@@ -1,0 +1,39 @@
+navbar.navbar-default.navbar-fixed-top.navbar-inverse
+  .container
+    a.navbar-brand(href='') jsDelivr
+    form.navbar-form.navbar-left
+      .form-group
+        input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
+.container-fluid
+  p(ng-show='info')
+    | Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results&nbsp;
+    small.text-muted ({{info.time}}ms)
+  .panel.panel-default(ng-repeat='lib in hits')
+    .panel-heading
+      a(href=''): {{lib.name}}
+      select.form-control.version-select(
+        ng-model='selected_version',
+        ng-init='selected_version = lib.lastversion',
+        ng-options='version for version in lib.versions'
+        )
+    .panel-body
+      p {{selected_version}}
+      //- .input-group
+      //-   input(type='text').form-control
+      //-   span.input-group-btn
+      //-     button(di-clip, data-clipboard-text="{{lib.name}}", type="button").btn.btn-default: i.fa.fa-copy
+      //- ul.list-inline
+      //-   li html
+      //-   li jade
+      //-   li url
+      p {{lib.description}}
+    ul.list-group
+      li.list-group-item(ng-repeat='(name, exts) in lib.assets[selected_version].files')
+        | {{name}}
+        span(ng-repeat='ex in exts') {{ex}}
+
+ul.pager
+  li.previous
+    a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)'): #[i.fa.fa-arrow-left] Previous Page
+  li.next
+    a.next(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
