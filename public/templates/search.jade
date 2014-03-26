@@ -4,35 +4,26 @@ navbar.navbar-default.navbar-fixed-top.navbar-inverse
     form.navbar-form.navbar-left
       .form-group
         input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
-.container-fluid
+.container-fluid(ng-if='hits')
   p(ng-show='info') Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
 
   .panel.panel-default(ng-repeat='lib in hits')
     .panel-heading
-      a(href='') {{lib.name}}
-      select.form-control.version-select(
-        ng-model='selected_version',
-        ng-init='selected_version = lib.lastversion',
-        ng-options='version for version in lib.versions'
-        )
+      a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
+      .pull-right
+        small {{lib.lastversion}}
     .panel-body
-      p {{selected_version}}
-      //- .input-group
-      //-   input(type='text').form-control
-      //-   span.input-group-btn
-      //-     button(di-clip, data-clipboard-text="{{lib.name}}", type="button").btn.btn-default: i.fa.fa-copy
-      //- ul.list-inline
-      //-   li html
-      //-   li jade
-      //-   li url
-      p {{lib.description}}
-    ul.list-group
-      li.list-group-item(ng-repeat='(name, exts) in lib.assets[selected_version].files')
-        | {{name}}
-        span(ng-repeat='ex in exts') {{ex}}
+      {{lib.description}}
 
-ul.pager
-  li.previous
-    a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)') #[i.fa.fa-arrow-left] Previous Page
-  li.next
-    a.next(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
+  ul.pager
+    li.previous
+      a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)') #[i.fa.fa-arrow-left] Previous Page
+    li.next
+      a.next(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
+.container-fluid(ng-if='hits.length == 0')
+  .text-center
+    p No Results
+    a(href='', ng-click='reset()') Reset
+
+.container-fluid(ng-if='!hits')
+  .text-center Loading...

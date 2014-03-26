@@ -8,8 +8,12 @@ angular.module('app', ['ui.router', 'ngSanitize'])
     $stateProvider
       .state 'search',
         url: '/'
-        templateUrl: 'templates/search.html'
+        templateUrl: '/templates/search.html'
         controller: 'SearchCtrl'
+      .state 'detail',
+        url: '/library/:name'
+        templateUrl: '/templates/detail.html'
+        controller: 'DetailCtrl'
 
     ZeroClipboard.config
       moviePath: '//cdn.jsdelivr.net/zeroclipboard/1.3.3/ZeroClipboard.swf'
@@ -92,6 +96,8 @@ angular.module('app', ['ui.router', 'ngSanitize'])
           lib
 
     class Library
+      get: (id, params) ->
+        index.getObject(id, params)
       search: (scope) ->
         state = $location.search()
         params =
@@ -102,18 +108,21 @@ angular.module('app', ['ui.router', 'ngSanitize'])
           q: state.q
 
         params.page = state.page if state.page
-        scope.hits = []
+        scope.hits = null
         index.search(params).then (response) ->
-          new LibrarySearchResponse(scope, response)
+          new SearchResponse(scope, response)
     new Library()
-
+  .controller 'DetailCtrl', ($scope, $stateParams, Library) ->
+    Library.get($stateParams.name).then ->
+      console.log arguments
+    $scope.hi = 1
   .controller 'SearchCtrl', ($scope, $location, Library) ->
+    $scope.search = $location.search().q
     Library.search($scope)
-    $scope.assets_for_version = (version) ->
-      # files = _.find(@lib.assets, version: version).files || []
-      # _.map files, (name) ->
-      #   out =
-      #     name: name
+
+    $scope.reset = ->
+      $location.search({})
+      Library.search($scope)
 
     $scope.select = (param_key, value) ->
       $location.search('page', null)

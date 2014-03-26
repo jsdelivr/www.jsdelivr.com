@@ -1,0 +1,21 @@
+      //- .input-group
+      //-   input(type='text').form-control
+      //-   span.input-group-btn
+      //-     button(di-clip, data-clipboard-text="{{lib.name}}", type="button").btn.btn-default: i.fa.fa-copy
+      //- ul.list-inline
+      //-   li html
+      //-   li jade
+      //-   li url
+      select.form-control.version-select(
+        ng-model='selected_version',
+        ng-init='selected_version = lib.lastversion',
+        ng-options='version for version in lib.versions'
+        )
+ul.nav-pills.nav
+  li.active: a(href='') JS
+  li: a(href='') Css
+  li: a(href='') Other
+ul.list-group
+  li.list-group-item(ng-repeat='file in lib.assets[selected_version].js')
+    | {{file.name}}&nbsp;
+    span.badge(ng-repeat='ex in file.exts') {{ex}}
