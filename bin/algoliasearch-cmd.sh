@@ -1,9 +1,6 @@
 #! /bin/bash
 
-# uncomment the following lines to set your Application ID and API Key
-# APPLICATION_ID=YourApplicationID
-# API_KEY=YourApiKey
-
+source .env
 HOST="$APPLICATION_ID.algolia.io"
 GZIP=0
 VERBOSE=0
@@ -75,12 +72,12 @@ if [ -z "$APPLICATION_ID" ]; then
     echo "Error: Please set your APPLICATION_ID"
     echo
     usage
-fi 
+fi
 if [ -z "$API_KEY" ]; then
     echo "Error: Please set your API_KEY"
     echo
     usage
-fi 
+fi
 
 headers=(--header "Content-Type: application/json; charset=utf-8")
 if [ "x$ALGOLIA_API_KEY" = "x" ]; then
@@ -295,7 +292,7 @@ case $1 in
             usage
         fi
         if [ -n "$4" ]; then
-            curl "${headers[@]}" --request PUT "$ALGOLIA_HOSTNAME/1/indexes/$2/$4" --data-binary @$3 
+            curl "${headers[@]}" --request PUT "$ALGOLIA_HOSTNAME/1/indexes/$2/$4" --data-binary @$3
         else
             curl "${headers[@]}" --request POST "$ALGOLIA_HOSTNAME/1/indexes/$2" --data-binary @$3
         fi
