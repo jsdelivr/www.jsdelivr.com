@@ -5,12 +5,11 @@ navbar.navbar-default.navbar-fixed-top.navbar-inverse
       .form-group
         input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
 .container-fluid
-  p(ng-show='info')
-    | Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results&nbsp;
-    small.text-muted ({{info.time}}ms)
+  p(ng-show='info') Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
+
   .panel.panel-default(ng-repeat='lib in hits')
     .panel-heading
-      a(href=''): {{lib.name}}
+      a(href='') {{lib.name}}
       select.form-control.version-select(
         ng-model='selected_version',
         ng-init='selected_version = lib.lastversion',
@@ -34,6 +33,6 @@ navbar.navbar-default.navbar-fixed-top.navbar-inverse
 
 ul.pager
   li.previous
-    a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)'): #[i.fa.fa-arrow-left] Previous Page
+    a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)') #[i.fa.fa-arrow-left] Previous Page
   li.next
     a.next(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]

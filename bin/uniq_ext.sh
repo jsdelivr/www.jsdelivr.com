@@ -1,1 +1,1 @@
-cat tmp/libraries.json | jq -c '.assets[].files[]' | tr -d '"' | awk -F . '{print $NF}' | sort | uniq -c | sort -n
+cat bin/test/angularjs.json | jq -c '.assets[0].files[]' | tr -d '"'
