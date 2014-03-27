@@ -1,8 +1,8 @@
-angular.module('app', ['ui.router', 'ngSanitize'])
+angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap'])
   .service 'Algolia', ->
     new AlgoliaSearch('OMJJSUW8EV', '677bfc2f1458fa602cb88c825c4d531b')
 
-  .config ($stateProvider, $urlRouterProvider, $locationProvider) ->
+  .config ($stateProvider, $urlRouterProvider, $locationProvider, $tooltipProvider) ->
     $locationProvider.html5Mode true
     $urlRouterProvider.otherwise("/")
     $stateProvider
@@ -15,6 +15,7 @@ angular.module('app', ['ui.router', 'ngSanitize'])
         templateUrl: '/templates/detail.html'
         controller: 'DetailCtrl'
 
+    $tooltipProvider.setTriggers( 'open': 'close' );
     ZeroClipboard.config
       moviePath: '//cdn.jsdelivr.net/zeroclipboard/1.3.3/ZeroClipboard.swf'
       debug: true
@@ -43,13 +44,26 @@ angular.module('app', ['ui.router', 'ngSanitize'])
           deferred.resolve(result)
         , params)
         deferred.promise
+
   .directive 'diClip', ->
     restrict: 'A'
 
     link: (scope, element, attrs) ->
+      text = 'copy to clipboard'
+      scope.tooltip = text
       clip = new ZeroClipboard(element)
 
       clip.on "load", (client) ->
+        client.on 'mouseover', ->
+          element.triggerHandler 'mouseenter'
+        client.on 'mouseout', ->
+          element.triggerHandler 'mouseleave'
+          scope.tooltip = text
+        client.on 'complete', ->
+          scope.$apply ->
+            scope.tooltip = 'copied!'
+          element.triggerHandler 'mouseleave'
+          element.triggerHandler 'mouseenter'
         scope.$on "$destroy", ->
           client.unclip element
 
@@ -60,6 +74,7 @@ angular.module('app', ['ui.router', 'ngSanitize'])
         console.log _.first scope.hits
         scope.info = @info(response)
         scope.page = @page(response)
+        console.log scope.page
 
       info: (data) ->
         start_index = data.page * data.hitsPerPage
@@ -85,26 +100,17 @@ angular.module('app', ['ui.router', 'ngSanitize'])
   .service 'Library', (Index, $location, SearchResponse) ->
     index = new Index('jsdelivr')
 
-    class LibrarySearchResponse extends SearchResponse
-      hits: (data) ->
-        _.map super(data), (lib) ->
-          assets = _.indexBy lib.assets, 'version'
-          _.each assets, (a) ->
-            a.files = _.groupBy a.files, (fn) ->
-              fn.split('.')[0]
-          lib.assets = assets
-          lib
-
     class Library
       get: (id, params) ->
         index.getObject(id, params)
       search: (scope) ->
         state = $location.search()
         params =
-          hitsPerPage: 10
+          hitsPerPage: 25
           facets: ['*']
           maxValuesPerFacet: 10
           facetFilters: []
+          attributesToRetrieve: ['description', 'name', 'lastversion']
           q: state.q
 
         params.page = state.page if state.page
@@ -113,9 +119,16 @@ angular.module('app', ['ui.router', 'ngSanitize'])
           new SearchResponse(scope, response)
     new Library()
   .controller 'DetailCtrl', ($scope, $stateParams, Library) ->
-    Library.get($stateParams.name).then ->
-      console.log arguments
-    $scope.hi = 1
+    $scope.copy_as = 'url'
+    Library.get($stateParams.name).then (res) ->
+      res.selected_version = res.lastversion
+      res.assets = _.indexBy(res.assets, 'version')
+      $scope.lib = res
+
+    $scope.file_url = ->
+      "//cdn.jsdelivr.net/#{@lib.selected_version}/#{@file}"
+
+
   .controller 'SearchCtrl', ($scope, $location, Library) ->
     $scope.search = $location.search().q
     Library.search($scope)
@@ -131,6 +144,7 @@ angular.module('app', ['ui.router', 'ngSanitize'])
       Library.search($scope)
 
     $scope.select_page = (page) ->
+      return if page < 0
       page = null if page == 0
       $location.search('page', page)
       Library.search($scope)

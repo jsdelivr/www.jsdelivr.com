@@ -1,1 +1,14 @@
-{{name}}
+.container-fluid
+  h1 {{lib.name}}
+
+  .panel.panel-default
+    .panel-heading.clearfix
+      .pull-right
+        select.form-control(ng-model='lib.selected_version', ng-options='version for version in lib.versions')
+      h3 Files
+    ul.list-group
+      li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
+        .input-group
+          input(type='text', ng-value='file_url()', readonly).form-control.copy-url
+          span.input-group-btn
+            span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy

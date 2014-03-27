@@ -4,22 +4,26 @@ navbar.navbar-default.navbar-fixed-top.navbar-inverse
     form.navbar-form.navbar-left
       .form-group
         input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
+.navbar-push
 .container-fluid(ng-if='hits')
-  p(ng-show='info') Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
-
-  .panel.panel-default(ng-repeat='lib in hits')
-    .panel-heading
-      a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
-      .pull-right
-        small {{lib.lastversion}}
-    .panel-body
-      {{lib.description}}
+  div Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
+  table.table.table-striped
+    thead
+      tr
+        th Name
+        th Description
+        th Latest Version
+    tbody
+      tr(ng-repeat='lib in hits')
+        td: a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
+        td.text-justify {{lib.description}}
+        td.text-right {{lib.lastversion}}
 
   ul.pager
-    li.previous
+    li.previous(ng-class='{ disabled: !page.hasPrev }')
       a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)') #[i.fa.fa-arrow-left] Previous Page
-    li.next
-      a.next(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
+    li.next(ng-class='{ disabled: !page.hasNext }')
+      a(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
 .container-fluid(ng-if='hits.length == 0')
   .text-center
     p No Results
