@@ -196,3 +196,5 @@ angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap']).service('Algo
     return Library.search($scope);
   };
 });
+;
+//# sourceMappingURL=app.all.js.map
