@@ -1,6 +1,9 @@
-angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap']).service('Algolia', function() {
-  return new AlgoliaSearch('OMJJSUW8EV', '677bfc2f1458fa602cb88c825c4d531b');
-}).config(function($stateProvider, $urlRouterProvider, $locationProvider, $tooltipProvider) {
+'use strict';
+var App;
+
+App = angular.module('app', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'app.algolia', 'app.search']);
+
+App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tooltipProvider) {
   $locationProvider.html5Mode(true);
   $urlRouterProvider.otherwise("/");
   $stateProvider.state('search', {
@@ -22,39 +25,6 @@ angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap']).service('Algo
     allowScriptAccess: "always",
     forceHandCursor: true
   });
-}).factory('Index', function(Algolia, $q) {
-  var Index;
-  return Index = (function() {
-    function Index(name) {
-      this.index = Algolia.initIndex(name);
-    }
-
-    Index.prototype.search = function(params) {
-      var deferred, query;
-      if (params == null) {
-        params = {};
-      }
-      deferred = $q.defer();
-      query = params.q || "";
-      delete params.q;
-      this.index.search(query, function(s, result) {
-        return deferred.resolve(result);
-      }, params);
-      return deferred.promise;
-    };
-
-    Index.prototype.getObject = function(id, params) {
-      var deferred;
-      deferred = $q.defer();
-      this.index.getObject(id, function(s, result) {
-        return deferred.resolve(result);
-      }, params);
-      return deferred.promise;
-    };
-
-    return Index;
-
-  })();
 }).directive('diClip', function() {
   return {
     restrict: 'A',
@@ -84,7 +54,44 @@ angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap']).service('Algo
       });
     }
   };
-}).factory('SearchResponse', function() {
+});
+;angular.module('app.algolia', []).service('AlgoliaClient', function() {
+  return new AlgoliaSearch('OMJJSUW8EV', '677bfc2f1458fa602cb88c825c4d531b');
+}).factory('AlgoliaIndex', function(AlgoliaClient, $q) {
+  var Index;
+  return Index = (function() {
+    function Index(name) {
+      this.index = AlgoliaClient.initIndex(name);
+    }
+
+    Index.prototype.search = function(params) {
+      var deferred, query;
+      if (params == null) {
+        params = {};
+      }
+      deferred = $q.defer();
+      query = params.q || "";
+      delete params.q;
+      this.index.search(query, function(s, result) {
+        return deferred.resolve(result);
+      }, params);
+      return deferred.promise;
+    };
+
+    Index.prototype.getObject = function(id, params) {
+      var deferred;
+      deferred = $q.defer();
+      this.index.getObject(id, function(s, result) {
+        return deferred.resolve(result);
+      }, params);
+      return deferred.promise;
+    };
+
+    return Index;
+
+  })();
+});
+;angular.module('app.search', []).factory('SearchResponse', function() {
   var SearchResponse;
   return SearchResponse = (function() {
     function SearchResponse(scope, response) {
@@ -126,9 +133,9 @@ angular.module('app', ['ui.router', 'ngSanitize', 'ui.bootstrap']).service('Algo
     return SearchResponse;
 
   })();
-}).service('Library', function(Index, $location, SearchResponse) {
+}).service('Library', function(AlgoliaIndex, $location, SearchResponse) {
   var Library, index;
-  index = new Index('jsdelivr');
+  index = new AlgoliaIndex('jsdelivr');
   Library = (function() {
     function Library() {}
 
