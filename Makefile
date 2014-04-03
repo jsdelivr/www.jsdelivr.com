@@ -8,7 +8,8 @@ watch:
 	node_modules/.bin/brunch w -s
 
 deploy:
-	harp compile
+	rm -rf www
+	node_modules/.bin/brunch b
 	git add www
 	git commit -am 'Release'
 	git subtree push --prefix www origin gh-pages
