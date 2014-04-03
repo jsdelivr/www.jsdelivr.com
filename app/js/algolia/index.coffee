@@ -1,6 +1,6 @@
 angular.module('app.algolia', [])
   .service 'AlgoliaClient', ->
-    new AlgoliaSearch('OMJJSUW8EV', '677bfc2f1458fa602cb88c825c4d531b')
+    new AlgoliaSearch('DBMBXHNL8O', 'ff534b434664d2fb939eace2877ec4dc')
 
   .factory 'AlgoliaIndex', (AlgoliaClient, $q) ->
     class Index
