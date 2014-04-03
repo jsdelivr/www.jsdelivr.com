@@ -1,4 +1,11 @@
-.PHONY: deploy
+.PHONY: deploy setup watch
+
+setup:
+	npm install
+
+watch:
+	rm -rf www
+	node_modules/.bin/brunch w -s
 
 deploy:
 	harp compile
