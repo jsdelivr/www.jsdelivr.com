@@ -4,16 +4,78 @@ nav.navbar.navbar-default
       img(src='/img/jsdelivr-logo.png')
 
     ul.nav.navbar-nav.navbar-right.sponsors
-      li: a(href='http://tracking.maxcdn.com/c/47243/36539/378'): img(src='/img/maxcdn.png', alt='Maxcdn')
-      li: a(href='https://www.cloudflare.com/'): img(src='/img/sponsors/Cloudflare.png', alt='Cloudflare')
+      li: a(href='http://www.jsdelivr.com/about.php#sponsors'): Network sponsored by:
+      li: a(href='http://tracking.maxcdn.com/c/47243/36539/378'): img(src='/img/maxcdn.png', alt='MaxCDN')
+      li: a(href='https://www.cloudflare.com/'): img(src='/img/sponsors/Cloudflare.png', alt='CloudFlare')
       li: a(href='http://www.cedexis.com/'): img(src='/img/sponsors/cedexis.png', alt='Cedexis')
+
+nav.navbar.navbar-default
+  .container-fluid
+    a.navbar-brand.logo(href='')
+      img(src='/img/jsdelivr-logo.png')
+
+    ul.nav.navbar-nav.navbar-right.sponsors
+      li: a(href='http://www.jsdelivr.com/about.php#sponsors'): Network sponsored by:
+      li: a(href='http://tracking.maxcdn.com/c/47243/36539/378'): img(src='/img/maxcdn.png', alt='MaxCDN')
+      li: a(href='https://www.cloudflare.com/'): img(src='/img/sponsors/Cloudflare.png', alt='CloudFlare')
+      li: a(href='http://www.cedexis.com/'): img(src='/img/sponsors/cedexis.png', alt='Cedexis')
+
+#about
+  h2
+    | Free super-fast Content Delivery Network (CDN) for developers and webmasters.
+  p
+    | jsDelivr provides free cloud hosting for javascript libraries, jQuery plugins, fonts, CSS frameworks and anything else you might need.  With our
+    a(href=http://www.jsdelivr.com/network.php): world-wide server network
+    | provided by
+    a(href='http://tracking.maxcdn.com/c/47243/36539/378'): MaxCDN,
+    a(href='https://www.cloudflare.com/'): CloudFlare, 
+    a(href='http://www.jsdelivr.com/about.php#sponsors'): and many other sponsors,
+    | jsDelivr provides maximum speed and uptime for hosted files.
+    | Please submit at the
+    a(href-'https://github.com/jsdelivr/jsdelivr#how-to-submit-or-update-projects'): jsDelivr GitHub
+    if something is missing.
 
 .container-fluid
   .form-group.search
     input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
     small
       | Realtime search provided by&nbsp;
-      a(href=''): img(src='/img/algolia128x40.png', height='15px', alt='Algoli Realtime Search')
+      a(href='http://www.algolia.com/'): img(src='/img/algolia128x40.png', height='15px', alt='Algoli Realtime Search')
+
+.container-fluid(ng-if='hits')
+  div Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
+  table.table.table-striped
+    thead
+      tr
+        th Name
+        th Description
+        th Latest Version
+    tbody
+      tr(ng-repeat='lib in hits')
+        td: a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
+        td.text-justify {{lib.description}}
+        td.text-right {{lib.lastversion}}
+
+  ul.pager
+    li.previous(ng-class='{ disabled: !page.hasPrev }')
+      a(href='', ng-disabled='!page.hasPrev', ng-click='select_page(page.prev)') #[i.fa.fa-arrow-left] Previous Page
+    li.next(ng-class='{ disabled: !page.hasNext }')
+      a(href='', ng-disabled='!page.hasNext', ng-click='select_page(page.next)') Next Page #[i.fa.fa-arrow-right]
+.container-fluid(ng-if='hits.length == 0')
+  .text-center
+    p No Results
+    a(href='', ng-click='reset()') Reset
+
+.container-fluid(ng-if='!hits')
+  .text-center Loading...
+
+
+.container-fluid
+  .form-group.search
+    input(type='search', placeholder='Search', ng-model='search', ng-change="select('q', search)").form-control
+    small
+      | Realtime search provided by&nbsp;
+      a(href='http://www.algolia.com/'): img(src='/img/algolia128x40.png', height='15px', alt='Algoli Realtime Search')
 
 .container-fluid(ng-if='hits')
   div Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
