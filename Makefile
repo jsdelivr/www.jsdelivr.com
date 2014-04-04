@@ -9,8 +9,7 @@ build: clean
 setup:
 	npm install
 
-watch:
-	rm -rf www
+watch: clean
 	node_modules/.bin/brunch w -s
 
 deploy: build
