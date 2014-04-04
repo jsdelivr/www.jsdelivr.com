@@ -8,6 +8,7 @@ App = angular.module('app', [
   # Internal
   'app.algolia'
   'app.search'
+  'app.templates'
 ])
 
 App
@@ -17,12 +18,22 @@ App
     $stateProvider
       .state 'search',
         url: '/'
-        templateUrl: '/templates/search.html'
+        templateUrl: 'app/templates/search.jade'
         controller: 'SearchCtrl'
       .state 'detail',
         url: '/library/:name'
-        templateUrl: '/templates/detail.html'
+        templateUrl: 'app/templates/detail.jade'
         controller: 'DetailCtrl'
+      .state 'network',
+        url: '/network'
+        templateUrl: 'app/templates/pages/network.jade'
+      .state 'about',
+        url: '/about'
+        templateUrl: 'app/templates/pages/about.jade'
+      .state 'faq',
+        url: '/faq'
+        templateUrl: 'app/templates/pages/faq.jade'
+
     $tooltipProvider.setTriggers( 'open': 'close' );
     ZeroClipboard.config
       moviePath: '//cdn.jsdelivr.net/zeroclipboard/1.3.3/ZeroClipboard.swf'

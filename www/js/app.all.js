@@ -1,19 +1,28 @@
 'use strict';
 var App;
 
-App = angular.module('app', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'app.algolia', 'app.search']);
+App = angular.module('app', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'app.algolia', 'app.search', 'app.templates']);
 
 App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tooltipProvider) {
   $locationProvider.html5Mode(true);
   $urlRouterProvider.otherwise("/");
   $stateProvider.state('search', {
     url: '/',
-    templateUrl: '/templates/search.html',
+    templateUrl: 'app/templates/search.jade',
     controller: 'SearchCtrl'
   }).state('detail', {
     url: '/library/:name',
-    templateUrl: '/templates/detail.html',
+    templateUrl: 'app/templates/detail.jade',
     controller: 'DetailCtrl'
+  }).state('network', {
+    url: '/network',
+    templateUrl: 'app/templates/pages/network.jade'
+  }).state('about', {
+    url: '/about',
+    templateUrl: 'app/templates/pages/about.jade'
+  }).state('faq', {
+    url: '/faq',
+    templateUrl: 'app/templates/pages/faq.jade'
   });
   $tooltipProvider.setTriggers({
     'open': 'close'
@@ -55,7 +64,6 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
     }
   };
 });
-
 ;angular.module('app.algolia', []).service('AlgoliaClient', function() {
   return new AlgoliaSearch('DBMBXHNL8O', 'ff534b434664d2fb939eace2877ec4dc');
 }).factory('AlgoliaIndex', function(AlgoliaClient, $q) {
@@ -92,7 +100,6 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
 
   })();
 });
-
 ;angular.module('app.search', []).factory('SearchResponse', function() {
   var SearchResponse;
   return SearchResponse = (function() {
@@ -205,5 +212,5 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
     return Library.search($scope);
   };
 });
-
 ;
+//# sourceMappingURL=app.all.js.map

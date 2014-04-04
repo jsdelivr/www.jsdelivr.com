@@ -20,14 +20,17 @@ exports.config =
     stylesheets:
       joinTo:
         'css/app.css': /^app/
+    templates:
+      joinTo:
+        'js/dontUseMe' : /^app/
 
 
   plugins:
     imageoptimizer:
       path: 'img'
-    jadePages:
-      jade:
-        locals: locals
+    jade_angular:
+      modules_folder: 'templates'
+      locals: locals
     sass:
       options:
         includePaths: ['vendor/css']
