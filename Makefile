@@ -1,4 +1,10 @@
-.PHONY: deploy setup watch
+.PHONY: clean build deploy setup watch
+
+clean:
+	rm -rf www
+
+build: clean
+	node_modules/.bin/brunch b --production
 
 setup:
 	npm install

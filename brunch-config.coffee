@@ -2,9 +2,6 @@ yaml_config = require 'node-yaml-config'
 locals = yaml_config.load(__dirname + '/locals.yaml')
 
 exports.config =
-  # See docs at http://brunch.readthedocs.org/en/latest/config.html.
-  conventions:
-    assets:  /^app[\/\\]+assets[\/\\]+/
   modules:
     definition: false
     wrapper: false
@@ -26,12 +23,11 @@ exports.config =
 
 
   plugins:
-    jade:
-      pretty: false # Adds pretty-indentation whitespaces to output (false by default)
+    imageoptimizer:
+      path: 'img'
     jadePages:
       jade:
         locals: locals
-
     sass:
       options:
         includePaths: ['vendor/css']
