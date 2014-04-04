@@ -64,6 +64,7 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
     }
   };
 });
+
 ;angular.module('app.algolia', []).service('AlgoliaClient', function() {
   return new AlgoliaSearch('DBMBXHNL8O', 'ff534b434664d2fb939eace2877ec4dc');
 }).factory('AlgoliaIndex', function(AlgoliaClient, $q) {
@@ -100,6 +101,7 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
 
   })();
 });
+
 ;angular.module('app.search', []).factory('SearchResponse', function() {
   var SearchResponse;
   return SearchResponse = (function() {
@@ -212,5 +214,5 @@ App.config(function($stateProvider, $urlRouterProvider, $locationProvider, $tool
     return Library.search($scope);
   };
 });
+
 ;
-//# sourceMappingURL=app.all.js.map
