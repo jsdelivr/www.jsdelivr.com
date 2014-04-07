@@ -6,7 +6,7 @@ exports.config =
     definition: false
     wrapper: false
   paths:
-    public: 'www'
+    public: '/tmp/beta.jsdelivr.com/development'
   files:
     javascripts:
       joinTo:
@@ -24,6 +24,10 @@ exports.config =
       joinTo:
         'js/dontUseMe' : /^app/
 
+  overrides:
+    production:
+      paths:
+        public: '/tmp/beta.jsdelivr.com/production'
 
   plugins:
     imageoptimizer:

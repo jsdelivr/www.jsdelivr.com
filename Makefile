@@ -1,23 +1,21 @@
 BRUNCH=node_modules/.bin/brunch
+BUILD_DIR=/tmp/beta.jsdelivr.com/production
 
-.PHONY: clean build deploy setup watch
+.PHONY: clean build deploy watch promote
 
 clean:
-	rm -rf www
+	rm -rf $(BUILD_DIR)
 
 build: clean
 	$(BRUNCH) b --production
-	cp www/index.html www/404.html
-	touch www/.nojekyll
-
-setup:
-	npm install
+	cp $(BUILD_DIR)/index.html $(BUILD_DIR)/404.html
+	touch $(BUILD_DIR)/.nojekyll
 
 watch: clean
-	node_modules/.bin/brunch w -s
+	$(BRUNCH) w -s
 
 deploy: build
-	git add --all www
-	git commit -am 'Release'
-	git subtree push --prefix www origin gh-pages
+	divshot push
 
+promote:
+	divshot promote development production
