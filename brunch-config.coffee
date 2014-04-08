@@ -6,7 +6,7 @@ exports.config =
     definition: false
     wrapper: false
   paths:
-    public: '/tmp/beta.jsdelivr.com/development'
+    public: 'tmp/www'
   files:
     javascripts:
       joinTo:
