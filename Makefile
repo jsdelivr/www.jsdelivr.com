@@ -11,7 +11,8 @@ build: clean
 	cp $(BUILD_DIR)/index.html $(BUILD_DIR)/404.html
 	touch $(BUILD_DIR)/.nojekyll
 
-watch: clean
+watch:
+	rm -rf tmp/www
 	$(BRUNCH) w -s
 
 deploy: build
