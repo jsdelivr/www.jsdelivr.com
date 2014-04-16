@@ -59,7 +59,7 @@ angular.module('app.search', [])
       $scope.lib = res
 
     $scope.file_url = ->
-      "//cdn.jsdelivr.net/#{@lib.selected_version}/#{@file}"
+      "//cdn.jsdelivr.net/#{@lib.name}/#{@lib.selected_version}/#{@file}"
 
 
   .controller 'SearchCtrl', ($scope, $location, Library) ->
