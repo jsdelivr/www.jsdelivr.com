@@ -41,6 +41,11 @@ App
       trustedDomains: ["*"]
       allowScriptAccess: "always"
       forceHandCursor: true
+  .directive "selectOnClick", ->
+    restrict: "A"
+    link: (scope, element, attrs) ->
+      element.on "click", ->
+        @select()
 
   .directive 'diClip', ->
     restrict: 'A'

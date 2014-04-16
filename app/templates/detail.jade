@@ -1,14 +1,14 @@
 include partials/header
 .container-fluid
   h1 {{lib.name}}
-  .panel.panel-default
-    .panel-heading.clearfix
-      .pull-right
-        select.form-control(ng-model='lib.selected_version', ng-options='version for version in lib.versions')
-      h3 Files
+  p {{lib.description}}
+  .panel.panel-default.clearfix
+    .pull-right
+      select(ng-model='lib.selected_version', ng-options='version for version in lib.versions', style='margin: 6px;')
+    .panel-heading #[b CDN Files] (#[a(href='https://github.com/jsdelivr/jsdelivr#load-multiple-files-with-single-http-request') mainfile]:{{lib.mainfile}})
     ul.list-group
       li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
         .input-group
-          input(type='text', ng-value='file_url()', readonly).form-control.copy-url
+          input(type='text', ng-value='file_url()', readonly, select-on-click).form-control.copy-url
           span.input-group-btn
             span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy
