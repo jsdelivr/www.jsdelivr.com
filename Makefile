@@ -1,5 +1,5 @@
 BRUNCH=node_modules/.bin/brunch
-BUILD_DIR=/tmp/beta.jsdelivr.com/production
+BUILD_DIR=tmp/production
 
 .PHONY: clean build deploy watch promote
 

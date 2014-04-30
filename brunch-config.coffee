@@ -27,7 +27,7 @@ exports.config =
   overrides:
     production:
       paths:
-        public: '/tmp/beta.jsdelivr.com/production'
+        public: 'tmp/production'
 
   plugins:
     imageoptimizer:
