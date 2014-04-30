@@ -4,3 +4,6 @@
 
 # Development
 Run ```make watch``` and visit http://localhost:3333/ to see page.
+
+# Auto-deploy
+When code is pushed to master it is autodeployed to http://development.jsdelivr.divshot.io.
