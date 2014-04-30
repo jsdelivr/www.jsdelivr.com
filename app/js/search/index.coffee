@@ -58,6 +58,10 @@ angular.module('app.search', [])
       res.assets = _.indexBy(res.assets, 'version')
       $scope.lib = res
 
+    $scope.zip_url = ->
+      lib = @lib || {}
+      "//cdn.jsdelivr.net/#{lib.name}/#{lib.selected_version}/#{lib.zip}" if lib.zip
+
     $scope.file_url = ->
       "//cdn.jsdelivr.net/#{@lib.name}/#{@lib.selected_version}/#{@file}"
 
