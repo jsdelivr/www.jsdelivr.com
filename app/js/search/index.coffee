@@ -46,7 +46,6 @@ angular.module('app.search', [])
           q: state.q
 
         params.page = state.page if state.page
-        scope.hits = null
         index.search(params).then (response) ->
           new SearchResponse(scope, response)
     new Library()
