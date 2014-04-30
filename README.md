@@ -5,5 +5,5 @@
 # Development
 Run ```make watch``` and visit http://localhost:3333/ to see page.
 
-# Auto-deploy
+# Auto-deploy [![Build Status](https://travis-ci.org/jsdelivr/beta.jsdelivr.com.svg?branch=master)](https://travis-ci.org/jsdelivr/beta.jsdelivr.com)
 When code is pushed to master it is autodeployed to http://development.jsdelivr.divshot.io.
