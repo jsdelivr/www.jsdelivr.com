@@ -66,7 +66,7 @@ angular.module('app.search', [])
       "//cdn.jsdelivr.net/#{@lib.name}/#{@lib.selected_version}/#{@file}"
 
 
-  .controller 'SearchCtrl', ($scope, $location, Library) ->
+  .controller 'SearchCtrl', ($scope, $location, Library, $window) ->
     $scope.search = $location.search().q
     Library.search($scope)
 
@@ -84,4 +84,5 @@ angular.module('app.search', [])
       return if page < 0
       page = null if page == 0
       $location.search('page', page)
-      Library.search($scope)
+      Library.search($scope).then ->
+        $window.scrollTo(0, 0)
