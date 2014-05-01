@@ -18,8 +18,8 @@ stream.on 'data', (line) ->
       client.get '/repos' + repo, {}, (err, status, body) ->
         data.gh = _.pick(body, 'stargazers_count', 'subscribers_count', 'forks')
         process.stdout.write JSON.stringify(data) + "\n"
-    else
-      process.stdout.write JSON.stringify(data) + "\n"
+  else
+    process.stdout.write JSON.stringify(data) + "\n"
 
 
 stream.resume()
