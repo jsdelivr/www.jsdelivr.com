@@ -42,7 +42,7 @@ angular.module('app.search', [])
           facets: ['*']
           maxValuesPerFacet: 10
           facetFilters: []
-          attributesToRetrieve: ['description', 'name', 'lastversion']
+          attributesToRetrieve: ['description', 'name', 'lastversion', 'gh']
           q: state.q
 
         params.page = state.page if state.page

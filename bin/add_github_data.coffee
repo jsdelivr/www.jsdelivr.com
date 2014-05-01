@@ -16,8 +16,7 @@ stream.on 'data', (line) ->
       #/padolsey/jQuery-Plugins/tree/master/cross-domain-ajax/
       repo = _.first(gh.pathname.split('/'), 3).join('/')
       client.get '/repos' + repo, {}, (err, status, body) ->
-        data.gh = _.pick(body, 'stargazers_count', 'watchers_count', 'forks_count')
-
+        data.gh = _.pick(body, 'stargazers_count', 'subscribers_count', 'forks')
         process.stdout.write JSON.stringify(data) + "\n"
     else
       process.stdout.write JSON.stringify(data) + "\n"
