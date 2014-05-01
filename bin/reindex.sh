@@ -1,7 +1,7 @@
 source .env
 INDEX_NAME=jsdelivr
 wget -qO- http://api.jsdelivr.com/v1/jsdelivr/libraries | jq '.[]' -c > tmp/libraries.json
-cat tmp/libraries.json | jq '. + {objectID: .name}' -c > tmp/jsdelivr.json
+cat tmp/libraries.json | jq '. + {objectID: .name}' -c | coffee bin/add_github_data.coffee > tmp/jsdelivr.json
 
 ./bin/algoliasearch-cmd.sh clearIndex $INDEX_NAME
 ./bin/algoliasearch-cmd.sh addObjects $INDEX_NAME tmp/jsdelivr.json
