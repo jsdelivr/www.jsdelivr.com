@@ -21,9 +21,12 @@ no_github_but_gh_homepage = (data) ->
     if gh.host == 'github.com'
       console.log data.name
 
+no_github = (data) ->
+  if !data.github
+    console.log data.name
 stream.on 'data', (line) ->
   data = JSON.parse(line)
-  no_github_but_gh_homepage(data)
+  no_github(data)
 
 
 stream.resume()
