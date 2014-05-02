@@ -1,21 +1,42 @@
-include partials/header
-.container-fluid.detail-page
-  h1 {{lib.name}} #[small {{lib.author}}]
-  ul.list-inline
-    li
-      a(ng-href='{{lib.homepage}}', ng-class='{disabled: !lib.homepage}'): i.fa.fa-home.fa-2x
-    li
-      a(ng-href='{{lib.github}}', ng-class='{disabled: !lib.github}'): i.fa.fa-github-square.fa-2x
-    li
-      a(ng-href='{{zip_url()}}', title='Download Zip'): i.fa.fa-download.fa-2x
-  p {{lib.description}}
-  .panel.panel-default.clearfix
-    .pull-right
-      select(ng-model='lib.selected_version', ng-options='version for version in lib.versions', style='margin: 6px;')
-    .panel-heading #[b CDN Files] (#[a(href='https://github.com/jsdelivr/jsdelivr#load-multiple-files-with-single-http-request') mainfile]:{{lib.mainfile}})
-    ul.list-group
-      li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
-        .input-group
-          input(type='text', ng-value='file_url()', readonly, select-on-click).form-control.copy-url
-          span.input-group-btn
-            span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy
+.container(ng-if='lib')
+  a.text-muted(ui-sref='search') #[i.fa.fa-caret-left] Return to search
+  .panel.panel-detail
+    .panel-heading
+      .pull-right
+        ul.panel-links
+          li
+            a(ng-href='{{lib.homepage}}', ng-class='{disabled: !lib.homepage}', title='Homepage').panel-btn
+             i.fa.fa-home
+          li
+            a(ng-href='{{lib.github}}', ng-class='{disabled: !lib.github}', title='Github').panel-btn
+              i.fa.fa-github
+          li
+            a(ng-href='{{zip_url()}}', title='Download Zip').panel-btn
+             i.fa.fa-download
+          li
+            .dropdown.dropdown-menu-left
+              a(href='').dropdown-toggle.panel-btn {{lib.selected_version}} #[i.fa.fa-caret-down]
+              ul.dropdown-menu
+                li(ng-repeat='version in lib.versions')
+                  a(ui-sref='detail_version({version: version, name: lib.name})') {{version}}
+      .name {{lib.name}}
+    .panel-body
+      p {{lib.description}}
+      dl.dl-horizontal
+        dt Author
+        dd {{lib.author}}
+      tabset
+        tab
+          tab-heading Javascript
+          p Hello
+        tab
+          tab-heading CSS
+          p css
+        tab
+          tab-heading Other
+          ul.list-group
+            li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
+              .input-group
+                input(type='text', ng-value='file_url()', readonly, select-on-click).form-control.copy-url
+                span.input-group-btn
+                  span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy

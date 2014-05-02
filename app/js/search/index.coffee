@@ -53,8 +53,7 @@ angular.module('app.search', [])
   .controller 'DetailCtrl', ($scope, $stateParams, Library) ->
     $scope.copy_as = 'url'
     Library.get($stateParams.name).then (res) ->
-      console.log  res
-      res.selected_version = res.lastversion
+      res.selected_version = $stateParams.version || res.lastversion
       res.assets = _.indexBy(res.assets, 'version')
       $scope.lib = res
 

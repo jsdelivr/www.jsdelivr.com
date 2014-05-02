@@ -8,20 +8,22 @@ include partials/header
       a(href=sponsors.algolia.home): img(src=sponsors.algolia.img, height='15px', alt=sponsors.algolia.name)
 
 .container(ng-if='hits')
-  div Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
-  table.table.table-striped
-    thead
-      tr
-        th Name
-        th Description
-        th Latest Version
-        th Stars
-    tbody
-      tr(ng-repeat='lib in hits')
-        td: a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
-        td.text-justify {{lib.description}}
-        td.text-right {{lib.lastversion}}
-        td.text-right {{lib.gh.stargazers_count}}
+  .panel.panel-default
+    .panel-heading Showing #[b {{info.start}}] - #[b {{info.stop}}] of #[b {{info.total}}] Results #[small.text-muted ({{info.time}}ms)]
+    table.table.table-striped
+      tbody
+        tr(ng-repeat='lib in hits')
+          td
+            h4
+              a(ui-sref='detail(lib)', ng-bind-html='lib._highlightResult.name.value')
+              small @{{lib.lastversion}}
+            p {{lib.description}}
+          td
+            .github-btn
+              a.btn(href='#', target='_blank')
+                i.fa.fa-github
+                | &nbsp;Star
+              .gh-count {{lib.gh.stargazers_count}}
 
   ul.pager
     li.previous(ng-class='{ disabled: !page.hasPrev }')

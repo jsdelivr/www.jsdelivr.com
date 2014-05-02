@@ -24,6 +24,10 @@ App
         url: '/library/:name'
         templateUrl: 'app/templates/detail.jade'
         controller: 'DetailCtrl'
+      .state 'detail_version',
+        url: '/library/:name/:version'
+        templateUrl: 'app/templates/detail.jade'
+        controller: 'DetailCtrl'
       .state 'network',
         url: '/network'
         templateUrl: 'app/templates/pages/network.jade'
