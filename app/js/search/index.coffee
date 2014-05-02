@@ -50,12 +50,17 @@ angular.module('app.search', [])
           new SearchResponse(scope, response)
     new Library()
 
-  .controller 'DetailCtrl', ($scope, $stateParams, Library) ->
+  .controller 'DetailCtrl', ($scope, $stateParams, Library, $location) ->
     $scope.copy_as = 'url'
+
     Library.get($stateParams.name).then (res) ->
-      res.selected_version = $stateParams.version || res.lastversion
+      res.selected_version = $location.search().version || res.lastversion
       res.assets = _.indexBy(res.assets, 'version')
+      console.log res.assets
       $scope.lib = res
+
+    $scope.select_version = (version) ->
+      $scope.lib.selected_version = version
 
     $scope.zip_url = ->
       lib = @lib || {}

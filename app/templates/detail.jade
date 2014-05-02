@@ -18,25 +18,15 @@
               a(href='').dropdown-toggle.panel-btn {{lib.selected_version}} #[i.fa.fa-caret-down]
               ul.dropdown-menu
                 li(ng-repeat='version in lib.versions')
-                  a(ui-sref='detail_version({version: version, name: lib.name})') {{version}}
+                  a(ng-href='/library/{{lib.name}}?version={{version}}', ng-click='select_version(version)') {{version}}
       .name {{lib.name}}
     .panel-body
       p {{lib.description}}
-      dl.dl-horizontal
-        dt Author
-        dd {{lib.author}}
-      tabset
-        tab
-          tab-heading Javascript
-          p Hello
-        tab
-          tab-heading CSS
-          p css
-        tab
-          tab-heading Other
-          ul.list-group
-            li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
-              .input-group
-                input(type='text', ng-value='file_url()', readonly, select-on-click).form-control.copy-url
-                span.input-group-btn
-                  span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy
+
+    ul.list-group
+      li.list-group-item(ng-repeat='file in lib.assets[lib.selected_version].files')
+        .input-group
+          input(type='text', ng-value='file_url()', readonly, select-on-click).form-control.copy-url
+          span.input-group-btn
+            span(di-clip, data-clipboard-text="{{file_url()}}", tooltip='{{tooltip}}', tooltip-placement='left').btn.btn-default: i.fa.fa-copy
+            a(href='', tooltip='Add to Collection').btn.btn-default: i.fa.fa-plus
