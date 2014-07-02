@@ -2,7 +2,10 @@ module.exports = function(grunt) {
 	var pkg = grunt.file.readJSON('package.json');
 
 	grunt.initConfig({
-		clean: [ 'build/*' ],
+		clean: {
+			before: [ 'build/*' ],
+			after: [ 'tmp/' ]
+		},
 		browserify: {
 			bundle: {
 				files: {
@@ -41,10 +44,10 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		rename: {
+		copy: {
 			build: {
 				files: [
-					{ src: 'tmp', dest: 'build/' + pkg.version }
+					{ expand: true, cwd: 'tmp', src: './**', dest: 'build/' + pkg.version }
 				]
 			}
 		}
@@ -55,15 +58,16 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-jsbeautifier');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
-	grunt.loadNpmTasks('grunt-contrib-rename');
+	grunt.loadNpmTasks('grunt-contrib-copy');
 
 	grunt.registerTask('build', [
-		'clean',
+		'clean:before',
 		'browserify',
 		'jsbeautifier',
 		'uglify',
 		'cssmin',
-		'rename'
+		'copy',
+		'clean:after'
 	]);
 
 	grunt.registerTask('default', 'build');
