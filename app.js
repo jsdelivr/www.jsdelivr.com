@@ -4,8 +4,6 @@ var isBot = require('is-bot');
 var Ractive = require('ractive');
 var rr = require('ractive-render');
 
-var pkg = require('./package.json');
-
 var app = express();
 
 /**
@@ -14,8 +12,8 @@ var app = express();
 app.use(connect.favicon());
 app.use(connect.logger('remote-addr - - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" - :response-time ms'));
 app.use(connect.compress());
-app.use(express.static('public'));
-app.use(express.static('build/' + pkg.version, { maxAge: 365 * 86400000 })); // one year
+app.use(express.static('public', { maxAge: 86400000 })); // one day
+app.use(express.static('build', { maxAge: 86400000 }));
 
 app.set('view engine', 'html');
 app.engine('html', rr.renderFile);

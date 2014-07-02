@@ -1,15 +1,10 @@
 module.exports = function(grunt) {
-	var pkg = grunt.file.readJSON('package.json');
-
 	grunt.initConfig({
-		clean: {
-			before: [ 'build/*' ],
-			after: [ 'tmp/' ]
-		},
+		clean: [ 'build/*' ],
 		browserify: {
 			bundle: {
 				files: {
-					'tmp/js/bundle.js': [ 'public/js/app.js' ]
+					'build/js/bundle.js': [ 'public/js/app.js' ]
 				},
 			options: {
 				browserifyOptions: {
@@ -24,31 +19,24 @@ module.exports = function(grunt) {
 					indentWithTabs: true
 				}
 			},
-			files: [ 'tmp/js/bundle.js' ]
+			files: [ 'build/js/bundle.js' ]
 		},
 		uglify: {
 			bundle: {
 				options: {
 					sourceMap: true,
-					sourceMapName: 'tmp/js/bundle.min.map'
+					sourceMapName: 'build/js/bundle.min.map'
 				},
 				files: {
-					'tmp/js/bundle.min.js': 'tmp/js/bundle.js'
+					'build/js/bundle.min.js': 'build/js/bundle.js'
 				}
 			}
 		},
 		cssmin: {
 			combine: {
 				files: {
-					'tmp/css/bundle.min.css': [ 'public/css/modern-ui.css', 'public/css/custom.css' ]
+					'build/css/bundle.min.css': [ 'public/css/modern-ui.css', 'public/css/custom.css' ]
 				}
-			}
-		},
-		copy: {
-			build: {
-				files: [
-					{ expand: true, cwd: 'tmp', src: './**', dest: 'build/' + pkg.version }
-				]
 			}
 		}
 	});
@@ -58,16 +46,13 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-jsbeautifier');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
-	grunt.loadNpmTasks('grunt-contrib-copy');
 
 	grunt.registerTask('build', [
-		'clean:before',
+		'clean',
 		'browserify',
 		'jsbeautifier',
 		'uglify',
-		'cssmin',
-		'copy',
-		'clean:after'
+		'cssmin'
 	]);
 
 	grunt.registerTask('default', 'build');
