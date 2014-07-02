@@ -1,0 +1,93 @@
+<link rel="ractive" href="./modal.html" name="Modal">
+
+<Modal id="{{id}}" title="{{title}}" size="{{size}}" collection="{{collection}}" submit="{{subscribe}}" email="{{email}}" showSwitch="{{showSwitch}}">
+	{{#links}}
+		{{#showSwitch}}
+			<div class="row" style="padding: 0 5px">
+				<div class="col-xs-2 col-xs-offset-9" style="text-align: right">
+					Group links
+				</div>
+				<div class="col-sm-1">
+					<input type="checkbox" class="switch-inline" id="group-links" checked="{{groupLinks}}" value="1">
+					<label for="group-links"></label>
+				</div>
+			</div>
+		{{/showSwitch}}
+		<ul id="link-list" class="list-style-none">
+			{{#js.length}}
+				<li><strong>JS</strong></li>
+				{{#js}}
+					<li><input type="text" class="form-control output" value='{{cdnRoot}}/{{this}}'></li>
+				{{/js}}
+			{{/js}}
+
+			{{#css.length}}
+				<li><strong>CSS</strong></li>
+				{{#css}}
+					<li><input type="text" class="form-control output" value='{{cdnRoot}}/{{this}}'></li>
+				{{/css}}
+			{{/css}}
+
+			{{#others.length}}
+				<li><strong>Others</strong></li>
+				{{#others}}
+					<li><input type="text" class="form-control output" value='{{cdnRoot}}/{{this}}'></li>
+				{{/others}}
+			{{/others}}
+		</ul>
+
+		<div class="email-updates">
+			{{^subscribed}}
+				<strong>E-mail updates</strong>
+				<input type="email" class="form-control" value="{{email}}" placeholder="Enter your e-mail address if you want to receive updates">
+				<div>
+					<button class="btn primary btn-inverse" on-click="submit">Keep Me Updated</button>
+				</div>
+			{{/subscribed}}
+
+			{{#subscribed}}
+				<p>We'll send you an e-mail to <a href="mailto:{{email}}">{{email}}</a>  when there is a new version available.</p>
+			{{/subscribed}}
+		</div>
+	{{/links}}
+</Modal>
+
+<script>
+	var linkBuilder = require('public/js/search/build-links');
+
+	component.exports = {
+		el: 'body',
+		append: true,
+		computed: {
+			showSwitch: function () {
+				var links = linkBuilder(this.get('collection'), false);
+				return links.css.length > 1 || links.js.length > 1;
+			},
+			links: function () {
+				return linkBuilder(this.get('collection'), this.get('groupLinks'))
+			},
+			title: function () {
+				return 'Your link' + ((this.get('links.css').length + this.get('links.js').length + this.get('links.others').length) > 1 ? 's' : '');
+			}
+		},
+		data: {
+			app: {},
+			cdnRoot: '//cdn.jsdelivr.net',
+			collection: {},
+			email: '',
+			groupLinks: true,
+			id: 'modal-links',
+			linkBuilder: linkBuilder,
+			size: 'modal-lg',
+			subscribed: false,
+			subscribe: function() {
+				if (/^[^@]+@[^@]+\.[a-z]{2,}$/i.test(this.get('email'))) {
+					this.set('subscribed', true);
+					// TODO-LATER
+				}
+
+				return false;
+			}
+		}
+	};
+</script>

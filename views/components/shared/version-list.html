@@ -1,0 +1,66 @@
+<link rel="ractive" href="./report-new-version.html" name="ReportNewVersion">
+<link rel="ractive" href="./select-files.html" name="SelectFiles">
+
+{{#project}}
+	<ul class="dropdown-menu {{class}}" role="menu">
+		{{#.versions:j}}
+			{{#this !== selectedVersion}}
+				<li><a class="link" on-click="selectVersion:{{this}}">{{this}}</a></li>
+			{{/}}
+		{{/.versions}}
+
+		{{#.versions.length > 1}}
+			<li class="divider"></li>
+		{{/.versions}}
+
+		<li><a class="link" on-click="reportNew:{{this}}">Found newer version?</a></li>
+	</ul>
+{{/project}}
+
+<script>
+	var getFilesForVersion = require('public/js/utils/get-files-for-version.js');
+
+	component.exports = {
+		data: {
+			class: '',
+			project: {}// TODO doesn't update parent with R 0.4.0
+		},
+		init: function () {
+			this.on({
+				reportNew: function (event, project) {
+					new this.components.ReportNewVersion({
+						data: {
+							project: project
+						}
+					});
+				},
+				selectVersion: function (event, version) {
+					this.set('project.selectedVersion', version);
+
+					var project = this.get('project');
+					var files = getFilesForVersion(this.get('project'), version);
+					var _this = this;
+
+					// reselect files if some of them are not available in this version
+					for(var x in project.selectedFiles) {
+						if(project.selectedFiles.hasOwnProperty(x)) {
+							if(files.indexOf(project.selectedFiles[x]) === -1) {
+								new this.components.SelectFiles({
+									data: {
+										app: this.get('app'),
+										project: project,
+										callback: function(project) {
+											_this.set('project.selectedFiles', project.selectedFiles);
+										}
+									}
+								});
+
+								break;
+							}
+						}
+					}
+				}
+			})
+		}
+	};
+</script>

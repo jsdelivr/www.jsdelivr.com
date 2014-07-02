@@ -1,0 +1,57 @@
+<link rel="ractive" href="./modal.html" name="Modal">
+
+<Modal id="{{id}}" title="{{title}}" project="{{project}}" buttons="{{buttons}}" submit="{{submit}}">
+	<ol id="file-list" class="list-style-none">
+		{{# listFiles(project):i }}
+			<li>
+				<input type="checkbox" class="checkbox primary" id="file{{i}}" value="{{this}}" checked="{{this === project.mainfile}}">
+				<label for="file{{i}}">{{this}}</label>
+			</li>
+		{{/}}
+	</ol>
+</Modal>
+
+<script>
+	var listFiles = require('public/js/search/list-files.js');
+
+	component.exports	= {
+		el: 'body',
+		append: true,
+		data: {
+			callback: null,
+			id: 'modal-select-files',
+			listFiles: listFiles,
+			title: 'Select files to include',
+			project: {},
+			buttons: [
+				{
+					label: 'Cancel',
+					class: 'btn-default',
+					handler: 'cancel'
+				},
+				{
+					label: 'Select',
+					class: 'primary',
+					handler: 'submit'
+				}
+			]
+		},
+		init: function () {
+			var _this = this;
+
+			this.set('submit', function() {
+				var files = Array.prototype.slice.call($('#' + this.get('id'))
+					.find('input:checked'))
+					.map(function(element) {
+						return element.value
+					});
+
+				if(files.length && typeof _this.get('callback') === 'function') {
+					_this.get('callback')($.extend($.extend(true, {}, _this.get('project')), {
+						selectedFiles: files
+					}));
+				}
+			});
+		}
+	};
+</script>
