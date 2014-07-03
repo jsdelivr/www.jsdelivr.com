@@ -73,3 +73,25 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	component.exports = {
+		init: function () {
+			if (!Ractive.isServer) {
+				var $carousel = $('#carousel');
+				var $window = $(window);
+
+				$window
+					.on('resize now.carousel', function () {
+						$carousel
+							.removeClass('slide')
+							.carousel(0)
+							.css({ minHeight: false })
+							.css({ minHeight: $carousel.outerHeight() })
+							.addClass('slide');
+					})
+					.triggerHandler('now.carousel');
+			}
+		}
+	};
+</script>
