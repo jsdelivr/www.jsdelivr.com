@@ -34,7 +34,7 @@ app.use(function (req, res, next) {
 		return next();
 	}
 
-	app.render('components' + req.path + '.html', { wrapper: 'template.html' }, function (err, html) {
+	app.render('components' + req.path + '.html', { wrapper: 'template.html', el: 'content' }, function (err, html) {
 		if (err) {
 			console.error(err);
 			return res.send(404);
