@@ -9,7 +9,7 @@ var app = express();
 /**
  * Express config
  */
-app.use(connect.favicon());
+app.use(connect.favicon('public/favicon.png'));
 app.use(connect.logger('remote-addr - - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" - :response-time ms'));
 app.use(connect.compress());
 app.use(express.static('public', { maxAge: 86400000 })); // one day
