@@ -1,57 +1,52 @@
-<link rel="ractive" href="./modal.html" name="Modal">
+<link rel="ractive" href="./modal.html" name="modal">
 
-<Modal id="{{id}}" title="{{title}}" project="{{project}}" buttons="{{buttons}}" submit="{{submit}}">
-	<ol id="file-list" class="list-style-none">
-		{{# listFiles(project):i }}
-			<li>
-				<input type="checkbox" class="checkbox primary" id="file{{i}}" value="{{this}}" checked="{{this === project.mainfile}}">
-				<label for="file{{i}}">{{this}}</label>
-			</li>
-		{{/}}
-	</ol>
-</Modal>
+<modal>
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h4 class="modal-title">Select files to include</h4>
+	</div>
+
+	<div class="modal-body">
+		<ol class="select-files">
+			{{#each getFilesByVersion(project, project.selectedVersion) }}
+				<li>
+					<input type="checkbox" class="checkbox primary" id="file-{{@index}}" name="{{selected}}" value="{{this}}">
+					<label for="file-{{@index}}">{{this}}</label>
+				</li>
+			{{/each}}
+		</ol>
+	</div>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" on-click="teardown()">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="submit()">Select</button>
+	</div>
+</modal>
 
 <script>
-	var listFiles = require('public/js/search/list-files.js');
+	var assign = require('public/js/utils/assign.js');
+	var getFilesByVersion = require('public/js/utils/get-files-by-version.js');
 
-	component.exports	= {
+	component.exports = {
 		el: 'body',
 		append: true,
-		data: {
-			callback: null,
-			id: 'modal-select-files',
-			listFiles: listFiles,
-			title: 'Select files to include',
-			project: {},
-			buttons: [
-				{
-					label: 'Cancel',
-					class: 'btn-default',
-					handler: 'cancel'
-				},
-				{
-					label: 'Select',
-					class: 'primary',
-					handler: 'submit'
-				}
-			]
+		data: function (data) {
+			return assign({
+				callback: function () {},
+				id: 'modal-select-files',
+				getFilesByVersion: getFilesByVersion,
+				project: {},
+				selected: []
+			}, data);
 		},
-		init: function () {
-			var _this = this;
+		oninit: function () {
+			// TODO: Doesn't work at the moment ractivejs/ractive#1305
+			this.push('selected', this.get('project.mainfile'));
+		},
+		submit: function () {
+			this.get('callback')(this.get('selected'));
 
-			this.set('submit', function() {
-				var files = Array.prototype.slice.call($('#' + this.get('id'))
-					.find('input:checked'))
-					.map(function(element) {
-						return element.value
-					});
-
-				if(files.length && typeof _this.get('callback') === 'function') {
-					_this.get('callback')($.extend($.extend(true, {}, _this.get('project')), {
-						selectedFiles: files
-					}));
-				}
-			});
+			this.teardown();
 		}
 	};
 </script>

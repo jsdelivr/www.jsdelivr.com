@@ -1,6 +1,7 @@
 var helpers = require('./helpers.js');
 
-module.exports = helpers.create(function (node) {
+module.exports = helpers.create(function (node, tooltipPlacement) {
+	tooltipPlacement = tooltipPlacement || 'right';
 	var clip = new ZeroClipboard(node);
 	var $node = $(node);
 
@@ -10,7 +11,7 @@ module.exports = helpers.create(function (node) {
 				.tooltip('destroy')
 				.tooltip({
 					title: 'Copy to Clipboard',
-					placement: 'top',
+					placement: tooltipPlacement,
 					trigger: 'manual',
 					container: 'body'
 				})
@@ -25,7 +26,7 @@ module.exports = helpers.create(function (node) {
 			.tooltip('destroy')
 			.tooltip({
 				title: 'Copied!',
-				placement: 'top',
+				placement: tooltipPlacement,
 				trigger: 'manual',
 				container: 'body'
 			})

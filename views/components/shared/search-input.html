@@ -1,0 +1,27 @@
+<div class="container search-input-component">
+	{{#if render}}
+		<section>
+			<h1>A free super-fast CDN for developers and webmasters</h1>
+
+			<i class="icon icon-search"></i>
+			<input type="text" placeholder="Search in more than {{nbProjects}} open source projects..." value="{{query}}">
+		</section>
+	{{/if render}}
+</div>
+
+<script>
+	component.exports = {
+		oncomplete: function() {
+			if (this.get('el')) {
+				this.detach();
+				this.insert(this.get('el'), this.get('anchor'));
+				this.set('render', true);
+			}
+		},
+		onteardown: function() {
+			if (this.get('el')) {
+				this.find('*').outerHTML = '';
+			}
+		}
+	};
+</script>

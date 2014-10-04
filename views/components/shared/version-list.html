@@ -1,66 +1,63 @@
-<link rel="ractive" href="./report-new-version.html" name="ReportNewVersion">
 <link rel="ractive" href="./select-files.html" name="SelectFiles">
 
-{{#project}}
-	<ul class="dropdown-menu {{class}}" role="menu">
-		{{#.versions:j}}
-			{{#this !== selectedVersion}}
-				<li><a class="link" on-click="selectVersion:{{this}}">{{this}}</a></li>
-			{{/}}
-		{{/.versions}}
-
-		{{#.versions.length > 1}}
-			<li class="divider"></li>
-		{{/.versions}}
-
-		<li><a class="link" on-click="reportNew:{{this}}">Found newer version?</a></li>
-	</ul>
-{{/project}}
+<ul class="dropdown-menu">
+	{{#each project.versions}}
+		{{#if this !== selectedVersion}}
+			<li><a class="clickable" on-click="select(this)">{{this}}</a></li>
+		{{/if}}
+	{{/each project.versions}}
+</ul>
 
 <script>
-	var getFilesForVersion = require('public/js/utils/get-files-for-version.js');
+	var assign = require('public/js/utils/assign.js');
+	var getCollectionIndex = require('public/js/utils/get-collection-index.js');
+	var getFilesByVersion = require('public/js/utils/get-files-by-version.js');
 
 	component.exports = {
-		data: {
-			class: '',
-			project: {}// TODO doesn't update parent with R 0.4.0
+		data: function (data) {
+			return assign({
+				collection: [],
+				project: {}
+			}, data);
 		},
-		init: function () {
-			this.on({
-				reportNew: function (event, project) {
-					new this.components.ReportNewVersion({
-						data: {
-							project: project
-						}
-					});
-				},
-				selectVersion: function (event, version) {
-					this.set('project.selectedVersion', version);
+		select: function (version) {
+			var collection = this.get('collection');
+			var project = this.get('project');
+			var collectionIndex = getCollectionIndex(collection, project.name);
+			var collectionProject = collection[collectionIndex];
+			var files = getFilesByVersion(project, version);
+			var _this = this;
 
-					var project = this.get('project');
-					var files = getFilesForVersion(this.get('project'), version);
-					var _this = this;
+			this.set('project.selectedVersion', version);
 
-					// reselect files if some of them are not available in this version
-					for(var x in project.selectedFiles) {
-						if(project.selectedFiles.hasOwnProperty(x)) {
-							if(files.indexOf(project.selectedFiles[x]) === -1) {
-								new this.components.SelectFiles({
-									data: {
-										app: this.get('app'),
-										project: project,
-										callback: function(project) {
-											_this.set('project.selectedFiles', project.selectedFiles);
-										}
+			// If this project is in the collection, update the collection as well.
+			if (collectionIndex !== -1) {
+				this.set('collection.' + collectionIndex + '.version', version);
+
+				// Reselect files if some of them are not available in this version.
+				for (var x in collectionProject.files) {
+					if (collectionProject.files.hasOwnProperty(x)) {
+						if (files.indexOf(collectionProject.files[x]) === -1) {
+							// Remove the project from the collection.
+							this.splice('collection', collectionIndex, 1);
+
+							new this.components.SelectFiles({
+								data: {
+									project: project,
+									callback: function (files) {
+										collectionProject.files = files;
+
+										// If user re-selected the files, we can add the project back.
+										_this.splice('collection', collectionIndex, 0, collectionProject);
 									}
-								});
+								}
+							});
 
-								break;
-							}
+							break;
 						}
 					}
 				}
-			})
+			}
 		}
 	};
 </script>

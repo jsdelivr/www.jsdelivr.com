@@ -1,7 +1,7 @@
 module.exports = function (node, title, placement, trigger, container) {
 	var $node = $(node).tooltip({
 		title: title,
-		placement: placement || 'top',
+		placement: placement || 'right',
 		trigger: trigger || 'hover',
 		container: container || 'body'
 	});

@@ -1,320 +1,258 @@
-@red	: #e80c1f;
-@gray	: #333;
-@white	: #fff;
-@fonts	: "Open Sans", "Segoe UI", "Helvetica Neue", sans-serif;
+@import "variables";
+@import "mixins";
 
-// ***************
-// typography
-// ***************
-body { font-family: @fonts; }
-
-h1 { font-size: 32px; }
-h2 { font-size: 26px; }
-h3 { font-size: 20px; text-transform: uppercase; }
-h4 { font-size: 14px; text-transform: uppercase; }
-
-h1, h2, h3 {
-	font-weight: 300;
+.alert {
+	border-radius: 0;
 }
 
-// ***************
-// navigation
-// ***************
-.top-nav {
-	background-color: #555;
-	padding: 2px 0 2px 0;
+.btn {
+	border-width: 2px;
+	padding: 10px 20px;
+	outline: none !important;
 
-	li {
-		margin-left: 20px;
-		list-style: none;
+	&:active, &.active {
+		.box-shadow(none);
+	}
+}
+.checkbox, .checkbox-inline {
+	display: none;
 
-		a {
-			color: #eee;
-			font-size: 80%;
-			text-transform: uppercase;
-			text-decoration: none;
+	& + label {
+		display: block;
+		cursor: pointer;
+		font-weight: normal;
+		opacity: .5;
 
-			&:hover, &:focus {
-				color: #ccc;
-			}
+		&:before {
+			position: relative;
+			margin-right: 10px;
+			display: inline-block;
+			width: 18px;
+			height: 18px;
+			border: 1px solid #c2c3c4;
+			text-align: center;
+			font-size: 14px;
+			content: "\2713";
+			color: transparent;
+			line-height: 18px;
+			background-color: #fff;
 		}
 	}
-}
 
-// ***************
-// branding
-// ***************
-.navbar {
-	border-top: none;
+	&:checked + label {
+		opacity: 1;
 
-	.navbar-nav {
-		> li {
-			> a {
-				&.navbar-brand {
-					padding-top: 10px;
-					padding-bottom: 10px;
-
-					&:hover, &:focus {
-						background-color: @white;
-					}
-
-					img {
-						height: 30px;
-					}
-				}
-			}
+		&:before {
+			color: #fff;
+			background-color:#f00;
+			border-color:#f00;
 		}
 	}
-}
 
-// ***************
-// general
-// ***************
-blockquote {
-	border-left: none;
-}
-
-header {
-	h1, h2 {
-		text-align: center;
+	& + label:hover:before {
+		border-color:#f00;
 	}
 }
 
-body {
-	text-align: justify;
-}
-
-#content > section {
-	border-bottom: 1px solid #eee;
-}
-
-section:not(:empty) {
-	padding-top: 20px;
-	padding-bottom: 20px;
-}
-
-iframe {
-	border: none;
-}
-
-.btn.zeroclipboard-is-hover {
-	border: 1px solid @gray;
-}
-
-.carousel {
-	text-align: center;
-	padding-bottom: 20px;
-
-	.carousel-indicators {
-		bottom: 0;
-
-		li {
-			background-color: #ccc;
-			border: none;
-
-			&.active {
-				background-color: @red;
-			}
-		}
-	}
-}
-
-.container {
-	overflow: hidden;
-}
-
-.featured {
-	text-align: center;
-
-	img {
-		width: 100px;
-		height: 100px;
-	}
-}
-
-.label {
-	margin-right: 5px;
-}
-
-// links without HREF attribute
-.link {
+.clickable {
 	cursor: pointer;
 }
 
-.list-item {
-	padding: 5px 0;
+.dropdown-menu {
+	padding: 0;
 
-	& + & {
-		border-top: 1px solid #ccc;
-	}
-}
+	li {
+		&:first-child a {
+			border-top-left-radius: 4px;
+			border-top-right-radius: 4px;
+		}
 
-.list-style-none {
-	list-style: none;
-	padding-left: 0;
-	margin-bottom: 0;
-}
+		&:last-child a {
+			border-bottom-left-radius: 4px;
+			border-bottom-right-radius: 4px;
+		}
 
-.more-files {
-	width: 100%;
-}
-
-.output {
-	background-color: #eee;
-}
-
-.show-more {
-	text-align: center;
-	margin-bottom: 0;
-}
-
-*:focus, *:hover {
-	outline-color: @red !important;
-}
-
-::selection {
-	color: @white;
-	background: @red;
-}
-
-::-moz-selection {
-	color: @white;
-	background: @red;
-}
-
-// ***************
-// section specific
-// ***************
-#my-collection {
-	margin-top: 40px;
-}
-
-.collection-item {
-	line-height: 34px;
-}
-
-#search-input {
-	border-top: none;
-	border-left: none;
-	border-right: none;
-	padding-left: 0;
-	padding-right: 0;
-	height: 50px;
-	font-size: 20px;
-	line-height: 25px;
-}
-
-.result {
-	h4 {
-		color: @red;
-		margin-bottom: 0;
-		text-transform: none;
-	}
-
-	p {
-		margin-top: 10px;
-	}
-
-	.buttons {
-		text-align: right;
-	}
-}
-
-.file-list {
-	list-style: none;
-	padding-left: 0;
-	text-align: center;
-}
-
-footer {
-	color: #ccc;
-	background-color: @gray;
-	padding-top: 40px;
-	padding-bottom: 20px;
-
-	a {
-		color: #ccc;
-
-		&:hover, &:focus {
-			color: #eee;
+		a {
+			font-weight: 600;
+			line-height: 28px;
 		}
 	}
 }
 
-#credits {
-	background-color: #ccc;
-
-	h4 { margin-bottom: 0; }
-	p { font-size: 17.5px; }
-}
-
-#copyright {
+.file-link {
+	color: @gray-darker;
+	font-family: @font-family-monospace;
+	font-weight: 700;
 	margin-top: 20px;
-	border-top: 1px solid darken(@gray, 5%);
-	padding-top: 20px;
+	word-wrap: break-word;
+	padding-right: 30px;
+
+	.icon {
+		position: relative;
+		left: 20px;
+	}
+
+	&.main {
+		font-size: 16px;
+	}
+}
+
+.link-list {
+	list-style: none;
+
+	li {
+		padding: 5px 0;
+
+		a {
+			color: #fff;
+
+			&:hover, &:focus, &:active, &.active {
+				color: #fff;
+			}
+		}
+	}
+}
+
+.modal {
+	.modal-header {
+		color: @gray-dark;
+
+		.close {
+			margin-top: 2px;
+		}
+	}
+
+	.modal-content {
+		padding: 0 5px;
+	}
+
+	.modal-footer {
+		text-align: left;
+	}
+}
+
+.navbar {
+	.nav {
+		text-transform: uppercase;
+
+		a {
+			color: #fff;
+			border-top: 2px solid transparent;
+			padding: 10px 20px;
+
+			&:hover, &:focus, &:active, &.active {
+				color: #fff;
+				background-color: @gray-dark;
+				border-color: @brand-primary;
+			}
+		}
+
+		.btn-primary {
+			font-weight: 700;
+			padding: 10px 40px;
+
+			&:hover, &:focus, &:active, &.active {
+				background-color: darken(@btn-primary-bg, 5%);
+				border-color: darken(@btn-primary-bg, 5%);
+			}
+		}
+	}
+}
+
+.navbar-center {
 	text-align: center;
-}
 
-.about, .faq, .sponsors, .debug {
-	section {
-		padding-top: 20px;
+	.navbar-nav {
+		display: inline-block;
+		float: none;
 	}
 }
 
-.faq {
+.pagination {
 	li {
-		margin-top: 20px;
-
-		p {
-			margin: 5px 0 25px;
+		a, span {
+			padding: 1px 7px;
+			border-radius: @border-radius-small;
+			margin-left: 10px;
 		}
 	}
 }
 
-.sponsors {
-	li {
-		margin-bottom: 5px;
+.pagination-wrapper {
+	text-align: center;
+	font-weight: 700;
+
+	.previous, .next {
+		font-weight: 400;
 	}
 
-	.sponsor {
-		margin-top: 20px;
-		margin-bottom: 20px;
+	.previous {
+		.icon {
+			margin: -4px 10px 0 0;
+		}
+	}
 
-		img {
-			width: 100px;
-			height: 50px;
+	.next {
+		.icon {
+			margin: -4px 0 0 10px;
 		}
 	}
 }
 
-.debug {
-	li {
-		margin-bottom: 5px;
+.progress {
+	border-radius: 0;
+ }
+
+.section {
+	padding: 40px 0;
+}
+
+.section-icon {
+	float: left;
+	margin-left: -60px;
+}
+
+.switch, .switch-inline {
+	display: none;
+
+	& + label {
+		display: block;
+		width: 46px;
+		height: 28px;
+		border-radius: 99px;
+		cursor: pointer;
+		font-weight: normal;
+		background-color: @gray;
+		vertical-align: middle;
+		.transition(all 400ms ease);
+		border: 1px solid @gray;
+
+		&:before {
+			margin-left: 0;
+			display: inline-block;
+			width: 26px;
+			height: 26px;
+			background-color: #fff;
+			content: "";
+			text-align: center;
+			vertical-align: top;
+			line-height: 25px;
+			border-radius: 99px;
+		}
+	}
+
+	&:checked + label {
+		background-color: #4bd562;
+		border-color: #4bd562;
+		padding-left: 18px;
+	}
+
+	&.switch-inline + label {
+		display: inline-block;
 	}
 }
 
-// ***************
-// modals
-// ***************
-.email-updates {
-	margin-top: 20px;
-
-	div {
-		margin-top: 30px;
-		text-align: center;
-	}
-
-	p {
-		margin-bottom: 0;
-		text-align: center;
-	}
-}
-
-// ***************
-// fixes
-// ***************
-
-// should work at least on windows; https://github.com/twbs/bootstrap/issues/9855
-.modal-open {
-	margin-left: -17px;
+.tooltip-inner {
+	font-weight: 700;
+	padding: 6px 12px;
 }
