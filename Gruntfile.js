@@ -91,7 +91,7 @@ module.exports = function(grunt) {
 		uncss: {
 			app: {
 				options: {
-					ignore: [ /(?:tooltip|modal|dropdown|icon|project|main|fade|in)(?:-\w+)?/ ],
+					ignore: [ /^(.*)?\.(tooltip|modal|dropdown|icon|project|main|fade|in)([^\w]+\w+)*$/ ],
 					stylesheets: [ '../public/css/app.css' ]
 				},
 				files: {
