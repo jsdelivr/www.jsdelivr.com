@@ -29,7 +29,7 @@ app.router.addRoute('/sponsors', Ractive.extend(cSponsors));
 app.router.addRoute('/stats', Ractive.extend(cStats));
 
 // 404 -> homepage
-app.router.addRoute('/(.*)', function () { app.router.dispatch('/'); });
+app.router.addRoute('/(.*)', function () { location.pathname = ''; });
 
 $(function () {
 	ZeroClipboard.config({
