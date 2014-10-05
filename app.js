@@ -15,7 +15,7 @@ var app = express();
 //app.use(favicon('public/img/favicon.ico'));
 app.use(morgan(':remote-addr - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" - :response-time ms'));
 app.use(compression());
-app.use(express.static('public', { maxAge: 31536000000 })); // one year
+app.use(express.static(__dirname + '/public', { maxAge: 31536000000 })); // one year
 
 app.set('view engine', 'html');
 app.engine('html', rr.renderFile);
