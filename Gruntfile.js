@@ -29,7 +29,13 @@ module.exports = function(grunt) {
 		}},
 		concat: {
 			bootstrap: {
-				src: [ 'public/js/bootstrap/dropdown.js', 'public/js/bootstrap/modal.js', 'public/js/bootstrap/tooltip.js', 'public/js/bootstrap/transition.js' ],
+				src: [
+					'public/js/bootstrap/collapse.js',
+					'public/js/bootstrap/dropdown.js',
+					'public/js/bootstrap/modal.js',
+					'public/js/bootstrap/tooltip.js',
+					'public/js/bootstrap/transition.js'
+				],
 				dest: 'app/public/js/bootstrap.js'
 			},
 			bundle: {

@@ -1,0 +1,41 @@
+<link rel="ractive" href="./shared/project.html" name="project">
+
+<section>
+	<div class="container">
+		<project project="{{project}}" collection="{{collection}}" single="true"></project>
+	</div>
+</section>
+
+<script>
+	var assign = require('public/js/utils/assign.js');
+
+	component.exports = {
+		data: function (data) {
+			return assign({
+				name: ''
+			}, data);
+		},
+		oninit: function () {
+			if (!Ractive.isServer) {
+				var collection = this.get('collection');
+				var appCollection = this.get('app.collection');
+				var search = require('public/js/utils/search.js');
+				var _this = this;
+
+				// TODO change to 'name: ' + name
+				search(this.get('name'), 0, function (response) {
+					_this.set('project', response.hits[0]);
+				});
+
+				// We need to make sure that collection and appCollection use the same object,
+				// otherwise, they would get out of sync.
+				if (collection !== appCollection) {
+					this.splice('app.collection', 0, appCollection.length);
+					appCollection.push.apply(appCollection, collection);
+					this.set('collection', appCollection);
+					this.update('app.collection');
+				}
+			}
+		}
+	};
+</script>

@@ -1,319 +1,40 @@
 <link rel="ractive" href="./shared/search-input.html" name="searchInput">
-<link rel="ractive" href="./shared/version-list.html" name="versionList">
-<link rel="ractive" href="./shared/select-files.html" name="SelectFiles">
-<link rel="ractive" href="./shared/links.html" name="Links">
+<link rel="ractive" href="./shared/search-results.html" name="searchResults">
 
 <!-- Search input will be injected into the header. -->
 <!-- TODO: Use official API when it's available ractivejs/ractive#1131 -->
-<searchInput el="#header" anchor="#header > :last-child" query="{{query}}" nbProjects="{{nbProjects}}"></searchInput>
+<searchInput el="#header" anchor="#header > :last-child" query="{{query}}"></searchInput>
 
-<section>
-	<div class="container">
-		<!-- TODO: Move this somewhere else? At least for smaller screens. -->
-		<div class="collection-sidebar">
-			{{#if collection}}
-				<button class="btn btn-primary" on-click="showLinks()">Collection ({{collection.length}})</button>
-			{{/if collection}}
-		</div>
-
-		{{#each projects}}
-			<!-- TODO: Remove data-index="{{@index}}" when ractivejs/ractive#1303 is fixed. -->
-			<div class="project" data-index="{{@index}}">
-				<div class="row">
-					<div class="col-xs-1">
-						<ul class="pr-links">
-							{{#if github}}<li><a href="{{github}}" decorator="tooltip:'GitHub', 'left'"><i class="icon icon-github"></i></a></li>{{/if github}}
-							<li><a href="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{zip}}" decorator="tooltip:'Download ZIP', 'left'"><i class="icon icon-download"></i></a></li>
-							<li><a href="{{homepage}}" decorator="tooltip:'Homepage', 'left'"><i class="icon icon-globe"></i></a></li>
-							<li><a href="{{apiUrl}}/jsdelivr/libraries?name={{name}}" decorator="tooltip:'API', 'left'"><i class="icon icon-api"></i></a></li>
-						</ul>
-					</div>
-
-					<div class="col-xs-11">
-						<h2 class="pr-header">
-							<!-- TODO: set('query', 'name: ' + name) -->
-							<a class="clickable" on-click="set('query', name)">{{name}}</a>
-
-							<span class="btn-group pr-version">
-								{{#if versions.length > 1}}
-									<span class="clickable" data-toggle="dropdown">
-										<a>{{selectedVersion}}</a>
-										<i class="icon icon-drop-down"></i>
-									</span>
-
-									<versionList project="{{this}}" collection="{{collection}}"></versionList>
-								{{else}}
-									{{selectedVersion}}
-								{{/if}}
-							</span>
-
-							<i class="icon icon-warning" decorator="tooltip:Mainfile: {{mainfile}}"></i>
-
-							<span class="pr-collection">
-								{{#if getCollectionIndex(collection, name) === -1}}
-									<a class="clickable" on-click="addToCollection(this)" decorator="tooltip:Add to Collection">
-										<i class="icon icon-add-to-list"></i>
-									</a>
-								{{else}}
-									<a class="clickable" on-click="splice('collection', getCollectionIndex(collection, name), 1)" decorator="tooltip:Remove from Collection">
-										<i class="icon icon-remove-from-list"></i>
-									</a>
-								{{/if getFromCollection}}
-							</span>
-							<span class="pr-author">by <a class="clickable" on-click="set('query', 'author: ' + author)">{{author}}</a></span>
-						</h2>
-
-						<p>{{description}}</p>
-
-						<div class="row">
-							{{#each getFilesByVersion(this, selectedVersion).slice(0, fLimit)}}
-								<div class="col-xs-10 file-link {{#if !@index}}main{{/if}}">
-									{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}
-
-									{{#if hasFlash}}
-										<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}"></i>
-									{{/if hasFlash}}
-								</div>
-							{{/each files}}
-
-							{{#if insert}}
-								<div class="more-files" style="display: {{ showAll ? 'block' : 'none' }}">
-									{{#each getFilesByVersion(this, selectedVersion).slice(fLimit)}}
-										<div class="col-xs-10 file-link">
-											{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}
-
-											{{#if hasFlash}}
-												<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}"></i>
-											{{/if hasFlash}}
-										</div>
-									{{/each files}}
-								</div>
-							{{/if insert}}
-						</div>
-
-						{{#if getFilesByVersion(this, selectedVersion).length > fLimit}}
-							<div class="pr-show-all clickable">
-								<span on-click="toggleFiles(@index, event.node)">
-									{{#if !showAll}}
-										<i class="icon icon-chevron-down"></i> Show all
-									{{else}}
-										<i class="icon icon-chevron-up"></i> Hide
-									{{/if}}
-								</span>
-							</div>
-						{{/if fLimit}}
-					</div>
-				</div>
-			</div>
-		{{/each projects}}
-
-		{{#if nbPages > 1}}
-			<div class="pagination-wrapper">
-				<ul class="pagination">
-					<li class="previous {{#unless page}}disabled{{/unless}}">
-						<a class="clickable" on-click="substract('page')">
-							<i class="icon icon-chevron-left{{#unless page}}-disabled{{/unless}}"></i> Previous
-						</a>
-					</li>
-
-					{{#if pages[0] >= 1}}
-						<li><a class="clickable" on-click="set('page', 0)">1</a></li>
-						{{#if pages[0] === 2}}
-							<li><a class="clickable" on-click="set('page', 1)">2</a></li>
-						{{/if}}
-						{{#pages[0] > 2}}
-							<li class="disabled"><a>...</a></li>
-						{{/if}}
-					{{/if}}
-
-					{{#each pages}}
-						<li class="{{this === page ? 'active' : ''}}"><a class="clickable" on-click="set('page', this)">{{this + 1}}</a></li>
-					{{/each pages}}
-
-					{{#pages[pages.length - 1] <= nbPages - 2}}
-						{{#pages[pages.length - 1] === nbPages - 3}}
-							<li><a class="clickable" on-click="set('page', nbPages - 2)">{{nbPages - 1}}</a></li>
-						{{/}}
-
-						{{#pages[pages.length - 1] < nbPages - 3}}
-							<li class="disabled"><a>...</a></li>
-						{{/}}
-						<li class="{{this === page ? 'active' : ''}}"><a class="clickable" on-click="set('page', nbPages - 1)">{{nbPages}}</a></li>
-					{{/}}
-
-					<li class="next {{#unless page < nbPages - 1}}disabled{{/unless}}">
-						<a class="clickable" on-click="add('page')">Next
-							<i class="icon icon-chevron-right{{#unless page < nbPages - 1}}-disabled{{/unless}}"></i>
-						</a>
-					</li>
-				</ul>
-			</div>
-		{{/if}}
-	</div>
-</section>
+<searchResults query="{{query}}" page="{{page}}" collection="{{collection}}" __ready="{{__ready}}"></searchResults>
 
 <script>
-	var has = require('public/js/utils/has.js');
 	var assign = require('public/js/utils/assign.js');
-	var getCollectionIndex = require('public/js/utils/get-collection-index.js');
-	var getFilesByVersion = require('public/js/utils/get-files-by-version.js');
-	var tooltipDecorator = require('public/js/decorators/tooltip.js');
-	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
-	var collection = [];
 
 	component.exports = {
-		computed: {
-			fLimit: function () {
-				return this.get('single') ? Number.MAX_VALUE : 3;
-			},
-			pages: function() {
-				var current = this.get('page');
-				var total = this.get('nbPages');
-				var length = 5;
-				var half = Math.floor(length / 2);
-				var result = [];
-				var start, end;
-
-				if (total < length) {
-					start = 0;
-					end = total - 1;
-				} else if (current <= half) {
-					start = 0;
-					end = length - 1;
-				} else if (current >= (total - half)) {
-					start = total - length;
-					end = total - 1;
-				} else {
-					start = current - half;
-					end = start + length - 1;
-				}
-
-				for (var i = start; i <= end; i++) {
-					result.push(i);
-				}
-
-				return result;
-			},
-			single: function () {
-				return this.get('projects.length') === 1;
-			}
-		},
 		data: function (data) {
 			return assign({
-				apiUrl: 'http://api.jsdelivr.com/v1',
-				cdnRoot: '//cdn.jsdelivr.net',
-				collection: collection,
-				getCollectionIndex: getCollectionIndex,
-				getFilesByVersion: getFilesByVersion,
-				hasFlash: false,
-				nbProjects: 1150,
 				page: 0,
-				projects: [],
 				query: ''
 			}, data);
 		},
-		decorators: {
-			tooltip: tooltipDecorator,
-			zeroClipboard: zeroClipboardDecorator
-		},
 		oninit: function () {
-			if (!Ractive.isServer) {
-				var countProjects = require('public/js/utils/count-projects.js');
-				var search = require('public/js/utils/search.js');
-				var _this = this;
+			var collection = this.get('collection');
+			var appCollection = this.get('app.collection');
 
-				// Show number of hosted projects.
-				countProjects(function (nbProjects) {
-					nbProjects && _this.set('nbProjects', nbProjects);
-				});
-
-				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
-
-				// Update results on input.
-				this.observe('page query __ready', function (newValue, oldValue, keypath) {
-					// Don't send requests before we're have all the data.
-					if (this.get('__ready')) {
-						// Reset page number on query change.
-						if (keypath === 'query' && this.get('page')) {
-							this.set('page', 0)
-						} else {
-							search(this.get('query').toString(), this.get('page'), function (response, query) {
-								// The query might have changed since we sent the request.
-								if (query === _this.get('query')) {
-									_this.merge('projects', response.hits);
-
-									_this.set({
-										nbPages: response.nbPages || 0,
-										page: response.page || 0
-									});
-								}
-							});
-						}
-					}
-				});
-
-				// Scroll to top on page change.
-				this.observe('page', function () {
-					$('html, body').scrollTop(0);
-				})
+			// We need to make sure that collection and appCollection use the same object,
+			// otherwise, they would get out of sync.
+			if (collection !== appCollection) {
+				this.splice('app.collection', 0, appCollection.length);
+				appCollection.push.apply(appCollection, collection);
+				this.set('collection', appCollection);
+				this.update('app.collection');
 			}
 		},
 		oncomplete: function () {
 			// Redirect from the old URL format.
 			if (location.hash && !this.get('query')) {
-				this.set('query', location.hash.substr(2));
-
-				if (has.history()) {
-					history.replaceState({}, document.title, location.pathname + location.search);
-				} else {
-					location.hash = '';
-				}
+				this.get('app.router').dispatch('/projects/' + location.hash.substr(2), { noHistory: true });
 			}
-		},
-		addToCollection: function (project) {
-			var _this = this;
-
-			new this.components.SelectFiles({
-				data: {
-					project: project,
-					callback: function (files) {
-						project.selectedFiles = files;
-
-						_this.push('collection', {
-							name: project.name,
-							version: project.selectedVersion,
-							files: files
-						});
-
-						_this.update();
-					}
-				}
-			});
-		},
-		showLinks: function () {
-			new this.components.Links({
-				data: {
-					cdnRoot: this.get('cdnRoot'),
-					collection: this.get('collection')
-				}
-			});
-		},
-		toggleFiles: function (index, node) {
-			this.set('projects.' + index + '.insert', true);
-
-			var $link = $(node);
-			var $moreFiles = $link.parent().prev('.row' ).find('.more-files');
-			var _this = this;
-
-			$moreFiles.slideToggle(200, function () {
-				if($link.offset().top < $(document).scrollTop()) {
-					$('html, body').animate({
-						scrollTop: $link.closest('.project').offset().top
-					});
-				}
-
-				_this.toggle('projects.' + index + '.showAll');
-			});
 		}
 	};
 </script>

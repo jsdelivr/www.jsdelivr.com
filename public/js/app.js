@@ -5,17 +5,20 @@ var cAbout = require('views/components/about.html');
 var cDebugTool = require('views/components/debug-tool.html');
 var cDonate = require('views/components/donate.html');
 var cFeatures = require('views/components/features.html');
+var cProjects = require('views/components/projects.html');
 var cSponsors = require('views/components/sponsors.html');
 var cStats = require('views/components/stats.html');
 
 var app = module.exports;
+app.collection = [];
 
 /** @type {Router} */
 app.router = new Ractive.Router({
 	el: '#page',
 	data: function () {
 		return {
-			app: app
+			app: app,
+			collection: app.collection
 		};
 	}
 });
@@ -25,6 +28,7 @@ app.router.addRoute('/about', Ractive.extend(cAbout));
 app.router.addRoute('/debug-tool', Ractive.extend(cDebugTool), { hash: [ 'resultsHash' ] });
 app.router.addRoute('/donate', Ractive.extend(cDonate));
 app.router.addRoute('/features', Ractive.extend(cFeatures));
+app.router.addRoute('/projects/:name', Ractive.extend(cProjects));
 app.router.addRoute('/sponsors', Ractive.extend(cSponsors));
 app.router.addRoute('/stats', Ractive.extend(cStats));
 
@@ -32,10 +36,11 @@ app.router.addRoute('/stats', Ractive.extend(cStats));
 app.router.addRoute('/(.*)', function () { location.pathname = ''; });
 
 $(function () {
+	// TODO: This won't work for dynamically inserted images.
 	$('.retina-image').each(function (index, image) {
 		image.width *= .5;
 	});
-	
+
 	ZeroClipboard.config({
 		swfPath: '//cdn.jsdelivr.net/zeroclipboard/2.1.5/ZeroClipboard.swf'
 	});
