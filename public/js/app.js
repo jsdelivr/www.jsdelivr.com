@@ -32,6 +32,10 @@ app.router.addRoute('/stats', Ractive.extend(cStats));
 app.router.addRoute('/(.*)', function () { location.pathname = ''; });
 
 $(function () {
+	$('.retina-image').each(function (index, image) {
+		image.width *= .5;
+	});
+	
 	ZeroClipboard.config({
 		swfPath: '//cdn.jsdelivr.net/zeroclipboard/2.1.5/ZeroClipboard.swf'
 	});
