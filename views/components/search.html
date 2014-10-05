@@ -153,6 +153,7 @@
 </section>
 
 <script>
+	var has = require('public/js/utils/has.js');
 	var assign = require('public/js/utils/assign.js');
 	var getCollectionIndex = require('public/js/utils/get-collection-index.js');
 	var getFilesByVersion = require('public/js/utils/get-files-by-version.js');
@@ -255,6 +256,18 @@
 				this.observe('page', function () {
 					$('html, body').scrollTop(0);
 				})
+			}
+		},
+		oncomplete: function () {
+			// Redirect from the old URL format.
+			if (location.hash && !this.get('query')) {
+				this.set('query', location.hash.substr(2));
+
+				if (has.history()) {
+					history.replaceState({}, document.title, location.pathname + location.search);
+				} else {
+					location.hash = '';
+				}
 			}
 		},
 		addToCollection: function (project) {

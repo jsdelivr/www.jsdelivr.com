@@ -70,6 +70,7 @@ module.exports = function(grunt) {
 				src: 'public/img/icons/*.png',
 				destImg: 'app/public/img/icons.png',
 				destCSS: 'app/public/css/icons.css',
+				padding: 2,
 				cssTemplate: function (params) {
 					var result = '.icon {';
 					result += '\n\tdisplay: inline-block;';
