@@ -4,12 +4,14 @@
 			<h1>A free super-fast CDN for developers and webmasters</h1>
 
 			<i class="icon icon-search"></i>
-			<input type="text" placeholder="Search in more than {{nbProjects}} open source projects..." value="{{query}}" autofocus>
+			<input type="text" value="{{query}}" decorator='autofocus' autofocus
+				placeholder="Search in more than {{nbProjects}} open source projects...">
 		</section>
 	{{/if render}}
 </div>
 
 <script>
+	var autoFocusDecorator = require('public/js/decorators/auto-focus.js');
 	component.exports = {
 		oninit: function () {
 			if (!Ractive.isServer) {
@@ -28,6 +30,9 @@
 				this.insert(this.get('el'), this.get('anchor'));
 				this.set('render', true);
 			}
+		},
+		decorators: {
+			autofocus: autoFocusDecorator
 		},
 		onteardown: function() {
 			if (this.get('el')) {
