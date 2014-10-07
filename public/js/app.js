@@ -37,8 +37,12 @@ app.router.addRoute('/(.*)', function () { location.pathname = ''; });
 
 $(function () {
 	// TODO: This won't work for dynamically inserted images.
-	$('.retina-image').each(function (index, image) {
-		image.width *= .5;
+	$('.retina-image').one('load', function () {
+		this.width *= .5;
+	}).each(function () {
+		if (this.complete) {
+			$(this).trigger('load');
+		}
 	});
 
 	ZeroClipboard.config({
