@@ -48,7 +48,9 @@ $(function () {
 	});
 
 	$navbar.on('click', 'a', function () {
-		$navbar.collapse('hide');
+		if ($navbar.hasClass('in')) {
+			$navbar.collapse('hide');
+		}
 	});
 
 	ZeroClipboard.config({
