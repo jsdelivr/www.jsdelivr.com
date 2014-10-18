@@ -1,4 +1,4 @@
-require('./hacks/modal-zero-clipboard.js');
+require('./hacks/modal.js');
 
 var cSearch = require('views/components/search.html');
 var cAbout = require('views/components/about.html');

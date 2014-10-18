@@ -51,7 +51,7 @@
 				<div class="row">
 					{{#each getFilesByVersion(this, selectedVersion).slice(0, fLimit)}}
 						<div class="col-xs-10 file-link {{#if !@index}}main{{/if}}">
-							{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}
+							<span decorator="select">{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}</span>
 
 							{{#if hasFlash}}
 								<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}"></i>
@@ -95,6 +95,7 @@
 	var assign = require('public/js/utils/assign.js');
 	var getCollectionIndex = require('public/js/utils/get-collection-index.js');
 	var getFilesByVersion = require('public/js/utils/get-files-by-version.js');
+	var selectDecorator = require('public/js/decorators/select.js');
 	var tooltipDecorator = require('public/js/decorators/tooltip.js');
 	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
 
@@ -114,6 +115,7 @@
 		},
 		decorators: {
 			tooltip: tooltipDecorator,
+			select: selectDecorator,
 			zeroClipboard: zeroClipboardDecorator
 		},
 		oninit: function () {

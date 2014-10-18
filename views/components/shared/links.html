@@ -25,7 +25,7 @@
 
 					{{#each js}}
 						<div class="col-xs-10 file-link">
-							{{cdnRoot}}/{{this}}
+							<span decorator="select">{{cdnRoot}}/{{this}}</span>
 
 							{{#if hasFlash}}
 								<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{this}}"></i>
@@ -43,7 +43,7 @@
 
 					{{#each css}}
 						<div class="col-xs-10 file-link">
-							{{cdnRoot}}/{{this}}
+							<span decorator="select">{{cdnRoot}}/{{this}}</span>
 
 							{{#if hasFlash}}
 								<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{this}}"></i>
@@ -62,7 +62,7 @@
 
 					{{#each other}}
 						<div class="col-xs-10 file-link">
-							{{cdnRoot}}/{{this}}
+							<span decorator="select">{{cdnRoot}}/{{this}}</span>
 
 							{{#if hasFlash}}
 								<i class="icon icon-clipboard clickable pull-right" decorator="zeroClipboard" data-clipboard-text="{{cdnRoot}}/{{this}}"></i>
@@ -78,6 +78,7 @@
 <script>
 	var assign = require('public/js/utils/assign.js');
 	var linkBuilder = require('public/js/utils/build-links');
+	var selectDecorator = require('public/js/decorators/select.js');
 	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
 
 	component.exports = {
@@ -103,6 +104,7 @@
 			}, data);
 		},
 		decorators: {
+			select: selectDecorator,
 			zeroClipboard: zeroClipboardDecorator
 		},
 		oninit: function () {
