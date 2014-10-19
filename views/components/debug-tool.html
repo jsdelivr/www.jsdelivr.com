@@ -92,9 +92,14 @@
 
 				return (!!results.ipInfo + !!results.server + results.list.filter(function (i) { return i; }).length + !!results.cedexis) / this.get('total') * 100;
 			},
-			resultsHash: function () {
-				if (this.get('progress') === 100) {
-					return this.get('results');
+			resultsHash: {
+				get: function () {
+					if (this.get('progress') === 100) {
+						return this.get('results');
+					}
+				},
+				set: function (value) {
+					this.set('results', value)
 				}
 			},
 			total: function () {
@@ -104,7 +109,9 @@
 		data: {
 			hasFlash: false,
 			link: '',
-			results: {},
+			results: {
+				list: []
+			},
 			tests: {
 				ipInfo: 'http://ipinfo.io/json',
 				cedexis: 'http://jsdelivr-data.wildlemur.com',
