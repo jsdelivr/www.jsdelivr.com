@@ -1,2 +1,1 @@
-// TODO: Use the new account.
-module.exports = new AlgoliaSearch('DBMBXHNL8O', 'ff534b434664d2fb939eace2877ec4dc').initIndex('jsdelivr');
+module.exports = new AlgoliaSearch('0UIFPQ3RGG', 'fd0fa679c0defa9861821fc129385ab5');

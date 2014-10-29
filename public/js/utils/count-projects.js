@@ -1,6 +1,8 @@
 var algolia = require('./algolia.js');
 var has = require('./has.js');
 
+var jsDelivrIndex = algolia.initIndex('jsDelivr');
+
 module.exports = function (callback) {
 	var hasLocalStorage = has.localStorage();
 	var now = Date.now();
@@ -8,7 +10,7 @@ module.exports = function (callback) {
 	if (hasLocalStorage && localStorage.getItem('expires') >= now) {
 		callback(localStorage.getItem('nbPojects'))
 	} else {
-		algolia.search('', function (success, response) {
+		jsDelivrIndex.search('', function (success, response) {
 			var nbPojects = Math.floor(response.nbHits / 50) * 50;
 
 			if (hasLocalStorage) {
