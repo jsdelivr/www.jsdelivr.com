@@ -18,7 +18,7 @@
 			<div class="pagination-wrapper">
 				<ul class="pagination">
 					<li class="previous {{#unless page}}disabled{{/unless}}">
-						<a class="clickable" on-click="substract('page')">
+						<a class="clickable" on-click="subtract('page')">
 							<i class="icon icon-chevron-left{{#unless page}}-disabled{{/unless}}"></i> Previous
 						</a>
 					</li>
@@ -63,7 +63,7 @@
 	component.exports = {
 		computed: {
 			pages: function() {
-				var current = this.get('page');
+				var current = this.get('page') || 0;
 				var total = this.get('nbPages');
 				var length = 5;
 				var half = Math.floor(length / 2);
@@ -99,25 +99,36 @@
 				var search = require('public/js/utils/search.js');
 				var _this = this;
 
+				if (!this.get('query') && !this.get('page')) {
+					this.set('page', undefined);
+				}
+
 				// Update results on input.
 				this.observe('page query __ready', function (newValue, oldValue, keypath) {
 					// Don't send requests before we're have all the data.
 					if (this.get('__ready')) {
-						// Reset page number on query change.
-						if (keypath === 'query' && this.get('page')) {
-							this.set('page', 0)
-						} else {
-							search(this.get('query').toString(), this.get('page'), function (response, query) {
-								// The query might have changed since we sent the request.
-								if (query === _this.get('query')) {
-									_this.merge('projects', response.hits);
-
-									_this.set({
-										nbPages: response.nbPages || 0,
-										page: response.page || 0
-									});
-								}
+						// Show 10 random projects.
+						if (keypath === '__ready' && !this.get('query') && !this.get('page')) {
+							search('', Math.floor(Math.random() * this.get('nbProjects') / 10), function (response) {
+								_this.merge('projects', response.hits);
+								_this.set({ nbPages: response.nbPages });
 							});
+						} else {
+							// Reset page number on query change.
+							if (keypath === 'query' && this.get('page')) {
+								this.set('page', 0)
+							} else {
+								search(this.get('query').toString(), this.get('page'), function (response, query) {
+									// The query might have changed since we sent the request.
+									if (query === _this.get('query')) {
+										_this.merge('projects', response.hits);
+										_this.set({
+											nbPages: response.nbPages,
+											page: response.page
+										});
+									}
+								});
+							}
 						}
 					}
 				});
