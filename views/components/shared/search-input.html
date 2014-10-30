@@ -12,6 +12,17 @@
 <script>
 	var autoFocusDecorator = require('public/js/decorators/auto-focus.js');
 	component.exports = {
+		oninit: function () {
+			if (!Ractive.isServer) {
+				var countProjects = require('public/js/utils/count-projects.js');
+				var _this = this;
+
+				// Show number of hosted projects.
+				countProjects(function (nbProjects) {
+					nbProjects && _this.set('nbProjects', nbProjects);
+				});
+			}
+		},
 		oncomplete: function() {
 			if (this.get('el')) {
 				this.detach();

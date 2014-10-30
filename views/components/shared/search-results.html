@@ -97,6 +97,7 @@
 		oninit: function () {
 			if (!Ractive.isServer) {
 				var search = require('public/js/utils/search.js');
+				var searchRandom = require('public/js/utils/search-random.js');
 				var _this = this;
 
 				if (!this.get('query') && !this.get('page')) {
@@ -109,7 +110,7 @@
 					if (this.get('__ready')) {
 						// Show 10 random projects.
 						if (keypath === '__ready' && !this.get('query') && !this.get('page')) {
-							search('', Math.floor(Math.random() * this.get('nbProjects') / 10), function (response) {
+							searchRandom(function (response) {
 								_this.merge('projects', response.hits);
 								_this.set({ nbPages: response.nbPages });
 							});

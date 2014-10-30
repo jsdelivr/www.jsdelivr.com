@@ -3,9 +3,9 @@
 
 <!-- Search input will be injected into the header. -->
 <!-- TODO: Use official API when it's available ractivejs/ractive#1131 -->
-<searchInput el="#header" anchor="#header > :last-child" query="{{query}}" nbProjects="{{nbProjects}}"></searchInput>
+<searchInput el="#header" anchor="#header > :last-child" query="{{query}}"></searchInput>
 
-<searchResults query="{{query}}" page="{{page}}" collection="{{collection}}" nbProjects="{{nbProjects}}" __ready="{{__ready}}"></searchResults>
+<searchResults query="{{query}}" page="{{page}}" collection="{{collection}}" __ready="{{__ready}}"></searchResults>
 
 <script>
 	var assign = require('public/js/utils/assign.js');
@@ -18,25 +18,16 @@
 			}, data);
 		},
 		oninit: function () {
-			if (!Ractive.isServer) {
-				var countProjects = require('public/js/utils/count-projects.js');
-				var appCollection = this.get('app.collection');
-				var collection = this.get('collection');
-				var _this = this;
+			var collection = this.get('collection');
+			var appCollection = this.get('app.collection');
 
-				// Show number of hosted projects.
-				countProjects(function (nbProjects) {
-					nbProjects && _this.set('nbProjects', nbProjects);
-				});
-
-				// We need to make sure that collection and appCollection use the same object,
-				// otherwise, they would get out of sync.
-				if (collection !== appCollection) {
-					this.splice('app.collection', 0, appCollection.length);
-					appCollection.push.apply(appCollection, collection);
-					this.set('collection', appCollection);
-					this.update('app.collection');
-				}
+			// We need to make sure that collection and appCollection use the same object,
+			// otherwise, they would get out of sync.
+			if (collection !== appCollection) {
+				this.splice('app.collection', 0, appCollection.length);
+				appCollection.push.apply(appCollection, collection);
+				this.set('collection', appCollection);
+				this.update('app.collection');
 			}
 		},
 		oncomplete: function () {
