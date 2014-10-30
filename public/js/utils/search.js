@@ -48,7 +48,7 @@ module.exports = function (queryString, page, callback) {
 		}
 	};
 
-	if (parsed.query) {
+	if (parsed.query || options.facetFilters) {
 		jsDelivrIndex.search(parsed.query, searchCallback, options);
 	} else {
 		jsDelivrIndex.browse(options.page, searchCallback, 10);
