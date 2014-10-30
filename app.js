@@ -65,6 +65,7 @@ app.use(function (req, res, next) {
 		return next();
 	}
 
+	// TODO: This needs to be updated.
 	app.render('components' + req.path + '.html', { wrapper: 'app.html', el: 'page' }, function (err, html) {
 		if (err) {
 			console.error(err);
