@@ -5,8 +5,13 @@ var jsDelivrIndex = algolia.initIndex('jsDelivr');
 
 module.exports = function (queryString, page, callback) {
 	var parsed = parseQuery(queryString);
+	var options = { page: page || 0 };
 
-	jsDelivrIndex.search(parsed.query, function (success, response) {
+	if (parsed.facetFilters) {
+		options.facetFilters = parsed.facetFilters;
+	}
+
+	jsDelivrIndex.search(parsed.query || '*', function (success, response) {
 		var load = [];
 
 		if (success) {
@@ -41,5 +46,5 @@ module.exports = function (queryString, page, callback) {
 				});
 			}
 		}
-	}, { hitsPerPage: 10, page: page, facetFilters: parsed.facetFilters });
+	}, options);
 };
