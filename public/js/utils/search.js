@@ -11,7 +11,7 @@ module.exports = function (queryString, page, callback) {
 		options.facetFilters = parsed.facetFilters;
 	}
 
-	jsDelivrIndex.search(parsed.query || '*', function (success, response) {
+	var searchCallback = function (success, response) {
 		var load = [];
 
 		if (success) {
@@ -46,5 +46,11 @@ module.exports = function (queryString, page, callback) {
 				});
 			}
 		}
-	}, options);
+	};
+
+	if (parsed.query) {
+		jsDelivrIndex.search(parsed.query, searchCallback, options);
+	} else {
+		jsDelivrIndex.browse(options.page, searchCallback, 10);
+	}
 };
