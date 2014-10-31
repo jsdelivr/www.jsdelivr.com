@@ -20,6 +20,7 @@ app.use(morgan(':remote-addr - [:date] ":method :url HTTP/:http-version" :status
 app.use(compression());
 app.use(express.static(__dirname + '/public', { maxAge: 31536000000 })); // one year
 
+app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.engine('html', rr.renderFile);
 
