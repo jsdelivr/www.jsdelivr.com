@@ -3,14 +3,23 @@ var childProcess = require('child_process');
 
 var Promise = require('bluebird');
 
-Promise.promisifyAll(childProcess);
-
 module.exports = function updateRepository () {
-	if (fs.existsSync(__dirname + '/../jsdelivr/')) {
-		console.log('Updating the local repository.');
-		return childProcess.execAsync('git pull', { cwd: __dirname + '/../jsdelivr/' });
-	}
+	return new Promise(function (resolve, reject) {
+		var child;
 
-	console.log('Cloning the repository. This will take a while...');
-	return childProcess.execAsync('git clone https://github.com/jsdelivr/jsdelivr.git', { cwd: __dirname + '/../' });
+		if (fs.existsSync(__dirname + '/../jsdelivr/')) {
+			console.log('Updating the local repository.');
+			child = childProcess.spawn('git', [ 'pull' ], { cwd: __dirname + '/../jsdelivr/' });
+		} else {
+			console.log('Cloning the repository. This will take a while...');
+			child = childProcess.spawn('git', [ 'clone', 'https://github.com/jsdelivr/jsdelivr.git' ], { cwd: __dirname + '/../' });
+		}
+
+		child.stdout.pipe(process.stdout);
+		child.stderr.pipe(process.stderr);
+
+		child.on('close', function (code) {
+			code ? reject(code) : resolve();
+		});
+	});
 };
