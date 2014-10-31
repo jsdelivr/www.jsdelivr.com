@@ -61,6 +61,14 @@ module.exports = function (queryString, page, callback) {
 		}
 	} else {
 		// We'll need to query Algolia.
+		var facetFilters = [];
+
+		_.each(options.facetFilters, function (filter) {
+			facetFilters.push(filter[0] + ':' + filter[1]);
+		});
+
+		options.facetFilters = facetFilters.join(',');
+
 		jsDelivrIndex.search(parsed.query, function (error, response) {
 			if (error) {
 				return callback(error);
