@@ -1,3 +1,4 @@
+var appLog = require('./log.js')('app');
 var search = require('./search.js');
 
 module.exports = function (req, res, app) {
@@ -6,7 +7,7 @@ module.exports = function (req, res, app) {
 	var renderOptions = { wrapper: 'app.html', el: 'page', data: {} };
 	var renderCallback = function (error, html) {
 		if (error) {
-			console.error(error);
+			appLog.err(error);
 			return res.sendStatus(404);
 		}
 
@@ -16,6 +17,7 @@ module.exports = function (req, res, app) {
 	if (path === '/') {
 		search(req.query.query || '', req.query.page, function (error, projects) {
 			if (error) {
+				appLog.err(error);
 				return res.sendStatus(500);
 			}
 
@@ -25,6 +27,7 @@ module.exports = function (req, res, app) {
 	} else if (pPattern.test(path)) {
 		search('name:' + pPattern.exec(path)[1], 0, function (error, projects) {
 			if (error) {
+				appLog.err(error);
 				return res.sendStatus(500);
 			}
 

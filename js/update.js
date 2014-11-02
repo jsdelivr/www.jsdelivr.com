@@ -2,6 +2,7 @@ var childProcess = require('child_process');
 var crypto = require('crypto');
 
 var _ = require('lodash');
+var appLog = require('./log.js')('app');
 var updater;
 
 module.exports = function (req, res) {
@@ -14,11 +15,11 @@ module.exports = function (req, res) {
 		res.send('The index will be updated.');
 
 		if (updater) {
-			console.log('Stopping the updater.');
+			appLog.info('Stopping the updater.');
 			updater.kill();
 		}
 
-		console.log('Starting the updater.');
+		appLog.info('Starting the updater.');
 		updater = childProcess.fork(__dirname + '/../algolia/index.js', { env: _.assign({ ALGOLIA_API_KEY: req.query.api }, process.env) });
 	}
 };

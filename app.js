@@ -6,6 +6,7 @@ var isBot = require('is-bot');
 var Ractive = require('ractive');
 var rr = require('ractive-render');
 
+var morganConfig = require('./js/config/morgan.js');
 var render = require('./js/render.js');
 var update = require('./js/update.js');
 
@@ -16,7 +17,7 @@ var app = express();
  */
 // TODO: uncomment this once we have a new logo.
 //app.use(favicon('public/img/favicon.ico'));
-app.use(morgan(':remote-addr - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" - :response-time ms'));
+app.use(morgan(morganConfig.format, morganConfig.options));
 app.use(compression());
 app.use(express.static(__dirname + '/public', { maxAge: 31536000000 })); // one year
 

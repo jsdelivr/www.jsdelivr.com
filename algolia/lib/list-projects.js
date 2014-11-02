@@ -4,6 +4,7 @@ var _ = require('lodash');
 var Promise = require('bluebird');
 
 var Project = require('./project.js');
+var appLog = require('../../js/log.js')('app');
 
 var rootDir = __dirname + '/../jsdelivr/files/';
 
@@ -12,7 +13,7 @@ module.exports = function listProjects () {
 		var assets = [];
 		var projects = [];
 
-		console.log('Listing projects.');
+		appLog.info('Listing projects.');
 
 		_.each(fs.readdirSync(rootDir), function (file) {
 			if (fs.statSync(rootDir + file).isDirectory()) {
@@ -20,7 +21,7 @@ module.exports = function listProjects () {
 
 				// Save each version as a separate record for big projects.
 				if (JSON.stringify(project).length > 100000) {
-					console.log('Project %s is too big. Each version will be stored as a separate record.', project.name);
+					appLog.info('Project %s is too big. Each version will be stored as a separate record.', project.name);
 
 					_.each(project.assets, function (entry) {
 						assets.push({
@@ -32,7 +33,7 @@ module.exports = function listProjects () {
 
 						// Still too big?
 						if (JSON.stringify(assets[assets.length - 1]).length > 100000) {
-							console.log('Project %s v%s is too big. Only main file will be included.', project.name, entry.version);
+							appLog.notice('Project %s v%s is too big. Only main file will be included.', project.name, entry.version);
 							assets[assets.length - 1].files = [ project.mainfile ];
 						}
 					});
@@ -44,7 +45,7 @@ module.exports = function listProjects () {
 			}
 		});
 
-		console.log('Found %d projects.', projects.length);
+		appLog.info('Found %d projects.', projects.length);
 
 		return [ projects, assets ];
 	});

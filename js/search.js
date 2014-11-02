@@ -1,6 +1,8 @@
 var _ = require('lodash');
 var Algolia = require('algolia-search');
 
+var appLog = require('./log.js')('app');
+
 var client = new Algolia('0UIFPQ3RGG', 'fd0fa679c0defa9861821fc129385ab5');
 var jsDelivrIndex = client.initIndex('jsDelivr');
 var jsDelivrAssetsIndex = client.initIndex('jsDelivr_assets');
@@ -12,7 +14,7 @@ var db = {};
  */
 jsDelivrIndex.browse(0, function (error, response) {
 	if (error) {
-		console.error(response);
+		appLog.err(response);
 	} else {
 		_.each(response.hits, function (project) {
 			db[project.name] = project;
@@ -27,7 +29,7 @@ jsDelivrIndex.browse(0, function (error, response) {
 			}
 		});
 
-		console.log('In-memory copy of the index successfully created.');
+		appLog.info('In-memory copy of the index successfully created.');
 
 		_.each(Object.keys(db).slice(0, 10), function (name) {
 			noQuery.push(db[name]);
