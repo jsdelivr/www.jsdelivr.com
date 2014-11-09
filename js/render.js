@@ -7,7 +7,11 @@ module.exports = function (req, res, app) {
 	var renderOptions = { wrapper: 'app.html', el: 'page', data: {} };
 	var renderCallback = function (error, html) {
 		if (error) {
-			appLog.err(error);
+			// Don't log "Failed to lookup view" errors.
+			if (!error.message || error.message.indexOf('Failed to lookup view') === -1) {
+				appLog.err(error);
+			}
+
 			return res.sendStatus(404);
 		}
 
