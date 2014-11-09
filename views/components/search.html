@@ -18,16 +18,18 @@
 			}, data);
 		},
 		oninit: function () {
-			var collection = this.get('collection');
-			var appCollection = this.get('app.collection');
+			if (!Ractive.isServer) {
+				var collection = this.get('collection');
+				var appCollection = this.get('app.collection');
 
-			// We need to make sure that collection and appCollection use the same object,
-			// otherwise, they would get out of sync.
-			if (collection !== appCollection) {
-				this.splice('app.collection', 0, appCollection.length);
-				appCollection.push.apply(appCollection, collection);
-				this.set('collection', appCollection);
-				this.update('app.collection');
+				// We need to make sure that collection and appCollection use the same object,
+				// otherwise, they would get out of sync.
+				if (collection !== appCollection) {
+					this.splice('app.collection', 0, appCollection.length);
+					appCollection.push.apply(appCollection, collection);
+					this.set('collection', appCollection);
+					this.update('app.collection');
+				}
 			}
 		},
 		oncomplete: function () {
