@@ -31,6 +31,7 @@ function compareStrings (a, b) {
 	a = a.toLowerCase();
 	b = b.toLowerCase();
 
+	// 1.0.0 > 1.0.0-alpha
 	if (tPattern.test(a) && !tPattern.test(b)) {
 		return 1;
 	} else if (tPattern.test(b) && !tPattern.test(a)) {

@@ -36,7 +36,7 @@ Ractive.isServer = true;
 /**
  * Algolia updater.
  */
-app.get('/update-algolia', update);
+app.all('/update-algolia', update);
 
 /**
  * Render on server side if it's a bot.
@@ -52,7 +52,7 @@ app.use(function (req, res, next) {
 /**
  * Just send a template and render on client side.
  */
-app.get('/*', function (req, res) {
+app.all('/*', function (req, res) {
 	res.sendFile(__dirname + '/views/app.html');
 });
 
