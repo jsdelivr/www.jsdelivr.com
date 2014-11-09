@@ -1,4 +1,5 @@
 var fs = require('fs');
+var util = require('util');
 
 var _ = require('lodash');
 var Promise = require('bluebird');
@@ -21,7 +22,7 @@ module.exports = function listProjects () {
 
 				// Save each version as a separate record for big projects.
 				if (JSON.stringify(project).length > 100000) {
-					appLog.info('Project %s is too big. Each version will be stored as a separate record.', project.name);
+					appLog.info(util.format('Project %s is too big. Each version will be stored as a separate record.', project.name));
 
 					_.each(project.assets, function (entry) {
 						assets.push({
@@ -33,7 +34,7 @@ module.exports = function listProjects () {
 
 						// Still too big?
 						if (JSON.stringify(assets[assets.length - 1]).length > 100000) {
-							appLog.notice('Project %s v%s is too big. Only main file will be included.', project.name, entry.version);
+							appLog.notice(util.format('Project %s v%s is too big. Only main file will be included.', project.name, entry.version));
 							assets[assets.length - 1].files = [ project.mainfile ];
 						}
 					});
@@ -45,7 +46,7 @@ module.exports = function listProjects () {
 			}
 		});
 
-		appLog.info('Found %d projects.', projects.length);
+		appLog.info(util.format('Found %d projects.', projects.length));
 
 		return [ projects, assets ];
 	});

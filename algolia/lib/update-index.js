@@ -1,3 +1,5 @@
+var util = require('util');
+
 var Algolia = require('algolia-search');
 var appLog = require('../../js/log.js')('app');
 
@@ -8,7 +10,7 @@ var jsDelivrAssets = client.initIndex('jsDelivr_assets');
 module.exports = function updateIndex (projects, assets) {
 	jsDelivr.saveObjects(projects, function (error, content) {
 		if (error) {
-			appLog.err('Error (jsDelivr): %s', content.message);
+			appLog.err(util.format('Error (jsDelivr): %s', content.message));
 		} else {
 			appLog.info('jsDelivr index successfully updated.')
 		}
@@ -16,7 +18,7 @@ module.exports = function updateIndex (projects, assets) {
 
 	jsDelivrAssets.saveObjects(assets, function (error, content) {
 		if (error) {
-			appLog.err('Error (jsDelivr_assets): %s', content.message);
+			appLog.err(util.format('Error (jsDelivr_assets): %s', content.message));
 		} else {
 			appLog.info('jsDelivr_assets index successfully updated.')
 		}
