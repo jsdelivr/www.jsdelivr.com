@@ -7,6 +7,7 @@ var Ractive = require('ractive');
 var rr = require('ractive-render');
 
 var morganConfig = require('./js/config/morgan.js');
+var dnsApi = require('./js/dns.js');
 var render = require('./js/render.js');
 var update = require('./js/update.js');
 
@@ -32,6 +33,11 @@ rr.use('load').config({ componentsLoader: 'load', defaultLoader: 'load' });
 
 // Tell our components not to use browser specific stuff.
 Ractive.isServer = true;
+
+/**
+ * DNS lookup API.
+ */
+app.all('/dns', dnsApi);
 
 /**
  * Algolia updater.
