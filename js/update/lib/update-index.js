@@ -1,7 +1,7 @@
 var util = require('util');
 
 var Algolia = require('algolia-search');
-var appLog = require('../../js/log.js')('app');
+var appLog = require('../../log.js')('app');
 
 var client = new Algolia('0UIFPQ3RGG', process.env.ALGOLIA_API_KEY);
 var jsDelivr = client.initIndex('jsDelivr');
