@@ -42,35 +42,35 @@
 					{{/if error}}
 				{{/with results.ipInfo}}
 
-				{{#with results.cedexis}}
-					<br><strong>{{tests.cedexis}}</strong><br>
+				<br><strong>{{tests.server}}</strong><br>
+				{{results.server}}<br>
+
+				{{#with results.dns}}
+					<br><strong>{{dnsTests.dns}}</strong><br>
+					{{this}}<br>
+				{{/with results.dns}}
+
+				{{#each results.servers}}
+					<br><strong>{{tests.servers[@index]}}</strong><br>
+					{{this}}<br>
+				{{/each results.servers}}
+
+				{{#each results.availability}}
+					<br><strong>{{dnsTests.availability[@index]}}</strong><br>
 
 					{{#if error}}
 						{{error}}<br>
 					{{else}}
-						<strong>Network</strong><br>
-
-						{{#each network}}
+						{{#each this}}
 							{{@key}}: {{this}}<br>
-						{{/each network}}
-
-						{{#with providers}}
-							<br><strong class="text-capitalize">{{@key}}</strong><br>
-
-								{{#each this}}
-									{{@key}}: {{this}}<br>
-								{{/each this}}
-						{{/with providers}}
+						{{/each this}}
 					{{/if error}}
-				{{/with results.cedexis}}
+				{{/each results.availability}}
 
-				<br><strong>{{tests.server}}</strong><br>
-				{{results.server}}<br>
-
-				{{#each results.list}}
-					<br><strong>{{tests.list[@index]}}</strong><br>
+				{{#each results.performance}}
+					<br><strong>{{dnsTests.performance[@index]}}</strong><br>
 					{{this}}<br>
-				{{/each results.list}}
+				{{/each results.performance}}
 			</pre>
 		{{/if progress}}
 	</div>
@@ -87,10 +87,30 @@
 			zeroClipboard: zeroClipboardDecorator
 		},
 		computed: {
+			dnsTests: function () {
+				var ip = this.get('results.ipInfo.ip').replace(/\./g, '-');
+				var tests = {
+					dns: '2-01-2cd3-000f.cdx-i-' + ip + '.cedexis.net',
+					availability: [],
+					performance: []
+				};
+
+				$.each(this.get('providers'), function (index, provider) {
+					tests.availability.push(provider + '.avail.2-01-2cd3-0010.cdx-i-' + ip + '.cedexis.net');
+					tests.performance.push(provider + '.http_rtt.2-01-2cd3-0010.cdx-i-' + ip + '.cedexis.net')
+				});
+
+				return tests;
+			},
 			progress: function () {
 				var results = this.get('results');
 
-				return (!!results.ipInfo + !!results.server + results.list.filter(function (i) { return i; }).length + !!results.cedexis) / this.get('total') * 100;
+				return (
+					!!results.ipInfo
+					+ !!results.server
+					+ !!results.dns
+					+ results.servers.concat(results.availability, results.performance).filter(function (i) { return i; }).length
+				) / this.get('total') * 100;
 			},
 			resultsHash: {
 				get: function () {
@@ -103,28 +123,27 @@
 				}
 			},
 			total: function () {
-				return this.get('tests.list').length + 3;
+				return 2 + this.get('tests.servers').length + 1 + 8;
 			}
 		},
 		data: {
 			hasFlash: false,
 			link: '',
+			providers: [ 'cloudflare', 'maxcdn', 'prome-it', 'exvm-sg' ],
 			results: {
-				list: []
+				availability: [],
+				performance: [],
+				servers: []
 			},
 			tests: {
 				ipInfo: 'http://ipinfo.io/json',
-				cedexis: 'http://jsdelivr-data.wildlemur.com',
 				server: 'http://cdn.jsdelivr.net/information.txt',
-				list: [
+				servers: [
 					'https://cdn.jsdelivr.net/r15lgc.js',
 					'http://cdn.jsdelivr.net/r15lgc.js',
-					'https://www.cdn.jsdelivr.net/r15lgc.js',
-					'http://www.cdn.jsdelivr.net/r15lgc.js',
+					'http://testingcf.jsdelivr.net/r15lgc.js',
 					'http://jsdelivr3.dak.netdna-cdn.com/r15lgc.js',
 					'http://exvm-sg.jsdelivr.net/r15lgc.js',
-					'http://leap-pt.jsdelivr.net/r15lgc.js',
-					'http://leap-ua.jsdelivr.net/r15lgc.js',
 					'http://prome-it.jsdelivr.net/r15lgc.js'
 				]
 			}
@@ -171,9 +190,11 @@
 				results: {
 					now: new Date().toUTCString(),
 					ipInfo: null,
-					cedexis: null,
+					dns: null,
+					availability: [],
+					performance: [],
 					server: null,
-					list: []
+					servers: []
 				},
 				saved: false
 			});
@@ -182,19 +203,10 @@
 				cache: false,
 				success: function (response) {
 					_this.set('results.ipInfo', response);
+					_this.testDns();
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					_this.set('results.ipInfo', { error: errorThrown || textStatus });
-				}
-			});
-
-			$.ajax(this.get('tests.cedexis'), {
-				cache: false,
-				success: function (response) {
-					_this.set('results.cedexis', response);
-				},
-				error: function (jqXHR, textStatus, errorThrown) {
-					_this.set('results.cedexis', { error: errorThrown || textStatus });
 				}
 			});
 
@@ -208,14 +220,61 @@
 				}
 			});
 
-			$.each(this.get('tests.list'), function (index, entry) {
+			$.each(this.get('tests.servers'), function (index, entry) {
 				$.ajax(entry, {
 					cache: false,
 					success: function (response) {
-						_this.set('results.list.' + index, response === testString ? 'Ok' : 'Failed');
+						_this.set('results.servers.' + index, response === testString ? 'OK' : 'Failed');
 					},
 					error: function (jqXHR, textStatus, errorThrown) {
-						_this.set('results.list.' + index, errorThrown || textStatus);
+						_this.set('results.servers.' + index, errorThrown || textStatus);
+					}
+				});
+			});
+		},
+		testDns: function () {
+			var _this = this;
+
+			$.ajax('/dns', {
+				cache: false,
+				data: { domain: this.get('dnsTests.dns') },
+				success: function (response) {
+					_this.set('results.dns', response);
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					_this.set('results.dns', { error: errorThrown || textStatus });
+				}
+			});
+
+			$.each(this.get('dnsTests.availability'), function (index, entry) {
+				$.ajax('/dns', {
+					cache: false,
+					data: { domain: entry },
+					success: function (response) {
+						var data = response.split('.');
+
+						_this.set('results.availability.' + index, {
+							availability: data[5] + '%',
+							continent: data[0],
+							country: data[1],
+							asn: data[2]
+						});
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						_this.set('results.availability.' + index, { error: errorThrown || textStatus });
+					}
+				});
+			});
+
+			$.each(this.get('dnsTests.performance'), function (index, entry) {
+				$.ajax('/dns', {
+					cache: false,
+					data: { domain: entry },
+					success: function (response) {
+						_this.set('results.performance.' + index, response.split('.')[5] + ' ms');
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						_this.set('results.performance.' + index, errorThrown || textStatus);
 					}
 				});
 			});
