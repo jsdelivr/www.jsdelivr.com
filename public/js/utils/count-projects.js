@@ -11,14 +11,14 @@ module.exports = function (callback) {
 		callback(localStorage.getItem('nbProjects'))
 	} else {
 		jsDelivrIndex.search('', function (success, response) {
-			var nbPojects = Math.floor(response.nbHits / 50) * 50;
+			var nbProjects = Math.floor(response.nbHits / 50) * 50;
 
 			if (hasLocalStorage) {
-				localStorage.setItem('nbProjects', nbPojects);
+				localStorage.setItem('nbProjects', nbProjects);
 				localStorage.setItem('nbProjectsExpires', now + 604800000); // Cache for one week.
 			}
 
-			callback(nbPojects);
+			callback(nbProjects);
 		}, { analytics: false });
 	}
 };

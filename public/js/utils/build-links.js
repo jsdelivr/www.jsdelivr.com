@@ -39,7 +39,7 @@ module.exports = function (collection, group) {
 	};
 };
 
-function buildLink(projects, filter, merge) {
+function buildLink (projects, filter, merge) {
 	var chunks = [];
 
 	// each project

@@ -1,14 +1,15 @@
 module.exports = function (node) {
+	var $node = $(node);
 	var selection = window.getSelection();
 	var select = function () {
 		selection.selectAllChildren(node);
 	};
 
-	node.addEventListener('click', select);
+	$node.on('click', select);
 
 	return {
 		teardown: function () {
-			node.removeEventListener('click', select);
+			$node.off('click', select);
 		}
 	};
 };

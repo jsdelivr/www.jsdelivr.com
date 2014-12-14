@@ -1,6 +1,4 @@
-var helpers = require('./helpers.js');
-
-module.exports = helpers.create(function (node, tooltipPlacement) {
+module.exports = function (node, tooltipPlacement) {
 	tooltipPlacement = tooltipPlacement || 'right';
 	var clip = new ZeroClipboard(node);
 	var $node = $(node);
@@ -32,4 +30,8 @@ module.exports = helpers.create(function (node, tooltipPlacement) {
 			})
 			.tooltip('show');
 	});
-});
+
+	return {
+		teardown: function () {}
+	};
+};

@@ -57,5 +57,5 @@ app.all('/*', function (req, res) {
 });
 
 app.listen(process.env.PORT || 4400, function () {
-	console.log('Express server listening on port %d.', process.env.PORT || 4400);
+	console.log('Express server listening on port %d.', this.address().port);
 });

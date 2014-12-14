@@ -38,15 +38,6 @@ app.router.addRoute('/(.*)', function () { location.pathname = ''; });
 $(function () {
 	var $navbar = $('#navbar-wrapper');
 
-	// TODO: This won't work for dynamically inserted images.
-	$('.retina-image').one('load', function () {
-		this.width *= .5;
-	}).each(function () {
-		if (this.complete) {
-			$(this).trigger('load');
-		}
-	});
-
 	$navbar.on('click', 'a', function () {
 		if ($navbar.hasClass('in')) {
 			$navbar.collapse('hide');
@@ -54,7 +45,7 @@ $(function () {
 	});
 
 	ZeroClipboard.config({
-		swfPath: '//cdn.jsdelivr.net/zeroclipboard/2.1.5/ZeroClipboard.swf'
+		swfPath: '//cdn.jsdelivr.net/zeroclipboard/2.1.6/ZeroClipboard.swf'
 	});
 
 	app.router
