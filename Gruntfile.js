@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 				dest: 'app/'
 			},
 			js: {
-				src: [ 'js/**', 'app.js', 'algolia/**' ],
+				src: [ 'js/**', 'app.js' ],
 				dest: 'app/'
 			},
 			img: {

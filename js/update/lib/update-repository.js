@@ -2,7 +2,7 @@ var fs = require('fs');
 var childProcess = require('child_process');
 
 var Promise = require('bluebird');
-var appLog = require('../../js/log.js')('app');
+var appLog = require('../../log.js')('app');
 
 module.exports = function updateRepository () {
 	return new Promise(function (resolve, reject) {

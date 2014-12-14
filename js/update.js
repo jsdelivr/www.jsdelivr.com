@@ -20,6 +20,6 @@ module.exports = function (req, res) {
 		}
 
 		appLog.info('Starting the updater.');
-		updater = childProcess.fork(__dirname + '/../algolia/index.js', { env: _.assign({ ALGOLIA_API_KEY: req.query.api }, process.env) });
+		updater = childProcess.fork(__dirname + '/update/index.js', { env: _.assign({ ALGOLIA_API_KEY: req.query.api }, process.env) });
 	}
 };

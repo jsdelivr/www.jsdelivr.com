@@ -5,7 +5,7 @@ var _ = require('lodash');
 var Promise = require('bluebird');
 
 var Project = require('./project.js');
-var appLog = require('../../js/log.js')('app');
+var appLog = require('../../log.js')('app');
 
 var rootDir = __dirname + '/../jsdelivr/files/';
 
