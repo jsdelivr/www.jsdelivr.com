@@ -7,7 +7,7 @@ module.exports = function (callback) {
 		var hasLocalStorage = has.localStorage();
 		var now = Date.now();
 
-		if (hasLocalStorage && localStorage.getItem('randomProjectsExpires')) {
+		if (hasLocalStorage && localStorage.getItem('randomProjectsExpires') >= now) {
 			callback(JSON.parse(localStorage.getItem('randomProjects')));
 		} else {
 			search('', Math.floor(Math.random() * nbProjects / 10), function (response) {
