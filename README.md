@@ -3,7 +3,7 @@
 2. `npm install` in the project directory to set up dependencies.
 
 # Development
-Run `npm run start`, then visit [http://localhost:4400](http://localhost:4400).
+Run `npm run start`, then visit [http://localhost:4400](http://localhost:4400). To build the app without starting a webserver, run `npm run build`.
 
 # Production
 Set environment variables `LOGENTRIES_ACCESS_TOKEN` for access log and `LOGENTRIES_APP_TOKEN` for app log.
