@@ -1,0 +1,170 @@
+<div class="modal fade collection-links" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 class="modal-title">Links collection</h3>
+			</div>
+
+			{{#with links}}
+				<div class="modal-body">
+					<div class="collection-links-options">
+						<input class="radio-inline" type="checkbox" checked="{{groupLinks}}" id="groupLinks">
+						<label for="groupLinks">Group links</label>
+
+						<input class="radio-inline" type="checkbox" checked="{{addTag}}" id="addTag">
+						<label for="addTag">Add the <b>&lt;script&gt;</b> tag</label>
+
+						<input class="radio-inline" type="checkbox" checked="{{addProtocol}}" id="addProtocol">
+						<label for="addProtocol">Add the <b>https:</b></label>
+					</div>
+
+					{{#if js}}
+						<h4 class="strikethrough"><span>JS</span></h4>
+
+						{{#if groupLinks}}
+							<div class="grouped-link">
+								<div decorator="select">{{js[0]}}</div>
+
+								{{#if hasFlash}}
+									<button class="btn btn-default btn-copy" decorator="zeroClipboard" data-clipboard-text="{{js[0]}}">
+										<i class="fa fa-copy"></i> Copy
+									</button>
+								{{/if hasFlash}}
+							</div>
+						{{else}}
+							{{#each js}}
+								<div class="collection-file">
+									<div class="row">
+										<div class="col-xs-{{hasFlash ? 22 : 24}}">
+											<div decorator="select">{{this}}</div>
+										</div>
+
+										<div class="col-xs-2 collection-file-copy-wrapper">
+											<i class="fa fa-copy clickable" decorator="zeroClipboard" data-clipboard-text="{{this}}"></i>
+										</div>
+									</div>
+								</div>
+							{{/each js}}
+						{{/if groupLinks}}
+					{{/if js}}
+
+					{{#if css}}
+						<h4 class="strikethrough"><span>CSS</span></h4>
+
+						{{#if groupLinks}}
+							<div class="grouped-link">
+								<div decorator="select">{{css[0]}}</div>
+
+								{{#if hasFlash}}
+									<button class="btn btn-default btn-copy" decorator="zeroClipboard" data-clipboard-text="{{css[0]}}">
+										<i class="fa fa-copy"></i> Copy
+									</button>
+								{{/if hasFlash}}
+							</div>
+						{{else}}
+							{{#each css}}
+								<div class="collection-file">
+									<div class="row">
+										<div class="col-xs-{{hasFlash ? 22 : 24}}">
+											<div decorator="select">{{this}}</div>
+										</div>
+
+										<div class="col-xs-2 collection-file-copy-wrapper">
+											<i class="fa fa-copy clickable" decorator="zeroClipboard" data-clipboard-text="{{this}}"></i>
+										</div>
+									</div>
+								</div>
+							{{/each css}}
+						{{/if groupLinks}}
+					{{/if css}}
+
+					{{#if other}}
+						<h4 class="strikethrough"><span>Other</span></h4>
+
+						{{#each other}}
+							<div class="collection-file">
+								<div class="row">
+									<div class="col-xs-{{hasFlash ? 22 : 24}}">
+										<div decorator="select">{{this}}</div>
+									</div>
+
+									<div class="col-xs-2 collection-file-copy-wrapper">
+										<i class="fa fa-copy clickable" decorator="zeroClipboard" data-clipboard-text="{{this}}"></i>
+									</div>
+								</div>
+							</div>
+						{{/each other}}
+					{{/if other}}
+				</div>
+			{{/with links}}
+		</div>
+	</div>
+</div>
+
+<script>
+	var linkBuilder = require('public/js/utils/build-links');
+	var selectDecorator = require('public/js/decorators/select.js');
+	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
+
+	component.exports = {
+		el: 'body',
+		append: true,
+		computed: {
+			links: function () {
+				var links = linkBuilder(this.get('collection'), this.get('groupLinks'));
+				var addTag = this.get('addTag');
+				var addProtocol = this.get('addProtocol');
+
+				links.js = links.js.map(function (link) {
+					link = addProtocol ? 'https:' + link : link;
+					link = addTag ? '<script src="' + link + '"><\/script>' : link;
+
+					return link;
+				});
+
+				links.css = links.css.map(function (link) {
+					link = addProtocol ? 'https:' + link : link;
+					link = addTag ? '<link rel="stylesheet" href="' + link + '">' : link;
+
+					return link;
+				});
+
+				links.other = links.other.map(function (link) {
+					return addProtocol ? 'https:' + link : link;
+				});
+
+				return links;
+			},
+		},
+		data: function () {
+			return {
+				addTag: false,
+				groupLinks: true,
+				addProtocol: false,
+				linkBuilder: linkBuilder,
+			};
+		},
+		decorators: {
+			select: selectDecorator,
+			zeroClipboard: zeroClipboardDecorator
+		},
+		oninit: function () {
+			if (!Ractive.isServer) {
+				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
+			}
+		},
+		onrender: function () {
+			var _this = this;
+
+			$(this.find('.modal'))
+				.modal()
+				.on('hidden.bs.modal', function() {
+					_this.teardown();
+				});
+		},
+		onunrender: function () {
+			$(this.find('.modal')).modal('hide');
+		},
+	};
+</script>

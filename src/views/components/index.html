@@ -1,0 +1,161 @@
+<link rel="ractive" href="./shared/collection.html" name="Collection">
+<link rel="ractive" href="./shared/header.html" name="Header">
+<link rel="ractive" href="./shared/navbar-nav-c.html" name="NavbarNav">
+<link rel="ractive" href="./shared/project.html" name="Project">
+
+<div class="index">
+	<header class="index-header">
+		<nav class="navbar navbar-inverse index-top-navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-xs-4 col-xs-offset-1">
+						<a class="navbar-brand" href="/"><img src="/img/logo-50.png"></a>
+					</div>
+
+					<div class="col-xs-14">
+						<NavbarNav></NavbarNav>
+					</div>
+
+					<div class="col-xs-4">
+						<button class="btn btn-primary"><i class="fa fa-cloud-upload"></i>Add Project</button>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-14 col-xs-offset-5">
+					<h1><strong>A free super-fast CDN</strong><br> for developers and webmasters</h1>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xs-14 col-xs-offset-5">
+					<div class="sub-level">
+						Search for javascript libraries, jQuery plugins, fonts, CSS frameworks,<br>
+						and anything else you might need. You can submit if something is missing.
+					</div>
+
+					<input type="text" class="index-search-input" value="{{query}}" placeholder="Search more than {{nbProjects}} open source projects...">
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<Header app="{{app}}" query="{{query}}"></Header>
+	<Collection collection="{{collection}}"></Collection>
+
+	<div class="container index-projects">
+		{{#each projects}}
+			<div class="row" intro="{{#if fadeIn}}fade{{/if fadeIn}}">
+				<div class="col-lg-16 col-lg-offset-4 col-md-22 col-md-offset-1 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<Project project="{{this}}" collection="{{collection}}" expandFiles="{{expandFiles}}"></Project>
+				</div>
+			</div>
+		{{/each projects}}
+
+		{{#if nbHits > hitsPerPage}}
+			<div class="row">
+				<div class="col-lg-16 col-lg-offset-4 col-md-22 col-md-offset-1 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<div class="index-show-more-projects">
+						<span class="clickable" on-click="add('hitsPerPage', 10)">
+							<i class="fa fa-circle"></i> <i class="fa fa-circle"></i> <i class="fa fa-circle"></i>Show more
+						</span>
+					</div>
+				</div>
+			</div>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	component.exports = {
+		computed: {
+			expandFiles: function () {
+				return this.get('projects.length') === 1;
+			},
+			limit: {
+				get: function () {
+					return this.get('hitsPerPage') > 10 ? this.get('hitsPerPage') : 0;
+				},
+				set: function (value) {
+					this.set('hitsPerPage', value);
+				},
+			},
+		},
+		data: function () {
+			return {
+				query: '',
+				projects: [],
+				hitsPerPage: 10,
+				cdnRoot: '',
+				useScrollBy: false,
+			};
+		},
+		oninit: function () {
+			if (!Ractive.isServer) {
+				var search = require('public/js/utils/search');
+				var searchRandom = require('public/js/utils/search-random');
+				var countProjects = require('public/js/utils/count-projects');
+				var _this = this;
+
+				// Show number of hosted projects.
+				countProjects().then(function (nbProjects) {
+					nbProjects && _this.set('nbProjects', nbProjects);
+				});
+
+				// Update results on input.
+				this.observe('hitsPerPage query __ready', function (newValue, oldValue, keypath) {
+					// Don't send requests before have all the data.
+					if (this.get('__ready')) {
+						// Show 10 random projects.
+						if (keypath === '__ready' && !this.get('query') && this.get('hitsPerPage') === 10) {
+							searchRandom().then(function (response) {
+								_this.merge('projects', response.hits);
+								_this.set({ nbPages: response.nbPages });
+								_this.set('fadeIn', true);
+							});
+						} else {
+							// Reset hitsPerPage on query change.
+							if (keypath === 'query' && this.get('hitsPerPage') !== 10) {
+								this.set('hitsPerPage', 10);
+							} else {
+								search(this.get('query').toString(), 0, this.get('hitsPerPage')).then(function (result) {
+									// The query might have changed since we sent the request.
+									if (result.queryString === _this.get('query')) {
+										_this.merge('projects', result.response.hits, { compare: 'name' });
+										_this.set('fadeIn', true);
+										_this.set({
+											nbPages: result.response.nbPages,
+											nbHits: result.response.nbHits,
+										});
+
+										// If we're right at the top (usually right after page load), scroll down to the results.
+										if (!pageYOffset && _this.findComponent('Header').find('.search-input') === document.activeElement) {
+											if (_this.get('app.config.animateScrolling')) {
+												$('html, body').animate({
+													scrollTop: 700
+												});
+											} else {
+												scrollBy(0, 700);
+												_this.set('app.config.animateScrolling', true);
+											}
+										}
+									}
+								});
+							}
+						}
+					}
+				});
+			}
+		},
+		oncomplete: function () {
+			// Redirect from the old URL format.
+			if (location.hash && !this.get('query')) {
+				// TODO: We probably need to support this on the back-end as well.
+				this.get('app.router').dispatch('/projects/' + location.hash.substr(2), { noHistory: true });
+			}
+		}
+	};
+</script>

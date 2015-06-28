@@ -1,0 +1,89 @@
+<link rel="ractive" href="./collection-links.html" name="CollectionLinks">
+
+{{#if collection}}
+	{{#with collection}}
+		<div class="collection">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-16 col-lg-offset-4 col-md-22 col-md-offset-1 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+						<div class="row">
+							<div class="col-sm-20 col-xs-18">
+								<div class="input-group">
+									<input type="text" class="collection-link" twoway="false" value="{{mainLink}}" decorator="select" disabled="{{disableLink}}" readonly>
+
+									{{#if hasFlash}}
+										<span class="input-group-btn">
+											<button class="btn btn-default btn-copy" decorator="zeroClipboard" data-clipboard-text="{{mainLink}}" disabled="{{disableLink}}">
+												<i class="fa fa-copy"></i>Copy
+											</button>
+										</span>
+									{{/if hasFlash}}
+								</div>
+							</div>
+
+							<div class="col-sm-4 col-xs-6 collection-btn-wrapper">
+								<button class="btn btn-primary collection-btn" on-click="showLinks()">
+									<span class="collection-count">{{collection.length}}</span> In Collection
+								</button>
+							</div>
+						</div>
+
+						{{#if expand}}
+							<div intro-outro="slide" class="collection-files">
+								{{#each collection}}
+									<div class="collection-file">
+										{{this.name}} ({{this.version}}) <i class="fa fa-times-circle clickable" on-click="splice('collection', @index, 1)"></i>
+									</div>
+								{{/each collection}}
+							</div>
+						{{/if expand}}
+
+						<button class="btn btn-default btn-icon collection-toggle-btn" on-click="toggle('expand')">
+							<i class="fa {{expand ? 'fa-angle-up' : 'fa-angle-down' }}"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{{/with collection}}
+{{/if collection}}
+
+<script>
+	var buildLinks = require('public/js/utils/build-links');
+	var selectDecorator = require('public/js/decorators/select.js');
+	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
+
+	component.exports = {
+		computed: {
+			disableLink: function () {
+				var links = this.get('links');
+
+				return (links.css.length && links.js.length) || links.other.length;
+			},
+			mainLink: function () {
+				var links = this.get('links');
+
+				return links.js[0] || links.css[0];
+			},
+			links: function () {
+				return buildLinks(this.get('collection'));
+			},
+		},
+		decorators: {
+			select: selectDecorator,
+			zeroClipboard: zeroClipboardDecorator,
+		},
+		oninit: function () {
+			if (!Ractive.isServer) {
+				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
+			}
+		},
+		showLinks: function () {
+			new this.components.CollectionLinks({
+				data: {
+					collection: this.get('collection'),
+				}
+			});
+		},
+	};
+</script>

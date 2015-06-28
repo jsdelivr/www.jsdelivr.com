@@ -1,0 +1,82 @@
+<link rel="ractive" href="./navbar-nav-c.html" name="NavbarNav">
+
+<header class="header">
+	<div class="header-sponsors">
+		<div class="container">
+			<a href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
+			<a href="http://tracking.maxcdn.com/c/47243/36539/378"><img src="/img/sponsors-header/maxcdn.png"></a>
+			<a href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
+			<a href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
+			<a href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+		</div>
+	</div>
+
+	<nav class="navbar navbar-default">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-3 col-md-offset-1 col-sm-3 col-sm-offset-0 col-xs-4 col-xs-offset-2">
+					<a class="navbar-brand" href="/"><img src="/img/logo-34.png"></a>
+				</div>
+
+				<div class="col-md-10 col-sm-12 col-xs-18">
+					<NavbarNav></NavbarNav>
+				</div>
+
+				<div class="col-md-6 col-sm-6 col-sm-offset-0 col-xs-16 col-xs-offset-2 xs-padding">
+					<input type="text" class="search-input" value="{{query}}" placeholder="Search more than {{nbProjects}} open source projects..." on-input="search()">
+				</div>
+
+				<div class="col-md-3 col-sm-3 col-xs-4 xs-padding md-right">
+					<button class="btn btn-primary"><i class="fa fa-cloud-upload"></i>Add Project</button>
+				</div>
+			</div>
+		</div>
+	</nav>
+</header>
+
+<script>
+	component.exports = {
+		oninit: function () {
+			if (!Ractive.isServer) {
+				var countProjects = require('public/js/utils/count-projects');
+				var _this = this;
+
+				// Show number of hosted projects.
+				countProjects().then(function (nbProjects) {
+					nbProjects && _this.set('nbProjects', nbProjects);
+				});
+			}
+		},
+		oncomplete: function () {
+			if (location.pathname === '/' && this.get('query')) {
+				var input = this.find('input');
+				var value = input.value;
+
+				input.focus();
+
+				// Make sure the cursor is at the end of the input.
+				input.value = '';
+				input.value = value;
+			} else {
+				this.set('prevQuery', this.get('query'));
+			}
+
+			this.findAll('a').forEach(function (a) {
+				var $a = $(a);
+
+				if (location.pathname.indexOf($a.attr('href')) === 0) {
+					$a.addClass('active');
+				} else {
+					$a.removeClass('active');
+				}
+			});
+		},
+		search: function () {
+			// IE likes to fire "input" events for no particular reason. Make sure the query has actually changed.
+			if (location.pathname !== '/' && this.get('query') !== this.get('prevQuery')) {
+				this.set('app.config.animateScrolling', false);
+				this.get('app.router').dispatch('/?query=' + encodeURIComponent(this.find('input').value));
+			}
+		},
+	};
+</script>

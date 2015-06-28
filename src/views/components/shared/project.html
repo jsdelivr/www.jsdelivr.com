@@ -1,0 +1,172 @@
+<link rel="ractive" href="./version-dropdown.html" name="VersionDropdown">
+
+{{#with project}}
+	<div class="project">
+		<div class="project-header">
+			<div class="row">
+				<div class="col-sm-7">
+					<div class="project-github">
+						{{#if github}}<a href="{{github}}"><i class="fa fa-github"></i>{{author}}</a>{{else}}{{author}}{{/if github}}
+					</div>
+
+					<div class="project-name">
+						<h3><a href="/projects/{{name}}">{{name}}</a></h3>
+					</div>
+				</div>
+
+				<div class="col-sm-9 text-justify">
+					<div class="version-dropdown-wrapper">
+						<VersionDropdown project="{{this}}"></VersionDropdown>
+					</div>
+
+					{{description}}
+				</div>
+
+				<div class="col-sm-8">
+					<div class="project-links">
+						<button class="btn btn-default btn-icon{{#if ~getCollectionIndex(collection, name)}} btn-checked{{/if}}" on-click="toggleCollectionProject()">
+							<i class="fa fa-plus-circle"></i>
+						</button>
+
+						<button class="btn btn-default btn-icon"><i class="fa fa-cog"></i></button>
+						<button class="btn btn-default btn-icon"><i class="fa fa-link"></i></button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="project-files-header">
+			<div class="row">
+				<div class="col-xs-7">
+					<b>CDN files</b>
+				</div>
+
+				<div class="col-xs-10">
+					<div class="project-files-header-link">
+						mainfile: <a href="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{mainfile}}"><i class="fa fa-file-text-o"></i>{{mainfile}}</a>
+					</div>
+
+					<div class="project-files-header-link">
+						download: <a href="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{name}}.zip"><i class="fa fa-download"></i>ZIP</a>
+					</div>
+				</div>
+
+				<div class="col-xs-7">
+					<b>Add</b>
+				</div>
+			</div>
+		</div>
+
+		{{#each getFilesByVersion(this, selectedVersion).slice(0, fileLimit)}}
+			<div class="project-file {{#if ~getCollectionIndex(collection, project.name, project.selectedVersion, this)}}project-file-selected{{/if}}">
+				<div class="row">
+					<div class="col-xs-17">
+						<span decorator="select">{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}</span>
+					</div>
+
+					<div class="col-xs-7">
+						<input type="checkbox" class="switch-inline" id="{{name}}/{{selectedVersion}}/{{this}}" twoway="false"
+								checked="{{~getCollectionIndex(collection, project.name, project.selectedVersion, this)}}" on-click="toggleCollectionFile(this)">
+						<label for="{{name}}/{{selectedVersion}}/{{this}}"></label>
+					</div>
+				</div>
+			</div>
+		{{/each files}}
+
+		{{#if showMoreFiles}}
+			<div intro-outro="slide">
+				{{#each getFilesByVersion(this, selectedVersion).slice(fileLimit)}}
+					<div class="project-file {{#if ~getCollectionIndex(collection, project.name, project.selectedVersion, this)}}project-file-selected{{/if}}">
+						<div class="row">
+							<div class="col-xs-17">
+								<span decorator="select">{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{this}}</span>
+							</div>
+
+							<div class="col-xs-7">
+								<input type="checkbox" class="switch-inline" id="{{name}}/{{selectedVersion}}/{{this}}" twoway="false"
+										checked="{{~getCollectionIndex(collection, project.name, project.selectedVersion, this)}}" on-click="toggleCollectionFile(this)">
+								<label for="{{name}}/{{selectedVersion}}/{{this}}"></label>
+							</div>
+						</div>
+					</div>
+				{{/each files}}
+			</div>
+		{{/if showMoreFiles}}
+
+		{{#if getFilesByVersion(this, selectedVersion).length > fileLimit}}
+			<div class="project-footer">
+				<span class="clickable" on-click="toggleShowMoreFiles()">
+					{{#if !showMoreFiles}}
+						<i class="fa fa-circle"></i> <i class="fa fa-circle"></i> <i class="fa fa-circle"></i>Show more
+					{{else}}
+						<i class="fa fa-circle"></i> <i class="fa fa-circle"></i>Show less
+					{{/if}}
+				</span>
+			</div>
+		{{/if}}
+	</div>
+{{/with project}}
+
+<script>
+	var getFilesByVersion = require('public/js/utils/get-files-by-version');
+	var getCollectionIndex = require('public/js/utils/get-collection-index');
+	var selectDecorator = require('public/js/decorators/select');
+
+	component.exports = {
+		noIntro: true,
+		computed: {
+			fileLimit: function () {
+				return this.get('expandFiles') ? Number.MAX_VALUE : 3;
+			}
+		},
+		data: function () {
+			return {
+				cdnRoot: '//cdn.jsdelivr.net',
+				getFilesByVersion: getFilesByVersion,
+				getCollectionIndex: getCollectionIndex,
+			};
+		},
+		decorators: {
+			select: selectDecorator,
+		},
+		toggleCollectionFile: function (file) {
+			var project = this.get('project');
+			var index;
+
+			if (~(index = getCollectionIndex(this.get('collection'), project.name, project.selectedVersion, file))) {
+				this.splice('collection', index, 1);
+			} else {
+				this.push('collection', {
+					name: file,
+					project: project.name,
+					version: project.selectedVersion,
+					mainfile: project.mainfile,
+				});
+			}
+		},
+		toggleCollectionProject: function () {
+			var project = this.get('project');
+			var collection = this.get('collection');
+
+			if (!~getCollectionIndex(collection, project.name, project.selectedVersion)) {
+				this.toggleCollectionFile(project.mainfile);
+			} else {
+				this.splice.apply(this, [ 'collection', 0, collection.length ].concat(collection.filter(function (file) {
+					return file.project !== project.name;
+				})));
+			}
+		},
+		toggleShowMoreFiles: function () {
+			var $project = $(this.find('.project'));
+			var _this = this;
+
+			this.toggle('project.showMoreFiles').then(function () {
+				if(!_this.get('project.showMoreFiles') && $project.offset().top < $(document).scrollTop()) {
+					$('html, body').animate({
+						scrollTop: $project.offset().top
+					});
+				}
+			});
+		},
+	};
+</script>
