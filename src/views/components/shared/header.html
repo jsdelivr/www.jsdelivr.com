@@ -36,6 +36,11 @@
 
 <script>
 	component.exports = {
+		data: function () {
+			return {
+				offsetTop: 124,
+			};
+		},
 		oninit: function () {
 			if (!Ractive.isServer) {
 				var countProjects = require('public/js/utils/count-projects');
@@ -46,6 +51,14 @@
 					nbProjects && _this.set('nbProjects', nbProjects);
 				});
 			}
+		},
+		onrender: function () {
+			$(this.find('.navbar')).affix({
+				offset: {
+					top: this.get('offsetTop'),
+					bottom: 0,
+				}
+			});
 		},
 		oncomplete: function () {
 			if (location.pathname === '/' && this.get('query')) {
