@@ -24,12 +24,12 @@
 
 				<div class="col-sm-8">
 					<div class="project-links">
-						<button class="btn btn-default btn-icon{{#if ~getCollectionIndex(collection, name)}} btn-checked{{/if}}" on-click="toggleCollectionProject()">
+						<button class="btn btn-default btn-icon{{#if ~getCollectionIndex(collection, name)}} btn-checked{{/if}}" on-click="toggleCollectionProject()" decorator="tooltip: Add to Collection">
 							<i class="fa {{~getCollectionIndex(collection, name) ? 'fa-check-circle' : 'fa-plus-circle' }}"></i>
 						</button>
 
-						<button class="btn btn-default btn-icon"><i class="fa fa-cog"></i></button>
-						<button class="btn btn-default btn-icon"><i class="fa fa-link"></i></button>
+						<a class="btn btn-default btn-icon" href="{{apiRoot}}/jsdelivr/libraries?name={{name}}" decorator="tooltip: API"><i class="fa fa-cog"></i></a>
+						<a class="btn btn-default btn-icon" href="{{homepage}}" decorator="tooltip: Homepage"><i class="fa fa-link"></i></a>
 					</div>
 				</div>
 			</div>
@@ -111,6 +111,7 @@
 <script>
 	var getFilesByVersion = require('public/js/utils/get-files-by-version');
 	var getCollectionIndex = require('public/js/utils/get-collection-index');
+	var tooltipDecorator = require('public/js/decorators/tooltip');
 	var selectDecorator = require('public/js/decorators/select');
 
 	component.exports = {
@@ -122,6 +123,7 @@
 		},
 		data: function () {
 			return {
+				apiRoot: 'https://api.jsdelivr.com/v1',
 				cdnRoot: '//cdn.jsdelivr.net',
 				getFilesByVersion: getFilesByVersion,
 				getCollectionIndex: getCollectionIndex,
@@ -129,6 +131,7 @@
 		},
 		decorators: {
 			select: selectDecorator,
+			tooltip: tooltipDecorator,
 		},
 		toggleCollectionFile: function (file) {
 			var project = this.get('project');
