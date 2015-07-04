@@ -77,6 +77,14 @@
 			if (!Ractive.isServer) {
 				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
 			}
+
+			this.observe('collection.length', function (newValue, oldValue) {
+				if (newValue && !oldValue) {
+					scrollBy(0, 94);
+				} else if (oldValue && !newValue) {
+					scrollBy(0, -94);
+				}
+			})
 		},
 		showLinks: function () {
 			new this.components.CollectionLinks({
