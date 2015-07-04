@@ -84,7 +84,19 @@
 				} else if (oldValue && !newValue) {
 					scrollBy(0, -94);
 				}
-			})
+			});
+		},
+		onrender: function () {
+			this.observe('collection.length', function (length) {
+				if (length) {
+					$(this.find('.collection')).affix({
+						offset: {
+							top: this.get('offsetTop'),
+							bottom: 0,
+						}
+					});
+				}
+			}, { defer: true });
 		},
 		showLinks: function () {
 			new this.components.CollectionLinks({
