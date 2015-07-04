@@ -88,7 +88,8 @@
 			// IE likes to fire "input" events for no particular reason. Make sure the query has actually changed.
 			if (location.pathname !== '/' && this.get('query') !== this.get('prevQuery')) {
 				this.set('app.config.animateScrolling', false);
-				this.get('app.router').dispatch('/?query=' + encodeURIComponent(this.find('input').value));
+				this.get('app.router')
+					.dispatch('/?query=' + encodeURIComponent(this.find('input').value) + '&collection=' + encodeURIComponent(JSON.stringify(this.root.get('collection'))));
 			}
 		},
 	};
