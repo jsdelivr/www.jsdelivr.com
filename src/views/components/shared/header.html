@@ -53,9 +53,13 @@
 			}
 		},
 		onrender: function () {
+			var _this = this;
+
 			$(this.find('.navbar')).affix({
 				offset: {
-					top: this.get('offsetTop'),
+					top: function () {
+						return document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
+					},
 					bottom: 0,
 				}
 			});

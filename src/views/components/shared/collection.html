@@ -54,6 +54,11 @@
 	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
 
 	component.exports = {
+		data: function () {
+			return {
+				offsetTop: 124,
+			};
+		},
 		computed: {
 			disableLink: function () {
 				var links = this.get('links');
@@ -97,9 +102,13 @@
 		onrender: function () {
 			this.observe('collection.length', function (length) {
 				if (length) {
+					var _this = this;
+
 					$(this.find('.collection')).affix({
 						offset: {
-							top: this.get('offsetTop'),
+							top: function () {
+								return document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
+							},
 							bottom: 0,
 						}
 					});
