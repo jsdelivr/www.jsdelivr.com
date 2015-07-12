@@ -49,9 +49,10 @@
 {{/if collection}}
 
 <script>
+	var has = require('public/js/utils/has');
 	var buildLinks = require('public/js/utils/build-links');
-	var selectDecorator = require('public/js/decorators/select.js');
-	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard.js');
+	var selectDecorator = require('public/js/decorators/select');
+	var zeroClipboardDecorator = require('public/js/decorators/zero-clipboard');
 
 	component.exports = {
 		data: function () {
@@ -81,6 +82,12 @@
 		oninit: function () {
 			if (!Ractive.isServer) {
 				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
+
+				if (has.localStorage()) {
+					this.observe('collection', function (newValue) {
+						localStorage.setItem('collection', JSON.stringify(newValue));
+					}, { init: false });
+				}
 			}
 
 			this.observe('collection.length', function (newValue, oldValue) {

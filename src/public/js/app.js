@@ -1,3 +1,5 @@
+import has from './utils/has';
+
 import cAbout from '../../views/components/about';
 import cCdnInAsiaAndChina from '../../views/components/features/cdn-in-asia-and-china';
 import cJsdelivrCdnFeatures from '../../views/components/features/jsdelivr-cdn-features';
@@ -31,7 +33,7 @@ app.router = new Ractive.Router({
 	data () {
 		return {
 			app,
-			collection: [],
+			collection: has.localStorage() && localStorage.getItem('collection') ? JSON.parse(localStorage.getItem('collection')) : [],
 		};
 	},
 	globals: [ 'query', 'collection' ],
