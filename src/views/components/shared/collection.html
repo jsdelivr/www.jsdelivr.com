@@ -91,13 +91,15 @@
 			}
 
 			this.observe('collection.length', function (newValue, oldValue) {
-				if (newValue && !oldValue) {
+				var $navbar = $('.header > .navbar');
+
+				if (newValue && !oldValue && !$navbar.hasClass('affix')) {
 					scrollBy(0, 94);
 
 					$('.tooltip').each(function () {
 						$(this).css('top', parseFloat($(this).css('top')) + 94);
 					});
-				} else if (oldValue && !newValue) {
+				} else if (oldValue && !newValue && !$navbar.hasClass('affix')) {
 					scrollBy(0, -94);
 
 					$('.tooltip').each(function () {

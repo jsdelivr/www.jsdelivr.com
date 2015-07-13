@@ -66,6 +66,12 @@ $(() => {
 		.init()
 		.watchLinks()
 		.watchState();
+
+	// The affix plugin sometimes applies incorrect css on page load; scrolling fixes the problem.
+	setTimeout(function () {
+		scrollBy(0, 1);
+		scrollBy(0, -1);
+	});
 });
 
 window.app = app;
