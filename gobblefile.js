@@ -2,8 +2,8 @@ var gobble = require('gobble');
 
 var app = gobble([
 		gobble('src/public/js')
-			.observe('jscs')
-			.observe('jshint')
+			.observeIf(gobble.env() === 'development', 'jscs')
+			.observeIf(gobble.env() === 'development', 'jshint')
 			.transform('babel', { blacklist: [ 'es6.modules' ] })
 			.moveTo('public/js'),
 		gobble('src/views')
@@ -13,7 +13,7 @@ var app = gobble([
 	.transform('esperanto-bundle', { type: 'umd', name: 'app', entry: 'public/js/app.js', dest: 'public/js/app.js', strict: true });
 
 module.exports = gobble([
-	app.transform('jsbeautify', {
+	app.transformIf(gobble.env() === 'development', 'jsbeautify', {
 		indent_with_tabs: true,
 		space_after_anon_function: true,
 		keep_array_indentation: true,
@@ -28,8 +28,8 @@ module.exports = gobble([
 		.moveTo('public/css'),
 	gobble('src')
 		.exclude('public/**')
-		.observe('jscs')
-		.observe('jshint')
+		.observeIf(gobble.env() === 'development', 'jscs')
+		.observeIf(gobble.env() === 'development', 'jshint')
 		.transform('babel')
 		.include( '**/*.js' ),
 	gobble('src/public/img')
