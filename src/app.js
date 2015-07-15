@@ -8,6 +8,7 @@ import rr from 'ractive-render';
 
 import morganConfig from './config/morgan';
 import dnsApi from './js/api/dns';
+import statsApi from './js/api/stats';
 
 let app = express();
 
@@ -35,6 +36,8 @@ Ractive.isServer = true;
  * Private APIs used by our frontend.
  */
 app.all('/api/dns', dnsApi);
+app.all('/api/stats', statsApi);
+
 // TODO
 // app.all('/api/update-algolia', update);
 

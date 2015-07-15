@@ -13,6 +13,7 @@ import cIndex from '../../views/components/index';
 import cProjects from '../../views/components/projects';
 import cBecomeASponsor from '../../views/components/sponsors/become-a-sponsor';
 import cOurSponsors from '../../views/components/sponsors/our-sponsors';
+import cStatistics from '../../views/components/statistics';
 import cDebugTool from '../../views/components/tools/debug-tool';
 
 Ractive.DEBUG = location.hostname === 'localhost';
@@ -52,6 +53,7 @@ app.router.addRoute('/free-open-source-cdn/custom-cdn-for-open-source', Ractive.
 app.router.addRoute('/projects/:name', Ractive.extend(cProjects));
 app.router.addRoute('/sponsors/become-a-sponsor', Ractive.extend(cBecomeASponsor));
 app.router.addRoute('/sponsors/our-sponsors', Ractive.extend(cOurSponsors));
+app.router.addRoute('/statistics', Ractive.extend(cStatistics));
 app.router.addRoute('/tools/debug-tool', Ractive.extend(cDebugTool), { hash: [ 'resultsHash' ] });
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';

@@ -1,0 +1,230 @@
+<link rel="ractive" href="./shared/header.html" name="Header">
+
+<Header app="{{app}}" query="{{query}}"></Header>
+
+<div class="statistics">
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12 col-xs-offset-6">
+				<h1 class="text-center">TOTAL CDN STATS</h1>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1 xs-padding">
+				<div class="stats-box">
+					<div class="stats-title">HTTP HITS</div>
+					<div class="stats-number">{{stats.cdn.total.hits}}</div>
+				</div>
+			</div>
+
+			<div class="col-sm-6 col-sm-offset-1 col-xs-10 col-xs-offset-2 xs-padding">
+				<div class="stats-box">
+					<div class="stats-title">DNS REQUESTS</div>
+					<div class="stats-number">{{stats.dns.total}}</div>
+				</div>
+			</div>
+
+			<div class="col-sm-7 col-sm-offset-1 col-xs-11 col-xs-offset-7">
+				<div class="stats-box">
+					<div class="stats-title">LOAD BALANCING DECISIONS</div>
+					<div class="stats-number">{{stats.cedexis.total}}</div>
+					<div class="stats-traffic"><span class="stats-number">{{Math.floor(stats.cdn.total.traffic / 1024 / 1024 / 1024 / 1024)}}TB</span> SERVED</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-11 col-xs-22 col-xs-offset-1">
+				<h3>Load Balancing decisions</h3>
+
+				<div id="load-balancing"></div>
+			</div>
+
+			<div class="col-md-10 col-xs-22 col-xs-offset-1">
+				<h3>DNS requests</h3>
+
+				<div id="dns-requests"></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-11 col-xs-22 col-xs-offset-1">
+				<h3>Load Balancing decisions map</h3>
+
+				<div id="load-balancing-map"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	import debounce from 'public/js/utils/debounce';
+
+	var loading = 3;
+	var stats = {};
+
+	// Load google visualization library...
+	google.load('visualization', '1.1', {
+		packages: [ 'corechart', 'geochart' ]
+	});
+
+	google.setOnLoadCallback(onLoad);
+
+	// ...load stats data from our API...
+	$.getJSON('/api/stats', function (data) {
+		stats = data;
+
+		// Convert UNIX timestamps to Date objects.
+		stats.cedexis.decisions.forEach(function (entry) {
+			entry[0] = new Date(entry[0] * 1000);
+		});
+
+		stats.dns.chart.forEach(function (entry) {
+			entry[0] = new Date(entry[0] * 1000);
+		});
+
+		// Create map tooltips.
+		stats.cedexis.map.forEach(function (entry) {
+			entry[2] = '<strong class="google-tooltip-title">' + new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString() + ' - ' + new Date().toLocaleDateString()+ '</strong><br>'
+				+'<span>' + entry[2] + ':</span> <span><strong>' + entry[1] + '</strong></span>';
+		});
+
+		onLoad();
+	});
+
+	// ...make sure our component is rendered...
+	component.exports = {
+		data: function () {
+			return {
+				stats: stats,
+			};
+		},
+		onrender: function () {
+			var onResize = debounce(draw);
+
+			$(window).on('resize', onResize);
+			this.on('unrender', function () {
+				$(window).off('rezize', onResize);
+			});
+
+			onLoad();
+		},
+	};
+
+	// ...and render the charts when everything is ready.
+	function onLoad () {
+		if (--loading <= 0) {
+			draw()
+		}
+	}
+
+	function draw () {
+		if (loading <= 0) {
+			var lineChartDefaults = {
+				backgroundColor: {
+					stroke: '#cee1e1',
+					strokeWidth: 4,
+				},
+				chartArea: {
+					left: 100,
+					top: 30,
+					height: 350,
+					width: '85%',
+				},
+				colors: [ '#3a46b6', '#920784', '#20a9e9' ],
+				curveType: 'function',
+				focusTarget: 'category',
+				fontName: 'Open Sans',
+				fontSize: 13,
+				hAxis: {
+					format: 'MMM d, y',
+					gridlines: {
+						color: '#dee2e6',
+					},
+					title: 'Date',
+					titleTextStyle: {
+						fontSize: 12,
+						bold: true,
+						italic: false,
+					}
+				},
+				height: 480,
+				legend: {
+					position: 'bottom',
+				},
+				tooltip: {
+					isHtml: true,
+					trigger: 'both',
+					textStyle: {
+						color: '#fff',
+					}
+				},
+				vAxis: {
+					baseline: 0,
+					baselineColor: '#dee2e6',
+					format: 'decimal',
+					gridlines: {
+						color: '#dee2e6',
+						count: -1,
+					},
+				},
+				width: '100%',
+			};
+			var mapChartDefaults = {
+				legend: {
+					position: 'none',
+				},
+				tooltip: {
+					isHtml: true,
+					trigger: 'both',
+				},
+			};
+
+			// Load balancing.
+			var loadBalancingData = new google.visualization.DataTable();
+
+			loadBalancingData.addColumn('date', 'Date');
+			loadBalancingData.addColumn('number', 'MaxCDN');
+			loadBalancingData.addColumn('number', 'CloudFlare');
+			loadBalancingData.addColumn('number', 'KeyCDN');
+			loadBalancingData.addRows(stats.cedexis.decisions);
+
+			var loadBalancingChart = new google.visualization.LineChart($('#load-balancing')[0]);
+			loadBalancingChart.draw(loadBalancingData, lineChartDefaults);
+
+			// DNS.
+			var dnsData = new google.visualization.DataTable();
+
+			dnsData.addColumn('date', 'Date');
+			dnsData.addColumn('number', 'Requests');
+			dnsData.addRows(stats.dns.chart);
+
+			var dnsChart = new google.visualization.LineChart($('#dns-requests')[0]);
+			dnsChart.draw(dnsData, $.extend(true, {}, lineChartDefaults, {
+				chartArea: {
+					width: '83%',
+				},
+				legend: {
+					position: 'none',
+				},
+			}));
+
+			// Load balancing map.
+			var mapData = new google.visualization.DataTable();
+
+			mapData.addColumn('string', 'Country');
+			mapData.addColumn('number', 'Decisions');
+			mapData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
+			mapData.addRows(stats.cedexis.map);
+
+			var mapChart = new google.visualization.GeoChart($('#load-balancing-map')[0]);
+			mapChart.draw(mapData, $.extend(true, {
+				colorAxis: {
+					colors: [ '#46a3d5', '#a9edd9', '#ffee99', '#f9a674', '#f08c6b', '#dc5559' ],
+					maxValue: 40000000,
+				},
+			}, mapChartDefaults));
+		}
+	}
+</script>
