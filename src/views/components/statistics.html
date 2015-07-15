@@ -66,7 +66,8 @@
 
 	// Load google visualization library...
 	google.load('visualization', '1.1', {
-		packages: [ 'corechart', 'geochart' ]
+		packages: [ 'corechart', 'geochart' ],
+		language: 'en',
 	});
 
 	google.setOnLoadCallback(onLoad);
@@ -87,7 +88,7 @@
 		// Create map tooltips.
 		stats.cedexis.map.forEach(function (entry) {
 			entry[2] = '<strong class="google-tooltip-title">' + new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString() + ' - ' + new Date().toLocaleDateString()+ '</strong><br>'
-				+'<span>' + entry[2] + ':</span> <span><strong>' + entry[1] + '</strong></span>';
+				+'<span>' + entry[2] + ':</span> <span><strong>' + formatNumber(entry[1]) + '</strong></span>';
 		});
 
 		onLoad();
@@ -98,9 +99,7 @@
 		data: function () {
 			return {
 				stats: stats,
-				formatNumber: function (number) {
-					return number.toString().split('').reverse().join('').replace(/(\d{3})(?=\d)/g, '$1,').split('').reverse().join('');
-				},
+				formatNumber: formatNumber,
 			};
 		},
 		onrender: function () {
@@ -183,6 +182,7 @@
 					trigger: 'both',
 				},
 			};
+			var numberFormatter = new google.visualization.NumberFormat({ fractionDigits: 0 });
 
 			// Load balancing.
 			var loadBalancingData = new google.visualization.DataTable();
@@ -193,6 +193,10 @@
 			loadBalancingData.addColumn('number', 'KeyCDN');
 			loadBalancingData.addRows(stats.cedexis.decisions);
 
+			numberFormatter.format(loadBalancingData, 1);
+			numberFormatter.format(loadBalancingData, 2);
+			numberFormatter.format(loadBalancingData, 3);
+
 			var loadBalancingChart = new google.visualization.LineChart($('#load-balancing')[0]);
 			loadBalancingChart.draw(loadBalancingData, lineChartDefaults);
 
@@ -202,6 +206,8 @@
 			dnsData.addColumn('date', 'Date');
 			dnsData.addColumn('number', 'Requests');
 			dnsData.addRows(stats.dns.chart);
+
+			numberFormatter.format(dnsData, 1);
 
 			var dnsChart = new google.visualization.LineChart($('#dns-requests')[0]);
 			dnsChart.draw(dnsData, $.extend(true, {}, lineChartDefaults, {
@@ -221,6 +227,8 @@
 			mapData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
 			mapData.addRows(stats.cedexis.map);
 
+			numberFormatter.format(mapData, 1);
+
 			var mapChart = new google.visualization.GeoChart($('#load-balancing-map')[0]);
 			mapChart.draw(mapData, $.extend(true, {
 				colorAxis: {
@@ -229,5 +237,9 @@
 				},
 			}, mapChartDefaults));
 		}
+	}
+
+	function formatNumber (number) {
+		return number.toString().split('').reverse().join('').replace(/(\d{3})(?=\d)/g, '$1,').split('').reverse().join('');
 	}
 </script>
