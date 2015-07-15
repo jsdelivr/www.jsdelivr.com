@@ -19,12 +19,15 @@ function updateData () {
 	request('http://dev.dakulov.com/jsdelivr/stats.php').then((body) => {
 		var data = JSON.parse(body);
 
-		// 1. Don't show stats for today as they are incomplete.
-		data.dns.chart = data.dns.chart.slice(0, -1);
+		// 1. Group by date.
+		// 2. Convert to arrays of [ date, hits ].
+		data.dns.chart = _.map(_.groupBy(data.dns.chart, (entry) => {
+			let date = new Date(entry[0] * 1000);
+			return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+		}), day => [ day[0][0], _.sum(day, entry => entry[1]) ]);
 
 		// 1. Group by date.
-		// 2. Convert to an arrays of [ date, MaxCDN, CloudFlare, KeyCDN ].
-		// 3. Drop today's stats.
+		// 2. Convert to arrays of [ date, MaxCDN, CloudFlare, KeyCDN ].
 		data.cedexis.decisions = _.map(_.groupBy(data.cedexis.decisions, 1), (decisions, date) => {
 			return [
 				Number(date),
@@ -32,7 +35,7 @@ function updateData () {
 				_.find(decisions, (decision) => decision[0] === 'CloudFlare')[2],
 				_.find(decisions, (decision) => decision[0] === 'KeyCDN')[2],
 			];
-		}).slice(0, -1);
+		});
 
 		// 1. Group by country.
 		// 2. Reformat country names (Congo, The Democratic Republic of the -> The Democratic Republic of the Congo).
