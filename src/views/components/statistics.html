@@ -14,22 +14,22 @@
 			<div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1 xs-padding">
 				<div class="stats-box">
 					<div class="stats-title">HTTP HITS</div>
-					<div class="stats-number">{{stats.cdn.total.hits}}</div>
+					<div class="stats-number">{{formatNumber(stats.cdn.total.hits)}}</div>
+					<div class="stats-traffic"><span class="stats-number">{{Math.floor(stats.cdn.total.traffic / 1024 / 1024 / 1024 / 1024)}}TB</span> SERVED</div>
 				</div>
 			</div>
 
 			<div class="col-sm-6 col-sm-offset-1 col-xs-10 col-xs-offset-2 xs-padding">
 				<div class="stats-box">
 					<div class="stats-title">DNS REQUESTS</div>
-					<div class="stats-number">{{stats.dns.total}}</div>
+					<div class="stats-number">{{formatNumber(stats.dns.total)}}</div>
 				</div>
 			</div>
 
 			<div class="col-sm-7 col-sm-offset-1 col-xs-11 col-xs-offset-7">
 				<div class="stats-box">
 					<div class="stats-title">LOAD BALANCING DECISIONS</div>
-					<div class="stats-number">{{stats.cedexis.total}}</div>
-					<div class="stats-traffic"><span class="stats-number">{{Math.floor(stats.cdn.total.traffic / 1024 / 1024 / 1024 / 1024)}}TB</span> SERVED</div>
+					<div class="stats-number">{{formatNumber(stats.cedexis.total)}}</div>
 				</div>
 			</div>
 		</div>
@@ -98,6 +98,9 @@
 		data: function () {
 			return {
 				stats: stats,
+				formatNumber: function (number) {
+					return number.toString().split('').reverse().join('').replace(/(\d{3})(?=\d)/g, '$1,').split('').reverse().join('');
+				},
 			};
 		},
 		onrender: function () {
