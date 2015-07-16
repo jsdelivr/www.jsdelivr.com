@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import countryData from 'country-data';
+import render from './stats/render';
 import request from 'request-promise';
 import logger from '../logger';
 
@@ -10,7 +10,8 @@ updateData();
 setInterval(updateData, 3600000);
 
 export default function (req, res) {
-	res.json(statsCache);
+	res.set('Content-Type', 'application/json');
+	res.send(statsCache);
 }
 
 function updateData () {
@@ -37,25 +38,33 @@ function updateData () {
 			];
 		});
 
-		// 1. Group by country.
-		// 2. Reformat country names (Congo, The Democratic Republic of the -> The Democratic Republic of the Congo).
-		// 3. Resolve country names to ISO codes where possible.
-		// 4. Sum hits per country.
-		data.cedexis.map = _.map(_.groupBy(data.cedexis.map, 0), (data, state) => {
-			let code = state;
+		// 1. Generate the charts and save them as images.
+		// 2. Use base64 encoding and include the images in the stats.
+		render(_.map(_.groupBy(data.cedexis.map, 0), (countryData) => {
+			return _.map(countryData, entry => [ entry[1], entry[2] ]).sort((a, b) => a[0] - b[0]);
+		})).then((images) => {
+			_.forEach(images, (image, index) => {
+				data.cedexis.map[index][2] = image.toString('base64');
+			});
 
-			if (~state.indexOf(',')) {
-				code = state = `${state.substring(state.indexOf(',') + 2)} ${state.substring(0, state.indexOf(','))}`;
-			}
-
-			try {
-				code = countryData.lookup.countries({ name: state.replace(' of', ' Of') })[0].alpha2;
-			} catch (e) {}
-
-			return [ code, _.sum(data, date => date[2]), state ];
+			statsCache = JSON.stringify(data);
+			appLog.info('Chart images generated.');
+		}).catch((error) => {
+			appLog.err(error);
 		});
 
-		statsCache = data;
+		// 1. Group by country.
+		// 2. Reformat country names (Congo, The Democratic Republic of the -> The Democratic Republic of the Congo).
+		// 3. Sum hits per country.
+		data.cedexis.map = _.map(_.groupBy(data.cedexis.map, 0), (data, country) => {
+			if (~country.indexOf(',')) {
+				country = `${country.substring(country.indexOf(',') + 2)} ${country.substring(0, country.indexOf(','))}`;
+			}
+
+			return [ country, _.sum(data, entry => entry[2]) ];
+		});
+
+		statsCache = JSON.stringify(data);
 
 		appLog.info('Stats successfully updated.');
 	}).catch((error) => {

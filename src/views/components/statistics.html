@@ -88,10 +88,8 @@
 			entry[0] = new Date(entry[0] * 1000);
 		});
 
-		// Create map tooltips.
 		stats.cedexis.map.forEach(function (entry) {
-			entry[2] = '<strong class="google-tooltip-title">' + new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString() + ' - ' + new Date().toLocaleDateString()+ '</strong><br>'
-				+'<span>' + entry[2] + ':</span> <span><strong>' + formatNumber(entry[1]) + '</strong></span>';
+			entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
 		});
 
 		onLoad();
@@ -183,6 +181,9 @@
 				tooltip: {
 					isHtml: true,
 					trigger: 'both',
+					textStyle: {
+						color: '#fff',
+					},
 				},
 			};
 			var numberFormatter = new google.visualization.NumberFormat({ fractionDigits: 0 });
@@ -243,6 +244,6 @@
 	}
 
 	function formatNumber (number) {
-		return number.toString().split('').reverse().join('').replace(/(\d{3})(?=\d)/g, '$1,').split('').reverse().join('');
+		return number.toString().replace(/\d(?=(?:\d{3})+$)/g, '$&,');
 	}
 </script>
