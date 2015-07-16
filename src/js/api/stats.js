@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import render from './stats/render';
 import request from 'request-promise';
+import render from './stats/render';
 import logger from '../logger';
 
 let appLog = logger('app');
@@ -57,13 +57,17 @@ function updateData () {
 		// 2. Reformat country names (Congo, The Democratic Republic of the -> The Democratic Republic of the Congo).
 		// 3. Sum hits per country.
 		data.cedexis.map = _.map(_.groupBy(data.cedexis.map, 0), (data, country) => {
-			if (~country.indexOf(',')) {
-				country = `${country.substring(country.indexOf(',') + 2)} ${country.substring(0, country.indexOf(','))}`;
-			}
-
-			return [ country, _.sum(data, entry => entry[2]) ];
+			return [ friendlyCountryName(country), _.sum(data, entry => entry[2]) ];
 		});
 
+		// 1. Group by country.
+		// 2. Reformat country names.
+		// 3. Get an average of the values.
+		data.cedexis.perfmap = _.map(_.groupBy(data.cedexis.perfmap, 0), (data, country) => {
+			return [ friendlyCountryName(country), Math.round(_.sum(data, entry => entry[2]) / data.length) ];
+		});
+
+		data.lastUpdate = Date.now();
 		statsCache = JSON.stringify(data);
 
 		appLog.info('Stats successfully updated.');
@@ -72,3 +76,10 @@ function updateData () {
 	});
 }
 
+function friendlyCountryName (name) {
+	let index = name.indexOf(',');
+
+	return ~index
+		? `${name.substring(index + 2)} ${name.substring(0, index)}`
+		: name;
+}

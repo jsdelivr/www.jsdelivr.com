@@ -13,7 +13,7 @@
 			</div>
 
 			<div class="col-xs-5">
-				<div class="stats-last-update">
+				<div class="stats-subtitle stats-last-update">
 					Last update: {{formatDate(stats.lastUpdate)}}
 				</div>
 			</div>
@@ -62,6 +62,17 @@
 				<h3>Load Balancing decisions map</h3>
 
 				<div id="load-balancing-map"></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
+				<h3>
+					Performance map
+					<span class="stats-subtitle">Based on tens of millions of RUM tests for the last 24 hours</span>
+				</h3>
+
+				<div id="performance-map"></div>
 			</div>
 		</div>
 	</div>
@@ -194,6 +205,7 @@
 				},
 			};
 			var numberFormatter = new google.visualization.NumberFormat({ fractionDigits: 0 });
+			var perfFormatter = new google.visualization.NumberFormat({ fractionDigits: 0, suffix: ' ms' });
 
 			// Load balancing.
 			var loadBalancingData = new google.visualization.DataTable();
@@ -245,6 +257,23 @@
 				colorAxis: {
 					colors: [ '#46a3d5', '#a9edd9', '#ffee99', '#f9a674', '#f08c6b', '#dc5559' ],
 					maxValue: 60000000,
+				},
+			}, mapChartDefaults));
+
+			// Performance map.
+			var perfMapData = new google.visualization.DataTable();
+
+			perfMapData.addColumn('string', 'Country');
+			perfMapData.addColumn('number', 'Load time');
+			perfMapData.addRows(stats.cedexis.perfmap);
+
+			perfFormatter.format(perfMapData, 1);
+
+			var perfMapChart = new google.visualization.GeoChart($('#performance-map')[0]);
+			perfMapChart.draw(perfMapData, $.extend(true, {
+				colorAxis: {
+					colors: [ '#46a3d5', '#a9edd9', '#ffee99', '#f9a674', '#f08c6b', '#dc5559' ],
+					maxValue: 200,
 				},
 			}, mapChartDefaults));
 		}
