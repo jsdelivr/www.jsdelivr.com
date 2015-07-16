@@ -11,6 +11,12 @@
 					<small class="text-center">(last 30 days)</small>
 				</h1>
 			</div>
+
+			<div class="col-xs-5">
+				<div class="stats-last-update">
+					Last update: {{formatDate(stats.lastUpdate)}}
+				</div>
+			</div>
 		</div>
 
 		<div class="row">
@@ -100,6 +106,7 @@
 		data: function () {
 			return {
 				stats: stats,
+				formatDate: formatDate,
 				formatNumber: formatNumber,
 			};
 		},
@@ -241,6 +248,17 @@
 				},
 			}, mapChartDefaults));
 		}
+	}
+
+	function formatDate (date) {
+		return new Date(date).toLocaleString('en', {
+			hour12: false,
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+			hour: 'numeric',
+			minute: 'numeric',
+		});
 	}
 
 	function formatNumber (number) {
