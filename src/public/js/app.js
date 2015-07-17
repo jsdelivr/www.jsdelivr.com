@@ -40,7 +40,7 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/', Ractive.extend(cIndex), { qs: [ 'query', 'limit', 'collection' ] });
+app.router.addRoute('/', Ractive.extend(cIndex), { qs: [ 'query', 'limit' ] });
 app.router.addRoute('/about', Ractive.extend(cAbout));
 app.router.addRoute('/features/multi-cdn-load-balancing', Ractive.extend(cMultiCdnLoadBalancing));
 app.router.addRoute('/features/jsdelivr-cdn-features', Ractive.extend(cJsdelivrCdnFeatures));
