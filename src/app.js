@@ -9,6 +9,7 @@ import rr from 'ractive-render';
 import morganConfig from './config/morgan';
 import dnsApi from './js/api/dns';
 import statsApi from './js/api/stats';
+import './js/update';
 
 let app = express();
 

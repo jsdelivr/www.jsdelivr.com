@@ -11,7 +11,7 @@ export default function () {
 			return JSON.parse(localStorage.getItem('randomProjects'));
 		}
 
-		return search('', Math.floor(Math.random() * nbProjects / 10)).then((result) => {
+		return search('', { hitsPerPage: Math.floor(Math.random() * nbProjects / 10) }).then((result) => {
 			if (hasLocalStorage) {
 				localStorage.setItem('randomProjects', JSON.stringify(result.response));
 				localStorage.setItem('randomProjectsExpires', now + 604800000); // Cache for one week.
