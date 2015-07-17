@@ -5,5 +5,4 @@ RUN	apt-get update && \
 RUN	npm -g install phantomjs
 RUN cd /home; git clone https://github.com/jsdelivr/www.jsdelivr.com; cd /home/www.jsdelivr.com; npm install
 ADD start.sh /tmp/
-EXPOSE 80:80
 CMD ["bash", "/tmp/start.sh"]
