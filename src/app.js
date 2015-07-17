@@ -20,6 +20,7 @@ app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(morgan(morganConfig.format, morganConfig.options));
 app.use(compression());
 app.use(express.static(__dirname + '/public', { maxAge: 0 })); // one year = 31536000000
+app.use(express.static(__dirname + '/public', { maxAge: 3600000 }));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
