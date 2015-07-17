@@ -83,6 +83,7 @@
 
 	var loading = 3;
 	var stats = {};
+	var ractive;
 
 	// Load google visualization library...
 	google.load('visualization', '1.1', {
@@ -109,6 +110,10 @@
 			entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
 		});
 
+		if (ractive) {
+			ractive.update();
+		}
+
 		onLoad();
 	});
 
@@ -123,6 +128,7 @@
 		},
 		onrender: function () {
 			var onResize = debounce(draw);
+			ractive = this;
 
 			$(window).on('resize', onResize);
 			this.on('unrender', function () {
