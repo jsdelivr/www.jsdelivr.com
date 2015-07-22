@@ -42,9 +42,6 @@ Ractive.isServer = true;
 app.all('/api/dns', dnsApi);
 app.all('/api/stats', statsApi);
 
-// TODO
-// app.all('/api/update-algolia', update);
-
 /**
  * Render on server side if it's a bot.
  */
