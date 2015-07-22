@@ -82,42 +82,8 @@
 	import debounce from 'public/js/utils/debounce';
 
 	var loading = 3;
-	var stats = {};
-	var ractive;
+	var stats;
 
-	// Load google visualization library...
-	google.load('visualization', '1.1', {
-		packages: [ 'corechart', 'geochart' ],
-		language: 'en',
-	});
-
-	google.setOnLoadCallback(onLoad);
-
-	// ...load stats data from our API...
-	$.getJSON('/api/stats', function (data) {
-		stats = data;
-
-		// Convert UNIX timestamps to Date objects.
-		stats.cedexis.decisions.forEach(function (entry) {
-			entry[0] = new Date(entry[0] * 1000);
-		});
-
-		stats.dns.chart.forEach(function (entry) {
-			entry[0] = new Date(entry[0] * 1000);
-		});
-
-		stats.cedexis.map.forEach(function (entry) {
-			entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
-		});
-
-		if (ractive) {
-			ractive.set('stats', stats);
-		}
-
-		onLoad();
-	});
-
-	// ...make sure our component is rendered...
 	component.exports = {
 		data: function () {
 			return {
@@ -126,9 +92,39 @@
 				formatNumber: formatNumber,
 			};
 		},
+		oninit: function () {
+			var _this = this;
+
+			google.load('visualization', '1.1', {
+				packages: [ 'corechart', 'geochart' ],
+				language: 'en',
+				callback: onLoad,
+			});
+
+			if (!stats) {
+				$.getJSON('/api/stats', function (data) {
+					stats = data;
+
+					// Convert UNIX timestamps to Date objects.
+					stats.cedexis.decisions.forEach(function (entry) {
+						entry[0] = new Date(entry[0] * 1000);
+					});
+
+					stats.dns.chart.forEach(function (entry) {
+						entry[0] = new Date(entry[0] * 1000);
+					});
+
+					stats.cedexis.map.forEach(function (entry) {
+						entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
+					});
+
+					_this.set('stats', stats);
+					onLoad();
+				});
+			}
+		},
 		onrender: function () {
 			var onResize = debounce(draw);
-			ractive = this;
 
 			$(window).on('resize', onResize);
 			this.on('unrender', function () {
@@ -139,7 +135,6 @@
 		},
 	};
 
-	// ...and render the charts when everything is ready.
 	function onLoad () {
 		if (--loading <= 0) {
 			draw()
