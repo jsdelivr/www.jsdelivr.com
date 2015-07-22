@@ -8,7 +8,7 @@ export default {
 	options: {
 		stream: {
 			write (message) {
-				accessLog.info(message);
+				accessLog.info(message.trim());
 			}
 		}
 	},
