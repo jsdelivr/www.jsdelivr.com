@@ -64,7 +64,7 @@ app.all('/*', function (req, res) {
 });
 
 app.listen(process.env.PORT || 4400, function () {
-	app.info(`Express server listening on port ${this.address().port}.`);
+	appLog.info(`Express server listening on port ${this.address().port}.`);
 });
 
 process.on('uncaughtException', function (error) {
