@@ -9,8 +9,10 @@ import rr from 'ractive-render';
 import morganConfig from './config/morgan';
 import dnsApi from './js/api/dns';
 import statsApi from './js/api/stats';
+import logger from './js/logger';
 import './js/update';
 
+let appLog = logger('app');
 let app = express();
 
 /**
@@ -64,4 +66,13 @@ app.all('/*', function (req, res) {
 
 app.listen(process.env.PORT || 4400, function () {
 	console.log(`Express server listening on port ${this.address().port}.`);
+});
+
+process.on('uncaughtException', function (error) {
+	console.error(error, error.stack);
+	appLog.crit(error);
+
+	setTimeout(() => {
+		process.exit(1);
+	}, 10000);
 });
