@@ -58,6 +58,7 @@
 		data: function () {
 			return {
 				offsetTop: 124,
+				stickyOnBottom: true,
 			};
 		},
 		computed: {
@@ -116,7 +117,7 @@
 					$(this.find('.collection')).affix({
 						offset: {
 							top: function () {
-								return !pageYOffset || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
+								return !pageYOffset || !_this.get('stickyOnBottom') || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
 							},
 							bottom: 0,
 						}
