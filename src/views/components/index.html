@@ -109,6 +109,13 @@
 					nbProjects && _this.set('nbProjects', nbProjects);
 				});
 
+				// Make sure query is always a string.
+				this.observe('query', function (value) {
+					if (typeof value !== 'string') {
+						this.set('query', String(value));
+					}
+				});
+
 				// Update results on input.
 				this.observe('hitsPerPage query __ready', function (newValue, oldValue, keypath) {
 					// Don't send requests before have all the data.
@@ -125,7 +132,7 @@
 							if (keypath === 'query' && this.get('hitsPerPage') !== 10) {
 								this.set('hitsPerPage', 10);
 							} else {
-								search(this.get('query').toString(), 0, this.get('hitsPerPage')).then(function (result) {
+								search(this.get('query'), 0, this.get('hitsPerPage')).then(function (result) {
 									// The query might have changed since we sent the request.
 									if (result.queryString === _this.get('query')) {
 										_this.merge('projects', result.response.hits, { compare: 'name' });
