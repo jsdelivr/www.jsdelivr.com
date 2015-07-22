@@ -22,10 +22,11 @@ function updateData () {
 
 		// 1. Group by date.
 		// 2. Convert to arrays of [ date, hits ].
+		// 3. Remove today's (incomplete) stats.
 		data.dns.chart = _.map(_.groupBy(data.dns.chart, (entry) => {
 			let date = new Date(entry[0] * 1000);
 			return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-		}), day => [ day[0][0], _.sum(day, entry => entry[1]) ]);
+		}), day => [ day[0][0], _.sum(day, entry => entry[1]) ]).slice(0, -1);
 
 		// 1. Group by date.
 		// 2. Convert to arrays of [ date, MaxCDN, CloudFlare, KeyCDN ].
