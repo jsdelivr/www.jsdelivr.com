@@ -26,6 +26,8 @@ app.use(express.static(__dirname + '/public', { maxAge: 3600000 }));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
+app.set('x-powered-by', false);
+
 app.engine('html', rr.renderFile);
 
 /**
