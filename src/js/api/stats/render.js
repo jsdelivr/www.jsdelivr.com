@@ -28,6 +28,7 @@ export default function (countries) {
 							});
 						}, Promise.resolve()).then(() => {
 							resolve(images);
+							// TODO .close()?
 						});
 					}
 				});
@@ -35,7 +36,6 @@ export default function (countries) {
 				page.set('content', `
 					<html>
 						<head>
-							<script src="https://cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
 							<script src="https://www.google.com/jsapi"></script>
 							<script>
 								google.load('visualization', '1.1', {
@@ -54,7 +54,7 @@ export default function (countries) {
 
 									countries.forEach(function (country) {
 										var tooltipData = new google.visualization.DataTable();
-										var tooltipChart = new google.visualization.LineChart($('#chart')[0]);
+										var tooltipChart = new google.visualization.LineChart(document.getElementById('chart'));
 
 										tooltipData.addColumn('date', 'Date');
 										tooltipData.addColumn('number', 'Hits');
