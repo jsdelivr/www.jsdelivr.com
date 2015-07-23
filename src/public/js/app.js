@@ -76,4 +76,13 @@ $(() => {
 	});
 });
 
+$.fn.shuffle = function (selector) {
+	return this.each(function () {
+		$(this).find(selector)
+			.sort(() => .5 - Math.random())
+			.detach()
+			.appendTo(this);
+	});
+};
+
 window.app = app;
