@@ -8,5 +8,5 @@ Run `npm run start`, then visit [http://localhost:4400](http://localhost:4400). 
 # Production
 Set environment variables `LOGENTRIES_ACCESS_TOKEN` for access log, `LOGENTRIES_APP_TOKEN` for app log, and `ALGOLIA_API_KEY`.
 
-# Auto-deploy [![Build Status](https://travis-ci.org/jsdelivr/beta.jsdelivr.com.svg?branch=master)](https://travis-ci.org/jsdelivr/beta.jsdelivr.com)
+# Auto-deploy [![Build Status](https://travis-ci.org/jsdelivr/www.jsdelivr.com.svg?branch=master)](https://travis-ci.org/jsdelivr/www.jsdelivr.com)
 When code is pushed to master it is autodeployed to http://beta-jsdelivr-com.herokuapp.com.
