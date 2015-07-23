@@ -31,7 +31,7 @@ export default function (req, res) {
 	}
 
 	if (PROJECTS_PATTERN.test(path)) {
-		return search('name:' + PROJECTS_PATTERN.exec(path)[1], 0).then((projects) => {
+		return search(`name: ${PROJECTS_PATTERN.exec(path)[1]}`, 0).then((projects) => {
 			renderOptions.data.project = projects[0];
 			res.render('components/projects.html', renderOptions, renderCallback);
 		}).catch((error) => {

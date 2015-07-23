@@ -79,12 +79,12 @@ function parseQuery (queryString) {
 
 	while ((match = ATTR_REGEXP.exec(substr)) !== null) {
 		let temp = match[0].split(':');
-		filters.push(`${temp[0].trim()}:${temp[1].trim()}`);
+		filters.push([ temp[0].trim(), temp[1].trim() ]);
 	}
 
 	return {
 		query,
-		facetFilters: filters.join(','),
+		facetFilters: filters,
 	};
 }
 
