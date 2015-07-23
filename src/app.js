@@ -55,6 +55,14 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.use((req, res, next) => {
+	if (!req.query._escaped_fragment_) {
+		return next();
+	}
+
+	res.redirect(301, `/projects/${req.query._escaped_fragment_.replace(/\r|\n/g, '')}`);
+});
+
 /**
  * Render on server side if it's a bot.
  */
