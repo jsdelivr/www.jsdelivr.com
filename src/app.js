@@ -2,14 +2,16 @@ import express from 'express';
 import compression from 'compression';
 import favicon from 'serve-favicon';
 import morgan from 'morgan';
-// import isBot from 'is-bot';
+import isBot from 'is-bot';
 import Ractive from 'ractive';
+import ractiveLoad from 'ractive-load';
 import rr from 'ractive-render';
 
 import morganConfig from './config/morgan';
 import dnsApi from './js/api/dns';
 import statsApi from './js/api/stats';
 import logger from './js/logger';
+import render from './js/render';
 import './js/update';
 
 let appLog = logger('app');
@@ -21,7 +23,6 @@ let app = express();
 app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(morgan(morganConfig.format, morganConfig.options));
 app.use(compression());
-app.use(express.static(__dirname + '/public', { maxAge: 0 })); // one year = 31536000000
 app.use(express.static(__dirname + '/public', { maxAge: 3600000 }));
 
 app.set('views', __dirname + '/views');
@@ -34,9 +35,11 @@ app.engine('html', rr.renderFile);
  * ractive-render config.
  */
 rr.use('load').config({ componentsLoader: 'load', defaultLoader: 'load' });
+ractiveLoad.baseUrl = __dirname;
 
 // Tell our components not to use browser specific stuff.
 Ractive.isServer = true;
+Ractive.DEBUG = false;
 
 /**
  * Private APIs used by our frontend.
@@ -45,21 +48,28 @@ app.all('/api/dns', dnsApi);
 app.all('/api/stats', statsApi);
 
 /**
+ * Make caching work correctly, as we'll be sending rendered pages for bots.
+ */
+app.use((req, res, next) => {
+	res.vary('User-Agent');
+	next();
+});
+
+/**
  * Render on server side if it's a bot.
  */
-// TODO
-/*app.use(function (req, res, next) {
+app.use((req, res, next) => {
 	if (!isBot(req.headers['user-agent'])) {
 		return next();
 	}
 
 	render(req, res);
-});*/
+});
 
 /**
  * Just send a template and render on client side.
  */
-app.all('/*', function (req, res) {
+app.all('/*', (req, res) => {
 	res.sendFile(__dirname + '/views/app.html');
 });
 
@@ -67,7 +77,7 @@ app.listen(process.env.PORT || 4400, function () {
 	appLog.info(`Express server listening on port ${this.address().port}.`);
 });
 
-process.on('uncaughtException', function (error) {
+process.on('uncaughtException', (error) => {
 	console.error(error, error.stack);
 	appLog.crit(error);
 

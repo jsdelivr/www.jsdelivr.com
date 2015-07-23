@@ -13,6 +13,9 @@ var app = gobble([
 	.transform('esperanto-bundle', { type: 'umd', name: 'app', entry: 'public/js/app.js', dest: 'public/js/app.js', strict: true });
 
 module.exports = gobble([
+	gobble('src/public/js')
+		.transform('babel')
+		.moveTo('public/js'),
 	app.transformIf(gobble.env() === 'development', 'jsbeautify', {
 		indent_with_tabs: true,
 		space_after_anon_function: true,

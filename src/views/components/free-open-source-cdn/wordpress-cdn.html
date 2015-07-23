@@ -32,14 +32,16 @@
 
 	component.exports = {
 		onrender: function () {
-			$('#wp-search-input').typeahead(null, {
-				displayKey: 'name',
-				source: function (query, syncResults, asyncResults) {
-					client.search(query).then(function (result) {
-						asyncResults(result.hits);
-					}, { hitsPerPage: 10 });
-				},
-			});
+			if (!Ractive.isServer) {
+				$('#wp-search-input').typeahead(null, {
+					displayKey: 'name',
+					source: function (query, syncResults, asyncResults) {
+						client.search(query).then(function (result) {
+							asyncResults(result.hits);
+						}, { hitsPerPage: 10 });
+					},
+				});
+			}
 		}
 	};
 </script>

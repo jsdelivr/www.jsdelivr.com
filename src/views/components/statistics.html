@@ -79,8 +79,7 @@
 </div>
 
 <script type="text/javascript">
-	import debounce from 'public/js/utils/debounce';
-
+	var debounce = require('public/js/utils/debounce');
 	var loading = 3;
 	var stats;
 
@@ -93,34 +92,36 @@
 			};
 		},
 		oninit: function () {
-			var _this = this;
+			if (!Ractive.isServer) {
+				var _this = this;
 
-			google.load('visualization', '1.1', {
-				packages: [ 'corechart', 'geochart' ],
-				language: 'en',
-				callback: onLoad,
-			});
-
-			if (!stats) {
-				$.getJSON('/api/stats', function (data) {
-					stats = data;
-
-					// Convert UNIX timestamps to Date objects.
-					stats.cedexis.decisions.forEach(function (entry) {
-						entry[0] = new Date(entry[0] * 1000);
-					});
-
-					stats.dns.chart.forEach(function (entry) {
-						entry[0] = new Date(entry[0] * 1000);
-					});
-
-					stats.cedexis.map.forEach(function (entry) {
-						entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
-					});
-
-					_this.set('stats', stats);
-					onLoad();
+				google.load('visualization', '1.1', {
+					packages: [ 'corechart', 'geochart' ],
+					language: 'en',
+					callback: onLoad,
 				});
+
+				if (!stats) {
+					$.getJSON('/api/stats', function (data) {
+						stats = data;
+
+						// Convert UNIX timestamps to Date objects.
+						stats.cedexis.decisions.forEach(function (entry) {
+							entry[0] = new Date(entry[0] * 1000);
+						});
+
+						stats.dns.chart.forEach(function (entry) {
+							entry[0] = new Date(entry[0] * 1000);
+						});
+
+						stats.cedexis.map.forEach(function (entry) {
+							entry[2] = '<span class="total-hits">' + formatNumber(entry[1]) + '</span><img src="data:image/png;base64,' + entry[2] + '">';
+						});
+
+						_this.set('stats', stats);
+						onLoad();
+					});
+				}
 			}
 		},
 		onrender: function () {
