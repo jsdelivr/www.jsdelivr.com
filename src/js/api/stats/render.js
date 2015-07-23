@@ -13,6 +13,8 @@ export default function (countries) {
 					images.push(image);
 
 					if (images.length === countries.length) {
+						ph.exit();
+
 						images.reduce((promise, image, index) => {
 							return promise.then(() => {
 								return new Promise((resolve, reject) => {
@@ -28,7 +30,6 @@ export default function (countries) {
 							});
 						}, Promise.resolve()).then(() => {
 							resolve(images);
-							// TODO .close()?
 						});
 					}
 				});
