@@ -14,7 +14,7 @@ export default function (req, res) {
 		from: req.body.email,
 		to: 'martin@kolarik.sk',
 		subject: 'Custom CDN Hosting',
-		text: req.body.message,
+		text: `Name:\n${req.body.name}\n\nMessage:${req.body.message}`,
 	}, function (error) {
 		let email = JSON.stringify({ name: req.body.name, email: req.body.email, message: req.body.message });
 
