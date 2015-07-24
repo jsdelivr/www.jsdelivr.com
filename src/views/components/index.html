@@ -43,7 +43,7 @@
 		</div>
 	</header>
 
-	<Header app="{{app}}" query="{{query}}" offsetTop="868" stickyOnBottom="false"></Header>
+	<Header app="{{app}}" query="{{query}}" stickyOnBottom="false" sponsorsOnTop="true"></Header>
 	<Collection collection="{{collection}}" offsetTop="868" stickyOnBottom="false"></Collection>
 
 	<div class="container index-projects">
@@ -161,10 +161,21 @@
 				});
 			}
 		},
+		onrender: function () {
+			var _this = this;
+
+			$(this.find('.header .navbar')).affix({
+				offset: {
+					top: function () {
+						return !pageYOffset || !_this.get('stickyOnBottom') || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? 868 : 0;
+					},
+					bottom: 0,
+				}
+			});
+		},
 		oncomplete: function () {
 			// Redirect from the old URL format.
 			if (location.hash && !this.get('query')) {
-				// TODO: We probably need to support this on the back-end as well.
 				this.get('app.router').dispatch('/projects/' + location.hash.substr(2), { noHistory: true });
 			}
 		}

@@ -1,15 +1,17 @@
 <link rel="ractive" href="./navbar-nav-c.html" name="NavbarNav">
 
 <header class="header">
-	<div class="header-sponsors">
-		<div class="container">
-			<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
-			<a target="_blank" href="http://tracking.maxcdn.com/c/47243/36539/378"><img src="/img/sponsors-header/maxcdn.png"></a>
-			<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
-			<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
-			<a target="_blank" href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+	{{#if sponsorsOnTop}}
+		<div class="header-sponsors header-sponsors-top">
+			<div class="container">
+				<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
+				<a target="_blank" href="http://tracking.maxcdn.com/c/47243/36539/378"><img src="/img/sponsors-header/maxcdn.png"></a>
+				<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
+				<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
+				<a target="_blank" href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+			</div>
 		</div>
-	</div>
+	{{/if sponsorsOnTop}}
 
 	<nav class="navbar navbar-default">
 		<div class="container">
@@ -34,14 +36,33 @@
 						<input type="text" class="search-input" value="{{query}}" placeholder="Search more than {{nbProjects}} open source projects..." on-input="search()">
 					</div>
 
-					<div class="col-md-3 col-sm-3 col-xs-4 xs-padding md-right">
+					<div class="col-md-3 col-sm-3 col-xs-4 xs-padding md-right xs-right">
 						<a href="https://github.com/jsdelivr/jsdelivr/blob/master/CONTRIBUTING.md" class="btn btn-primary"><i class="fa fa-cloud-upload"></i>Add Project</a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</nav>
+
+	{{#unless sponsorsOnTop}}
+		<div class="header-sponsors header-sponsors-bottom">
+			<div class="container">
+				<div class="col-lg-22 col-md-23 col-sm-24 col-xs-22">
+					<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
+					<a target="_blank" href="http://tracking.maxcdn.com/c/47243/36539/378"><img src="/img/sponsors-header/maxcdn.png"></a>
+					<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
+					<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
+					<a target="_blank" href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+					<a class="header-become-a-sponsor" href="/sponsors/become-a-sponsor">Become a sponsor</a>
+				</div>
+			</div>
+		</div>
+	{{/unless sponsorsOnTop}}
 </header>
+
+{{#unless sponsorsOnTop}}
+	<div style="margin-bottom: 117px;"></div>
+{{/unless sponsorsOnTop}}
 
 <script>
 	component.exports = {
@@ -61,18 +82,6 @@
 					nbProjects && _this.set('nbProjects', nbProjects);
 				});
 			}
-		},
-		onrender: function () {
-			var _this = this;
-
-			$(this.find('.navbar')).affix({
-				offset: {
-					top: function () {
-						return !pageYOffset || !_this.get('stickyOnBottom') || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
-					},
-					bottom: 0,
-				}
-			});
 		},
 		oncomplete: function () {
 			if (location.pathname === '/' && this.get('query')) {
