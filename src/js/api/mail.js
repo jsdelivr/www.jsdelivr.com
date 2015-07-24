@@ -12,9 +12,9 @@ export default function (req, res) {
 
 	transporter.sendMail({
 		from: req.body.email,
-		to: 'martin@kolarik.sk',
+		to: 'contact@jsdelivr.com',
 		subject: 'Custom CDN Hosting',
-		text: `Name:\n${req.body.name}\n\nMessage:${req.body.message}`,
+		text: `Name:\n${req.body.name}\n\nMessage:\n${req.body.message}`,
 	}, function (error) {
 		let email = JSON.stringify({ name: req.body.name, email: req.body.email, message: req.body.message });
 
