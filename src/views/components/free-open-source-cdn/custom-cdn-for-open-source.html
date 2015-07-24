@@ -58,16 +58,16 @@
 							</div>
 						</div>
 
+						{{#if error}}
+							An error occurred while processing your request. Please try again later.<br>
+						{{/if error}}
+
 						{{#if sent}}
 							Your message has been sent, and we'll get back to you soon.
 						{{else}}
-							{{#if error}}
-								An error occurred while processing your request. Please try again later.
-							{{else}}
-								<button class="btn btn-primary send-message-btn" on-click="send(event, name, email, message)" disabled="{{!name || !email || !message}}">
-									<i class="fa fa-envelope"></i>Send message
-								</button>
-							{{/if error}}
+							<button class="btn btn-primary send-message-btn" on-click="send(event, name, email, message)" disabled="{{!name || !email || !message}}">
+								<i class="fa fa-envelope"></i>Send message
+							</button>
 						{{/if sent}}
 					</form>
 				</div>
@@ -89,6 +89,7 @@
 				contentType: 'application/json',
 				success: function () {
 					_this.set('sent', true);
+					_this.set('error', false);
 				},
 				error: function () {
 					_this.set('error', true);
