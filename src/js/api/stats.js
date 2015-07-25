@@ -29,13 +29,14 @@ function updateData () {
 		}), day => [ day[0][0], _.sum(day, entry => entry[1]) ]).slice(0, -1);
 
 		// 1. Group by date.
-		// 2. Convert to arrays of [ date, MaxCDN, CloudFlare, KeyCDN ].
+		// 2. Convert to arrays of [ date, MaxCDN, CloudFlare, KeyCDN, Quantil ].
 		data.cedexis.decisions = _.map(_.groupBy(data.cedexis.decisions, 1), (decisions, date) => {
 			return [
 				Number(date),
-				_.find(decisions, (decision) => decision[0] === 'MaxCDN')[2],
-				_.find(decisions, (decision) => decision[0] === 'CloudFlare')[2],
-				_.find(decisions, (decision) => decision[0] === 'KeyCDN')[2],
+				_.find(decisions, decision => decision[0] === 'MaxCDN')[2],
+				_.find(decisions, decision => decision[0] === 'CloudFlare')[2],
+				_.find(decisions, decision => decision[0] === 'KeyCDN')[2],
+				_.get(_.find(decisions, decision => decision[0] === 'quantil'), 2, null),
 			];
 		});
 
