@@ -26,11 +26,19 @@
 							<h2>Global load balancing</h2>
 
 							<p>
-								After the web page finishes loading, our JavaScript code executes and fetches a small file from a few CDNs, silently in the background.
+								Unlike the competition jsDelivr uses a unique Multi-CDN infrastructure to offer the best possible uptime and performance. The main backbone of it is built on top of CDN networks provided by MaxCDN, CloudFlare, KeyCDN and Quantil.
 							</p>
-
 							<p>
-								After a test is done, detailed performance data is beaconed to our servers (or a simple 'Fail' if the object did not load completely in 5 seconds).
+								And we also use custom servers in locations where CDNs have little or no presence. In total at this moment this results in 98 global POP locations. In the future we plan to add even more locations to offer top performance even in less popular countries.
+							</p>
+							<p>
+								Our smart load balancing system ensures not only best possible performance but also the best possible uptime. We have multiple levels of failover and a diverse uptime monitoring system that will catch any downtime or issues and instantly redirect all traffic.
+							</p>
+							<p>
+								Every user gets a unique response that is based on their location and ISP provider. Each time a users requests to download a file from jsDelivr, our algorithm extracts the performance and availability data it has available for the last few minutes and then figures out the most optimal provider for that particular user and that particular time. All that in a few ms.
+							</p>
+							<p>
+								This algorithm also immediately responds to performance degradation. For example a CDN provider gets DDoSed in Europe and their response times increase, jsDelivr will pick up the change and simply stop using this provider in Europe but still consider it for users in USA and other locations that were not affected by the attack.
 							</p>
 						</div>
 
@@ -53,11 +61,21 @@
 						</div>
 
 						<div class="col-xs-12">
-							<h2>Real-time data monitoring</h2>
+							<h2>Real-time CDN monitoring</h2>
 
 							<p>
-								Our servers receive, validate and store the performance data as it comes in. It then flows into our real-time data processing engine, Analyzr,
-								which constantly calculates a performance score for every CDN per country/state, using a carefully crafted algorithm.
+								Our load balancing is based on real time performance data that <a target="_blank" href="http://www.cedexis.com/">Cedexis</a> gathers on all major CDN providers. 1.3 billion RUM (Real User Metrics) performance tests per day are processed and made available to us. 
+							</p>
+							<p>
+								To gather these RUM tests a special JavaScript code was deployed on thousands of websites. Every visitor to one of these websites executes the code and starts testing different CDN providers in the background as they browse the website. You can even do it yourself and <a href="https://github.com/jsdelivr/jsdelivr#contribute-performance-data">help jsDelivr with valuable data</a>.
+								The beauty of these tests is that they are not synthetic. They reflect the real performance real users will get if they download a file from one of those CDNs.
+							</p>
+							<p>
+								On top of the RUM uptime information we also use 2 synthetic uptime monitors to monitor all of our providers. This guarantees instant downtime detection and instant failover.
+								This uptime information is pulled every single time a user makes a request to cdn.jsdelivr.net and if any of the monitors reports problems that provider is removed from consideration.
+							</p>
+							<p>	
+								As an additional failover layer we are also monitoring our load balancing provider and if for any reason the load-balancer itself fails all traffic will be automatically switched to a single CDN provider. This happens automatically on the DNS level and its the last resort to ensure our uptime. 
 							</p>
 						</div>
 					</div>
@@ -72,13 +90,13 @@
 				<div class="col-md-12 col-md-offset-6 col-sm-16 col-sm-offset-5 col-xs-20 col-xs-offset-2">
 					<div class="row row-same-height">
 						<div class="col-xs-12">
-							<h2>Automatic CDN switch</h2>
+							<h2>Infinite options</h2>
 
 							<p>
-								If at some point in time, for a certain country/state, the platform believes
-								it makes sense (= performance will improve), it automatically switches
-								to a different CDN. The switch happens by changing a DNS record.
-								Not long after the switch, end users will be routed to the better CDN.
+								Due to its nature jsDelivr was built to be able to switch infrastructure at a minutes notice. We are using the best available services out there and unlike our competition we NEVER vendor lock to any technology/service/company. If a sponsor pulls its sponsorship or makes unreasonable demands then we can simply switch to a different provider. We maintain 100% control of the project without giving away any power or influence to corporations.
+							</p>
+							<p>
+								Thanks to this we have infinite options and freedom available to us, we use multiple providers in multiple countries and can switch any of them whenever its needed for the benefit of our users.
 							</p>
 						</div>
 
