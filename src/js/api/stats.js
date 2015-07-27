@@ -64,9 +64,9 @@ function updateData () {
 
 		// 1. Group by country.
 		// 2. Reformat country names.
-		// 3. Get an average of the values.
+		// 3. Get median of the values.
 		data.cedexis.perfmap = _.map(_.groupBy(data.cedexis.perfmap, 0), (data, country) => {
-			return [ friendlyCountryName(country), Math.round(_.sum(data, entry => entry[2]) / data.length) ];
+			return [ friendlyCountryName(country), Math.round(median(_.map(data, entry => entry[2]))) ];
 		});
 
 		data.lastUpdate = Date.now();
@@ -84,4 +84,12 @@ function friendlyCountryName (name) {
 	return ~index
 		? `${name.substring(index + 2)} ${name.substring(0, index)}`
 		: name;
+}
+
+function median (values) {
+	values = values.slice().sort();
+
+	return values.length % 2
+		? values[(values.length - 1) / 2]
+		: (values[values.length / 2] + values[values.length / 2 - 1]) / 2;
 }
