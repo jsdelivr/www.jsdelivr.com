@@ -146,10 +146,10 @@
 										if (!pageYOffset && _this.findComponent('Header').find('.search-input') === document.activeElement) {
 											if (_this.get('app.config.animateScrolling')) {
 												$('html, body').animate({
-													scrollTop: 700
+													scrollTop: 740,
 												});
 											} else {
-												scrollBy(0, 700);
+												scrollBy(0, 740);
 												_this.set('app.config.animateScrolling', true);
 											}
 										}
@@ -172,6 +172,20 @@
 					bottom: 0,
 				}
 			});
+
+			if (!this.get('query')) {
+				var $input = $(this.find('.index-search-input'));
+
+				$input.focus().on('keypress', function f (event) {
+					if (event.keyCode === 13) {
+						$input.off('keypress', f);
+
+						$('html, body').animate({
+							scrollTop: 740,
+						});
+					}
+				});
+			}
 		},
 		oncomplete: function () {
 			// Redirect from the old URL format.
