@@ -163,6 +163,7 @@
 		},
 		onrender: function () {
 			var _this = this;
+			var $input = $(this.find('.index-search-input'));
 
 			$(this.find('.header .navbar')).affix({
 				offset: {
@@ -174,18 +175,23 @@
 			});
 
 			if (!this.get('query')) {
-				var $input = $(this.find('.index-search-input'));
-
-				$input.focus().on('keypress', function f (event) {
-					if (event.keyCode === 13) {
-						$input.off('keypress', f);
-
-						$('html, body').animate({
-							scrollTop: 740,
-						});
-					}
-				});
+				$input.focus();
 			}
+
+			$input.on('keypress', function f (event) {
+				if (event.keyCode === 13) {
+					var $headerInput = $('.header .search-input').focus();
+					var value = $headerInput.val();
+
+					// Make sure the cursor is at the end of the input.
+					$headerInput.val('');
+					$headerInput.val(value);
+
+					$('html, body').animate({
+						scrollTop: 740,
+					});
+				}
+			});
 		},
 		oncomplete: function () {
 			// Redirect from the old URL format.
