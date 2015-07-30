@@ -178,19 +178,17 @@
 				$input.focus();
 			}
 
-			$input.on('keypress', function f (event) {
-				if (event.keyCode === 13) {
-					var $headerInput = $('.header .search-input').focus();
-					var value = $headerInput.val();
+			$input.on('input', function () {
+				var $headerInput = $('.header .search-input').focus();
+				var value = $headerInput.val();
 
-					// Make sure the cursor is at the end of the input.
-					$headerInput.val('');
-					$headerInput.val(value);
+				// Make sure the cursor is at the end of the input.
+				$headerInput.val('');
+				$headerInput.val(value);
 
-					$('html, body').animate({
-						scrollTop: 740,
-					});
-				}
+				setTimeout(function () {
+					scrollTo(0, 740);
+				});
 			});
 		},
 		oncomplete: function () {
