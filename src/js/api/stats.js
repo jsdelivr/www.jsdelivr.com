@@ -73,6 +73,7 @@ function updateData () {
 		statsCache = JSON.stringify(data);
 
 		appLog.info('Stats successfully updated.');
+		appLog.debug(data);
 	}).catch((error) => {
 		appLog.err(error);
 	});
