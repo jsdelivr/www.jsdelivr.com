@@ -19,6 +19,8 @@ function updateData () {
 
 	request('http://dev.dakulov.com/jsdelivr/stats.php').then((body) => {
 		var data = JSON.parse(body);
+		appLog.debug('Got the following stats:');
+		appLog.debug(body);
 
 		// 1. Group by date.
 		// 2. Convert to arrays of [ date, hits ].
