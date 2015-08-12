@@ -2,79 +2,85 @@
 
 <Header app="{{app}}" query="{{query}}"></Header>
 
-<div class="statistics">
+<div class="statistics" style="{{#if !stats.lastUpdate}}background-color: #fff;{{/if}}">
 	<div class="container">
-		<div class="row">
-			<div class="col-xs-12 col-xs-offset-6">
-				<h1 class="text-center">
-					TOTAL CDN STATS<br>
-					<small class="text-center">(last 30 days)</small>
-				</h1>
+		{{#if !stats.lastUpdate}}
+			<div class="text-center">
+				<h2>Loading...</h2>
 			</div>
-
-			<div class="col-xs-5">
-				<div class="stats-subtitle stats-last-update">
-					Last update: {{formatDate(stats.lastUpdate)}}
+		{{else}}
+			<div class="row">
+				<div class="col-xs-12 col-xs-offset-6">
+					<h1 class="text-center">
+						TOTAL CDN STATS<br>
+						<small class="text-center">(last 30 days)</small>
+					</h1>
 				</div>
-			</div>
-		</div>
 
-		<div class="row">
-			<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-2 xs-padding">
-				<div class="stats-box">
-					<div class="stats-title">LOAD BALANCING DECISIONS</div>
-					<div class="stats-number">{{formatNumber(stats.cedexis.total)}}</div>
+				<div class="col-xs-5">
+					<div class="stats-subtitle stats-last-update">
+						Last update: {{formatDate(stats.lastUpdate)}}
+					</div>
 				</div>
 			</div>
 
-			<div class="col-md-6 col-md-offset-1 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-1 xs-padding">
-				<div class="stats-box">
-					<div class="stats-title">HTTP HITS</div>
-					<div class="stats-number">{{formatNumber(stats.cdn.total.hits)}}</div>
-					<div class="stats-traffic"><span class="stats-number">{{Math.floor(stats.cdn.total.traffic / 1024 / 1024 / 1024 / 1024)}}TB</span> SERVED</div>
+			<div class="row">
+				<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-2 xs-padding">
+					<div class="stats-box">
+						<div class="stats-title">LOAD BALANCING DECISIONS</div>
+						<div class="stats-number">{{formatNumber(stats.cedexis.total)}}</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 col-md-offset-1 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-1 xs-padding">
+					<div class="stats-box">
+						<div class="stats-title">HTTP HITS</div>
+						<div class="stats-number">{{formatNumber(stats.cdn.total.hits)}}</div>
+						<div class="stats-traffic"><span class="stats-number">{{Math.floor(stats.cdn.total.traffic / 1024 / 1024 / 1024 / 1024)}}TB</span> SERVED</div>
+					</div>
+				</div>
+
+				<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-0 col-xs-11 col-xs-offset-7">
+					<div class="stats-box">
+						<div class="stats-title">DNS REQUESTS</div>
+						<div class="stats-number">{{formatNumber(stats.dns.total)}}</div>
+					</div>
 				</div>
 			</div>
 
-			<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-0 col-xs-11 col-xs-offset-7">
-				<div class="stats-box">
-					<div class="stats-title">DNS REQUESTS</div>
-					<div class="stats-number">{{formatNumber(stats.dns.total)}}</div>
+			<div class="row">
+				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
+					<h3>Load Balancing decisions</h3>
+
+					<div id="load-balancing"></div>
+				</div>
+
+				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
+					<h3>DNS requests</h3>
+
+					<div id="dns-requests"></div>
 				</div>
 			</div>
-		</div>
 
-		<div class="row">
-			<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-				<h3>Load Balancing decisions</h3>
+			<div class="row">
+				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
+					<h3>Load Balancing decisions map</h3>
 
-				<div id="load-balancing"></div>
+					<div id="load-balancing-map"></div>
+				</div>
 			</div>
 
-			<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-				<h3>DNS requests</h3>
+			<div class="row">
+				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
+					<h3>
+						Performance map
+						<span class="stats-subtitle">Based on tens of millions of RUM tests for the last 24 hours</span>
+					</h3>
 
-				<div id="dns-requests"></div>
+					<div id="performance-map"></div>
+				</div>
 			</div>
-		</div>
-
-		<div class="row">
-			<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-				<h3>Load Balancing decisions map</h3>
-
-				<div id="load-balancing-map"></div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-				<h3>
-					Performance map
-					<span class="stats-subtitle">Based on tens of millions of RUM tests for the last 24 hours</span>
-				</h3>
-
-				<div id="performance-map"></div>
-			</div>
-		</div>
+		{{/if !stats}}
 	</div>
 </div>
 
