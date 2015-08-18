@@ -112,16 +112,22 @@
 		onrender: function () {
 			this.observe('collection.length', function (length) {
 				if (length) {
-					var _this = this;
+					var $collection = $(this.find('.collection'));
 
-					$(this.find('.collection')).affix({
-						offset: {
-							top: function () {
-								return !pageYOffset || !_this.get('stickyOnBottom') || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
-							},
-							bottom: 0,
-						}
-					});
+					if (this.get('offsetTop') === 0) {
+						$collection.addClass('affix');
+					} else {
+						var _this = this;
+
+						$collection.affix({
+							offset: {
+								top: function () {
+									return !pageYOffset || !_this.get('stickyOnBottom') || document.body.scrollHeight - pageYOffset - innerHeight > 0 ? _this.get('offsetTop') : 0;
+								},
+								bottom: 0,
+							}
+						});
+					}
 				}
 			}, { defer: true });
 		},
