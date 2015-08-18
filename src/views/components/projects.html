@@ -12,7 +12,9 @@
 				{{#if project}}
 					<Project project="{{project}}" collection="{{collection}}" expandFiles="true"></Project>
 				{{else}}
-					Project not found.
+					{{#if project !== LOADING}}
+						Project not found.
+					{{/if}}
 				{{/if project}}
 			</div>
 		</div>
@@ -25,6 +27,9 @@
 			if (!Ractive.isServer) {
 				var search = require('public/js/utils/search.js');
 				var _this = this;
+
+				this.set('LOADING', {});
+				this.set('project', this.get('LOADING'));
 
 				search('name: ' + this.get('name')).then(function (result) {
 					_this.set('project', result.response.hits[0]);
