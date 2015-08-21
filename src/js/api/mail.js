@@ -2,9 +2,20 @@ import mailer from 'nodemailer';
 import logger from '../logger';
 
 let appLog = logger('app');
+let config = Object.create(null);
+
+config['custom-cdn'] = {
+	email: 'contact@jsdelivr.com',
+	subject: 'Custom CDN Hosting',
+};
+
+config['consultation-services'] = {
+	email: 'dakulovgr@gmail.com',
+	subject: 'jsDelivr: Consultation services',
+};
 
 export default function (req, res) {
-	if (!req.body.name || !req.body.email || !req.body.message || !/^[^@]+@[^@]+\.[^@]+$/.test(req.body.email)) {
+	if (!(req.body.page in config) || !req.body.name || !req.body.email || !req.body.message || !/^[^@]+@[^@]+\.[^@]+$/.test(req.body.email)) {
 		return res.sendStatus(400);
 	}
 
@@ -12,8 +23,8 @@ export default function (req, res) {
 
 	transporter.sendMail({
 		from: req.body.email,
-		to: 'contact@jsdelivr.com',
-		subject: 'Custom CDN Hosting',
+		to: config[req.body.page].email,
+		subject: config[req.body.page].subject,
 		text: `Name:\n${req.body.name}\n\nMessage:\n${req.body.message}`,
 	}, function (error) {
 		let email = JSON.stringify({ name: req.body.name, email: req.body.email, message: req.body.message });

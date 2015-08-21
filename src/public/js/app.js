@@ -1,6 +1,7 @@
 import has from './utils/has';
 
 import cAbout from '../../views/components/about';
+import cConsultationServices from '../../views/components/consultation-services';
 import cCdnInAsiaAndChina from '../../views/components/features/cdn-in-asia-and-china';
 import cJsdelivrCdnFeatures from '../../views/components/features/jsdelivr-cdn-features';
 import cMultiCdnLoadBalancing from '../../views/components/features/multi-cdn-load-balancing';
@@ -42,6 +43,7 @@ app.router = new Ractive.Router({
 
 app.router.addRoute('/', Ractive.extend(cIndex), { qs: [ 'query', 'limit' ] });
 app.router.addRoute('/about', Ractive.extend(cAbout));
+app.router.addRoute('/consultation-services', Ractive.extend(cConsultationServices));
 app.router.addRoute('/features/multi-cdn-load-balancing', Ractive.extend(cMultiCdnLoadBalancing));
 app.router.addRoute('/features/jsdelivr-cdn-features', Ractive.extend(cJsdelivrCdnFeatures));
 app.router.addRoute('/features/network-map', Ractive.extend(cNetworkMap));
