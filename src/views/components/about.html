@@ -289,27 +289,23 @@
 <script>
 	component.exports = {
 		onrender: function () {
+			this.observe('teamPosition', function (newValue) {
+				$(this.find('.team-members')).animate({ scrollLeft: newValue * $(this.find('.team-member')).width() });
+			}, { init: false });
+
 			this.set({
 				teamPosition: 0,
 				teamLength: this.findAll('.team-member').length - 4, // 4 = number of visible members
 			});
 		},
 		next: function () {
-			var $teamMember = $(this.find('.team-member'));
-			var $teamMembers = $(this.find('.team-members'));
-
 			if (this.get('teamPosition') < this.get('teamLength')) {
 				this.add('teamPosition');
-				$teamMembers.animate({ scrollLeft: $teamMembers.scrollLeft() + $teamMember.width() });
 			}
 		},
 		prev: function () {
-			var $teamMember = $(this.find('.team-member'));
-			var $teamMembers = $(this.find('.team-members'));
-
 			if (this.get('teamPosition') > 0) {
 				this.subtract('teamPosition');
-				$teamMembers.animate({ scrollLeft: $teamMembers.scrollLeft() - $teamMember.width() });
 			}
 		},
 	};
