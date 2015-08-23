@@ -24,6 +24,17 @@ if (!window.Promise) {
 	window.Promise = Ractive.Promise;
 }
 
+let routerDispatch = Ractive.Router.prototype.dispatch;
+
+Ractive.Router.prototype.dispatch = function () {
+	routerDispatch.apply(this, arguments);
+
+	ga('set', 'page', this.getUri());
+	ga('send', 'pageview');
+
+	return this;
+};
+
 let app = {
 	config: {
 		animateScrolling: true,
