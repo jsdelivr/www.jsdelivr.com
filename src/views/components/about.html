@@ -196,31 +196,88 @@
 
 	<div class="about-team" id="team">
 		<div class="container">
-			<h1>Team</h1>
+			<h1 class="text-center">Team</h1>
 
 			<div class="row">
 				<div class="col-xs-12 col-xs-offset-6">
-					<div class="team-member">
-						<h3>Dmitriy Akulov</h3>
+					<i class="clickable fa fa-angle-left fa-3x" on-click="prev()"></i>
+					<i class="clickable fa fa-angle-right fa-3x" on-click="next()"></i>
 
-						<img class="team-member-avatar" src="/img/about/team/dmitriy-akulov.png">
+					<div class="team-members">
+						<div class="team-member">
+							<h3>Dmitriy Akulov</h3>
 
-						<div class="team-social-icons">
-							<a href=""><img src="/img/about/social-icons/linkedin.png"></a>
-							<a href=""><img src="/img/about/social-icons/twitter.png"></a>
-							<a href=""><img src="/img/about/social-icons/github.png"></a>
+							<img class="team-member-avatar" src="/img/about/team/dmitriy-akulov.png">
+
+							<div class="team-social-icons">
+								<a target="_blank" href="https://ua.linkedin.com/in/dakulov"><img src="/img/about/social-icons/linkedin.png"></a>
+								<a target="_blank" href="https://twitter.com/jimaek"><img src="/img/about/social-icons/twitter.png"></a>
+								<a target="_blank" href="https://github.com/jimaek"><img src="/img/about/social-icons/github.png"></a>
+							</div>
 						</div>
-					</div>
 
-					<div class="team-member">
-						<h3>Dmitriy Akulov</h3>
+						<div class="team-member">
+							<h3>Graeme Yeates</h3>
 
-						<img class="team-member-avatar" src="/img/about/team/dmitriy-akulov.png">
+							<img class="team-member-avatar" src="/img/about/team/graeme-yeates.png">
 
-						<div class="team-social-icons">
-							<a href=""><img src="/img/about/social-icons/linkedin.png"></a>
-							<a href=""><img src="/img/about/social-icons/twitter.png"></a>
-							<a href=""><img src="/img/about/social-icons/github.png"></a>
+							<div class="team-social-icons">
+								<a target="_blank" href="https://twitter.com/GraemeYeates"><img src="/img/about/social-icons/twitter.png"></a>
+								<a target="_blank" href="https://github.com/megawac"><img src="/img/about/social-icons/github.png"></a>
+							</div>
+						</div>
+
+						<div class="team-member">
+							<h3>Patrick Nommensen</h3>
+
+							<img class="team-member-avatar" src="/img/about/team/patrick-nommensen.png">
+
+							<div class="team-social-icons">
+								<a target="_blank" href="https://linkedin.com/in/pnommensen"><img src="/img/about/social-icons/linkedin.png"></a>
+								<a target="_blank" href="https://twitter.com/pnommensen"><img src="/img/about/social-icons/twitter.png"></a>
+							</div>
+						</div>
+
+						<div class="team-member">
+							<h3>Martin Kolárik</h3>
+
+							<img class="team-member-avatar" src="/img/about/team/martin-kolarik.png">
+
+							<div class="team-social-icons">
+								<a target="_blank" href="https://twitter.com/MaKolarik"><img src="/img/about/social-icons/twitter.png"></a>
+								<a target="_blank" href="https://github.com/MartinKolarik"><img src="/img/about/social-icons/github.png"></a>
+							</div>
+						</div>
+
+						<div class="team-member">
+							<h3>Austin Brown</h3>
+
+							<img class="team-member-avatar" src="/img/about/team/austin-brown.png">
+
+							<div class="team-social-icons">
+								<a target="_blank" href="http://www.linkedin.com/in/austinjbrown"><img src="/img/about/social-icons/linkedin.png"></a>
+								<a target="_blank" href="https://github.com/UnbounDev"><img src="/img/about/social-icons/github.png"></a>
+							</div>
+						</div>
+
+						<div class="team-member">
+							<h3>Andrew Sun</h3>
+
+							<img class="team-member-avatar" src="/img/about/team/andrew-sun.png">
+
+							<div class="team-social-icons">
+								&nbsp;
+							</div>
+						</div>
+
+						<div class="team-member">
+							<h3>Juho Vepsäläinen</h3>
+
+							<img class="team-member-avatar" src="/img/about/team/juho-vepsalainen.png">
+
+							<div class="team-social-icons">
+								<a target="_blank" href="http://survivejs.com/"><img src="/img/about/social-icons/website.png"></a>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -228,3 +285,32 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	component.exports = {
+		onrender: function () {
+			this.set({
+				teamPosition: 0,
+				teamLength: this.findAll('.team-member').length - 4, // 4 = number of visible members
+			});
+		},
+		next: function () {
+			var $teamMember = $(this.find('.team-member'));
+			var $teamMembers = $(this.find('.team-members'));
+
+			if (this.get('teamPosition') < this.get('teamLength')) {
+				this.add('teamPosition');
+				$teamMembers.animate({ scrollLeft: $teamMembers.scrollLeft() + $teamMember.width() });
+			}
+		},
+		prev: function () {
+			var $teamMember = $(this.find('.team-member'));
+			var $teamMembers = $(this.find('.team-members'));
+
+			if (this.get('teamPosition') > 0) {
+				this.subtract('teamPosition');
+				$teamMembers.animate({ scrollLeft: $teamMembers.scrollLeft() - $teamMember.width() });
+			}
+		},
+	};
+</script>
