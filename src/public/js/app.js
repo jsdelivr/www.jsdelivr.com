@@ -9,7 +9,7 @@ import cNetworkMap from '../../views/components/features/network-map';
 import cCustomCdn from '../../views/components/free-open-source-cdn/custom-cdn-for-open-source';
 import cJavascriptCdn from '../../views/components/free-open-source-cdn/javascript-cdn';
 // import cNpmCdn from '../../views/components/free-open-source-cdn/npm-cdn';
-import cWordPressCdn from '../../views/components/free-open-source-cdn/wordpress-cdn';
+// import cWordPressCdn from '../../views/components/free-open-source-cdn/wordpress-cdn';
 import cIndex from '../../views/components/index';
 import cProjects from '../../views/components/projects';
 import cBecomeASponsor from '../../views/components/sponsors/become-a-sponsor';
@@ -60,7 +60,7 @@ app.router.addRoute('/features/jsdelivr-cdn-features', Ractive.extend(cJsdelivrC
 app.router.addRoute('/features/network-map', Ractive.extend(cNetworkMap));
 app.router.addRoute('/features/cdn-in-asia-and-china', Ractive.extend(cCdnInAsiaAndChina));
 app.router.addRoute('/free-open-source-cdn/javascript-cdn', Ractive.extend(cJavascriptCdn));
-app.router.addRoute('/free-open-source-cdn/wordpress-cdn', Ractive.extend(cWordPressCdn));
+// app.router.addRoute('/free-open-source-cdn/wordpress-cdn', Ractive.extend(cWordPressCdn));
 // app.router.addRoute('/free-open-source-cdn/npm-cdn', Ractive.extend(cNpmCdn));
 app.router.addRoute('/free-open-source-cdn/custom-cdn-for-open-source', Ractive.extend(cCustomCdn));
 app.router.addRoute('/projects/:name', Ractive.extend(cProjects));
