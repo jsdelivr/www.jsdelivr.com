@@ -22,6 +22,7 @@ function updateIndex () {
 			if (!aProject || project.versions.length > aProject.versions.length) {
 				project = _.pick(project, [ 'name', 'mainfile', 'lastversion', 'description', 'homepage', 'github', 'author', 'versions', 'assets' ]);
 				project.objectID = project.name;
+				project.lastupdate = Date.now();
 
 				appLog.info(`Updating project ${project.name}.`);
 				algoliaIndex[project.name] = _.merge({}, project);

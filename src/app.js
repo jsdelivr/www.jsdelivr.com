@@ -7,6 +7,7 @@ import isBot from 'is-bot';
 import Ractive from 'ractive';
 import ractiveLoad from 'ractive-load';
 import rr from 'ractive-render';
+import eh from 'express-handlebars';
 
 import morganConfig from './config/morgan';
 import dnsApi from './js/api/dns';
@@ -14,6 +15,7 @@ import mailApi from './js/api/mail';
 import statsApi from './js/api/stats';
 import logger from './js/logger';
 import render from './js/render';
+import sitemap from './js/sitemap';
 import './js/update';
 
 let appLog = logger('app');
@@ -33,6 +35,7 @@ app.set('view engine', 'html');
 app.set('x-powered-by', false);
 
 app.engine('html', rr.renderFile);
+app.engine('xml', eh());
 
 /**
  * ractive-render config.
@@ -50,6 +53,11 @@ Ractive.DEBUG = false;
 app.all('/api/dns', dnsApi);
 app.all('/api/mail', mailApi);
 app.all('/api/stats', statsApi);
+
+/**
+ * sitemap.xml
+ */
+app.all('/sitemap.xml', sitemap);
 
 /**
  * Make caching work correctly, as we'll be sending rendered pages for bots.
