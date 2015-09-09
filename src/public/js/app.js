@@ -24,17 +24,6 @@ if (!window.Promise) {
 	window.Promise = Ractive.Promise;
 }
 
-let routerDispatch = Ractive.Router.prototype.dispatch;
-
-Ractive.Router.prototype.dispatch = function () {
-	routerDispatch.apply(this, arguments);
-
-	ga('set', 'page', this.getUri());
-	ga('send', 'pageview');
-
-	return this;
-};
-
 let app = {
 	config: {
 		animateScrolling: true,
@@ -51,6 +40,19 @@ app.router = new Ractive.Router({
 	},
 	globals: [ 'query', 'collection' ],
 });
+
+let routerDispatch = Ractive.Router.prototype.dispatch;
+
+Ractive.Router.prototype.dispatch = function () {
+	routerDispatch.apply(this, arguments);
+
+	document.title = app.router.route.view.get('title') || 'jsDelivr - A free super-fast CDN for developers and webmasters';
+
+	ga('set', 'page', this.getUri());
+	ga('send', 'pageview');
+
+	return this;
+};
 
 app.router.addRoute('/', Ractive.extend(cIndex), { qs: [ 'query', 'limit' ] });
 app.router.addRoute('/about', Ractive.extend(cAbout));
