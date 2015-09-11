@@ -115,7 +115,7 @@ function friendlyCountryName (name) {
 }
 
 function median (values) {
-	values = values.slice().sort();
+	values = values.slice().sort((a, b) => a - b);
 
 	return values.length % 2
 		? values[(values.length - 1) / 2]
