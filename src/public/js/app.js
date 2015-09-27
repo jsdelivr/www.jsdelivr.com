@@ -28,6 +28,7 @@ let app = {
 	config: {
 		animateScrolling: true,
 	},
+	sriHashes: {},
 };
 
 app.router = new Ractive.Router({
