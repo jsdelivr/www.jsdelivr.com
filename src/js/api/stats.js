@@ -101,7 +101,7 @@ function updateData () {
 		statsCache = JSON.stringify(result);
 
 		appLog.info('Stats successfully updated.');
-		appLog.debug(result);
+		appLog.debug(_.clone(result, true));
 	}).catch((error) => {
 		appLog.err(error);
 	});
