@@ -31,6 +31,13 @@
 							</div>
 						</div>
 					{{else}}
+						{{#if showSriWarning}}
+							<div class="alert alert-warning sri-warning" role="alert">
+								Some files in your collection contain UTF-8 characters.
+								Due to a <a href="https://code.google.com/p/chromium/issues/detail?id=527286" target="_blank">bug in Google Chrome</a>, we disabled SRI for those files.
+							</div>
+						{{/if showSriWarning}}
+
 						{{#if js}}
 							<h4 class="strikethrough"><span>JS</span></h4>
 
@@ -183,11 +190,11 @@
 					var _this = this;
 
 					allLinks.forEach(function (link) {
-						if (!app.sriHashes[link]) {
+						if (app.sriHashes[link] === undefined) {
 							app.sriHashes[link] = true;
 
 							$.get(link, function (file) {
-								app.sriHashes[link] = 'sha256-' + hexToBase64(sha256(file));
+								app.sriHashes[link] = !/[^\u0000-\u007F]/.test(file) ? 'sha256-' + hexToBase64(sha256(file)) : null;
 								_this.set('_hashes', app.sriHashes);
 							}, 'html');
 						}
@@ -209,14 +216,18 @@
 
 				links.js = links.js.map(function (link, index, collection) {
 					link = addProtocol ? 'https:' + link : link;
-					link = addTag ? '<script ' + (enableSri ? 'crossorigin="anonymous" integrity="' + hashes[collection[index]] + '" ' : '') +  'src="' + link + '"><\/script>' : link;
+					link = addTag
+						? '<script ' + (enableSri && hashes[collection[index]] ? 'crossorigin="anonymous" integrity="' + hashes[collection[index]] + '" ' : '') +  'src="' + link + '"><\/script>'
+						: link;
 
 					return link;
 				});
 
 				links.css = links.css.map(function (link, index, collection) {
 					link = addProtocol ? 'https:' + link : link;
-					link = addTag ? '<link rel="stylesheet" ' + (enableSri ? 'crossorigin="anonymous" integrity="' + hashes[collection[index]] + '" ' : '') + 'href="' + link + '">' : link;
+					link = addTag
+						? '<link rel="stylesheet" ' + (enableSri && hashes[collection[index]] ? 'crossorigin="anonymous" integrity="' + hashes[collection[index]] + '" ' : '') + 'href="' + link + '">'
+						: link;
 
 					return link;
 				});
@@ -229,6 +240,15 @@
 			},
 			sriProgress: function () {
 				return this.get('hashes').length / (this.get('links').js.length + this.get('links').css.length) * 100;
+			},
+			showSriWarning: function () {
+				var hashes = this.get('hashes');
+				var links = linkBuilder(this.get('collection'), this.get('groupLinks'));
+				var allLinks = links.js.concat.apply(links.js, links.css);
+
+				return !!Object.keys(hashes).filter(function (key) {
+					return typeof key === 'string' && ~allLinks.indexOf(key) && hashes[key] === null;
+				}).length;
 			},
 		},
 		data: function () {
