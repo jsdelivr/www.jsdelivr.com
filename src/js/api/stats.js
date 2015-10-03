@@ -30,10 +30,11 @@ function updateData () {
 	appLog.info('Updating stats.');
 
 	request('http://dev.dakulov.com/jsdelivr/stats.php').then((body) => {
-		var data = JSON.parse(body);
-		var result = JSON.parse(statsCache); // Use previous data if something's missing.
 		appLog.debug('Got the following stats:');
 		appLog.debug(body);
+
+		var data = JSON.parse(body);
+		var result = JSON.parse(statsCache); // Use previous data if something's missing.
 
 		if (!_.isEmpty(data.dns.chart)) {
 			// 1. Group by date.
