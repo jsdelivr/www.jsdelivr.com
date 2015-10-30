@@ -101,7 +101,7 @@ app.listen(process.env.PORT || 4400, function () {
 });
 
 process.on('uncaughtException', (error) => {
-	console.error(error, error.stack);
+	console.error('CRITICAL ERROR (exiting in 10 seconds):', error, error.stack);
 	appLog.crit(error);
 
 	setTimeout(() => {
