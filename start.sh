@@ -3,4 +3,5 @@ git fetch --all
 git reset --hard origin/master
 git pull -p
 npm install
-PORT=80 npm run start
+npm run build
+PORT=80 npm run forever
