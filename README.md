@@ -28,7 +28,6 @@
 
 Search is powered by [Algolia](https://www.algolia.com/). There's a [script](https://github.com/jsdelivr/www.jsdelivr.com/commit/8742343dc49b10201f4c5d864da221607d480a83#diff-902324592c72fe4414b0ff192977e0e3), which is run once a minute. It retrieves a list of all projects from our API, compares that with an in-memory copy of the index, and updates the Algolia index when necessary (only if valid `ALGOLIA_API_KEY` is set).
 
-
 Some projects have too many files. In that case, a separate index (jsDelivr_assets) is used to store a list of files for each version of the project, and `assets` in the main index is set to an empty array.
 
 In addition to project name (which has the highest priority), it also searches in author's name and project's description, and tolerates typos (1 or 2 characters).
