@@ -34,3 +34,4 @@ In addition to project name (which has the highest priority), it also searches i
 
 # Auto-deploy [![Build Status](https://travis-ci.org/jsdelivr/www.jsdelivr.com.svg?branch=master)](https://travis-ci.org/jsdelivr/www.jsdelivr.com)
 When code is pushed to master it is autodeployed to http://beta-jsdelivr-com.herokuapp.com.
+
