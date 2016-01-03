@@ -1,19 +1,33 @@
 import childProcess from 'child_process';
 import pngquant from 'pngquant-bin';
 import Promise from 'bluebird';
-import phantom from 'phantom';
+import phantom from 'node-phantom-simple';
 
 export default function (countries) {
 	return new Promise((resolve) => {
-		phantom.create((ph) => {
-			ph.createPage((page) => {
+		let path = process.env.PHANTOM_PATH || require('phantomjs').path;
+
+		if (~path.indexOf(' ')) {
+			throw new Error('The path to phantomjs cannot contain spaces. Please install it to a different location or use a symlink.');
+		}
+
+		phantom.create({ path }, (err, ph) => {
+			handleError(err);
+
+			ph.createPage((err, page) => {
+				handleError(err);
+
 				let images = [];
 
-				page.set('onCallback', (image) => {
+				page.onCallback = (image) => {
 					images.push(image);
 
 					if (images.length === countries.length) {
 						ph.exit();
+
+						setTimeout(() => {
+							ph.process.kill(0);
+						}, 2000);
 
 						images.reduce((promise, image, index) => {
 							return promise.then(() => {
@@ -32,14 +46,14 @@ export default function (countries) {
 							resolve(images);
 						});
 					}
-				});
+				};
 
 				page.set('content', `
 					<html>
 						<head>
 							<script src="https://www.google.com/jsapi"></script>
 							<script>
-								google.load('visualization', '1.1', {
+								google.load('visualization', '1.2', {
 									packages: [ 'corechart', 'geochart' ],
 									language: 'en',
 								});
@@ -49,7 +63,7 @@ export default function (countries) {
 
 									countries.forEach(function (country) {
 										country.forEach(function (entry) {
-											entry[0] = new Date(entry[0] * 1000)
+											entry[0] = new Date(entry[0] * 1000);
 										});
 									});
 
@@ -101,7 +115,7 @@ export default function (countries) {
 													fontSize: 10,
 													bold: false,
 												},
-											}
+											},
 										});
 									});
 								});
@@ -111,8 +125,14 @@ export default function (countries) {
 						<body>
 							<div id="chart"></div>
 						</body>
-					</html>`);
+					</html>`, handleError);
 			});
 		});
 	});
+}
+
+function handleError (err) {
+	if (err) {
+		throw err;
+	}
 }
