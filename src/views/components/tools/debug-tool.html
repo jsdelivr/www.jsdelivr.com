@@ -8,79 +8,89 @@
 			<div class="col-md-12 col-md-offset-6 col-xs-16 col-xs-offset-4">
 				<h1 class="text-center">Debug tool</h1>
 
-				<div class="debug-tool-results">
-					{{#if progress !== 100}}
-						<div class="running-tests">
-							Running tests...
+				{{#if showHttpsWarning}}
+					<div class="alert alert-warning https-warning" role="alert">
+						The debug tool currently doesn't support HTTPS. Please go to <a href="http://www.jsdelivr.com/tools/debug-tool">non-HTTPS versions of this site</a> instead.
+					</div>
+				{{else}}
+					<div class="alert alert-warning ab-warning" role="alert">
+						We recommend turning off any ad blockers, or adding our website to the whitelist, as they may interfere with this tool.
+					</div>
 
-							<div class="progress">
-								<div class="progress-bar" role="progressbar" style="width: {{progress}}%"></div>
+					<div class="debug-tool-results">
+						{{#if progress !== 100}}
+							<div class="running-tests">
+								Running tests...
+
+								<div class="progress">
+									<div class="progress-bar" role="progressbar" style="width: {{progress}}%"></div>
+								</div>
 							</div>
-						</div>
-					{{else}}
-						<div class="debug-tool-results-header">
-							<button on-click="test()" class="btn btn-default">
-								<i class="fa fa-refresh"></i>Reload
-							</button>
-
-							{{#if hasFlash}}
-								<button class="btn btn-default" decorator="zeroClipboard" data-clipboard-text="{{link}}">
-									<i class="fa fa-copy"></i>Copy
+						{{else}}
+							<div class="debug-tool-results-header">
+								<button on-click="test()" class="btn btn-default">
+									<i class="fa fa-refresh"></i>Reload
 								</button>
-							{{/if hasFlash}}
 
-							{{#if saved}}
-								Showing results for IP address <strong>{{results.ipInfo.ip}}</strong> from {{results.now}}.
-							{{/if saved}}
-						</div>
+								{{#if hasFlash}}
+									<button class="btn btn-default" decorator="zeroClipboard" data-clipboard-text="{{link}}">
+										<i class="fa fa-copy"></i>Copy
+									</button>
+								{{/if hasFlash}}
 
-						<div class="debug-tool-results-body">
-							<span class="results-date">{{results.now}}</span><br>
+								{{#if saved}}
+									Showing results for IP address <strong>{{results.ipInfo.ip}}</strong> from {{results.now}}.
+								{{/if saved}}
+							</div>
 
-							{{#with results.ipInfo}}
-								<br><strong>{{tests.ipInfo}}</strong><br>
+							<div class="debug-tool-results-body">
+								<span class="results-date">{{results.now}}</span><br>
 
-								{{#if error}}
-									{{error}}<br>
-								{{else}}
-									{{#each this}}
-										{{@key}}: {{this}}<br>
-									{{/each this}}
-								{{/if error}}
-							{{/with results.ipInfo}}
+								{{#with results.ipInfo}}
+									<br><strong>{{tests.ipInfo}}</strong><br>
 
-							<br><strong>{{tests.server}}</strong><br>
-							{{results.server}}<br>
+									{{#if error}}
+										{{error}}<br>
+									{{else}}
+										{{#each this}}
+											{{@key}}: {{this}}<br>
+										{{/each this}}
+									{{/if error}}
+								{{/with results.ipInfo}}
 
-							{{#with results.dns}}
-								<br><strong>{{dnsTests.dns}}</strong><br>
-								{{this}}<br>
-							{{/with results.dns}}
+								<br><strong>{{tests.server}}</strong><br>
+								{{results.server}}<br>
 
-							{{#each results.servers}}
-								<br><strong>{{tests.servers[@index]}}</strong><br>
-								{{this}}<br>
-							{{/each results.servers}}
+								{{#with results.dns}}
+									<br><strong>{{dnsTests.dns}}</strong><br>
+									{{this}}<br>
+								{{/with results.dns}}
 
-							{{#each results.availability}}
-								<br><strong>{{dnsTests.availability[@index]}}</strong><br>
+								{{#each results.servers}}
+									<br><strong>{{tests.servers[@index]}}</strong><br>
+									{{this}}<br>
+								{{/each results.servers}}
 
-								{{#if error}}
-									{{error}}<br>
-								{{else}}
-									{{#each this}}
-										{{@key}}: {{this}}<br>
-									{{/each this}}
-								{{/if error}}
-							{{/each results.availability}}
+								{{#each results.availability}}
+									<br><strong>{{dnsTests.availability[@index]}}</strong><br>
 
-							{{#each results.performance}}
-								<br><strong>{{dnsTests.performance[@index]}}</strong><br>
-								{{this}}<br>
-							{{/each results.performance}}
-						</div>
-					{{/if}}
-				</div>
+									{{#if error}}
+										{{error}}<br>
+									{{else}}
+										{{#each this}}
+											{{@key}}: {{this}}<br>
+										{{/each this}}
+									{{/if error}}
+								{{/each results.availability}}
+
+								{{#each results.performance}}
+									<br><strong>{{dnsTests.performance[@index]}}</strong><br>
+									{{this}}<br>
+								{{/each results.performance}}
+							</div>
+						{{/if}}
+					</div>
+				{{/if showHttpsWarning}}
 			</div>
 		</div>
 	</div>
@@ -160,33 +170,37 @@
 		},
 		oninit: function () {
 			if (!Ractive.isServer) {
-				var _this = this;
-
-				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
-
-				this.observe('progress', function (value) {
-					if (value === 100) {
-						this.set('link', location.href);
-
-						// Google is smart enough to return an existing URL if there is one.
-						$.ajax({
-							type: 'POST',
-							contentType: 'application/json; charset=UTF-8',
-							url: 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyB8DINjLBVWS7ImklEB1zOAS8QyuIGzB-Q',
-							data: JSON.stringify({ longUrl: location.href }),
-							success: function (response) {
-								if (response.id) {
-									_this.set('link', response.id);
-								}
-							}
-						});
-					}
-				}, { defer: true });
-
-				if (this.get('progress') === 100) {
-					this.set('saved', true);
+				if (location.protocol === 'https:') {
+					this.set('showHttpsWarning', true);
 				} else {
-					this.test();
+					var _this = this;
+
+					this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
+
+					this.observe('progress', function (value) {
+						if (value === 100) {
+							this.set('link', location.href);
+
+							// Google is smart enough to return an existing URL if there is one.
+							$.ajax({
+								type: 'POST',
+								contentType: 'application/json; charset=UTF-8',
+								url: 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyB8DINjLBVWS7ImklEB1zOAS8QyuIGzB-Q',
+								data: JSON.stringify({ longUrl: location.href }),
+								success: function (response) {
+									if (response.id) {
+										_this.set('link', response.id);
+									}
+								}
+							});
+						}
+					}, { defer: true });
+
+					if (this.get('progress') === 100) {
+						this.set('saved', true);
+					} else {
+						this.test();
+					}
 				}
 			}
 		},
