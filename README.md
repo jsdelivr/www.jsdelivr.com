@@ -15,6 +15,7 @@
  - `LOGENTRIES_ACCESS_TOKEN` - optional - logentries token for logging incoming requests.
  - `LOGENTRIES_APP_TOKEN` - optional - logentries token for logging everything else.
  - `ALGOLIA_API_KEY` - optional - algolia token with write permissions to `jsDelivr` and `jsDelivr_assets` indices.
+ - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, and `EMAIL_PASS` - optional - used for sending emails from contact forms.
 
 # How it works
 

@@ -1,5 +1,6 @@
 import mailer from 'nodemailer';
 import logger from '../logger';
+import emailConfig from '../../config/email';
 
 let appLog = logger('app');
 let config = Object.create(null);
@@ -19,7 +20,14 @@ export default function (req, res) {
 		return res.sendStatus(400);
 	}
 
-	let transporter = mailer.createTransport();
+	let transporter = mailer.createTransport({
+		host: emailConfig.host,
+		port: emailConfig.port,
+		auth: {
+			user: emailConfig.user,
+			pass: emailConfig.pass,
+		},
+	});
 
 	transporter.sendMail({
 		from: req.body.email,
