@@ -31,13 +31,6 @@
 							</div>
 						</div>
 					{{else}}
-						{{#if showSriWarning}}
-							<div class="alert alert-warning sri-warning" role="alert">
-								Some files in your collection contain UTF-8 characters.
-								Due to a <a href="https://code.google.com/p/chromium/issues/detail?id=527286" target="_blank">bug in Google Chrome</a>, we disabled SRI for those files.
-							</div>
-						{{/if showSriWarning}}
-
 						{{#if js}}
 							<h4 class="strikethrough"><span>JS</span></h4>
 
@@ -194,7 +187,7 @@
 							app.sriHashes[link] = true;
 
 							$.get(link, function (file) {
-								app.sriHashes[link] = !/[^\u0000-\u007F]/.test(file) ? 'sha256-' + hexToBase64(sha256(file)) : null;
+								app.sriHashes[link] = 'sha256-' + hexToBase64(sha256(file));
 								_this.set('_hashes', app.sriHashes);
 							}, 'html');
 						}
@@ -240,15 +233,6 @@
 			},
 			sriProgress: function () {
 				return this.get('hashes').length / (this.get('links').js.length + this.get('links').css.length) * 100;
-			},
-			showSriWarning: function () {
-				var hashes = this.get('hashes');
-				var links = linkBuilder(this.get('collection'), this.get('groupLinks'));
-				var allLinks = links.js.concat.apply(links.js, links.css);
-
-				return !!Object.keys(hashes).filter(function (key) {
-					return typeof key === 'string' && ~allLinks.indexOf(key) && hashes[key] === null;
-				}).length;
 			},
 		},
 		data: function () {
