@@ -19,7 +19,7 @@ function updateIndex () {
 		_.forEach(data, project => {
 			let aProject = algoliaIndex[project.name];
 
-			if (!aProject || project.versions.length > aProject.versions.length) {
+			if (!aProject || !_.isEqual(aProject.versions, project.versions)) {
 				project = _.pick(project, [ 'name', 'mainfile', 'lastversion', 'description', 'homepage', 'github', 'author', 'versions', 'assets' ]);
 				project.objectID = project.name;
 				project.lastupdate = Date.now();
