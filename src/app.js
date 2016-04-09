@@ -90,6 +90,13 @@ app.use((req, res, next) => {
 });
 
 /**
+ * OSSCDN landing page.
+ */
+app.all('/osscdn', (req, res) => {
+	res.sendFile(__dirname + '/views/osscdn.html');
+});
+
+/**
  * Just send a template and render on client side.
  */
 app.all('/*', (req, res) => {
