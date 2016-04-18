@@ -9,6 +9,8 @@ let appLog = logger('app');
 let client = algoliaSearch(algoliaConfig.appID, algoliaConfig.writeAccessToken);
 let jsDelivrIndex = client.initIndex('jsDelivr');
 let jsDelivrAssetsIndex = client.initIndex('jsDelivr_assets');
+let projectFields = [ 'name', 'mainfile', 'lastversion', 'description', 'homepage', 'github', 'author', 'versions', 'assets' ];
+let compareFields = _.omit(projectFields, [ 'assets' ]);
 
 setInterval(updateIndex, 60000);
 
@@ -19,8 +21,8 @@ function updateIndex () {
 		_.forEach(data, project => {
 			let aProject = algoliaIndex[project.name];
 
-			if (!aProject || !_.isEqual(aProject.versions, project.versions)) {
-				project = _.pick(project, [ 'name', 'mainfile', 'lastversion', 'description', 'homepage', 'github', 'author', 'versions', 'assets' ]);
+			if (!aProject || !_.isEqual(_.pick(aProject, compareFields), _.pick(project, compareFields))) {
+				project = _.pick(project, projectFields);
 				project.objectID = project.name;
 				project.lastupdate = Date.now();
 

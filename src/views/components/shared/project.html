@@ -43,7 +43,7 @@
 
 				<div class="col-xs-10">
 					<div class="project-files-header-link">
-						mainfile: <a href="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{mainfile}}" target="_blank"><i class="fa fa-file-text-o"></i>{{mainfile}}</a>
+						mainfile: <a href="{{cdnRoot}}/{{name}}/{{selectedVersion}}/{{~/mainfile}}" target="_blank"><i class="fa fa-file-text-o"></i>{{~/mainfile}}</a>
 					</div>
 
 					<div class="project-files-header-link">
@@ -119,6 +119,13 @@
 		computed: {
 			fileLimit: function () {
 				return this.get('expandFiles') ? Number.MAX_VALUE : 3;
+			},
+			mainfile: function () {
+				var project = this.get('project');
+
+				return (project.assets.filter(function (asset) {
+					return asset.version === project.selectedVersion;
+				})[0] || {}).mainfile || project.mainfile;
 			}
 		},
 		data: function () {
@@ -144,7 +151,7 @@
 					name: file,
 					project: project.name,
 					version: project.selectedVersion,
-					mainfile: project.mainfile,
+					mainfile: this.get('mainfile'),
 				});
 			}
 		},
@@ -153,7 +160,7 @@
 			var collection = this.get('collection');
 
 			if (!~getCollectionIndex(collection, project.name, project.selectedVersion)) {
-				this.toggleCollectionFile(project.mainfile);
+				this.toggleCollectionFile(this.get('mainfile'));
 			} else {
 				this.splice.apply(this, [ 'collection', 0, collection.length ].concat(collection.filter(function (file) {
 					return file.project !== project.name;
