@@ -29,6 +29,7 @@ let app = {
 		animateScrolling: true,
 	},
 	sriHashes: {},
+	usedCdn: '',
 };
 
 app.router = new Ractive.Router({

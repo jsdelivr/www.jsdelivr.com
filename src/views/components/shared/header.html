@@ -4,11 +4,75 @@
 	{{#if sponsorsOnTop}}
 		<div class="header-sponsors header-sponsors-top">
 			<div class="container">
-				<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
-				<a target="_blank" href="https://www.maxcdn.com/"><img src="/img/sponsors-header/maxcdn.png"></a>
-				<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
-				<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
-				<a target="_blank" href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+				<div class="header-sponsor">
+					{{#if usedCdn}}
+						<span class="sponsor-info">Your request was load-balanced by:</span>
+					{{/if usedCdn}}
+
+					<a target="_blank" href="http://www.cedexis.com/">
+						{{#if usedCdn}}
+							<img src="/img/sponsors-header/cedexis-c.png" height="54">
+						{{else}}
+							<img src="/img/sponsors-header/cedexis.png" height="54">
+						{{/if usedCdn}}
+					</a>
+				</div>
+
+				<div class="header-sponsor">
+					{{#if usedCdn === 'maxcdn'}}
+						<span class="sponsor-info">Most optimal CDN for you is:</span>
+					{{/if usedCdn}}
+
+					<a target="_blank" href="https://www.maxcdn.com/">
+						{{#if usedCdn === 'maxcdn'}}
+							<img src="/img/sponsors-header/maxcdn-c.png" height="54">
+						{{else}}
+							<img src="/img/sponsors-header/maxcdn.png" height="54">
+						{{/if usedCdn}}
+					</a>
+				</div>
+
+				<div class="header-sponsor">
+					{{#if usedCdn === 'cloudflare'}}
+						<span class="sponsor-info">Most optimal CDN for you is:</span>
+					{{/if usedCdn}}
+
+					<a target="_blank" href="https://www.cloudflare.com/">
+						{{#if usedCdn === 'cloudflare'}}
+							<img src="/img/sponsors-header/cloudflare-c.png" height="54">
+						{{else}}
+							<img src="/img/sponsors-header/cloudflare.png" height="54">
+						{{/if usedCdn}}
+					</a>
+				</div>
+
+				<div class="header-sponsor">
+					{{#if usedCdn === 'keycdn'}}
+						<span class="sponsor-info">Most optimal CDN for you is:</span>
+					{{/if usedCdn}}
+
+					<a target="_blank" href="https://www.keycdn.com/">
+						{{#if usedCdn === 'keycdn'}}
+							<img src="/img/sponsors-header/keycdn-c.png" height="54">
+						{{else}}
+							<img src="/img/sponsors-header/keycdn.png" height="54">
+						{{/if usedCdn}}
+					</a>
+				</div>
+
+				<div class="header-sponsor">
+					{{#if usedCdn}}
+						<span class="sponsor-info">DNS was served by:</span>
+					{{/if usedCdn}}
+
+					<a target="_blank" href="https://www.nsone.com/">
+						{{#if usedCdn}}
+							<img src="/img/sponsors-header/nsone-c.png" height="54">
+						{{else}}
+							<img src="/img/sponsors-header/nsone.png" height="54">
+						{{/if usedCdn}}
+					</a>
+				</div>
 			</div>
 		</div>
 	{{/if sponsorsOnTop}}
@@ -48,11 +112,46 @@
 		<div class="header-sponsors header-sponsors-bottom">
 			<div class="container">
 				<div class="col-lg-20 col-lg-offset-2 col-md-22 col-md-offset-1 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
-					<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
-					<a target="_blank" href="https://www.maxcdn.com/"><img src="/img/sponsors-header/maxcdn.png"></a>
-					<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
-					<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
-					<a target="_blank" href="https://nsone.net/"><img src="/img/sponsors-header/nsone.png"></a>
+					<a target="_blank" href="http://www.cedexis.com/">
+						{{#if usedCdn}}
+							<img src="/img/sponsors-header/cedexis-c.png">
+						{{else}}
+							<img src="/img/sponsors-header/cedexis.png">
+						{{/if usedCdn}}
+					</a>
+
+					<a target="_blank" href="https://www.maxcdn.com/">
+						{{#if usedCdn === 'maxcdn'}}
+							<img src="/img/sponsors-header/maxcdn-c.png">
+						{{else}}
+							<img src="/img/sponsors-header/maxcdn.png">
+						{{/if usedCdn}}
+					</a>
+
+					<a target="_blank" href="https://www.cloudflare.com/">
+						{{#if usedCdn === 'cloudflare'}}
+							<img src="/img/sponsors-header/cloudflare-c.png">
+						{{else}}
+							<img src="/img/sponsors-header/cloudflare.png">
+						{{/if usedCdn}}
+					</a>
+
+					<a target="_blank" href="https://www.keycdn.com/">
+						{{#if usedCdn === 'keycdn'}}
+							<img src="/img/sponsors-header/keycdn-c.png">
+						{{else}}
+							<img src="/img/sponsors-header/keycdn.png">
+						{{/if usedCdn}}
+					</a>
+
+					<a target="_blank" href="https://www.nsone.com/">
+						{{#if usedCdn}}
+							<img src="/img/sponsors-header/nsone-c.png">
+						{{else}}
+							<img src="/img/sponsors-header/nsone.png">
+						{{/if usedCdn}}
+					</a>
+
 					<a class="header-become-a-sponsor" href="/sponsors/become-a-sponsor">Become a sponsor</a>
 				</div>
 			</div>
@@ -65,6 +164,12 @@
 {{/unless sponsorsOnTop}}
 
 <script>
+	var servers = {
+		'NetDNA-cache/2.2': 'maxcdn',
+		'cloudflare-nginx': 'cloudflare',
+		'keycdn-engine': 'keycdn',
+	};
+
 	component.exports = {
 		data: function () {
 			return {
@@ -81,6 +186,22 @@
 				countProjects().then(function (nbProjects) {
 					nbProjects && _this.set('nbProjects', nbProjects);
 				});
+
+				// Highlight the used CDN.
+				if (this.get('app').usedCdn) {
+					this.set('usedCdn', this.get('app').usedCdn);
+				} else {
+					$.ajax({
+						type: 'HEAD',
+						url: 'https://cdn.jsdelivr.net/information.txt',
+						async: true,
+						success: function (data, textStatus, jqXHR) {
+							_this.set('usedCdn', servers[jqXHR.getResponseHeader('server')]);
+							_this.set('app.usedCdn', servers[jqXHR.getResponseHeader('server')]);
+						},
+					})
+
+				}
 			}
 
 			this.set('prevQuery', this.get('query'));
