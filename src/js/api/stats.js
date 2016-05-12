@@ -9,12 +9,14 @@ let statsCache = JSON.stringify({
 		decisions: [],
 		perfmap: [],
 		map: [],
+		bestcdnspeed: [],
 	},
 	dns: {
 		chart: [],
 	},
 	cdn: {
 		total: {},
+		percdn: [],
 	},
 });
 
@@ -35,6 +37,18 @@ function updateData () {
 
 		var data = JSON.parse(body);
 		var result = JSON.parse(statsCache); // Use previous data if something's missing.
+
+		if (!_.isEmpty(data.cdn.percdn)) {
+			result.cdn.percdn = data.cdn.percdn;
+		}
+
+		if (!_.isEmpty(data.cedexis.bestcdnspeed)) {
+			// 1. Convert to arrays of [ name, hits ]
+			// 2. Sort
+			result.cedexis.bestcdnspeed = _(data.cedexis.bestcdnspeed).map((value) => {
+				return [ value[1], value[2] ];
+			}).sortBy(value => value[1]).value();
+		}
 
 		if (!_.isEmpty(data.dns.chart)) {
 			// 1. Group by date.

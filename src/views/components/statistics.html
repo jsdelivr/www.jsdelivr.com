@@ -11,28 +11,90 @@
 		{{else}}
 			<div class="row">
 				<div class="col-xs-12 col-xs-offset-6">
-					<h1 class="text-center">
-						TOTAL CDN STATS<br>
-						<small class="text-center">(last 30 days)</small>
-					</h1>
-				</div>
+					<h1 class="text-center">FASTEST CDN</h1>
 
-				<div class="col-xs-5">
-					<div class="stats-subtitle stats-last-update">
-						Last update: {{formatDate(stats.lastUpdate)}}
+					<div class="text-center stats-subtitle">
+						(last 30 days / Last update: {{formatDate(stats.lastUpdate)}})
 					</div>
 				</div>
 			</div>
 
 			<div class="row">
-				<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-2 xs-padding">
+				<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-2 xs-padding">
+					<div class="cdn-box best-cdn">
+						<div class="cdn-image">
+							<img src="/img/sponsors/our-sponsors/platinum/{{stats.cedexis.bestcdnspeed.0.0.toLowerCase()}}.png" width="210">
+						</div>
+
+						<div class="cdn-stats">
+							Average response time:
+							<span class="stats-number">{{stats.cedexis.bestcdnspeed[0][1]}} MS</span>
+						</div>
+
+						<div class="cdn-stats">
+							Total HTTP requests:
+							<span class="stats-number">{{formatNumber(stats.cdn.percdn[stats.cedexis.bestcdnspeed[0][0]])}}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-0 xs-padding">
+					<div class="cdn-box">
+						<div class="cdn-image">
+							<img src="/img/sponsors/our-sponsors/platinum/{{stats.cedexis.bestcdnspeed.1.0.toLowerCase()}}.png" width="210">
+						</div>
+
+						<div class="cdn-stats">
+							Average response time:
+							<span class="stats-number">{{stats.cedexis.bestcdnspeed[1][1]}} MS</span>
+						</div>
+
+						<div class="cdn-stats">
+							Total HTTP requests:
+							<span class="stats-number">{{formatNumber(stats.cdn.percdn[stats.cedexis.bestcdnspeed[1][0]])}}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-7">
+					<div class="cdn-box">
+						<div class="cdn-image">
+							<img src="/img/sponsors/our-sponsors/platinum/{{stats.cedexis.bestcdnspeed.2.0.toLowerCase()}}.png" width="210">
+						</div>
+
+						<div class="cdn-stats">
+							Average response time:
+							<span class="stats-number">{{stats.cedexis.bestcdnspeed[2][1]}} MS</span>
+						</div>
+
+						<div class="cdn-stats">
+							Total HTTP requests:
+							<span class="stats-number">{{formatNumber(stats.cdn.percdn[stats.cedexis.bestcdnspeed[2][0]])}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xs-12 col-xs-offset-6">
+					<h1 class="text-center">TOTAL CDN STATS</h1>
+
+					<div class="text-center stats-subtitle">
+						(last 30 days / Last update: {{formatDate(stats.lastUpdate)}})
+					</div>
+				</div>
+
+			</div>
+
+			<div class="row">
+				<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-2 xs-padding">
 					<div class="stats-box">
 						<div class="stats-title">LOAD BALANCING DECISIONS</div>
 						<div class="stats-number">{{formatNumber(stats.cedexis.total)}}</div>
 					</div>
 				</div>
 
-				<div class="col-md-6 col-md-offset-1 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-1 xs-padding">
+				<div class="col-md-6 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-0 xs-padding">
 					<div class="stats-box">
 						<div class="stats-title">HTTP HITS</div>
 						<div class="stats-number">{{formatNumber(stats.cdn.total.hits)}}</div>
@@ -40,7 +102,7 @@
 					</div>
 				</div>
 
-				<div class="col-md-7 col-md-offset-1 col-sm-7 col-sm-offset-0 col-xs-11 col-xs-offset-7">
+				<div class="col-md-6 col-sm-8 col-sm-offset-0 col-xs-10 col-xs-offset-7">
 					<div class="stats-box">
 						<div class="stats-title">DNS REQUESTS</div>
 						<div class="stats-number">{{formatNumber(stats.dns.total)}}</div>
@@ -49,35 +111,44 @@
 			</div>
 
 			<div class="row">
-				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-					<h3>Load Balancing decisions</h3>
+				<div class="col-md-18 col-md-offset-3 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<div class="chart-box">
+						<h3>Load Balancing decisions</h3>
 
-					<div id="load-balancing"></div>
+						<div id="load-balancing"></div>
+					</div>
 				</div>
 
-				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-					<h3>DNS requests</h3>
+				<div class="col-md-18 col-md-offset-3 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<div class="chart-box">
+						<h3>DNS requests</h3>
 
-					<div id="dns-requests"></div>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-					<h3>Load Balancing decisions map</h3>
-
-					<div id="load-balancing-map"></div>
+						<div id="dns-requests"></div>
+					</div>
 				</div>
 			</div>
 
 			<div class="row">
-				<div class="col-md-14 col-md-offset-5 col-xs-22 col-xs-offset-1">
-					<h3>
-						Performance map
-						<span class="stats-subtitle">Based on tens of millions of RUM tests for the last 24 hours</span>
-					</h3>
+				<div class="col-md-18 col-md-offset-3 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<div class="chart-box">
+						<h3>Load Balancing decisions map</h3>
 
-					<div id="performance-map"></div>
+						<div id="load-balancing-map"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-18 col-md-offset-3 col-sm-24 col-sm-offset-0 col-xs-20 col-xs-offset-2">
+					<div class="chart-box">
+						<h3>
+							Performance map
+							<span class="stats-subtitle">Based on tens of millions of RUM tests for the last 24 hours</span>
+						</h3>
+
+						<div id="performance-map"></div>
+					</div>
+
 				</div>
 			</div>
 		{{/if !stats}}
@@ -86,8 +157,9 @@
 
 <script type="text/javascript">
 	var debounce = require('public/js/utils/debounce');
+	var cdnColors = [ '#4517f3', '#00a6c9', '#9b24b4', '#ef6e5c' ];
 	var loading = 3;
-	var stats;
+	var chartsLoaded, stats;
 
 	component.exports = {
 		data: function () {
@@ -102,19 +174,31 @@
 			if (!Ractive.isServer) {
 				var _this = this;
 
-				google.load('visualization', '1.2', {
-					packages: [ 'corechart', 'geochart' ],
-					language: 'en',
-					callback: onLoad,
-				});
+				if (!chartsLoaded) {
+					google.charts.load('44', {
+						packages: [ 'corechart' ],
+						language: 'en',
+						callback: onLoad
+					});
+				}
 
 				if (!stats) {
 					$.getJSON('/api/stats', function (data) {
 						stats = data;
 
 						// Convert UNIX timestamps to Date objects.
-						stats.cedexis.decisions.forEach(function (entry) {
-							entry[0] = new Date(entry[0] * 1000);
+						stats.cedexis.decisions = stats.cedexis.decisions.map(function (entry) {
+							return [
+								new Date(entry[0] * 1000),
+								entry[1],
+								'point { size: 3; fill-color: #fff; stroke-width: 2; stroke-color: ' + cdnColors[0] +' }',
+								entry[2],
+								'point { size: 3; fill-color: #fff; stroke-width: 2; stroke-color: ' + cdnColors[1] +' }',
+								entry[3],
+								'point { size: 3; fill-color: #fff; stroke-width: 2; stroke-color: ' + cdnColors[2] +' }',
+								entry[4],
+								'point { size: 3; fill-color: #fff; stroke-width: 2; stroke-color: ' + cdnColors[3] +' }',
+							];
 						});
 
 						stats.dns.chart.forEach(function (entry) {
@@ -150,19 +234,18 @@
 	}
 
 	function draw () {
+		chartsLoaded = true;
+
 		if (loading <= 0) {
 			var lineChartDefaults = {
-				backgroundColor: {
-					stroke: '#cee1e1',
-					strokeWidth: 4,
-				},
+				areaOpacity: .6,
 				chartArea: {
 					left: 100,
 					top: 30,
 					height: 350,
 					width: '85%',
 				},
-				colors: [ '#3a46b6', '#920784', '#20a9e9', '#d41800' ],
+				colors: cdnColors,
 				curveType: 'function',
 				focusTarget: 'category',
 				fontName: 'Open Sans',
@@ -183,6 +266,7 @@
 				legend: {
 					position: 'bottom',
 				},
+				lineWidth: 0.1,
 				tooltip: {
 					isHtml: true,
 					trigger: 'both',
@@ -221,9 +305,13 @@
 
 			loadBalancingData.addColumn('date', 'Date');
 			loadBalancingData.addColumn('number', 'MaxCDN');
+			loadBalancingData.addColumn({ type: 'string', role: 'style' });
 			loadBalancingData.addColumn('number', 'CloudFlare');
+			loadBalancingData.addColumn({ type: 'string', role: 'style' });
 			loadBalancingData.addColumn('number', 'KeyCDN');
+			loadBalancingData.addColumn({ type: 'string', role: 'style' });
 			loadBalancingData.addColumn('number', 'Quantil');
+			loadBalancingData.addColumn({ type: 'string', role: 'style' });
 			loadBalancingData.addRows(stats.cedexis.decisions);
 
 			numberFormatter.format(loadBalancingData, 1);
@@ -231,7 +319,7 @@
 			numberFormatter.format(loadBalancingData, 3);
 			numberFormatter.format(loadBalancingData, 4);
 
-			var loadBalancingChart = new google.visualization.LineChart($('#load-balancing')[0]);
+			var loadBalancingChart = new google.visualization.AreaChart($('#load-balancing')[0]);
 			loadBalancingChart.draw(loadBalancingData, lineChartDefaults);
 
 			// DNS.
@@ -243,7 +331,7 @@
 
 			numberFormatter.format(dnsData, 1);
 
-			var dnsChart = new google.visualization.LineChart($('#dns-requests')[0]);
+			var dnsChart = new google.visualization.AreaChart($('#dns-requests')[0]);
 			dnsChart.draw(dnsData, $.extend(true, {}, lineChartDefaults, {
 				chartArea: {
 					width: '83%',
@@ -251,6 +339,7 @@
 				legend: {
 					position: 'none',
 				},
+				colors: [ cdnColors[1] ],
 			}));
 
 			// Load balancing map.
