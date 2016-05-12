@@ -186,7 +186,6 @@
 					$.getJSON('/api/stats', function (data) {
 						stats = data;
 
-						// Convert UNIX timestamps to Date objects.
 						stats.cedexis.decisions = stats.cedexis.decisions.map(function (entry) {
 							return [
 								new Date(entry[0] * 1000),
@@ -201,8 +200,10 @@
 							];
 						});
 
-						stats.dns.chart.forEach(function (entry) {
+						stats.dns.chart = stats.dns.chart.map(function (entry) {
 							entry[0] = new Date(entry[0] * 1000);
+							entry[2] = 'point { size: 3; fill-color: #fff; stroke-width: 2; stroke-color: ' + cdnColors[1] +' }';
+							return entry;
 						});
 
 						stats.cedexis.map.forEach(function (entry) {
@@ -327,6 +328,7 @@
 
 			dnsData.addColumn('date', 'Date');
 			dnsData.addColumn('number', 'Requests');
+			dnsData.addColumn({ type: 'string', role: 'style' });
 			dnsData.addRows(stats.dns.chart);
 
 			numberFormatter.format(dnsData, 1);
