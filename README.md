@@ -11,7 +11,7 @@
 # Configuration
 
  - `PORT` - defaults to `4400`.
- - `NODE_ENV` - optional - setting this to `development` will allow logging to console instead of logentries.
+ - `NODE_ENV` - `development`/`production`
  - `LOGENTRIES_ACCESS_TOKEN` - optional - logentries token for logging incoming requests.
  - `LOGENTRIES_APP_TOKEN` - optional - logentries token for logging everything else.
  - `ALGOLIA_API_KEY` - optional - algolia token with write permissions to `jsDelivr` and `jsDelivr_assets` indices.
