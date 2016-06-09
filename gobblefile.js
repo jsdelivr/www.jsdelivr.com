@@ -16,6 +16,7 @@ var app = gobble([
 	.transform('esperanto-bundle', { type: 'umd', name: 'app', entry: 'public/js/app.js', dest: 'public/js/app.js', strict: true });
 
 module.exports = gobble([
+	gobble('src'),
 	gobble('src/public/js')
 		.transform('babel')
 		.moveTo('public/js'),
