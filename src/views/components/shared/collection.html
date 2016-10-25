@@ -11,13 +11,11 @@
 								<div class="input-group">
 									<input type="text" class="collection-link" twoway="false" value="{{mainLink}}" decorator="select" disabled="{{disableLink}}" readonly>
 
-									{{#if hasFlash}}
-										<span class="input-group-btn">
-											<button class="btn btn-default btn-copy" decorator="zeroClipboard" data-clipboard-text="{{mainLink}}" disabled="{{disableLink}}">
-												<i class="fa fa-copy"></i>Copy
-											</button>
-										</span>
-									{{/if hasFlash}}
+									<span class="input-group-btn">
+										<button class="btn btn-default btn-copy" decorator="zeroClipboard" data-clipboard-text="{{mainLink}}" disabled="{{disableLink}}">
+											<i class="fa fa-copy"></i>Copy
+										</button>
+									</span>
 								</div>
 							</div>
 
@@ -82,8 +80,6 @@
 		},
 		oninit: function () {
 			if (!Ractive.isServer) {
-				this.set('hasFlash', !ZeroClipboard.isFlashUnusable());
-
 				if (has.localStorage()) {
 					this.observe('collection', function (newValue) {
 						localStorage.setItem('collection', JSON.stringify(newValue));

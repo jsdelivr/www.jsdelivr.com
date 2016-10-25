@@ -77,10 +77,6 @@ app.router.addRoute('/(.*)', () => {
 });
 
 $(() => {
-	ZeroClipboard.config({
-		swfPath: '//cdn.jsdelivr.net/zeroclipboard/2.2.0/ZeroClipboard.swf'
-	});
-
 	app.router
 		.init()
 		.watchLinks()

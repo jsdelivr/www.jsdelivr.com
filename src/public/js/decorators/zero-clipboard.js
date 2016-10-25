@@ -1,5 +1,5 @@
 export default function (node, tooltipPlacement = 'top') {
-	let clip = new ZeroClipboard(node);
+	let clipboard = new Clipboard(node);
 	let $node = $(node);
 	let tooltipOptions = {
 		title: 'Copy to Clipboard',
@@ -9,18 +9,24 @@ export default function (node, tooltipPlacement = 'top') {
 		animation: false,
 	};
 
-	$node
-		.on('mouseover', () => {
-			$node
-				.tooltip('destroy')
-				.tooltip(tooltipOptions)
-				.tooltip('show');
-		});
+	$node.on('mouseover', () => {
+		$node
+			.tooltip('destroy')
+			.tooltip(tooltipOptions)
+			.tooltip('show');
+	});
 
-	clip.on('aftercopy', () => {
+	clipboard.on('success', function () {
 		$node
 			.tooltip('destroy')
 			.tooltip($.extend({}, tooltipOptions, { title: 'Copied!' }))
+			.tooltip('show');
+	});
+
+	clipboard.on('error', function () {
+		$node
+			.tooltip('destroy')
+			.tooltip($.extend({}, tooltipOptions, { title: 'Press Ctrl+C to copy' }))
 			.tooltip('show');
 	});
 
