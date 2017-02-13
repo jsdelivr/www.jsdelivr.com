@@ -12,15 +12,15 @@ export default function (project, version) {
 			return 1;
 		}
 
-		if (/[._-]min./i.test(a)) {
-			if (/[._-]min./i.test(b)) {
+		if (/[._-]min\./i.test(a)) {
+			if (/[._-]min\./i.test(b)) {
 				return a > b || -1;
 			}
 
 			return -1;
 		}
 
-		if (/[._-]min./i.test(b)) {
+		if (/[._-]min\./i.test(b)) {
 			return 1;
 		}
 
