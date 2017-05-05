@@ -47,15 +47,15 @@
 				</div>
 
 				<div class="hs">
-					{{#if usedCdn === 'keycdn'}}
+					{{#if usedCdn === 'fastly'}}
 						<span class="hs-info">Most optimal CDN for you is:</span>
 					{{/if usedCdn}}
 
-					<a target="_blank" href="https://www.keycdn.com/">
-						{{#if usedCdn === 'keycdn'}}
-							<img src="/img/sponsors-header/keycdn-c.png" height="54">
+					<a target="_blank" href="https://www.fastly.com/">
+						{{#if usedCdn === 'fastly'}}
+							<img src="/img/sponsors-header/fastly-c.png" height="54">
 						{{else}}
-							<img src="/img/sponsors-header/keycdn.png" height="54">
+							<img src="/img/sponsors-header/fastly.png" height="54">
 						{{/if usedCdn}}
 					</a>
 				</div>
@@ -115,7 +115,7 @@
 					<a target="_blank" href="http://www.cedexis.com/"><img src="/img/sponsors-header/cedexis.png"></a>
 					<a target="_blank" href="https://www.stackpath.com/"><img src="/img/sponsors-header/stackpath.png"></a>
 					<a target="_blank" href="https://www.cloudflare.com/"><img src="/img/sponsors-header/cloudflare.png"></a>
-					<a target="_blank" href="https://www.keycdn.com/"><img src="/img/sponsors-header/keycdn.png"></a>
+					<a target="_blank" href="https://www.fastly.com/"><img src="/img/sponsors-header/fastly.png"></a>
 					<a target="_blank" href="https://ns1.com/"><img src="/img/sponsors-header/nsone.png"></a>
 					<a class="header-become-a-sponsor" href="/sponsors/become-a-sponsor">Become a sponsor</a>
 				</div>
@@ -132,7 +132,6 @@
 	var servers = {
 		'NetDNA-cache/2.2': 'maxcdn',
 		'cloudflare-nginx': 'cloudflare',
-		'keycdn-engine': 'keycdn',
 	};
 
 	component.exports = {
@@ -161,8 +160,9 @@
 						url: 'https://cdn.jsdelivr.net/information.txt',
 						async: true,
 						success: function (data, textStatus, jqXHR) {
-							_this.set('usedCdn', servers[jqXHR.getResponseHeader('server')]);
-							_this.set('app.usedCdn', servers[jqXHR.getResponseHeader('server')]);
+							var cdn = jqXHR.getResponseHeader('x-served-by') ? 'fastly' : servers[jqXHR.getResponseHeader('server')];
+							_this.set('usedCdn', cdn);
+							_this.set('app.usedCdn', cdn);
 						},
 					})
 
