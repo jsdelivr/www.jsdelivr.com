@@ -81,10 +81,10 @@ app.use((req, res, next) => {
 /**
  * Render on server side if it's a bot.
  */
-app.use((req, res, next) => {
-	if (!isBot(req.headers['user-agent'])) {
-		return next();
-	}
+app.use((req, res) => {
+	// if (!isBot(req.headers['user-agent'])) {
+	// 	return next();
+	// }
 
 	render(req, res);
 });
