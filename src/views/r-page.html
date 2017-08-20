@@ -1,0 +1,37 @@
+{{#if !@shared.isServer}}
+	{{yield}}
+{{else}}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<meta name="description" content="A free super-fast CDN for developers and webmasters">
+			<title>{{title || 'jsDelivr - A free super-fast CDN for developers and webmasters'}}</title>
+			{{yield seo}}
+			<link rel="stylesheet" href="/css/app.css?{{@shared.commitHash}}">
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700">
+			<link rel="stylesheet" href="//cdn.jsdelivr.net/fontawesome/4.7.0/css/font-awesome.min.css">
+			{{yield css}}
+			<link rel="sitemap" href="/sitemap.xml" type="application/xml">
+		</head>
+
+		<body>
+			<div id="wrapper">
+				<div id="page">{{yield}}</div>
+				<div id="push"></div>
+			</div>
+
+			<script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+			<script src="//cdn.jsdelivr.net/npm/ractive"></script>
+			<script src="//cdn.jsdelivr.net/npm/ractive-transitions-fly"></script>
+			<script src="//cdn.jsdelivr.net/npm/ractive-transitions-slide"></script>
+			<script src="//cdn.jsdelivr.net/npm/ractive-transitions-fade"></script>
+			<script src="//cdn.jsdelivr.net/npm/jquery"></script>
+			<script src="//cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+			<script src="//cdn.jsdelivr.net/npm/ractive-route"></script>
+			<script src="/js/app.js?x{{@shared.commitHash}}"></script>
+			{{yield js}}
+		</body>
+	</html>
+{{/if}}

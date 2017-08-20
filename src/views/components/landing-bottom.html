@@ -1,0 +1,139 @@
+<div class="c-landing-bottom">
+	<section class="built-for-production">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-4 col-md-5 col-sm-6">
+					<img src="/img/landing/built-for-production-icon.png" srcset="/img/landing/built-for-production-icon@2x.png 2x">
+					<h2 class="section-title">Built for production</h2>
+
+					<ul class="features-list">
+						<li>four CDN & two DNS providers</li>
+						<li>more than 750 points of presence</li>
+						<li>RUM based load balancing</li>
+						<li>faster than any other CDN</li>
+						<li>failover on every layer</li>
+						<li>works in China</li>
+					</ul>
+				</div>
+
+				<div class="col-lg-8 col-md-7 col-sm-6 hidden-xs">
+					<img class="network-map" src="/img/landing/network-map.png" srcset="/img/landing/network-map@2x.png 2x" title="Network map">
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="requests-served">
+		<div class="count"><span class="number">{{_.formatNumber(@shared.requestsServed)}}</span> requests served</div>
+		<div class="since">since you opened this page</div>
+	</section>
+
+	<section class="developer-friendly">
+		<div class="developer-friendly-bg-top">
+			<div class="stats-button-wrapper">
+				<a href="" class="btn-featured btn">SEE MORE STATS</a>
+			</div>
+		</div>
+
+		<div class="developer-friendly-bg-middle">
+			<div class="container ">
+				<div class="row">
+					<div class="col-lg-6 col-md-7 hidden-xs">
+						<div class="top-10-table">
+							<table class="top-10-table-table">
+								<colgroup>
+									<col style="width:50%;">
+									<col style="width:22%;">
+									<col style="width:28%;">
+								</colgroup>
+
+								<thead>
+								<tr>
+									<th colspan="3">TOP 10 downloads last 30 days</th>
+								</tr>
+								</thead>
+
+								<tbody>
+								{{#each topPackages.slice(0, 10)}}
+								<tr>
+									<td><span class="type">{{type}}/</span>{{name}}</td>
+									<td class="hits">{{_.formatNumber(hits)}}</td>
+									<td>
+										<div class="table-graph" style="width: {{hits/topPackages[0].hits*100}}px"></div>
+									</td>
+								</tr>
+								{{/each}}
+								</tbody>
+							</table>
+						</div>
+					</div>
+
+					<div class="col-lg-5 col-md-5 col-lg-offset-1 col-md-offset-0">
+						<img src="/img/landing/developer-friendly-icon.png" srcset="/img/landing/developer-friendly-icon@2x.png 2x">
+						<h2 class="section-title">Developer Friendly</h2>
+
+						<ul class="features-list">
+							<li>all files from npm and GitHub available
+								<div class="next-line">with zero setup</div>
+							</li>
+							<li>combine multiple files on-demand</li>
+							<li>minify files on-demand</li>
+							<li>source map support</li>
+							<li>version aliasing</li>
+							<li>usage statistics</li>
+							<li>API</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="developer-friendly-bg-bottom"></div>
+	</section>
+
+	<section class="used-by">
+		<h3 class="section-title">jsDelivr is used by</h3>
+		<img src="/img/used-by/mozilla.png" srcset="/img/used-by/mozilla@2x.png 2x" title="Used by Mozilla">
+		<img src="/img/used-by/urban-dictionary.png" srcset="/img/used-by/urban-dictionary@2x.png 2x" title="Used by Urban Dictionary">
+		<img src="/img/used-by/the-new-york-times.png" srcset="/img/used-by/the-new-york-times@2x.png 2x" title="Used by The New York Times">
+		<img src="/img/used-by/nbc.png" srcset="/img/used-by/nbc@2x.png 2x" title="Used by NBC News">
+		<img src="/img/used-by/britannica.png" title="Used by Encyclopedia Britannica">
+	</section>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+
+	component.exports = {
+		easing: {
+			random (t) {
+				return Math.pow(t, 2);
+			},
+		},
+		data () {
+			return {
+				_,
+			};
+		},
+		oninit () {
+			if (!this.get('@shared.requestsServed')) {
+				this.set('@shared.requestsServed', 0);
+			}
+
+			if (!Ractive.isServer) {
+				let animateRequests = () => {
+					let seconds = Math.floor(Math.random() * 15 + 5);
+					this.animate('@shared.requestsServed', this.get('@shared.requestsServed') + 5750 * seconds, { duration: (seconds + 1) * 1000, easing: 'easeOut' }); // ~ 5750 / sec
+					setTimeout(animateRequests, seconds * 1000);
+				};
+
+				animateRequests();
+
+				// Load top packages.
+				app.http.fetchTopPackages().then((data) => {
+					this.set('topPackages', data);
+				});
+			}
+		},
+	};
+</script>
