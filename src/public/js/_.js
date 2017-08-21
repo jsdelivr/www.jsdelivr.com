@@ -12,4 +12,15 @@ module.exports = {
 	formatNumber (number) {
 		return Math.floor(number).toString().replace(/\d(?=(?:\d{3})+$)/g, '$& ');
 	},
+	listFiles: function listFiles (files = [], path) {
+		if (!path.length) {
+			return files;
+		}
+
+		let p = path.slice();
+		let n = p.shift();
+		let d = files.filter(f => f.name === n)[0];
+
+		return d && d.files ? listFiles(d.files, p) : null;
+	},
 };

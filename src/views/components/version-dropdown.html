@@ -1,0 +1,20 @@
+<div class="version-dropdown btn-group ">
+	{{#if package.versions.length > 1}}
+	<span class="version-dropdown-selected-version" data-toggle="dropdown">
+		<a>{{version}}</a>
+		<i class="fa fa-angle-down" aria-hidden="true"></i>
+	</span>
+
+	<ul class="dropdown-menu dropdown-menu-right">
+		{{#each package.versions}}
+		{{#if this !== version}}
+		<li><a on-click="@this.set('version', this)">{{this}}</a></li>
+		{{/if}}
+		{{/each package.versions}}
+	</ul>
+	{{else}}
+	<span class="version-dropdown-selected-version">
+		<a>{{version}}</a>
+	</span>
+	{{/if}}
+</div>

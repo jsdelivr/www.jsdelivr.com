@@ -3,10 +3,72 @@
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/package.html" name="c-package">
 
-<r-page>
+<r-page noYield="{{noYield}}">
 	<div class="p-package">
 		<c-header></c-header>
-		<c-package-header></c-package-header>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8">
+					{{#if package}}
+					<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}"></c-package>
+					{{/if}}
+				</div>
+			</div>
+		</div>
+
 		<c-footer></c-footer>
 	</div>
 </r-page>
+
+<script>
+	const search = require('../../public/js/utils/search');
+	let app;
+
+	component.exports = {
+		computed: {
+			path: {
+				get () {
+					return this.get('pathA').join('/');
+				},
+				set (value = '') {
+					this.set('pathA', value.split('/').filter(v => v));
+				},
+			},
+		},
+		data () {
+			return {
+				package: {},
+				pathA: [],
+			};
+		},
+		oninit () {
+			// Convert user/repo to name for GitHub packages.
+			this.observe('user repo', () => {
+				this.set('name', this.get('user') + '/' + this.get('repo'));
+			}, { init: false });
+
+			if (!Ractive.isServer) {
+				// Load package metadata.
+				search(this.get('name'), this.get('page')).then((result) => {
+					this.set({ package: result.response.hits[0], });
+				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				app = this.get('@shared.app');
+			}
+		},
+		scrollToSearch () {
+			if (app.config.animateScrolling) {
+				$('html, body').animate({
+					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
+				});
+			} else {
+				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				app.config.animateScrolling = true;
+			}
+		}
+	};
+</script>

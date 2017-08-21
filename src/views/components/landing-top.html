@@ -146,6 +146,7 @@
 
 <script>
 	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
 
 	component.exports = {
 		noIntro: true,
@@ -187,12 +188,12 @@
 				});
 
 				// Highlight the used CDN.
-				app.http.fetchCdnHeaders().then((cdn) => {
+				http.fetchCdnHeaders().then((cdn) => {
 					this.set('usedCdn', cdn);
 				});
 
 				// Load network stats.
-				app.http.fetchNetworkStats().then((data) => {
+				http.fetchNetworkStats().then((data) => {
 					this.animate('networkStats', data);
 				});
 

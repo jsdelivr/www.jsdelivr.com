@@ -131,7 +131,31 @@ server.use(async (ctx, next) => {
 	return next();
 });
 
-router.get('/*', async (ctx) => {
+router.get([
+	'/package/:type(npm)/:name',
+	'/package/:type(gh)/:user/:repo',
+], async (ctx) => {
+	let data = {
+		type: ctx.params.type,
+		name: ctx.params.name,
+		user: ctx.params.user,
+		repo: ctx.params.repo,
+		path: ctx.query.path,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/package.html', data);
+	} catch (e) {
+		if (server.env === 'development') {
+			console.error(e);
+		}
+
+		data.noYield = true;
+		ctx.body = await ctx.render('pages/index.html', data);
+	}
+});
+
+router.get([ '/*' ], async (ctx) => {
 	let data = {
 		docs: ctx.query.docs,
 	};

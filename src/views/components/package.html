@@ -1,14 +1,20 @@
+<link rel="ractive" href="../components/version-dropdown.html" name="c-version-dropdown">
+
 <div class="c-package">
 	{{#with package}}
 	<div class="row">
 		<div class="col-sm-8">
+			{{#if onlyHeader}}
 			<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
+			{{else}}
+			<h1 class="package-name">{{name}}</h1>
+			{{/if}}
 		</div>
 
 		<div class="col-sm-4">
 			<div class="package-buttons">
 				{{#if homepage}}
-				<a target="_blank" href="" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
+				<a target="_blank" href="{{homepage}}" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
 				{{/if}}
 				{{#if githubRepo}}
 				<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
@@ -24,5 +30,113 @@
 	{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
 
 	<p class="package-description">{{description}}</p>
+
+	{{#if package.versions}}
+	<div class="package-keywords">
+		{{#each keywords}}
+		<span class="package-label">{{this}}</span>
+		{{/each}}
+	</div>
+
+	<div class="package-files">
+		<h2 class="small-headline">CDN Files</h2>
+
+		<div class="box box-files">
+			<div class="box-header">
+				<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
+				{{#each path.slice(0, -1)}}
+				/ <a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
+				{{/each}}
+				{{#if path}}
+				/ <span class="path-part active">{{path[path.length - 1]}}</span>
+				{{/if}}
+
+				<c-version-dropdown package="{{package}}" version="{{~/version}}"></c-version-dropdown>
+			</div>
+
+			<div class="box-content">
+				<div class="file-link file-default">
+					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}">
+						<i class="fa fa-file-code-o" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{~/default.substr(1)}}</span>
+					</a>
+
+					<input type="checkbox" class="switch-inline" id="{{~/name}}/{{~/version}}{{~/default}}" value="on">
+					<label for="{{~/name}}/{{~/version}}{{~/default}}"></label>
+
+					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
+				</div>
+
+				{{#each _.listFiles(~/files, path)}}
+				<div class="file-link">
+					{{#if type === 'directory'}}
+					<a on-click="@this.push('path', name)">
+						<i class="fa fa-folder" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+					</a>
+					{{else}}
+					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+						<i class="fa fa-file" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+					</a>
+
+					<input type="checkbox" class="switch-inline" id="{{~/name}}/{{~/version}}/{{name}}" value="on">
+					<label for="{{~/name}}/{{~/version}}/{{name}}"></label>
+					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" class="fa fa-clipboard" aria-hidden="true"></i>
+					{{/if}}
+				</div>
+				{{/each}}
+			</div>
+		</div>
+	</div>
+	{{/if}}
 	{{/with}}
 </div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		computed: {
+			pathS() {
+				return this.get('path').length ? this.get('path').join('/') + '/' : '';
+			}
+		},
+		data() {
+			return {
+				_,
+				files: [],
+				path: [],
+			};
+		},
+		decorators: {
+			clipboard,
+		},
+		oninit() {
+			if (!Ractive.isServer) {
+				if (!this.get('onlyHeader')) {
+					// Load package versions.
+					http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
+						this.set('package.versions', data.versions);
+					});
+
+					// Load package files.
+					this.observe('version', (version) => {
+						this.set('files', []);
+
+						http.fetchPackageFiles(this.get('type'), this.get('name'), version).then((data) => {
+							this.set('default', data.default);
+							this.set('files', data.files);
+						}).catch(() => {
+							// handle 403?
+						});
+					}, { init: false });
+				}
+			}
+
+			this.set('version', this.get('package.version'));
+		},
+	};
+</script>

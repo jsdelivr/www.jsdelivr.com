@@ -52,6 +52,7 @@ async function compileJs (file, minify) {
 			format: 'umd',
 			moduleName: 'app',
 			globals: {
+				algoliasearch: 'algoliasearch',
 				ractive: 'Ractive',
 			},
 		})).code;

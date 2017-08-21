@@ -11,7 +11,7 @@
 
 		<div class="search-results">
 			{{#each packages}}
-			<div class="package">
+			<div class="package" fade-in-out="{ duration: 200 }">
 				<c-package package="{{this}}" onlyHeader="true"></c-package>
 			</div>
 			{{/each}}
@@ -42,6 +42,7 @@
 </div>
 
 <script>
+	const search = require('../../public/js/utils/search');
 	let app;
 
 	component.exports = {
@@ -87,14 +88,19 @@
 							this.set('hideLanding', false);
 							this.set('packages', []);
 						} else {
-							app.search(this.get('query'), this.get('page')).then((result) => {
+							search(this.get('query'), this.get('page')).then((result) => {
 								// The query might have changed since we sent the request.
 								if (result.query === this.get('query')) {
+									// An exact match should always come first.
+									result.response.hits.sort((a, b) => {
+										return a.name === result.query ? -1 : b.name === result.query;
+									});
+
 									this.set('packages', result.response.hits, { shuffle: 'name' });
 									this.set('hideLanding', true);
 
 									this.set({
-										//fadeIn: true,
+										fadeIn: true,
 										nbPages: result.response.nbPages,
 										nbHits: result.response.nbHits,
 									});

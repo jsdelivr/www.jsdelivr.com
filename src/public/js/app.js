@@ -1,13 +1,10 @@
 const cIndex = require('../../views/pages/index.html');
-const search = require('./utils/search');
-const http = require('./utils/http');
+const cPackage = require('../../views/pages/package.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 Ractive.defaults.isolated = true;
 
 let app = {
-	http,
-	search,
 	config: {
 		animateScrolling: true,
 	},
@@ -39,6 +36,8 @@ Ractive.Router.prototype.dispatch = function () {
 };
 
 app.router.addRoute('/', (cIndex), { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path' ] });
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });
