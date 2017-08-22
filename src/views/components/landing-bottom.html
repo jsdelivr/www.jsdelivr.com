@@ -1,3 +1,5 @@
+<link rel="ractive" href="./stats-table.html" name="c-stats-table">
+
 <div class="c-landing-bottom">
 	<section class="built-for-production">
 		<div class="container">
@@ -7,7 +9,7 @@
 					<h2 class="section-title">Built for production</h2>
 
 					<ul class="features-list">
-						<li>four CDN & two DNS providers</li>
+						<li><a>four CDN & two DNS providers</a></li>
 						<li>more than 750 points of presence</li>
 						<li>RUM based load balancing</li>
 						<li>faster than any other CDN</li>
@@ -39,33 +41,11 @@
 			<div class="container ">
 				<div class="row">
 					<div class="col-lg-6 col-md-7 hidden-xs">
-						<div class="top-10-table">
-							<table class="top-10-table-table">
-								<colgroup>
-									<col style="width:50%;">
-									<col style="width:22%;">
-									<col style="width:28%;">
-								</colgroup>
-
-								<thead>
-								<tr>
-									<th colspan="3">TOP 10 downloads last 30 days</th>
-								</tr>
-								</thead>
-
-								<tbody>
-								{{#each topPackages.slice(0, 10)}}
-								<tr>
-									<td><span class="type">{{type}}/</span>{{name}}</td>
-									<td class="hits">{{_.formatNumber(hits)}}</td>
-									<td>
-										<div class="table-graph" style="width: {{hits/topPackages[0].hits*100}}px"></div>
-									</td>
-								</tr>
-								{{/each}}
-								</tbody>
-							</table>
-						</div>
+						<c-stats-table title="Top 10 packages last 30 days" data="{{topPackages.slice(0, 10)}}">
+							{{#partial column1}}
+							<a href="/package/{{type}}/{{name}}"><span class="prefix">{{type}}/</span>{{name}}</a>
+							{{/partial}}
+						</c-stats-table>
 					</div>
 
 					<div class="col-lg-5 col-md-5 col-lg-offset-1 col-md-offset-0">

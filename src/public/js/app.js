@@ -1,4 +1,5 @@
 const cIndex = require('../../views/pages/index.html');
+const cFeatures = require('../../views/pages/features.html');
 const cPackage = require('../../views/pages/package.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
@@ -17,6 +18,7 @@ app.router = new Ractive.Router({
 	data () {
 		return {
 			app,
+			collection: localStorage.getItem('collection2') ? JSON.parse(localStorage.getItem('collection2')) : [],
 		};
 	},
 	globals: [ 'query', 'collection' ],
@@ -38,6 +40,7 @@ Ractive.Router.prototype.dispatch = function () {
 app.router.addRoute('/', (cIndex), { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path', 'version' ] });
 app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'version' ] });
+app.router.addRoute('/features', (cFeatures));
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });

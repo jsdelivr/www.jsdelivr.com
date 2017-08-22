@@ -26,6 +26,16 @@ module.exports.fetchPackageFiles = (type, name, version) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}`);
 };
 
+module.exports.fetchPackageVersionStats = (type, name) => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/day`);
+
+};
+
+module.exports.fetchPackageFileStats = (type, name, version) => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}/stats/day`);
+
+};
+
 module.exports.fetchPackageVersions = (type, name) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}`);
 };

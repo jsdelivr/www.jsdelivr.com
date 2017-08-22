@@ -8,13 +8,9 @@
 		<c-header></c-header>
 
 		<div class="container">
-			<div class="row">
-				<div class="col-md-8">
-					{{#if package}}
-					<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}"></c-package>
-					{{/if}}
-				</div>
-			</div>
+			{{#if package}}
+			<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}" collection="{{collection}}"></c-package>
+			{{/if}}
 		</div>
 
 		<c-footer></c-footer>
@@ -47,6 +43,7 @@
 		},
 		data () {
 			return {
+				collection: [],
 				package: {},
 				pathA: [],
 			};
@@ -74,6 +71,10 @@
 				} else {
 					this.set({
 						package: {
+							githubRepo: {
+								user: this.get('user'),
+								project: this.get('repo'),
+							},
 							owner: {
 								link: `https://github.com/${this.get('user')}/`,
 								avatar: `https://github.com/${this.get('user')}.png`,
@@ -82,6 +83,10 @@
 						},
 					});
 				}
+
+				this.observe('collection', function (newValue) {
+					localStorage.setItem('collection2', JSON.stringify(newValue));
+				}, { init: false });
 			}
 		},
 		onrender () {

@@ -1,0 +1,24 @@
+{{#if collection}}
+<div class="c-collection-box">
+	{{#with collection}}
+	<div class="box box-rounded">
+		<div class="box-header">
+			Selected files <i class="fa fa-trash" aria-hidden="true" on-click="@this.set('collection', [])"></i>
+		</div>
+
+		<div class="box-content">
+			{{#each this}}
+			<div class="box-content-line">
+				<a href="/package/{{type}}/{{name}}">{{name}}</a>{{file}}
+				<i class="fa fa-times" aria-hidden="true" on-click="@this.splice('collection', 	@index, 1)"></i>
+			</div>
+			{{/each}}
+
+			<a class="box-content-button box-content-line">
+				SHOW &amp; CONFIGURE ALL LINKS <i class="fa fa-chevron-right" aria-hidden="true"></i>
+			</a>
+		</div>
+	</div>
+	{{/with}}
+</div>
+{{/if}}

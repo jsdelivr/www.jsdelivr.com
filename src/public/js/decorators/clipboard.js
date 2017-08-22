@@ -16,14 +16,14 @@ module.exports = (node, tooltipPlacement = 'top') => {
 			.tooltip('show');
 	});
 
-	clipboard.on('success', function () {
+	clipboard.on('success', () => {
 		$node
 			.tooltip('destroy')
 			.tooltip($.extend({}, tooltipOptions, { title: 'Copied!' }))
 			.tooltip('show');
 	});
 
-	clipboard.on('error', function () {
+	clipboard.on('error', () => {
 		$node
 			.tooltip('destroy')
 			.tooltip($.extend({}, tooltipOptions, { title: 'Press Ctrl+C to copy' }))
@@ -31,6 +31,6 @@ module.exports = (node, tooltipPlacement = 'top') => {
 	});
 
 	return {
-		teardown: () => {}
+		teardown: () => {},
 	};
-}
+};
