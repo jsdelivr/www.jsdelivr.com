@@ -40,6 +40,7 @@ async function compileJs (file, minify) {
 	let code = (await rollup.rollup({
 		entry: file,
 		external: [
+			'algoliasearch',
 			'ractive',
 		],
 		plugins: [

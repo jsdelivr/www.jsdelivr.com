@@ -11,7 +11,7 @@
 			<div class="row">
 				<div class="col-md-8">
 					{{#if package}}
-					<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}"></c-package>
+					<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}"></c-package>
 					{{/if}}
 				</div>
 			</div>
@@ -35,6 +35,15 @@
 					this.set('pathA', value.split('/').filter(v => v));
 				},
 			},
+			version: {
+				get () {
+					return this.get('versionS') === this.get('versionP') ? '' : this.get('versionP');
+				},
+				set (value) {
+					this.set('versionS', true);
+					this.set('versionP', value);
+				},
+			},
 		},
 		data () {
 			return {
@@ -43,16 +52,36 @@
 			};
 		},
 		oninit () {
+			this.observe('versionP', (newValue) => {
+				if (newValue && !this.get('versionS')) {
+					this.set('versionS', newValue);
+				}
+			});
+
 			// Convert user/repo to name for GitHub packages.
 			this.observe('user repo', () => {
-				this.set('name', this.get('user') + '/' + this.get('repo'));
-			}, { init: false });
+				if (this.get('user') && this.get('repo')) {
+					this.set('name', this.get('user') + '/' + this.get('repo'));
+				}
+			});
 
 			if (!Ractive.isServer) {
-				// Load package metadata.
-				search(this.get('name'), this.get('page')).then((result) => {
-					this.set({ package: result.response.hits[0], });
-				});
+				if (this.get('type') === 'npm') {
+					// Load package metadata.
+					search(this.get('name'), this.get('page')).then((result) => {
+						this.set({ package: result.response.hits[0], });
+					});
+				} else {
+					this.set({
+						package: {
+							owner: {
+								link: `https://github.com/${this.get('user')}/`,
+								avatar: `https://github.com/${this.get('user')}.png`,
+								name: this.get('user'),
+							},
+						},
+					});
+				}
 			}
 		},
 		onrender () {
