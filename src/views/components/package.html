@@ -5,7 +5,7 @@
 <div class="c-package">
 	{{#with package}}
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-{{onlyHeader ? 12 : 8}}">
 			<div class="row">
 				<div class="col-sm-8">
 					{{#if onlyHeader}}
@@ -17,7 +17,7 @@
 
 				<div class="col-sm-4">
 					<div class="package-buttons">
-						{{#if type === 'npm'}}
+						{{#if !type || type === 'npm'}}
 						{{#if homepage}}
 						<a target="_blank" href="{{homepage}}" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
 						{{/if}}
@@ -58,6 +58,10 @@
 	</div>
 
 	<div class="row">
+		<div class="col-md-4 hidden-lg hidden-md">
+			<c-collection-box collection="{{collection}}"></c-collection-box>
+		</div>
+
 		<div class="col-md-8">
 			<div class="package-files">
 				<div class="box box-files">
@@ -73,62 +77,67 @@
 						<c-version-dropdown package="{{package}}" version="{{~/version}}"></c-version-dropdown>
 					</div>
 
-					{{#if type === 'npm' && files}}
-					<div class="box-sub-header">
-						{{#if ~/default}}
-						<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
-							<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
-								<i class="fa fa-file-code-o" aria-hidden="true"></i>
-								<span class="file-path">https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}</span>{{~/default}}
-							</a>
+					<div class="box-content-wrapper">
+						{{#if type === 'npm' && files}}
+						<div class="box-sub-header">
+							{{#if ~/default}}
+							<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
+								<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
+									<i class="fa fa-file-code-o" aria-hidden="true"></i>
+									<span class="file-path">https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}</span>{{~/default}}
+								</a>
 
-							<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
-							<label for="df" on-click="@this.toggleCollectionFile(~/default)"></label>
+								<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
+								<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
 
-							<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
-						</div>
-						{{elseif githubRepo}}
-						<div class="file-message text-center">
-							Sadly, this package doesn't have a default file set.
-							Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
-						</div>
-						{{/if}}
-					</div>
-					{{/if}}
-
-					<div class="box-content">
-						{{#each _.listFiles(~/files, path)}}
-						<div class="file-link">
-							{{#if type === 'directory'}}
-							<a on-click="@this.push('path', name)">
-								<i class="fa fa-folder" aria-hidden="true"></i>
-								https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-							</a>
-							{{else}}
-							<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
-								<i class="fa fa-file" aria-hidden="true"></i>
-								https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-							</a>
-
-							<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
-								   twoway="false">
-							<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)"></label>
-							<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+								<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
+							</div>
+							{{elseif githubRepo}}
+							<div class="file-message text-center">
+								Sadly, this package doesn't have a default file set.
+								Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
+							</div>
 							{{/if}}
 						</div>
-						{{else}}
-						<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
-						{{/each}}
+						{{/if}}
+
+						<div class="box-content">
+							{{#each _.listFiles(~/files, path)}}
+							<div class="file-link">
+								{{#if type === 'directory'}}
+								<a on-click="@this.push('path', name)">
+									<i class="fa fa-folder" aria-hidden="true"></i>
+									https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+								</a>
+								{{else}}
+								<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+									<i class="fa fa-file" aria-hidden="true"></i>
+									https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+								</a>
+
+								<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+									   twoway="false">
+								<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)"  as-tooltip="'Add to collection'"></label>
+								<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+								{{/if}}
+							</div>
+							{{else}}
+							<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+							{{/each}}
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="col-md-4">
+		<div class="col-md-4 hidden-sm hidden-xs">
 			<c-collection-box collection="{{collection}}"></c-collection-box>
 		</div>
 	</div>
+	{{/if}}
+	{{/with}}
 
+	{{#if ~/versionStats && ~/fileStats}}
 	<section class="package-usage">
 		<div class="row">
 			<div class="col-md-12">
@@ -151,15 +160,15 @@
 		</div>
 
 		<div class="row">
-			<div class="col-lg-6 col-md-6 hidden-xs">
-				<c-stats-table title="Top 10 version" data="{{~/versionStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+			<div class="col-md-6">
+				<c-stats-table title="Top 10 versions" data="{{~/versionStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 					{{#partial column1}}
 					<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
 					{{/partial}}
 				</c-stats-table>
 			</div>
 
-				<div class="col-lg-6 col-md-6 hidden-xs">
+				<div class="col-md-6">
 				<c-stats-table title="Top 10 files" data="{{~/fileStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 					{{#partial column1}}
 					<span class="prefix">{{~/version}}@</span>{{file}}
@@ -169,7 +178,6 @@
 		</div>
 	</section>
 	{{/if}}
-	{{/with}}
 </div>
 
 <script>
@@ -267,7 +275,7 @@
 									});
 								});
 
-								this.set('versionStats', array.sort((a, b) => b.hits - a.hits));
+								this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
 							});
 
 							// Load version stats.
@@ -281,7 +289,7 @@
 									});
 								});
 
-								this.set('fileStats', array.sort((a, b) => b.hits - a.hits));
+								this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
 							});
 						});
 					});
