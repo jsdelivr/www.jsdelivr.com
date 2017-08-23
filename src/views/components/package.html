@@ -3,181 +3,189 @@
 <link rel="ractive" href="./stats-table.html" name="c-stats-table">
 
 <div class="c-package">
-	{{#with package}}
-	<div class="row">
-		<div class="col-md-{{onlyHeader ? 12 : 8}}">
-			<div class="row">
-				<div class="col-sm-8">
-					{{#if onlyHeader}}
-					<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
-					{{else}}
-					<h1 class="package-name">{{name}}</h1>
-					{{/if}}
-				</div>
-
-				<div class="col-sm-4">
-					<div class="package-buttons">
-						{{#if !type || type === 'npm'}}
-						{{#if homepage}}
-						<a target="_blank" href="{{homepage}}" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
-						{{/if}}
-						{{#if githubRepo}}
-						<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
-						{{/if}}
-						<a target="_blank" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm"><img src="/img/icons/npm.png" srcset="/img/icons/npm@2x.png 2x"></a>
-						<a href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{version}}.tgz" class="button" title="Download"><i class="fa fa-download"
-																																							aria-hidden="true"></i></a>
+	<div class="container">
+		{{#with package}}
+		<div class="row">
+			<div class="col-md-{{onlyHeader ? 12 : 8}}">
+				<div class="row">
+					<div class="col-sm-8">
+						{{#if onlyHeader}}
+						<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
 						{{else}}
-						<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
+						<h1 class="package-name">{{name}}</h1>
 						{{/if}}
 					</div>
-				</div>
-			</div>
 
-			<a href="{{owner.link}}" class="package-owner"><img src="{{owner.avatar}}" width="20">{{owner.name}}</a>
-			<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>
-			{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
-
-			<p class="package-description">{{{description}}}</p>
-
-			{{#if package.versions}}
-			<div class="package-keywords">
-				{{#each keywords}}
-				<span class="package-label">{{this}}</span>
-				{{/each}}
-			</div>
-			{{/if}}
-		</div>
-	</div>
-
-	{{#if package.versions}}
-	<div class="row">
-		<div class="col-md-8">
-			<h2 class="small-headline">CDN Files</h2>
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="col-md-4 hidden-lg hidden-md">
-			<c-collection-box collection="{{collection}}"></c-collection-box>
-		</div>
-
-		<div class="col-md-8">
-			<div class="package-files">
-				<div class="box box-files">
-					<div class="box-header">
-						<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
-						{{#each path.slice(0, -1)}}
-						{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
-						{{/each}}
-						{{#if path}}
-						/ <span class="path-part active">{{path[path.length - 1]}}</span>
-						{{/if}}
-
-						<c-version-dropdown package="{{package}}" version="{{~/version}}"></c-version-dropdown>
-					</div>
-
-					<div class="box-content-wrapper">
-						{{#if type === 'npm' && files}}
-						<div class="box-sub-header">
-							{{#if ~/default}}
-							<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
-								<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
-									<i class="fa fa-file-code-o" aria-hidden="true"></i>
-									<span class="file-path">https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}</span>{{~/default}}
-								</a>
-
-								<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
-								<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-
-								<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
-							</div>
-							{{elseif githubRepo}}
-							<div class="file-message text-center">
-								Sadly, this package doesn't have a default file set.
-								Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
-							</div>
+					<div class="col-sm-4">
+						<div class="package-buttons">
+							{{#if !type || type === 'npm'}}
+							{{#if homepage}}
+							<a target="_blank" href="{{homepage}}" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
+							{{/if}}
+							{{#if githubRepo}}
+							<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
+							{{/if}}
+							<a target="_blank" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm"><img src="/img/icons/npm.png" srcset="/img/icons/npm@2x.png 2x"></a>
+							<a href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{version}}.tgz" class="button" title="Download"><i class="fa fa-download"
+																																								aria-hidden="true"></i></a>
+							{{else}}
+							<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
 							{{/if}}
 						</div>
-						{{/if}}
+					</div>
+				</div>
 
-						<div class="box-content">
-							{{#each _.listFiles(~/files, path)}}
-							<div class="file-link">
-								{{#if type === 'directory'}}
-								<a on-click="@this.push('path', name)">
-									<i class="fa fa-folder" aria-hidden="true"></i>
-									https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-								</a>
-								{{else}}
-								<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
-									<i class="fa fa-file" aria-hidden="true"></i>
-									https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-								</a>
+				<a href="{{owner.link}}" class="package-owner"><img src="{{owner.avatar}}" width="20">{{owner.name}}</a>
+				<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>
+				{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
 
-								<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
-									   twoway="false">
-								<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)"  as-tooltip="'Add to collection'"></label>
-								<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+				<p class="package-description">{{{description}}}</p>
+
+				{{#if package.versions}}
+				<div class="package-keywords">
+					{{#each keywords}}
+					<span class="package-label">{{this}}</span>
+					{{/each}}
+				</div>
+				{{/if}}
+			</div>
+		</div>
+
+		{{#if package.versions}}
+		<div class="row">
+			<div class="col-md-8">
+				<h2 class="small-headline">CDN Files</h2>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-4 hidden-lg hidden-md">
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+
+			<div class="col-md-8">
+				<div class="package-files">
+					<div class="box box-files">
+						<div class="box-header">
+							<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
+							{{#each path.slice(0, -1)}}
+							{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
+							{{/each}}
+							{{#if path}}
+							/ <span class="path-part active">{{path[path.length - 1]}}</span>
+							{{/if}}
+
+							<c-version-dropdown package="{{package}}" version="{{~/version}}"></c-version-dropdown>
+						</div>
+
+						<div class="box-content-wrapper">
+							{{#if type === 'npm' && files}}
+							<div class="box-sub-header">
+								{{#if ~/default}}
+								<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
+									<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
+										<i class="fa fa-file-code-o" aria-hidden="true"></i>
+										<span class="file-path">https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}</span>{{~/default}}
+									</a>
+
+									<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
+									<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
+
+									<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
+								</div>
+								{{elseif githubRepo}}
+								<div class="file-message text-center">
+									Sadly, this package doesn't have a default file set.
+									Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
+								</div>
 								{{/if}}
 							</div>
-							{{else}}
-							<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
-							{{/each}}
+							{{/if}}
+
+							<div class="box-content">
+								{{#each _.listFiles(~/files, path)}}
+								<div class="file-link">
+									{{#if type === 'directory'}}
+									<a on-click="@this.push('path', name)">
+										<i class="fa fa-folder" aria-hidden="true"></i>
+										https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+									</a>
+									{{else}}
+									<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+										<i class="fa fa-file" aria-hidden="true"></i>
+										https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+									</a>
+
+									<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+										   twoway="false">
+									<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)"  as-tooltip="'Add to collection'"></label>
+									<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+									{{/if}}
+								</div>
+								{{else}}
+								<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+								{{/each}}
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="col-md-4 hidden-sm hidden-xs">
-			<c-collection-box collection="{{collection}}"></c-collection-box>
-		</div>
-	</div>
-	{{/if}}
-	{{/with}}
-
-	{{#if ~/versionStats && ~/fileStats}}
-	<section class="package-usage">
-		<div class="row">
-			<div class="col-md-12">
-				<h2 class="small-headline">
-					Package usage
-
-					<div class="btn-group pull-right">
-						<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							Show data for: {{~/statsIntervals[selectedStatsInterval]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
-
-						<ul class="dropdown-menu">
-							{{#each ~/statsIntervals}}
-							<li><a on-click="@this.set ('selectedStatsInterval', @key)">{{this}}</a></li>
-							{{/each}}
-						</ul>
-					</div>
-				</h2>
+			<div class="col-md-4 hidden-sm hidden-xs">
+				<c-collection-box collection="{{collection}}"></c-collection-box>
 			</div>
 		</div>
+		{{/if}}
+		{{/with}}
 
-		<div class="row">
-			<div class="col-md-6">
-				<c-stats-table title="Top 10 versions" data="{{~/versionStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
-					{{#partial column1}}
-					<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
-					{{/partial}}
-				</c-stats-table>
+		{{#if ~/versionStats}}
+		<section class="package-usage">
+			<div class="row">
+				<div class="col-md-12">
+					<h2 class="small-headline">
+						Package usage
+
+						<div class="btn-group pull-right">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Show requests per: {{~/statsIntervals[statsInterval]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/statsIntervals}}
+								<li><a on-click="@this.set ('statsInterval', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+
+						<div class="stats-data-note">Note: We only have data starting from Aug 16, 2017.</div>
+					</h2>
+				</div>
 			</div>
 
+			<div class="row">
 				<div class="col-md-6">
-				<c-stats-table title="Top 10 files" data="{{~/fileStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
-					{{#partial column1}}
-					<span class="prefix">{{~/version}}@</span>{{file}}
-					{{/partial}}
-				</c-stats-table>
+					<c-stats-table title="Top 10 versions" data="{{~/versionStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+						{{#partial column1}}
+						<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
+						{{/partial}}
+					</c-stats-table>
+				</div>
+
+					<div class="col-md-6">
+					<c-stats-table title="Top 10 files" data="{{~/fileStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+						{{#partial column1}}
+						<span class="prefix">@{{~/version}}/</span>{{file.substr(1)}}
+						{{/partial}}
+					</c-stats-table>
+				</div>
 			</div>
-		</div>
-	</section>
-	{{/if}}
+		</section>
+		{{/if}}
+	</div>
+
+	<div class="bottom-chart">
+		<canvas width="100%" height="250"></canvas>
+	</div>
 </div>
 
 <script>
@@ -211,12 +219,12 @@
 				filesLoadingMessage: '',
 				path: [],
 				statsIntervals: {
-					1: '1 day',
-					7: '1 week',
-					30: '1 month',
-					365: '1 year',
+					1: 'day',
+					7: 'week',
+					30: 'month',
+					365: 'year',
 				},
-				selectedStatsInterval: 30,
+				statsInterval: 30,
 			};
 		},
 		decorators: {
@@ -262,8 +270,10 @@
 								}
 							});
 						}
+					});
 
-						this.observe('selectedStatsInterval', (statsInterval) => {
+					this.observe('statsInterval version', () => {
+						if (this.get('statsInterval') && this.get('version')) {
 							// Load package stats.
 							http.fetchPackageVersionStats(this.get('type'), this.get('name')).then((data) => {
 								let array = [];
@@ -271,7 +281,7 @@
 								Object.keys(data.versions).forEach((key) => {
 									array.push({
 										version: key,
-										hits: data.versions[key].total * statsInterval,
+										hits: data.versions[key].total * this.get('statsInterval'),
 									});
 								});
 
@@ -285,11 +295,93 @@
 								Object.keys(data.files).forEach((key) => {
 									array.push({
 										file: key,
-										hits: data.files[key].total * statsInterval,
+										hits: data.files[key].total * this.get('statsInterval'),
 									});
 								});
 
 								this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+							});
+						}
+					});
+
+					http.fetchTopPackages().then((topPackages) => {
+						http.fetchPackageDateStats(this.get('type'), this.get('name')).then((data) => {
+							let array = [];
+
+							Object.keys(data.dates).forEach((date) => {
+								array.push([ date, data.dates[date] ]);
+							});
+
+							new Chart(this.find('.bottom-chart canvas'), {
+								type: 'line',
+								data: {
+									labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+									datasets: [{
+										data: array.map(value => value[1].total),
+										backgroundColor: '#ffeee9',
+										borderColor: '#ff5627',
+										borderWidth: 1,
+										pointRadius: 0,
+									}],
+								},
+								options: {
+									maintainAspectRatio: false,
+									fill: true,
+									legend: {
+										display: false,
+									},
+									scales: {
+										yAxes: [{
+											type: 'logarithmic',
+											display: false,
+											ticks: {
+												min: 0,
+												max: Math.pow(10, Math.ceil(Math.log10(topPackages[ 0 ].hits / 30))), // set max based on the most popular package
+											},
+										}],
+										xAxes: [{
+											display: false,
+										}],
+									},
+									tooltips: {
+										enabled: false,
+										mode: 'index',
+										intersect: false,
+										custom (tooltip) {
+											// Tooltip Element
+											let $tooltipEl = $('#chartjs-tooltip').show();
+											let bodyWidth = $('body').width();
+
+											if (!$tooltipEl.length) {
+												$tooltipEl = $(`
+													<div id="chartjs-tooltip">
+														<div class="tooltip-number"></div>
+														<div class="tooltip-date"></div>
+														<div class="tooltip-line"></div>
+													</div>
+												`).appendTo(this._chart.canvas.parentNode);
+											}
+
+											// Hide if no tooltip
+											if (tooltip.opacity === 0) {
+												//return $tooltipEl.hide();
+											}
+
+											if (tooltip.caretX < 100) {
+												$tooltipEl.css({ width: 100, left: tooltip.caretX });
+											} else if (tooltip.caretX + 200 > bodyWidth) {
+												$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
+											} else {
+												$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
+											}
+
+											if (tooltip.body) {
+												$tooltipEl.find('.tooltip-date').text(tooltip.title);
+												$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+											}
+										},
+									},
+								}
 							});
 						});
 					});

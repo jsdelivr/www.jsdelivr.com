@@ -1,4 +1,9 @@
+const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+
 module.exports = {
+	formatDate (date) {
+		return `${date.getUTCDate()} ${months[date.getUTCMonth()]}`;
+	},
 	formatHits (hits) {
 		if (hits < 1e9) {
 			return 1;
