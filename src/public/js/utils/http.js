@@ -26,8 +26,8 @@ module.exports.fetchPackageFiles = (type, name, version) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}`);
 };
 
-module.exports.fetchPackageDateStats = (type, name) => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/date`);
+module.exports.fetchPackageDateStats = (type, name, period) => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`);
 };
 
 module.exports.fetchPackageFileStats = (type, name, version) => {

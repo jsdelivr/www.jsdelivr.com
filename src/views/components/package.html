@@ -137,8 +137,10 @@
 		</div>
 		{{/if}}
 		{{/with}}
+	</div>
 
-		{{#if ~/versionStats}}
+	{{#if !onlyHeader && statsTotal.total}}
+	<div class="container">
 		<section class="package-usage">
 			<div class="row">
 				<div class="col-md-12">
@@ -147,12 +149,12 @@
 
 						<div class="btn-group pull-right">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								Show requests per: {{~/statsIntervals[statsInterval]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
+								Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
-								{{#each ~/statsIntervals}}
-								<li><a on-click="@this.set ('statsInterval', @key)">{{this}}</a></li>
+								{{#each ~/statsPeriods}}
+								<li><a on-click="@this.set ('statsPeriod', @key)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -162,9 +164,10 @@
 				</div>
 			</div>
 
+			{{#if ~/versionStats}}
 			<div class="row">
 				<div class="col-md-6">
-					<c-stats-table title="Top 10 versions" data="{{~/versionStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+					<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
 						<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
 						{{/partial}}
@@ -172,20 +175,31 @@
 				</div>
 
 					<div class="col-md-6">
-					<c-stats-table title="Top 10 files" data="{{~/fileStats.slice(0, 10)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+					<c-stats-table title="Top 5 files" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
 						<span class="prefix">@{{~/version}}/</span>{{file.substr(1)}}
 						{{/partial}}
 					</c-stats-table>
 				</div>
 			</div>
+			{{/if}}
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3 class="small-headline text-center">Total </h3>
+				</div>
+			</div>
 		</section>
-		{{/if}}
 	</div>
 
 	<div class="bottom-chart">
 		<canvas width="100%" height="250"></canvas>
 	</div>
+	{{else}}
+	<div class="container">
+		<section class="package-usage-empty"></section>
+	</div>
+	{{/if}}
 </div>
 
 <script>
@@ -218,13 +232,13 @@
 				files: [],
 				filesLoadingMessage: '',
 				path: [],
-				statsIntervals: {
+				statsPeriods: {
 					1: 'day',
 					7: 'week',
 					30: 'month',
 					365: 'year',
 				},
-				statsInterval: 30,
+				statsPeriod: 30,
 			};
 		},
 		decorators: {
@@ -233,6 +247,8 @@
 		},
 		oninit() {
 			if (!Ractive.isServer) {
+				let bottomChart;
+
 				if (!this.get('onlyHeader')) {
 					// Load package versions.
 					http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
@@ -272,8 +288,8 @@
 						}
 					});
 
-					this.observe('statsInterval version', () => {
-						if (this.get('statsInterval') && this.get('version')) {
+					this.observe('statsPeriod version', () => {
+						if (this.get('statsPeriod') && this.get('version')) {
 							// Load package stats.
 							http.fetchPackageVersionStats(this.get('type'), this.get('name')).then((data) => {
 								let array = [];
@@ -281,7 +297,7 @@
 								Object.keys(data.versions).forEach((key) => {
 									array.push({
 										version: key,
-										hits: data.versions[key].total * this.get('statsInterval'),
+										hits: data.versions[key].total * this.get('statsPeriod'),
 									});
 								});
 
@@ -295,95 +311,111 @@
 								Object.keys(data.files).forEach((key) => {
 									array.push({
 										file: key,
-										hits: data.files[key].total * this.get('statsInterval'),
+										hits: data.files[key].total * this.get('statsPeriod'),
 									});
 								});
 
 								this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
 							});
-						}
-					});
 
-					http.fetchTopPackages().then((topPackages) => {
-						http.fetchPackageDateStats(this.get('type'), this.get('name')).then((data) => {
-							let array = [];
+							// Bottom chart.
+							if (this.get('statsPeriod') !== '1') {
+								http.fetchTopPackages().then((topPackages) => {
+									http.fetchPackageDateStats(this.get('type'), this.get('name'), this.get('statsPeriods')[this.get('statsPeriod')]).then((data) => {
+										this.set('statsTotal', data);
 
-							Object.keys(data.dates).forEach((date) => {
-								array.push([ date, data.dates[date] ]);
-							});
+										if (!data.total) {
+											return;
+										}
 
-							new Chart(this.find('.bottom-chart canvas'), {
-								type: 'line',
-								data: {
-									labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
-									datasets: [{
-										data: array.map(value => value[1].total),
-										backgroundColor: '#ffeee9',
-										borderColor: '#ff5627',
-										borderWidth: 1,
-										pointRadius: 0,
-									}],
-								},
-								options: {
-									maintainAspectRatio: false,
-									fill: true,
-									legend: {
-										display: false,
-									},
-									scales: {
-										yAxes: [{
-											type: 'logarithmic',
-											display: false,
-											ticks: {
-												min: 0,
-												max: Math.pow(10, Math.ceil(Math.log10(topPackages[ 0 ].hits / 30))), // set max based on the most popular package
+										let array = [];
+
+										Object.keys(data.dates).forEach((date) => {
+											array.push([ date, data.dates[date] ]);
+										});
+
+										array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+										if (bottomChart) {
+											bottomChart.destroy();
+											bottomChart = null;
+										}
+
+										bottomChart = new Chart(this.find('.bottom-chart canvas'), {
+											type: 'line',
+											data: {
+												labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+												datasets: [{
+													data: array.map(value => value[1].total),
+													backgroundColor: '#ffeee9',
+													borderColor: '#ff5627',
+													borderWidth: 1,
+													pointRadius: 1,
+												}],
 											},
-										}],
-										xAxes: [{
-											display: false,
-										}],
-									},
-									tooltips: {
-										enabled: false,
-										mode: 'index',
-										intersect: false,
-										custom (tooltip) {
-											// Tooltip Element
-											let $tooltipEl = $('#chartjs-tooltip').show();
-											let bodyWidth = $('body').width();
+											options: {
+												maintainAspectRatio: false,
+												fill: true,
+												legend: {
+													display: false,
+												},
+												scales: {
+													yAxes: [{
+														type: 'logarithmic',
+														display: false,
+														ticks: {
+															min: 0,
+															max: Math.pow(10, Math.ceil(Math.log10(topPackages[ 0 ].hits / 30))), // set max based on the most popular package
+														},
+													}],
+													xAxes: [{
+														display: false,
+													}],
+												},
+												tooltips: {
+													enabled: false,
+													mode: 'index',
+													intersect: false,
+													custom (tooltip) {
+														// Tooltip Element
+														let $tooltipEl = $('#chartjs-tooltip').show();
+														let bodyWidth = $('body').width();
 
-											if (!$tooltipEl.length) {
-												$tooltipEl = $(`
-													<div id="chartjs-tooltip">
-														<div class="tooltip-number"></div>
-														<div class="tooltip-date"></div>
-														<div class="tooltip-line"></div>
-													</div>
-												`).appendTo(this._chart.canvas.parentNode);
-											}
+														if (!$tooltipEl.length) {
+															$tooltipEl = $(`
+															<div id="chartjs-tooltip">
+																<div class="tooltip-number"></div>
+																<div class="tooltip-date"></div>
+																<div class="tooltip-line"></div>
+															</div>
+														`).appendTo(this._chart.canvas.parentNode);
+														}
 
-											// Hide if no tooltip
-											if (tooltip.opacity === 0) {
-												//return $tooltipEl.hide();
-											}
+														// Hide if no tooltip
+														if (tooltip.opacity === 0) {
+															//return $tooltipEl.hide();
+														}
 
-											if (tooltip.caretX < 100) {
-												$tooltipEl.css({ width: 100, left: tooltip.caretX });
-											} else if (tooltip.caretX + 200 > bodyWidth) {
-												$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
-											} else {
-												$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
-											}
+														if (tooltip.caretX < 100) {
+															$tooltipEl.css({ width: 100, left: tooltip.caretX });
+														} else if (tooltip.caretX + 200 > bodyWidth) {
+															$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
+														} else {
+															$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
+														}
 
-											if (tooltip.body) {
-												$tooltipEl.find('.tooltip-date').text(tooltip.title);
-												$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+														if (tooltip.body) {
+															$tooltipEl.find('.tooltip-date').text(tooltip.title);
+															$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+														}
+													},
+												},
 											}
-										},
-									},
-								}
-							});
-						});
+										});
+									});
+								});
+							}
+						}
 					});
 				}
 
