@@ -56,15 +56,19 @@ async function makeComponent (href, options) {
 	let template = await fs.readFileAsync(viewsHref, 'utf8');
 
 	return new Promise(async (resolve, reject) => {
-		rcu.make(template, {
-			loadImport (name, innerHref, url, callback) {
-				makeComponent(path.join(path.dirname(href), innerHref), options).then(callback).catch(console.error);
-			},
-			require (module) {
-				return require(path.join(options.views, path.dirname(href), module));
-			},
-			parseOptions: { preserveWhitespace: true, interpolate: { script: true, style: true } },
-		}, resolve, reject);
+		try {
+			rcu.make(template, {
+				loadImport (name, innerHref, url, callback) {
+					makeComponent(path.join(path.dirname(href), innerHref), options).then(callback).catch(reject);
+				},
+				require (module) {
+					return require(path.join(options.views, path.dirname(href), module));
+				},
+				parseOptions: { preserveWhitespace: true, interpolate: { script: true, style: true } },
+			}, resolve, reject);
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
