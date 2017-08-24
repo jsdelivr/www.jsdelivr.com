@@ -28,6 +28,15 @@ module.exports = {
 
 		return d && d.files ? listFiles(d.files, p) : null;
 	},
+	logRange (min, max) {
+		let array = [];
+
+		for (let i = min; i <= max; i *= 10) {
+			array.push(i);
+		}
+
+		return array;
+	},
 	multiplyDeep: function multiplyDeep (data, n) {
 		if (typeof data !== 'object') {
 			return data;
