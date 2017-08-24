@@ -1,0 +1,22 @@
+<div class="c-collection-links">
+	<div class="links-title">{{title}}</div>
+
+	{{#each links}}
+	<div class="collection-link{{#if ~/default && !@index}} default{{/if}}">
+		<a target="_blank" href="{{this}}">{{this}}</a>
+		<i class="fa fa-clipboard pull-right" aria-hidden="true" as-clipboard data-clipboard-text="{{this}}"></i>
+	</div>
+	{{/each}}
+
+	<button class="copy-all" as-clipboard data-clipboard-text="{{links.join('\n')}}">COPY ALL</button>
+</div>
+
+<script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+	};
+</script>
