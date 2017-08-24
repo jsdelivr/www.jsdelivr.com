@@ -2,14 +2,25 @@
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/package.html" name="c-package">
+<link rel="ractive" href="../components/slider.html" name="c-slider">
+<link rel="ractive" href="../components/slide.html" name="c-slide">
+<link rel="ractive" href="../components/collection.html" name="c-collection">
 
 <r-page noYield="{{noYield}}">
 	<div class="p-package">
 		<c-header></c-header>
 
-		{{#if package}}
-		<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}" collection="{{collection}}"></c-package>
-		{{/if}}
+		<c-slider active="{{activeSlide}}">
+			<c-slide>
+				{{#if package}}
+				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}" collection="{{collection}}"></c-package>
+				{{/if}}
+			</c-slide>
+
+			<c-slide>
+				<c-collection></c-collection>
+			</c-slide>
+		</c-slider>
 
 		<c-footer></c-footer>
 	</div>
@@ -47,6 +58,16 @@
 			};
 		},
 		oninit () {
+			this.set('activeSlide', this.get('tab') === 'collection' ? 1 : 0);
+
+			this.observe('tab', (newValue) => {
+				this.findComponent('c-slider').show(newValue === 'collection' ? 1 : 0);
+			}, { init: false });
+
+			this.observe('activeSlide', (newValue) => {
+				this.set('tab', newValue ? 'collection' : '');
+			}, { init: false });
+
 			this.observe('versionP', (newValue) => {
 				if (newValue && !this.get('versionS')) {
 					this.set('versionS', newValue);

@@ -38,8 +38,8 @@ Ractive.Router.prototype.dispatch = function () {
 };
 
 app.router.addRoute('/', (cIndex), { qs: [ 'docs', 'limit', 'page', 'query' ] });
-app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path', 'version' ] });
-app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'version' ] });
+app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
 app.router.addRoute('/features', (cFeatures));
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';

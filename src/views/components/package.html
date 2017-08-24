@@ -1,57 +1,17 @@
 <link rel="ractive" href="./collection-box.html" name="c-collection-box">
-<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+<link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
+<link rel="ractive" href="./package-header.html" name="c-package-header">
 <link rel="ractive" href="./stats-table.html" name="c-stats-table">
 
 <div class="c-package">
 	<div class="container">
-		{{#with package}}
 		<div class="row">
-			<div class="col-md-{{onlyHeader ? 12 : 8}}">
-				<div class="row">
-					<div class="col-sm-8">
-						{{#if onlyHeader}}
-						<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
-						{{else}}
-						<h1 class="package-name">{{name}}</h1>
-						{{/if}}
-					</div>
-
-					<div class="col-sm-4">
-						<div class="package-buttons">
-							{{#if !type || type === 'npm'}}
-							{{#if homepage}}
-							<a target="_blank" href="{{homepage}}" class="button" title="Homepage"><i class="fa fa-globe" aria-hidden="true"></i></a>
-							{{/if}}
-							{{#if githubRepo}}
-							<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
-							{{/if}}
-							<a target="_blank" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm"><img src="/img/icons/npm.png" srcset="/img/icons/npm@2x.png 2x"></a>
-							<a href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{version}}.tgz" class="button" title="Download"><i class="fa fa-download"
-																																								aria-hidden="true"></i></a>
-							{{else}}
-							<a target="_blank" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
-							{{/if}}
-						</div>
-					</div>
-				</div>
-
-				<a href="{{owner.link}}" class="package-owner"><img src="{{owner.avatar}}" width="20">{{owner.name}}</a>
-				<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>
-				{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
-
-				<p class="package-description">{{{description}}}</p>
-
-				{{#if package.versions}}
-				<div class="package-keywords">
-					{{#each keywords}}
-					<span class="package-label">{{this}}</span>
-					{{/each}}
-				</div>
-				{{/if}}
+			<div class="col-md-8">
+				<c-package-header package="{{package}}"></c-package-header>
 			</div>
 		</div>
 
-		{{#if package.versions}}
+		{{#if versions}}
 		<div class="row">
 			<div class="col-md-8">
 				<h2 class="small-headline">CDN Files</h2>
@@ -64,71 +24,7 @@
 			</div>
 
 			<div class="col-md-8">
-				<div class="package-files">
-					<div class="box box-files">
-						<div class="box-header">
-							<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
-							{{#each path.slice(0, -1)}}
-							{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
-							{{/each}}
-							{{#if path}}
-							/ <span class="path-part active">{{path[path.length - 1]}}</span>
-							{{/if}}
-
-							<c-version-dropdown package="{{package}}" version="{{~/version}}"></c-version-dropdown>
-						</div>
-
-						<div class="box-content-wrapper">
-							{{#if type === 'npm' && files}}
-							<div class="box-sub-header">
-								{{#if ~/default}}
-								<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
-									<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
-										<i class="fa fa-file-code-o" aria-hidden="true"></i>
-										<span class="file-path">https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}</span>{{~/default}}
-									</a>
-
-									<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
-									<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-
-									<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
-								</div>
-								{{elseif githubRepo}}
-								<div class="file-message text-center">
-									Sadly, this package doesn't have a default file set.
-									Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
-								</div>
-								{{/if}}
-							</div>
-							{{/if}}
-
-							<div class="box-content">
-								{{#each _.listFiles(~/files, path)}}
-								<div class="file-link">
-									{{#if type === 'directory'}}
-									<a on-click="@this.push('path', name)">
-										<i class="fa fa-folder" aria-hidden="true"></i>
-										https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-									</a>
-									{{else}}
-									<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
-										<i class="fa fa-file" aria-hidden="true"></i>
-										https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-									</a>
-
-									<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
-										   twoway="false">
-									<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)"  as-tooltip="'Add to collection'"></label>
-									<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
-									{{/if}}
-								</div>
-								{{else}}
-								<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
-								{{/each}}
-							</div>
-						</div>
-					</div>
-				</div>
+				<c-package-file-browser type="{{type}}" name="{{name}}" github="{{githubRepo}}" version="{{version}}" versions="{{versions}}" path="{{path}}" collection="{{collection}}"></c-package-file-browser>
 			</div>
 
 			<div class="col-md-4 hidden-sm hidden-xs">
@@ -136,10 +32,9 @@
 			</div>
 		</div>
 		{{/if}}
-		{{/with}}
 	</div>
 
-	{{#if !onlyHeader && statsTotal.total}}
+	{{#if totalStats.total}}
 	<div class="container">
 		<section class="package-usage">
 			<div class="row">
@@ -174,10 +69,10 @@
 					</c-stats-table>
 				</div>
 
-					<div class="col-md-6">
+				<div class="col-md-6">
 					<c-stats-table title="Top 5 files" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
-						<span class="prefix">@{{~/version}}/</span>{{file.substr(1)}}
+						<span class="prefix">{{~/version}}/</span>{{file.substr(1)}}
 						{{/partial}}
 					</c-stats-table>
 				</div>
@@ -186,7 +81,7 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<h3 class="small-headline text-center">Total </h3>
+					<h3 class="small-headline text-center">Total</h3>
 				</div>
 			</div>
 		</section>
@@ -205,33 +100,11 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
-	const tooltip = require('../../public/js/decorators/tooltip');
 
 	component.exports = {
-		syncComputedChildren: true,
-		computed: {
-			issueDefaultFile() {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=No default jsDelivr CDN file set`
-					+ `&body=This package doesn't have a default file set. You can set it via \`jsdelivr\`, \`cdn\`, \`browser\`, or \`main\` field in \`package.json\``;
-			},
-			issueTooBig() {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`
-					+ `&body=I'm trying to load this package from [jsDelivr CDN](${this.get('@global.location.href')})`
-					+ ` but it fails because the package is over 50 MB. Are there any files that could be removed to reduce the package size?`;
-			},
-			pathS() {
-				return this.get('path').length ? this.get('path').join('/') + '/' : '';
-			}
-		},
 		data() {
 			return {
 				_,
-				files: [],
-				filesLoadingMessage: '',
-				path: [],
 				statsPeriods: {
 					1: 'day',
 					7: 'week',
@@ -239,219 +112,163 @@
 					365: 'year',
 				},
 				statsPeriod: 30,
+				versions: [],
 			};
-		},
-		decorators: {
-			clipboard,
-			tooltip,
 		},
 		oninit() {
 			if (!Ractive.isServer) {
 				let bottomChart;
 
-				if (!this.get('onlyHeader')) {
-					// Load package versions.
-					http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
-						this.set('package.versions', data.versions);
+				// Load package versions.
+				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
+					this.set('versions', data.versions);
 
-						// Set version for GitHub packages or when an invalid version is selected.
-						if (!this.get('version') || data.versions.indexOf(this.get('version')) === -1) {
-							this.set('package.version', data.versions[0]);
-							this.set('version', data.versions[0]);
-						}
-					});
+					// Set version for GitHub packages or when an invalid version is selected.
+					if (!this.get('version') || data.versions.indexOf(this.get('version')) === -1) {
+						this.set('package.version', data.versions[0]);
+						this.set('version', data.versions[0]);
+					}
+				});
 
-					this.observe('version', (version) => {
-						if (version) {
-							this.set('files', []);
-							this.set('filesLoadingMessage', '');
+				this.observe('statsPeriod version', () => {
+					if (this.get('statsPeriod') && this.get('version')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let version = this.get('version');
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-							// Load package files.
-							http.fetchPackageFiles(this.get('type'), this.get('name'), version).then((data) => {
-								this.set('default', data.default);
-								this.set('files', data.files);
-							}).catch((error) => {
-								let defaultError = 'Failed to load the file listing.';
+						// Load package stats.
+						http.fetchPackageVersionStats(type, name, period).then((data) => {
+							let array = [];
 
-								if (error.responseJSON && error.responseJSON.message) {
-									let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+							Object.keys(data.versions).forEach((key) => {
+								array.push({
+									version: key,
+									hits: data.versions[key].total,
+								});
+							});
 
-									if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('package.githubRepo')) {
-										errorHtml += `<br>Consider <a target="_blank" href="${this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
+						});
+
+						// Load version stats.
+						http.fetchPackageFileStats(type, name, version, period).then((data) => {
+							let array = [];
+
+							Object.keys(data.files).forEach((key) => {
+								array.push({
+									file: key,
+									hits: data.files[key].total,
+								});
+							});
+
+							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+						});
+
+						// Bottom chart.
+						if (period !== 'day') {
+							http.fetchTopPackages().then((topPackages) => {
+								http.fetchPackageDateStats(type, name, period).then((data) => {
+									this.set('totalStats', data);
+
+									if (!data.total) {
+										return;
 									}
 
-									this.set('filesLoadingMessage', errorHtml);
-								} else {
-									this.set('filesLoadingMessage', defaultError);
-								}
-							});
-						}
-					});
+									let array = [];
 
-					this.observe('statsPeriod version', () => {
-						if (this.get('statsPeriod') && this.get('version')) {
-							// Load package stats.
-							http.fetchPackageVersionStats(this.get('type'), this.get('name')).then((data) => {
-								let array = [];
-
-								Object.keys(data.versions).forEach((key) => {
-									array.push({
-										version: key,
-										hits: data.versions[key].total * this.get('statsPeriod'),
+									Object.keys(data.dates).forEach((date) => {
+										array.push([ date, data.dates[date] ]);
 									});
-								});
 
-								this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
-							});
+									array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
 
-							// Load version stats.
-							http.fetchPackageFileStats(this.get('type'), this.get('name'), this.get('version')).then((data) => {
-								let array = [];
+									if (bottomChart) {
+										bottomChart.destroy();
+										bottomChart = null;
+									}
 
-								Object.keys(data.files).forEach((key) => {
-									array.push({
-										file: key,
-										hits: data.files[key].total * this.get('statsPeriod'),
-									});
-								});
-
-								this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
-							});
-
-							// Bottom chart.
-							if (this.get('statsPeriod') !== '1') {
-								http.fetchTopPackages().then((topPackages) => {
-									http.fetchPackageDateStats(this.get('type'), this.get('name'), this.get('statsPeriods')[this.get('statsPeriod')]).then((data) => {
-										this.set('statsTotal', data);
-
-										if (!data.total) {
-											return;
-										}
-
-										let array = [];
-
-										Object.keys(data.dates).forEach((date) => {
-											array.push([ date, data.dates[date] ]);
-										});
-
-										array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-										if (bottomChart) {
-											bottomChart.destroy();
-											bottomChart = null;
-										}
-
-										bottomChart = new Chart(this.find('.bottom-chart canvas'), {
-											type: 'line',
-											data: {
-												labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
-												datasets: [{
-													data: array.map(value => value[1].total),
-													backgroundColor: '#ffeee9',
-													borderColor: '#ff5627',
-													borderWidth: 1,
-													pointRadius: 1,
+									bottomChart = new Chart(this.find('.bottom-chart canvas'), {
+										type: 'line',
+										data: {
+											labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+											datasets: [{
+												data: array.map(value => value[1].total),
+												backgroundColor: '#ffeee9',
+												borderColor: '#ff5627',
+												borderWidth: 1,
+												pointRadius: 0,
+											}],
+										},
+										options: {
+											maintainAspectRatio: false,
+											fill: true,
+											legend: {
+												display: false,
+											},
+											scales: {
+												yAxes: [{
+													type: 'logarithmic',
+													display: false,
+													ticks: {
+														min: 1,
+														max: Math.pow(10, Math.ceil(Math.log10(topPackages[0].hits / 30))), // set max based on the most popular package
+													},
+												}],
+												xAxes: [{
+													display: false,
 												}],
 											},
-											options: {
-												maintainAspectRatio: false,
-												fill: true,
-												legend: {
-													display: false,
+											tooltips: {
+												enabled: false,
+												mode: 'index',
+												intersect: false,
+												custom (tooltip) {
+													// Tooltip Element
+													let $tooltipEl = $('#chartjs-tooltip').show();
+													let bodyWidth = $('body').width();
+
+													if (!$tooltipEl.length) {
+														$tooltipEl = $(`
+														<div id="chartjs-tooltip">
+															<div class="tooltip-number"></div>
+															<div class="tooltip-date"></div>
+															<div class="tooltip-line"></div>
+														</div>
+													`).appendTo(this._chart.canvas.parentNode);
+													}
+
+													// Hide if no tooltip
+													if (tooltip.opacity === 0) {
+														return $tooltipEl.hide();
+													}
+
+													if (tooltip.caretX < 100) {
+														$tooltipEl.css({ width: 100, left: tooltip.caretX });
+													} else if (tooltip.caretX + 200 > bodyWidth) {
+														$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
+													} else {
+														$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
+													}
+
+													if (tooltip.body) {
+														$tooltipEl.find('.tooltip-date').text(tooltip.title);
+														$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+													}
 												},
-												scales: {
-													yAxes: [{
-														type: 'logarithmic',
-														display: false,
-														ticks: {
-															min: 0,
-															max: Math.pow(10, Math.ceil(Math.log10(topPackages[ 0 ].hits / 30))), // set max based on the most popular package
-														},
-													}],
-													xAxes: [{
-														display: false,
-													}],
-												},
-												tooltips: {
-													enabled: false,
-													mode: 'index',
-													intersect: false,
-													custom (tooltip) {
-														// Tooltip Element
-														let $tooltipEl = $('#chartjs-tooltip').show();
-														let bodyWidth = $('body').width();
-
-														if (!$tooltipEl.length) {
-															$tooltipEl = $(`
-															<div id="chartjs-tooltip">
-																<div class="tooltip-number"></div>
-																<div class="tooltip-date"></div>
-																<div class="tooltip-line"></div>
-															</div>
-														`).appendTo(this._chart.canvas.parentNode);
-														}
-
-														// Hide if no tooltip
-														if (tooltip.opacity === 0) {
-															//return $tooltipEl.hide();
-														}
-
-														if (tooltip.caretX < 100) {
-															$tooltipEl.css({ width: 100, left: tooltip.caretX });
-														} else if (tooltip.caretX + 200 > bodyWidth) {
-															$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
-														} else {
-															$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
-														}
-
-														if (tooltip.body) {
-															$tooltipEl.find('.tooltip-date').text(tooltip.title);
-															$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
-														}
-													},
-												},
-											}
-										});
+											},
+										}
 									});
 								});
-							}
+							});
 						}
-					});
-				}
+					}
+				});
 
 				if (!this.get('version')) {
 					this.set('version', this.get('package.version'));
 				}
 			}
-		},
-		getCollectionIndex(collection, type, name, version, file) {
-			for (let i = 0; i < collection.length; i++) {
-				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && collection[i].file === file) {
-					return i;
-				}
-			}
-
-			return -1;
-		},
-		toggleCollectionFile(file) {
-			let type = this.get('type');
-			let name = this.get('name');
-			let version = this.get('version');
-			let collection = this.get('collection');
-			let index = this.getCollectionIndex(collection, type, name, version, file);
-
-			if (index !== -1) {
-				this.splice('collection', index, 1);
-			} else {
-				this.push('collection', {
-					type,
-					name,
-					version,
-					file,
-				})
-			}
-
-			return false;
 		},
 	};
 </script>

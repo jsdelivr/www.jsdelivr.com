@@ -28,4 +28,19 @@ module.exports = {
 
 		return d && d.files ? listFiles(d.files, p) : null;
 	},
+	multiplyDeep: function multiplyDeep (data, n) {
+		if (typeof data !== 'object') {
+			return data;
+		}
+
+		Object.keys(data).forEach((key) => {
+			if (typeof data[key] === 'number') {
+				data[key] *= n;
+			} else if (data[key] && typeof data[key] === 'object') {
+				multiplyDeep(data[key], n);
+			}
+		});
+
+		return data;
+	},
 };

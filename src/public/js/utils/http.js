@@ -1,4 +1,7 @@
 const API_HOST = 'https://data.jsdelivr.com';
+const _ = require('../_');
+
+const periods = { day: 1, week: 7, month: 30, year: 365 };
 
 module.exports.fetchCdnHeaders = () => {
 	return $.ajax({
@@ -14,11 +17,9 @@ module.exports.fetchCdnHeaders = () => {
 	});
 };
 
-module.exports.fetchNetworkStats = () => {
+module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/day`).then((data) => {
-		data.hits.total = Math.floor(data.hits.total * 30);
-		data.megabytes.total = Math.floor(data.megabytes.total * 30);
-		return data;
+		return _.multiplyDeep(data, periods[period]);
 	});
 };
 
@@ -26,28 +27,28 @@ module.exports.fetchPackageFiles = (type, name, version) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}`);
 };
 
-module.exports.fetchPackageDateStats = (type, name, period) => {
+module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`);
 };
 
-module.exports.fetchPackageFileStats = (type, name, version) => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}/stats/day`);
+module.exports.fetchPackageFileStats = (type, name, version, period = 'month') => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}/stats/day`).then((data) => {
+		return _.multiplyDeep(data, periods[period]);
+	});
 };
 
-module.exports.fetchPackageVersionStats = (type, name) => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/day`);
+module.exports.fetchPackageVersionStats = (type, name, period = 'month') => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/day`).then((data) => {
+		return _.multiplyDeep(data, periods[period]);
+	});
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}`);
 };
 
-module.exports.fetchTopPackages = () => {
+module.exports.fetchTopPackages = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/packages/day`).then((data) => {
-		data.forEach((pkg) => {
-			pkg.hits = Math.floor(pkg.hits * 30);
-		});
-
-		return data;
+		return _.multiplyDeep(data, periods[period]);
 	});
 };
