@@ -1,6 +1,8 @@
 const cIndex = require('../../views/pages/index.html');
 const cFeatures = require('../../views/pages/features.html');
 const cPackage = require('../../views/pages/package.html');
+const cSponsors = require('../../views/pages/sponsors.html');
+const cStatistics = require('../../views/pages/statistics.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 Ractive.defaults.isolated = true;
@@ -41,6 +43,8 @@ app.router.addRoute('/', (cIndex), { qs: [ 'docs', 'limit', 'page', 'query' ] })
 app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
 app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
 app.router.addRoute('/features', (cFeatures));
+app.router.addRoute('/sponsors', (cSponsors));
+app.router.addRoute('/statistics', (cStatistics));
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });

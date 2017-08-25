@@ -16,8 +16,8 @@
 
 		<div class="box-content-wrapper">
 			{{#if type === 'npm' && files}}
+			{{#if ~/default}}
 			<div class="box-sub-header">
-				{{#if ~/default}}
 				<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
 					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
 						<i class="fa fa-file-code-o" aria-hidden="true"></i>
@@ -29,13 +29,15 @@
 
 					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}" class="fa fa-clipboard" aria-hidden="true"></i>
 				</div>
-				{{elseif github}}
+			</div>
+			{{elseif github}}
+			<div class="box-sub-header">
 				<div class="file-message text-center">
 					Sadly, this package doesn't have a default file set.
 					Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
 				</div>
-				{{/if}}
 			</div>
+			{{/if}}
 			{{/if}}
 
 			<div class="box-content">
@@ -154,6 +156,7 @@
 					name,
 					version,
 					file,
+					isDefault: file === this.get('default'),
 				})
 			}
 
