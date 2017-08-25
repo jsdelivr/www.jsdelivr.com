@@ -79,6 +79,10 @@
 				if (this.get('type') === 'npm') {
 					// Load package metadata.
 					search(this.get('name'), this.get('page')).then((result) => {
+						if (!result.response.hits[0] || result.response.hits[0].name !== this.get('name')) {
+							return location.pathname = '/';
+						}
+
 						this.set({ package: result.response.hits[0], });
 					});
 				} else {

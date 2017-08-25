@@ -136,6 +136,10 @@
 						this.set('package.version', data.versions[0]);
 						this.set('version', data.versions[0]);
 					}
+				}).catch((error) => {
+					if (error.status === 404) {
+						location.pathname = '/';
+					}
 				});
 
 				this.observe('statsPeriod version', () => {
