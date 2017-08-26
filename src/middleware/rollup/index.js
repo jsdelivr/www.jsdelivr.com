@@ -3,6 +3,7 @@ const rollup = require('rollup');
 const rollupBabel = require('rollup-plugin-babel');
 const rollupRactive = require('rollup-plugin-ractive');
 const rollupCommonjs = require('rollup-plugin-commonjs');
+const rollupJson = require('rollup-plugin-json');
 const uglify = require('uglify-js');
 const jsCache = new Map();
 
@@ -46,6 +47,7 @@ async function compileJs (file, minify) {
 		plugins: [
 			rollupRactive(),
 			rollupCommonjs({ extensions: [ '.html', '.js' ], ignore: [ ] }),
+			rollupJson(),
 			rollupBabel(),
 		],
 	}).then(async (bundle) => {

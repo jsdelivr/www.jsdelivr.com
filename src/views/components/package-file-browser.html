@@ -76,12 +76,12 @@
 	component.exports = {
 		computed: {
 			issueDefaultFile() {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
 					+ `?title=No default jsDelivr CDN file set`
 					+ `&body=This package doesn't have a default file set. You can set it via \`jsdelivr\`, \`cdn\`, \`browser\`, or \`main\` field in \`package.json\``;
 			},
 			issueTooBig() {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
 					+ `?title=${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`
 					+ `&body=I'm trying to load this package from [jsDelivr CDN](${this.get('@global.location.href')})`
 					+ ` but it fails because the package is over 50 MB. Are there any files that could be removed to reduce the package size?`;
@@ -119,7 +119,7 @@
 							if (error.responseJSON && error.responseJSON.message) {
 								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
 
-								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('package.githubRepo')) {
+								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 									errorHtml += `<br>Consider <a target="_blank" href="${this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 								}
 

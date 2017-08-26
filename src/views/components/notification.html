@@ -1,0 +1,27 @@
+{{#if !notificationSeen}}
+<div class="c-notification">
+	<i class="fa fa-bullhorn" aria-hidden="true"></i>
+	We launched a new back-end and changed the way how jsDelivr works.
+	If you were used to the old system, please take a moment to read the docs and learn how to use the new <a href="">jsDelivr</a>.
+	<a on-click="@this.set('notificationSeen', true)"><i class="fa fa-times" aria-hidden="true"></i></a>
+</div>
+{{/if}}
+
+<script>
+	component.exports = {
+		oninit() {
+			if (Ractive.isServer) {
+				this.set('notificationSeen', true);
+			} else {
+				if (localStorage.getItem('npm-migrate-notificationSeen')) {
+					this.set('notificationSeen', true)
+				}
+
+				this.observe('notificationSeen', function (newValue) {
+					localStorage.setItem('npm-migrate-notificationSeen', JSON.stringify(newValue));
+				}, { init: false });
+			}
+		}
+	}
+
+</script>

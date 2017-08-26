@@ -1,9 +1,13 @@
+require('./polyfills');
 const cIndex = require('../../views/pages/index.html');
 const cFeatures = require('../../views/pages/features.html');
 const cPackage = require('../../views/pages/package.html');
 const cSponsors = require('../../views/pages/sponsors.html');
+const cBecomeASponsor = require('../../views/pages/become-a-sponsor.html');
 const cStatistics = require('../../views/pages/statistics.html');
 const cDebug = require('../../views/pages/tools/debug.html');
+const cPurge = require('../../views/pages/tools/purge.html');
+const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 Ractive.defaults.isolated = true;
@@ -45,8 +49,11 @@ app.router.addRoute('/package/:type(npm)/:name', (cPackage), { qs: [ 'path', 'ta
 app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
 app.router.addRoute('/features', (cFeatures));
 app.router.addRoute('/sponsors', (cSponsors));
+app.router.addRoute('/become-a-sponsor', (cBecomeASponsor));
 app.router.addRoute('/statistics', (cStatistics));
 app.router.addRoute('/tools/debug', (cDebug));
+app.router.addRoute('/tools/purge', (cPurge));
+app.router.addRoute('/using-sri-with-dynamic-files', (cSri));
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });

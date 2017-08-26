@@ -1,11 +1,68 @@
 <link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
 
 <r-page noYield="{{noYield}}">
+	<c-notification></c-notification>
+	<c-header></c-header>
+
 	<div class="p-features">
 		<div class="container">
 			<h1 class="page-title">Features</h1>
 
-			
+			<div class="network-map" style="height: 600px;"></div>
+
+			- network
+			- npm features
+			- map
+			- about
+			- migration from old system somewhere
 		</div>
 	</div>
 </r-page>
+
+<script>
+	const styles = require('../../public/js/map/styles.json');
+	const locations = require('../../public/js/map/map.json');
+	const getIcon = require('../../public/js/map/get-icon');
+
+	component.exports = {
+		initMap () {
+			let infoWindows = [];
+			let CENTER = { lat: 44, lng: 18 };
+			let map = new google.maps.Map(this.find('.network-map'), {
+				styles,
+				zoom: 2,
+				minZoom: 2,
+				center: CENTER,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+			});
+
+			// Create markers.
+			locations.sort((a, b) => a.title > b.title ? -1 : a.title < b.title).forEach(function (location) {
+				let infoWindow = new google.maps.InfoWindow({
+					content: location.title,
+				});
+
+				let marker = new google.maps.Marker({
+					map,
+					icon: getIcon(location.title),
+					position: new google.maps.LatLng(location.latitude, location.longitude),
+					title: location.title,
+				});
+
+				google.maps.event.addListener(marker, 'click', () => {
+					infoWindows.forEach(iw => iw.close());
+					infoWindow.open(map, marker);
+				});
+
+				google.maps.event.addListener(map, 'click', () => {
+					infoWindow.close();
+				});
+
+				infoWindows.push(infoWindow);
+			});
+		},
+	};
+</script>
