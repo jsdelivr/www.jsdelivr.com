@@ -18,8 +18,8 @@ module.exports.fetchCdnHeaders = () => {
 };
 
 module.exports.fetchNetworkStats = (period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/stats/network/day`).then((data) => {
-		return _.multiplyDeep(data, periods[period]);
+	return $.getJSON(`${API_HOST}/v1/stats/network/week`).then((data) => {
+		return _.multiplyDeep(data, periods[period] / 7);
 	});
 };
 
@@ -32,14 +32,14 @@ module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
 };
 
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}/stats/day`).then((data) => {
-		return _.multiplyDeep(data, periods[period]);
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${version}/stats/week`).then((data) => {
+		return _.multiplyDeep(data, periods[period] / 7);
 	});
 };
 
 module.exports.fetchPackageVersionStats = (type, name, period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/day`).then((data) => {
-		return _.multiplyDeep(data, periods[period]);
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/week`).then((data) => {
+		return _.multiplyDeep(data, periods[period] / 7);
 	});
 };
 
@@ -48,7 +48,7 @@ module.exports.fetchPackageVersions = (type, name) => {
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/stats/packages/day`).then((data) => {
-		return _.multiplyDeep(data, periods[period]);
+	return $.getJSON(`${API_HOST}/v1/stats/packages/week`).then((data) => {
+		return _.multiplyDeep(data, periods[period] / 7);
 	});
 };

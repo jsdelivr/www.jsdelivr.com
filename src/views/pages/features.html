@@ -8,61 +8,217 @@
 
 	<div class="p-features">
 		<div class="container">
-			<h1 class="page-title">Features</h1>
+			<div class="row">
+				{{#partial nav}}
+				<ul class="nav nav-pills nav-stacked page-nav">
+					<li role="presentation" class="active">
+						<a>Features</a>
+					</li>
+					<li>
+						<a href="/network">Our network</a>
+					</li>
+				</ul>
+				{{/partial}}
 
-			<div class="network-map" style="height: 600px;"></div>
+				<div class="col-md-3 hidden-lg hidden-md">
+					{{>nav}}
+				</div>
 
-			- network
-			- npm features
-			- map
-			- about
-			- migration from old system somewhere
+				<div class="col-md-9 ">
+					<h1 class="page-title">Features</h1>
+
+					<section>
+						<p>
+							jsDelivr provides mirrors for npm, GitHub, WordPress plugins, and custom endpoints for several other projects with special requirements.
+							If our regular endpoints don't work for your use case, <a href="mailto:contact@jsdelivr.com">let us know</a> and we'll figure something out!
+						</p>
+					</section>
+
+					<section id="npm">
+						<h2>npm</h2>
+
+						<div class="alert alert-info">
+							We use a permanent S3 storage to ensure all files remain available even if npm goes down, or a package is deleted by its author.
+							Files are fetched directly from npm only the first time, or when S3 goes down.
+						</div>
+
+						<p>
+							Our npm endpoint has the following format:
+						</p>
+
+						<pre><code>https://cdn.jsdelivr.net/npm/package@version/file</code></pre>
+
+						<p>
+							Load an exact version of a file:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js</a></code></pre>
+
+						<p>
+							Use a version range instead of an exact version:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.1/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@3.1/dist/jquery.min.js</a></code></pre>
+
+						<div class="alert alert-info">
+							If you use this feature and a file you requested is not available in the newest version of the package,
+							the link will keep working thanks to our version-fallback feature. We'll continue to serve the file from older version of the package
+							instead of failing with a 404 error.
+						</div>
+
+						<p>
+							Load by tag (not recommended for production usage):
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@beta/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@beta/dist/jquery.min.js</a></code></pre>
+
+						<p>
+							Omit the version completely or use "latest" to load the latest one (not recommended for production usage):
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js</a></code></pre>
+
+						<div class="alert alert-warning">
+							Requesting the latest version (as opposed to "latest major" or "latest minor") is dangerous because major versions usually
+							come with breaking changes. Only do this if you really know what you are doing.
+						</div>
+
+						<p>
+							Add ".min" to any JS/CSS file to get a minified version - if one doesn't exist, we'll generate it for you.
+							All generated files come with source maps and can be easily used during development:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/github-markdown-css@2.4.1/github-markdown.min.css">https://cdn.jsdelivr.net/npm/github-markdown-css@2.4.1/github-markdown.min.css</a></code></pre>
+
+						Omit the file path to get the default file (currently not recommended). This file is always minified:
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1">https://cdn.jsdelivr.net/npm/jquery@3.2.1</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3">https://cdn.jsdelivr.net/npm/jquery@3</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/npm/npm/jquery">https://cdn.jsdelivr.net/npm/jquery</a></code></pre>
+
+						<div class="alert alert-warning">
+							If the default file is not directly in the root directory of the package, using this feature may cause problems
+							with relative imports, such as source maps, images, or font files referenced by the requested file.
+						</div>
+
+						<p>
+							Get a directory listing:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/">https://cdn.jsdelivr.net/npm/jquery@3.2.1/</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/">https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/</a></code></pre>
+					</section>
+
+					<section id="gh">
+						<h2>GitHub</h2>
+
+						<div class="alert alert-info">
+							We use a permanent S3 storage to ensure all files remain available even if GitHub goes down, or a repository or a release is deleted by its author.
+							Files are fetched directly from GitHub only the first time, or when S3 goes down.
+						</div>
+
+						<p>
+							Our GitHub endpoint has the following format:
+						</p>
+
+						<pre><code>https://cdn.jsdelivr.net/gh/user/repo@version/file</code></pre>
+
+						<p>
+							Load an exact version of a file:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js</a></code></pre>
+
+						<p>
+							Use a version range instead of an exact version:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js</a></code></pre>
+
+						<div class="alert alert-info">
+							If you use this feature and a file you requested is not available in the newest release,
+							the link will keep working thanks to our version-fallback feature. We'll continue to serve the file from older release
+							instead of failing with a 404 error.
+						</div>
+
+						<p>
+							Omit the version completely or use "latest" to load the latest one (not recommended for production usage):
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@latest/dist/jquery.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@latest/dist/jquery.min.js</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js</a></code></pre>
+
+						<div class="alert alert-warning">
+							Requesting the latest version (as opposed to "latest major" or "latest minor") is dangerous because major versions usually
+							come with breaking changes. Only do this if you really know what you are doing.
+						</div>
+
+						<p>
+							Add ".min" to any JS/CSS file to get a minified version - if one doesn't exist, we'll generate it for you.
+							All generated files come with source maps and can be easily used during development:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js</a></code></pre>
+
+						<p>
+							Get a directory listing:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/">/gh/jquery/jquery@3.2.1/</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/">/gh/jquery/jquery@3.2.1/dist/</a></code></pre>
+					</section>
+
+					<section id="wp">
+						<h2>WordPress</h2>
+
+						<p>
+							Load any plugin from the WordPress.org plugins SVN repo:
+						</p>
+
+						<pre><code>https://cdn.jsdelivr.net/wp/project/tags/version/file</code></pre>
+
+						<p>
+							Load an exact version of a file:
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/wp/wp-slimstat/tags/4.6.5/wp-slimstat.js">https://cdn.jsdelivr.net/wp/wp-slimstat/tags/4.6.5/wp-slimstat.js</a></code></pre>
+
+						<p>
+							Load the latest version (not recommended for production usage):
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/wp/wp-slimstat/trunk/wp-slimstat.js">https://cdn.jsdelivr.net/wp/wp-slimstat/trunk/wp-slimstat.js</a></code></pre>
+
+						<div class="alert alert-warning">
+							Requesting the latest version is dangerous because a new version may come with breaking changes.
+							Only do this if you really know what you are doing.
+						</div>
+					</section>
+
+					<section>
+						<h2>Custom endpoints</h2>
+
+						<p>
+							We currently provide custom endpoints for the following projects (contact us if you need one too):
+						</p>
+
+						<ul>
+							<li><a target="_blank" href="https://www.emojione.com">emojione.com</a></li>
+							<li><a target="_blank" href="https://foundation.zurb.com">foundation.zurb.com</a></li>
+							<li><a target="_blank" href="https://hex.pm">hex.pm</a></li>
+							<li><a target="_blank" href="https://jspm.io">jspm.io</a></li>
+							<li><a target="_blank" href="https://www.webjars.org">webjars.org</a></li>
+						</ul>
+					</section>
+				</div>
+
+				<div class="col-md-3 hidden-sm hidden-xs">
+					{{>nav}}
+				</div>
+			</div>
 		</div>
 	</div>
 </r-page>
-
-<script>
-	const styles = require('../../public/js/map/styles.json');
-	const locations = require('../../public/js/map/map.json');
-	const getIcon = require('../../public/js/map/get-icon');
-
-	component.exports = {
-		initMap () {
-			let infoWindows = [];
-			let CENTER = { lat: 44, lng: 18 };
-			let map = new google.maps.Map(this.find('.network-map'), {
-				styles,
-				zoom: 2,
-				minZoom: 2,
-				center: CENTER,
-				mapTypeId: 'roadmap',
-				draggableCursor: 'default',
-			});
-
-			// Create markers.
-			locations.sort((a, b) => a.title > b.title ? -1 : a.title < b.title).forEach(function (location) {
-				let infoWindow = new google.maps.InfoWindow({
-					content: location.title,
-				});
-
-				let marker = new google.maps.Marker({
-					map,
-					icon: getIcon(location.title),
-					position: new google.maps.LatLng(location.latitude, location.longitude),
-					title: location.title,
-				});
-
-				google.maps.event.addListener(marker, 'click', () => {
-					infoWindows.forEach(iw => iw.close());
-					infoWindow.open(map, marker);
-				});
-
-				google.maps.event.addListener(map, 'click', () => {
-					infoWindow.close();
-				});
-
-				infoWindows.push(infoWindow);
-			});
-		},
-	};
-</script>

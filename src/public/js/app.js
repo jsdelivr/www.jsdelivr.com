@@ -8,6 +8,7 @@ const cStatistics = require('../../views/pages/statistics.html');
 const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
 const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
+const cNetwork = require('../../views/pages/network.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 Ractive.defaults.isolated = true;
@@ -25,7 +26,7 @@ app.router = new Ractive.Router({
 	data () {
 		return {
 			app,
-			collection: localStorage.getItem('collection2') ? JSON.parse(localStorage.getItem('collection2')) : [],
+
 		};
 	},
 	globals: [ 'query', 'collection' ],
@@ -54,6 +55,7 @@ app.router.addRoute('/statistics', (cStatistics));
 app.router.addRoute('/tools/debug', (cDebug));
 app.router.addRoute('/tools/purge', (cPurge));
 app.router.addRoute('/using-sri-with-dynamic-files', (cSri));
+app.router.addRoute('/network', (cNetwork));
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });
@@ -66,14 +68,5 @@ $(() => {
 		.watchLinks()
 		.watchState();
 });
-
-$.fn.shuffle = function (selector) {
-	return this.each(function () {
-		$(this).find(selector)
-			.sort(() => .5 - Math.random())
-			.detach()
-			.appendTo(this);
-	});
-};
 
 module.exports = app;

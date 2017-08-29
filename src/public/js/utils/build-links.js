@@ -16,8 +16,7 @@ module.exports = (collection, html, optimize, alias, sri) => {
 	let collectionCopy = collection.map((file) => {
 		let copy = $.extend(true, {}, file);
 
-		// Default files are minified automatically.
-		if (optimize && !copy.isDefault && copy.file === getNonMinifiedName(copy.file)) {
+		if (optimize && copy.file === getNonMinifiedName(copy.file)) {
 			copy.file = getMinifiedName(file.file);
 		}
 
@@ -34,7 +33,7 @@ module.exports = (collection, html, optimize, alias, sri) => {
 	});
 
 	collectionCopy.forEach((file) => {
-		let link = CDN_ROOT + '/' + buildFileLink(file, sri);
+		let link = CDN_ROOT + '/' + buildFileLink(file);
 
 		if (JS_PATTERN.test(file.file)) {
 			links.js.push(buildFileLinkHtml(true, link, html, sri && (file.hash || 'xx')));
@@ -62,8 +61,8 @@ function buildCombined (collection, filter) {
 	}).join(',');
 }
 
-function buildFileLink (file, sri = false) {
-	return `${file.type}/${file.name}@${file.version}${file.isDefault && !sri ? '' : file.file}`;
+function buildFileLink (file) {
+	return `${file.type}/${file.name}@${file.version}${file.file}`;
 }
 
 function buildFileLinkHtml (isJs, link, html, hash) {
