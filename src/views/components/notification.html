@@ -8,18 +8,22 @@
 {{/if}}
 
 <script>
+	const has = require('../../public/js/utils/has');
+
 	component.exports = {
 		oninit() {
 			if (Ractive.isServer) {
 				this.set('notificationSeen', true);
 			} else {
-				if (localStorage.getItem('npm-migrate-notificationSeen')) {
-					this.set('notificationSeen', true)
-				}
+				if (has.localStorage()) {
+					if (localStorage.getItem('npm-migrate-notificationSeen')) {
+						this.set('notificationSeen', true)
+					}
 
-				this.observe('notificationSeen', function (newValue) {
-					localStorage.setItem('npm-migrate-notificationSeen', JSON.stringify(newValue));
-				}, { init: false });
+					this.observe('notificationSeen', function (newValue) {
+						localStorage.setItem('npm-migrate-notificationSeen', JSON.stringify(newValue));
+					}, { init: false });
+				}
 			}
 		}
 	}

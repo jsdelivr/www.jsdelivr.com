@@ -1,4 +1,6 @@
 require('./polyfills');
+
+const has = require('./utils/has');
 const cIndex = require('../../views/pages/index.html');
 const cFeatures = require('../../views/pages/features.html');
 const cPackage = require('../../views/pages/package.html');
@@ -11,13 +13,11 @@ const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
 const cNetwork = require('../../views/pages/network.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
-Ractive.defaults.isolated = true;
 
 let app = {
 	config: {
 		animateScrolling: true,
 	},
-	sriHashes: {},
 	usedCdn: '',
 };
 
@@ -26,7 +26,7 @@ app.router = new Ractive.Router({
 	data () {
 		return {
 			app,
-
+			collection: has.localStorage() && localStorage.getItem('collection2') ? JSON.parse(localStorage.getItem('collection2')) : [],
 		};
 	},
 	globals: [ 'query', 'collection' ],
@@ -37,10 +37,14 @@ let routerDispatch = Ractive.Router.prototype.dispatch;
 Ractive.Router.prototype.dispatch = function () {
 	routerDispatch.apply(this, arguments);
 
+	if (!app.router.route.view) {
+		return;
+	}
+
 	document.title = app.router.route.view.get('title') || 'jsDelivr - A free super-fast CDN for developers and webmasters';
 
-	// ga('set', 'page', this.getUri());
-	// ga('send', 'pageview');
+	ga('set', 'page', this.getUri());
+	ga('send', 'pageview');
 
 	return this;
 };

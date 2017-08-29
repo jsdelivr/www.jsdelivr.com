@@ -6,7 +6,7 @@
 	<c-notification></c-notification>
 	<c-header></c-header>
 
-	<div class="p-features">
+	<div class="p-features page">
 		<div class="container">
 			<div class="row">
 				{{#partial nav}}
@@ -35,7 +35,7 @@
 					</section>
 
 					<section id="npm">
-						<h2>npm</h2>
+						<h2>npm CDN</h2>
 
 						<div class="alert alert-info">
 							We use a permanent S3 storage to ensure all files remain available even if npm goes down, or a package is deleted by its author.
@@ -54,7 +54,7 @@
 
 						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js">https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js</a></code></pre>
 
-						<p>
+						<p id="alias">
 							Use a version range instead of an exact version:
 						</p>
 
@@ -85,12 +85,17 @@
 							come with breaking changes. Only do this if you really know what you are doing.
 						</div>
 
-						<p>
+						<p id="minify">
 							Add ".min" to any JS/CSS file to get a minified version - if one doesn't exist, we'll generate it for you.
 							All generated files come with source maps and can be easily used during development:
 						</p>
 
 						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/npm/github-markdown-css@2.4.1/github-markdown.min.css">https://cdn.jsdelivr.net/npm/github-markdown-css@2.4.1/github-markdown.min.css</a></code></pre>
+
+						<div class="alert alert-info">
+							Minifying a large file can take several seconds. However, we store all generated files in our permanent storage,
+							so this delay only applies to the first few requests.
+						</div>
 
 						Omit the file path to get the default file (currently not recommended). This file is always minified:
 
@@ -112,7 +117,7 @@
 					</section>
 
 					<section id="gh">
-						<h2>GitHub</h2>
+						<h2>GitHub CDN</h2>
 
 						<div class="alert alert-info">
 							We use a permanent S3 storage to ensure all files remain available even if GitHub goes down, or a repository or a release is deleted by its author.
@@ -163,6 +168,11 @@
 
 						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js">https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js</a></code></pre>
 
+						<div class="alert alert-info">
+							Minifying a large file can take several seconds. However, we store all generated files in our permanent storage,
+							so this delay only applies to the first few requests.
+						</div>
+
 						<p>
 							Get a directory listing:
 						</p>
@@ -171,8 +181,31 @@
 							<code><a target="_blank" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/">/gh/jquery/jquery@3.2.1/dist/</a></code></pre>
 					</section>
 
+					<section id="combine">
+						<h2>Combine multiple files</h2>
+
+						<p>
+							Our combine endpoint allows you to load several files from npm and GitHub endpoints in one request:
+						</p>
+
+						<pre><code>https://cdn.jsdelivr.net/combine/url1,url2,url3</code></pre>
+
+						<p>
+							All features that work for individual files (version ranges, minification, etc.) work here as well.
+							All combined files come with source maps and can be easily used during development.
+						</p>
+
+						<pre><code><a target="_blank" href="https://cdn.jsdelivr.net/combine/gh/jquery/jquery@3.2/dist/jquery.min.js,gh/twbs/bootstrap@3.3/dist/js/bootstrap.min.js">https://cdn.jsdelivr.net/combine/gh/jquery/jquery@3.2/dist/jquery.min.js,gh/twbs/bootstrap@3.3/dist/js/bootstrap.min.js</a></code>
+							<code><a target="_blank" href="https://cdn.jsdelivr.net/combine/npm/bootstrap@3.3/dist/css/bootstrap.min.css,npm/bootstrap@3.3/dist/css/bootstrap-theme.min.css">https://cdn.jsdelivr.net/combine/npm/bootstrap@3.3/dist/css/bootstrap.min.css,npm/bootstrap@3.3/dist/css/bootstrap-theme.min.css</a></code></pre>
+
+						<div class="alert alert-info">
+							Combining large/many files can take several seconds. However, we store all generated files in our permanent storage,
+							so this delay only applies to the first few requests.
+						</div>
+					</section>
+
 					<section id="wp">
-						<h2>WordPress</h2>
+						<h2>WordPress CDN</h2>
 
 						<p>
 							Load any plugin from the WordPress.org plugins SVN repo:
@@ -198,11 +231,11 @@
 						</div>
 					</section>
 
-					<section>
+					<section id="custom">
 						<h2>Custom endpoints</h2>
 
 						<p>
-							We currently provide custom endpoints for the following projects (contact us if you need one too):
+							We provide custom endpoints for the following projects (contact us if you need one too):
 						</p>
 
 						<ul>

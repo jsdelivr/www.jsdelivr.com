@@ -23,7 +23,7 @@
 	<c-notification></c-notification>
 	<c-header></c-header>
 
-	<div class="p-network">
+	<div class="p-network page">
 		<div class="container">
 			<div class="row">
 				{{#partial nav}}
@@ -177,6 +177,8 @@
 			let locations = this.get('locations');
 			let added =  [], removed = [];
 
+			// Compute added and removed markers.
+			// Don't do anything with markers that haven't changed (re-rendering everything is too slow).
 			locations.forEach((location, index) => {
 				if (!infoWindows.some(iw => location.title === iw.content)) {
 					added.push(index);
@@ -189,6 +191,7 @@
 				}
 			});
 
+			// Remove old markers.
 			removed.forEach((index) => {
 				infoWindows[index].close();
 				markers[index].setMap(null);
@@ -199,7 +202,7 @@
 			infoWindows = infoWindows.filter(v => v);
 			markers = markers.filter(v => v);
 
-			// Create markers.
+			// Add new markers.
 			added.forEach(function (index) {
 				let location = locations[index];
 				let infoWindow = new google.maps.InfoWindow({

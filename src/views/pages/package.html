@@ -10,7 +10,7 @@
 	<c-notification></c-notification>
 	<c-header></c-header>
 
-	<div class="p-package">
+	<div class="p-package page">
 		<c-slider active="{{activeSlide}}">
 			<c-slide>
 				{{#if package}}
@@ -26,6 +26,7 @@
 </r-page>
 
 <script>
+	const has = require('../../public/js/utils/has');
 	const search = require('../../public/js/utils/search');
 	let app;
 
@@ -106,9 +107,11 @@
 					});
 				}
 
-				this.observe('collection', function (newValue) {
-					localStorage.setItem('collection2', JSON.stringify(newValue));
-				}, { init: false });
+				if (has.localStorage()) {
+					this.observe('collection', function (newValue) {
+						localStorage.setItem('collection2', JSON.stringify(newValue));
+					}, { init: false });
+				}
 			}
 		},
 		onrender () {

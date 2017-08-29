@@ -1,5 +1,5 @@
 const getProvider = require('./get-provider');
 
 module.exports = (title) => {
-	return `/img/map-${getProvider(title).toLowerCase()}.png`;
+	return `/img/features/map-${getProvider(title).toLowerCase()}.png`;
 };
