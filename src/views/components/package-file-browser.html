@@ -41,6 +41,15 @@
 			{{/if}}
 
 			<div class="box-content">
+				{{#if files && path.length}}
+				<div class="file-link">
+					<a on-click="@this.pop('path')">
+						<i class="fa fa-level-up" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}..</span>
+					</a>
+				</div>
+				{{/if}}
+
 				{{#each _.listFiles(~/files, path)}}
 				<div class="file-link">
 					{{#if type === 'directory'}}
@@ -88,7 +97,7 @@
 			},
 			pathS() {
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
-			}
+			},
 		},
 		data() {
 			return {
@@ -104,6 +113,12 @@
 		},
 		oninit() {
 			if (!Ractive.isServer) {
+				this.observe('path files', () => {
+					if (this.get('files').length && _.listFiles(this.get('files'), this.get('path')) === null) {
+						this.set('path', []);
+					}
+				});
+
 				this.observe('version', (version) => {
 					if (version) {
 						this.set('files', []);

@@ -64,7 +64,7 @@
 							</ul>
 						</div>
 
-						<div class="stats-data-note">Note: We only have data starting from Aug 16, 2017.</div>
+						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
 					</h2>
 				</div>
 			</div>
@@ -99,7 +99,7 @@
 
 	<div class="bottom-chart">
 		<div class="chart-y">
-			{{#with _.logRange(10, totalStatsMax).reverse() as range}}
+			{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
 			{{#each range}}
 			<div style="height: {{250 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
 			{{/each}}
@@ -217,8 +217,10 @@
 						if (period !== 'day') {
 							http.fetchTopPackages().then((topPackages) => {
 								http.fetchPackageDateStats(type, name, period).then((data) => {
+									let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
+									let magnitude = Math.floor(Math.log10(maxValue));
+									this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
 									this.set('totalStats', data);
-									this.set('totalStatsMax', Math.pow(10, Math.ceil(Math.log10(topPackages[0].hits / 30))));
 
 									if (!data.total) {
 										return;
@@ -257,11 +259,11 @@
 											},
 											scales: {
 												yAxes: [{
-													type: 'logarithmic',
 													display: false,
 													ticks: {
-														min: 1,
-														max: this.get('totalStatsMax'), // set max based on the most popular package
+														min: 0,
+														max: this.get('totalStatsMax'),
+														beginAtZero: true,
 													},
 												}],
 												xAxes: [{
@@ -294,7 +296,7 @@
 
 													if (tooltip.caretX < 100) {
 														$tooltipEl.css({ width: 100, left: tooltip.caretX });
-													} else if (tooltip.caretX + 200 > bodyWidth) {
+													} else if (tooltip.caretX + 100 > bodyWidth) {
 														$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
 													} else {
 														$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });

@@ -49,6 +49,6 @@ module.exports.fetchPackageVersions = (type, name) => {
 
 module.exports.fetchTopPackages = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/packages/week`).then((data) => {
-		return _.multiplyDeep(data, periods[period] / 7);
+		return _.multiplyDeep(data.filter(pkg => pkg.type === 'npm'), periods[period] / 7);
 	});
 };

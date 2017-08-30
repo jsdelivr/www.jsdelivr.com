@@ -39,6 +39,15 @@ module.exports = {
 
 		return d && d.files ? listFiles(d.files, p) : null;
 	},
+	linRange (max, number) {
+		let array = [];
+
+		for (let i = 1; i <= number; i++) {
+			array.push(max * i / number);
+		}
+
+		return array;
+	},
 	logRange (min, max) {
 		let array = [];
 
