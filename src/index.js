@@ -31,6 +31,7 @@ const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
+const legacyMapping = require('../data/legacy-mapping.json');
 
 let server = new Koa();
 let router = new Router();
@@ -124,6 +125,28 @@ server.use(koaETag());
 server.use(async (ctx, next) => {
 	ctx.set(serverConfig.headers);
 	return next();
+});
+
+// Redirect old URLs #1.
+server.use(async (ctx, next) => {
+	if (!ctx.query._escaped_fragment_) {
+		return next();
+	}
+
+	let name = ctx.query._escaped_fragment_.trim();
+
+	if (legacyMapping.hasOwnProperty(name)) {
+		ctx.status = 301;
+		return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
+	}
+});
+
+// Redirect old URLs #2.
+router.get('/projects/:name', async (ctx) => {
+	if (legacyMapping.hasOwnProperty(ctx.params.name)) {
+		ctx.status = 301;
+		return ctx.redirect(`/package/${legacyMapping[ctx.params.name].type}/${legacyMapping[ctx.params.name].name}`);
+	}
 });
 
 router.get([
