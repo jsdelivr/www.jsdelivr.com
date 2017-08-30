@@ -51,7 +51,10 @@ server.use(koaFavicon(__dirname + '/public/favicon.ico'));
  * Log requests during development.
  */
 if (server.env === 'development') {
-	server.use(koaLogger());
+	server.use(koaLogger({
+		logger,
+		useLevel: 'debug',
+	}));
 }
 
 /**
@@ -94,14 +97,6 @@ server.use(rollup('/js', {
 server.use(koaStatic(__dirname + '/public', {
 	maxage: 365 * 24 * 60 * 60 * 1000,
 	index: false,
-}));
-
-/**
- * Log basic info about requests and responses.
- */
-server.use(koaLogger({
-	logger,
-	useLevel: 'debug',
 }));
 
 /**
