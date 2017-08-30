@@ -5,7 +5,7 @@ const rcu = require('rcu');
 const childProcess = require('child_process');
 
 const componentCache = new Map();
-let commitHash = '';
+let commitHash = require('../../../package.json').version;
 
 try {
 	commitHash = childProcess.execSync('git log -1 "--format=%H"', { encoding: 'utf8' }).trim();

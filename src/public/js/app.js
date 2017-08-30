@@ -16,7 +16,7 @@ const cPurge = require('../../views/pages/tools/purge.html');
 Ractive.DEBUG = location.hostname === 'localhost';
 
 // Redirect from the old URL format.
-if (location.hash) {
+if (location.pathname === '/' && location.hash) {
 	location.href = '/projects/' + location.hash.substr(2);
 }
 

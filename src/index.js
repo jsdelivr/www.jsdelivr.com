@@ -127,7 +127,9 @@ server.use(async (ctx, next) => {
 	return next();
 });
 
-// Redirect old URLs #1.
+/**
+ * Redirect old URLs #1.
+ */
 server.use(async (ctx, next) => {
 	if (!ctx.query._escaped_fragment_) {
 		return next();
@@ -141,7 +143,9 @@ server.use(async (ctx, next) => {
 	}
 });
 
-// Redirect old URLs #2.
+/**
+ * Redirect old URLs #2.
+ */
 router.get('/projects/:name', async (ctx) => {
 	if (legacyMapping.hasOwnProperty(ctx.params.name)) {
 		ctx.status = 301;
@@ -149,6 +153,9 @@ router.get('/projects/:name', async (ctx) => {
 	}
 });
 
+/**
+ * Package pages.
+ */
 router.get([
 	'/package/:type(npm)/:name',
 	'/package/:type(gh)/:user/:repo',
@@ -173,6 +180,9 @@ router.get([
 	}
 });
 
+/**
+ * All other pages.
+ */
 router.get([ '/*' ], async (ctx) => {
 	let data = {
 		docs: ctx.query.docs,

@@ -36,9 +36,9 @@ module.exports = (collection, html, optimize, alias, sri) => {
 		let link = CDN_ROOT + '/' + buildFileLink(file);
 
 		if (JS_PATTERN.test(file.file)) {
-			links.js.push(buildFileLinkHtml(true, link, html, sri && (file.hash || 'xx')));
+			links.js.push(buildFileLinkHtml(true, link, html, sri && file.hash));
 		} else if (CSS_PATTERN.test(file.file)) {
-			links.css.push(buildFileLinkHtml(false, link, html, sri && (file.hash || 'xx')));
+			links.css.push(buildFileLinkHtml(false, link, html, sri && file.hash));
 		} else {
 			links.other.push({ html: link, text: link });
 		}
