@@ -5,11 +5,15 @@ const rcu = require('rcu');
 const childProcess = require('child_process');
 
 const componentCache = new Map();
-let commitHash = process.env.SOURCE_VERSION || '';
+let commitHash = '';
 
 try {
 	commitHash = childProcess.execSync('git log -1 "--format=%H"', { encoding: 'utf8' }).trim();
-} catch (e) {}
+} catch (e) {
+	try {
+		commitHash = fs.readFileSync(__dirname + '/../../../sha.txt', 'utf8').trim();
+	} catch (e) {}
+}
 
 rcu.init(Ractive);
 Ractive.DEBUG = false;
