@@ -39,7 +39,7 @@ module.exports = (prefix, options) => {
 
 async function compileJs (file, minify) {
 	let code = (await rollup.rollup({
-		entry: file,
+		input: file,
 		external: [
 			'algoliasearch',
 			'ractive',
@@ -52,8 +52,8 @@ async function compileJs (file, minify) {
 		],
 	}).then(async (bundle) => {
 		return (await bundle.generate({
+			name: 'app',
 			format: 'umd',
-			moduleName: 'app',
 			globals: {
 				algoliasearch: 'algoliasearch',
 				ractive: 'Ractive',

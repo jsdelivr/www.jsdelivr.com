@@ -9,6 +9,16 @@
 			<div class="col-md-8">
 				<c-package-header package="{{package}}"></c-package-header>
 			</div>
+
+			{{#unless hasSourceMaps}}
+			<div class="col-md-4">
+				<div class="box box-default box-rounded">
+					<div class="box-title">Missing source maps :(</div>
+					This package contains minified files without source maps.
+					Consider <a target="_blank" href="{{issueSourceMaps}}">asking the author to add them</a> for easier debugging.
+				</div>
+			</div>
+			{{/unless}}
 		</div>
 
 		{{#if versions}}
@@ -24,7 +34,7 @@
 			</div>
 
 			<div class="col-md-8">
-				<c-package-file-browser type="{{type}}" name="{{name}}" github="{{package.githubRepo}}" version="{{version}}" versions="{{versions}}" path="{{path}}" collection="{{collection}}"></c-package-file-browser>
+				<c-package-file-browser type="{{type}}" name="{{name}}" github="{{package.githubRepo}}" version="{{version}}" versions="{{versions}}" path="{{path}}" collection="{{collection}}" files="{{~/files}}"></c-package-file-browser>
 			</div>
 
 			<div class="col-md-4 hidden-sm hidden-xs">
@@ -110,6 +120,31 @@
 	const http = require('../../public/js/utils/http');
 
 	component.exports = {
+		computed: {
+			hasSourceMaps () {
+				let files = this.get('files');
+				let hasMin, hasMap;
+
+				if (!files) {
+					return true;
+				}
+
+				_.flattenFiles(files).forEach((file) => {
+					if (/\.min\.(?:js|css)$/.test(file)) {
+						hasMin = true;
+					} else if (/\.map$/.test(file)) {
+						hasMap = true;
+					}
+				});
+
+				return !hasMin || hasMap;
+			},
+			issueSourceMaps() {
+				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+					+ `?title=No source maps for minified files`
+					+ `&body=[This package](${this.get('@global.location.href')}) doesn't contain source maps for the minified files. It would be great to add them for easier debugging.`;
+			},
+		},
 		data() {
 			return {
 				_,

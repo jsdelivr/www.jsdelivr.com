@@ -51,7 +51,6 @@ function minifyCss (css) {
 	return new CleanCSS({
 		level: {
 			1: { all: true },
-			2: { all: true },
 		},
 	}).minify(css).styles;
 }

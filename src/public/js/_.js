@@ -1,6 +1,17 @@
 const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
 module.exports = {
+	flattenFiles: function flattenFiles (tree, path = '/', files = []) {
+		tree.forEach((item) => {
+			if (item.type === 'file') {
+				files.push(path + item.name);
+			} else {
+				flattenFiles(item.files, path + item.name + '/', files);
+			}
+		});
+
+		return files;
+	},
 	formatDate (date) {
 		return `${date.getUTCDate()} ${months[date.getUTCMonth()]}`;
 	},
