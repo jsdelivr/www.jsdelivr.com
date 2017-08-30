@@ -42,6 +42,7 @@
 </div>
 
 <script>
+	const debounce = require('../../public/js/utils/debounce');
 	const search = require('../../public/js/utils/search');
 	let app;
 
@@ -70,8 +71,36 @@
 				this.find('.search-input').focus();
 				scrollTo(0, offsetTop);
 
+				let s = debounce((keypath) => {
+					if (this.get('query')) {
+						search(this.get('query'), this.get('page')).then((result) => {
+							// The query might have changed since we sent the request.
+							if (result.query === this.get('query')) {
+								// An exact match should always come first.
+								result.response.hits.sort((a, b) => {
+									return a.name === result.query ? -1 : b.name === result.query;
+								});
+
+								this.set('packages', result.response.hits, { shuffle: 'name' });
+								this.set('hideLanding', true);
+
+								this.set({
+									fadeIn: true,
+									nbPages: result.response.nbPages,
+									nbHits: result.response.nbHits,
+								});
+
+								// Scroll to the results.
+								if (!pageYOffset || keypath === 'page') {
+									this.scrollToSearch();
+								}
+							}
+						});
+					}
+				}, 200);
+
 				// Make sure query is always a string.
-				this.observe('query', function (value) {
+				this.observe('query', (value) => {
 					if (typeof value !== 'string') {
 						this.set('query', String(value));
 					}
@@ -88,29 +117,7 @@
 							this.set('hideLanding', false);
 							this.set('packages', []);
 						} else {
-							search(this.get('query'), this.get('page')).then((result) => {
-								// The query might have changed since we sent the request.
-								if (result.query === this.get('query')) {
-									// An exact match should always come first.
-									result.response.hits.sort((a, b) => {
-										return a.name === result.query ? -1 : b.name === result.query;
-									});
-
-									this.set('packages', result.response.hits, { shuffle: 'name' });
-									this.set('hideLanding', true);
-
-									this.set({
-										fadeIn: true,
-										nbPages: result.response.nbPages,
-										nbHits: result.response.nbHits,
-									});
-
-									// Scroll to the results.
-									if (!pageYOffset || keypath === 'page') {
-										this.scrollToSearch();
-									}
-								}
-							});
+							s(keypath);
 						}
 					}
 				});
