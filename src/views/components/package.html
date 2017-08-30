@@ -226,101 +226,99 @@
 
 						// Bottom chart.
 						if (period !== 'day') {
-							http.fetchTopPackages().then((topPackages) => {
-								http.fetchPackageDateStats(type, name, period).then((data) => {
-									let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
-									let magnitude = Math.floor(Math.log10(maxValue));
-									this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-									this.set('totalStats', data);
+							http.fetchPackageDateStats(type, name, period).then((data) => {
+								let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
+								let magnitude = Math.floor(Math.log10(maxValue));
+								this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+								this.set('totalStats', data);
 
-									if (!data.total) {
-										return;
-									}
+								if (!data.total) {
+									return;
+								}
 
-									let array = [];
+								let array = [];
 
-									Object.keys(data.dates).forEach((date) => {
-										array.push([ date, data.dates[date] ]);
-									});
+								Object.keys(data.dates).forEach((date) => {
+									array.push([ date, data.dates[date] ]);
+								});
 
-									array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+								array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
 
-									if (bottomChart) {
-										bottomChart.destroy();
-										bottomChart = null;
-									}
+								if (bottomChart) {
+									bottomChart.destroy();
+									bottomChart = null;
+								}
 
-									bottomChart = new Chart(this.find('.bottom-chart canvas'), {
-										type: 'line',
-										data: {
-											labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
-											datasets: [{
-												data: array.map(value => value[1].total),
-												backgroundColor: '#ffeee9',
-												borderColor: '#ff5627',
-												borderWidth: 1,
-												pointRadius: 0,
+								bottomChart = new Chart(this.find('.bottom-chart canvas'), {
+									type: 'line',
+									data: {
+										labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+										datasets: [{
+											data: array.map(value => value[1].total),
+											backgroundColor: '#ffeee9',
+											borderColor: '#ff5627',
+											borderWidth: 1,
+											pointRadius: 0,
+										}],
+									},
+									options: {
+										maintainAspectRatio: false,
+										fill: true,
+										legend: {
+											display: false,
+										},
+										scales: {
+											yAxes: [{
+												display: false,
+												ticks: {
+													min: 0,
+													max: this.get('totalStatsMax'),
+													beginAtZero: true,
+												},
+											}],
+											xAxes: [{
+												display: false,
 											}],
 										},
-										options: {
-											maintainAspectRatio: false,
-											fill: true,
-											legend: {
-												display: false,
+										tooltips: {
+											enabled: false,
+											mode: 'index',
+											intersect: false,
+											custom (tooltip) {
+												// Tooltip Element
+												let $tooltipEl = $('#chartjs-tooltip').show();
+												let bodyWidth = $('body').width();
+
+												if (!$tooltipEl.length) {
+													$tooltipEl = $(`
+													<div id="chartjs-tooltip">
+														<div class="tooltip-number"></div>
+														<div class="tooltip-date"></div>
+														<div class="tooltip-line"></div>
+													</div>
+												`).appendTo(this._chart.canvas.parentNode);
+												}
+
+												// Hide if no tooltip
+												if (tooltip.opacity === 0) {
+													return $tooltipEl.hide();
+												}
+
+												if (tooltip.caretX < 100) {
+													$tooltipEl.css({ width: 100, left: tooltip.caretX });
+												} else if (tooltip.caretX + 100 > bodyWidth) {
+													$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
+												} else {
+													$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
+												}
+
+												if (tooltip.body) {
+													$tooltipEl.find('.tooltip-date').text(tooltip.title);
+													$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+												}
 											},
-											scales: {
-												yAxes: [{
-													display: false,
-													ticks: {
-														min: 0,
-														max: this.get('totalStatsMax'),
-														beginAtZero: true,
-													},
-												}],
-												xAxes: [{
-													display: false,
-												}],
-											},
-											tooltips: {
-												enabled: false,
-												mode: 'index',
-												intersect: false,
-												custom (tooltip) {
-													// Tooltip Element
-													let $tooltipEl = $('#chartjs-tooltip').show();
-													let bodyWidth = $('body').width();
-
-													if (!$tooltipEl.length) {
-														$tooltipEl = $(`
-														<div id="chartjs-tooltip">
-															<div class="tooltip-number"></div>
-															<div class="tooltip-date"></div>
-															<div class="tooltip-line"></div>
-														</div>
-													`).appendTo(this._chart.canvas.parentNode);
-													}
-
-													// Hide if no tooltip
-													if (tooltip.opacity === 0) {
-														return $tooltipEl.hide();
-													}
-
-													if (tooltip.caretX < 100) {
-														$tooltipEl.css({ width: 100, left: tooltip.caretX });
-													} else if (tooltip.caretX + 100 > bodyWidth) {
-														$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
-													} else {
-														$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
-													}
-
-													if (tooltip.body) {
-														$tooltipEl.find('.tooltip-date').text(tooltip.title);
-														$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
-													}
-												},
-											},
-										}
-									});
+										},
+									}
 								});
 							});
 						}
