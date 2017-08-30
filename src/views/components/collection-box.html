@@ -1,9 +1,8 @@
-{{#if collection}}
 <div class="c-collection-box">
 	{{#with collection}}
 	<div class="box box-rounded">
 		<div class="box-header">
-			Selected files <i class="fa fa-trash" aria-hidden="true" on-click="@this.set('collection', [])" as-tooltip="'Remove all'"></i>
+			Selected files <i class="fa fa-trash" aria-hidden="true" on-click="@this.set('collection', [])" as-tooltip="'Remove all'" style="{{#unless collection}}visibility: hidden;{{/unless}}"></i>
 		</div>
 
 		<div class="box-content">
@@ -12,16 +11,21 @@
 				<a href="/package/{{type}}/{{name}}">{{name}}</a>{{file}}
 				<i class="fa fa-times" aria-hidden="true" on-click="@this.splice('collection', 	@index, 1)" as-tooltip="'Remove this file'"></i>
 			</div>
+			{{else}}
+			<div class="box-message">
+				No files selected. Select the files you want to use using the switches on the left.
+			</div>
 			{{/each}}
 
+			{{#if this}}
 			<a on-click="slide-next" class="box-content-button box-content-line">
 				SHOW &amp; CONFIGURE ALL LINKS <i class="fa fa-chevron-right" aria-hidden="true"></i>
 			</a>
+			{{/if}}
 		</div>
 	</div>
 	{{/with}}
 </div>
-{{/if}}
 
 <script>
 	const tooltip = require('../../public/js/decorators/tooltip');
