@@ -1,3 +1,4 @@
+const _ = require('../_');
 const JS_PATTERN = /\.js$/i;
 const CSS_PATTERN = /\.css$/i;
 const CDN_ROOT = 'https://cdn.jsdelivr.net';
@@ -16,8 +17,8 @@ module.exports = (collection, html, optimize, alias, sri) => {
 	let collectionCopy = collection.map((file) => {
 		let copy = $.extend(true, {}, file);
 
-		if (optimize && copy.file === getNonMinifiedName(copy.file)) {
-			copy.file = getMinifiedName(file.file);
+		if (optimize && copy.file === _.getNonMinifiedName(copy.file)) {
+			copy.file = _.getMinifiedName(file.file);
 		}
 
 		// Aliasing only works with valid semver versions.
@@ -77,12 +78,4 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 	}
 
 	return result;
-}
-
-function getMinifiedName (name) {
-	return name.replace(/\.(js|css)$/i, '.min.$1');
-}
-
-function getNonMinifiedName (name) {
-	return name.replace(/\.min\.(js|css)$/i, '.$1');
 }

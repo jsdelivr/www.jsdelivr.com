@@ -1,8 +1,8 @@
-module.exports = (node, tooltipPlacement = 'top') => {
+module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top') => {
 	let clipboard = new Clipboard(node);
 	let $node = $(node);
 	let tooltipOptions = {
-		title: 'Copy to Clipboard',
+		title,
 		placement: tooltipPlacement,
 		trigger: 'hover',
 		container: 'body',
