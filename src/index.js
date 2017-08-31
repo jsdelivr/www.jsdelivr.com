@@ -30,6 +30,7 @@ const Router = require('koa-router');
 const Handlebars = require('handlebars');
 const dedent = require('dedent-js');
 const pathToPackages = require.resolve('all-the-package-names');
+const assetsVersion = require('./lib/assets').version;
 
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
@@ -110,6 +111,7 @@ server.use(less('/css', {
 	files: __dirname + '/public/less/',
 	cache: server.env === 'production',
 	minify: server.env === 'production',
+	assetsVersion,
 }));
 
 /**
@@ -119,6 +121,7 @@ server.use(rollup('/js', {
 	files: __dirname + '/public/js/',
 	cache: server.env === 'production',
 	minify: server.env === 'production',
+	assetsVersion,
 }));
 
 /**
@@ -154,6 +157,7 @@ server.use(async (ctx, next) => {
 server.use(render({
 	views: __dirname + '/views/',
 	cache: server.env === 'production',
+	assetsVersion,
 }, server));
 
 /**
