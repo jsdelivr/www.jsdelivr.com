@@ -14,6 +14,7 @@ global.OPBEAT_CLIENT = require('opbeat').start({
 require('./lib/startup');
 require('./lib/trace-cpu')(trace);
 
+const fs = require('fs-extra');
 const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
@@ -22,9 +23,13 @@ const koaStatic = require('koa-static');
 const koaFavicon = require('koa-favicon');
 const koaResponseTime = require('koa-response-time');
 const koaConditionalGet = require('koa-conditional-get');
+const koaCompress = require('koa-compress');
 const koaLogger = require('koa-logger');
 const koaETag = require('koa-etag');
 const Router = require('koa-router');
+const Handlebars = require('handlebars');
+const dedent = require('dedent-js');
+const pathToPackages = require.resolve('all-the-package-names');
 
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
@@ -33,6 +38,19 @@ const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
 const legacyMapping = require('../data/legacy-mapping.json');
 
+const templateSource = dedent`
+	<?xml version="1.0" encoding="utf-8"?>
+	<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+		{{#each packages}}
+			<url>
+				<loc>https://www.jsdelivr.com/package/npm/{{this}}</loc>
+				<changefreq>monthly</changefreq>
+			</url>
+		{{/each}}
+	</urlset>
+	`;
+
+let siteMapTemplate = Handlebars.compile(templateSource);
 let server = new Koa();
 let router = new Router();
 
@@ -62,6 +80,17 @@ if (server.env === 'development') {
  * Add a X-Response-Time header.
  */
 server.use(koaResponseTime());
+
+/**
+ * Gzip compression.
+ */
+server.use(koaCompress());
+
+/**
+ * ETag support.
+ */
+server.use(koaConditionalGet());
+server.use(koaETag());
 
 /**
  * Security: prevent directory traversal.
@@ -114,12 +143,6 @@ server.use(render({
 }, server));
 
 /**
- * ETag support.
- */
-server.use(koaConditionalGet());
-server.use(koaETag());
-
-/**
  * Set default headers.
  */
 server.use(async (ctx, next) => {
@@ -151,6 +174,13 @@ router.get('/projects/:name', async (ctx) => {
 		ctx.status = 301;
 		return ctx.redirect(`/package/${legacyMapping[ctx.params.name].type}/${legacyMapping[ctx.params.name].name}`);
 	}
+});
+
+/**
+ * Sitemap
+ */
+router.get('/sitemap.xml', async (ctx) => {
+	ctx.body = siteMapTemplate({ packages: JSON.parse(await fs.readFile(pathToPackages, 'utf8')) });
 });
 
 /**
