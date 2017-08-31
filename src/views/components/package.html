@@ -73,6 +73,11 @@
 
 						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
 					</h2>
+
+					<h3 class="small-headline total-headline">
+						{{~/name}} had {{_.formatNumber(versionStatsTotal)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
+						<a class="share-twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{~/name}} had {{_.formatNumber(versionStatsTotal)}} hits at @jsDelivr CDN in the last {{~/statsPeriods[~/statsPeriod]}}: {{@global.location.href}}"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+					</h3>
 				</div>
 			</div>
 
@@ -87,7 +92,7 @@
 				</div>
 
 				<div class="col-md-6">
-					<c-stats-table title="Top 5 files" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+					<c-stats-table title="Top 5 files in v{{version}}" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
 						<span class="prefix">{{~/version}}/</span>{{file.substr(1)}}
 						{{/partial}}
@@ -95,12 +100,6 @@
 				</div>
 			</div>
 			{{/if}}
-
-			<div class="row">
-				<div class="col-md-12">
-					<h3 class="small-headline total-headline">Total {{~/name}} requests in the last {{~/statsPeriods[~/totalPeriod]}}</h3>
-				</div>
-			</div>
 		</section>
 	</div>
 
@@ -164,7 +163,6 @@
 					365: 'year',
 				},
 				statsPeriod: 30,
-				totalPeriod: 30,
 				versions: [],
 			};
 		},
@@ -209,6 +207,7 @@
 							});
 
 							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
+							this.animate('versionStatsTotal', data.total);
 						});
 
 						// Load version stats.
@@ -227,8 +226,6 @@
 
 						// Bottom chart.
 						if (period !== 'day') {
-							this.set('totalPeriod', this.get('statsPeriod'));
-
 							http.fetchPackageDateStats(type, name, period).then((data) => {
 								let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
 								let magnitude = Math.floor(Math.log10(maxValue));
