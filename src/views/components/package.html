@@ -98,7 +98,7 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<h3 class="small-headline text-center">Total</h3>
+					<h3 class="small-headline total-headline">Total {{~/name}} requests in the last {{~/statsPeriods[~/totalPeriod]}}</h3>
 				</div>
 			</div>
 		</section>
@@ -164,6 +164,7 @@
 					365: 'year',
 				},
 				statsPeriod: 30,
+				totalPeriod: 30,
 				versions: [],
 			};
 		},
@@ -226,6 +227,8 @@
 
 						// Bottom chart.
 						if (period !== 'day') {
+							this.set('totalPeriod', this.get('statsPeriod'));
+
 							http.fetchPackageDateStats(type, name, period).then((data) => {
 								let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
 								let magnitude = Math.floor(Math.log10(maxValue));
