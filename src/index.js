@@ -14,6 +14,7 @@ global.OPBEAT_CLIENT = require('opbeat').start({
 require('./lib/startup');
 require('./lib/trace-cpu')(trace);
 
+const _ = require('lodash');
 const fs = require('fs-extra');
 const config = require('config');
 const signalExit = require('signal-exit');
@@ -28,7 +29,6 @@ const koaLogger = require('koa-logger');
 const koaETag = require('koa-etag');
 const Router = require('koa-router');
 const Handlebars = require('handlebars');
-const dedent = require('dedent-js');
 const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
 
@@ -38,20 +38,9 @@ const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
 const legacyMapping = require('../data/legacy-mapping.json');
+let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
+let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
 
-const templateSource = dedent`
-	<?xml version="1.0" encoding="utf-8"?>
-	<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-		{{#each packages}}
-			<url>
-				<loc>https://www.jsdelivr.com/package/npm/{{this}}</loc>
-				<changefreq>monthly</changefreq>
-			</url>
-		{{/each}}
-	</urlset>
-	`;
-
-let siteMapTemplate = Handlebars.compile(templateSource);
 let server = new Koa();
 let router = new Router();
 
@@ -197,8 +186,21 @@ router.get('/projects/:name', async (ctx) => {
 /**
  * Sitemap
  */
-router.get('/sitemap.xml', async (ctx) => {
-	ctx.body = siteMapTemplate({ packages: JSON.parse(await fs.readFile(pathToPackages, 'utf8')) });
+router.use('/sitemap/:page', async (ctx) => {
+	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
+	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
+	let maxPage = Math.ceil(packages.length / 50000);
+	let page = Number(ctx.params.page);
+
+	if (ctx.params.page === 'index') {
+		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
+	} else if (page > 0 && page <= maxPage) {
+		ctx.body = siteMapTemplate({ packages: packages.slice((page - 1) * 50000, page * 50000) });
+	} else {
+		ctx.status = 404;
+	}
+
+	ctx.type = 'xml';
 	ctx.maxAge = 24 * 60 * 60;
 });
 

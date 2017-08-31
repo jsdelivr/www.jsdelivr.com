@@ -73,6 +73,11 @@
 
 						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
 					</h2>
+
+					<h3 class="small-headline total-headline">
+						{{~/name}} is the {{_.nth(versionStatsData.rank + 1)}} most popular package on jsDelivr, with {{_.formatNumber(versionStatsData.total)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
+						<a class="share-twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the #${Math.floor(versionStatsData.rank + 1)} package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+					</h3>
 				</div>
 			</div>
 
@@ -87,7 +92,7 @@
 				</div>
 
 				<div class="col-md-6">
-					<c-stats-table title="Top 5 files" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+					<c-stats-table title="Top 5 files in v{{version}}" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
 						<span class="prefix">{{~/version}}/</span>{{file.substr(1)}}
 						{{/partial}}
@@ -95,12 +100,6 @@
 				</div>
 			</div>
 			{{/if}}
-
-			<div class="row">
-				<div class="col-md-12">
-					<h3 class="small-headline text-center">Total</h3>
-				</div>
-			</div>
 		</section>
 	</div>
 
@@ -165,6 +164,7 @@
 				},
 				statsPeriod: 30,
 				versions: [],
+				link: location.href,
 			};
 		},
 		decorators: {
@@ -208,6 +208,7 @@
 							});
 
 							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
+							this.animate('versionStatsData', data);
 						});
 
 						// Load version stats.
@@ -322,6 +323,18 @@
 								});
 							});
 						}
+					}
+				});
+
+				// Get a short link for tweeting.
+				$.ajax({
+					type: 'POST',
+					contentType: 'application/json; charset=UTF-8',
+					url: 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDWviaENV6cbRZG8eWD3huBDzZgzywPC78',
+					data: JSON.stringify({ longUrl: location.href }),
+				}).then((response) => {
+					if (response.id) {
+						this.set('link', response.id);
 					}
 				});
 

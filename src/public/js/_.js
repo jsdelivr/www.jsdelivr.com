@@ -69,7 +69,7 @@ module.exports = {
 		}
 
 		Object.keys(data).forEach((key) => {
-			if (typeof data[key] === 'number') {
+			if (key !== 'rank' && typeof data[key] === 'number') {
 				data[key] *= n;
 			} else if (data[key] && typeof data[key] === 'object') {
 				multiplyDeep(data[key], n);
@@ -77,5 +77,16 @@ module.exports = {
 		});
 
 		return data;
+	},
+	nth (n) {
+		if (n === 1) {
+			return '';
+		} else if (n === 2) {
+			return '2nd';
+		} else if  (n === 3) {
+			return '3rd';
+		}
+
+		return `${n}th`;
 	},
 };
