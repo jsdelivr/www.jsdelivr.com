@@ -50,7 +50,7 @@
 				</div>
 				{{/if}}
 
-				{{#each _.listFiles(~/files, path)}}
+				{{#partial fileLink}}
 				<div class="file-link">
 					{{#if type === 'directory'}}
 					<a on-click="@this.push('path', name)">
@@ -68,9 +68,31 @@
 					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
 					{{/if}}
 				</div>
+				{{/partial}}
+
+				{{#each _.listFiles(~/files, path).slice(0, ~/filesLimit)}}
+				{{>fileLink}}
 				{{else}}
 				<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
 				{{/each}}
+
+				{{#if showMoreFiles}}
+				<div slide-in-out>
+					{{#each _.listFiles(~/files, path).slice(filesLimit)}}
+					{{>fileLink}}
+					{{/each}}
+				</div>
+				{{/if}}
+
+				{{#if _.listFiles(~/files, path).length > filesLimit}}
+				<div class="show-more-toggle">
+					{{#if showMoreFiles}}
+					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
+					{{else}}
+					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
+					{{/if}}
+				</div>
+				{{/if}}
 			</div>
 		</div>
 	</div>
@@ -103,6 +125,7 @@
 			return {
 				_,
 				files: [],
+				filesLimit: 10,
 				filesLoadingMessage: '',
 				path: [],
 			};
@@ -189,6 +212,15 @@
 			}
 
 			return false;
+		},
+		toggleShowMoreFiles () {
+			this.toggle('showMoreFiles').then(() => {
+				if(!this.get('showMoreFiles') && $('.c-package').offset().top < $(document).scrollTop()) {
+					$('html, body').animate({
+						scrollTop: 0,
+					});
+				}
+			});
 		},
 	};
 </script>
