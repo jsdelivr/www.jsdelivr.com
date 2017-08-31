@@ -1,7 +1,7 @@
 // This needs to run before any require() call.
 const trace = require('@risingstack/trace');
 global.OPBEAT_CLIENT = require('opbeat').start({
-	serverId: '45fb9abc99',
+	appId: '45fb9abc99',
 	organizationId: '091f361b83f64dbcbac3d3c318636efc',
 	secretToken: process.env.OPBEAT_TOKEN,
 	logLevel: 'fatal',
