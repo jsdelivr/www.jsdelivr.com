@@ -75,8 +75,8 @@
 					</h2>
 
 					<h3 class="small-headline total-headline">
-						{{~/name}} had {{_.formatNumber(versionStatsTotal)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
-						<a class="share-twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{~/name}} had {{_.formatNumber(versionStatsTotal)}} hits at @jsDelivr CDN in the last {{~/statsPeriods[~/statsPeriod]}}: {{@global.location.href}}"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+						{{~/name}} is the #{{Math.floor(versionStatsData.rank + 1)}} package on jsDelivr, with {{_.formatNumber(versionStatsData.total)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
+						<a class="share-twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the #${Math.floor(versionStatsData.rank + 1)} package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
 					</h3>
 				</div>
 			</div>
@@ -164,6 +164,7 @@
 				},
 				statsPeriod: 30,
 				versions: [],
+				link: location.href,
 			};
 		},
 		decorators: {
@@ -207,7 +208,7 @@
 							});
 
 							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
-							this.animate('versionStatsTotal', data.total);
+							this.animate('versionStatsData', data);
 						});
 
 						// Load version stats.
@@ -322,6 +323,18 @@
 								});
 							});
 						}
+					}
+				});
+
+				// Get a short link for tweeting.
+				$.ajax({
+					type: 'POST',
+					contentType: 'application/json; charset=UTF-8',
+					url: 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDWviaENV6cbRZG8eWD3huBDzZgzywPC78',
+					data: JSON.stringify({ longUrl: location.href }),
+				}).then((response) => {
+					if (response.id) {
+						this.set('link', response.id);
 					}
 				});
 

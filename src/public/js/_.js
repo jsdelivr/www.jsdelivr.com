@@ -69,7 +69,7 @@ module.exports = {
 		}
 
 		Object.keys(data).forEach((key) => {
-			if (typeof data[key] === 'number') {
+			if (key !== 'rank' && typeof data[key] === 'number') {
 				data[key] *= n;
 			} else if (data[key] && typeof data[key] === 'object') {
 				multiplyDeep(data[key], n);
