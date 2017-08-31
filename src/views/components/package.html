@@ -11,7 +11,7 @@
 			</div>
 
 			{{#if files}}
-			<div class="col-md-4">
+			<div class="col-md-4 hidden-sm hidden-xs">
 				{{#if !hasSourceMaps}}
 				<div class="box box-default box-rounded">
 					<div class="box-title">Missing source maps :(</div>
@@ -59,7 +59,7 @@
 					<h2 class="small-headline">
 						Package usage
 
-						<div class="btn-group pull-right">
+						<div class="btn-group pull-right hidden-xs">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
@@ -71,7 +71,7 @@
 							</ul>
 						</div>
 
-						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
+						<div class="stats-data-note hidden-xs">Note: We only have data starting from Aug 19, 2017.</div>
 					</h2>
 
 					<h3 class="small-headline total-headline">
@@ -114,6 +114,7 @@
 	</div>
 
 	<div class="bottom-chart">
+		{{#if Math.floor((~/bottomChartLabels.length - 2) / chartXInterval) > 2}}
 		<div class="chart-x">
 			{{#each ~/bottomChartLabels.slice(1, -1)}}
 			{{#if ~/bottomChartData && (@key + 1) % ~/chartXInterval === 0}}
@@ -126,6 +127,7 @@
 			{{/if}}
 			{{/each}}
 		</div>
+		{{/if}}
 
 		<div class="chart-y">
 			{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
