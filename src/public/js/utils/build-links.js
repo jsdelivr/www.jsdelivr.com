@@ -1,77 +1,81 @@
-const CSS_PATTERN = /\.css$/i;
+const _ = require('../_');
 const JS_PATTERN = /\.js$/i;
-const CDN_ROOT = '//cdn.jsdelivr.net';
+const CSS_PATTERN = /\.css$/i;
+const CDN_ROOT = 'https://cdn.jsdelivr.net';
 
-export default function (collection, groupLinks = true) {
+// from https://github.com/mojombo/semver/issues/232
+const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+
+module.exports = (collection, html, optimize, alias, sri) => {
+	if (sri) {
+		html = true;
+		optimize = false;
+		alias = false;
+	}
+
 	let links = { js: [], css: [], other: [] };
+	let collectionCopy = collection.map((file) => {
+		let copy = $.extend(true, {}, file);
 
-	collection.forEach((file) => {
-		let link = `${CDN_ROOT}/${file.project}/${file.version}/${file.name}`;
-
-		if (CSS_PATTERN.test(file.name)) {
-			links.css.push(link);
-		} else if (JS_PATTERN.test(file.name)) {
-			links.js.push(link);
-		} else {
-			links.other.push(link);
+		if (optimize && copy.file === _.getNonMinifiedName(copy.file)) {
+			copy.file = _.getMinifiedName(file.file);
 		}
-	});
 
-	if (!groupLinks) {
-		return links;
-	}
+		// Aliasing only works with valid semver versions.
+		if (alias && SEMVER_PATTERN.test(copy.version)) {
+			let parsed = SEMVER_PATTERN.exec(copy.version);
 
-	return {
-		js: buildLink(collection, JS_PATTERN, links.js.length > 1),
-		css: buildLink(collection, CSS_PATTERN, links.css.length > 1),
-		other: links.other,
-	};
-}
-
-function buildLink (collection, filter, merge) {
-	let chunks = [];
-	let filtered = collection.filter(file => filter.test(file.name));
-
-	// There is ony one file of this type; don't merge.
-	if (!merge && filtered.length) {
-		return [ `${CDN_ROOT}/${filtered[0].project}/${filtered[0].version}/${filtered[0].name}` ];
-	}
-
-	groupByProject(filtered).forEach((project) => {
-		if (project.files.length) {
-			let link = `${project.name}@${project.version}`;
-
-			// No need to create a list of files if there is only the main file.
-			if (project.files.length !== 1 || project.files[0] !== project.mainfile) {
-				link += `(${project.files.join('+')})`;
+			if (Number(parsed[1]) > 0) {
+				copy.version = parsed[1];
 			}
+		}
 
-			chunks.push(link);
+		return copy;
+	});
+
+	collectionCopy.forEach((file) => {
+		let link = CDN_ROOT + '/' + buildFileLink(file);
+
+		if (JS_PATTERN.test(file.file)) {
+			links.js.push(buildFileLinkHtml(true, link, html, sri && file.hash));
+		} else if (CSS_PATTERN.test(file.file)) {
+			links.css.push(buildFileLinkHtml(false, link, html, sri && file.hash));
+		} else {
+			links.other.push({ html: link, text: link });
 		}
 	});
 
-	return chunks.length
-		? [ `${CDN_ROOT}/g/${chunks.join(',')}` ]
-		: [];
+	if (links.js.length > 1) {
+		links.js.unshift(buildFileLinkHtml(true, buildCombined(collectionCopy, JS_PATTERN), html));
+	}
+
+	if (links.css.length > 1) {
+		links.css.unshift(buildFileLinkHtml(false, buildCombined(collectionCopy, CSS_PATTERN), html));
+	}
+
+	return links;
+};
+
+function buildCombined (collection, filter) {
+	return CDN_ROOT + '/combine/' + collection.filter(file => filter.test(file.file)).map((file) => {
+		return buildFileLink(file);
+	}).join(',');
 }
 
-function groupByProject (collection) {
-	let projects = {};
+function buildFileLink (file) {
+	return `${file.type}/${file.name}@${file.version}${file.file}`;
+}
 
-	collection.forEach((file) => {
-		let key = file.project + file.version;
+function buildFileLinkHtml (isJs, link, html, hash) {
+	let result = { text: link };
 
-		if (!projects[key]) {
-			projects[key] = {
-				name: file.project,
-				version: file.version,
-				mainfile: file.mainfile,
-				files: [ file.name ],
-			};
-		} else {
-			projects[key].files.push(file.name);
-		}
-	});
+	if (hash) {
+		result.html = isJs ? `<script src="${link}" integrity="sha256-${hash}"></script>` : `<link rel="stylesheet" href="${link}" integrity="sha256-${hash}">`;
+	} else if (html) {
+		result.html = isJs ? `<script src="${link}"></script>` : `<link rel="stylesheet" href="${link}">`;
+	} else {
+		result.html = link;
+	}
 
-	return Object.keys(projects).map(key => projects[key]);
+	return result;
 }

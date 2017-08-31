@@ -1,0 +1,82 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+
+<r-page noYield="{{noYield}}" title="{{title}}">
+	<c-notification></c-notification>
+	<c-header></c-header>
+
+	<div class="p-sri text-page">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-9">
+					<h1 class="page-title">Using SRI with jsDelivr</h1>
+
+					<section>
+						<p>
+							<a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity">Subresource Integrity (SRI)</a>
+							is a security feature that enables browsers to verify that files they fetch
+							are delivered without unexpected manipulation. It works by allowing you to provide a cryptographic hash
+							that a fetched file must match.
+						</p>
+					</section>
+
+					<section>
+						<h2>When is it safe to use SRI with jsDelivr</h2>
+
+						<p>
+							Because SRI verifies full contents of the file, changing even one byte will cause the verification to fail.
+							For this reason, you must only use SRI with links that are guaranteed to never change.
+							Only use SRI with full single-file links, and static versions. For example:
+						</p>
+
+						<pre><code>{{'<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="></script>'}}</code></pre>
+					</section>
+
+					<section>
+						<h2>Do NOT use SRI with</h2>
+
+						<a href="/features#alias"><strong>version aliasing (version ranges)</strong></a>
+
+						<p>
+							The purpose of version aliasing is getting automatic updates. This obviously means the code can change any time.
+						</p>
+
+						<a href="/features#default"><strong>default files</strong></a>
+
+						<p>
+							Default file are automatically minified, so the reasons for minified files apply here as well.
+						</p>
+
+						<a href="/features#minify"><strong>files minified on-demand</strong></a>
+
+						<p>
+							Minifying the exact same source code multiple times might not result in the exact same generated code.
+							While we store all generated files in our permanent storage, we might need to re-minify the file in certain situation,
+							e.g., as a part of failover, if our storage provider goes down.
+						</p>
+
+						<a href="/features#combine"><strong>combined files</strong></a>
+
+						<p>
+							Combining the exact same source code multiple times might not result in the exact same generated code.
+							There might be subtle changes over time, e.g. in added whitespace, caused by changes in our code.
+							While we store all generated files in our permanent storage, we might need to re-combine the files in certain situation,
+							e.g., as a part of failover, if our storage provider goes down.
+						</p>
+					</section>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				title: 'Using SRI - jsDelivr',
+			};
+		},
+	};
+</script>

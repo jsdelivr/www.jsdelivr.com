@@ -1,0 +1,137 @@
+<link rel="ractive" href="./package-header.html" name="c-package-header">
+
+<div class="c-search">
+	<div class="container">
+		<div class="search-input-wrapper">
+			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
+			<a class="search-by" target="_blank" href="https://www.algolia.com">
+				Real-time search by <img src="/img/algolia.png" srcset="/img/algolia@2x.png 2x" title="Algolia">
+			</a>
+		</div>
+
+		<div class="search-results">
+			{{#each packages}}
+			<div class="package" fade-in-out="{ duration: 200 }">
+				<c-package-header package="{{this}}" onlyHeader="true"></c-package-header>
+			</div>
+			{{/each}}
+		</div>
+
+		{{#if hideLanding}}
+		<nav class="search-pagination" aria-label="Search results pagination">
+			<ul class="pagination">
+				<li style="{{#unless page}}visibility: hidden;{{/unless}}">
+					<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
+						<span aria-hidden="true">&laquo;</span>
+					</a>
+				</li>
+
+				{{#each pagination(page, nbPages)}}
+				<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+				{{/each}}
+
+				<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
+					<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
+						<span aria-hidden="true">&raquo;</span>
+					</a>
+				</li>
+			</ul>
+		</nav>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	const debounce = require('../../public/js/utils/debounce');
+	const search = require('../../public/js/utils/search');
+	let app;
+
+	component.exports = {
+		data () {
+			return {
+				page: 0,
+				query: '',
+				packages: [],
+				pagination (page, nbPages) {
+					let start = Math.max(page - 2, 0);
+					let pages = [];
+
+					for (let i = 0; i < 5 && i < nbPages; i++) {
+						pages.push(start + i);
+					}
+
+					return pages;
+				},
+			};
+		},
+		onrender () {
+			if (!this.isServer) {
+				app = this.get('@shared.app');
+				let offsetTop = pageYOffset;
+				this.find('.search-input').focus();
+				scrollTo(0, offsetTop);
+
+				let s = debounce((keypath) => {
+					if (this.get('query')) {
+						search(this.get('query'), this.get('page')).then((result) => {
+							// The query might have changed since we sent the request.
+							if (result.query === this.get('query')) {
+								// An exact match should always come first.
+								result.response.hits.sort((a, b) => {
+									return a.name === result.query ? -1 : b.name === result.query;
+								});
+
+								this.set('packages', result.response.hits, { shuffle: 'name' });
+								this.set('hideLanding', true);
+
+								this.set({
+									fadeIn: true,
+									nbPages: result.response.nbPages,
+									nbHits: result.response.nbHits,
+								});
+
+								// Scroll to the results.
+								if (!pageYOffset || keypath === 'page') {
+									this.scrollToSearch();
+								}
+							}
+						});
+					}
+				}, 200);
+
+				// Make sure query is always a string.
+				this.observe('query', (value) => {
+					if (typeof value !== 'string') {
+						this.set('query', String(value));
+					}
+				});
+
+				// Update results on input.
+				this.observe('page query __ready', (newValue, oldValue, keypath) => {
+					// Don't send requests before have all the data.
+					if (this.get('__ready')) {
+						// Reset page on query change.
+						if (keypath === 'query' && this.get('page') !== 0) {
+							this.set('page', 0);
+						} else if (!this.get('query')) {
+							this.set('hideLanding', false);
+							this.set('packages', []);
+						} else {
+							s(keypath);
+						}
+					}
+				});
+			}
+		},
+		scrollToSearch () {
+			if (app.config.animateScrolling) {
+				$('html, body').animate({
+					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
+				});
+			} else {
+				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				app.config.animateScrolling = true;
+			}
+		}
+	};
+</script>

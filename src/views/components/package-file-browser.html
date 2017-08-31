@@ -1,0 +1,194 @@
+<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+
+<div class="c-package-file-browser">
+	<div class="box box-files">
+		<div class="box-header">
+			<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
+			{{#each path.slice(0, -1)}}
+			{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
+			{{/each}}
+			{{#if path}}
+			/ <span class="path-part active">{{path[path.length - 1]}}</span>
+			{{/if}}
+
+			<c-version-dropdown versions="{{versions}}" version="{{~/version}}"></c-version-dropdown>
+		</div>
+
+		<div class="box-content-wrapper">
+			{{#if type === 'npm' && files}}
+			{{#if ~/default}}
+			<div class="box-sub-header">
+				<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
+					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}">
+						<i class="fa fa-file-code-o" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
+					</a>
+
+					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
+					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
+
+					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
+				</div>
+			</div>
+			{{elseif github}}
+			<div class="box-sub-header">
+				<div class="file-message text-center">
+					Sadly, this package doesn't have a default file set.
+					Consider <a target="_blank" href="{{issueDefaultFile}}">asking the author to set it</a>.
+				</div>
+			</div>
+			{{/if}}
+			{{/if}}
+
+			<div class="box-content">
+				{{#if files && path.length}}
+				<div class="file-link">
+					<a on-click="@this.pop('path')">
+						<i class="fa fa-level-up" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}..</span>
+					</a>
+				</div>
+				{{/if}}
+
+				{{#each _.listFiles(~/files, path)}}
+				<div class="file-link">
+					{{#if type === 'directory'}}
+					<a on-click="@this.push('path', name)">
+						<i class="fa fa-folder" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+					</a>
+					{{else}}
+					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+						<i class="fa fa-file" aria-hidden="true"></i>
+						https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+					</a>
+
+					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
+					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
+					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+					{{/if}}
+				</div>
+				{{else}}
+				<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+				{{/each}}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
+
+	component.exports = {
+		computed: {
+			issueDefaultFile() {
+				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
+					+ `?title=No default jsDelivr CDN file set`
+					+ `&body=This package doesn't have a default file set. You can set it via \`jsdelivr\`, \`cdn\`, \`browser\`, or \`main\` field in \`package.json\``;
+			},
+			issueTooBig() {
+				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
+					+ `?title=${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`
+					+ `&body=I'm trying to load this package from [jsDelivr CDN](${this.get('@global.location.href')})`
+					+ ` but it fails because the package is over 50 MB. Are there any files that could be removed to reduce the package size?`;
+			},
+			pathS() {
+				return this.get('path').length ? this.get('path').join('/') + '/' : '';
+			},
+		},
+		data () {
+			return {
+				_,
+				files: [],
+				filesLoadingMessage: '',
+				path: [],
+			};
+		},
+		decorators: {
+			clipboard,
+			tooltip,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('path files', () => {
+					if (this.get('files').length && _.listFiles(this.get('files'), this.get('path')) === null) {
+						this.set('path', []);
+					}
+				});
+
+				this.observe('version', (version) => {
+					if (version) {
+						this.set('files', []);
+						this.set('filesLoadingMessage', '');
+
+						// Load package files.
+						http.fetchPackageFiles(this.get('type'), this.get('name'), version).then((data) => {
+							this.set('default', data.default);
+							this.set('files', data.files);
+						}).catch((error) => {
+							let defaultError = 'Failed to load the file listing.';
+
+							if (error.responseJSON && error.responseJSON.message) {
+								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+
+								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
+									errorHtml += `<br>Consider <a target="_blank" href="${this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+								}
+
+								this.set('filesLoadingMessage', errorHtml);
+							} else {
+								this.set('filesLoadingMessage', defaultError);
+							}
+						});
+					}
+				});
+			}
+		},
+		getCollectionIndex (collection, type, name, version, file) {
+			for (let i = 0; i < collection.length; i++) {
+				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && collection[i].file === file) {
+					return i;
+				}
+			}
+
+			return -1;
+		},
+		toggleCollectionFile (file) {
+			let type = this.get('type');
+			let name = this.get('name');
+			let version = this.get('version');
+			let collection = this.get('collection');
+			let index = this.getCollectionIndex(collection, type, name, version, file);
+
+			if (index !== -1) {
+				this.splice('collection', index, 1);
+			} else {
+				let p = file.split('/');
+				let n = p.slice(-1)[0];
+				let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
+
+				if (!f) {
+					if (file === this.get('default') && _.getNonMinifiedName(file) !== file) {
+						return this.toggleCollectionFile(_.getNonMinifiedName(file));
+					} else {
+						return console.log('File not found in the list.');
+					}
+				}
+
+				this.push('collection', {
+					type,
+					name,
+					version,
+					file,
+					hash: f.hash,
+					isDefault: file === this.get('default'),
+				})
+			}
+
+			return false;
+		},
+	};
+</script>

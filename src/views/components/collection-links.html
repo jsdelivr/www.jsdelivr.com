@@ -1,0 +1,27 @@
+<div class="c-collection-links">
+	<div class="links-title">{{title}}</div>
+
+	{{#each links}}
+	<div class="collection-link{{#if ~/combined && !@index && links.length > 1}} combined{{/if}}">
+		<a target="_blank" href="{{text}}">{{html}}</a>
+		<i class="fa fa-clipboard pull-right" aria-hidden="true" as-clipboard data-clipboard-text="{{html}}"></i>
+	</div>
+	{{/each}}
+
+	<button class="copy-all" as-clipboard data-clipboard-text="{{(combined && html.length > 1 ? html.slice(1) : html).join('\n')}}">COPY ALL</button>
+</div>
+
+<script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		computed: {
+			html () {
+				return this.get('links').map(link => link.html);
+			},
+		},
+		decorators: {
+			clipboard,
+		},
+	};
+</script>

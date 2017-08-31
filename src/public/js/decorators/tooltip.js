@@ -1,4 +1,4 @@
-export default function (node, title, placement = 'top', trigger = 'hover', container = 'body') {
+module.exports = (node, title, placement = 'top', trigger = 'hover', container = 'body') => {
 	let $node = $(node).tooltip({
 		title,
 		placement,
@@ -9,6 +9,6 @@ export default function (node, title, placement = 'top', trigger = 'hover', cont
 	return {
 		teardown () {
 			$node.tooltip('destroy');
-		}
+		},
 	};
-}
+};

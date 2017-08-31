@@ -1,8 +1,8 @@
-export default function (fn, wait = 100) {
+module.exports = (fn, wait = 100) => {
 	let timeout;
 
-	return function (...args) {
+	return (...args) => {
 		clearTimeout(timeout);
 		timeout = setTimeout(fn, wait, ...args);
 	};
-}
+};

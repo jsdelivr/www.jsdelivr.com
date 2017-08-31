@@ -1,0 +1,136 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/collection.html" name="c-collection">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/package.html" name="c-package">
+<link rel="ractive" href="../components/slider.html" name="c-slider">
+<link rel="ractive" href="../components/slide.html" name="c-slide">
+
+<r-page noYield="{{noYield}}" title="{{title}}">
+	<c-notification></c-notification>
+	<c-header></c-header>
+
+	<div class="p-package page">
+		<c-slider active="{{activeSlide}}">
+			<c-slide>
+				{{#if package}}
+				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" version="{{versionP}}" collection="{{collection}}"></c-package>
+				{{/if}}
+			</c-slide>
+
+			<c-slide>
+				<c-collection name="{{name}}" collection="{{collection}}"></c-collection>
+			</c-slide>
+		</c-slider>
+	</div>
+</r-page>
+
+<script>
+	const has = require('../../public/js/utils/has');
+	const search = require('../../public/js/utils/search');
+	let app;
+
+	component.exports = {
+		computed: {
+			path: {
+				get () {
+					return this.get('pathA').join('/');
+				},
+				set (value = '') {
+					this.set('pathA', value.split('/').filter(v => v));
+				},
+			},
+			title () {
+				return this.get('name') + ' CDN links by jsDelivr - A super-fast CDN for developers and webmasters'
+			},
+			version: {
+				get () {
+					return this.get('versionS') === this.get('versionP') ? '' : this.get('versionP');
+				},
+				set (value) {
+					this.set('versionS', true);
+					this.set('versionP', value);
+				},
+			},
+		},
+		data () {
+			return {
+				collection: [],
+				package: {},
+				pathA: [],
+			};
+		},
+		oninit () {
+			this.set('activeSlide', this.get('tab') === 'collection' ? 1 : 0);
+
+			this.observe('tab', (newValue) => {
+				this.findComponent('c-slider').show(newValue === 'collection' ? 1 : 0);
+			}, { init: false });
+
+			this.observe('activeSlide', (newValue) => {
+				this.set('tab', newValue ? 'collection' : '');
+			}, { init: false });
+
+			this.observe('versionP', (newValue) => {
+				if (newValue && !this.get('versionS')) {
+					this.set('versionS', newValue);
+				}
+			});
+
+			// Convert user/repo to name for GitHub packages.
+			this.observe('user repo', () => {
+				if (this.get('user') && this.get('repo')) {
+					this.set('name', this.get('user') + '/' + this.get('repo'));
+				}
+			});
+
+			if (!Ractive.isServer) {
+				if (this.get('type') === 'npm') {
+					// Load package metadata.
+					search(this.get('name'), this.get('page')).then((result) => {
+						if (!result.response.hits[0] || result.response.hits[0].name !== this.get('name')) {
+							return location.pathname = '/';
+						}
+
+						this.set({ package: result.response.hits[0], });
+					});
+				} else {
+					this.set({
+						package: {
+							githubRepo: {
+								user: this.get('user'),
+								project: this.get('repo'),
+							},
+							owner: {
+								link: `https://github.com/${this.get('user')}/`,
+								avatar: `https://github.com/${this.get('user')}.png`,
+								name: this.get('user'),
+							},
+						},
+					});
+				}
+
+				if (has.localStorage()) {
+					this.observe('collection', function (newValue) {
+						localStorage.setItem('collection2', JSON.stringify(newValue));
+					}, { init: false });
+				}
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				app = this.get('@shared.app');
+			}
+		},
+		scrollToSearch () {
+			if (app.config.animateScrolling) {
+				$('html, body').animate({
+					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
+				});
+			} else {
+				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				app.config.animateScrolling = true;
+			}
+		}
+	};
+</script>

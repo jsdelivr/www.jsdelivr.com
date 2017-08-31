@@ -1,0 +1,334 @@
+<link rel="ractive" href="./collection-box.html" name="c-collection-box">
+<link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
+<link rel="ractive" href="./package-header.html" name="c-package-header">
+<link rel="ractive" href="./stats-table.html" name="c-stats-table">
+
+<div class="c-package">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8">
+				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}"></c-package-header>
+			</div>
+
+			{{#if files}}
+			<div class="col-md-4">
+				{{#if !hasSourceMaps}}
+				<div class="box box-default box-rounded">
+					<div class="box-title">Missing source maps :(</div>
+					This package contains minified files without source maps.
+					Consider <a target="_blank" href="{{issueSourceMaps}}">asking the author to add them</a> for easier debugging.
+				</div>
+				{{else}}
+				<div class="box box-badge box-rounded">
+					<div class="box-title">Get a badge for your package</div>
+					<pre><code>[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge)](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})</code></pre>
+				</div>
+				{{/if}}
+			</div>
+			{{/if}}
+		</div>
+
+		{{#if versions}}
+		<div class="row">
+			<div class="col-md-8">
+				<h2 class="small-headline">CDN Files</h2>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-4 hidden-lg hidden-md">
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+
+			<div class="col-md-8">
+				<c-package-file-browser type="{{type}}" name="{{name}}" github="{{package.githubRepo}}" version="{{version}}" versions="{{versions}}" path="{{path}}" collection="{{collection}}" files="{{~/files}}"></c-package-file-browser>
+			</div>
+
+			<div class="col-md-4 hidden-sm hidden-xs">
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+		</div>
+		{{/if}}
+	</div>
+
+	{{#if totalStats.total}}
+	<div class="container">
+		<section class="package-usage">
+			<div class="row">
+				<div class="col-md-12">
+					<h2 class="small-headline">
+						Package usage
+
+						<div class="btn-group pull-right">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/statsPeriods}}
+								<li><a on-click="@this.set ('statsPeriod', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+
+						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
+					</h2>
+				</div>
+			</div>
+
+			{{#if ~/versionStats}}
+			<div class="row">
+				<div class="col-md-6">
+					<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+						{{#partial column1}}
+						<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
+						{{/partial}}
+					</c-stats-table>
+				</div>
+
+				<div class="col-md-6">
+					<c-stats-table title="Top 5 files" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+						{{#partial column1}}
+						<span class="prefix">{{~/version}}/</span>{{file.substr(1)}}
+						{{/partial}}
+					</c-stats-table>
+				</div>
+			</div>
+			{{/if}}
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3 class="small-headline text-center">Total</h3>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<div class="bottom-chart">
+		<div class="chart-y">
+			{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
+			{{#each range}}
+			<div style="height: {{250 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
+			{{/each}}
+			{{/with}}
+		</div>
+
+		<canvas width="100%" height="250"></canvas>
+	</div>
+	{{else}}
+	<div class="container">
+		<section class="package-usage-empty"></section>
+	</div>
+	{{/if}}
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		computed: {
+			hasSourceMaps () {
+				let files = this.get('files');
+				let hasMin, hasMap;
+
+				if (!files) {
+					return true;
+				}
+
+				_.flattenFiles(files).forEach((file) => {
+					if (/\.min\.(?:js|css)$/.test(file)) {
+						hasMin = true;
+					} else if (/\.map$/.test(file)) {
+						hasMap = true;
+					}
+				});
+
+				return !hasMin || hasMap;
+			},
+			issueSourceMaps () {
+				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+					+ `?title=No source maps for minified files`
+					+ `&body=[This package](${this.get('@global.location.href')}) doesn't contain source maps for the minified files. It would be great to add them for easier debugging.`;
+			},
+		},
+		data () {
+			return {
+				_,
+				collection: [],
+				statsPeriods: {
+					1: 'day',
+					7: 'week',
+					30: 'month',
+					365: 'year',
+				},
+				statsPeriod: 30,
+				versions: [],
+			};
+		},
+		decorators: {
+			clipboard,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				let bottomChart;
+
+				// Load package versions.
+				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
+					this.set('versions', data.versions);
+
+					// Set version for GitHub packages or when an invalid version is selected.
+					if (!this.get('version') || data.versions.indexOf(this.get('version')) === -1) {
+						this.set('package.version', data.versions[0]);
+						this.set('version', data.versions[0]);
+					}
+				}).catch((error) => {
+					if (error.status === 404) {
+						location.pathname = '/';
+					}
+				});
+
+				this.observe('statsPeriod version', () => {
+					if (this.get('statsPeriod') && this.get('version')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let version = this.get('version');
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+
+						// Load package stats.
+						http.fetchPackageVersionStats(type, name, period).then((data) => {
+							let array = [];
+
+							Object.keys(data.versions).forEach((key) => {
+								array.push({
+									version: key,
+									hits: data.versions[key].total,
+								});
+							});
+
+							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
+						});
+
+						// Load version stats.
+						http.fetchPackageFileStats(type, name, version, period).then((data) => {
+							let array = [];
+
+							Object.keys(data.files).forEach((key) => {
+								array.push({
+									file: key,
+									hits: data.files[key].total,
+								});
+							});
+
+							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+						});
+
+						// Bottom chart.
+						if (period !== 'day') {
+							http.fetchPackageDateStats(type, name, period).then((data) => {
+								let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
+								let magnitude = Math.floor(Math.log10(maxValue));
+								this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+								this.set('totalStats', data);
+
+								if (!data.total) {
+									return;
+								}
+
+								let array = [];
+
+								Object.keys(data.dates).forEach((date) => {
+									array.push([ date, data.dates[date] ]);
+								});
+
+								array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+								if (bottomChart) {
+									bottomChart.destroy();
+									bottomChart = null;
+								}
+
+								bottomChart = new Chart(this.find('.bottom-chart canvas'), {
+									type: 'line',
+									data: {
+										labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+										datasets: [{
+											data: array.map(value => value[1].total),
+											backgroundColor: '#ffeee9',
+											borderColor: '#ff5627',
+											borderWidth: 1,
+											pointRadius: 0,
+										}],
+									},
+									options: {
+										maintainAspectRatio: false,
+										fill: true,
+										legend: {
+											display: false,
+										},
+										scales: {
+											yAxes: [{
+												display: false,
+												ticks: {
+													min: 0,
+													max: this.get('totalStatsMax'),
+													beginAtZero: true,
+												},
+											}],
+											xAxes: [{
+												display: false,
+											}],
+										},
+										tooltips: {
+											enabled: false,
+											mode: 'index',
+											intersect: false,
+											custom (tooltip) {
+												// Tooltip Element
+												let $tooltipEl = $('#chartjs-tooltip').show();
+												let bodyWidth = $('body').width();
+
+												if (!$tooltipEl.length) {
+													$tooltipEl = $(`
+													<div id="chartjs-tooltip">
+														<div class="tooltip-number"></div>
+														<div class="tooltip-date"></div>
+														<div class="tooltip-line"></div>
+													</div>
+												`).appendTo(this._chart.canvas.parentNode);
+												}
+
+												// Hide if no tooltip
+												if (tooltip.opacity === 0) {
+													return $tooltipEl.hide();
+												}
+
+												if (tooltip.caretX < 100) {
+													$tooltipEl.css({ width: 100, left: tooltip.caretX });
+												} else if (tooltip.caretX + 100 > bodyWidth) {
+													$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
+												} else {
+													$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
+												}
+
+												if (tooltip.body) {
+													$tooltipEl.find('.tooltip-date').text(tooltip.title);
+													$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
+												}
+											},
+										},
+									}
+								});
+							});
+						}
+					}
+				});
+
+				if (!this.get('version')) {
+					this.set('version', this.get('package.version'));
+				}
+			}
+		},
+	};
+</script>

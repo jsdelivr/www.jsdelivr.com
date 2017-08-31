@@ -1,0 +1,139 @@
+<link rel="ractive" href="./switch-box.html" name="c-switch-box">
+<link rel="ractive" href="./collection-links.html" name="c-collection-links">
+
+<div class="c-collection">
+	<div class="container">
+		<a class="go-back" on-click="slide-prev"><i class="fa fa-chevron-left" aria-hidden="true"></i> back to {{name}}</a>
+		<h1 class="headline">Selected files</h1>
+
+		<div class="alert alert-warning">
+			Using the combined link may cause problems with relative imports, such as images or font files referenced by one of the files.
+			You need to use the regular, single-file links for any files that use relative imports (e.g., font-awesome).
+		</div>
+
+		{{#if sri}}
+		<div class="alert alert-warning">
+			Check <a href="/using-sri-with-dynamic-files">this page</a> for more information about using SRI with jsDelivr.
+		</div>
+		{{/if}}
+
+		<div class="row">
+			<div class="col-md-3 col-sm-6">
+				<c-switch-box active="{{html}}">
+					<div class="switch-box-title">HTML output</div>
+					Display all links as HTML code for easier copy-paste.
+				</c-switch-box>
+			</div>
+
+			<div class="col-md-3 col-sm-6">
+				<c-switch-box active="{{optimize}}">
+					<div class="switch-box-title">Auto-optimization</div>
+					If a minified version of JS/CSS isn't available, generate it on the fly.<br>
+				</c-switch-box>
+			</div>
+
+			<div class="col-md-3 col-sm-6">
+				<c-switch-box active="{{alias}}">
+					<div class="switch-box-title">Version aliasing</div>
+					Automatically receive bug fixes and new non-breaking features.<br>
+				</c-switch-box>
+			</div>
+
+			<div class="col-md-3 col-sm-6">
+				<c-switch-box active="{{sri}}">
+					<div class="switch-box-title">SRI</div>
+					Enable Subresource Integrity check for increased security.<br>
+				</c-switch-box>
+			</div>
+		</div>
+
+		{{#if links.js}}
+		<div class="row">
+			<div class="col-md-12">
+				<c-collection-links title="JavaScript" links="{{links.js}}" combined="true"></c-collection-links>
+			</div>
+		</div>
+		{{/if}}
+
+		{{#if links.css}}
+		<div class="row">
+			<div class="col-md-12">
+				<c-collection-links title="CSS" links="{{links.css}}" combined="true"></c-collection-links>
+			</div>
+		</div>
+		{{/if}}
+
+		{{#if links.other}}
+		<div class="row">
+			<div class="col-md-12">
+				<c-collection-links title="Other" links="{{links.other}}"></c-collection-links>
+			</div>
+		</div>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	const buildLinks = require('../../public/js/utils/build-links');
+
+	component.exports = {
+		computed: {
+			alias: {
+				get () {
+					return this.get('_alias');
+				},
+				set (value) {
+					this.set('_alias', value);
+					this.set('_aliasSri', value);
+				},
+			},
+			html: {
+				get () {
+					return this.get('sri') || this.get('_html');
+				},
+				set (value) {
+					this.set('_html', value);
+					this.set('_htmlSri', value);
+				},
+			},
+			links () {
+				return buildLinks(this.get('collection'), this.get('html'), this.get('optimize'), this.get('alias'), this.get('sri'));
+			},
+			optimize: {
+				get () {
+					return this.get('_optimize');
+				},
+				set (value) {
+					this.set('_optimize', value);
+					this.set('_optimizeSri', value);
+				},
+			},
+			sri: {
+				get () {
+					return this.get('_sri') && this.get('_html') && !this.get('_optimize') && !this.get('_alias');
+				},
+				set (value) {
+					this.set('_sri', value);
+
+					if (value) {
+						this.set('_html', true);
+						this.set('_optimize', false);
+						this.set('_alias', false);
+					} else {
+						this.set('_html', this.get('_htmlSri'));
+						this.set('_optimize', this.get('_optimizeSri'));
+						this.set('_alias', this.get('_aliasSri'));
+					}
+				},
+			},
+		},
+		data () {
+			return {
+				html: false,
+				optimize: true,
+				alias: false,
+				sri: false,
+			};
+		},
+	};
+</script>

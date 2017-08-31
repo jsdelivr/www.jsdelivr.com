@@ -1,61 +1,57 @@
-import algolia from './algolia.js';
-import parseQuery from './parse-query.js';
+const algoliasearch = require('algoliasearch');
+const algolia = algoliasearch('OFCNCOG2CU', 'f54e21fa3a2a0160595bb058179bfb1e', { protocol: 'https:' });
+const index = algolia.initIndex('npm-search');
 
-let jsDelivrIndex = algolia.initIndex('jsDelivr');
-
-export default function (queryString, page = 0, hitsPerPage = 10) {
+module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	return Promise.resolve().then(() => {
 		let parsed = parseQuery(queryString);
-		let options = { page, hitsPerPage };
-		let promise;
+		let options = {
+			page,
+			hitsPerPage,
+			attributesToHighlight: [],
+			attributesToRetrieve: [ 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version' ],
+		};
 
 		if (parsed.facetFilters) {
 			options.facetFilters = parsed.facetFilters;
 		}
 
-		if (parsed.query || options.facetFilters) {
-			promise = jsDelivrIndex.search(parsed.query, options);
-		} else {
-			promise = jsDelivrIndex.browse(options.page, hitsPerPage);
-		}
-
-		return promise.then((response) => {
-			let load = [];
-
-			response.hits.forEach((project) => {
-				project.selectedVersion = project.lastversion;
-
-				if (!project.assets.length) {
-					load.push(project);
-				}
+		return index.search(parsed.query, options).then((response) => {
+			// An exact match should always come first.
+			response.hits.sort((a, b) => {
+				return a.name === parsed.query ? -1 : b.name === parsed.query;
 			});
 
-			if (!load.length) {
-				return {
-					response: $.extend(true, {}, response),
-					queryString,
-				};
-			}
-
-			algolia.startQueriesBatch();
-
-			load.forEach((project) => {
-				algolia.addQueryInBatch('jsDelivr_assets', '', {
-					hitsPerPage: 100,
-					facetFilters: `name: ${project.name}`,
-				});
-			});
-
-			return algolia.sendQueriesBatch().then((content) => {
-				load.forEach((project, index) => {
-					project.assets = content.results[index].hits;
-				});
-
-				return {
-					response: $.extend(true, {}, response),
-					queryString,
-				};
-			});
+			return {
+				response: $.extend(true, {}, response),
+				query: queryString,
+			};
 		});
 	});
+};
+
+const ATTR_REGEXP = /\s*(?:[a-z]+)\s*:\s*(?:.(?![a-z]*\s*:))*/gi;
+const QUERY_REGEXP = /^((?:(?:[^\s:]+(?![a-z]*\s*:))\s*)*)/i;
+const filterMapping = {
+	author: 'owner.name',
+};
+
+function parseQuery (queryString) {
+	let query = queryString.match(QUERY_REGEXP)[0].trim();
+	let substr = queryString.substr(query.length);
+	let filters = [];
+	let match;
+
+	while ((match = ATTR_REGEXP.exec(substr)) !== null) {
+		let temp = match[0].split(':');
+
+		if (filterMapping[temp[0].trim()]) {
+			filters.push(filterMapping[temp[0].trim()] + ':' + temp[1].trim());
+		}
+	}
+
+	return {
+		query,
+		facetFilters: filters.join(','),
+	};
 }

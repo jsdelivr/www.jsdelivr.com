@@ -1,0 +1,74 @@
+<div class="c-slider">
+	{{yield}}
+</div>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				active: 0,
+				direction: 'horizontal',
+				distance: 2000,
+				duration: 400,
+				slides: [],
+			};
+		},
+		onrender () {
+			this.parent.on('*.slide-next', () => this.next());
+			this.parent.on('*.slide-prev', () => this.prev());
+			this.parent.on('*.slide-show', (e, slideIndex) => this.show(slideIndex));
+
+			this.set('slides', this.findAllComponents('c-slide'));
+			this.get('slides')[this.get('active')].set('active', true);
+		},
+		next (slideIndex = this.get('active') + 1) {
+			let slides = this.get('slides');
+
+			if (this.get('active') < slides.length - 1) {
+				let curr = slides[this.get('active')];
+				let next = slides[slideIndex];
+
+				if (this.get('direction') === 'horizontal') {
+					curr.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: -this.get('distance'), y: 0 } });
+					next.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: this.get('distance'), y: 0 } });
+				} else {
+					curr.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: 0, y: -this.get('distance') } });
+					next.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: 0, y: this.get('distance') } });
+				}
+
+				curr.set({ active: false, isOut: true }).then(() => curr.set({ transitionOptions: null, isOut: false }));
+				next.set({ active: true, isIn: true }).then(() => next.set({ transitionOptions: null, isIn: false }));
+
+				this.set('active', slideIndex);
+			}
+		},
+		prev (slideIndex = this.get('active') - 1) {
+			let slides = this.get('slides');
+
+			if (this.get('active') > 0) {
+				let curr = slides[this.get('active')];
+				let next = slides[slideIndex];
+
+				if (this.get('direction') === 'horizontal') {
+					curr.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: this.get('distance'), y: 0 } });
+					next.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: -this.get('distance'), y: 0 } });
+				} else {
+					curr.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: 0, y: this.get('distance') } });
+					next.set({ transitionOptions: { easing: 'linear', duration: this.get('duration'), x: 0, y: -this.get('distance') } });
+				}
+
+				curr.set({ active: false, isOut: true, }).then(() => curr.set({ transitionOptions: null, isOut: false }));
+				next.set({ active: true, isIn: true }).then(() => next.set({ transitionOptions: null, isIn: false }));
+
+				this.set('active', slideIndex);
+			}
+		},
+		show (slideIndex) {
+			if (slideIndex < this.get('active')) {
+				this.prev(slideIndex);
+			} else if (slideIndex > this.get('active')) {
+				this.next(slideIndex);
+			}
+		}
+	};
+</script>

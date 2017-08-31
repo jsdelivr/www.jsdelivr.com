@@ -1,0 +1,120 @@
+<link rel="ractive" href="./stats-table.html" name="c-stats-table">
+
+<div class="c-landing-bottom">
+	<section class="built-for-production">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-4 col-md-5 col-sm-6">
+					<img src="/img/landing/built-for-production-icon.png" srcset="/img/landing/built-for-production-icon@2x.png 2x">
+					<h2 class="section-title">Built for production</h2>
+
+					<ul class="features-list">
+						<li><a href="/network">four CDN & two DNS providers</a></li>
+						<li><a href="/network#map">more than 750 points of presence</a></li>
+						<li><a href="/network">RUM based load balancing</a></li>
+						<li><a target="_blank" href="https://www.cdnperf.com">faster than any other CDN</a></li>
+						<li><a href="/network#failover">failover on every layer</a></li>
+						<li><a href="/network#china">works in China</a></li>
+					</ul>
+				</div>
+
+				<div class="col-lg-8 col-md-7 col-sm-6 hidden-xs">
+					<a href="/network#map"><img class="network-map" src="/img/landing/network-map.png" srcset="/img/landing/network-map@2x.png 2x"></a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="requests-served">
+		<div class="count"><span class="number">{{_.formatNumber(@shared.requestsServed)}}</span> requests served</div>
+		<div class="since">since you opened this page</div>
+	</section>
+
+	<section class="developer-friendly">
+		<div class="developer-friendly-bg-top">
+			<div class="stats-button-wrapper">
+				<a href="/statistics" class="btn-featured btn">See more stats</a>
+			</div>
+		</div>
+
+		<div class="developer-friendly-bg-middle">
+			<div class="container ">
+				<div class="row">
+					<div class="col-lg-6 col-md-7">
+						<c-stats-table title="Top 10 packages last 30 days" data="{{topPackages.slice(0, 10)}}">
+							{{#partial column1}}
+							<a href="/package/{{type}}/{{name}}"><span class="prefix">{{type}}/</span>{{name}}</a>
+							{{/partial}}
+						</c-stats-table>
+					</div>
+
+					<div class="col-lg-5 col-md-5 col-lg-offset-1 col-md-offset-0">
+						<img src="/img/landing/developer-friendly-icon.png" srcset="/img/landing/developer-friendly-icon@2x.png 2x">
+						<h2 class="section-title">Developer Friendly</h2>
+
+						<ul class="features-list">
+							<li><a href="/features">all files from npm and GitHub available
+								<div class="next-line">with zero setup</div>
+							</a></li>
+							<li><a href="/features#combine">combine multiple files on-demand</a></li>
+							<li><a href="/features#minify">minify files on-demand</a></li>
+							<li><a href="/features#combine">source map support</a></li>
+							<li><a href="/features#alias">version aliasing</a></li>
+							<li><a target="_blank" href="https://github.com/jsdelivr/data.jsdelivr.com">usage statistics</a></li>
+							<li><a target="_blank" href="https://github.com/jsdelivr/data.jsdelivr.com">API</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="developer-friendly-bg-bottom"></div>
+	</section>
+
+	<section class="used-by">
+		<h3 class="section-title">jsDelivr is used by</h3>
+		<img src="/img/used-by/mozilla.png" srcset="/img/used-by/mozilla@2x.png 2x" title="Used by Mozilla">
+		<img src="/img/used-by/urban-dictionary.png" srcset="/img/used-by/urban-dictionary@2x.png 2x" title="Used by Urban Dictionary">
+		<img src="/img/used-by/the-new-york-times.png" srcset="/img/used-by/the-new-york-times@2x.png 2x" title="Used by The New York Times">
+		<img src="/img/used-by/yandex.png" srcset="/img/used-by/yandex@2x.png 2x" title="Used by Yandex">
+		<img src="/img/used-by/nbc.png" srcset="/img/used-by/nbc@2x.png 2x" title="Used by NBC News">
+	</section>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		easing: {
+			random (t) {
+				return Math.pow(t, 2);
+			},
+		},
+		data () {
+			return {
+				_,
+			};
+		},
+		oninit () {
+			if (!this.get('@shared.requestsServed')) {
+				this.set('@shared.requestsServed', 0);
+			}
+
+			if (!Ractive.isServer) {
+				let animateRequests = () => {
+					let seconds = Math.floor(Math.random() * 15 + 5);
+					this.animate('@shared.requestsServed', this.get('@shared.requestsServed') + 5750 * seconds, { duration: (seconds + 1) * 1000, easing: 'easeOut' }); // ~ 5750 / sec
+					setTimeout(animateRequests, seconds * 1000);
+				};
+
+				animateRequests();
+
+				// Load top packages.
+				http.fetchTopPackages().then((data) => {
+					this.set('topPackages', data);
+				});
+			}
+		},
+	};
+</script>
