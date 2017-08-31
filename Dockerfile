@@ -8,3 +8,4 @@ COPY . /app
 WORKDIR /app
 ENTRYPOINT ["/wormhole"]
 CMD [ "node", "src" ]
+EXPOSE 8080
