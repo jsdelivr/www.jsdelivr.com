@@ -48,7 +48,7 @@ Ractive.Router.prototype.dispatch = function () {
 		return;
 	}
 
-	document.title = app.router.route.view.get('title') || 'jsDelivr - A free super-fast CDN for developers and webmasters';
+	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable Open Source CDN';
 
 	ga('set', 'page', this.getUri());
 	ga('send', 'pageview');
