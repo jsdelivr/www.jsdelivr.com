@@ -135,6 +135,20 @@ server.use(koaStatic(__dirname + '/public', {
 server.use(stripTrailingSlash());
 
 /**
+ * Easier caching.
+ */
+server.use(async (ctx, next) => {
+	await next();
+
+	if (ctx.maxAge) {
+		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}`);
+	} else if (ctx.expires) {
+		ctx.set('Cache-Control', `public`);
+		ctx.set('Expires', ctx.expires);
+	}
+});
+
+/**
  * Ractive integration.
  */
 server.use(render({
@@ -181,6 +195,7 @@ router.get('/projects/:name', async (ctx) => {
  */
 router.get('/sitemap.xml', async (ctx) => {
 	ctx.body = siteMapTemplate({ packages: JSON.parse(await fs.readFile(pathToPackages, 'utf8')) });
+	ctx.maxAge = 24 * 60 * 60;
 });
 
 /**
@@ -200,6 +215,7 @@ router.get([
 
 	try {
 		ctx.body = await ctx.render('pages/package.html', data);
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (server.env === 'development') {
 			console.error(e);
@@ -220,6 +236,7 @@ router.get([ '/*' ], async (ctx) => {
 
 	try {
 		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? 'index' : ctx.path) + '.html', data);
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (server.env === 'development') {
 			console.error(e);
