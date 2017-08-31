@@ -13,13 +13,14 @@
 				slides: [],
 			};
 		},
+		oninit () {
+			this.set('slides', this.findAllComponents('c-slide'));
+			this.get('slides')[this.get('active')].set('active', true);
+		},
 		onrender () {
 			this.parent.on('*.slide-next', () => this.next());
 			this.parent.on('*.slide-prev', () => this.prev());
 			this.parent.on('*.slide-show', (e, slideIndex) => this.show(slideIndex));
-
-			this.set('slides', this.findAllComponents('c-slide'));
-			this.get('slides')[this.get('active')].set('active', true);
 		},
 		next (slideIndex = this.get('active') + 1) {
 			let slides = this.get('slides');

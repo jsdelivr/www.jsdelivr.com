@@ -236,10 +236,10 @@
 			};
 		},
 		oninit () {
-			if (!Ractive.isServer) {
-				// It's too soon to call the show method here.
-				this.findComponent('c-slider').set('active', docs.indexOf(this.get('activeDocs')) !== -1 ? docs.indexOf(this.get('activeDocs')) : 0);
+			// It's too soon to call the show method here.
+			this.findComponent('c-slider').set('active', docs.indexOf(this.get('activeDocs')) !== -1 ? docs.indexOf(this.get('activeDocs')) : 0);
 
+			if (!Ractive.isServer) {
 				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
 				}, { init: false });
