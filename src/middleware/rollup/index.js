@@ -24,7 +24,7 @@ module.exports = (prefix, options) => {
 		}
 
 		try {
-			if (options.cache) {
+			if (options.cache && ctx.query.v === options.assetsVersion) {
 				ctx.set('Cache-Control', 'public, max-age=31536000');
 			}
 

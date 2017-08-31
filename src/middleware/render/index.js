@@ -2,18 +2,8 @@ const Ractive = require('ractive');
 const path = require('path');
 const fs = require('fs-extra');
 const rcu = require('rcu');
-const childProcess = require('child_process');
 
 const componentCache = new Map();
-let commitHash = require('../../../package.json').version;
-
-try {
-	commitHash = childProcess.execSync('git log -1 "--format=%H"', { encoding: 'utf8' }).trim();
-} catch (e) {
-	try {
-		commitHash = fs.readFileSync(__dirname + '/../../../sha.txt', 'utf8').trim();
-	} catch (e) {}
-}
 
 rcu.init(Ractive);
 Ractive.DEBUG = false;
@@ -33,7 +23,7 @@ module.exports = (options) => {
 			let Component = await getComponent(template, options);
 			let component = new Component({ data });
 			component.set('@shared.isServer', true);
-			component.set('@shared.commitHash', commitHash);
+			component.set('@shared.assetsVersion', options.assetsVersion);
 			component.set('@shared.options', ctx.options);
 			component.set('@shared.router', ctx.router);
 			let html = component.toHtml().replace('<<RACTIVE_SERIALIZED_DATA>>', JSON.stringify(data));
@@ -75,4 +65,3 @@ async function makeComponent (href, options) {
 		}
 	});
 }
-
