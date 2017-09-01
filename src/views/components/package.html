@@ -11,7 +11,7 @@
 			</div>
 
 			{{#if files}}
-			<div class="col-md-4">
+			<div class="col-md-4 hidden-sm hidden-xs">
 				{{#if !hasSourceMaps}}
 				<div class="box box-default box-rounded">
 					<div class="box-title">Missing source maps :(</div>
@@ -59,7 +59,7 @@
 					<h2 class="small-headline">
 						Package usage
 
-						<div class="btn-group pull-right">
+						<div class="btn-group pull-right hidden-xs">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
@@ -71,7 +71,7 @@
 							</ul>
 						</div>
 
-						<div class="stats-data-note">Note: We only have data starting from Aug 19, 2017.</div>
+						<div class="stats-data-note hidden-xs">Note: We only have data starting from Aug 19, 2017.</div>
 					</h2>
 
 					<h3 class="small-headline total-headline">
@@ -114,6 +114,21 @@
 	</div>
 
 	<div class="bottom-chart">
+		{{#if Math.floor((~/bottomChartLabels.length - 2) / chartXInterval) > 2}}
+		<div class="chart-x">
+			{{#each ~/bottomChartLabels.slice(1, -1)}}
+			{{#if ~/bottomChartData && (@key + 1) % ~/chartXInterval === 0}}
+			<!-- 100 / NUMBER_OF_COLUMNS * COLUMN_NUMBER - (100 % WIDTH_OF_ONE_COLUMN) -->
+			<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key + 1) - (100 % (100 / (~/bottomChartLabels.length - 1) * ~/chartXInterval))}}% - 100px);">
+				<div class="x-number">{{_.formatNumber(~/bottomChartData[@key + 1])}}</div>
+				<div class="x-date">{{this}}</div>
+				<div class="x-line"></div>
+			</div>
+			{{/if}}
+			{{/each}}
+		</div>
+		{{/if}}
+
 		<div class="chart-y">
 			{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
 			{{#each range}}
@@ -134,10 +149,15 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const debounce = require('../../public/js/utils/debounce');
 	const clipboard = require('../../public/js/decorators/clipboard');
 
 	component.exports = {
 		computed: {
+			chartXInterval () {
+				this.get('_resizeId'); // Keep this here so that it updates on resize.
+				return this.get('bottomChartLabels') ? Math.ceil(this.get('bottomChartLabels').length / Math.floor(innerWidth / 140)) : 1;
+			},
 			hasSourceMaps () {
 				let files = this.get('files');
 				let hasMin, hasMap;
@@ -175,6 +195,7 @@
 				statsPeriod: 30,
 				versions: [],
 				link: location.href,
+				_resizeId: 0,
 			};
 		},
 		decorators: {
@@ -237,20 +258,20 @@
 
 						// Bottom chart.
 						if (period !== 'day') {
-							http.fetchPackageDateStats(type, name, period).then((data) => {
-								let maxValue = Math.max(...Object.keys(data.dates).map(date => data.dates[date].total));
+							http.fetchPackageDateStats(type, name, period).then((response) => {
+								let maxValue = Math.max(...Object.keys(response.dates).map(date => response.dates[date].total));
 								let magnitude = Math.floor(Math.log10(maxValue));
 								this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-								this.set('totalStats', data);
+								this.set('totalStats', response);
 
-								if (!data.total) {
+								if (!response.total) {
 									return;
 								}
 
 								let array = [];
 
-								Object.keys(data.dates).forEach((date) => {
-									array.push([ date, data.dates[date] ]);
+								Object.keys(response.dates).forEach((date) => {
+									array.push([ date, response.dates[date] ]);
 								});
 
 								array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
@@ -260,12 +281,18 @@
 									bottomChart = null;
 								}
 
+								let labels = array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase());
+								let data = array.map(value => value[1].total);
+
+								this.set('bottomChartLabels', labels);
+								this.set('bottomChartData', data);
+
 								bottomChart = new Chart(this.find('.bottom-chart canvas'), {
 									type: 'line',
 									data: {
-										labels: array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase()),
+										labels,
 										datasets: [{
-											data: array.map(value => value[1].total),
+											data,
 											backgroundColor: '#ffeee9',
 											borderColor: '#ff5627',
 											borderWidth: 1,
@@ -291,44 +318,6 @@
 												display: false,
 											}],
 										},
-										tooltips: {
-											enabled: false,
-											mode: 'index',
-											intersect: false,
-											custom (tooltip) {
-												// Tooltip Element
-												let $tooltipEl = $('#chartjs-tooltip').show();
-												let bodyWidth = $('body').width();
-
-												if (!$tooltipEl.length) {
-													$tooltipEl = $(`
-													<div id="chartjs-tooltip">
-														<div class="tooltip-number"></div>
-														<div class="tooltip-date"></div>
-														<div class="tooltip-line"></div>
-													</div>
-												`).appendTo(this._chart.canvas.parentNode);
-												}
-
-												// Hide if no tooltip
-												if (tooltip.opacity === 0) {
-													return $tooltipEl.hide();
-												}
-
-												if (tooltip.caretX < 100) {
-													$tooltipEl.css({ width: 100, left: tooltip.caretX });
-												} else if (tooltip.caretX + 100 > bodyWidth) {
-													$tooltipEl.css({ width: 100, left: bodyWidth - 100 });
-												} else {
-													$tooltipEl.css({ width: 200, left: tooltip.caretX - 100 });
-												}
-
-												if (tooltip.body) {
-													$tooltipEl.find('.tooltip-date').text(tooltip.title);
-													$tooltipEl.find('.tooltip-number').text(_.formatNumber(tooltip.body[0].lines[0]));
-												}
-											},
-										},
 									}
 								});
 							});
@@ -352,6 +341,15 @@
 					this.set('version', this.get('package.version'));
 				}
 			}
+		},
+		onrender () {
+			let resize = debounce(() => {
+				this.add('_resizeId');
+			});
+
+			this.on('unrender', () => $(window).off('resize', resize));
+			$(window).on('resize', resize);
+			resize();
 		},
 	};
 </script>

@@ -235,7 +235,7 @@ router.get([
 /**
  * All other pages.
  */
-router.get([ '/*' ], async (ctx) => {
+router.get('/*', async (ctx) => {
 	let data = {
 		docs: ctx.query.docs,
 	};
