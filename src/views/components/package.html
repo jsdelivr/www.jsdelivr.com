@@ -114,13 +114,12 @@
 	</div>
 
 	<div class="bottom-chart">
-		{{#if Math.floor((~/bottomChartLabels.length - 2) / chartXInterval) > 2}}
+		{{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
 		<div class="chart-x">
-			{{#each ~/bottomChartLabels.slice(1, -1)}}
-			{{#if ~/bottomChartData && (@key + 1) % ~/chartXInterval === 0}}
-			<!-- 100 / NUMBER_OF_COLUMNS * COLUMN_NUMBER - (100 % WIDTH_OF_ONE_COLUMN) -->
-			<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key + 1) - (100 % (100 / (~/bottomChartLabels.length - 1) * ~/chartXInterval))}}% - 100px);">
-				<div class="x-number">{{_.formatNumber(~/bottomChartData[@key + 1])}}</div>
+			{{#each ~/bottomChartLabels}}
+			{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor(~/bottomChartData.length / ~/chartXInterval - 1) * ~/chartXInterval}}
+			<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key)}}% - 100px);">
+				<div class="x-number">{{_.formatNumber(~/bottomChartData[@key])}}</div>
 				<div class="x-date">{{this}}</div>
 				<div class="x-line"></div>
 			</div>
