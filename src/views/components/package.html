@@ -75,7 +75,7 @@
 					</h2>
 
 					<h3 class="small-headline total-headline">
-						{{#if versionStatsData.rank < 100}}
+						{{#if versionStatsData.rank !== null && versionStatsData.rank < 100}}
 						{{~/name}} is the {{_.nth(versionStatsData.rank + 1)}} most popular package on jsDelivr,
 						with {{_.formatNumber(versionStatsData.total)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
 						<a class="share-twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the #${Math.floor(versionStatsData.rank + 1)} package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
@@ -96,7 +96,7 @@
 				<div class="col-md-6">
 					<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
-						<a on-click="@this.set('version', version)"><span class="prefix">{{~/type}}/{{~/name}}@</span>{{version}}</a>
+						<a on-click="@this.set('version', version)">{{version}}</a>
 						{{/partial}}
 					</c-stats-table>
 				</div>
@@ -104,7 +104,7 @@
 				<div class="col-md-6">
 					<c-stats-table title="Top 5 files in v{{version}}" data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
 						{{#partial column1}}
-						<span class="prefix">{{~/version}}/</span>{{file.substr(1)}}
+						<a title="{{file}}" target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
 						{{/partial}}
 					</c-stats-table>
 				</div>

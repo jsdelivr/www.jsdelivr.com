@@ -92,7 +92,8 @@
 							return location.pathname = '/';
 						}
 
-						this.set({ package: result.response.hits[0], });
+						this.set({ package: result.response.hits[0] });
+						$('meta[name="description"]').attr('content', `${this.get('title')}. ${$('<div></div>').html(result.response.hits[0].description).text()}`);
 					});
 				} else {
 					this.set({
