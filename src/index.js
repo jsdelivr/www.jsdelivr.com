@@ -248,7 +248,8 @@ router.get('/*', async (ctx) => {
 			console.error(e);
 		}
 
-		ctx.body = await ctx.render('pages/index.html', data);
+		ctx.status = 301;
+		return ctx.redirect('/');
 	}
 });
 
