@@ -76,6 +76,13 @@
 				}
 			});
 
+			// Support scoped npm packages.
+			this.observe('scope name', () => {
+				if (this.get('scope') && this.get('name') && this.get('name').indexOf(this.get('scope')) !== 0) {
+					this.set('name', this.get('scope') + '/' + this.get('name'));
+				}
+			});
+
 			// Convert user/repo to name for GitHub packages.
 			this.observe('user repo', () => {
 				if (this.get('user') && this.get('repo')) {

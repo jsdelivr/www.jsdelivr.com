@@ -208,7 +208,7 @@ router.use('/sitemap/:page', async (ctx) => {
  * Package pages.
  */
 router.get([
-	'/package/:type(npm)/:name',
+	'/package/:type(npm)/:scope?/:name',
 	'/package/:type(gh)/:user/:repo',
 ], async (ctx) => {
 	let data = {
@@ -217,6 +217,7 @@ router.get([
 		user: ctx.params.user,
 		repo: ctx.params.repo,
 		path: ctx.query.path,
+		scope: ctx.params.scope,
 	};
 
 	try {
