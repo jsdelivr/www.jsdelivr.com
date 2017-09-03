@@ -45,11 +45,10 @@
 			},
 			version: {
 				get () {
-					return this.get('versionS') === this.get('versionP') ? '' : this.get('versionP');
+					return !this.get('versionS') || this.get('versionS') === this.get('versionP') ? '' : this.get('versionP');
 				},
 				set (value) {
-					this.set('versionS', true);
-					this.set('versionP', value);
+					this.set({ versionS: true, versionP: value });
 				},
 			},
 		},
