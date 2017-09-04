@@ -58,12 +58,12 @@ module.exports = (collection, html, optimize, alias, sri) => {
 
 function buildCombined (collection, filter) {
 	return CDN_ROOT + '/combine/' + collection.filter(file => filter.test(file.file)).map((file) => {
-		return buildFileLink(file);
+		return buildFileLink(file, true);
 	}).join(',');
 }
 
-function buildFileLink (file) {
-	return `${file.type}/${file.name}@${file.version}${file.file}`;
+function buildFileLink (file, useDefault = false) {
+	return `${file.type}/${file.name}@${file.version}${file.isDefault && useDefault ? '' : file.file}`;
 }
 
 function buildFileLinkHtml (isJs, link, html, hash) {
