@@ -172,12 +172,29 @@
 		},
 		getCollectionIndex (collection, type, name, version, file) {
 			for (let i = 0; i < collection.length; i++) {
-				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && collection[i].file === file) {
+				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && (collection[i].file === file || (collection[i].isDefault && this.getFile(file) === this.getFile(this.get('default'))))) {
+					console.log(file, this.get(file), this.getFile(this.get('default')));
 					return i;
 				}
 			}
 
 			return -1;
+		},
+		getFile (file) {
+			let p = file.split('/');
+			let n = p.slice(-1)[0];
+			let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
+			console.log(file, f);
+
+			if (!f) {
+				if (file === this.get('default') && _.getNonMinifiedName(file) !== file) {
+					return _.getNonMinifiedName(file);
+				}
+
+				return null;
+			}
+
+			return file;
 		},
 		toggleCollectionFile (file) {
 			let type = this.get('type');
@@ -189,16 +206,12 @@
 			if (index !== -1) {
 				this.splice('collection', index, 1);
 			} else {
-				let p = file.split('/');
-				let n = p.slice(-1)[0];
-				let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
+				let f = this.getFile(file);
 
-				if (!f) {
-					if (file === this.get('default') && _.getNonMinifiedName(file) !== file) {
-						return this.toggleCollectionFile(_.getNonMinifiedName(file));
-					} else {
-						return console.log('File not found in the list.');
-					}
+				if (f !== file) {
+					return this.toggleCollectionFile(f);
+				} else if (!f) {
+					return console.log('File not found in the list.');
 				}
 
 				this.push('collection', {
@@ -207,7 +220,7 @@
 					version,
 					file,
 					hash: f.hash,
-					isDefault: file === this.get('default'),
+					isDefault: this.getFile(file) === this.getFile(this.get('default')),
 				})
 			}
 
