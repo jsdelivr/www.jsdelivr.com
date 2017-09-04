@@ -172,8 +172,7 @@
 		},
 		getCollectionIndex (collection, type, name, version, file) {
 			for (let i = 0; i < collection.length; i++) {
-				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && (collection[i].file === file || (collection[i].isDefault && this.getFile(file) === this.getFile(this.get('default'))))) {
-					console.log(file, this.get(file), this.getFile(this.get('default')));
+				if (collection[i].type === type && collection[i].name === name && collection[i].version === version && (collection[i].file === file || (collection[i].isDefault && this.getFile(file).path === this.getFile(this.get('default')).path))) {
 					return i;
 				}
 			}
@@ -184,17 +183,16 @@
 			let p = file.split('/');
 			let n = p.slice(-1)[0];
 			let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
-			console.log(file, f);
 
 			if (!f) {
 				if (file === this.get('default') && _.getNonMinifiedName(file) !== file) {
-					return _.getNonMinifiedName(file);
+					return $.extend({ path: _.getNonMinifiedName(file) }, f);
 				}
 
-				return null;
+				return {};
 			}
 
-			return file;
+			return $.extend({ path: file }, f);
 		},
 		toggleCollectionFile (file) {
 			let type = this.get('type');
@@ -208,9 +206,9 @@
 			} else {
 				let f = this.getFile(file);
 
-				if (f !== file) {
-					return this.toggleCollectionFile(f);
-				} else if (!f) {
+				if (f.path !== file) {
+					return this.toggleCollectionFile(f.path);
+				} else if (!f.path) {
 					return console.log('File not found in the list.');
 				}
 
@@ -220,7 +218,7 @@
 					version,
 					file,
 					hash: f.hash,
-					isDefault: this.getFile(file) === this.getFile(this.get('default')),
+					isDefault: f.path === this.getFile(this.get('default')).path,
 				})
 			}
 
