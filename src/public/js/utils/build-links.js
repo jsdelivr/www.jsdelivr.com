@@ -70,7 +70,7 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 	let result = { text: link };
 
 	if (hash) {
-		result.html = isJs ? `<script src="${link}" integrity="sha256-${hash}"></script>` : `<link rel="stylesheet" href="${link}" integrity="sha256-${hash}">`;
+		result.html = isJs ? `<script src="${link}" integrity="sha256-${hash}" crossorigin="anonymous"></script>` : `<link rel="stylesheet" href="${link}" integrity="sha256-${hash}" crossorigin="anonymous">`;
 	} else if (html) {
 		result.html = isJs ? `<script src="${link}"></script>` : `<link rel="stylesheet" href="${link}">`;
 	} else {
