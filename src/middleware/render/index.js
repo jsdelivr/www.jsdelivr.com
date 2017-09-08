@@ -58,7 +58,7 @@ async function makeComponent (href, options) {
 				require (module) {
 					return require(path.join(options.views, path.dirname(href), module));
 				},
-				parseOptions: { preserveWhitespace: true, interpolate: { script: true, style: true } },
+				parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false },
 			}, resolve, reject);
 		} catch (e) {
 			reject(e);
