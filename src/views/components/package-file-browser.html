@@ -206,10 +206,11 @@
 			} else {
 				let f = this.getFile(file);
 
-				if (f.path !== file) {
+				if (!f.path) {
+					console.log('File not found in the list.');
+					return false;
+				} else if (f.path !== file) {
 					return this.toggleCollectionFile(f.path);
-				} else if (!f.path) {
-					return console.log('File not found in the list.');
 				}
 
 				this.push('collection', {
