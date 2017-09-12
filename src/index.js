@@ -163,7 +163,7 @@ server.use(async (ctx, next) => {
 server.use(async (ctx, next) => {
 	if (serverConfig.blogRewrite.hasOwnProperty(ctx.path)) {
 		ctx.status = 301;
-		return ctx.redirect(serverConfig.blogRewrite[ctx.path]);
+		return ctx.redirect(`https://www.jsdelivr.com${serverConfig.blogRewrite[ctx.path]}`);
 	} else if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
 		ctx.status = 301;
 		return ctx.redirect(`${ctx.path}/`);
