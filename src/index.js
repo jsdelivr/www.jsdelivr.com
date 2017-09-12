@@ -164,7 +164,10 @@ server.use(async (ctx, next) => {
 	if (serverConfig.blogRewrite.hasOwnProperty(ctx.path)) {
 		ctx.status = 301;
 		return ctx.redirect(`https://www.jsdelivr.com${serverConfig.blogRewrite[ctx.path]}`);
-	} else if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
+	} else if (ctx.hostname === 'blog.jsdelivr.com') {
+		ctx.status = 301;
+		return ctx.redirect(`https://www.jsdelivr.com/blog${ctx.path}`);
+	} if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
 		ctx.status = 301;
 		return ctx.redirect(`${ctx.path}/`);
 	}
