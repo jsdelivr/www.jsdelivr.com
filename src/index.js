@@ -158,6 +158,18 @@ server.use(async (ctx, next) => {
 });
 
 /**
+ * Redirect /blog to /blog/
+ */
+server.use(async (ctx, next) => {
+	if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
+		ctx.status = 301;
+		return ctx.redirect(`${ctx.path}/`);
+	}
+
+	return next();
+});
+
+/**
  * Redirect old URLs #1.
  */
 server.use(async (ctx, next) => {
