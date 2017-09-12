@@ -158,10 +158,13 @@ server.use(async (ctx, next) => {
 });
 
 /**
- * Redirect /blog to /blog/
+ * Redirect /blog to /blog/ & old blog posts.
  */
 server.use(async (ctx, next) => {
-	if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
+	if (serverConfig.blogRewrite.hasOwnProperty(ctx.path)) {
+		ctx.status = 301;
+		return ctx.redirect(serverConfig.blogRewrite[ctx.path]);
+	} else if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
 		ctx.status = 301;
 		return ctx.redirect(`${ctx.path}/`);
 	}
