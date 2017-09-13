@@ -14,10 +14,11 @@
 			<div class="col-md-4 hidden-sm hidden-xs">
 				<div class="box box-badge box-rounded">
 					<div class="box-title">Get a badge for your package</div>
-					<a as-clipboard="'Copy markdown to clipboard', 'bottom'" data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge)](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})">
-						<img src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge">
+					<a as-clipboard="'Copy markdown to clipboard', 'bottom'" data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})">
+						<img src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
 					</a>
-					<pre><code>[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge)](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})</code></pre>
+					<div class="badge-alt-style" on-click="@this.toggle('badgeAltStyle')">{{badgeAltStyle ? 'Default' : 'Alternative'}} style</div>
+					<pre><code>[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})</code></pre>
 				</div>
 			</div>
 			{{/if}}
