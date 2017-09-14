@@ -31,6 +31,8 @@ const Router = require('koa-router');
 const Handlebars = require('handlebars');
 const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
+const readDirRecursive = require('recursive-readdir');
+const path = require('path');
 
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
@@ -39,6 +41,7 @@ const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
 const legacyMapping = require('../data/legacy-mapping.json');
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
+let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
 let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
 
 let server = new Koa();
@@ -208,6 +211,7 @@ router.get('/projects/:name', async (ctx) => {
 router.use('/sitemap/:page', async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
 	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
+	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
 
@@ -215,6 +219,8 @@ router.use('/sitemap/:page', async (ctx) => {
 		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
 	} else if (page > 0 && page <= maxPage) {
 		ctx.body = siteMapTemplate({ packages: packages.slice((page - 1) * 50000, page * 50000) });
+	} else if (page === 0) {
+		ctx.body = siteMap0Template({ pages });
 	} else {
 		ctx.status = 404;
 	}
@@ -240,7 +246,7 @@ router.get([
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/package.html', data);
+		ctx.body = await ctx.render('pages/_package.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (server.env === 'development') {
@@ -248,7 +254,7 @@ router.get([
 		}
 
 		data.noYield = true;
-		ctx.body = await ctx.render('pages/index.html', data);
+		ctx.body = await ctx.render('pages/_index.html', data);
 	}
 });
 
@@ -261,7 +267,7 @@ router.get('/*', async (ctx) => {
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? 'index' : ctx.path) + '.html', data);
+		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (server.env === 'development') {
