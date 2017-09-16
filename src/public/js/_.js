@@ -13,7 +13,7 @@ module.exports = {
 		return files;
 	},
 	formatDate (date) {
-		return `${date.getUTCDate()} ${months[date.getUTCMonth()]}`;
+		return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
 	},
 	formatHits (hits) {
 		if (hits < 1e9) {
