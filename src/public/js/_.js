@@ -79,6 +79,8 @@ module.exports = {
 		return data;
 	},
 	nth (n) {
+		n = Math.floor(n);
+
 		if (n === 1) {
 			return '';
 		} else if (n === 2) {
