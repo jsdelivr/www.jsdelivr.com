@@ -8,7 +8,6 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 		let options = {
 			page,
 			hitsPerPage,
-			optionalFacetFilters: `concatenatedName:${parsed.query.replace(/[-/@_.]+/g, '')}`,
 			attributesToHighlight: [],
 			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version' ],
 		};
