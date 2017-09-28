@@ -180,6 +180,10 @@
 			return -1;
 		},
 		getFile (file) {
+			if (!file) {
+				return {};
+			}
+
 			let p = file.split('/');
 			let n = p.slice(-1)[0];
 			let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
