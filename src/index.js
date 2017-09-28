@@ -315,3 +315,11 @@ process.on('uncaughtException', (error) => {
 		process.exit(1);
 	}, 10000);
 });
+
+process.on('unhandledRejection', (error) => {
+	logger.fatal(error, 'Unhandled rejection. Exiting.');
+
+	setTimeout(() => {
+		process.exit(1);
+	}, 10000);
+});
