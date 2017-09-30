@@ -4,7 +4,8 @@ const CSS_PATTERN = /\.css$/i;
 const CDN_ROOT = 'https://cdn.jsdelivr.net';
 
 // from https://github.com/mojombo/semver/issues/232
-const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+// modified to only allow stable versions
+const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
 module.exports = (collection, html, optimize, alias, sri) => {
 	if (sri) {
