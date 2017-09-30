@@ -102,13 +102,17 @@
 			}
 
 			if (!Ractive.isServer) {
-				let animateRequests = () => {
-					let seconds = Math.floor(Math.random() * 15 + 5);
-					this.animate('@shared.requestsServed', this.get('@shared.requestsServed') + 5750 * seconds, { duration: (seconds + 1) * 1000, easing: 'easeOut' }); // ~ 5750 / sec
-					setTimeout(animateRequests, seconds * 1000);
-				};
+				if (!this.get('@shared.requestsServed')) {
+					let served = 0;
+					let animateRequests = () => {
+						let seconds = Math.floor(Math.random() * 15 + 5);
+						served += 7800 * seconds;
+						this.animate('@shared.requestsServed', served, { duration: (seconds + 1) * 1000, easing: 'easeOut' });
+						setTimeout(animateRequests, seconds * 1000);
+					};
 
-				animateRequests();
+					animateRequests();
+				}
 
 				// Load top packages.
 				http.fetchTopPackages().then((data) => {
