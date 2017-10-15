@@ -1,5 +1,4 @@
 // This needs to run before any require() call.
-const trace = require('@risingstack/trace');
 global.OPBEAT_CLIENT = require('opbeat').start({
 	appId: '45fb9abc99',
 	organizationId: '091f361b83f64dbcbac3d3c318636efc',
@@ -12,7 +11,6 @@ global.OPBEAT_CLIENT = require('opbeat').start({
 });
 
 require('./lib/startup');
-require('./lib/trace-cpu')(trace);
 
 const _ = require('lodash');
 const fs = require('fs-extra');
