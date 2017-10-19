@@ -40,11 +40,20 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<a href="/?query=author%3A%20{{owner.name}}" class="package-owner"><img src="{{owner.avatar}}?s=20" width="20">{{owner.name}}</a>
-			<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>
+			{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
 			{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
 			{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
 
-			<p class="package-description">{{{description}}}</p>
+			<p class="package-description">
+				{{{description}}}
+			</p>
+
+			{{#if !version}}
+			<div class="text-center package-no-release">
+				This package doesn't have any release on GitHub. <br>Please
+				<a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr.
+			</div>
+			{{/if}}
 
 			{{#if keywords}}
 			<div class="package-keywords">
@@ -57,3 +66,15 @@
 	</div>
 	{{/with}}
 </div>
+
+<script>
+    component.exports = {
+        computed: {
+            issueReleaseRequest() {
+                return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+                    + `?title=No package release on GitHub`
+                    + `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from CDN?`;
+            }
+		}
+    }
+</script>
