@@ -30,6 +30,12 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	});
 };
 
+module.exports.getByName = (name) => {
+	return index.getObject(name).then((pkg) => {
+		return $.extend(true, {}, pkg);
+	});
+};
+
 const ATTR_REGEXP = /\s*(?:[a-z]+)\s*:\s*(?:.(?![a-z]*\s*:))*/gi;
 const QUERY_REGEXP = /^((?:(?:[^\s:]+(?![a-z]*\s*:))\s*)*)/i;
 const filterMapping = {
