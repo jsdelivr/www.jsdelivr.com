@@ -88,7 +88,7 @@ server.use(koaETag());
  * Security: prevent directory traversal.
  */
 server.use(async (ctx, next) => {
-	if (isSafePath(ctx.path)) {
+	if (isSafePath(ctx.path) && ctx.path.charAt(1) !== '/') {
 		return await next();
 	}
 
@@ -286,6 +286,12 @@ server.use(router.routes()).use(router.allowedMethods());
  * Koa error handling.
  */
 server.on('error', (err, ctx) => {
+	let ignore = [ 'ECONNABORTED', 'ECONNRESET', 'EPIPE' ];
+
+	if ((err.status && err.status < 500) || ignore.includes(err.code)) {
+		return;
+	}
+
 	logger.error({ err, ctx }, 'Koa server error.');
 });
 
