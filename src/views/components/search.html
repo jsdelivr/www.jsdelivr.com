@@ -58,6 +58,12 @@
 					let start = Math.max(page - 2, 0);
 					let pages = [];
 
+					if (nbPages - page === 1) {
+						start = Math.max(Math.min(start, start - 1, start - 2), 0);
+					} else if (nbPages - page === 2) {
+						start = Math.max(Math.min(start, start - 1), 0);
+					}
+
 					for (let i = 0; i < 5 && start + i < nbPages; i++) {
 						pages.push(start + i);
 					}
