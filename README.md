@@ -21,6 +21,6 @@ module.exports = {
 }
 ```
 
-Additionally, opbeat token should be set via `OPBEAT_TOKEN` variable, and Trace token via `TRACE_API_KEY`, and `NODE_ENV=production`.
+Additionally, opbeat token should be set via `OPBEAT_TOKEN` variable, and `NODE_ENV=production`.
 
 Staging: https://jsdelivr-com.herokuapp.com/
