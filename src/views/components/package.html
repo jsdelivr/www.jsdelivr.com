@@ -89,7 +89,7 @@
 			{{#if ~/versionStats}}
 			<div class="row">
 				<div class="col-md-6">
-					<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/version}}">
+					<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 						{{#partial column1}}
 						<a on-click="@this.set('version', version)">{{version}}</a>
 						{{/partial}}
@@ -99,8 +99,7 @@
 				<div class="col-md-6">
 					<c-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
 						{{#partial header}}
-						Top 5 files in v
-						<c-version-dropdown version="{{~/version}}" versions="{{versions}}"></c-version-dropdown>
+						Top 5 files in v<c-version-dropdown version="{{~/version}}" versions="{{versions}}"></c-version-dropdown>
 						{{/partial}}
 
 						{{#partial column1}}
@@ -219,37 +218,34 @@
 					}
 				});
 
-				this.observe('fileStatsVersion', () => {
-					let type = this.get('type');
-					let name = this.get('name');
-					let version = this.get('fileStatsVersion');
-					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+				this.observe('statsPeriod fileStatsVersion', () => {
+					if (this.get('statsPeriod') && this.get('fileStatsVersion')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let version = this.get('fileStatsVersion');
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-					console.log(version);
+						http.fetchPackageFileStats(type, name, version, period).then((data) => {
+							let array = [];
 
-					// Load version stats.
-					http.fetchPackageFileStats(type, name, version, period).then((data) => {
-						let array = [];
-
-						Object.keys(data.files).forEach((key) => {
-							array.push({
-								file: key,
-								hits: data.files[key].total,
+							Object.keys(data.files).forEach((key) => {
+								array.push({
+									file: key,
+									hits: data.files[key].total,
+								});
 							});
-						});
 
-						this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
-					});
+							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+						});
+					}
 				});
 
 				this.observe('statsPeriod version', () => {
 					if (this.get('statsPeriod') && this.get('version')) {
 						let type = this.get('type');
 						let name = this.get('name');
-						let version = this.get('version');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-						// Load package stats.
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
 							let array = [];
 
@@ -262,8 +258,6 @@
 
 							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
 							this.animate('versionStatsData', data);
-
-							console.log(array[0].version);
 							this.set('fileStatsVersion', array[0].version);
 						});
 
