@@ -1,0 +1,23 @@
+<div class="c-search">
+    <div class="search-input-wrapper">
+        <input type="text" class="search-input" placeholder="search all of npm">
+    </div>
+</div>
+
+<script>
+    component.exports = {
+        onrender () {
+            if (!this.isServer) {
+                var $searchInput = $('.search-input');
+                $searchInput.on('keyup',function(){
+                    let s = $searchInput.val();
+                    setTimeout(function(){
+                        if($searchInput.val() === s) {
+                            window.location = window.origin + '/?query=' + encodeURIComponent(s);
+                        }
+                    }, 500);
+                })
+            }
+        },
+    };
+</script>
