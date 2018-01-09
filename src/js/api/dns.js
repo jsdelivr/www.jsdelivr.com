@@ -6,7 +6,7 @@ let server = { address: 'opx1.lax.hv.prod.cedexis.com' };
 
 dns.lookup(server.address, (error, address) => {
 	if (error) {
-		throw error;
+		//throw error;
 	}
 
 	server.address = address;
