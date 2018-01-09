@@ -1,6 +1,6 @@
 <div class="c-search-compact">
 	<div class="search-input-wrapper">
-		<input type="text" class="search-input" placeholder="search all of npm">
+		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
 	</div>
 </div>
 
@@ -8,15 +8,9 @@
 	component.exports = {
 		onrender () {
 			if (!this.isServer) {
-				let $searchInput = $('.search-input');
-				$searchInput.on('keyup', function () {
-					let s = $searchInput.val();
-					setTimeout(function () {
-						if ($searchInput.val() === s) {
-							window.location = window.origin + '/?query=' + encodeURIComponent(s);
-						}
-					}, 500);
-				});
+				this.observe('query', (newValue) => {
+					app.router.dispatch(`/?query=${encodeURIComponent(newValue)}`);
+				}, { init: false });
 			}
 		},
 	};
