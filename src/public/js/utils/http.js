@@ -1,19 +1,5 @@
 const API_HOST = 'https://data.jsdelivr.com';
 
-module.exports.fetchCdnHeaders = () => {
-	return $.ajax({
-		type: 'HEAD',
-		url: 'https://cdn.jsdelivr.net/heartbeat',
-	}).then((data, textStatus, jqXHR) => {
-		let servers = {
-			'NetDNA-cache/2.2': 'maxcdn',
-			'cloudflare-nginx': 'cloudflare',
-		};
-
-		return jqXHR.getResponseHeader('x-served-by') ? 'fastly' : servers[jqXHR.getResponseHeader('server')];
-	});
-};
-
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
 };
