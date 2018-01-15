@@ -1,0 +1,18 @@
+<div class="c-search-compact">
+	<div class="search-input-wrapper">
+		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
+	</div>
+</div>
+
+<script>
+	component.exports = {
+		onrender () {
+			if (!this.isServer) {
+				this.observe('query', (newValue) => {
+					app.router.dispatch(`/?query=${encodeURIComponent(newValue)}`);
+					scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				}, { init: false });
+			}
+		},
+	};
+</script>
