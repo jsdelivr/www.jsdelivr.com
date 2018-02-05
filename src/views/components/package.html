@@ -210,9 +210,13 @@
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
 
+					// Set version for GitHub packages.
+					if (!this.get('package.version')) {
+						this.set('package.version', data.versions[0]);
+					}
+
 					// Set version for GitHub packages or when an invalid version is selected.
 					if (!this.get('version') || data.versions.indexOf(this.get('version')) === -1) {
-						this.set('package.version', data.versions[0]);
 						this.set('version', data.versions[0]);
 					}
 				}).catch((error) => {
@@ -261,7 +265,11 @@
 
 							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
 							this.animate('versionStatsData', data);
-							this.set('fileStatsVersion', array[0].version);
+
+							// Maybe we have no stats yet.
+							if (array[0]) {
+								this.set('fileStatsVersion', array[0].version);
+							}
 						});
 
 						// Bottom chart.

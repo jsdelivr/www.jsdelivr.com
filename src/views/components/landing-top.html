@@ -182,28 +182,25 @@
 			</section>
 
 			<section class="sponsors">
-				<div class="sponsor active">
-					<div class="sponsor-used">{{#if usedCdn}}Request load-balanced by:{{/if}}</div>
+				<div class="sponsors-text">jsDelivr operates thanks to our main sponsors:</div>
+
+				<div class="sponsor">
 					<a target="_blank" href="https://www.cedexis.com"><img src="/img/landing/cedexis.png" srcset="/img/landing/cedexis@2x.png 2x" title="Sponsored by Cedexis"></a>
 				</div>
 
-				<div class="sponsor{{#if !usedCdn || usedCdn === 'maxcdn'}} active{{/if}}">
-					<div class="sponsor-used">{{#if usedCdn === 'maxcdn'}}Most optimal CDN for you is:{{/if}}</div>
+				<div class="sponsor">
 					<a target="_blank" href="https://www.stackpath.com"><img src="/img/landing/stackpath.png" srcset="/img/landing/stackpath@2x.png 2x" title="Sponsored by StackPath"></a>
 				</div>
 
-				<div class="sponsor{{#if !usedCdn || usedCdn === 'cloudflare'}} active{{/if}}">
-					<div class="sponsor-used">{{#if usedCdn === 'cloudflare'}}Most optimal CDN for you is:{{/if}}</div>
+				<div class="sponsor">
 					<a target="_blank" href="https://www.cloudflare.com"><img src="/img/landing/cloudflare.png" srcset="/img/landing/cloudflare@2x.png 2x" title="Sponsored by Cloudflare"></a>
 				</div>
 
-				<div class="sponsor{{#if !usedCdn || usedCdn === 'fastly'}} active{{/if}}">
-					<div class="sponsor-used">{{#if usedCdn === 'fastly'}}Most optimal CDN for you is:{{/if}}</div>
+				<div class="sponsor">
 					<a target="_blank" href="https://www.fastly.com"><img src="/img/landing/fastly.png" srcset="/img/landing/fastly@2x.png 2x" title="Sponsored by Fastly"></a>
 				</div>
 
-				<div class="sponsor active">
-					<div class="sponsor-used">{{#if usedCdn}}Main DNS provider:{{/if}}</div>
+				<div class="sponsor">
 					<a target="_blank" href="https://ns1.com"><img src="/img/landing/ns1.png" srcset="/img/landing/ns1@2x.png 2x" title="Sponsored by NS1"></a>
 				</div>
 			</section>
@@ -246,11 +243,6 @@
 				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
 				}, { init: false });
-
-				// Highlight the used CDN.
-				http.fetchCdnHeaders().then((cdn) => {
-					this.set('usedCdn', cdn);
-				});
 
 				// Load network stats.
 				http.fetchNetworkStats().then((data) => {
