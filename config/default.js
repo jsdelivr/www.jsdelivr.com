@@ -4,6 +4,8 @@ module.exports = {
 	},
 	server: {
 		port: 4400,
+		host: 'https://www.jsdelivr.com',
+		blogHost: 'https://jsdelivr-blog.ghost.io',
 		blogRewrite: {
 			'/2015/10/new-website-and-sri-support.html': '/blog/jsdelivr-reloaded-2017/',
 			'/2015/01/keycdn-joins-jsdelivr.html': '/blog/keycdn-joins-jsdelivr/',
