@@ -1,5 +1,8 @@
+const _ = require('lodash');
 const url = require('url');
 const httpProxy = require('http-proxy');
+const cookie = require('cookie');
+const Cookie = require('tough-cookie').Cookie;
 const harmon = require('harmon');
 const srcset = require('srcset');
 
@@ -8,10 +11,31 @@ module.exports = (proxyHost, host) => {
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
 
+	proxy.on('proxyReq', (proxyReq) => {
+		// Remove Cloudflare cookies.
+		if (proxyReq.getHeader('cookie')) {
+			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
+			proxyReq.setHeader('cookie', _.map(cookies, (value, name) => cookie.serialize(name, value)).join('; '));
+		}
+	});
+
 	proxy.on('proxyRes', (proxyRes) => {
 		// Remove Cloudflare headers.
 		delete proxyRes.headers['cf-ray'];
 		delete proxyRes.headers['cf-cache-status'];
+		delete proxyRes.headers['cf-railgun'];
+		delete proxyRes.headers['expect-ct'];
+
+		// Remove Cloudflare cookies.
+		if (proxyRes.headers['set-cookie']) {
+			proxyRes.headers['set-cookie'] = proxyRes.headers['set-cookie'].filter((string) => {
+				return Cookie.parse(string).key !== '__cfduid';
+			});
+
+			if (!proxyRes.headers['set-cookie'].length) {
+				delete proxyRes.headers['set-cookie'];
+			}
+		}
 
 		// Rewrite redirects.
 		if (proxyRes.headers.location) {
