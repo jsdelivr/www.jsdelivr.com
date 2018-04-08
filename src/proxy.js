@@ -8,8 +8,12 @@ module.exports = (proxyHost, host) => {
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
 
-	// Rewrite redirects.
 	proxy.on('proxyRes', (proxyRes) => {
+		// Remove Cloudflare headers.
+		delete proxyRes.headers['cf-ray'];
+		delete proxyRes.headers['cf-cache-status'];
+
+		// Rewrite redirects.
 		if (proxyRes.headers.location) {
 			let location = url.parse(proxyRes.headers.location, false, true);
 
