@@ -6,11 +6,12 @@ const cookie = require('cookie');
 const Cookie = require('tough-cookie').Cookie;
 const harmon = require('harmon');
 const srcset = require('srcset');
+const cssUrlPattern = /url\(\s*(['"])((?:\\[\s\S]|(?!\1).)*)\1\s*\)|url\(((?:\\[\s\S]|[^)])*)\)/gi;
 
 module.exports = (proxyHost, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = url.parse(proxyHost, false, true);
-	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
+	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
 
 	proxy.on('proxyReq', (proxyReq, req) => {
 		// Only forward standard headers.
@@ -78,10 +79,14 @@ module.exports = (proxyHost, host) => {
 
 					el.getAttribute(name, (value) => {
 						try {
-							if (name !== 'srcset') {
-								value = rewrite(value);
-							} else {
+							if (name === 'srcset') {
 								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url), src)));
+							} else if (name === 'style') {
+								value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
+									return `url("${rewrite($2 || $3)}")`;
+								});
+							} else {
+								value = rewrite(value);
 							}
 
 							el.setAttribute(name, value);
