@@ -12,6 +12,8 @@ module.exports = (proxyHost, host) => {
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
 
 	proxy.on('proxyReq', (proxyReq) => {
+		proxyReq.removeHeader('referer');
+
 		// Remove Cloudflare cookies.
 		if (proxyReq.getHeader('cookie')) {
 			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
@@ -25,6 +27,7 @@ module.exports = (proxyHost, host) => {
 		delete proxyRes.headers['cf-cache-status'];
 		delete proxyRes.headers['cf-railgun'];
 		delete proxyRes.headers['expect-ct'];
+		delete proxyRes.headers.server;
 
 		// Remove Cloudflare cookies.
 		if (proxyRes.headers['set-cookie']) {
