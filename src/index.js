@@ -17,6 +17,8 @@ const fs = require('fs-extra');
 const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
+const express = require('express');
+
 const Koa = require('koa');
 const koaStatic = require('koa-static');
 const koaFavicon = require('koa-favicon');
@@ -25,7 +27,9 @@ const koaConditionalGet = require('koa-conditional-get');
 const koaCompress = require('koa-compress');
 const koaLogger = require('koa-logger');
 const koaETag = require('koa-etag');
-const Router = require('koa-router');
+const KoaRouter = require('koa-router');
+const proxy = require('./proxy');
+
 const Handlebars = require('handlebars');
 const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
@@ -42,27 +46,27 @@ let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sit
 let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
 let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
 
-let server = new Koa();
-let router = new Router();
+let app = new Koa();
+let router = new KoaRouter();
 
 /**
  * Server config.
  */
-server.name = serverConfig.name;
-server.keys = serverConfig.keys;
-server.silent = server.env === 'production';
-server.proxy = true;
+app.name = serverConfig.name;
+app.keys = serverConfig.keys;
+app.silent = app.env === 'production';
+app.proxy = true;
 
 /**
  * Handle favicon requests before anything else.
  */
-server.use(koaFavicon(__dirname + '/public/favicon.ico'));
+app.use(koaFavicon(__dirname + '/public/favicon.ico'));
 
 /**
  * Log requests during development.
  */
-if (server.env === 'development') {
-	server.use(koaLogger({
+if (app.env === 'development') {
+	app.use(koaLogger({
 		logger,
 		useLevel: 'debug',
 	}));
@@ -71,23 +75,23 @@ if (server.env === 'development') {
 /**
  * Add a X-Response-Time header.
  */
-server.use(koaResponseTime());
+app.use(koaResponseTime());
 
 /**
  * Gzip compression.
  */
-server.use(koaCompress());
+app.use(koaCompress());
 
 /**
  * ETag support.
  */
-server.use(koaConditionalGet());
-server.use(koaETag());
+app.use(koaConditionalGet());
+app.use(koaETag());
 
 /**
  * Security: prevent directory traversal.
  */
-server.use(async (ctx, next) => {
+app.use(async (ctx, next) => {
 	if (isSafePath(ctx.path) && ctx.path.charAt(1) !== '/') {
 		return await next();
 	}
@@ -98,27 +102,27 @@ server.use(async (ctx, next) => {
 /**
  * On-demand less compilation.
  */
-server.use(less('/css', {
+app.use(less('/css', {
 	files: __dirname + '/public/less/',
-	cache: server.env === 'production',
-	minify: server.env === 'production',
+	cache: app.env === 'production',
+	minify: app.env === 'production',
 	assetsVersion,
 }));
 
 /**
  * On-demand js compilation.
  */
-server.use(rollup('/js', {
+app.use(rollup('/js', {
 	files: __dirname + '/public/js/',
-	cache: server.env === 'production',
-	minify: server.env === 'production',
+	cache: app.env === 'production',
+	minify: app.env === 'production',
 	assetsVersion,
 }));
 
 /**
  * Static files.
  */
-server.use(koaStatic(__dirname + '/public', {
+app.use(koaStatic(__dirname + '/public', {
 	maxage: 365 * 24 * 60 * 60 * 1000,
 	index: false,
 }));
@@ -126,12 +130,12 @@ server.use(koaStatic(__dirname + '/public', {
 /**
  * Normalize URLs.
  */
-server.use(stripTrailingSlash());
+app.use(stripTrailingSlash());
 
 /**
  * Easier caching.
  */
-server.use(async (ctx, next) => {
+app.use(async (ctx, next) => {
 	await next();
 
 	if (ctx.maxAge) {
@@ -145,42 +149,24 @@ server.use(async (ctx, next) => {
 /**
  * Ractive integration.
  */
-server.use(render({
+app.use(render({
 	views: __dirname + '/views/',
-	cache: server.env === 'production',
+	cache: app.env === 'production',
 	assetsVersion,
-}, server));
+}, app));
 
 /**
  * Set default headers.
  */
-server.use(async (ctx, next) => {
+app.use(async (ctx, next) => {
 	ctx.set(serverConfig.headers);
-	return next();
-});
-
-/**
- * Redirect /blog to /blog/ & old blog posts.
- */
-server.use(async (ctx, next) => {
-	if (serverConfig.blogRewrite.hasOwnProperty(ctx.path)) {
-		ctx.status = 301;
-		return ctx.redirect(`https://www.jsdelivr.com${serverConfig.blogRewrite[ctx.path]}`);
-	} else if (ctx.hostname === 'blog.jsdelivr.com') {
-		ctx.status = 301;
-		return ctx.redirect(`https://www.jsdelivr.com/blog${ctx.path}`);
-	} if (/\/blog(?:\/|$)/.test(ctx.path) && !ctx.path.endsWith('/')) {
-		ctx.status = 301;
-		return ctx.redirect(`${ctx.path}/`);
-	}
-
 	return next();
 });
 
 /**
  * Redirect old URLs #1.
  */
-server.use(async (ctx, next) => {
+app.use(async (ctx, next) => {
 	if (!ctx.query._escaped_fragment_) {
 		return next();
 	}
@@ -247,7 +233,7 @@ router.get([
 		ctx.body = await ctx.render('pages/_package.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (server.env === 'development') {
+		if (app.env === 'development') {
 			console.error(e);
 		}
 
@@ -268,7 +254,7 @@ router.get('/*', async (ctx) => {
 		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (server.env === 'development') {
+		if (app.env === 'development') {
 			console.error(e);
 		}
 
@@ -280,12 +266,12 @@ router.get('/*', async (ctx) => {
 /**
  * Routing.
  */
-server.use(router.routes()).use(router.allowedMethods());
+app.use(router.routes()).use(router.allowedMethods());
 
 /**
  * Koa error handling.
  */
-server.on('error', (err, ctx) => {
+app.on('error', (err, ctx) => {
 	let ignore = [ 'ECONNABORTED', 'ECONNRESET', 'EPIPE' ];
 
 	if ((err.status && err.status < 500) || ignore.includes(err.code)) {
@@ -294,6 +280,53 @@ server.on('error', (err, ctx) => {
 
 	logger.error({ err, ctx }, 'Koa server error.');
 });
+
+
+/**
+ * Main Express server.
+ */
+let server = express();
+
+server.enable('trust proxy');
+server.enable('strict routing');
+server.enable('case sensitive routing');
+server.disable('query parser');
+server.disable('x-powered-by');
+server.disable('etag');
+
+/**
+ * Redirect /blog to /blog/.
+ */
+server.use((req, res, next) => {
+	if (req.path === '/blog') {
+		return res.redirect(`${req.path}/`);
+	}
+
+	next();
+});
+
+/**
+ * Redirect old blog posts.
+ */
+server.use('/blog', (req, res, next) => {
+	if (serverConfig.blogRewrite.hasOwnProperty(req.path)) {
+		return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
+	} else if (req.hostname === 'blog.jsdelivr.com') {
+		return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
+	}
+
+	next();
+});
+
+/**
+ * Proxy blog requests to ghost.
+ */
+server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? '' : serverConfig.host));
+
+/**
+ * Forward everything else to Koa (main website).
+ */
+server.use(app.callback());
 
 /**
  * Start listening on the configured port.
