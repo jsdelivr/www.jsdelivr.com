@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const url = require('url');
 const httpProxy = require('http-proxy');
+const headers = require('./lib/headers');
 const cookie = require('cookie');
 const Cookie = require('tough-cookie').Cookie;
 const harmon = require('harmon');
@@ -12,7 +13,12 @@ module.exports = (proxyHost, host) => {
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
 
 	proxy.on('proxyReq', (proxyReq, req) => {
-		proxyReq.removeHeader('referer');
+		// Only forward standard headers.
+		_.forEach(proxyReq.getHeaders(), (value, key) => {
+			if (!headers.isRequestHeader(key)) {
+				proxyReq.removeHeader(key);
+			}
+		});
 
 		// Remove Cloudflare cookies.
 		if (proxyReq.getHeader('cookie')) {
@@ -24,12 +30,12 @@ module.exports = (proxyHost, host) => {
 	});
 
 	proxy.on('proxyRes', (proxyRes) => {
-		// Remove Cloudflare headers.
-		delete proxyRes.headers['cf-ray'];
-		delete proxyRes.headers['cf-cache-status'];
-		delete proxyRes.headers['cf-railgun'];
-		delete proxyRes.headers['expect-ct'];
-		delete proxyRes.headers.server;
+		// Only forward standard headers.
+		_.forEach(proxyRes.headers, (value, key) => {
+			if (!headers.isResponseHeader(key)) {
+				delete proxyRes.headers[key];
+			}
+		});
 
 		// Remove Cloudflare cookies.
 		if (proxyRes.headers['set-cookie']) {
@@ -91,7 +97,7 @@ module.exports = (proxyHost, host) => {
 			res.status(502);
 
 			proxy.web(req, res, {
-				target: proxyUrl,
+				target: proxyHost,
 				changeOrigin: true,
 				protocolRewrite: 'https',
 				cookieDomainRewrite: '',
