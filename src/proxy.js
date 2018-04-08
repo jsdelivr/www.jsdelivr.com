@@ -11,7 +11,7 @@ module.exports = (proxyHost, host) => {
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset' ];
 
-	proxy.on('proxyReq', (proxyReq) => {
+	proxy.on('proxyReq', (proxyReq, req) => {
 		proxyReq.removeHeader('referer');
 
 		// Remove Cloudflare cookies.
@@ -19,6 +19,8 @@ module.exports = (proxyHost, host) => {
 			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
 			proxyReq.setHeader('cookie', _.map(cookies, (value, name) => cookie.serialize(name, value)).join('; '));
 		}
+
+		proxyReq.setHeader('X-Fowarded-For', req.ip);
 	});
 
 	proxy.on('proxyRes', (proxyRes) => {
