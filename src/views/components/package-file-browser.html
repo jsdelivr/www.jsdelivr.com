@@ -28,6 +28,9 @@
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
 
 					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
+					{{#if ~/defaultFile.hash}}
+					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard="'Copy SRI'" data-clipboard-text="{{buildIntegrity(~/defaultFile.hash)}}"></i>
+					{{/if}}
 				</div>
 			</div>
 			{{elseif github}}
@@ -123,6 +126,10 @@
 			},
 			pathS() {
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
+			},
+			defaultFile() {
+				const d = this.get('default');
+				return d && this.getFile(d);
 			},
 		},
 		data () {
