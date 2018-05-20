@@ -23,8 +23,8 @@
 				</span>
 
 				<ul class="dropdown-menu dropdown-menu-right">
-					<li><a>Copy URL</a></li>
-					<li><a>Copy SRI</a></li>
+					<li><a as-stopPropagation as-clipboardInline data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">Copy URL</a></li>
+					<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</a></li>
 				</ul>
 			</div>
 			{{/partial}}
@@ -114,7 +114,8 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
+	const stopPropagation = require('../../public/js/decorators/stop-propagation');
+	const clipboardInline = require('../../public/js/decorators/clipboard-inline');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const { buildIntegrity } = require('../../public/js/utils/build-links');
 
@@ -149,7 +150,8 @@
 			};
 		},
 		decorators: {
-			clipboard,
+			stopPropagation,
+			clipboardInline,
 			tooltip,
 		},
 		oninit () {
