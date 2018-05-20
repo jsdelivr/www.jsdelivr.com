@@ -66,6 +66,9 @@
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
 					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+					{{#if hash}}
+					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard="'Copy SRI'" data-clipboard-text="{{buildIntegrity(hash)}}"></i>
+					{{/if}}
 					{{/if}}
 				</div>
 				{{/partial}}
@@ -103,6 +106,7 @@
 	const http = require('../../public/js/utils/http');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
+	const { buildIntegrity } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -238,5 +242,6 @@
 				}
 			});
 		},
+		buildIntegrity
 	};
 </script>
