@@ -15,6 +15,20 @@
 		</div>
 
 		<div class="box-content-wrapper">
+			{{#partial actionsDropdown}}
+			<div class="actions-dropdown btn-group">
+				<span data-toggle="dropdown">
+					<i class="fa fa-clipboard" aria-hidden="true"></i>
+					<i class="fa fa-angle-down" aria-hidden="true"></i>
+				</span>
+
+				<ul class="dropdown-menu dropdown-menu-right">
+					<li><a>Copy URL</a></li>
+					<li><a>Copy SRI</a></li>
+				</ul>
+			</div>
+			{{/partial}}
+
 			{{#if type === 'npm' && files}}
 			{{#if ~/default}}
 			<div class="box-sub-header">
@@ -26,11 +40,7 @@
 
 					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-
-					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
-					{{#if ~/defaultFile.hash}}
-					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard="'Copy SRI'" data-clipboard-text="{{buildIntegrity(~/defaultFile.hash)}}"></i>
-					{{/if}}
+					{{>actionsDropdown}}
 				</div>
 			</div>
 			{{elseif github}}
@@ -68,10 +78,7 @@
 
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
-					{{#if hash}}
-					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard="'Copy SRI'" data-clipboard-text="{{buildIntegrity(hash)}}"></i>
-					{{/if}}
+					{{>actionsDropdown}}
 					{{/if}}
 				</div>
 				{{/partial}}
