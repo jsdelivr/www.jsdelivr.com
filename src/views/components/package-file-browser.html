@@ -1,4 +1,5 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+<link rel="ractive" href="./copy-dropdown.html" name="c-copy-dropdown">
 
 <div class="c-package-file-browser">
 	<div class="box box-files">
@@ -14,21 +15,8 @@
 			<c-version-dropdown versions="{{versions}}" version="{{~/version}}"></c-version-dropdown>
 		</div>
 
+
 		<div class="box-content-wrapper">
-			{{#partial actionsDropdown}}
-			<div class="actions-dropdown btn-group">
-				<span data-toggle="dropdown">
-					<i class="fa fa-clipboard" aria-hidden="true"></i>
-					<i class="fa fa-angle-down" aria-hidden="true"></i>
-				</span>
-
-				<ul class="dropdown-menu dropdown-menu-right">
-					<li><a as-stopPropagation as-clipboardInline data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">Copy URL</a></li>
-					<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</a></li>
-				</ul>
-			</div>
-			{{/partial}}
-
 			{{#if type === 'npm' && files}}
 			{{#if ~/default}}
 			<div class="box-sub-header">
@@ -40,7 +28,7 @@
 
 					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-					{{>actionsDropdown}}
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" sri="{{buildIntegrity(defaultFile.hash)}}"></c-copy-dropdown>
 				</div>
 			</div>
 			{{elseif github}}
@@ -78,7 +66,7 @@
 
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					{{>actionsDropdown}}
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" sri="{{buildIntegrity(hash)}}"></c-copy-dropdown>
 					{{/if}}
 				</div>
 				{{/partial}}
