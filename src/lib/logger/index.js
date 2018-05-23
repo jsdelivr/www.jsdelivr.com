@@ -61,7 +61,7 @@ module.exports = bunyan.createLogger({
 	streams: [
 		{ level: bunyan.TRACE, type: 'raw', stream: prettyStream },
 		{ level: bunyan.TRACE, type: 'raw', stream: new FileStream(path.join(loggerConfig.path, `${os.hostname()}-${process.pid}.log`)) },
-		{ level: bunyan.ERROR, type: 'raw', stream: new OpbeatStream() },
+		// { level: bunyan.ERROR, type: 'raw', stream: new OpbeatStream() },
 	],
 	serializers: _.defaults({
 		err (err) {

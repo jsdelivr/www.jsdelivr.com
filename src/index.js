@@ -1,15 +1,3 @@
-// This needs to run before any require() call.
-global.OPBEAT_CLIENT = require('opbeat').start({
-	appId: '45fb9abc99',
-	organizationId: '091f361b83f64dbcbac3d3c318636efc',
-	secretToken: process.env.OPBEAT_TOKEN,
-	logLevel: 'fatal',
-	active: process.env.NODE_ENV === 'production',
-	captureExceptions: false,
-	ignoreUrls: [ '/favicon.ico', '/heartbeat' ],
-	timeoutErrorThreshold: 30000,
-});
-
 require('./lib/startup');
 
 const _ = require('lodash');
