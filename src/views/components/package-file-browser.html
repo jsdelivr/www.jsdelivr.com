@@ -1,4 +1,5 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+<link rel="ractive" href="./copy-dropdown.html" name="c-copy-dropdown">
 
 <div class="c-package-file-browser">
 	<div class="box box-files">
@@ -14,6 +15,7 @@
 			<c-version-dropdown versions="{{versions}}" version="{{~/version}}"></c-version-dropdown>
 		</div>
 
+
 		<div class="box-content-wrapper">
 			{{#if type === 'npm' && files}}
 			{{#if ~/default}}
@@ -26,8 +28,7 @@
 
 					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-
-					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" sri="{{buildIntegrity(defaultFile.hash)}}"></c-copy-dropdown>
 				</div>
 			</div>
 			{{elseif github}}
@@ -65,7 +66,7 @@
 
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" sri="{{buildIntegrity(hash)}}"></c-copy-dropdown>
 					{{/if}}
 				</div>
 				{{/partial}}
@@ -101,8 +102,10 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
+	const stopPropagation = require('../../public/js/decorators/stop-propagation');
+	const clipboardInline = require('../../public/js/decorators/clipboard-inline');
 	const tooltip = require('../../public/js/decorators/tooltip');
+	const { buildIntegrity } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -120,6 +123,10 @@
 			pathS() {
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
 			},
+			defaultFile() {
+				const d = this.get('default');
+				return d && this.getFile(d);
+			},
 		},
 		data () {
 			return {
@@ -131,7 +138,8 @@
 			};
 		},
 		decorators: {
-			clipboard,
+			stopPropagation,
+			clipboardInline,
 			tooltip,
 		},
 		oninit () {
@@ -238,5 +246,6 @@
 				}
 			});
 		},
+		buildIntegrity
 	};
 </script>
