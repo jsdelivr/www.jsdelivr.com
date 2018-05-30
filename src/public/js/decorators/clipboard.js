@@ -1,6 +1,6 @@
-module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top') => {
+module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', nodeSelector) => {
 	let clipboard = new Clipboard(node);
-	let $node = $(node);
+	let $node = nodeSelector ? $(node).parents(nodeSelector).first() : $(node);
 	let tooltipOptions = {
 		title,
 		placement: tooltipPlacement,
@@ -9,25 +9,30 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top') =
 		animation: false,
 	};
 
-	$node.on('mouseover', () => {
+	function setDefaultTooltip () {
 		$node
 			.tooltip('destroy')
-			.tooltip(tooltipOptions)
-			.tooltip('show');
-	});
+			.tooltip(tooltipOptions);
+	}
+
+	setDefaultTooltip();
 
 	clipboard.on('success', () => {
 		$node
 			.tooltip('destroy')
-			.tooltip($.extend({}, tooltipOptions, { title: 'Copied!' }))
+			.tooltip($.extend({}, tooltipOptions, { trigger: 'manual', title: 'Copied!' }))
 			.tooltip('show');
+
+		setTimeout(setDefaultTooltip, 1000);
 	});
 
 	clipboard.on('error', () => {
 		$node
 			.tooltip('destroy')
-			.tooltip($.extend({}, tooltipOptions, { title: 'Press Ctrl+C to copy' }))
+			.tooltip($.extend({}, tooltipOptions, { trigger: 'manual', title: 'Press Ctrl+C to copy' }))
 			.tooltip('show');
+
+		setTimeout(setDefaultTooltip, 1000);
 	});
 
 	return {
