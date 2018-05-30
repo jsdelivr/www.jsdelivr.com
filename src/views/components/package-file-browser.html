@@ -1,4 +1,5 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+<link rel="ractive" href="./copy-dropdown.html" name="c-copy-dropdown">
 
 <div class="c-package-file-browser">
 	<div class="box box-files">
@@ -26,8 +27,7 @@
 
 					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-
-					<i as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" class="fa fa-clipboard" aria-hidden="true"></i>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
 			</div>
 			{{elseif github}}
@@ -65,7 +65,7 @@
 
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					<i class="fa fa-clipboard" aria-hidden="true" as-clipboard data-clipboard-text="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"></i>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" hash="{{hash}}" dropup="{{@index && ../length - @index <= 4}}"></c-copy-dropdown>
 					{{/if}}
 				</div>
 				{{/partial}}
@@ -101,7 +101,6 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
 
 	component.exports = {
@@ -120,6 +119,10 @@
 			pathS() {
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
 			},
+			defaultFile() {
+				const d = this.get('default');
+				return d && this.getFile(d);
+			},
 		},
 		data () {
 			return {
@@ -131,7 +134,6 @@
 			};
 		},
 		decorators: {
-			clipboard,
 			tooltip,
 		},
 		oninit () {

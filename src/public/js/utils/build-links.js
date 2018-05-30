@@ -7,7 +7,14 @@ const CDN_ROOT = 'https://cdn.jsdelivr.net';
 // modified to only allow stable versions
 const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
-module.exports = (collection, html, optimize, alias, sri) => {
+module.exports = {
+	buildLinks,
+	buildIntegrity,
+	buildHtml,
+	canBuildHtml,
+};
+
+function buildLinks(collection, html, optimize, alias, sri) {
 	if (sri) {
 		html = true;
 		optimize = false;
@@ -55,7 +62,7 @@ module.exports = (collection, html, optimize, alias, sri) => {
 	}
 
 	return links;
-};
+}
 
 function buildCombined (collection, filter) {
 	return CDN_ROOT + '/combine/' + collection.filter(file => filter.test(file.file)).map((file) => {
@@ -71,7 +78,7 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 	let result = { text: link };
 
 	if (hash) {
-		result.html = isJs ? `<script src="${link}" integrity="sha256-${hash}" crossorigin="anonymous"></script>` : `<link rel="stylesheet" href="${link}" integrity="sha256-${hash}" crossorigin="anonymous">`;
+		result.html = isJs ? `<script src="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous"></script>` : `<link rel="stylesheet" href="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous">`;
 	} else if (html) {
 		result.html = isJs ? `<script src="${link}"></script>` : `<link rel="stylesheet" href="${link}">`;
 	} else {
@@ -79,4 +86,22 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 	}
 
 	return result;
+}
+
+function buildIntegrity(hash) {
+	return `sha256-${hash}`;
+}
+
+function buildHtml (link, hash) {
+	if (CSS_PATTERN.test(link)) {
+		return buildFileLinkHtml(false, link, true, hash).html;
+	} else if (JS_PATTERN.test(link)) {
+		return buildFileLinkHtml(true, link, true, hash).html;
+	}
+
+	return buildFileLinkHtml(null, link, false).html;
+}
+
+function canBuildHtml (link) {
+	return CSS_PATTERN.test(link) || JS_PATTERN.test(link);
 }
