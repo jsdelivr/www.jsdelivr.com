@@ -10,6 +10,8 @@ const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 module.exports = {
 	buildLinks,
 	buildIntegrity,
+	buildHtml,
+	canBuildHtml,
 };
 
 function buildLinks(collection, html, optimize, alias, sri) {
@@ -88,4 +90,18 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 
 function buildIntegrity(hash) {
 	return `sha256-${hash}`;
+}
+
+function buildHtml (link, hash) {
+	if (CSS_PATTERN.test(link)) {
+		return buildFileLinkHtml(false, link, true, hash).html;
+	} else if (JS_PATTERN.test(link)) {
+		return buildFileLinkHtml(true, link, true, hash).html;
+	}
+
+	return buildFileLinkHtml(null, link, false).html;
+}
+
+function canBuildHtml (link) {
+	return CSS_PATTERN.test(link) || JS_PATTERN.test(link);
 }

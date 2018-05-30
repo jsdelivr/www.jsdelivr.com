@@ -28,7 +28,7 @@
 
 					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" sri="{{buildIntegrity(defaultFile.hash)}}"></c-copy-dropdown>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
 			</div>
 			{{elseif github}}
@@ -66,7 +66,7 @@
 
 					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" sri="{{buildIntegrity(hash)}}"></c-copy-dropdown>
+					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" hash="{{hash}}" dropup="{{@index && ../length - @index <= 4}}"></c-copy-dropdown>
 					{{/if}}
 				</div>
 				{{/partial}}
@@ -105,7 +105,6 @@
 	const stopPropagation = require('../../public/js/decorators/stop-propagation');
 	const clipboardInline = require('../../public/js/decorators/clipboard-inline');
 	const tooltip = require('../../public/js/decorators/tooltip');
-	const { buildIntegrity } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -246,6 +245,5 @@
 				}
 			});
 		},
-		buildIntegrity
 	};
 </script>

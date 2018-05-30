@@ -1,4 +1,4 @@
-<div class="c-copy-dropdown btn-group">
+<div class="c-copy-dropdown btn-group {{#if ~/dropup}}dropup{{/if}}">
 	<span data-toggle="dropdown">
 		<i class="fa fa-clipboard" aria-hidden="true"></i>
 		<i class="fa fa-angle-down" aria-hidden="true"></i>
@@ -6,18 +6,30 @@
 
 	<ul class="dropdown-menu dropdown-menu-right">
 		<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{url}}">Copy URL</a></li>
-		<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{sri}}">Copy SRI</a></li>
+		<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{hash}}">Copy SRI</a></li>
+		{{#if canBuildHtml(url)}}
+		<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{buildHtml(url)}}">Copy HTML</a></li>
+		<li><a as-stopPropagation as-clipboardInline data-clipboard-text="{{buildHtml(url, hash)}}">Copy HTML + SRI</a></li>
+		{{/if}}
 	</ul>
 </div>
 
 <script>
 	const stopPropagation = require('../../public/js/decorators/stop-propagation');
 	const clipboardInline = require('../../public/js/decorators/clipboard-inline');
+	const { buildIntegrity, buildHtml, canBuildHtml } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		decorators: {
 			stopPropagation,
 			clipboardInline,
+		},
+		data () {
+			return {
+				buildIntegrity,
+				buildHtml,
+				canBuildHtml,
+			};
 		},
 	};
 </script>
