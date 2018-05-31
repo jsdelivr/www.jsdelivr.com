@@ -22,7 +22,7 @@ module.exports = {
 
 		return Math.round(hits / 1e9);
 	},
-	formatMB (mb) {
+	formatMiB2TiB (mb) {
 		return Math.floor(mb / 1024 / 1024 / 10) * 10;
 	},
 	formatNumber (number) {
