@@ -1,3 +1,15 @@
+// This needs to run before any require() call.
+global.apmClient = require('elastic-apm-node').start({
+	active: process.env.NODE_ENV === 'production',
+	serviceName: 'jsdelivr-website',
+	serviceVersion: require('../package.json').version,
+	logLevel: 'fatal',
+	captureExceptions: false,
+	ignoreUrls: [ '/favicon.ico', '/heartbeat' ],
+	errorOnAbortedRequests: true,
+	abortedErrorThreshold: 30000,
+});
+
 require('./lib/startup');
 
 const _ = require('lodash');
@@ -16,6 +28,7 @@ const koaCompress = require('koa-compress');
 const koaLogger = require('koa-logger');
 const koaETag = require('koa-etag');
 const KoaRouter = require('koa-router');
+const koaElasticUtils = require('h-logger2-elastic').koa;
 const proxy = require('./proxy');
 
 const Handlebars = require('handlebars');
@@ -168,9 +181,16 @@ app.use(async (ctx, next) => {
 });
 
 /**
+ * More accurate APM route names.
+ */
+router.use(koaElasticUtils.middleware(global.apmClient));
+
+/**
  * Redirect old URLs #2.
  */
-router.get('/projects/:name', async (ctx) => {
+koaElasticUtils.addRoutes(router, [
+	[ '/projects/:name', '/projects/:name' ],
+], async (ctx) => {
 	if (legacyMapping.hasOwnProperty(ctx.params.name)) {
 		ctx.status = 301;
 		return ctx.redirect(`/package/${legacyMapping[ctx.params.name].type}/${legacyMapping[ctx.params.name].name}`);
@@ -180,7 +200,9 @@ router.get('/projects/:name', async (ctx) => {
 /**
  * Sitemap
  */
-router.use('/sitemap/:page', async (ctx) => {
+koaElasticUtils.addRoutes(router, [
+	[ '/sitemap/:page', '/sitemap/:page' ],
+], async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
 	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
 	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
@@ -204,9 +226,9 @@ router.use('/sitemap/:page', async (ctx) => {
 /**
  * Package pages.
  */
-router.get([
-	'/package/:type(npm)/:scope?/:name',
-	'/package/:type(gh)/:user/:repo',
+koaElasticUtils.addRoutes(router, [
+	[ '/package/npm/:name', '/package/:type(npm)/:scope?/:name' ],
+	[ '/package/gh/:user/:repo', '/package/:type(gh)/:user/:repo' ],
 ], async (ctx) => {
 	let data = {
 		type: ctx.params.type,
@@ -233,7 +255,9 @@ router.get([
 /**
  * All other pages.
  */
-router.get('/*', async (ctx) => {
+koaElasticUtils.addRoutes(router, [
+	[ '/*', '/*' ],
+], async (ctx) => {
 	let data = {
 		docs: ctx.query.docs,
 	};
@@ -259,14 +283,14 @@ app.use(router.routes()).use(router.allowedMethods());
 /**
  * Koa error handling.
  */
-app.on('error', (err, ctx) => {
+app.on('error', (error, ctx) => {
 	let ignore = [ 'ECONNABORTED', 'ECONNRESET', 'EPIPE' ];
 
-	if ((err.status && err.status < 500) || ignore.includes(err.code)) {
+	if ((error.status && error.status < 500) || ignore.includes(error.code)) {
 		return;
 	}
 
-	logger.error({ err, ctx }, 'Koa server error.');
+	log.error('Koa server error.', error, { ctx });
 });
 
 
@@ -319,22 +343,22 @@ server.use(app.callback());
 /**
  * Start listening on the configured port.
  */
-server.listen(process.env.PORT || serverConfig.port, () => {
-	logger.info(`Web server started on port ${process.env.PORT || serverConfig.port}.`);
+server.listen(process.env.PORT || serverConfig.port, function () {
+	log.info(`Web server started at http://localhost:${this.address().port}`);
 });
 
 /**
  * Always log before exit.
  */
 signalExit((code, signal) => {
-	logger[code === 0 ? 'info' : 'fatal']({ code, signal }, 'Web server stopped.');
+	log[code === 0 ? 'info' : 'fatal']('Web server stopped.', { code, signal });
 });
 
 /**
  * If we exit because of an uncaught exception, log the error details as well.
  */
 process.on('uncaughtException', (error) => {
-	logger.fatal(error, `Fatal error. Exiting.`);
+	log.fatal(`Uncaught exception. Exiting.`, error);
 
 	setTimeout(() => {
 		process.exit(1);
@@ -342,7 +366,7 @@ process.on('uncaughtException', (error) => {
 });
 
 process.on('unhandledRejection', (error) => {
-	logger.fatal(error, 'Unhandled rejection. Exiting.');
+	log.fatal('Unhandled rejection. Exiting.', error);
 
 	setTimeout(() => {
 		process.exit(1);
