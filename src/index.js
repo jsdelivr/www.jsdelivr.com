@@ -6,11 +6,13 @@ global.apmClient = require('elastic-apm-node').start({
 	logLevel: 'fatal',
 	captureExceptions: false,
 	captureSpanStackTraces: false,
+	captureErrorLogStackTraces: 'always',
 	ignoreUrls: [ '/favicon.ico', '/heartbeat', '/amp_preconnect_polyfill_404_or_other_error_expected._Do_not_worry_about_it' ],
 	errorOnAbortedRequests: true,
 	abortedErrorThreshold: 30000,
 });
 
+global.apmClient.addFilter(require('elastic-apm-utils').apm.filter());
 require('./lib/startup');
 
 const _ = require('lodash');
@@ -29,7 +31,7 @@ const koaCompress = require('koa-compress');
 const koaLogger = require('koa-logger');
 const koaETag = require('koa-etag');
 const KoaRouter = require('koa-router');
-const koaElasticUtils = require('h-logger2-elastic').koa;
+const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
 
 const Handlebars = require('handlebars');
