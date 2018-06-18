@@ -348,7 +348,7 @@ server.use(app.callback());
  * Start listening on the configured port.
  */
 server.listen(process.env.PORT || serverConfig.port, function () {
-	log.info(`Web server started at http://localhost:${this.address().port}`);
+	log.info(`Web server started at http://localhost:${this.address().port}, NODE_ENV=${process.env.NODE_ENV}.`);
 });
 
 /**
