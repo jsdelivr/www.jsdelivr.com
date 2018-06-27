@@ -51,7 +51,11 @@
 			{{#if !version}}
 			<div class="text-center package-no-release">
 				This package doesn't have any release on GitHub.<br>
-				Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.
+				Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.<br>
+
+				{{#if ~/latestCommitSha}}
+				Alternatively, you can use a <a target="_blank" href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific git commit hash</a>.
+				{{/if}}
 			</div>
 			{{/if}}
 
@@ -68,13 +72,22 @@
 </div>
 
 <script>
+	const http = require('../../public/js/utils/http');
+
     component.exports = {
         computed: {
             issueReleaseRequest() {
                 return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
                     + `?title=No package release on GitHub`
-                    + `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from CDN?`;
+                    + `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
             }
+		},
+		oninit() {
+        	if (!this.get('package.version')) {
+				http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
+					this.set('latestCommitSha', data[0] && data[0].commit.tree.sha);
+				});
+			}
 		}
     }
 </script>
