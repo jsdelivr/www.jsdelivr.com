@@ -17,7 +17,7 @@
 
 		<div class="box-content-wrapper">
 			{{#if type === 'npm' && files}}
-			{{#if ~/default}}
+			{{#if @this.checkIfFileExists(~/default)}}
 			<div class="box-sub-header">
 				<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
 					<a target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}">
@@ -239,6 +239,9 @@
 					});
 				}
 			});
+		},
+		checkIfFileExists (file) {
+			return this.getFile(file).path !== undefined;
 		},
 	};
 </script>
