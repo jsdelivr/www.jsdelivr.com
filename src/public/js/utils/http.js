@@ -1,4 +1,5 @@
 const API_HOST = 'https://data.jsdelivr.com';
+const GITHUB_API_HOST = 'https://api.github.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
@@ -28,4 +29,8 @@ module.exports.fetchTopPackages = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/packages/${period}`).then((data) => {
 		return data.filter(pkg => pkg.type === 'npm');
 	});
+};
+
+module.exports.fetchProjectCommits = (owner, repo) => {
+	return $.getJSON(`${GITHUB_API_HOST}/repos/${owner}/${repo}/commits`);
 };

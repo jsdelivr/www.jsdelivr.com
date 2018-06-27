@@ -9,7 +9,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-md-8">
-				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}"></c-package-header>
+				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}" version="{{version}}"></c-package-header>
 			</div>
 
 			<div class="col-md-4 hidden-sm hidden-xs">
@@ -231,6 +231,8 @@
 						let name = this.get('name');
 						let version = this.get('fileStatsVersion');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+
+						Pace.restart();
 
 						http.fetchPackageFileStats(type, name, version, period).then((data) => {
 							let array = [];
