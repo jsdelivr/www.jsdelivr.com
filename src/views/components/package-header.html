@@ -1,5 +1,4 @@
 <div class="c-package-header">
-	{{#if package}}
 	{{#with package}}
 	<div class="row">
 		<div class="col-sm-8 package-name-wrapper">
@@ -70,18 +69,6 @@
 		</div>
 	</div>
 	{{/with}}
-	{{else}}
-	<div class="row">
-		<div class="col-sm-8 package-name-wrapper">
-			<h1 class="package-name">{{name}}</h1>
-
-			<div class="text-center package-not-found">
-				Package {{{name}}} was not found.<br>
-				If you believe this to be an error, you can <a target="_blank" href="{{issueReportNotFoundError}}">report it at our issue tracker</a>
-			</div>
-		</div>
-	</div>
-	{{/if}}
 </div>
 
 <script>
@@ -94,11 +81,6 @@
                     + `?title=No package release on GitHub`
                     + `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
             },
-			issueReportNotFoundError() {
-            	return `https://github.com/jsdelivr/www.jsdelivr.com/issues/new/`
-					+ `?title=Package not found`
-					+ `&body=[This package](${this.get('@global.location.href')}) was not found on jsDelivr CDN, but it should have been.`;
-			}
 		},
 		oninit() {
         	if (!this.get('package.version')) {
