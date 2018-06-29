@@ -48,7 +48,7 @@
 				{{{description}}}
 			</p>
 
-			{{#if !version}}
+			{{#if ~/packageVersionsNotFound}}
 			<div class="text-center package-no-release">
 				This package doesn't have any release on GitHub.<br>
 				Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.<br>
@@ -83,11 +83,14 @@
 			},
 		},
 		oninit() {
-			if (!this.get('package.version')) {
-				http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-					this.set('latestCommitSha', data[0] && data[0].sha);
-				});
-			}
+			this.observe('packageVersionsNotFound', (newValue) => {
+				if (newValue) {
+					http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
+						this.set('latestCommitSha', data[0] && data[0].sha);
+					});
+					
+				}
+			});
 		},
 	};
 </script>
