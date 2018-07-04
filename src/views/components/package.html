@@ -9,7 +9,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-md-8">
-				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}" version="{{version}}"></c-package-header>
+				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}" version="{{version}}" packageVersionsNotFound="{{packageVersionsNotFound}}"></c-package-header>
 			</div>
 
 			<div class="col-md-4 hidden-sm hidden-xs">
@@ -210,6 +210,11 @@
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
 
+					// This can only happen for GitHub packages.
+					if (data.versions.length === 0) {
+						return this.set({ packageVersionsNotFound: true });
+					}
+
 					// Set version for GitHub packages.
 					if (!this.get('package.version')) {
 						this.set('package.version', data.versions[0]);
@@ -220,9 +225,8 @@
 						this.set('version', data.versions[0]);
 					}
 				}).catch((error) => {
-					if (error.status === 404) {
-						location.pathname = '/';
-					}
+					this.set({ packageNotFound: true });
+					console.error(`Package versions not found.`, error);
 				});
 
 				this.observe('statsPeriod fileStatsVersion', () => {
@@ -299,7 +303,7 @@
 									bottomChart = null;
 								}
 
-								let labels = array.map((value, i) => _.formatDate(new Date(value[0])).toUpperCase());
+								let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
 								let data = array.map(value => value[1].total);
 
 								this.set('bottomChartLabels', labels);
@@ -336,7 +340,7 @@
 												display: false,
 											}],
 										},
-									}
+									},
 								});
 							});
 						}

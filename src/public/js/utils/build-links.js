@@ -14,7 +14,7 @@ module.exports = {
 	canBuildHtml,
 };
 
-function buildLinks(collection, html, optimize, alias, sri) {
+function buildLinks (collection, html, optimize, alias, sri) {
 	if (sri) {
 		html = true;
 		optimize = false;
@@ -88,7 +88,7 @@ function buildFileLinkHtml (isJs, link, html, hash) {
 	return result;
 }
 
-function buildIntegrity(hash) {
+function buildIntegrity (hash) {
 	return `sha256-${hash}`;
 }
 

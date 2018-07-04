@@ -105,21 +105,21 @@
 
 	component.exports = {
 		computed: {
-			issueDefaultFile() {
+			issueDefaultFile () {
 				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
 					+ `?title=No default jsDelivr CDN file set`
 					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have a [default file](https://www.jsdelivr.com/features%23publishing-packages) set. You can set it via \`jsdelivr\`, \`browser\`, or \`main\` field in \`package.json\``;
 			},
-			issueTooBig() {
+			issueTooBig () {
 				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
 					+ `?title=${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`
 					+ `&body=I'm trying to load this package from [jsDelivr CDN](${this.get('@global.location.href')})`
 					+ ` but it fails because the package is over 50 MB. Are there any files that could be removed to reduce the package size?`;
 			},
-			pathS() {
+			pathS () {
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
 			},
-			defaultFile() {
+			defaultFile () {
 				const d = this.get('default');
 				return d && this.getFile(d);
 			},
@@ -226,14 +226,14 @@
 					file,
 					hash: f.hash,
 					isDefault: f.path === this.getFile(this.get('default')).path,
-				})
+				});
 			}
 
 			return false;
 		},
 		toggleShowMoreFiles () {
 			this.toggle('showMoreFiles').then(() => {
-				if(!this.get('showMoreFiles') && $('.c-package').offset().top < $(document).scrollTop()) {
+				if (!this.get('showMoreFiles') && $('.c-package').offset().top < $(document).scrollTop()) {
 					$('html, body').animate({
 						scrollTop: 0,
 					});
