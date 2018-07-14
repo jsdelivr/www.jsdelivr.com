@@ -98,7 +98,7 @@ app.use(koaETag());
  */
 app.use(async (ctx, next) => {
 	if (isSafePath(ctx.path) && ctx.path.charAt(1) !== '/') {
-		return await next();
+		return next();
 	}
 
 	ctx.status = 403;

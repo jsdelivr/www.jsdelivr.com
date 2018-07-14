@@ -85,7 +85,7 @@ module.exports = {
 			return '';
 		} else if (n === 2) {
 			return '2nd';
-		} else if  (n === 3) {
+		} else if (n === 3) {
 			return '3rd';
 		}
 

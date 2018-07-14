@@ -17,7 +17,7 @@ module.exports = (prefix, options) => {
 
 	return async (ctx, next) => {
 		if (!ctx.path.startsWith(prefix)) {
-			return await next();
+			return next();
 		}
 
 		try {
@@ -36,7 +36,7 @@ module.exports = (prefix, options) => {
 };
 
 async function compileLess (file, minify) {
-	return await less.render(await fs.readFileAsync(file, 'utf8'), { filename: file, strictMath: true }).then((output) => {
+	return less.render(await fs.readFileAsync(file, 'utf8'), { filename: file, strictMath: true }).then((output) => {
 		return minify ? minifyCss(output.css) : output.css;
 	});
 }

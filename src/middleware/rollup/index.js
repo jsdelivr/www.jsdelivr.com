@@ -20,7 +20,7 @@ module.exports = (prefix, options) => {
 
 	return async (ctx, next) => {
 		if (!ctx.path.startsWith(prefix)) {
-			return await next();
+			return next();
 		}
 
 		try {
@@ -40,7 +40,7 @@ module.exports = (prefix, options) => {
 };
 
 async function compileJs (file, minify) {
-	let code = (await rollup.rollup({
+	let code = await rollup.rollup({
 		input: file,
 		external: [
 			'algoliasearch',
@@ -61,7 +61,7 @@ async function compileJs (file, minify) {
 				ractive: 'Ractive',
 			},
 		})).code;
-	}));
+	});
 
 	return minify ? minifyJs(code) : code;
 }

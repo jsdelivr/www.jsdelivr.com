@@ -44,8 +44,8 @@ app.router = new Ractive.Router({
 
 let routerDispatch = Ractive.Router.prototype.dispatch;
 
-Ractive.Router.prototype.dispatch = function () {
-	routerDispatch.apply(this, arguments);
+Ractive.Router.prototype.dispatch = function (...args) {
+	routerDispatch.apply(this, args);
 
 	if (!app.router.route.view) {
 		return;
@@ -60,22 +60,22 @@ Ractive.Router.prototype.dispatch = function () {
 	return this;
 };
 
-app.router.addRoute('/', (cIndex), { qs: [ 'docs', 'limit', 'page', 'query' ] });
-app.router.addRoute('/about', (cAbout));
-app.router.addRoute('/become-a-sponsor', (cBecomeASponsor));
-app.router.addRoute('/features', (cFeatures));
-app.router.addRoute('/network', (cNetwork));
-app.router.addRoute('/network/infographic', (cNetworkInfographic));
-app.router.addRoute('/new-jsdelivr', (cNewJsdelivr));
-app.router.addRoute('/package/:type(npm)/:scope?/:name', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
-app.router.addRoute('/package/:type(gh)/:user/:repo', (cPackage), { qs: [ 'path', 'tab', 'version' ] });
-app.router.addRoute('/sponsors', (cSponsors));
-app.router.addRoute('/statistics', (cStatistics));
-app.router.addRoute('/tools/debug', (cDebug));
-app.router.addRoute('/tools/purge', (cPurge));
-app.router.addRoute('/using-sri-with-dynamic-files', (cSri));
-app.router.addRoute('/privacy-policy-jsdelivr-com', (cPPCom));
-app.router.addRoute('/privacy-policy-jsdelivr-net', (cPPNet));
+app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/about', cAbout);
+app.router.addRoute('/become-a-sponsor', cBecomeASponsor);
+app.router.addRoute('/features', cFeatures);
+app.router.addRoute('/network', cNetwork);
+app.router.addRoute('/network/infographic', cNetworkInfographic);
+app.router.addRoute('/new-jsdelivr', cNewJsdelivr);
+app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/sponsors', cSponsors);
+app.router.addRoute('/statistics', cStatistics);
+app.router.addRoute('/tools/debug', cDebug);
+app.router.addRoute('/tools/purge', cPurge);
+app.router.addRoute('/using-sri-with-dynamic-files', cSri);
+app.router.addRoute('/privacy-policy-jsdelivr-com', cPPCom);
+app.router.addRoute('/privacy-policy-jsdelivr-net', cPPNet);
 app.router.addRoute('/(.*)', () => {
 	location.pathname = '/';
 });

@@ -95,6 +95,7 @@ module.exports = (proxyHost, host) => {
 				},
 			};
 		}), true),
+
 		/**
 		 * The main proxy middleware.
 		 */

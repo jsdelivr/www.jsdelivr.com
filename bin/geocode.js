@@ -28,4 +28,4 @@ Promise.map(list, (line) => {
 	});
 
 	return fs.writeFileSync(__dirname + '/../src/public/js/map/map.json', JSON.stringify(locations, null, '\t'));
-});
+}).catch(console.error);
