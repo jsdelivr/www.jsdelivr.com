@@ -55,6 +55,7 @@
 	},
 	"devDependencies": {
 		"@martin-kolarik/eslint-config": "^1.0.1",
+		"@martin-kolarik/stylelint-config": "^1.0.0",
 		"@types/algoliasearch": "^3.27.6",
 		"@types/babel-core": "^6.25.5",
 		"@types/bluebird": "^3.5.23",
@@ -83,11 +84,14 @@
 		"eslint-plugin-chai-expect": "^1.1.1",
 		"eslint-plugin-html": "^4.0.5",
 		"eslint-plugin-node": "^7.0.1",
-		"eslint-plugin-promise": "^4.0.0"
+		"eslint-plugin-promise": "^4.0.0",
+		"stylelint": "^9.5.0"
 	},
 	"scripts": {
 		"heroku-postbuild": "echo \"$SOURCE_VERSION\" > sha.txt",
-		"lint": "eslint --ext .html,.js bin config src",
+		"lint": "npm run lint:css && npm run lint:js",
+		"lint:css": "stylelint \"./src/**/*.{css,less}\"",
+		"lint:js": "eslint --ext .html,.js bin config src",
 		"test": "npm run lint"
 	},
 	"repository": {
