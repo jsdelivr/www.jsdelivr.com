@@ -9,6 +9,12 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', n
 		animation: false,
 	};
 
+	function onDocumentClick (e) {
+		if (e.srcElement !== $node[0] && !$(e.srcElement).closest($node[0]).length) {
+			setDefaultTooltip();
+		}
+	}
+
 	function setDefaultTooltip () {
 		$node
 			.tooltip('destroy')
@@ -16,6 +22,7 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', n
 	}
 
 	setDefaultTooltip();
+	document.addEventListener('click', onDocumentClick);
 
 	clipboard.on('success', () => {
 		$node
@@ -36,6 +43,8 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', n
 	});
 
 	return {
-		teardown: () => {},
+		teardown: () => {
+			document.removeEventListener('click', onDocumentClick);
+		},
 	};
 };
