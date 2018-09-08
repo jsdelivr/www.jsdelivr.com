@@ -80,13 +80,16 @@ module.exports = {
 	},
 	nth (n) {
 		n = Math.floor(n);
+		let m = n % 10;
 
 		if (n === 1) {
 			return '';
-		} else if (n === 2) {
-			return '2nd';
-		} else if (n === 3) {
-			return '3rd';
+		} else if (n > 20 && m === 1) {
+			return `${n}st`;
+		} else if (n === 2 || (n > 20 && m === 2)) {
+			return `${n}nd`;
+		} else if (n === 3 || (n > 20 && m === 3)) {
+			return `${n}rd`;
 		}
 
 		return `${n}th`;
