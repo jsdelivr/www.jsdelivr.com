@@ -13,6 +13,8 @@ module.exports = (proxyHost, host) => {
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
 
+	proxy.on('error', error => log.error('Proxy error', error));
+
 	proxy.on('proxyReq', (proxyReq, req) => {
 		// Only forward standard headers.
 		_.forEach(proxyReq.getHeaders(), (value, key) => {
