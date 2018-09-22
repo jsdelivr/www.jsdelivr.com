@@ -1,7 +1,7 @@
 const request = [
 	'Accept',
 	'Accept-Charset',
-	'Accept-Encoding',
+	// 'Accept-Encoding', breaks http-proxy on HEAD requests
 	'Accept-Language',
 	'Accept-Datetime',
 	'Access-Control-Request-Method',
