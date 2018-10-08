@@ -4,7 +4,6 @@ const rollupBabel = require('rollup-plugin-babel');
 const rollupRactive = require('rollup-plugin-ractive');
 const rollupCommonjs = require('rollup-plugin-commonjs');
 const rollupJson = require('rollup-plugin-json');
-const uglify = require('uglify-js');
 const jsCache = new Map();
 
 module.exports = (prefix, options) => {
@@ -39,7 +38,7 @@ module.exports = (prefix, options) => {
 	};
 };
 
-async function compileJs (file, minify) {
+async function compileJs (file) {
 	let code = await rollup.rollup({
 		input: file,
 		external: [
@@ -63,7 +62,7 @@ async function compileJs (file, minify) {
 		})).code;
 	});
 
-	return minify ? minifyJs(code) : code;
+	return code;
 }
 
 async function getJs (file, options) {
@@ -72,8 +71,4 @@ async function getJs (file, options) {
 	}
 
 	return jsCache.get(file);
-}
-
-function minifyJs (code) {
-	return uglify.minify(code).code;
 }

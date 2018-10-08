@@ -1,0 +1,150 @@
+<link rel="ractive" href="../r-page.html">
+
+<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+	<div class="p-rawgit">
+		<div class="bg"></div>
+
+		<div class="content">
+			<div class="title">
+				<h1>Migrating from RawGit to jsDelivr</h1>
+
+				<h2 class="subtitle">
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+					Most RawGit links can be easily converted to jsDelivr links.
+				</h2>
+			</div>
+
+			<div class="container">
+				<div class="box">
+					<div class="bar {{#if out}}active{{/if}}">
+						<div class="circle"></div>
+						<div class="line"><div class="line-inner"></div></div>
+						<div class="circle circle-bottom"></div>
+					</div>
+
+					<div class="icon-rawgit">
+						<img src="/img/rawgit.png" srcset="/img/rawgit@2x.png 2x">
+						<p>RawGit</p>
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a RawGit link here" value="{{in}}">
+					</div>
+
+					<div class="icon-jsdelivr">
+						<img src="/img/logo.png" srcset="/img/logo@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+						{{#if out && !error}}
+							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+						{{/if}}
+					</div>
+
+					{{#if displayHtmlWarning}}
+						<div class="alert alert-warning" role="alert">
+							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+							We recommend using <a href="https://pages.github.com/" target="_blank">GitHub Pages</a> if this is a problem.
+						</div>
+					{{else}}
+						<div style="height: 1px;"></div>
+					{{/if}}
+
+					<div class="buttons">
+						<a href="/?docs=gh" class="start-using">See All Features</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	/* eslint-disable no-throw-literal */
+
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const defaultError = 'Sorry, this doesn\'t look like a valid RawGit link :(';
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		oninit () {
+			let buildJsDelivrLink = (user, repo, version, path) => {
+				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
+			};
+
+			let isBranch = (user, repo, branch) => {
+				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/branches/${branch}`).then((response) => {
+					return response.commit.sha;
+				}).catch(() => {
+					return false;
+				});
+			};
+
+			let isCommitPrefixOrTag = (user, repo, sha) => {
+				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/commits/${sha}`).then((response) => {
+					return response.sha.indexOf(sha) === 0 ? response.sha : sha;
+				}).catch(() => {
+					return false;
+				});
+			};
+
+			let rawGit2jsDelivr = async (rawGit) => {
+				let pattern = /^https?:\/\/(?:cdn\.)?rawgit\.com\/([^/@]+)\/([^/@]+)\/([^/@]+)\/(.*)$/i;
+				let commitPattern = /^[0-9a-f]{40}$/;
+				let match = pattern.exec(rawGit);
+
+				if (match) {
+					let [ , user, repo, version, file ] = match;
+					let sha;
+
+					// gist
+					if (version === 'raw') {
+						throw 'Sorry, Github Gists are not supported.';
+					}
+
+					// full commit hash
+					if (commitPattern.test(version)) {
+						return buildJsDelivrLink(user, repo, version, file);
+					}
+
+					// branch -> convert to commit sha
+					if (sha = await isBranch(user, repo, version)) {
+						return buildJsDelivrLink(user, repo, sha, file);
+					}
+
+					// tag/commit prefix
+					if (sha = await isCommitPrefixOrTag(user, repo, version)) {
+						return buildJsDelivrLink(user, repo, sha, file);
+					}
+				}
+
+				throw defaultError;
+			};
+
+			this.observe('in', debounce(throttle((rawGit) => {
+				this.set('displayHtmlWarning', rawGit.slice(-5) === '.html');
+
+				if (!rawGit) {
+					return this.set('out', '');
+				}
+
+				rawGit2jsDelivr(rawGit).then((jsDelivr) => {
+					this.set('error', false);
+
+					if (this.get('in') === rawGit) {
+						this.set('out', jsDelivr);
+					}
+				}).catch((error) => {
+					this.set('error', true);
+					this.set('out', typeof error === 'string' ? error : defaultError);
+				});
+			}, 1000)));
+		},
+	};
+</script>
