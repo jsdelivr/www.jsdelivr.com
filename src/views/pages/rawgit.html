@@ -94,14 +94,13 @@
 				});
 			};
 
-			let rawGit2jsDelivr = async (rawGit) => {
+			let rawGit2jsDelivr = rawGit => Promise.resolve().then(() => {
 				let pattern = /^https?:\/\/(?:cdn\.)?rawgit\.com\/([^/@]+)\/([^/@]+)\/([^/@]+)\/(.*)$/i;
 				let commitPattern = /^[0-9a-f]{40}$/;
 				let match = pattern.exec(rawGit);
 
 				if (match) {
 					let [ , user, repo, version, file ] = match;
-					let sha;
 
 					// gist
 					if (version === 'raw') {
@@ -114,18 +113,24 @@
 					}
 
 					// branch -> convert to commit sha
-					if (sha = await isBranch(user, repo, version)) {
-						return buildJsDelivrLink(user, repo, sha, file);
-					}
+					return isBranch(user, repo, version).then((sha) => {
+						if (sha) {
+							return buildJsDelivrLink(user, repo, sha, file);
+						}
 
-					// tag/commit prefix
-					if (sha = await isCommitPrefixOrTag(user, repo, version)) {
-						return buildJsDelivrLink(user, repo, sha, file);
-					}
+						// tag/commit prefix
+						return isCommitPrefixOrTag(user, repo, version).then((sha) => {
+							if (sha) {
+								return buildJsDelivrLink(user, repo, sha, file);
+							}
+
+							throw defaultError;
+						});
+					});
 				}
 
 				throw defaultError;
-			};
+			});
 
 			this.observe('in', debounce(throttle((rawGit) => {
 				this.set('displayHtmlWarning', rawGit.slice(-5) === '.html');
