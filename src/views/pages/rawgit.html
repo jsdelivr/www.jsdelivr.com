@@ -75,15 +75,11 @@
 		},
 		oninit () {
 			let buildJsDelivrLink = (user, repo, version, path) => {
-				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
-			};
+				if (version === 'latest' || version === 'master') {
+					return `https://cdn.jsdelivr.net/gh/${user}/${repo}/${path}`;
+				}
 
-			let isBranch = (user, repo, branch) => {
-				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/branches/${branch}`).then((response) => {
-					return response.commit.sha;
-				}).catch(() => {
-					return false;
-				});
+				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
 			};
 
 			let isCommitPrefixOrTag = (user, repo, sha) => {
@@ -112,20 +108,14 @@
 						return buildJsDelivrLink(user, repo, version, file);
 					}
 
-					// branch -> convert to commit sha
-					return isBranch(user, repo, version).then((sha) => {
+					// tag/commit prefix
+					return isCommitPrefixOrTag(user, repo, version).then((sha) => {
 						if (sha) {
 							return buildJsDelivrLink(user, repo, sha, file);
 						}
 
-						// tag/commit prefix
-						return isCommitPrefixOrTag(user, repo, version).then((sha) => {
-							if (sha) {
-								return buildJsDelivrLink(user, repo, sha, file);
-							}
-
-							throw defaultError;
-						});
+						// branch
+						return buildJsDelivrLink(user, repo, version, file);
 					});
 				}
 
