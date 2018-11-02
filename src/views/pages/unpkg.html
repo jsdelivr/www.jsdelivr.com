@@ -1,0 +1,192 @@
+<link rel="ractive" href="../r-page.html">
+
+<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+	<div class="p-unpkg">
+		<div class="bg"></div>
+
+		<div class="content">
+			<div class="title">
+				<h1>Migrating from unpkg to jsDelivr</h1>
+
+				<h2 class="subtitle">
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+					Most unpkg links can be easily converted to jsDelivr links.
+				</h2>
+			</div>
+
+			<div class="container">
+				<div class="box">
+					<div class="bar {{#if out}}active{{/if}}">
+						<div class="circle"></div>
+						<div class="line"><div class="line-inner"></div></div>
+						<div class="circle circle-bottom"></div>
+					</div>
+
+					<div class="icon-competitor">
+						<img src="/img/unpkg.png" srcset="/img/unpkg@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste an unpkg link here" value="{{in}}">
+					</div>
+
+					<div class="icon-jsdelivr">
+						<img src="/img/logo.png" srcset="/img/logo@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+						{{#if out && !error}}
+							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+						{{/if}}
+					</div>
+
+					{{#if displayHtmlWarning}}
+						<div class="alert alert-warning" role="alert">
+							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+							We recommend using <a href="https://pages.github.com/" target="_blank">GitHub Pages</a> if this is a problem.
+						</div>
+					{{else}}
+						<div style="height: 1px;"></div>
+					{{/if}}
+
+					<div class="buttons">
+						<a href="/?docs=gh" class="start-using">See All Features</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="container">
+				<h1 class="comparison-title">unpkg and jsDelivr comparison</h1>
+
+				<div class="c-stats-table">
+					<table class="stats-table-table">
+						<colgroup>
+							<col style="width: 26%;">
+							<col style="width: 37%;">
+							<col style="width: 37%;">
+						</colgroup>
+
+						<thead>
+							<tr>
+								<th></th>
+								<th>
+									<div class="icon-competitor">
+										<img src="/img/unpkg.png" srcset="/img/unpkg@2x.png 2x">
+									</div>
+								</th>
+								<th>
+									<div class="icon-jsdelivr">
+										<img src="/img/logo.png" srcset="/img/logo@2x.png 2x">
+									</div>
+								</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+								<td>Multi-CDN</td>
+								<td>1</td>
+								<td class="better">4</td>
+							</tr>
+							<tr>
+								<td>Multi-DNS</td>
+								<td>1</td>
+								<td class="better">2</td>
+							</tr>
+							<tr>
+								<td>Smart load-balancing</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Combining multiple files</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Fully featured API</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Cache purge API</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Download stats</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png"  srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>POPs in China</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	/* eslint-disable no-throw-literal */
+
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const defaultError = 'Sorry, this doesn\'t look like a valid unpkg link :(';
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				title: 'Migrate from unpkg to jsDelivr',
+				description: 'Migrate from unpkg to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+			};
+		},
+		oninit () {
+			let buildJsDelivrLink = (name, version, file) => {
+				return `https://cdn.jsdelivr.net/npm/${name}@${version}/${file}`;
+			};
+
+			let unpkg2jsDelivr = unpkg => Promise.resolve().then(() => {
+				let pattern = /^https?:\/\/unpkg\.com\/([^/@]+)@([^/@]+)\/(.*)$/i;
+				let match = pattern.exec(unpkg);
+
+				if (match) {
+					let [ , name, version, file ] = match;
+
+					return buildJsDelivrLink(name, version, file);
+				}
+
+				throw defaultError;
+			});
+
+			this.observe('in', debounce(throttle((unpkg) => {
+				this.set('displayHtmlWarning', unpkg.slice(-5) === '.html');
+
+				if (!unpkg) {
+					return this.set('out', '');
+				}
+
+				unpkg2jsDelivr(unpkg).then((jsDelivr) => {
+					this.set('error', false);
+
+					if (this.get('in') === unpkg) {
+						this.set('out', jsDelivr);
+					}
+				}).catch((error) => {
+					this.set('error', true);
+					this.set('out', typeof error === 'string' ? error : defaultError);
+				});
+			}, 1000)));
+		},
+	};
+</script>
