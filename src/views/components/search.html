@@ -79,6 +79,10 @@
 				this.find('.search-input').focus();
 				scrollTo(0, offsetTop);
 
+				if (this.get('caretPosition')) {
+					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
+				}
+
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page')).then((result) => {
