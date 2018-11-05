@@ -1,6 +1,6 @@
 <div class="c-search-compact">
 	<div class="search-input-wrapper">
-		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
+		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" on-keydown="@this.onKeyDown()">
 	</div>
 </div>
 
@@ -9,10 +9,19 @@
 		onrender () {
 			if (!this.isServer) {
 				this.observe('query', (newValue) => {
-					app.router.dispatch(`/?query=${encodeURIComponent(newValue)}`);
-					scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+					this.goTo(newValue);
 				}, { init: false });
 			}
+		},
+		onKeyDown () {
+			// noinspection JSDeprecatedSymbols
+			if (this.event.original.keyCode === 13) {
+				this.goTo(this.get('query'));
+			}
+		},
+		goTo (query) {
+			app.router.dispatch(`/?query=${encodeURIComponent(query)}`);
+			scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
 		},
 	};
 </script>
