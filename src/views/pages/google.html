@@ -1,0 +1,280 @@
+<link rel="ractive" href="../r-page.html">
+
+<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+	<div class="p-google">
+		<div class="bg"></div>
+
+		<div class="content">
+			<div class="title">
+				<h1>Migrating from Google hosted libraries to jsDelivr</h1>
+
+				<h2 class="subtitle">
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+					Most Google hosted library links can be easily converted to jsDelivr links.
+				</h2>
+			</div>
+
+			<div class="container">
+				<div class="box">
+					<div class="bar {{#if out}}active{{/if}}">
+						<div class="circle"></div>
+						<div class="line"><div class="line-inner"></div></div>
+						<div class="circle circle-bottom"></div>
+					</div>
+
+					<div class="icon-competitor">
+						<img src="/img/google.png" srcset="/img/google@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a Google hosted library link here" value="{{in}}">
+					</div>
+
+					<div class="icon-jsdelivr">
+						<img src="/img/logo.png" srcset="/img/logo@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+						{{#if out && !error}}
+							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+						{{/if}}
+					</div>
+
+					{{#if displayHtmlWarning}}
+						<div class="alert alert-warning" role="alert">
+							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+							We recommend using <a href="https://pages.github.com/" target="_blank">GitHub Pages</a> if this is a problem.
+						</div>
+					{{else}}
+						<div style="height: 1px;"></div>
+					{{/if}}
+
+					<div class="buttons">
+						<a href="/" class="start-using">See All Features</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="container">
+				<h1 class="comparison-title">Google hosted libraries and jsDelivr comparison</h1>
+
+				<div class="c-stats-table">
+					<table class="stats-table-table">
+						<colgroup>
+							<col style="width: 26%;">
+							<col style="width: 37%;">
+							<col style="width: 37%;">
+						</colgroup>
+
+						<thead>
+							<tr>
+								<th></th>
+								<th>
+									<div class="icon-competitor">
+										<img src="/img/google.png" srcset="/img/google@2x.png 2x">
+									</div>
+								</th>
+								<th>
+									<div class="icon-jsdelivr">
+										<img src="/img/logo.png" srcset="/img/logo@2x.png 2x">
+									</div>
+								</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+								<td>Multi-CDN</td>
+								<td>1</td>
+								<td class="better">4</td>
+							</tr>
+							<tr>
+								<td>Multi-DNS</td>
+								<td>1</td>
+								<td class="better">2</td>
+							</tr>
+							<tr>
+								<td>Smart load-balancing</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Combining multiple files</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Fully featured API</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Cache purge API</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>Download stats</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png"  srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+							<tr>
+								<td>POPs in China</td>
+								<td class="tick"><img src="/img/icons/feature-unsupported-icon.png" srcset="/img/icons/feature-unsupported-icon@2x.png 2x"></td>
+								<td class="tick"><img src="/img/landing/features-list-icon.png" srcset="/img/landing/features-list-icon@2x.png 2x"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	/* eslint-disable no-throw-literal */
+
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const defaultError = 'Sorry, this doesn\'t look like a valid Google hosted library link :(';
+
+	const options = {
+		'd3js': {
+			getPath (version, file) {
+				return `/npm/d3@${version}/dist/${file}`;
+			},
+		},
+		'dojo': {
+			getPath (version, file) {
+				return `/gh/dojo/dojo@${version}/${file.slice(5, -3)}.min.js`;
+			},
+		},
+		'hammerjs': {
+			getPath (version, file) {
+				return `/npm/hammerjs@${version}/${file}`;
+			},
+		},
+		'indefinite-observable': {
+			getPath (version, file) {
+				return `/npm/indefinite-observable@${version}/dist/${file}`;
+			},
+		},
+		'jquery': {
+			getPath (version, file) {
+				return `/npm/jquery@${version}/dist/${file}`;
+			},
+		},
+		'jquerymobile': {
+			getPath (version, file) {
+				return `/npm/jquery-mobile@${version}/dist/${file}`;
+			},
+			isError (version, file) {
+				if (version !== '1.4.1' || (!file.endsWith('js') && !file.endsWith('css'))) {
+					return true;
+				}
+			},
+		},
+		'jqueryui': {
+			getPath (version, file) {
+				return `/npm/jquery-ui-dist@${version}/${file}`;
+			},
+			isError (version, file) {
+				if (file.includes('themes')) {
+					return true;
+				}
+			},
+		},
+		'mootools': {
+			getPath () {
+				return `/npm/mootools-core-dist@1.5.1/dist/mootools-core.min.js`;
+			},
+		},
+		'myanmar-tools': {
+			getPath (version, file) {
+				return `/npm/myanmar-tools@${version}/build_node/${file}`;
+			},
+		},
+		'shaka-player': {
+			getPath (version, file) {
+				return `/npm/shaka-player@${version}/dist/${file}`;
+			},
+		},
+		'spf': {
+			getPath (version, file) {
+				return `/npm/spf@${version}/dist/${file}`;
+			},
+		},
+		'swfobject': {
+			getPath (version, file) {
+				return `/gh/swfobject/swfobject@2.2.0/${file}`;
+			},
+			isError (version) {
+				if (version !== '2.2') {
+					return true;
+				}
+			},
+		},
+		'threejs': {
+			getPath (version, file) {
+				return `/npm/three@0.${version.slice(-2)}.0/build/${file}`;
+			},
+		},
+		'webfont': {
+			getPath (version, file) {
+				return `/npm/webfontloader@${version}/${file.slice(0, -3)}loader.js`;
+			},
+		},
+	};
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				title: 'Migrate from Google hosted libraries to jsDelivr',
+				description: 'Migrate from Google hosted libraries to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+			};
+		},
+		oninit () {
+			let google2jsDelivr = google => Promise.resolve().then(() => {
+				let pattern = /^https?:\/\/ajax\.googleapis\.com\/ajax\/libs\/([^/@]+)\/([^/@]+)\/(.*)$/i;
+				let match = pattern.exec(google);
+
+				if (match) {
+					let [ , name, version, file ] = match;
+
+					if (options[name].isError && options[name].isError(version, file)) {
+						throw defaultError;
+					} else {
+						return `https://cdn.jsdelivr.net${options[name].getPath(version, file)}`;
+					}
+				}
+
+				throw defaultError;
+			});
+
+			this.observe('in', debounce(throttle((google) => {
+				this.set('displayHtmlWarning', google.slice(-5) === '.html');
+
+				if (!google) {
+					return this.set('out', '');
+				}
+
+				google2jsDelivr(google).then((jsDelivr) => {
+					this.set('error', false);
+
+					if (this.get('in') === google) {
+						this.set('out', jsDelivr);
+					}
+				}).catch((error) => {
+					this.set('error', true);
+					this.set('out', typeof error === 'string' ? error : defaultError);
+				});
+			}, 1000)));
+		},
+	};
+</script>
