@@ -85,7 +85,7 @@
 					return `https://cdn.jsdelivr.net/gh/${user}/${repo}/${path}`;
 				}
 
-				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
+				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${encodeURIComponent(version)}/${path}`;
 			};
 
 			let isCommitPrefixOrTag = (user, repo, sha) => {
@@ -97,12 +97,13 @@
 			};
 
 			let rawGit2jsDelivr = rawGit => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/(?:cdn\.)?rawgit\.com\/([^/@]+)\/([^/@]+)\/([^/@]+)\/(.*)$/i;
+				let pattern = /^https?:\/\/(?:cdn\.)?rawgit\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.*)$/i;
 				let commitPattern = /^[0-9a-f]{40}$/;
 				let match = pattern.exec(rawGit);
 
 				if (match) {
 					let [ , user, repo, version, file ] = match;
+					version = decodeURIComponent(version);
 
 					// gist
 					if (version === 'raw') {
