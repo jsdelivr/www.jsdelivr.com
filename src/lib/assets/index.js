@@ -10,4 +10,4 @@ try {
 	} catch (e) {}
 }
 
-module.exports.version = version;
+module.exports.version = process.env.COMMIT_ID || version;
