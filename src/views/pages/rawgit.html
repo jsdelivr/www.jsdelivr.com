@@ -85,7 +85,7 @@
 					return `https://cdn.jsdelivr.net/gh/${user}/${repo}/${path}`;
 				}
 
-				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${encodeURIComponent(version)}/${path}`;
+				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
 			};
 
 			let isCommitPrefixOrTag = (user, repo, sha) => {
@@ -103,7 +103,6 @@
 
 				if (match) {
 					let [ , user, repo, version, file ] = match;
-					version = decodeURIComponent(version);
 
 					// gist
 					if (version === 'raw') {
