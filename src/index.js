@@ -362,7 +362,7 @@ signalExit((code, signal) => {
  * If we exit because of an uncaught exception, log the error details as well.
  */
 process.on('uncaughtException', (error) => {
-	log.fatal(`Uncaught exception. Exiting.`, error);
+	log.fatal(`Uncaught exception. Exiting.`, error, { handled: false });
 
 	setTimeout(() => {
 		process.exit(1);
@@ -370,7 +370,7 @@ process.on('uncaughtException', (error) => {
 });
 
 process.on('unhandledRejection', (error) => {
-	log.fatal('Unhandled rejection. Exiting.', error);
+	log.fatal('Unhandled rejection. Exiting.', error, { handled: false });
 
 	setTimeout(() => {
 		process.exit(1);
