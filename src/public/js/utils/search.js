@@ -10,6 +10,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			hitsPerPage,
 			attributesToHighlight: [],
 			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version' ],
+			analyticsTags: ['jsdelivr'],
 		};
 
 		if (parsed.facetFilters) {
