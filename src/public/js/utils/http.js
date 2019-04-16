@@ -34,3 +34,7 @@ module.exports.fetchTopPackages = (period = 'month') => {
 module.exports.fetchProjectCommits = (owner, repo) => {
 	return $.getJSON(`${GITHUB_API_HOST}/repos/${owner}/${repo}/commits`);
 };
+
+module.exports.findProjectIssue = (owner, repo, title) => {
+	return $.getJSON(`${GITHUB_API_HOST}/search/issues`, { q: title + ' user:' + owner + ' repo:' + repo });
+};

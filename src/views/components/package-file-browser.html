@@ -30,11 +30,18 @@
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
 			</div>
-			{{elseif github}}
+			{{elseif github && !defFileIssue}}
 			<div class="box-sub-header">
 				<div class="file-message text-center">
 					Sadly, this package doesn't have a default file set.
 					Consider <a target="_blank" rel="nofollow" href="{{issueDefaultFile}}">asking the author to set it</a>.
+				</div>
+			</div>
+			{{elseif github && defFileIssue}}
+			<div class="box-sub-header">
+				<div class="file-message text-center">
+					This package doesn't have a default file set.
+					You can find out more <a target="_blank" rel="nofollow" href="{{defFileIssue.html_url}}">in this issue</a>.
 				</div>
 			</div>
 			{{/if}}
@@ -131,6 +138,7 @@
 				filesLimit: 10,
 				filesLoadingMessage: '',
 				path: [],
+				defFileIssue: null,
 			};
 		},
 		decorators: {
@@ -167,6 +175,11 @@
 							} else {
 								this.set('filesLoadingMessage', defaultError);
 							}
+						});
+
+						// Check for default file not set issue
+						http.findProjectIssue(this.get('github.user'), this.get('github.project'), 'No default jsDelivr CDN file set').then((data) => {
+							this.set('defFileIssue', data.items[0]);
 						});
 					}
 				});
