@@ -168,10 +168,15 @@
 								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
-									errorHtml += `<br>Consider <a target="_blank" href="${this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
-								}
+									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`).then((data) => {
+										if (!data.items[0]) {
+											errorHtml += `<br>Consider <a target="_blank" href="${this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+										}
 
-								this.set('filesLoadingMessage', errorHtml);
+										errorHtml += `<br>You can still find the files you need in the <a target="_blank" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project as following link:<br>https://cdn.jsdelivr.net/<b>gh</b>/[user]/[repo]@[version]/[file]<br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>`;
+										this.set('filesLoadingMessage', errorHtml);
+									});
+								}
 							} else {
 								this.set('filesLoadingMessage', defaultError);
 							}
