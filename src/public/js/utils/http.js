@@ -36,5 +36,5 @@ module.exports.fetchProjectCommits = (owner, repo) => {
 };
 
 module.exports.findProjectIssue = (owner, repo, title) => {
-	return $.getJSON(`${GITHUB_API_HOST}/search/issues`, { q: title + ' user:' + owner + ' repo:' + repo });
+	return $.getJSON(`${GITHUB_API_HOST}/search/issues`, { q: `${title} user:${owner} repo:${repo}` });
 };
