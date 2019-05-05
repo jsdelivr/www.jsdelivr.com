@@ -30,18 +30,15 @@
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
 			</div>
-			{{elseif github && !defFileIssue}}
+			{{elseif github}}
 			<div class="box-sub-header">
 				<div class="file-message text-center">
 					Sadly, this package doesn't have a default file set.
+					{{#if defaultFileIssue}}
+					You can find out more <a target="_blank" rel="nofollow" href="{{defaultFileIssue.html_url}}">in this issue</a>.
+					{{else}}
 					Consider <a target="_blank" rel="nofollow" href="{{issueDefaultFile}}">asking the author to set it</a>.
-				</div>
-			</div>
-			{{elseif github && defFileIssue}}
-			<div class="box-sub-header">
-				<div class="file-message text-center">
-					This package doesn't have a default file set.
-					You can find out more <a target="_blank" rel="nofollow" href="{{defFileIssue.html_url}}">in this issue</a>.
+					{{/if}}
 				</div>
 			</div>
 			{{/if}}
@@ -138,7 +135,7 @@
 				filesLimit: 10,
 				filesLoadingMessage: '',
 				path: [],
-				defFileIssue: null,
+				defaultFileIssue: null,
 			};
 		},
 		decorators: {
@@ -161,6 +158,13 @@
 						http.fetchPackageFiles(this.get('type'), this.get('name'), version).then((data) => {
 							this.set('default', data.default);
 							this.set('files', data.files);
+
+							if (!this.checkIfFileExists(this.get('default')) && this.get('github')) {
+								// Check for an existing default file not set issue.
+								http.findProjectIssue(this.get('github.user'), this.get('github.project'), 'No default jsDelivr CDN file set').then((data) => {
+									this.set('defaultFileIssue', data.items[0]);
+								});
+							}
 						}).catch((error) => {
 							let defaultError = 'Failed to load the file listing.';
 
@@ -180,11 +184,6 @@
 							} else {
 								this.set('filesLoadingMessage', defaultError);
 							}
-						});
-
-						// Check for default file not set issue
-						http.findProjectIssue(this.get('github.user'), this.get('github.project'), 'No default jsDelivr CDN file set').then((data) => {
-							this.set('defFileIssue', data.items[0]);
 						});
 					}
 				});
