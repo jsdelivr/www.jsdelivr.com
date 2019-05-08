@@ -12,6 +12,7 @@ module.exports = (proxyHost, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
+	let rewriteElements = [ 'loc' ];
 
 	proxy.on('proxyReq', (proxyReq, req) => {
 		// Only forward standard headers.
@@ -67,26 +68,16 @@ module.exports = (proxyHost, host) => {
 			return {
 				query: `[${name}]`,
 				func (el, req) {
-					let rewrite = (value) => {
-						let link = url.parse(value, false, true);
-
-						if (matchesHost(link, proxyUrl.host)) {
-							return host + req.baseUrl + link.pathname;
-						}
-
-						return value;
-					};
-
 					el.getAttribute(name, (value) => {
 						try {
 							if (name === 'srcset') {
-								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url), src)));
+								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, host, req.baseUrl), src)));
 							} else if (name === 'style') {
 								value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
-									return `url("${rewrite($2 || $3)}")`;
+									return `url("${rewrite($2 || $3, host, req.baseUrl)}")`;
 								});
 							} else {
-								value = rewrite(value);
+								value = rewrite(value, host, req.baseUrl);
 							}
 
 							el.setAttribute(name, value);
@@ -94,7 +85,22 @@ module.exports = (proxyHost, host) => {
 					});
 				},
 			};
-		}), true),
+		}).concat(rewriteElements.map((name) => {
+			return {
+				query: name,
+				func (el, req) {
+					let value = '';
+					let stream = el.createStream()
+						.on('error', () => {})
+						.on('data', chunk => value += chunk.toString())
+						.on('end', () => {
+							try {
+								stream.end(rewrite(value, host, req.baseUrl));
+							} catch (e) {}
+						});
+				},
+			};
+		}))),
 
 		/**
 		 * Fix for harmon with http-proxy@1.17.0+
@@ -134,4 +140,14 @@ module.exports = (proxyHost, host) => {
 
 function matchesHost (url, host) {
 	return (!url.host && url.pathname.charAt(0) === '/') || url.host === host;
+}
+
+function rewrite (link, host, baseUrl) {
+	let parsed = url.parse(link, false, true);
+
+	if (matchesHost(parsed, host)) {
+		return host + baseUrl + parsed.pathname;
+	}
+
+	return link;
 }
