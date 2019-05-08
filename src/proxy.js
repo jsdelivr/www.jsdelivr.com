@@ -8,7 +8,7 @@ const harmon = require('harmon');
 const srcset = require('srcset');
 const cssUrlPattern = /url\(\s*(['"])((?:\\[\s\S]|(?!\1).)*)\1\s*\)|url\(((?:\\[\s\S]|[^)])*)\)/gi;
 
-module.exports = (proxyHost, host) => {
+module.exports = (proxyHost, host, baseUrl) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
@@ -107,6 +107,7 @@ module.exports = (proxyHost, host) => {
 				changeOrigin: true,
 				protocolRewrite: 'https',
 				cookieDomainRewrite: '',
+				cookiePathRewrite: baseUrl,
 				proxyTimeout: 10000,
 			}, next);
 		},
