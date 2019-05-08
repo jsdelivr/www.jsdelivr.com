@@ -337,7 +337,7 @@ server.use('/blog', (req, res, next) => {
 /**
  * Proxy blog requests to ghost.
  */
-server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? '' : serverConfig.host, '/blog'));
+server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? '' : serverConfig.host));
 
 /**
  * Forward everything else to Koa (main website).

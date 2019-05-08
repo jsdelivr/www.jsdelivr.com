@@ -8,7 +8,7 @@ const harmon = require('harmon');
 const srcset = require('srcset');
 const cssUrlPattern = /url\(\s*(['"])((?:\\[\s\S]|(?!\1).)*)\1\s*\)|url\(((?:\\[\s\S]|[^)])*)\)/gi;
 
-module.exports = (proxyHost, host, baseUrl) => {
+module.exports = (proxyHost, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = url.parse(proxyHost, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
@@ -97,6 +97,24 @@ module.exports = (proxyHost, host, baseUrl) => {
 		}), true),
 
 		/**
+		 * Fix for harmon with http-proxy@1.17.0+
+		 * Harmon assumes writeHead() is called before write() which is not the case anymore - http-proxy doesn't call writeHead() at all, it's called by node code from write().
+		 */
+		(req, res, next) => {
+			let write = res.write;
+
+			res.write = function (...args) {
+				if (!this.headersSent) {
+					this.writeHead(this.statusCode);
+				}
+
+				return write.apply(this, args);
+			};
+
+			return next();
+		},
+
+		/**
 		 * The main proxy middleware.
 		 */
 		(req, res, next) => {
@@ -107,7 +125,7 @@ module.exports = (proxyHost, host, baseUrl) => {
 				changeOrigin: true,
 				protocolRewrite: 'https',
 				cookieDomainRewrite: '',
-				cookiePathRewrite: baseUrl,
+				cookiePathRewrite: req.baseUrl,
 				proxyTimeout: 10000,
 			}, next);
 		},
