@@ -30,7 +30,7 @@ module.exports = (proxyHost, host) => {
 		proxyReq.setHeader('X-Fowarded-For', req.ip);
 	});
 
-	proxy.on('proxyRes', (proxyRes) => {
+	proxy.on('proxyRes', (proxyRes, req) => {
 		// Only forward standard headers.
 		_.forEach(proxyRes.headers, (value, key) => {
 			if (!headers.isResponseHeader(key)) {
@@ -54,7 +54,7 @@ module.exports = (proxyHost, host) => {
 			let location = url.parse(proxyRes.headers.location, false, true);
 
 			if (matchesHost(location, proxyUrl.host)) {
-				return proxyRes.headers.location = host + '/blog' + location.path;
+				return proxyRes.headers.location = host + req.baseUrl + location.path;
 			}
 		}
 	});
@@ -66,12 +66,12 @@ module.exports = (proxyHost, host) => {
 		harmon([], rewriteAttributes.map((name) => {
 			return {
 				query: `[${name}]`,
-				func (el) {
+				func (el, req) {
 					let rewrite = (value) => {
 						let link = url.parse(value, false, true);
 
 						if (matchesHost(link, proxyUrl.host)) {
-							return host + '/blog' + link.pathname;
+							return host + req.baseUrl + link.pathname;
 						}
 
 						return value;
