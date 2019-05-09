@@ -118,13 +118,6 @@ module.exports = (proxyTarget, host) => {
 			let write = res.write;
 
 			res.write = function (...args) {
-				if (this.getHeader('content-type').includes('application/xml')) {
-					res.isHtml = true;
-
-					// Strip off the content length since it will change.
-					res.removeHeader('Content-Length');
-				}
-
 				if (!this.headersSent) {
 					this.writeHead(this.statusCode);
 				}
