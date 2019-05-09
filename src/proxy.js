@@ -8,11 +8,21 @@ const harmon = require('harmon');
 const srcset = require('srcset');
 const cssUrlPattern = /url\(\s*(['"])((?:\\[\s\S]|(?!\1).)*)\1\s*\)|url\(((?:\\[\s\S]|[^)])*)\)/gi;
 
-module.exports = (proxyHost, host) => {
+module.exports = (proxyTarget, host) => {
 	let proxy = httpProxy.createProxyServer();
-	let proxyUrl = url.parse(proxyHost, false, true);
+	let proxyUrl = url.parse(proxyTarget, false, true);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
 	let rewriteElements = [ 'loc' ];
+
+	let rewrite = (link, baseUrl) => {
+		let parsed = url.parse(link, false, true);
+
+		if (matchesHost(parsed, proxyUrl.host)) {
+			return host + baseUrl + parsed.pathname;
+		}
+
+		return link;
+	};
 
 	proxy.on('proxyReq', (proxyReq, req) => {
 		// Only forward standard headers.
@@ -52,11 +62,7 @@ module.exports = (proxyHost, host) => {
 
 		// Rewrite redirects.
 		if (proxyRes.headers.location) {
-			let location = url.parse(proxyRes.headers.location, false, true);
-
-			if (matchesHost(location, proxyUrl.host)) {
-				return proxyRes.headers.location = host + req.baseUrl + location.path;
-			}
+			proxyRes.headers.location = rewrite(proxyRes.headers.location, req.baseUrl);
 		}
 	});
 
@@ -71,13 +77,13 @@ module.exports = (proxyHost, host) => {
 					el.getAttribute(name, (value) => {
 						try {
 							if (name === 'srcset') {
-								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, host, req.baseUrl), src)));
+								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
 							} else if (name === 'style') {
 								value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
-									return `url("${rewrite($2 || $3, host, req.baseUrl)}")`;
+									return `url("${rewrite($2 || $3, req.baseUrl)}")`;
 								});
 							} else {
-								value = rewrite(value, host, req.baseUrl);
+								value = rewrite(value, req.baseUrl);
 							}
 
 							el.setAttribute(name, value);
@@ -91,16 +97,18 @@ module.exports = (proxyHost, host) => {
 				func (el, req) {
 					let value = '';
 					let stream = el.createStream()
-						.on('error', () => {})
+						.on('error', () => stream.end())
 						.on('data', chunk => value += chunk.toString())
 						.on('end', () => {
 							try {
-								stream.end(rewrite(value, host, req.baseUrl));
-							} catch (e) {}
+								stream.end(rewrite(value, req.baseUrl));
+							} catch (e) {
+								stream.end(value);
+							}
 						});
 				},
 			};
-		}))),
+		})), true),
 
 		/**
 		 * Fix for harmon with http-proxy@1.17.0+
@@ -110,6 +118,13 @@ module.exports = (proxyHost, host) => {
 			let write = res.write;
 
 			res.write = function (...args) {
+				if (this.getHeader('content-type').includes('application/xml')) {
+					res.isHtml = true;
+
+					// Strip off the content length since it will change.
+					res.removeHeader('Content-Length');
+				}
+
 				if (!this.headersSent) {
 					this.writeHead(this.statusCode);
 				}
@@ -127,7 +142,7 @@ module.exports = (proxyHost, host) => {
 			res.status(502);
 
 			proxy.web(req, res, {
-				target: proxyHost,
+				target: proxyTarget,
 				changeOrigin: true,
 				protocolRewrite: 'https',
 				cookieDomainRewrite: '',
@@ -140,14 +155,4 @@ module.exports = (proxyHost, host) => {
 
 function matchesHost (url, host) {
 	return (!url.host && url.pathname.charAt(0) === '/') || url.host === host;
-}
-
-function rewrite (link, host, baseUrl) {
-	let parsed = url.parse(link, false, true);
-
-	if (matchesHost(parsed, host)) {
-		return host + baseUrl + parsed.pathname;
-	}
-
-	return link;
 }
