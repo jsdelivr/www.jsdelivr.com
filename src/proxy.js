@@ -18,10 +18,15 @@ module.exports = (proxyTarget, host) => {
 		let parsed = url.parse(link, false, true);
 
 		if (matchesHost(parsed, proxyUrl.host)) {
-			return host + baseUrl + parsed.pathname;
+			if (parsed.hostname) {
+				parsed.host = undefined;
+				parsed.hostname = host;
+			}
+
+			parsed.pathname = baseUrl + parsed.pathname;
 		}
 
-		return link;
+		return url.format(parsed);
 	};
 
 	proxy.on('proxyReq', (proxyReq, req) => {
