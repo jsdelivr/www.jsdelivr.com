@@ -43,7 +43,7 @@ module.exports = (proxyTarget, host) => {
 			proxyReq.setHeader('cookie', _.map(cookies, (value, name) => cookie.serialize(name, value)).join('; '));
 		}
 
-		proxyReq.setHeader('X-Fowarded-For', req.ip);
+		proxyReq.setHeader('X-Forwarded-For', req.ip);
 	});
 
 	proxy.on('proxyRes', (proxyRes, req) => {
