@@ -1,13 +1,16 @@
-const Logger = require('h-logger2');
-const ElasticWriter = require('h-logger2-elastic');
-
 global._ = require('lodash');
 global.Promise = require('bluebird');
 
-const esClient = require('elasticsearch').Client({
-	host: process.env.ELASTIC_SEARCH_URL,
-	log: 'error',
-});
+const Logger = require('h-logger2');
+const ElasticWriter = require('h-logger2-elastic');
+const ElasticSearch = require('@elastic/elasticsearch').Client;
+let esClient;
+
+if (process.env.ELASTIC_SEARCH_URL) {
+	esClient = new ElasticSearch({
+		node: process.env.ELASTIC_SEARCH_URL,
+	});
+}
 
 global.logger = new Logger(
 	'jsdelivr-website',
