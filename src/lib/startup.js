@@ -14,7 +14,7 @@ if (process.env.ELASTIC_SEARCH_URL) {
 
 global.logger = new Logger(
 	'jsdelivr-website',
-	process.env.NODE_ENV === 'production' ? [
+	process.env.NODE_ENV === 'production' && process.env.ELASTIC_SEARCH_URL ? [
 		new Logger.ConsoleWriter(process.env.LOG_LEVEL || Logger.levels.info),
 		new ElasticWriter(process.env.LOG_LEVEL || Logger.levels.info, { esClient, apmClient: global.apmClient }),
 	] : [
