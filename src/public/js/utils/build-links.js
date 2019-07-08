@@ -14,7 +14,7 @@ module.exports = {
 	canBuildHtml,
 };
 
-function buildLinks (collection, html, optimize, alias, sri) {
+function buildLinks (collection, html, optimize, alias, sri, outArray) {
 	if (sri) {
 		html = true;
 		optimize = false;
@@ -22,6 +22,11 @@ function buildLinks (collection, html, optimize, alias, sri) {
 	}
 
 	let links = { js: [], css: [], other: [] };
+
+	if (outArray) {
+		links.js = links.css = links.other = outArray;
+	}
+
 	let collectionCopy = collection.map((file) => {
 		let copy = $.extend(true, {}, file);
 
@@ -61,7 +66,7 @@ function buildLinks (collection, html, optimize, alias, sri) {
 		links.css.unshift(buildFileLinkHtml(false, buildCombined(collectionCopy, CSS_PATTERN), html));
 	}
 
-	return links;
+	return outArray || links;
 }
 
 function buildCombined (collection, filter) {

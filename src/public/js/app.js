@@ -3,6 +3,7 @@ require('./polyfills');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
 const cRawGit = require('../../views/pages/rawgit.html');
+const cFoundationCdn = require('../../views/pages/foundationcdn.html');
 const cUnpkg = require('../../views/pages/unpkg.html');
 const cGoogle = require('../../views/pages/google.html');
 const cBecomeASponsor = require('../../views/pages/become-a-sponsor.html');
@@ -66,6 +67,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', cRawGit);
+app.router.addRoute('/foundationcdn', cFoundationCdn);
 app.router.addRoute('/unpkg', cUnpkg);
 app.router.addRoute('/google', cGoogle);
 app.router.addRoute('/become-a-sponsor', cBecomeASponsor);
