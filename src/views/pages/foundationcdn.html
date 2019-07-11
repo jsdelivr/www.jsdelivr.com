@@ -1,0 +1,476 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/foundation-cdn-header.html" name="c-foundation-cdn-header">
+<link rel="ractive" href="../components/foundation-cdn-footer.html" name="c-foundation-cdn-footer">
+
+<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+	<div class="p-foundation-cdn">
+		<c-foundation-cdn-header></c-foundation-cdn-header>
+		<div id="modal-overlay"></div>
+
+		<section class="section-1">
+			<div class="container">
+				<div class="screen-height">
+					<div class="centered">
+						<h1>FoundationCDN</h1>
+						<div class="title-description">
+							<a href="https://www.jsdelivr.com/" target="_blank">Free super-fast CDN</a>
+							for the most advanced responsive front-end framework
+							<a href="http://foundation.zurb.com/" target="_blank">Foundation 6</a>
+						</div>
+
+						<div class="quick-use">
+							<h2>Quick Use:</h2>
+
+							<div class="jsline">
+								<div class="jsline-filters">
+									<div class="title">Complete JavaScript</div>
+									<div class="collection">
+										<div class="checkbox-style">
+											<input type="checkbox" id="addTag" checked="{{addTag}}">
+											<label for="addTag">Add the <b>&lt;script&gt;</b> tag</label>
+										</div>
+
+										<div class="checkbox-style">
+											<input type="checkbox" id="enableSRI" checked="{{enableSri}}">
+											<label for="enableSRI">Enable SRI</label>
+										</div>
+									</div>
+								</div>
+
+								<input type="text" id="getjs" value="{{completeFiles.js[0].html}}" twoway="false" class="form-control">
+								<button title="" as-clipboard data-clipboard-target="#getjs">
+									<i class="fa fa-copy"></i> Copy
+								</button>
+							</div>
+
+							<div class="cssline">
+								<div class="title">Complete CSS</div>
+								<input type="text" id="getcss" value="{{completeFiles.css[0].html}}" twoway="false" class="form-control">
+								<button title="" as-clipboard data-clipboard-target="#getcss">
+									<i class="fa fa-copy"></i> Copy
+								</button>
+							</div>
+						</div>
+
+						<div class="poweredby">
+							<span>Powered by:</span>
+
+							<div class="sponsors">
+								<div class="sponsor">
+									<a href="https://www.stackpath.com" target="_blank">
+										<img src="/img/foundation-cdn/stackpath.png" srcset="/img/foundation-cdn/stackpath@2x.png 2x" title="StackPath" />
+									</a>
+								</div>
+
+								<div class="sponsor">
+									<a href="https://www.cloudflare.com/" target="_blank">
+										<img src="/img/foundation-cdn/cloudflare.png" srcset="/img/foundation-cdn/cloudflare@2x.png 2x" title="The web performance &amp; security company" />
+									</a>
+								</div>
+
+								<div class="sponsor">
+									<a href="https://www.fastly.com" target="_blank">
+										<img src="/img/foundation-cdn/fastly.png" srcset="/img/foundation-cdn/fastly@2x.png 2x" title="Fastly" />
+									</a>
+								</div>
+
+								<div class="sponsor">
+									<a href="https://ns1.com/" target="_blank">
+										<img src="/img/foundation-cdn/ns1.png" srcset="/img/foundation-cdn/ns1@2x.png 2x" title="Intelligent DNS &amp; Traffic Management" />
+									</a>
+								</div>
+
+								<div class="sponsor">
+									<a href="https://perfops.net/" target="_blank">
+										<img src="/img/foundation-cdn/perfops.png" srcset="/img/foundation-cdn/perfops@2x.png 2x" title="Perfops" />
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="customize-btn">
+						<a href="/foundationcdn#customize">
+							<i class="fa fa-gear"></i> Customize Foundation
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section-2" id="customize">
+			<div class="customize-bar">
+				<div class="container">
+					<div class="title">Custom Foundation:</div>
+					<input type="text" class="form-control" id="customize-text" value="{{customizeText}}" twoway="false">
+
+					<div class="btns">
+						<button type="button" data-toggle="modal" data-target="#modal" class="button white-outline js-open-modal" title="">
+							<i class="fa fa-code"></i> View
+						</button>
+
+						<a as-clipboard data-clipboard-target="#customize-text" class="button white-outline active" title="">
+							<i class="fa fa-copy"></i> Copy
+						</a>
+						<a id="download-link" class="button white-outline" href="https://registry.npmjs.org/foundation-sites/-/foundation-sites-{{selectedVersion}}.tgz">
+							<i class="fa fa-download"></i> Download
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="container">
+				<div class="customize-fields">
+					<div class="cf-header">
+						<div class="left">
+							<div class="author">
+								<i class="fa fa-github"></i> Zurb.com
+							</div>
+							<div class="versions dropdown">
+								<button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{{selectedVersion}} <i class="fa fa-angle-down"></i></button>
+								<ul class="dropdown-menu" aria-labelledby="dropdownMenu">
+									{{#each versions}}
+										<li on-click="@this.setVersion(this)">{{this}}</li>
+									{{/each}}
+								</ul>
+							</div>
+							<div class="name">foundation</div>
+							<div class="descr">The most advanced responsive front-end framework in the world</div>
+						</div>
+
+						<div class="btns">
+							<a href="https://data.jsdelivr.com/v1/package/npm/foundation-sites@{{selectedVersion}}" class="button" target="_blank">
+								<i class="fa fa-gear"></i> API
+							</a>
+							<a href="http://foundation.zurb.com" class="button" target="_blank">
+								<i class="fa fa-link"></i> Project page
+							</a>
+						</div>
+					</div>
+
+					<div class="cf-list">
+						<div class="cfl-get">
+							<span>CDN files:</span>
+							<div class="switch">
+								<span>Select all</span>
+								<input id="get-all-links" type="checkbox" checked="{{toggleAll}}">
+								<label for="get-all-links"></label>
+							</div>
+						</div>
+
+						<div id="cdn-files-list">
+							{{#partial fileContent}}
+								<span class="link-left">{{@this.getLink([file], false, false, [])[0].html}}</span>
+								<div class="switch">
+									<input name="{{file.file}}" id="{{file.file}}" type="checkbox" checked="{{files[@index + this.offset].selected}}">
+									<label for="{{file.file}}"></label>
+								</div>
+							{{/partial}}
+
+							{{#partial fileItem}}
+								{{#if selected}}
+									<div class="fileItem active">{{>fileContent}}</div>
+								{{else}}
+									<div class="fileItem">{{>fileContent}}</div>
+								{{/if}}
+							{{/partial}}
+
+							{{#each files.slice(0, 5)}}
+								{{>fileItem { offset: 0, file: this }}}
+							{{/each}}
+
+							{{#if showMoreFiles}}
+								<div slide-in-out>
+									{{#each files.slice(5)}}
+										{{>fileItem { offset: 5, file: this }}}
+									{{/each}}
+								</div>
+							{{/if}}
+
+							{{#if files.length > 5}}
+								{{#if showMoreFiles}}
+									<div on-click="@this.showLessFiles()" class="showmoreless"><span><i class="fa fa-chevron-up"></i> Show less...</span></div>
+								{{else}}
+									<div on-click="@this.toggle('showMoreFiles')" class="showmoreless"><span><i class="fa fa-chevron-down"></i> Show more...</span></div>
+								{{/if}}
+							{{/if}}
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="modal" tabindex="-1" role="dialog">
+					<div class="modal-dialog modal-lg" role="document">
+						<div class="modal-content">
+							<div class="modal-body">
+								<div class="top">
+									<div class="title">Customize:</div>
+									<div class="collection">
+										<div class="checkbox-style">
+											<input type="checkbox" id="groupLinksM" checked="{{modalGroupLinks}}">
+											<label for="groupLinksM">Group links</label>
+										</div>
+
+										<div class="checkbox-style">
+											<input type="checkbox" id="addTagM" checked="{{modalAddTag}}">
+											<label for="addTagM">Add the <b>&lt;script&gt;</b> tag</label>
+										</div>
+
+										<div class="checkbox-style">
+											<input type="checkbox" id="enableSRIM" checked="{{modalEnableSri}}">
+											<label for="enableSRIM">Enable SRI</label>
+										</div>
+									</div>
+									<i on-click="@this.hideModal()" class="fa fa-close"></i>
+								</div>
+
+								<div class="bottom">
+									<ul>
+										{{#if modalGroupLinks}}
+											{{#each @this.getGroupedLinks(selectedFiles, modalAddTag, false)}}
+												<li>
+													<span id="group-tag-{{@index}}">
+														{{this}}
+													</span>
+													<button as-clipboard data-clipboard-target="#group-tag-{{@index}}"><i class="fa fa-copy"></i></button>
+												</li>
+											{{/each}}
+										{{else}}
+											{{#if @this.getLink(selectedFiles, modalAddTag, modalEnableSri, []).length > 1}}
+												{{#each @this.getLink(selectedFiles, modalAddTag, modalEnableSri, []).slice(2)}}
+													<li>
+														<span id="file-{{@index}}">{{this.html}}</span>
+														<button as-clipboard data-clipboard-target="#file-{{@index}}"><i class="fa fa-copy"></i></button>
+													</li>
+												{{/each}}
+											{{else}}
+												<li>
+													<span id="file-0">{{@this.getLink(selectedFiles, modalAddTag, modalEnableSri, [])[0].html}}</span>
+													<button as-clipboard data-clipboard-target="#file-0"><i class="fa fa-copy"></i></button>
+												</li>
+											{{/if}}
+										{{/if}}
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<c-foundation-cdn-footer></c-foundation-cdn-footer>
+	</div>
+</r-page>
+
+<script>
+	const http = require('../../public/js/utils/http');
+	const { buildLinks } = require('../../public/js/utils/build-links');
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		data () {
+			return {
+				title: 'Foundation CDN',
+				description: '',
+				selectedVersion: 'x.x.x',
+				defaultJs: 'foundation.min.js',
+				defaultCss: 'foundation.min.css',
+				addTag: false,
+				enableSri: false,
+				modalGroupLinks: false,
+				modalAddTag: false,
+				modalEnableSri: false,
+				toggleAll: false,
+				files: [],
+				versions: [],
+			};
+		},
+		decorators: {
+			clipboard,
+		},
+		computed: {
+			completeFiles () {
+				if (!this.get('files') || this.get('files').length < 1) {
+					return [{ file: '' }, { file: '' }];
+				}
+
+				return this.getLink([ this.get('files')[0], this.get('files')[1] ], this.get('addTag'), this.get('enableSri'));
+			},
+			selectedFiles () {
+				if (!this.get('files')) {
+					return [];
+				}
+
+				return this.get('files').filter((file) => {
+					return file.selected;
+				});
+			},
+			customizeText () {
+				let selectedLinks = this.getLink(this.get('selectedFiles'), false, false);
+
+				if (selectedLinks.js.length && selectedLinks.css.length) {
+					return 'Multiple file types selected. Use the View button instead.';
+				} else if (!selectedLinks.js.length && !selectedLinks.css.length) {
+					return '';
+				}
+
+				return selectedLinks.js.length ? selectedLinks.js[0].html : selectedLinks.css[0].html;
+			},
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchPackageVersions('npm', 'foundation-sites').then((data) => {
+					data.versions = data.versions.filter((version) => {
+						return /^\d+\.\d+\.\d+$/.test(version) && Number(version.split('.')[0]) > 5;
+					});
+
+					this.set('selectedVersion', data.tags.latest);
+					this.set('versions', data.versions);
+
+					this.updateFiles().then(() => {
+						this.observe('addTag', () => {
+							if (!this.get('addTag')) {
+								this.set('enableSri', false);
+							}
+						});
+
+						this.observe('enableSri', () => {
+							if (this.get('enableSri')) {
+								this.set('addTag', true);
+							}
+						});
+
+						this.observe('modalGroupLinks', () => {
+							if (this.get('modalGroupLinks')) {
+								this.set('modalEnableSri', false);
+							}
+						});
+
+						this.observe('modalAddTag', () => {
+							if (!this.get('modalAddTag')) {
+								this.set('modalEnableSri', false);
+							}
+						});
+
+						this.observe('modalEnableSri', () => {
+							if (this.get('modalEnableSri')) {
+								this.set('modalGroupLinks', false);
+								this.set('modalAddTag', true);
+							}
+						});
+
+						let files = this.get('files');
+
+						this.observe('toggleAll', () => {
+							files.forEach((file) => {
+								file.selected = this.get('toggleAll');
+							});
+
+							this.set('files', files);
+						});
+
+						files[0].selected = true;
+						files[1].selected = true;
+
+						this.set('files', files);
+					}).catch((error) => {
+						console.error(`Package files not found.`, error);
+					});
+				}).catch((error) => {
+					console.error(`Package versions not found.`, error);
+				});
+
+				$(window).on('scroll', () => {
+					let $customizeBar = $('.section-2 .customize-bar');
+
+					if ($(document).width() >= 992) {
+						let offset = $('.section-1').height();
+						let scrolled = $(window).scrollTop();
+
+						if ($customizeBar.hasClass('fixed-cb')) {
+							if (offset > scrolled) {
+								$customizeBar.removeClass('fixed-cb');
+								$('.section-2').css({ 'margin-top': 0 });
+							}
+						} else {
+							if (offset < scrolled) {
+								$customizeBar.addClass('fixed-cb');
+								$('.section-2').css({ 'margin-top': $customizeBar.outerHeight() });
+							}
+						}
+					} else if ($customizeBar.hasClass('fixed-cb')) {
+						$customizeBar.removeClass('fixed-cb');
+						$('.section-2').css({ 'margin-top': 0 });
+					}
+				});
+			}
+		},
+		getLink (files, addTag, enableSri, outFiles) {
+			return buildLinks(files, addTag, false, false, enableSri, outFiles);
+		},
+		getGroupedLinks (files, addTag, enableSri) {
+			let builtLinks = buildLinks(files, addTag, false, false, enableSri);
+			let outLinks = [];
+
+			if (builtLinks.js.length) {
+				outLinks.push(builtLinks.js[0].html);
+			}
+
+			if (builtLinks.css.length) {
+				outLinks.push(builtLinks.css[0].html);
+			}
+
+			return outLinks;
+		},
+		setVersion (version) {
+			this.set('selectedVersion', version);
+			this.updateFiles();
+		},
+		updateFiles () {
+			return http.fetchPackageFiles('npm', 'foundation-sites', this.get('selectedVersion'), true).then((files) => {
+				let distFiles = [];
+				this.set('toggleAll', false);
+
+				files.files.forEach((file) => {
+					if (/^(\/dist\/)((?!\.min\.).)*(\.js|\.css)+$/.test(file.name)) {
+						file.name = file.name.replace(/\.js$/, '.min.js').replace(/\.css$/, '.min.css');
+					}
+
+					if (distFiles.filter(f => f.file === file.name).length === 0 && /^(\/dist\/).*(\.js|\.css)+$/.test(file.name)) {
+						if (file.name.endsWith(this.get('defaultJs'))) {
+							distFiles.unshift(this.getFileObject(file.name, file.hash));
+						} else if (file.name.endsWith(this.get('defaultCss'))) {
+							distFiles.unshift(this.getFileObject(file.name, file.hash));
+
+							if (distFiles.length > 1 && distFiles[1].file.endsWith(this.get('defaultJs'))) {
+								let defaultJs = distFiles[1];
+								distFiles.splice(1, 1);
+								distFiles.unshift(defaultJs);
+							}
+						} else {
+							distFiles.push(this.getFileObject(file.name, file.hash));
+						}
+					}
+				});
+
+				distFiles[0].selected = true;
+				distFiles[1].selected = true;
+
+				this.set('files', distFiles);
+			});
+		},
+		getFileObject (name, hash) {
+			return { file: name, hash, type: 'npm', name: 'foundation-sites', version: this.get('selectedVersion'), selected: false };
+		},
+		hideModal () {
+			$('#modal').modal('hide');
+		},
+		showLessFiles () {
+			this.toggle('showMoreFiles').then(() => {
+				$('html, body').animate({
+					scrollTop: $('#customize').offset().top - $('#customize .customize-bar').outerHeight(),
+				});
+			});
+		},
+	};
+</script>

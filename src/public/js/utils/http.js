@@ -5,8 +5,8 @@ module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
 };
 
-module.exports.fetchPackageFiles = (type, name, version) => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}`);
+module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}`);
 };
 
 module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
