@@ -5,6 +5,6 @@ module.exports.initBrowser = (size) => {
 	return new webdriver.Builder()
 		.forBrowser('chrome')
 		.setChromeService(new Chrome.ServiceBuilder(require('chromedriver').path))
-		.setChromeOptions(new Chrome.Options().setChromeBinaryPath(require('chromium-binary/utils').getOsChromiumBinPath()).windowSize(size))
+		.setChromeOptions(new Chrome.Options().setChromeBinaryPath(require('chromium-binary').path).windowSize(size))
 		.build();
 };

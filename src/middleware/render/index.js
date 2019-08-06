@@ -49,6 +49,7 @@ async function makeComponent (href, options) {
 	let viewsHref = path.join(options.views, href);
 	let template = await fs.readFileAsync(viewsHref, 'utf8');
 
+	// eslint-disable-next-line no-async-promise-executor
 	return new Promise(async (resolve, reject) => {
 		try {
 			rcu.make(template, {
