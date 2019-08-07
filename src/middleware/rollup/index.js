@@ -50,7 +50,7 @@ async function compileJs (file, minify) {
 			rollupRactive({ format: 'cjs', parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false } }),
 			rollupCommonjs({ extensions: [ '.html', '.js' ], ignore: [ ] }),
 			rollupJson(),
-			rollupBabel(),
+			rollupBabel({ extensions: [ '.html', '.js' ] }),
 		],
 	}).then(async (bundle) => {
 		return (await bundle.generate({
@@ -60,7 +60,7 @@ async function compileJs (file, minify) {
 				algoliasearch: 'algoliasearch',
 				ractive: 'Ractive',
 			},
-		})).code;
+		})).output[0].code;
 	});
 
 	return minify ? minifyJs(code) : code;
