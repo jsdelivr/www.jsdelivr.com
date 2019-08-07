@@ -109,8 +109,8 @@ app.use(async (ctx, next) => {
  */
 app.use(less('/css', {
 	files: __dirname + '/public/less/',
-	cache: app.env === 'production',
-	minify: app.env === 'production',
+	cache: app.env !== 'development',
+	minify: app.env !== 'development',
 	assetsVersion,
 }));
 
@@ -119,8 +119,8 @@ app.use(less('/css', {
  */
 app.use(rollup('/js', {
 	files: __dirname + '/public/js/',
-	cache: app.env === 'production',
-	minify: app.env === 'production',
+	cache: app.env !== 'development',
+	minify: app.env !== 'development',
 	assetsVersion,
 }));
 
@@ -156,7 +156,7 @@ app.use(async (ctx, next) => {
  */
 app.use(render({
 	views: __dirname + '/views/',
-	cache: app.env === 'production',
+	cache: app.env !== 'development',
 	assetsVersion,
 }, app));
 
