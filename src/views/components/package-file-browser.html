@@ -25,7 +25,7 @@
 						/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
 					</a>
 
-					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
+					<input type="checkbox" class="switch-inline" id="df" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
@@ -67,7 +67,7 @@
 						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 					</a>
 
-					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
+					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" hash="{{hash}}" dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}"></c-copy-dropdown>
 					{{/if}}
