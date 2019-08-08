@@ -33,4 +33,7 @@ describe('Acceptance tests', function () {
 	});
 
 	require('./tests/homepage');
+	require('./tests/package');
+	require('./tests/search');
+	require('./tests/other');
 });
