@@ -47,7 +47,7 @@ async function compileJs (file, minify) {
 			'ractive',
 		],
 		plugins: [
-			rollupRactive({ format: 'cjs', parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false } }),
+			rollupRactive({ format: 'cjs', parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false, stripComments: false } }),
 			rollupCommonjs({ extensions: [ '.html', '.js' ], ignore: [ ] }),
 			rollupJson(),
 			rollupBabel({ extensions: [ '.html', '.js' ] }),
