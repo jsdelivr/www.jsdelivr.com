@@ -1,6 +1,10 @@
 const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 
+module.exports.fetchIpInfo = () => {
+	return $.getJSON('https://ipinfo.io/json');
+};
+
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
 };

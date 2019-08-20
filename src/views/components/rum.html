@@ -1,0 +1,120 @@
+<link rel="ractive" href="./spinner.html" name="c-spinner">
+
+<div class="c-rum">
+	<h2 class="section-title">jsDelivr uses Real User Metrics (RUM) to accurately load-balance traffic between multiple CDN providers</h2>
+	{{#if loading}}
+	<div class="rum-loading">
+		<c-spinner></c-spinner>
+		We're checking the best provider fit for you
+	</div>
+	{{elseif !results.0.up}}
+	<div class="rum-text">
+		It appears that all providers are down.<br>
+		Maybe a browser extension is blocking background http requests?
+	</div>
+	{{else}}
+	<div class="rum-loaded">
+		<div class="row">
+			{{#partial provider}}
+				<div class="provider" class-down="!result.up" class-fastest="fastest">
+					<div class="provider-logo">
+						<img src="/img/sponsors/{{providers[result.id].toLowerCase()}}.png" srcset="/img/sponsors/{{providers[result.id].toLowerCase()}}@2x.png 2x">
+					</div>
+					{{#if !result.up}}
+						<div class="provider-latency">Down</div>
+					{{elseif result.time}}
+						<div class="provider-latency">{{result.time.toFixed(2)}} ms</div>
+					{{/if}}
+				</div>
+			{{/partial}}
+
+			{{#if china}}
+				<div class="col-sm-4 col-sm-push-4 col-xs-6 col-xs-push-3">
+					{{>provider { id: -1, up: 1 } as result}}
+				</div>
+			{{else}}
+				<div class="visible-xs">
+					<div class="col-xs-3 "></div>
+					<div class="col-sm-4 col-xs-6">
+						{{>provider results.0 as result, true as fastest}}
+					</div>
+				</div>
+
+				<div class="col-sm-4 col-xs-6">
+					{{>provider results.1 as result, false as fastest}}
+				</div>
+
+				<div class="col-sm-4 hidden-xs">
+					{{>provider results.0 as result, true as fastest}}
+				</div>
+
+				<div class="col-sm-4 col-xs-6">
+					{{>provider results.2 as result, false as fastest}}
+				</div>
+			{{/if}}
+		</div>
+
+		<h3 class="section-title">
+			The best CDN for you is {{#if china}}Quantil{{else}}{{providers[results.0.id]}}{{/if}}
+		</h3>
+
+		<div class="rum-text">
+			We stored this information and will use it to improve our routing for all users.<br>
+			Join the community and help us improve our performance and uptime by adding this javascript code to your website:
+
+			<div class="rum-code" as-clipboard data-clipboard-text="{{rumScript}}">{{rumScript}}</div>
+			<a target="_blank"  href="https://perfops.net/rum">Learn more</a>
+		</div>
+	</div>
+	{{/if}}
+</div>
+
+<script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				china: true,
+				loading: true,
+				results: [
+					{ time: 0 },
+					{ time: 0 },
+					{ time: 0 },
+				],
+				providers: {
+					'3': 'Cloudflare',
+					'4': 'Fastly',
+					'13': 'StackPath',
+					'-1': 'Quantil',
+				},
+				// eslint-disable-next-line no-useless-escape
+				rumScript: '<script async src="https://cdn.jsdelivr.net/npm/perfops-rom"><\/script>',
+			};
+		},
+		oninit () {
+			let providers = Object.keys(this.get('providers')).map(Number);
+
+			if (!Ractive.isServer) {
+				http.fetchIpInfo().then((result) => {
+					this.set('china', result.country === 'CN');
+				});
+
+				perfopsRumJs.getResults().then((results) => {
+					results = results.filter((result) => {
+						return providers.indexOf(result.id) !== -1;
+					}).sort((a, b) => {
+						return (a.up ? a.time : Infinity) - (b.up ? b.time : Infinity);
+					});
+
+					this.set('loading', false);
+					this.animate('results', results);
+				});
+			}
+		},
+	};
+</script>
