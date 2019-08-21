@@ -28,34 +28,35 @@
 				</div>
 			{{/partial}}
 
-			{{#if china}}
-				<div class="col-sm-4 col-sm-push-4 col-xs-6 col-xs-push-3">
-					{{>provider { id: -1, up: 1 } as result}}
-				</div>
-			{{else}}
-				<div class="visible-xs">
-					<div class="col-xs-3 "></div>
-					<div class="col-sm-4 col-xs-6">
-						{{>provider results.0 as result, true as fastest}}
-					</div>
-				</div>
-
-				<div class="col-sm-4 col-xs-6">
-					{{>provider results.1 as result, false as fastest}}
-				</div>
-
-				<div class="col-sm-4 hidden-xs">
+			<div class="visible-xs">
+				<div class="col-xs-3"></div>
+				<div class="col-xs-6">
 					{{>provider results.0 as result, true as fastest}}
 				</div>
+			</div>
 
-				<div class="col-sm-4 col-xs-6">
-					{{>provider results.2 as result, false as fastest}}
+			<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+				{{>provider results.1 as result, false as fastest}}
+			</div>
+
+			<div class="{{#if china}}col-sm-3{{else}}col-sm-4{{/if}} hidden-xs">
+				{{>provider results.0 as result, true as fastest}}
+			</div>
+
+			<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+				{{>provider results.2 as result, false as fastest}}
+			</div>
+
+			{{#if china}}
+				<div class="col-xs-3"></div>
+				<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+					{{>provider results.3 as result, false as fastest}}
 				</div>
 			{{/if}}
 		</div>
 
 		<h3 class="section-title">
-			The best CDN for you is {{#if china}}Quantil{{else}}{{providers[results.0.id]}}{{/if}}
+			The best CDN for you is {{providers[results.0.id]}}
 		</h3>
 
 		<div class="rum-text">
@@ -84,26 +85,35 @@
 					{ time: 0 },
 					{ time: 0 },
 				],
-				providers: {
-					'3': 'Cloudflare',
-					'4': 'Fastly',
-					'13': 'StackPath',
-					'-1': 'Quantil',
-				},
 				// eslint-disable-next-line no-useless-escape
 				rumScript: '<script async src="https://cdn.jsdelivr.net/npm/perfops-rom"><\/script>',
 			};
 		},
-		oninit () {
-			let providers = Object.keys(this.get('providers')).map(Number);
+		computed: {
+			providers () {
+				let providers = {
+					3: 'Cloudflare',
+					4: 'Fastly',
+					13: 'StackPath',
+				};
 
+				if (this.get('china')) {
+					providers[15] = 'Quantil';
+				}
+
+				return providers;
+			},
+		},
+		oninit () {
 			if (!Ractive.isServer) {
 				perfopsRumJs.getStoreMeta().then((meta) => {
 					this.set('china', meta.country === 'CN');
 
 					perfopsRumJs.getResults().then((results) => {
+						let providersIds = Object.keys(this.get('providers')).map(Number);
+
 						results = results.filter((result) => {
-							return providers.indexOf(result.id) !== -1;
+							return providersIds.indexOf(result.id) !== -1;
 						}).sort((a, b) => {
 							return (a.up ? a.time : Infinity) - (b.up ? b.time : Infinity);
 						});
