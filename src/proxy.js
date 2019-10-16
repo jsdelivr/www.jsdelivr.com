@@ -2,6 +2,7 @@ const _ = require('lodash');
 const url = require('url');
 const httpProxy = require('http-proxy');
 const headers = require('./lib/headers');
+const LinkHeader = require('http-link-header');
 const cookie = require('cookie');
 const Cookie = require('tough-cookie').Cookie;
 const harmon = require('harmon');
@@ -64,6 +65,17 @@ module.exports = (proxyTarget, host) => {
 			if (!proxyRes.headers['set-cookie'].length) {
 				delete proxyRes.headers['set-cookie'];
 			}
+		}
+
+		// Rewrite link headers.
+		if (proxyRes.headers.link) {
+			let link = new LinkHeader();
+
+			LinkHeader.parse(proxyRes.headers.link).refs.forEach((ref) => {
+				link.set({ ...ref, uri: rewrite(ref.uri, req.baseUrl) });
+			});
+
+			proxyRes.headers.link = link.toString();
 		}
 
 		// Rewrite redirects.
