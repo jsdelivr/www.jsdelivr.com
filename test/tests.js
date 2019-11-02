@@ -16,9 +16,11 @@ global.browser = utils.initBrowser({ width: 1600, height: 900 });
 describe('Acceptance tests', function () {
 	this.timeout(20000);
 
-	before(async () => {
+	before(async function () {
+		this.timeout(40000);
 		await fs.ensureDir(screenshotsDir);
 		await fs.emptyDir(screenshotsDir);
+		await browser.navigate().to(`${BASE_URL}`); // The first load is rather slow, so we do it here with a longer timeout.
 	});
 
 	afterEach(async function () {
