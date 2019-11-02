@@ -1,6 +1,6 @@
 # [www.jsdelivr.com](https://www.jsdelivr.com)
 
-[![Build Status](https://img.shields.io/travis/jsdelivr/www.jsdelivr.com.svg?style=flat-square)](https://travis-ci.org/jsdelivr/www.jsdelivr.com)
+[![Build Status](https://github.com/jsdelivr/www.jsdelivr.com/workflows/Node%20CI/badge.svg)](https://github.com/jsdelivr/www.jsdelivr.com/actions?query=workflow%3A%22Node+CI%22)
 [![dependencies](https://img.shields.io/david/jsdelivr/www.jsdelivr.com.svg?style=flat-square)](https://david-dm.org/jsdelivr/www.jsdelivr.com)
 [![devDependencies](https://img.shields.io/david/dev/jsdelivr/www.jsdelivr.com.svg?style=flat-square)](https://david-dm.org/jsdelivr/www.jsdelivr.com?type=dev)
 
