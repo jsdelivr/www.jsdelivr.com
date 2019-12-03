@@ -88,9 +88,7 @@ app.router.addRoute('/using-sri-with-dynamic-files', cSri);
 app.router.addRoute('/privacy-policy', cPP);
 app.router.addRoute('/privacy-policy-jsdelivr-com', cPPCom);
 app.router.addRoute('/privacy-policy-jsdelivr-net', cPPNet);
-app.router.addRoute('/(.*)', () => {
-	location.pathname = '/';
-});
+app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
 	new Ractive().set('@shared.app', app);
