@@ -14,12 +14,12 @@ fetch('https://www.cloudflare.com/data/current-pops.csv')
         const result = [];
 
         data.forEach((dc) => {
-            if (dc.region !== 'CN') {
+            if (dc.region !== 'CHINA') {
                 result.push(`Cloudflare - ${dc.city.split(', ')[0]}`)
             }
         });
 
-        return result;
+        return result.sort();
     })
     .then(result => {
         result.forEach((i) => {
