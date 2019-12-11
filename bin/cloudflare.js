@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-const fetch = require('node-fetch-retry');
+const got = require('got');
 const parseCsv = require('csv-parse/lib/sync');
 
 const result = [];
 
-fetch('https://www.cloudflare.com/data/current-pops.csv')
-	.then((res) => { return res.text(); })
+got('https://www.cloudflare.com/data/current-pops.csv')
+	.then((res) => { return res.body; })
 	.then((text) => {
 		return parseCsv(text, {
 			columns: true,
