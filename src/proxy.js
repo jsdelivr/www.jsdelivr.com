@@ -17,7 +17,7 @@ module.exports = (proxyTarget, host) => {
 	let rewriteElements = [ 'loc' ];
 
 	let rewrite = (link, baseUrl) => {
-		let parsed = new URL(link);
+		let parsed = new URL(link, proxyTarget + baseUrl);
 
 		if (matchesHost(parsed, proxyUrl.host)) {
 			if (parsed.host) {
