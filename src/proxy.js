@@ -11,13 +11,13 @@ const cssUrlPattern = /url\(\s*(['"])((?:\\[\s\S]|(?!\1).)*)\1\s*\)|url\(((?:\\[
 
 module.exports = (proxyTarget, host) => {
 	let proxy = httpProxy.createProxyServer();
-	let proxyUrl = url.parse(proxyTarget, false, true);
-	let hostUrl = url.parse(host, false, true);
+	let proxyUrl = new URL(proxyTarget);
+	let hostUrl = new URL(host);
 	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
 	let rewriteElements = [ 'loc' ];
 
 	let rewrite = (link, baseUrl) => {
-		let parsed = url.parse(link, false, true);
+		let parsed = new URL(link);
 
 		if (matchesHost(parsed, proxyUrl.host)) {
 			if (parsed.host) {
