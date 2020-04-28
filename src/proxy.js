@@ -17,6 +17,11 @@ module.exports = (proxyTarget, host) => {
 	let rewriteElements = [ 'loc' ];
 
 	let rewrite = (link, baseUrl) => {
+		// A relative URL without a leading slash. No transformation needed.
+		if (!link.includes('://') && !link.startsWith('/')) {
+			return link;
+		}
+
 		let parsed = new URL(link, proxyTarget + baseUrl);
 
 		if (matchesHost(parsed, proxyUrl.host)) {
