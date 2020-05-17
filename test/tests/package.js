@@ -13,7 +13,7 @@ describe('package', () => {
 	});
 
 	it('displays no default file', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/bootstrap`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/font-awesome`);
 		await browser.sleep(2000);
 		await expect(browser.findElement({ css: '.file-message' })).to.eventually.not.equal(null);
 	});
