@@ -57,8 +57,8 @@ Ractive.Router.prototype.dispatch = function (...args) {
 		return;
 	}
 
-	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable Open Source CDN for npm & GitHub';
-	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'A free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance among all CDNs. Serving more than 20 billion requests per month.');
+	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for open source';
+	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
 
 	ga('set', 'page', this.getUri());
 	ga('send', 'pageview');
