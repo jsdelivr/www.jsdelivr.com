@@ -3,6 +3,7 @@ require('./polyfills');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
 const cRawGit = require('../../views/pages/rawgit.html');
+const cGithub = require('../../views/pages/github.html');
 const cFoundationCdn = require('../../views/pages/foundationcdn.html');
 const cUnpkg = require('../../views/pages/unpkg.html');
 const cGoogle = require('../../views/pages/google.html');
@@ -16,6 +17,7 @@ const cPackage = require('../../views/pages/_package.html');
 const cSponsors = require('../../views/pages/sponsors.html');
 const cStatistics = require('../../views/pages/statistics.html');
 const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
+const cPP = require('../../views/pages/privacy-policy.html');
 const cPPCom = require('../../views/pages/privacy-policy-jsdelivr-com.html');
 const cPPNet = require('../../views/pages/privacy-policy-jsdelivr-net.html');
 const cDebug = require('../../views/pages/tools/debug.html');
@@ -55,8 +57,8 @@ Ractive.Router.prototype.dispatch = function (...args) {
 		return;
 	}
 
-	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable Open Source CDN for npm & GitHub';
-	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'A free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance among all CDNs. Serving more than 20 billion requests per month.');
+	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for open source';
+	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
 
 	ga('set', 'page', this.getUri());
 	ga('send', 'pageview');
@@ -67,6 +69,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', cRawGit);
+app.router.addRoute('/github', cGithub);
 app.router.addRoute('/foundationcdn', cFoundationCdn);
 app.router.addRoute('/unpkg', cUnpkg);
 app.router.addRoute('/google', cGoogle);
@@ -82,11 +85,10 @@ app.router.addRoute('/statistics', cStatistics);
 app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
+app.router.addRoute('/privacy-policy', cPP);
 app.router.addRoute('/privacy-policy-jsdelivr-com', cPPCom);
 app.router.addRoute('/privacy-policy-jsdelivr-net', cPPNet);
-app.router.addRoute('/(.*)', () => {
-	location.pathname = '/';
-});
+app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
 	new Ractive().set('@shared.app', app);

@@ -1,0 +1,120 @@
+<link rel="ractive" href="./spinner.html" name="c-spinner">
+
+<div class="c-rum">
+	<h2 class="section-title">jsDelivr uses Real User Metrics (RUM) to accurately load-balance traffic between multiple CDN providers</h2>
+	{{#if loading}}
+	<div class="rum-loading">
+		<c-spinner></c-spinner>
+		We're checking the best provider fit for you
+	</div>
+	{{elseif !results.0.up}}
+	<div class="rum-text">
+		It appears that all providers are down.<br>
+		Maybe a browser extension is blocking background http requests?
+	</div>
+	{{else}}
+	<div class="rum-loaded">
+		<div class="row">
+			{{#partial provider}}
+				<div class="provider" class-down="!result.up" class-fastest="fastest">
+					<div class="provider-logo">
+						<img src="/img/sponsors/{{providers[result.id].toLowerCase()}}.png" srcset="/img/sponsors/{{providers[result.id].toLowerCase()}}@2x.png 2x">
+					</div>
+					{{#if !result.up}}
+						<div class="provider-latency">Down</div>
+					{{elseif result.time}}
+						<div class="provider-latency">{{result.time.toFixed(2)}} ms</div>
+					{{/if}}
+				</div>
+			{{/partial}}
+
+			<div class="visible-xs">
+				<div class="col-xs-3"></div>
+				<div class="col-xs-6">
+					{{>provider results.0 as result, true as fastest}}
+				</div>
+			</div>
+
+			<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+				{{>provider results.1 as result, false as fastest}}
+			</div>
+
+			<div class="{{#if china}}col-sm-3{{else}}col-sm-4{{/if}} hidden-xs">
+				{{>provider results.0 as result, true as fastest}}
+			</div>
+
+			<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+				{{>provider results.2 as result, false as fastest}}
+			</div>
+
+			{{#if china}}
+				<div class="col-xs-3"></div>
+				<div class="{{#if china}}col-sm-3 col-xs-6{{else}}col-sm-4 col-xs-6{{/if}}">
+					{{>provider results.3 as result, false as fastest}}
+				</div>
+			{{/if}}
+		</div>
+
+		<h3 class="section-title">
+			The best CDN for you is {{providers[results.0.id]}}
+		</h3>
+	</div>
+	{{/if}}
+</div>
+
+<script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				loading: true,
+				results: [
+					{ time: 0 },
+					{ time: 0 },
+					{ time: 0 },
+				],
+				// eslint-disable-next-line no-useless-escape
+				rumScript: '<script async src="https://cdn.jsdelivr.net/npm/perfops-rom"><\/script>',
+			};
+		},
+		computed: {
+			providers () {
+				let providers = {
+					3: 'Cloudflare',
+					4: 'Fastly',
+					13: 'StackPath',
+				};
+
+				if (this.get('china')) {
+					providers[15] = 'Quantil';
+				}
+
+				return providers;
+			},
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				perfopsRumJs.getStoreMeta().then((meta) => {
+					this.set('china', meta.country === 'CN');
+
+					perfopsRumJs.getResults().then((results) => {
+						let providersIds = Object.keys(this.get('providers')).map(Number);
+
+						results = results.filter((result) => {
+							return providersIds.indexOf(result.id) !== -1;
+						}).sort((a, b) => {
+							return (a.up ? a.time : Infinity) - (b.up ? b.time : Infinity);
+						});
+
+						this.set('loading', false);
+						this.animate('results', results);
+					});
+				});
+			}
+		},
+	};
+</script>

@@ -49,7 +49,7 @@ async function makeComponent (href, options) {
 	let viewsHref = path.join(options.views, href);
 	let template = await fs.readFileAsync(viewsHref, 'utf8');
 
-	return new Promise(async (resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		try {
 			rcu.make(template, {
 				loadImport (name, innerHref, url, callback) {
@@ -58,7 +58,7 @@ async function makeComponent (href, options) {
 				require (module) {
 					return require(path.join(options.views, path.dirname(href), module));
 				},
-				parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false },
+				parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false, stripComments: false },
 			}, resolve, reject);
 		} catch (e) {
 			reject(e);

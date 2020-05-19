@@ -26,9 +26,7 @@ module.exports.fetchPackageVersions = (type, name) => {
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/stats/packages/${period}`).then((data) => {
-		return data.filter(pkg => pkg.type === 'npm');
-	});
+	return $.getJSON(`${API_HOST}/v1/stats/packages/npm/${period}`);
 };
 
 module.exports.fetchProjectCommits = (owner, repo) => {

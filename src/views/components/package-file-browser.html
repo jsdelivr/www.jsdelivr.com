@@ -25,7 +25,7 @@
 						/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
 					</a>
 
-					<input type="checkbox" class="switch-inline" id="df" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
+					<input type="checkbox" class="switch-inline" id="df" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
 					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 				</div>
@@ -67,7 +67,7 @@
 						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 					</a>
 
-					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
+					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
 					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
 					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" hash="{{hash}}" dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}"></c-copy-dropdown>
 					{{/if}}
@@ -116,7 +116,7 @@
 			},
 			issueTooBig () {
 				return `https://github.com/${this.get('github.user')}/${this.get('github.project')}/issues/new/`
-					+ `?title=${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`
+					+ `?title=${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`
 					+ `&body=I'm trying to load this package from [jsDelivr CDN](${this.get('@global.location.href')})`
 					+ ` but it fails because the package is over 50 MB. Are there any files that could be removed to reduce the package size?`;
 			},
@@ -124,7 +124,7 @@
 				return this.get('path').length ? this.get('path').join('/') + '/' : '';
 			},
 			defaultFile () {
-				const d = this.get('default');
+				let d = this.get('default');
 				return d && this.getFile(d);
 			},
 		},
@@ -172,7 +172,7 @@
 								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
-									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${(this.get('type') === 'npm' ? 'npm package' : 'GitHub release')} too big for jsDelivr`).then((data) => {
+									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 										errorHtml += `<br><br>Consider <a target="_blank" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 									}).always(() => {
 										errorHtml += `<br><br>You may still find the files you need in the <a target="_blank" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;

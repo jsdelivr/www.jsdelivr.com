@@ -1,0 +1,145 @@
+<link rel="ractive" href="../r-page.html">
+
+<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+	<div class="p-github">
+		<div class="bg"></div>
+
+		<div class="content">
+			<div class="title">
+				<h1>Migrating from GitHub to jsDelivr</h1>
+
+				<h2 class="subtitle">
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+					Most GitHub links can be easily converted to jsDelivr links.
+				</h2>
+			</div>
+
+			<div class="container">
+				<div class="box">
+					<div class="bar {{#if out}}active{{/if}}">
+						<div class="circle"></div>
+						<div class="line"><div class="line-inner"></div></div>
+						<div class="circle circle-bottom"></div>
+					</div>
+
+					<div class="icon-competitor">
+						<img src="/img/github.png" srcset="/img/github@2x.png 2x">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a GitHub link here" value="{{in}}">
+					</div>
+
+					<div class="icon-jsdelivr">
+						<img src="/img/logo-horizontal.svg">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+						{{#if out && !error}}
+							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+						{{/if}}
+					</div>
+
+					{{#if displayHtmlWarning}}
+						<div class="alert alert-warning" role="alert">
+							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+							We recommend using <a href="https://pages.github.com/" target="_blank">GitHub Pages</a> if this is a problem.
+						</div>
+					{{else}}
+						<div style="height: 1px;"></div>
+					{{/if}}
+
+					<div class="buttons">
+						<a href="/?docs=gh" class="start-using">See All Features</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	/* eslint-disable no-throw-literal */
+
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const defaultError = 'Sorry, this doesn\'t look like a valid GitHub link :(';
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				title: 'Migrate from GitHub to jsDelivr',
+				description: 'Migrate from GitHub to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+			};
+		},
+		oninit () {
+			let buildJsDelivrLink = (user, repo, version, path) => {
+				if (version === 'latest') {
+					return `https://cdn.jsdelivr.net/gh/${user}/${repo}/${path}`;
+				}
+
+				return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${version}/${path}`;
+			};
+
+			let isCommitPrefixOrTag = (user, repo, sha) => {
+				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/commits/${sha}`).then((response) => {
+					return response.sha.indexOf(sha) === 0 ? response.sha : sha;
+				}).catch(() => {
+					return false;
+				});
+			};
+
+			let gitHub2jsDelivr = gitHub => Promise.resolve().then(() => {
+				let pattern = /^https?:\/\/(?:github|raw\.githubusercontent)\.com\/([^/]+)\/([^/]+)(?:\/blob)?\/([^/]+)\/(.*)$/i;
+				let commitPattern = /^[0-9a-f]{40}$/;
+				let match = pattern.exec(gitHub);
+
+				if (match) {
+					let [ , user, repo, version, file ] = match;
+
+					// full commit hash
+					if (commitPattern.test(version)) {
+						return buildJsDelivrLink(user, repo, version, file);
+					}
+
+					// tag/commit prefix
+					return isCommitPrefixOrTag(user, repo, version).then((sha) => {
+						if (sha) {
+							return buildJsDelivrLink(user, repo, sha, file);
+						}
+
+						// branch
+						return buildJsDelivrLink(user, repo, version, file);
+					});
+				}
+
+				throw defaultError;
+			});
+
+			this.observe('in', debounce(throttle((gitHub) => {
+				this.set('displayHtmlWarning', /\.html?$/i.test(gitHub));
+
+				if (!gitHub) {
+					return this.set('out', '');
+				}
+
+				gitHub2jsDelivr(gitHub).then((jsDelivr) => {
+					this.set('error', false);
+
+					if (this.get('in') === gitHub) {
+						this.set('out', jsDelivr);
+					}
+				}).catch((error) => {
+					this.set('error', true);
+					this.set('out', typeof error === 'string' ? error : defaultError);
+				});
+			}, 1000)));
+		},
+	};
+</script>
