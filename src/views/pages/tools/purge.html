@@ -1,5 +1,4 @@
 <link rel="ractive" href="../../r-page.html">
-<link rel="ractive" href="../../components/coming-soon.html" name="c-coming-soon">
 <link rel="ractive" href="../../components/header.html" name="c-header">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 
@@ -7,9 +6,58 @@
 	<c-notification></c-notification>
 	<c-header></c-header>
 
-	<div class="p-purge text-page">
-		<c-coming-soon title="A tool for purging CDN cache is coming soon"></c-coming-soon>
+	<div class="p-purge">
+		<div class="container">
+			<section class="heading">
+				<h1 class="page-title">Purge jsDelivr CDN cache</h1>
+				<div class="subtitle">Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</div>
+				<div class="row">
+					<div class="col-md-10">
+						<textarea class-loading="purging" class="input" rows="2" placeholder="You can cache up to 10 URLs, separated by a comma &quot;,&quot;" value="{{urls}}"></textarea>
+					</div>
+					<div class="col-md-2">
+						<a on-click="@this.purge()" class-loading="purging" class="btn btn-featured">
+							{{#if purging}}
+								<div class="load-animation"></div>
+							{{else}}
+								PURGE NOW
+							{{/if}}
+						</a>
+						{{#if requestFailed}}
+							<label class="error">An error occurred while purging!</label>
+						{{/if}}
+					</div>
+				</div>
+				<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+				<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+			</section>
+			<section class="results">
+				{{#if results.length}}
+					<table>
+						<tr>
+							<th>CDN Name</th>
+							<th>Message</th>
+						</tr>
+						{{#each results}}
+							<tr>
+								<td>{{this.name}}</td>
+								<td>
+									{{#if this.result}}
+										<i class="fa fa-check success"></i>
+										<span>Success</span>
+									{{else}}
+										<i class="fa fa-times failed"></i>
+										<span>Failed</span>
+									{{/if}}
+								</td>
+							</tr>
+						{{/each}}
+					</table>
+				{{/if}}
+			</section>
+		</div>
 	</div>
+
 </r-page>
 
 <script>
@@ -17,7 +65,111 @@
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
+				purging: false,
+				requestFailed: false,
+				results: [],
+				purgeChecks: [
+					{
+						provider: 'fastly',
+						check: (result) => {
+							try {
+								result.forEach((res) => {
+									if (res.status !== 'ok') {
+										return false;
+									}
+								});
+							} catch (error) {
+								return false;
+							}
+
+							return true;
+						},
+					},
+					{
+						provider: 'maxcdn',
+						check: (result) => {
+							return result.code === 200;
+						},
+					},
+					{
+						provider: 'cloudflare',
+						check: (result) => {
+							if (typeof result !== 'boolean') {
+								return false;
+							}
+
+							return result;
+						},
+					},
+					{
+						provider: 'quantil',
+						check: (result) => {
+							try {
+								return result.includes('success');
+							} catch (error) {
+								return false;
+							}
+						},
+					},
+				],
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				window.recaptchaCallback = undefined;
+
+				$(document).ready(() => {
+					window.recaptchaCallback = function recaptchaCallback (response) {
+						console.log(response);
+					};
+				});
+			}
+		},
+		purge () {
+			this.set('purging', true);
+			this.set('requestFailed', false);
+
+			let paths = this.get('urls').replace(/\s+/g, '');
+
+			if (paths === '') {
+				this.set('purging', false);
+				return;
+			}
+
+			paths = paths.split(',');
+
+			if (paths.length > 10) {
+				this.set('purging', false);
+				return;
+			}
+
+			$.ajax({
+				type: 'POST',
+				crossOrigin: true,
+				headers: {
+					'content-type': 'application/json',
+				},
+				url: 'https://purge.jsdelivr.net/',
+				data: JSON.stringify({ path: paths }),
+			}).done((response) => {
+				let results = [];
+				let providers = Object.keys(response);
+				let purgeChecks = this.get('purgeChecks');
+
+				providers.forEach((provider) => {
+					let pc = purgeChecks.find((purgeCheck) => {
+						return purgeCheck.provider === provider;
+					});
+
+					results.push({ name: provider, result: pc.check(response[provider]) });
+				});
+
+				this.set('results', results);
+				this.set('purging', false);
+			}).fail(() => {
+				this.set('purging', false);
+				this.set('requestFailed', true);
+			});
 		},
 	};
 </script>
