@@ -67,6 +67,7 @@
 				title: 'Purge CDN cache - jsDelivr',
 				purging: false,
 				requestFailed: false,
+				recaptchaResponse: '',
 				results: [],
 				purgeChecks: [
 					{
@@ -120,7 +121,7 @@
 
 				$(document).ready(() => {
 					window.recaptchaCallback = function recaptchaCallback (response) {
-						console.log(response);
+						this.set('recaptchaResponse', response);
 					};
 				});
 			}
@@ -138,7 +139,17 @@
 
 			paths = paths.split(',');
 
+			// If there are more than 10 paths, use the captcha endpoint
+			let apiEndpoint = 'https://purge.jsdelivr.net';
+			let postBody = { path: paths };
+
 			if (paths.length > 10) {
+				apiEndpoint += '/captcha';
+				postBody['g-recaptcha-response'] = this.get('recaptchaResponse');
+			}
+
+			// User hasn't completed CAPTCHA challenge yet
+			if (!postBody['g-recaptcha-response']) {
 				this.set('purging', false);
 				return;
 			}
@@ -149,8 +160,8 @@
 				headers: {
 					'content-type': 'application/json',
 				},
-				url: 'https://purge.jsdelivr.net/',
-				data: JSON.stringify({ path: paths }),
+				url: apiEndpoint,
+				data: JSON.stringify(postBody),
 			}).done((response) => {
 				let results = [];
 				let providers = Object.keys(response);
