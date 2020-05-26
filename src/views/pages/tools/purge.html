@@ -68,6 +68,7 @@
 				purging: false,
 				requestFailed: false,
 				results: [],
+				captchaToken: '',
 				purgeChecks: [
 					{
 						provider: 'fastly',
@@ -116,16 +117,22 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				let recaptchaCallback = (token) => {
+					this.set('captchaToken', token);
+				};
+
 				window.recaptchaCallback = undefined;
 
 				$(document).ready(() => {
-					window.recaptchaCallback = function recaptchaCallback (response) {
-						console.log(response);
-					};
+					window.recaptchaCallback = recaptchaCallback;
 				});
 			}
 		},
 		purge () {
+			if (this.get('captchaToken') === '') {
+				return;
+			}
+
 			this.set('purging', true);
 			this.set('requestFailed', false);
 
@@ -149,8 +156,8 @@
 				headers: {
 					'content-type': 'application/json',
 				},
-				url: 'https://purge.jsdelivr.net/',
-				data: JSON.stringify({ path: paths }),
+				url: 'https://purge.jsdelivr.net/captcha',
+				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
 			}).done((response) => {
 				let results = [];
 				let providers = Object.keys(response);
