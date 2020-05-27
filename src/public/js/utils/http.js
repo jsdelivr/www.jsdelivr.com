@@ -1,5 +1,6 @@
 const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
+const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
@@ -35,4 +36,13 @@ module.exports.fetchProjectCommits = (owner, repo) => {
 
 module.exports.findProjectIssue = (owner, repo, title) => {
 	return $.getJSON(`${GITHUB_API_HOST}/search/issues`, { q: `${title} user:${owner} repo:${repo}` });
+};
+
+module.exports.findPackageVulns = (name, version) => {
+	// return $.getJSON(`${SNYK_API_HOST}/test/test`);
+	return $.ajax({
+		beforeSend: (request) => { request.setRequestHeader('Authorization', '8U@$Kh6Qs#b@9qxYB!QhtvLeD=e+?Hq$_b#5%x*t'); },
+		dataType: 'json',
+		url: `${SNYK_API_HOST}/test/npm/lib/${name}/${version}`,
+	});
 };

@@ -46,6 +46,7 @@
 			{{/if}}
 			{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
 			{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
+			{{#if ~/vulns}}<span class="package-label" title="{{vulns}}"><a href="{{~/vulnsUrl}}"><i class="fa fa-lock" aria-hidden="true"></i> {{~/vulns}}</a></span>{{/if}}
 			{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
 
 			<p class="package-description">
@@ -77,7 +78,6 @@
 
 <script>
 	const http = require('../../public/js/utils/http');
-
 	component.exports = {
 		computed: {
 			issueReleaseRequest () {
@@ -87,6 +87,15 @@
 			},
 		},
 		oninit () {
+			this.observe('version', (newValue) => {
+				if (newValue) {
+					http.findPackageVulns(this.get('name'), newValue).then((data) => {
+						this.set('vulns', `${data.vulns} vuln${data.vulns === 1 ? '' : 's'} `);
+						this.set('vulnsUrl', data.url);
+					});
+				}
+			});
+
 			this.observe('packageVersionsNotFound', (newValue) => {
 				if (newValue) {
 					http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
@@ -96,4 +105,5 @@
 			});
 		},
 	};
+
 </script>
