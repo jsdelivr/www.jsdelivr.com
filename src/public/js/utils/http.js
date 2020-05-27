@@ -38,8 +38,7 @@ module.exports.findProjectIssue = (owner, repo, title) => {
 	return $.getJSON(`${GITHUB_API_HOST}/search/issues`, { q: `${title} user:${owner} repo:${repo}` });
 };
 
-module.exports.findPackageVulns = (name, version) => {
-	// return $.getJSON(`${SNYK_API_HOST}/test/test`);
+module.exports.fetchPackageVulnerabilities = (name, version) => {
 	return $.ajax({
 		beforeSend: (request) => { request.setRequestHeader('Authorization', '8U@$Kh6Qs#b@9qxYB!QhtvLeD=e+?Hq$_b#5%x*t'); },
 		dataType: 'json',
