@@ -94,6 +94,9 @@
 						http.fetchPackageVulnerabilities(this.get('name'), newValue).then((data) => {
 							this.set('vulnerabilities', data.vulns);
 							this.set('vulnerabilitiesUrl', data.url);
+						}).catch((error) => {
+							this.set('vulnerabilities', 0);
+							console.error('Failed to fetch vulnerability info', error);
 						});
 					}
 				});
