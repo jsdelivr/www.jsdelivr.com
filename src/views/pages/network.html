@@ -21,6 +21,22 @@
 		{{/each}}
 	</style>
 
+	{{#if !@shared.isServer}}
+	<script>
+		/* eslint-disable */
+		function initMap () {
+			$(function () {
+				app.loaded = true;
+
+				if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+					app.router.route.view.initMap();
+				}
+			});
+		}
+	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
+	{{/if}}
+
 	<c-notification></c-notification>
 	<c-header></c-header>
 
