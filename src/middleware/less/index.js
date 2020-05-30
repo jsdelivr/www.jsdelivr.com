@@ -36,7 +36,7 @@ module.exports = (prefix, options) => {
 };
 
 async function compileLess (file, minify) {
-	return less.render(await fs.readFileAsync(file, 'utf8'), { filename: file, strictMath: true }).then((output) => {
+	return less.render(await fs.readFileAsync(file, 'utf8'), { filename: file, strictMath: true, relativeUrls: true }).then((output) => {
 		return minify ? minifyCss(output.css) : output.css;
 	});
 }
