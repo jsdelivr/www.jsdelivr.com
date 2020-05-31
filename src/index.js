@@ -157,6 +157,7 @@ app.use(async (ctx, next) => {
 app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
+	assetsHost: app.env === 'production' ? `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}` : '',
 	assetsVersion,
 }, app));
 
