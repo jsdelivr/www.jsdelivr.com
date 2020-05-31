@@ -157,6 +157,11 @@ app.use(async (ctx, next) => {
 app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
+	assetsHost: app.env === 'production'
+		? process.env.HEROKU_APP_NAME
+			? `https://${process.env.HEROKU_APP_NAME}.herokuapp.com`
+			: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`
+		: '',
 	assetsVersion,
 }, app));
 
