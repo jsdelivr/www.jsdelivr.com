@@ -91,7 +91,25 @@ app.router.addRoute('/privacy-policy-jsdelivr-net', cPPNet);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
-	new Ractive().set('@shared.app', app);
+	let ractive = new Ractive();
+	ractive.set('@shared.app', app);
+
+	let unescape = (string) => {
+		return string
+			.replace(/&gt;/g, '>')
+			.replace(/&lt;/g, '<')
+			.replace(/&amp;/g, '&');
+	};
+
+	try {
+		let shared = JSON.parse(unescape($('#ractive-shared').html().trim()));
+
+		if (shared) {
+			Object.keys(shared).forEach((key) => {
+				ractive.set(`@shared.${key}`, shared[key]);
+			});
+		}
+	} catch (e) {}
 
 	app.router
 		.init({ noScroll: true })

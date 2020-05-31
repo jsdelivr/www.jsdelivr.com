@@ -22,7 +22,9 @@ module.exports = (options) => {
 
 			let Component = await getComponent(template, options);
 			let component = new Component({ data });
+			component.set('@shared.escape', escape);
 			component.set('@shared.isServer', true);
+			component.set('@shared.assetsHost', options.assetsHost);
 			component.set('@shared.assetsVersion', options.assetsVersion);
 			component.set('@shared.options', ctx.options);
 			component.set('@shared.router', ctx.router);
@@ -64,4 +66,11 @@ async function makeComponent (href, options) {
 			reject(e);
 		}
 	});
+}
+
+function escape (string) {
+	return string
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
 }
