@@ -46,6 +46,7 @@
 			{{/if}}
 			{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
 			{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
+			{{#if ~/vulnerabilities}}<span class="package-label" title="view details at snyk.io"><a href="{{~/vulnerabilitiesUrl}}" target="_blank"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> {{~/vulnerabilities}} {{#if ~/vulnerabilities > 1}}vulnerabilities{{else}}vulnerability{{/if}}</a></span>{{/if}}
 			{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
 
 			<p class="package-description">
@@ -87,6 +88,20 @@
 			},
 		},
 		oninit () {
+			if (this.get('type') === 'npm' && !this.get('onlyHeader')) {
+				this.observe('version', (newValue) => {
+					if (newValue) {
+						http.fetchPackageVulnerabilities(this.get('name'), newValue).then((data) => {
+							this.set('vulnerabilities', data.vulns);
+							this.set('vulnerabilitiesUrl', data.url);
+						}).catch((error) => {
+							this.set('vulnerabilities', 0);
+							console.error('Failed to fetch vulnerability info', error);
+						});
+					}
+				});
+			}
+
 			this.observe('packageVersionsNotFound', (newValue) => {
 				if (newValue) {
 					http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
