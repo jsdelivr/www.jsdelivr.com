@@ -20,7 +20,7 @@
 			{{#if @this.checkIfFileExists(~/default)}}
 			<div class="box-sub-header">
 				<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
-					<a target="_blank" rel="nofollow" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}">
+					<a href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" rel="noopener nofollow" target="_blank">
 						<i class="fa fa-file-code-o" aria-hidden="true"></i>
 						/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
 					</a>
@@ -35,9 +35,9 @@
 				<div class="file-message text-center">
 					Sadly, this package doesn't have a default file set.
 					{{#if defaultFileIssue}}
-					You can find out more <a target="_blank" rel="nofollow" href="{{defaultFileIssue.html_url}}">in this issue</a>.
+					You can find out more <a href="{{defaultFileIssue.html_url}}" rel="noopener nofollow" target="_blank">in this issue</a>.
 					{{else}}
-					Consider <a target="_blank" rel="nofollow" href="{{issueDefaultFile}}">asking the author to set it</a>.
+					Consider <a href="{{issueDefaultFile}}" rel="noopener nofollow" target="_blank">asking the author to set it</a>.
 					{{/if}}
 				</div>
 			</div>
@@ -62,7 +62,7 @@
 						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 					</a>
 					{{else}}
-					<a target="_blank" rel="nofollow" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+					<a href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" rel="noopener nofollow" target="_blank">
 						<i class="fa fa-file" aria-hidden="true"></i>
 						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 					</a>
@@ -173,9 +173,9 @@
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
-										errorHtml += `<br><br>Consider <a target="_blank" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+										errorHtml += `<br><br>Consider <a href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}" rel="noopener" target="_blank">asking the author to remove unnecessary files</a> to make the package smaller.`;
 									}).always(() => {
-										errorHtml += `<br><br>You may still find the files you need in the <a target="_blank" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+										errorHtml += `<br><br>You may still find the files you need in the <a href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/" rel="noopener" target="_blank">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code><br><br>Read more about <a href="/features#gh" target="_blank">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 										this.set('filesLoadingMessage', errorHtml);
 									});
 								}
