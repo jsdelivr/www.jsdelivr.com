@@ -52,7 +52,15 @@ async function getCss (file, options) {
 function minifyCss (css) {
 	return new CleanCSS({
 		level: {
-			1: { all: true },
-		},
+			1: {
+				roundingPrecision: 6
+			},
+			2: {
+				all: false,
+				mergeMedia: true,
+				removeDuplicateMediaBlocks: true,
+				removeEmpty: true
+			}
+		}
 	}).minify(css).styles;
 }
