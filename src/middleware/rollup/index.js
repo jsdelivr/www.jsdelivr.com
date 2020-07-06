@@ -4,7 +4,7 @@ const rollupBabel = require('rollup-plugin-babel');
 const rollupRactive = require('rollup-plugin-ractive');
 const rollupCommonjs = require('rollup-plugin-commonjs');
 const rollupJson = require('rollup-plugin-json');
-const uglify = require('uglify-js');
+const terser = require('terser');
 const jsCache = new Map();
 
 module.exports = (prefix, options) => {
@@ -75,5 +75,5 @@ async function getJs (file, options) {
 }
 
 function minifyJs (code) {
-	return uglify.minify(code).code;
+	return terser.minify(code).code;
 }
