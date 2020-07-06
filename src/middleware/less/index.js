@@ -1,7 +1,10 @@
-const less = require('less');
+const fs = require('fs');
 const path = require('path');
-const fs = require('fs-extra');
+const { promisify } = require('util');
+const less = require('less');
 const CleanCSS = require('clean-css');
+
+const readFileAsync = promisify(fs.readFile);
 const cssCache = new Map();
 
 module.exports = (prefix, options) => {
@@ -36,7 +39,11 @@ module.exports = (prefix, options) => {
 };
 
 async function compileLess (file, minify) {
-	return less.render(await fs.readFileAsync(file, 'utf8'), { filename: file, strictMath: true, relativeUrls: true }).then((output) => {
+	return less.render(await readFileAsync(file, 'utf8'), {
+		filename: file,
+		strictMath: true,
+		relativeUrls: true,
+	}).then((output) => {
 		return minify ? minifyCss(output.css) : output.css;
 	});
 }

@@ -17,7 +17,8 @@ global.apmClient.addTransactionFilter(require('elastic-apm-utils').apm.transacti
 require('./lib/startup');
 
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('fs');
+const { promisify } = require('util');
 const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
@@ -53,6 +54,8 @@ let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/view
 
 let app = new Koa();
 let router = new KoaRouter();
+
+const readFileAsync = promisify(fs.readFile);
 
 /**
  * Server config.
@@ -213,7 +216,7 @@ koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
 ], async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
+	let packages = JSON.parse(await readFileAsync(pathToPackages, 'utf8'));
 	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);

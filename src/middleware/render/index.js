@@ -1,8 +1,10 @@
-const Ractive = require('ractive');
+const fs = require('fs');
 const path = require('path');
-const fs = require('fs-extra');
+const { promisify } = require('util');
+const Ractive = require('ractive');
 const rcu = require('rcu');
 
+const readFileAsync = promisify(fs.readFile);
 const componentCache = new Map();
 
 rcu.init(Ractive);
@@ -49,7 +51,7 @@ async function getComponent (href, options) {
 
 async function makeComponent (href, options) {
 	let viewsHref = path.join(options.views, href);
-	let template = await fs.readFileAsync(viewsHref, 'utf8');
+	let template = await readFileAsync(viewsHref, 'utf8');
 
 	return new Promise((resolve, reject) => {
 		try {
