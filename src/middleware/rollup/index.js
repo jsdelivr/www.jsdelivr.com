@@ -1,9 +1,9 @@
 const path = require('path');
 const rollup = require('rollup');
-const rollupBabel = require('rollup-plugin-babel');
+const { babel: rollupBabel } = require('@rollup/plugin-babel');
 const rollupRactive = require('rollup-plugin-ractive');
-const rollupCommonjs = require('rollup-plugin-commonjs');
-const rollupJson = require('rollup-plugin-json');
+const rollupCommonjs = require('@rollup/plugin-commonjs');
+const rollupJson = require('@rollup/plugin-json');
 const uglify = require('uglify-js');
 const jsCache = new Map();
 
@@ -50,7 +50,7 @@ async function compileJs (file, minify) {
 			rollupRactive({ format: 'cjs', parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false, stripComments: false } }),
 			rollupCommonjs({ extensions: [ '.html', '.js' ], ignore: [ ] }),
 			rollupJson(),
-			rollupBabel({ extensions: [ '.html', '.js' ] }),
+			rollupBabel({ extensions: [ '.html', '.js' ], babelHelpers: 'bundled' }),
 		],
 	}).then(async (bundle) => {
 		return (await bundle.generate({
