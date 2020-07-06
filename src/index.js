@@ -47,9 +47,9 @@ const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
 const legacyMapping = require('../data/legacy-mapping.json');
-let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
-let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
-let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
+let siteMapTemplate = Handlebars.compile(fs.readFileSync(path.join(__dirname, '/views/sitemap.xml'), 'utf8'));
+let siteMap0Template = Handlebars.compile(fs.readFileSync(path.join(__dirname, '/views/sitemap-0.xml'), 'utf8'));
+let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(path.join(__dirname, '/views/sitemap-index.xml'), 'utf8'));
 
 let app = new Koa();
 let router = new KoaRouter();
@@ -65,7 +65,7 @@ app.proxy = true;
 /**
  * Handle favicon requests before anything else.
  */
-app.use(koaFavicon(__dirname + '/public/favicon.ico'));
+app.use(koaFavicon(path.join(__dirname, '/public/favicon.ico')));
 
 /**
  * Log requests during development.
@@ -108,7 +108,7 @@ app.use(async (ctx, next) => {
  * On-demand less compilation.
  */
 app.use(less('/css', {
-	files: __dirname + '/public/less/',
+	files: path.join(__dirname, '/public/less/'),
 	cache: app.env !== 'development',
 	minify: app.env !== 'development',
 	assetsVersion,
@@ -118,7 +118,7 @@ app.use(less('/css', {
  * On-demand js compilation.
  */
 app.use(rollup('/js', {
-	files: __dirname + '/public/js/',
+	files: path.join(__dirname, '/public/js/'),
 	cache: app.env !== 'development',
 	minify: app.env !== 'development',
 	assetsVersion,
@@ -127,7 +127,7 @@ app.use(rollup('/js', {
 /**
  * Static files.
  */
-app.use(koaStatic(__dirname + '/public', {
+app.use(koaStatic(path.join(__dirname, '/public'), {
 	maxage: 365 * 24 * 60 * 60 * 1000,
 	index: false,
 }));
@@ -155,7 +155,7 @@ app.use(async (ctx, next) => {
  * Ractive integration.
  */
 app.use(render({
-	views: __dirname + '/views/',
+	views: path.join(__dirname, '/views/'),
 	cache: app.env !== 'development',
 	assetsHost: app.env === 'production'
 		? process.env.HEROKU_APP_NAME
@@ -214,7 +214,7 @@ koaElasticUtils.addRoutes(router, [
 ], async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
 	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
-	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
+	let pages = (await readDirRecursive(path.join(__dirname, '/views/pages'), [ '_*' ])).map(p => path.relative(path.join(__dirname, '/views/pages'), p).replace(/\\/g, '/').slice(0, -5));
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
 

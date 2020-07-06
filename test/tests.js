@@ -5,9 +5,10 @@ require('../src/lib/startup');
 require('../src/index');
 
 const fs = require('fs-extra');
+const path = require('path');
 const filenamify = require('filenamify');
 const utils = require('./utils');
-const screenshotsDir = __dirname + '/screenshots';
+const screenshotsDir = path.join(__dirname, '/screenshots');
 let failureCounter = 0;
 
 global.BASE_URL = 'http://localhost:4401';

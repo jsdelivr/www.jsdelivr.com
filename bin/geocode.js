@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+
 const fs = require('fs');
+const path = require('path');
 const Promise = require('bluebird');
 const minDelay = require('p-min-delay');
 const NodeGeocoder = require('node-geocoder');
-const list = fs.readFileSync(__dirname + '/../data/map.txt', 'utf8').split('\n').filter(v => v);
+const list = fs.readFileSync(path.join(__dirname, '/../data/map.txt'), 'utf8').split('\n').filter(v => v);
 
 const geocoder = NodeGeocoder({
 	provider: 'google',
@@ -27,5 +29,5 @@ Promise.map(list, (line) => {
 		});
 	});
 
-	return fs.writeFileSync(__dirname + '/../src/public/js/map/map.json', JSON.stringify(locations, null, '\t'));
+	return fs.writeFileSync(path.join(__dirname, '/../src/public/js/map/map.json'), JSON.stringify(locations, null, '\t'));
 }).catch(console.error);
