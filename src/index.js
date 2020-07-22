@@ -4,6 +4,7 @@ global.apmClient = require('elastic-apm-node').start({
 	serviceName: 'jsdelivr-website',
 	serviceVersion: require('../package.json').version,
 	logLevel: 'fatal',
+	centralConfig: false,
 	captureExceptions: false,
 	captureSpanStackTraces: false,
 	captureErrorLogStackTraces: 'always',
@@ -265,7 +266,7 @@ koaElasticUtils.addRoutes(router, [
  * All other pages.
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/*', '/*' ],
+	[ '/(.*)', '/(.*)' ],
 ], async (ctx) => {
 	let data = {
 		docs: ctx.query.docs,
