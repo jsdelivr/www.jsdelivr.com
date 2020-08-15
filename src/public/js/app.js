@@ -17,9 +17,10 @@ const cPackage = require('../../views/pages/_package.html');
 const cSponsors = require('../../views/pages/sponsors.html');
 const cStatistics = require('../../views/pages/statistics.html');
 const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
-const cPP = require('../../views/pages/privacy-policy.html');
-const cPPCom = require('../../views/pages/privacy-policy-jsdelivr-com.html');
-const cPPNet = require('../../views/pages/privacy-policy-jsdelivr-net.html');
+const cPP = require('../../views/pages/terms.html');
+const cPPCom = require('../../views/pages/terms/privacy-policy-jsdelivr-com.html');
+const cPPNet = require('../../views/pages/terms/privacy-policy-jsdelivr-net.html');
+const cAUNet = require('../../views/pages/terms/acceptable-use-policy-jsdelivr-net.html');
 const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
 
@@ -85,9 +86,10 @@ app.router.addRoute('/statistics', cStatistics);
 app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
-app.router.addRoute('/privacy-policy', cPP);
-app.router.addRoute('/privacy-policy-jsdelivr-com', cPPCom);
-app.router.addRoute('/privacy-policy-jsdelivr-net', cPPNet);
+app.router.addRoute('/terms', cPP);
+app.router.addRoute('/terms/privacy-policy-jsdelivr-com', cPPCom);
+app.router.addRoute('/terms/privacy-policy-jsdelivr-net', cPPNet);
+app.router.addRoute('/terms/acceptable-use-policy-jsdelivr-net', cAUNet);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {

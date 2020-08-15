@@ -208,6 +208,17 @@ koaElasticUtils.addRoutes(router, [
 });
 
 /**
+ * Additional redirects
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/privacy-policy-jsdelivr-com', '/privacy-policy-jsdelivr-com' ],
+	[ '/privacy-policy-jsdelivr-net', '/privacy-policy-jsdelivr-net' ],
+], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect(`/terms${ctx.path}`);
+});
+
+/**
  * Sitemap
  */
 koaElasticUtils.addRoutes(router, [

@@ -7,6 +7,7 @@
 			if (!Ractive.isServer && !this.get('@shared.ppComText')) {
 				this.set('@shared.ppComText', 'Please wait while the document loads.');
 				this.set('@shared.ppNetText', 'Please wait while the document loads.');
+				this.set('@shared.auNetText', 'Please wait while the document loads.');
 
 				$.get('https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Privacy%20Policy%20-%20jsdelivr.com.md').then((response) => {
 					this.set('@shared.ppComText', response);
@@ -18,6 +19,12 @@
 					this.set('@shared.ppNetText', response);
 				}).catch(() => {
 					this.set('@shared.ppNetText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Privacy%20Policy%20-%20jsdelivr.com.md`);
+				});
+
+				$.get('https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Acceptable%20Use%20Policy%20-%20jsdelivr.net.md').then((response) => {
+					this.set('@shared.auNetText', response);
+				}).catch(() => {
+					this.set('@shared.auNetText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Acceptable%20Use%20Policy%20-%20jsdelivr.net.md`);
 				});
 			}
 		},
