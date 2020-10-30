@@ -14,9 +14,9 @@
 
 		return providers.reduce((acc, provider) => {
 			return acc.then((results) => {
-				performance.clearResourceTimings()
+				performance.clearResourceTimings();
 				let origin = new URL(provider.url).origin;
-				let start = Date.now()
+				let start = Date.now();
 
 				return import(provider.url).then(() => {
 					let duration = Date.now() - start;
@@ -24,12 +24,12 @@
 					let durationRT = Math.max(...entries.map(entry => entry.responseEnd)) - entries[0].startTime;
 					let bandwidth = entries.reduce((acc, entry) => acc + entry.transferSize, 0);
 
-					return [ ...results, { name: provider.name, url: provider.url, duration, durationRT, bandwidth, requests: provider.countRequests ? provider.countRequests(entries) : entries.length } ];
+					return [ ...results, { name: provider.name, url: provider.url, duration, durationRT, bandwidth, requests: provider.countRequests ? provider.countRequests(entries) : entries.length }];
 				}).catch((e) => {
 					console.error(e);
-					return [ ...results, { name: provider.name, url: provider.url, error: true, duration: 0, bandwidth: 0, requests: 0 } ];
+					return [ ...results, { name: provider.name, url: provider.url, error: true, duration: 0, bandwidth: 0, requests: 0 }];
 				});
 			});
 		}, Promise.resolve([]));
-	}
+	};
 </script>
