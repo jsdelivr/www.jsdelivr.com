@@ -23,6 +23,7 @@ const cPPNet = require('../../views/pages/terms/privacy-policy-jsdelivr-net.html
 const cAUNet = require('../../views/pages/terms/acceptable-use-policy-jsdelivr-net.html');
 const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
+const cEsm = require('../../views/pages/esm.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -68,6 +69,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 };
 
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', cRawGit);
 app.router.addRoute('/github', cGithub);
