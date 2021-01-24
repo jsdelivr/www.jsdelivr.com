@@ -1,4 +1,5 @@
 module.exports = [
+	'bunnynet',
 	'Cloudflare',
 	'Fastly',
 	'QUANTIL',
