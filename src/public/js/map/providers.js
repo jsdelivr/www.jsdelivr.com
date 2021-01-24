@@ -1,7 +1,7 @@
 module.exports = [
-	'Bunnynet',
 	'Cloudflare',
 	'Fastly',
+	'Bunny',
 	'QUANTIL',
 	'Other',
 ];
