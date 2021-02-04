@@ -1,7 +1,6 @@
 module.exports = [
 	'Cloudflare',
 	'Fastly',
-	'StackPath',
+	'Bunny',
 	'QUANTIL',
-	'Other',
 ];
