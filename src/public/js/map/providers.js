@@ -3,5 +3,4 @@ module.exports = [
 	'Fastly',
 	'Bunny',
 	'QUANTIL',
-	'Other',
 ];
