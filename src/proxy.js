@@ -13,8 +13,10 @@ module.exports = (proxyTarget, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = new URL(proxyTarget);
 	let hostUrl = new URL(host);
+	let proxyTargetPattern = new RegExp(`${_.escapeRegExp(proxyTarget)}/?`, 'gi');
 	let rewriteAttributes = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
 	let rewriteElements = [ 'loc' ];
+	let rewriteRegExp = [ 'script[type="application/ld+json"]' ];
 
 	let rewrite = (link, baseUrl) => {
 		// A relative URL without a leading slash. No transformation needed.
@@ -34,6 +36,12 @@ module.exports = (proxyTarget, host) => {
 		}
 
 		return url.format(parsed);
+	};
+
+	let rewriteAllAbsolute = (content, baseUrl) => {
+		return content.replace(proxyTargetPattern, (link) => {
+			return rewrite(link, baseUrl);
+		});
 	};
 
 	proxy.on('proxyReq', (proxyReq, req) => {
@@ -125,6 +133,23 @@ module.exports = (proxyTarget, host) => {
 						.on('end', () => {
 							try {
 								stream.end(rewrite(value, req.baseUrl));
+							} catch (e) {
+								stream.end(value);
+							}
+						});
+				},
+			};
+		})).concat(rewriteRegExp.map((name) => {
+			return {
+				query: name,
+				func (el, req) {
+					let value = '';
+					let stream = el.createStream()
+						.on('error', () => stream.end())
+						.on('data', chunk => value += chunk.toString())
+						.on('end', () => {
+							try {
+								stream.end(rewriteAllAbsolute(value, req.baseUrl));
 							} catch (e) {
 								stream.end(value);
 							}
