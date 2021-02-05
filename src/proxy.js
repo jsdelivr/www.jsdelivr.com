@@ -13,7 +13,7 @@ module.exports = (proxyTarget, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = new URL(proxyTarget);
 	let hostUrl = new URL(host);
-	let rewriteAttributes = [ 'action', 'href', 'link', 'src', 'srcset', 'style' ];
+	let rewriteAttributes = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
 	let rewriteElements = [ 'loc' ];
 
 	let rewrite = (link, baseUrl) => {
