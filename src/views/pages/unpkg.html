@@ -156,18 +156,16 @@
 			};
 		},
 		oninit () {
-			let buildJsDelivrLink = (name, version, file) => {
-				return `https://cdn.jsdelivr.net/npm/${name}@${version}/${file}`;
+			let buildJsDelivrLink = (esm, [ , name, version, file ]) => {
+				return `${esm ? 'https://esm.run/' : 'https://cdn.jsdelivr.net/npm/'}${name}${version || ''}${file || ''}`;
 			};
 
 			let unpkg2jsDelivr = unpkg => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/unpkg\.com\/([^/@]+)@([^/@]+)\/(.*)$/i;
+				let pattern = /^https?:\/\/unpkg\.com\/([^/@?]+)(@[^/?]+)?([^?]*\/[^?]*)*(\?module)?$/i;
 				let match = pattern.exec(unpkg);
 
 				if (match) {
-					let [ , name, version, file ] = match;
-
-					return buildJsDelivrLink(name, version, file);
+					return buildJsDelivrLink(!!match[4], match);
 				}
 
 				throw defaultError;
