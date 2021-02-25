@@ -68,51 +68,7 @@
 				purging: false,
 				requestFailed: false,
 				results: [],
-				captchaToken: '',
-				purgeChecks: [
-					{
-						provider: 'fastly',
-						check: (result) => {
-							try {
-								result.forEach((res) => {
-									if (res.status !== 'ok') {
-										return false;
-									}
-								});
-							} catch (error) {
-								return false;
-							}
-
-							return true;
-						},
-					},
-					{
-						provider: 'bunny',
-						check: (result) => {
-							return result.every(code => code === 200);
-						},
-					},
-					{
-						provider: 'cloudflare',
-						check: (result) => {
-							if (typeof result !== 'boolean') {
-								return false;
-							}
-
-							return result;
-						},
-					},
-					{
-						provider: 'quantil',
-						check: (result) => {
-							try {
-								return result.includes('success');
-							} catch (error) {
-								return false;
-							}
-						},
-					},
-				],
+				captchaToken: ''
 			};
 		},
 		oninit () {
@@ -146,8 +102,7 @@
 			paths = paths.split(',');
 
 			if (paths.length > 10) {
-				this.set('purging', false);
-				return;
+				this.set('purging', false);				return;
 			}
 
 			$.ajax({
@@ -160,16 +115,14 @@
 				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
 			}).done((response) => {
 				let results = [];
-				let providers = Object.keys(response);
-				let purgeChecks = this.get('purgeChecks');
+				let providers = Object.keys(response.cdn);
 
-				providers.forEach((provider) => {
-					let pc = purgeChecks.find((purgeCheck) => {
-						return purgeCheck.provider === provider;
+				for (let provider of providers) {
+					results.push({
+						name: provider,
+						result: response.cdn[provider]
 					});
-
-					results.push({ name: provider, result: pc.check(response[provider]) });
-				});
+				}
 
 				this.set('results', results);
 				this.set('purging', false);
