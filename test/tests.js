@@ -14,7 +14,7 @@ global.BASE_URL = 'http://localhost:4401';
 global.browser = utils.initBrowser({ width: 1600, height: 900 });
 
 describe('Acceptance tests', function () {
-	this.timeout(20000);
+	this.timeout(30000);
 
 	before(async function () {
 		this.timeout(40000);
