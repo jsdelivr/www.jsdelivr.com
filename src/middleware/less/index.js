@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const CleanCSS = require('clean-css');
 const autoprefixer = require('autoprefixer');
-const postcss = require('postcss')
+const postcss = require('postcss');
 const cssCache = new Map();
 
 module.exports = (prefix, options) => {
@@ -45,8 +45,8 @@ async function compileLess (file, minify) {
 
 async function getCss (file, options) {
 	if (!cssCache.has(file) || !options.cache) {
-		const css = await compileLess(path.join(options.files, path.basename(file, '.css') + '.less'), options.minify);
-		const result = postcss([ autoprefixer() ]).process(css);
+		let css = await compileLess(path.join(options.files, path.basename(file, '.css') + '.less'), options.minify);
+		let result = postcss([ autoprefixer() ]).process(css);
 		cssCache.set(file, result.css);
 	}
 
