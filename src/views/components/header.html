@@ -18,7 +18,10 @@ Get all versions here: https://github.com/jsdelivr/jsdelivr-media
 -->
 					<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
 				</a>
-				<c-search-compact></c-search-compact>
+
+				{{#if actualPath.includes('/package/npm')}}
+					<c-search-compact></c-search-compact>
+				{{/if}}
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
@@ -55,3 +58,11 @@ Get all versions here: https://github.com/jsdelivr/jsdelivr-media
 		</div>
 	</nav>
 </header>
+
+<script>
+	component.exports = {
+		onrender () {
+			this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
+		},
+	};
+</script>
