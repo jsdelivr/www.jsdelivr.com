@@ -169,7 +169,7 @@
 							let defaultError = 'Failed to load the file listing.';
 
 							if (error.responseJSON && error.responseJSON.message) {
-								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+								let errorHtml = defaultError + '<br>' + $('<div></div>').text(error.responseJSON.message).html();
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
