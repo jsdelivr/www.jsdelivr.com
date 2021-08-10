@@ -1,35 +1,75 @@
 <div class="c-package-header">
 	{{#with package}}
 	<div class="row">
-		<div class="col-sm-8 package-name-wrapper">
-			{{#if onlyHeader}}
-			<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
-			{{else}}
-			<h1 class="package-name">{{name}}</h1>
-			{{/if}}
+		<div class="col-sm-8">
+			<div class="package-name-wrapper">
+				{{#if onlyHeader}}
+				<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
+				{{else}}
+				<h1 class="package-name">{{name}}</h1>
+				{{/if}}
+			</div>
+
+			<div class="package-info">
+				{{#if ~/type === 'gh'}}
+					<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20">{{owner.name}}</a>
+				{{else}}
+					<a href="/?query=author%3A%20{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">{{owner.name}}</a>
+				{{/if}}
+
+				{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
+
+				{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
+
+				{{#if ~/vulnerabilities !== undefined}}
+					<span class="package-label" title="view details at snyk.io">
+						<a href="{{~/vulnerabilitiesUrl}}" target="_blank">
+							<i class="fa {{#if ~/vulnerabilities}}fa-exclamation-circle{{else}}fa-check-circle{{/if}}" aria-hidden="true"></i>
+							{{~/vulnerabilities}} {{#if ~/vulnerabilities === 1}}vulnerability{{else}}vulnerabilities{{/if}}
+						</a>
+					</span>
+				{{/if}}
+
+				{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
+
+				<p class="package-description">
+					{{{description}}}
+				</p>
+
+				{{#if ~/packageVersionsNotFound}}
+					<div class="text-center package-no-release">
+						This package doesn't have any release on GitHub.<br>
+						Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.<br>
+
+						{{#if ~/latestCommitSha}}
+							Alternatively, you can use a <a target="_blank" href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific git commit hash</a>.
+						{{/if}}
+					</div>
+				{{/if}}
+			</div>
 		</div>
 
 		<div class="col-sm-4">
 			<div class="package-buttons">
 				{{#if !~/type || ~/type === 'npm'}}
 				<a target="_blank" rel="noopener" href="https://openbase.com/js/{{name}}" class="button" title="{{name}} docs & info">
-					<img width="20" height="20" src="/img/icons/openbase.svg" alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg" alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
 				</a>
 				{{#if homepage}}
 				<a target="_blank" rel="noopener" href="{{homepage}}" class="button" title="Homepage">
-					<i class="fa fa-globe" aria-hidden="true"></i>
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg" alt="{{name}} JS library homepage" title="{{name}} homepage">
 				</a>
 				{{/if}}
 				{{#if githubRepo}}
 				<a target="_blank" rel="nofollow noopener" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
-					<i class="fa fa-github" aria-hidden="true"></i>
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg" alt="{{name}} JS library on GitHub" title="{{name}} on GitHub">
 				</a>
 				{{/if}}
 				<a target="_blank" rel="nofollow noopener" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm">
-					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.png" srcset="{{@shared.assetsHost}}/img/icons/npm@2x.png 2x">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm" title="{{name}} on npm">
 				</a>
 				<a rel="nofollow noopener" href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button" title="Download">
-					<i class="fa fa-download" aria-hidden="true"></i>
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg" alt="Download {{name}} JS library" title="Download {{name}}">
 				</a>
 				{{else}}
 				<a target="_blank" rel="nofollow noopener" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
@@ -42,42 +82,10 @@
 
 	<div class="row">
 		<div class="col-xs-12">
-			{{#if ~/type === 'gh'}}
-			<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20">{{owner.name}}</a>
-			{{else}}
-			<a href="/?query=author%3A%20{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">{{owner.name}}</a>
-			{{/if}}
-			{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
-			{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
-			{{#if ~/vulnerabilities !== undefined}}
-			<span class="package-label" title="view details at snyk.io">
-				<a href="{{~/vulnerabilitiesUrl}}" target="_blank">
-					<i class="fa {{#if ~/vulnerabilities}}fa-exclamation-circle{{else}}fa-check-circle{{/if}}" aria-hidden="true"></i>
-					{{~/vulnerabilities}} {{#if ~/vulnerabilities === 1}}vulnerability{{else}}vulnerabilities{{/if}}
-				</a>
-			</span>
-			{{/if}}
-			{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
-
-			<p class="package-description">
-				{{{description}}}
-			</p>
-
-			{{#if ~/packageVersionsNotFound}}
-			<div class="text-center package-no-release">
-				This package doesn't have any release on GitHub.<br>
-				Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.<br>
-
-				{{#if ~/latestCommitSha}}
-				Alternatively, you can use a <a target="_blank" href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific git commit hash</a>.
-				{{/if}}
-			</div>
-			{{/if}}
-
 			{{#if keywords}}
 			<div class="package-keywords">
 				{{#each keywords.slice(0, 15)}}
-				<span class="package-label">{{this}}</span>
+				<span class="package-label">{{this + "1"}}</span>
 				{{/each}}
 			</div>
 			{{/if}}
