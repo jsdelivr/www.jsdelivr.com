@@ -159,7 +159,7 @@ app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
 	assetsHost: app.env === 'production'
-		? process.env.IS_PULL_REQUEST && process.env.RENDER_EXTERNAL_URL
+		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
 			? process.env.RENDER_EXTERNAL_URL
 			: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`
 		: '',
