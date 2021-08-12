@@ -12,29 +12,22 @@
 
 			<div class="package-info">
 				{{#if ~/type === 'gh'}}
-					<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20">{{owner.name}}</a>
+					<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner">
+						<img width="20" height="20" src="{{owner.avatar}}?s=20">
+						{{owner.name}}
+					</a>
 				{{else}}
-					<a href="/?query=author%3A%20{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">{{owner.name}}</a>
+					<a href="/?query=author%3A%20{{owner.name}}" class="package-owner">
+						<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
+						{{owner.name}}
+					</a>
 				{{/if}}
 
-				{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
+				<span class="package-label package-label-primary" title="Popular">popular</span>
+				<span class="package-label package-label-secondary" title="ESM">esm</span>
+				<span class="package-label package-label-danger" title="Deprecated">deprecated</span>
 
-				{{#if license}}<span class="package-label" title="{{license}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{license}}</span>{{/if}}
-
-				{{#if ~/vulnerabilities !== undefined}}
-					<span class="package-label" title="view details at snyk.io">
-						<a href="{{~/vulnerabilitiesUrl}}" target="_blank">
-							<i class="fa {{#if ~/vulnerabilities}}fa-exclamation-circle{{else}}fa-check-circle{{/if}}" aria-hidden="true"></i>
-							{{~/vulnerabilities}} {{#if ~/vulnerabilities === 1}}vulnerability{{else}}vulnerabilities{{/if}}
-						</a>
-					</span>
-				{{/if}}
-
-				{{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> DEPRECATED</span>{{/if}}
-
-				<p class="package-description">
-					{{{description}}}
-				</p>
+				<!-- {{#if deprecated}}<span class="package-label"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>DEPRECATED</span>{{/if}} -->
 
 				{{#if ~/packageVersionsNotFound}}
 					<div class="text-center package-no-release">
@@ -82,13 +75,53 @@
 
 	<div class="row">
 		<div class="col-xs-12">
-			{{#if keywords}}
+			<p class="package-description">
+				{{{description}}}
+			</p>
+
+			<div class="horizontal-divider-16"></div>
+
+			{{#if version}}
+				<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+			{{/if}}
+
+			{{#if license}}
+				<span class="package-label package-label-neutral" title="{{license}}">License <span>{{license}}</span></span>
+			{{/if}}
+
+			{{#if ~/vulnerabilities !== undefined}}
+				<span class="package-label package-label-neutral" title="view details at snyk.io">
+					Vulnerabilities <span>{{~/vulnerabilities}}</span>
+				</span>
+			{{/if}}
+
+			<!-- {{#if keywords}}
 			<div class="package-keywords">
 				{{#each keywords.slice(0, 15)}}
 				<span class="package-label">{{this + "1"}}</span>
 				{{/each}}
 			</div>
-			{{/if}}
+			{{/if}} -->
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="package-install">
+				<div class="package-install-settings">
+					<div>INSTALL</div>
+					<div>Type</div>
+					<div>Version</div>
+				</div>
+
+				<div class="horizontal-divider-19"></div>
+
+				<div class="package-install-script"></div>
+
+				<div class="horizontal-divider-19"></div>
+
+				<div class="package-install-ctrls"></div>
+			</div>
 		</div>
 	</div>
 	{{/with}}
