@@ -80,9 +80,18 @@
 					<div class="stats-title">
 						<span class="text-secondary">Statistics</span>
 
-						<select name="select-period" id="select-period">
-							<option value="last-month" default>last month</option>
-						</select>
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/statsPeriods[statsPeriod]}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/statsPeriods}}
+									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
 					</div>
 
 					<div class="horizontal-divider mt-24 mb-24"></div>
