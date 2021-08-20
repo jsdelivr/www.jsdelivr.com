@@ -110,20 +110,36 @@
 			<div class="package-install">
 				<div class="package-install-settings">
 					<div>INSTALL</div>
-					<div class="select-wrapper">
+					<div class="dropdown-wrapper">
 						<label for="type-select">Type:&nbsp;&nbsp;</label>
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/installType}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
 
-						<select name="install-type" id="type-select">
-							<option value="esm" default>ESM</option>
-						</select>
+							<ul class="dropdown-menu">
+								{{#each ~/installTypes}}
+									<li><a on-click="@this.set('installType', this)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
 					</div>
 
-					<div class="select-wrapper">
+					<div class="dropdown-wrapper">
 						<label for="version-select">Version:&nbsp;&nbsp;</label>
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/installVersion}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
 
-						<select name="install-version" id="version-select">
-							<option value="static" default>Static</option>
-						</select>
+							<ul class="dropdown-menu">
+								{{#each ~/installVersions}}
+									<li><a on-click="@this.set('installVersion', this)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
 					</div>
 				</div>
 
@@ -185,5 +201,18 @@
 				}
 			});
 		},
+		data () {
+			return {
+				installTypes: [
+					"Default",
+					"ESM",
+				],
+				installVersions: [
+					"Static"
+				],
+				installType: "Default",
+				installVersion: "Static",
+			};
+		}
 	};
 </script>
