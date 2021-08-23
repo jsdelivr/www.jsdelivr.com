@@ -12,13 +12,13 @@
 				<c-package-header package="{{package}}" type="{{type}}" name="{{name}}" version="{{version}}" packageVersionsNotFound="{{packageVersionsNotFound}}"></c-package-header>
 
 				<div class="package-nav">
-					<a href="/package/npm/{{name}}" class="package-nav-route package-nav-route-active">
+					<a on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
 					</a>
-					<a href="/package/npm/{{name}}" class="package-nav-route">
+					<a on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
 					</a>
-					<a href="/package/npm/{{name}}" class="package-nav-route">
+					<a on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
 					</a>
 					<a target="_blank" rel="nofollow noopener" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
@@ -26,53 +26,59 @@
 					</a>
 				</div>
 
-				<div class="package-descr">
-					<div class="header-primary mb-8">{{name}}</div>
-					<div class="description mb-32">
-						jQuery is a fast, small, and feature-rich JavaScript library.
-						<br />
-						<br />
-						For information on how to get started and how to use {{name}}, please see <a href="/" class="package-link">{{name}}'s documentation</a>.
-						For source files and issues, please visit the <a href="/" class="package-link">{{name}} repo</a>.
-						<br />
-						<br />
-						If upgrading, please see the <a href="/" class="package-link">blog post for {{version}}</a>. This includes notable differences from the previous version and a more readable changelog.
-					</div>
+				{{#if navRoute === 'readme'}}
+					<div class="package-descr">
+						<div class="header-primary mb-8">{{name}}</div>
+						<div class="description mb-32">
+							jQuery is a fast, small, and feature-rich JavaScript library.
+							<br />
+							<br />
+							For information on how to get started and how to use {{name}}, please see <a href="/" class="package-link">{{name}}'s documentation</a>.
+							For source files and issues, please visit the <a href="/" class="package-link">{{name}} repo</a>.
+							<br />
+							<br />
+							If upgrading, please see the <a href="/" class="package-link">blog post for {{version}}</a>. This includes notable differences from the previous version and a more readable changelog.
+						</div>
 
-					<div class="header-secondary mb-8">Including {{name}}</div>
-					<div class="text-primary mb-32">Below are some of the most common ways to include {{name}}.</div>
+						<div class="header-secondary mb-8">Including {{name}}</div>
+						<div class="text-primary mb-32">Below are some of the most common ways to include {{name}}.</div>
 
-					<div class="header-tertiary mb-32">Keywords</div>
+						<div class="header-tertiary mb-32">Keywords</div>
 
-					<div class="script-card mb-32">
-						<div class="text-secondary">Script tag</div>
-						<div class="script-block mt-16">
-							&#60;script src="https://code.jquery.com/jquery-3.6.0.min.js"&#62;&#60;/script&#62;
+						<div class="script-card mb-32">
+							<div class="text-secondary">Script tag</div>
+							<div class="script-block mt-16">
+								&#60;script src="https://code.jquery.com/jquery-3.6.0.min.js"&#62;&#60;/script&#62;
+							</div>
+						</div>
+
+						<div class="script-card mb-32">
+							<div class="text-secondary mb-8">Babel</div>
+							<div class="text-primary">
+								<a target="_blank" href="https://babeljs.io/" class="package-link" rel="noopener">Babel</a> is a next generation JavaScript compiler. One of the features is the ability to use ES6/ES2015 modules now,
+								even though browsers do not yet support this feature natively.
+							</div>
+							<div class="script-block mt-16">
+								<span class="text-js-keywords">import</span> $ <span class="text-js-keywords">from</span> <span class="text-js-string">"{{name}}"</span>;
+							</div>
+						</div>
+
+						<div class="script-card mb-32">
+							<div class="text-secondary mb-8">Browserify/Webpack</div>
+							<div class="text-primary">
+								There are several ways to use Browserify and Webpack. For more information on using these tools, please refer to
+								the corresponding project's documentation. In the script, including jQuery will usually look like this...
+							</div>
+							<div class="script-block mt-16">
+								<span class="text-js-keywords">var</span> $ = <span class="text-js-func">require</span>( <span class="text-js-string">"{{name}}"</span> );
+							</div>
 						</div>
 					</div>
-
-					<div class="script-card mb-32">
-						<div class="text-secondary mb-8">Babel</div>
-						<div class="text-primary">
-							<a target="_blank" href="https://babeljs.io/" class="package-link" rel="noopener">Babel</a> is a next generation JavaScript compiler. One of the features is the ability to use ES6/ES2015 modules now,
-							even though browsers do not yet support this feature natively.
-						</div>
-						<div class="script-block mt-16">
-							<span class="text-js-keywords">import</span> $ <span class="text-js-keywords">from</span> <span class="text-js-string">"{{name}}"</span>;
-						</div>
-					</div>
-
-					<div class="script-card mb-32">
-						<div class="text-secondary mb-8">Browserify/Webpack</div>
-						<div class="text-primary">
-							There are several ways to use Browserify and Webpack. For more information on using these tools, please refer to
-							the corresponding project's documentation. In the script, including jQuery will usually look like this...
-						</div>
-						<div class="script-block mt-16">
-							<span class="text-js-keywords">var</span> $ = <span class="text-js-func">require</span>( <span class="text-js-string">"{{name}}"</span> );
-						</div>
-					</div>
-				</div>
+				{{elseif navRoute === 'config'}}
+					<div>config tab</div>
+				{{else}}
+					<div>stats tab</div>
+				{{/if}}
 			</div>
 
 			<div class="side-content">
@@ -320,6 +326,7 @@
 				versions: [],
 				link: location.href,
 				_resizeId: 0,
+				navRoute: 'readme',
 			};
 		},
 		decorators: {
