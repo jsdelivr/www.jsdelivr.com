@@ -146,12 +146,19 @@
 				<div class="horizontal-divider-19"></div>
 
 				<div class="package-install-script">
-					<div class="package-install-script-itself">
-						<span class="script-tag">&#60;script type="module"&#62;</span>
-						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from 'https://cdn.jsdelivr.net/npm/{{name}}/+esm'</span>
-						<span class="script-tag">&#60;/script&#62;</span>
-					</div>
-					
+					{{#if installType === "Default"}}
+						<div class="package-install-script-default">
+							<span class="script-tag">&#60;script src="</span>
+							<span class="script-text">https://cdn.jsdelivr.net/npm/{{name}}@{{version}}/dist/{{name}}.min.js</span>
+							<span class="script-tag">"&#62;&#60;/script&#62;</span>
+						</div>
+					{{else}}
+						<div class="package-install-script-esm">
+							<span class="script-tag">&#60;script type="module"&#62;</span>
+							<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from 'https://cdn.jsdelivr.net/npm/{{name}}/+esm'</span>
+							<span class="script-tag">&#60;/script&#62;</span>
+						</div>
+					{{/if}}
 
 					<div class="btn-group">
 						<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -169,11 +176,20 @@
 
 				<div class="horizontal-divider-19"></div>
 
-				<div class="package-install-ctrls">
-					<a target="_blank" rel="nofollow noopener" href="/" class="package-install-ctrl">Open in new tab</a>
-					<a target="_blank" rel="nofollow noopener" href="https://jsfiddle.net/" class="package-install-ctrl">Open in jsfiddle</a>
-					<a target="_blank" rel="nofollow noopener" href="/" class="package-install-ctrl">Learn more</a>
-				</div>
+				{{#if installType === "Default"}}
+					<div class="package-install-default-warning">
+						URL is guessed and might not be correct.
+						<a href="https://www.npmjs.com/package/{{name}}" target="_blank" rel="noopener nofollow">Browse the NPM package</a>
+						to find the correct one or use our
+						<a href="/TODO" target="_blank" rel="noopener nofollow">configurator to combine files and generate SRI</a>
+					</div>
+				{{else}}
+					<div class="package-install-esm-ctrls">
+						<a href="/TODO" class="package-install-esm-ctrl" target="_blank" rel="nofollow noopener">Open in new tab</a>
+						<a href="https://jsfiddle.net/TODO" class="package-install-esm-ctrl" target="_blank" rel="nofollow noopener">Open in jsfiddle</a>
+						<a href="/TODO" class="package-install-esm-ctrl" target="_blank" rel="nofollow noopener">Learn more</a>
+					</div>
+				{{/if}}
 			</div>
 		</div>
 	</div>
@@ -218,18 +234,18 @@
 		data () {
 			return {
 				installTypes: [
-					"Default",
-					"ESM",
+					'Default',
+					'ESM',
 				],
 				installVersions: [
-					"Static"
+					'Static',
 				],
-				installType: "Default",
-				installVersion: "Static",
+				installType: 'Default',
+				installVersion: 'Static',
 			};
 		},
 		decorators: {
-			clipboard
-		}
+			clipboard,
+		},
 	};
 </script>
