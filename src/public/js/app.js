@@ -62,8 +62,8 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for open source';
 	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
 
-	ga('set', 'page', this.getUri());
-	ga('send', 'pageview');
+	gtag('set', 'page', this.getUri());
+	gtag('send', 'pageview');
 
 	return this;
 };
