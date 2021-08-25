@@ -1,5 +1,5 @@
 module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', nodeSelector) => {
-	let clipboard = new Clipboard(node);
+	let clipboard = new ClipboardJS(node);
 	let $node = nodeSelector ? $(node).parents(nodeSelector).first() : $(node);
 	let tooltipOptions = {
 		title,

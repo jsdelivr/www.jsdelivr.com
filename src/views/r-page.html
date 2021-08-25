@@ -29,14 +29,21 @@
 			<meta name="twitter:creator" content="@jsdelivr">
 			<title>{{title || 'jsDelivr - A free, fast, and reliable CDN for open source'}}</title>
 			{{yield seo}}
+
+			<!-- Maybe will be useful in Firefox at some point. -->
+			<link rel="dns-prefetch" href="https://cdn.jsdelivr.net/">
+			<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+			<link rel="dns-prefetch" href="https://data.jsdelivr.com/">
+
 			<link rel="preconnect" href="https://cdn.jsdelivr.net/" crossorigin="anonymous">
 			<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="anonymous">
-			<link rel="preconnect" href="https://fonts.googleapis.com">
+			<link rel="preconnect" href="https://data.jsdelivr.com/" crossorigin="anonymous">
+			<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
 			<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
 			<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
 
 			<link rel="stylesheet" href="{{@shared.assetsHost}}/css/app.css?v={{@shared.assetsVersion}}">
-			<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700">
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700&display=swap" media="print" onload="this.media='all'">
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'">
 
 			<link rel="sitemap" href="/sitemap/index.xml" type="application/xml">
@@ -47,7 +54,7 @@
 				"@context":"http://schema.org",
 				"@type":"Organization",
 				"url":"https://www.jsdelivr.com/",
-				"sameAs":["https://www.linkedin.com/company/jsdelivr/","https://plus.google.com/b/104475276053139550029/104475276053139550029","https://twitter.com/jsdelivr", "https://en.wikipedia.org/wiki/JSDelivr"],
+				"sameAs":["https://www.linkedin.com/company/jsdelivr/","https://twitter.com/jsdelivr", "https://en.wikipedia.org/wiki/JSDelivr"],
 				"@id":"#organization",
 				"name":"jsDelivr",
 				"alternateName": "JSDelivr",
@@ -85,22 +92,23 @@
 			<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/clipboard@1.7.1/dist/clipboard.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/chart.js@2.6.0/dist/Chart.min.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/marked@0.3.19/marked.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/marked@2.1.3/marked.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/input-autogrow@1.1.1/dist/input-autogrow.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.0/dist/autocomplete.jquery.min.js"></script>
 
 			{{yield js}}
+			<script src="{{@shared.assetsHost}}/js/app.js?v={{@shared.assetsVersion}}"></script>
+
+			<script async src="https://www.googletagmanager.com/gtag/js?id=UA-31822709-1"></script>
 			<script>
 				/* eslint-disable */
-				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-				})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-				ga('create', 'UA-31822709-1', 'auto');
+				window.dataLayer = window.dataLayer || [];
+				function gtag(){dataLayer.push(arguments);}
+				gtag('js', new Date());
+				gtag('config', 'UA-31822709-1');
 			</script>
-			<script src="{{@shared.assetsHost}}/js/app.js?v={{@shared.assetsVersion}}"></script>
 		</body>
 	</html>
 {{/if}}
