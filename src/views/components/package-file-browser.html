@@ -2,100 +2,127 @@
 <link rel="ractive" href="./copy-dropdown.html" name="c-copy-dropdown">
 
 <div class="c-package-file-browser">
-	<div class="box box-files">
-		<div class="box-header">
-			<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
-			{{#each path.slice(0, -1)}}
-			{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
-			{{/each}}
-			{{#if path}}
-			/ <span class="path-part active">{{path[path.length - 1]}}</span>
-			{{/if}}
+	<div class="box-files">
+		<div class="path-n-version">
+			<div>
+				<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
+				{{#each path.slice(0, -1)}}
+					{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
+				{{/each}}
+				{{#if path}}
+					/ <span class="path-part active">{{path[path.length - 1]}}</span>
+				{{/if}}
+			</div>
 
 			<c-version-dropdown versions="{{versions}}" version="{{~/version}}"></c-version-dropdown>
 		</div>
 
 		<div class="box-content-wrapper">
 			{{#if type === 'npm' && files}}
-			{{#if @this.checkIfFileExists(~/default)}}
-			<div class="box-sub-header">
-				<div class="file-link file-default" as-tooltip="'Default file: ' + ~/default">
-					<a target="_blank" rel="nofollow" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}">
-						<i class="fa fa-file-code-o" aria-hidden="true"></i>
-						/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
-					</a>
+				{{#if @this.checkIfFileExists(~/default)}}
+					<div class="file-default">
+						<a class="file-default-link"
+							target="_blank"
+							rel="nofollow noopener"
+							href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
+							as-tooltip="'Default file: ' + ~/default">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
+							/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
+						</a>
 
-					<input type="checkbox" class="switch-inline" id="df" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}" twoway="false">
-					<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
-				</div>
-			</div>
-			{{elseif github}}
-			<div class="box-sub-header">
-				<div class="file-message text-center">
-					Sadly, this package doesn't have a default file set.
-					{{#if defaultFileIssue}}
-					You can find out more <a target="_blank" rel="nofollow" href="{{defaultFileIssue.html_url}}">in this issue</a>.
-					{{else}}
-					Consider <a target="_blank" rel="nofollow" href="{{issueDefaultFile}}">asking the author to set it</a>.
-					{{/if}}
-				</div>
-			</div>
-			{{/if}}
+						<div class="file-default-ctrls">
+							<input type="checkbox"
+								class="switch-inline"
+								id="df"
+								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}"
+								twoway="false">
+
+							<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
+							<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
+						</div>
+					</div>
+				{{elseif github}}
+					<div class="box-sub-header">
+						<div class="file-message text-center">
+							Sadly, this package doesn't have a default file set.
+							{{#if defaultFileIssue}}
+								You can find out more <a target="_blank" rel="nofollow noopener" href="{{defaultFileIssue.html_url}}">in this issue</a>.
+							{{else}}
+								Consider <a target="_blank" rel="nofollow noopener" href="{{issueDefaultFile}}">asking the author to set it</a>.
+							{{/if}}
+						</div>
+					</div>
+				{{/if}}
 			{{/if}}
 
-			<div class="box-content">
+			<div class="files-list">
+				<div class="all-files-header">All files</div>
 				{{#if files && path.length}}
-				<div class="file-link">
-					<a on-click="@this.pop('path')">
-						<i class="fa fa-level-up" aria-hidden="true"></i>
-						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}..</span>
-					</a>
-				</div>
+					<div class="files-list-back">
+						<a on-click="@this.pop('path')">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/back.svg" loading="lazy"/>
+							/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}..</span>
+						</a>
+					</div>
 				{{/if}}
 
 				{{#partial fileLink}}
-				<div class="file-link">
-					{{#if type === 'directory'}}
-					<a on-click="@this.push('path', name)">
-						<i class="fa fa-folder" aria-hidden="true"></i>
-						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-					</a>
-					{{else}}
-					<a target="_blank" rel="nofollow" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
-						<i class="fa fa-file" aria-hidden="true"></i>
-						/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
-					</a>
+					<div class="file-item">
+						{{#if type === 'directory'}}
+							<a on-click="@this.push('path', name)">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/folder.svg" loading="lazy"/>
+								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+							</a>
+						{{else}}
+							<a target="_blank" rel="nofollow noopener" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
+								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+							</a>
 
-					<input type="checkbox" class="switch-inline" id="{{name}}" checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}" twoway="false">
-					<label for="{{name}}" on-click="@this.toggleCollectionFile('/' + pathS + name)" as-tooltip="'Add to collection'"></label>
-					<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}" hash="{{hash}}" dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}"></c-copy-dropdown>
-					{{/if}}
-				</div>
+							<div>
+								<c-copy-dropdown
+									url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
+									hash="{{hash}}"
+									dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
+								</c-copy-dropdown>
+
+								<input id="{{name}}"
+									type="checkbox"
+									class="switch-inline"
+									checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+									twoway="false">
+
+								<label for="{{name}}"
+									on-click="@this.toggleCollectionFile('/' + pathS + name)"
+									as-tooltip="'Add to collection'">
+								</label>
+							</div>
+						{{/if}}
+					</div>
 				{{/partial}}
 
 				{{#each _.listFiles(~/files, path).slice(0, ~/filesLimit)}}
-				{{>fileLink}}
+					{{>fileLink}}
 				{{else}}
-				<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+					<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
 				{{/each}}
 
 				{{#if showMoreFiles}}
-				<div slide-in-out>
-					{{#each _.listFiles(~/files, path).slice(filesLimit)}}
-					{{>fileLink}}
-					{{/each}}
-				</div>
+					<div slide-in-out>
+						{{#each _.listFiles(~/files, path).slice(filesLimit)}}
+							{{>fileLink}}
+						{{/each}}
+					</div>
 				{{/if}}
 
 				{{#if _.listFiles(~/files, path).length > filesLimit}}
-				<div class="show-more-toggle">
-					{{#if showMoreFiles}}
-					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
-					{{else}}
-					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
-					{{/if}}
-				</div>
+					<div class="show-more-toggle">
+						{{#if showMoreFiles}}
+						<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
+						{{else}}
+						<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
+						{{/if}}
+					</div>
 				{{/if}}
 			</div>
 		</div>
@@ -175,7 +202,7 @@
 									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 										errorHtml += `<br><br>Consider <a target="_blank" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 									}).always(() => {
-										errorHtml += `<br><br>You may still find the files you need in the <a target="_blank" rel="noopener" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+										errorHtml += `<br><br>You may still find the files you need in the <a target="_blank" rel="nofollow noopener" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 										this.set('filesLoadingMessage', errorHtml);
 									});
 								}
