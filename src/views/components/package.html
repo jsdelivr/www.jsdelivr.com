@@ -161,7 +161,7 @@
 							<div class="box-title text-secondary">Get a badge for your package</div>
 							<img width="140" height="20" src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
 							<img as-clipboard="'Copy markdown to clipboard', 'bottom'" data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
-							<img title="Alternate badge style" on-click="@this.toggle('badgeAltStyle')" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/alternate-btn.svg">
+							<img as-tooltip="'Alternate badge style', 'bottom'" on-click="@this.toggle('badgeAltStyle')" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/alternate-btn.svg">
 						</div>
 					{{/if}}
 				</div>
@@ -289,6 +289,7 @@
 	const http = require('../../public/js/utils/http');
 	const debounce = require('../../public/js/utils/debounce');
 	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
 
 	component.exports = {
 		computed: {
@@ -339,6 +340,7 @@
 		},
 		decorators: {
 			clipboard,
+			tooltip,
 		},
 		oninit () {
 			if (!Ractive.isServer) {
