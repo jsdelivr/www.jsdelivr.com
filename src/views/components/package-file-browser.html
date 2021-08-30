@@ -19,41 +19,28 @@
 
 		<div class="box-content-wrapper">
 			{{#if type === 'npm' && files}}
-				{{#if @this.checkIfFileExists(~/default)}}
-					<div class="file-default">
-						<a class="file-default-link"
-							target="_blank"
-							rel="nofollow noopener"
-							href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
-							as-tooltip="'Default file: ' + ~/default">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
-							/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
-						</a>
+				<div class="file-default">
+					<a class="file-default-link"
+						target="_blank"
+						rel="nofollow noopener"
+						href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
+						as-tooltip="'Default file: ' + ~/default">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
+						/{{~/type}}/{{~/name}}@{{~/version}}<span class="file-path">/{{~/default.substr(1)}}</span>
+					</a>
 
-						<div class="file-default-ctrls">
-							<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
+					<div class="file-default-ctrls">
+						<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 
-							<input type="checkbox"
-								class="switch-inline"
-								id="df"
-								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}"
-								twoway="false">
+						<input type="checkbox"
+							class="switch-inline"
+							id="df"
+							checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}"
+							twoway="false">
 
-							<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
-						</div>
+						<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
 					</div>
-				{{elseif github}}
-					<div class="box-sub-header">
-						<div class="file-message text-center">
-							Sadly, this package doesn't have a default file set.
-							{{#if defaultFileIssue}}
-								You can find out more <a target="_blank" rel="nofollow noopener" href="{{defaultFileIssue.html_url}}">in this issue</a>.
-							{{else}}
-								Consider <a target="_blank" rel="nofollow noopener" href="{{issueDefaultFile}}">asking the author to set it</a>.
-							{{/if}}
-						</div>
-					</div>
-				{{/if}}
+				</div>
 			{{/if}}
 
 			<div class="files-list">
@@ -168,7 +155,6 @@
 				filesLimit: 10,
 				filesLoadingMessage: '',
 				path: [],
-				defaultFileIssue: null,
 			};
 		},
 		decorators: {
@@ -191,13 +177,6 @@
 						http.fetchPackageFiles(this.get('type'), this.get('name'), version).then((data) => {
 							this.set('default', data.default);
 							this.set('files', data.files);
-
-							if (!this.checkIfFileExists(this.get('default')) && this.get('github')) {
-								// Check for an existing default file not set issue.
-								http.findProjectIssue(this.get('github.user'), this.get('github.project'), 'No default jsDelivr CDN file set').then((data) => {
-									this.set('defaultFileIssue', data.items[0]);
-								});
-							}
 						}).catch((error) => {
 							let defaultError = 'Failed to load the file listing.';
 
@@ -289,9 +268,6 @@
 					});
 				}
 			});
-		},
-		checkIfFileExists (file) {
-			return this.getFile(file).path !== undefined;
 		},
 	};
 </script>
