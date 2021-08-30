@@ -5,12 +5,14 @@
 	<div class="box-files">
 		<div class="path-n-version">
 			<div>
-				<a on-click="@this.set('path', [])" class="path-root">{{name}}</a>
+				<a on-click="@this.set('path', [])" class="path-text">{{name}}</a>
 				{{#each path.slice(0, -1)}}
-					{{' / '}}<a on-click="@this.splice ('path', @index + 1)" class="path-part">{{this}}</a>
+					<span class="path-divider">{{' / '}}</span>
+					<a on-click="@this.splice ('path', @index + 1)" class="path-text">{{this}}</a>
 				{{/each}}
 				{{#if path}}
-					/ <span class="path-part active">{{path[path.length - 1]}}</span>
+					<span class="path-divider">{{' / '}}</span>
+					<span class="path-active-part">{{path[path.length - 1]}}</span>
 				{{/if}}
 			</div>
 
