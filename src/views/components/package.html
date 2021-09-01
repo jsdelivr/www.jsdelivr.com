@@ -183,7 +183,29 @@
 						<c-collection-box collection="{{collection}}"></c-collection-box>
 					</div>
 				{{elseif navRoute === 'stats'}}
-					<div class="package-stats full-width-content">stats tab</div>
+					<div class="package-statistics full-width-content">
+						<div class="header">
+							<div class="header-title">Statistics</div>
+							<div class="header-ctrls">
+								<div class="requests-ctrl">
+									<span>Show numers of</span>
+
+									<input id="chart-switch"
+										type="checkbox"
+										class="chart-type-switch"
+										checked="{{~/showBandwidth}}"
+										twoway="false">
+
+									<label for="chart-switch" on-click="@this.set('showBandwidth', true)">
+										<span>Request</span>
+										<span>GB</span>
+									</label>
+								</div>
+
+								<div class="range-ctrl">Data range:</div>
+							</div>
+						</div>
+					</div>
 				{{/if}}
 			</div>
 		{{/if}}
@@ -337,6 +359,7 @@
 				link: location.href,
 				_resizeId: 0,
 				navRoute: 'readme',
+				showBandwidth: false,
 			};
 		},
 		decorators: {
