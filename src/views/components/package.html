@@ -1,7 +1,6 @@
 <link rel="ractive" href="./collection-box.html" name="c-collection-box">
 <link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
 <link rel="ractive" href="./package-header.html" name="c-package-header">
-<link rel="ractive" href="./stats-table.html" name="c-stats-table">
 <link rel="ractive" href="./top-stats-table.html" name="c-top-stats-table">
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
 
@@ -257,31 +256,15 @@
 
 						<div class="chart-tops">
 							{{#if ~/versionStats}}
-								<!-- <c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-									{{#partial column1}}
-										<a on-click="@this.set('version', version)">{{version}}</a>
-									{{/partial}}
-								</c-stats-table> -->
-
 								<c-top-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 									{{#partial column1}}
 										<a on-click="@this.set('version', version)">{{version}}</a>
 									{{/partial}}
 								</c-top-stats-table>
 
-								<!-- <c-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
-									{{#partial header}}
-										Top 5 files in v<c-version-dropdown version="{{~/version}}" versions="{{versions}}"></c-version-dropdown>
-									{{/partial}}
-
-									{{#partial column1}}
-										<a title="{{file}}" target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-									{{/partial}}
-								</c-stats-table> -->
-
 								<c-top-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
 									{{#partial header}}
-										Top 5 files in v<c-version-dropdown version="{{~/version}}" versions="{{versions}}"></c-version-dropdown>
+										Top 5 files in v{{~/version}}
 									{{/partial}}
 
 									{{#partial column1}}
@@ -337,30 +320,6 @@
 						</h3>
 					</div>
 				</div>
-
-				{{#if ~/versionStats}}
-					<div class="row">
-						<div class="col-md-6">
-							<c-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-								{{#partial column1}}
-									<a on-click="@this.set('version', version)">{{version}}</a>
-								{{/partial}}
-							</c-stats-table>
-						</div>
-
-						<div class="col-md-6">
-							<c-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
-								{{#partial header}}
-									Top 5 files in v<c-version-dropdown version="{{~/version}}" versions="{{versions}}"></c-version-dropdown>
-								{{/partial}}
-
-								{{#partial column1}}
-									<a title="{{file}}" target="_blank" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-								{{/partial}}
-							</c-stats-table>
-						</div>
-					</div>
-				{{/if}}
 			</section>
 		</div>
 
