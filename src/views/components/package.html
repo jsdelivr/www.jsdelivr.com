@@ -276,7 +276,7 @@
 								</div>
 
 								<div class="bottom-chart">
-									{{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
+									<!-- {{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
 										<div class="chart-x">
 											{{#each ~/bottomChartLabels}}
 												{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/bottomChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
@@ -293,12 +293,12 @@
 									<div class="chart-y">
 										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
 											{{#each range}}
-												<div style="height: {{250 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
+												<div style="height: {{290 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
 											{{/each}}
 										{{/with}}
-									</div>
+									</div> -->
 
-									<canvas width="100%" height="250"></canvas>
+									<canvas id="stats-tab-chart" width="1224" height="290"></canvas>
 								</div>
 							{{else}}
 								<div class="container">
@@ -505,37 +505,63 @@
 								this.set('bottomChartLabels', labels);
 								this.set('bottomChartData', data);
 
-								bottomChart = new Chart(this.find('.bottom-chart canvas'), {
-									type: 'line',
+								let chartEl = this.find('#stats-tab-chart');
+								let chartBarContext = chartEl.getContext('2d');
+								let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+								barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+								barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+								bottomChart = new Chart(chartEl, {
+									type: 'bar',
 									data: {
 										labels,
 										datasets: [{
 											data,
-											backgroundColor: '#ffeee9',
-											borderColor: '#ff5627',
-											borderWidth: 1,
+											backgroundColor: barBackground,
+											borderWidth: 0,
 											pointRadius: 0,
+											barThickness: 10,
 										}],
 									},
 									options: {
-										maintainAspectRatio: false,
-										fill: true,
-										legend: {
-											display: false,
+										plugins: {
+											legend: {
+												display: false,
+											},
 										},
 										scales: {
-											yAxes: [{
-												display: false,
-												ticks: {
-													min: 0,
-													max: this.get('totalStatsMax'),
-													beginAtZero: true,
+											x: {
+												grid: {
+													display: false,
+													drawBorder: false,
+													borderColor: '#dadde2',
 												},
-											}],
-											xAxes: [{
-												display: false,
-											}],
+											},
+											y: {
+												grid: {
+													display: false,
+													borderColor: '#dadde2',
+												},
+											},
 										},
+										// maintainAspectRatio: false,
+										// fill: true,
+										// legend: {
+										// 	display: false,
+										// },
+										// scales: {
+										// 	yAxes: [{
+										// 		display: true,
+										// 		ticks: {
+										// 			min: 0,
+										// 			max: this.get('totalStatsMax'),
+										// 			beginAtZero: true,
+										// 		},
+										// 	}],
+										// 	xAxes: [{
+										// 		display: true,
+										// 	}],
+										// },
 									},
 								});
 							});
