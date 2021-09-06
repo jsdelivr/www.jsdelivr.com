@@ -250,7 +250,63 @@
 							</div>
 						</div>
 
-						<div class="chart-stats" style="height: 354px;"></div>
+						<div class="chart-stats">
+							{{#if totalStats.total}}
+								<div class="container">
+									<section class="package-usage">
+										<div class="row">
+											<div class="col-md-12">
+												<h2 class="small-headline">
+													Package usage
+
+													<div class="btn-group pull-right hidden-xs">
+														<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+															Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<ul class="dropdown-menu">
+															{{#each ~/statsPeriods}}
+																<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+															{{/each}}
+														</ul>
+													</div>
+												</h2>
+											</div>
+										</div>
+									</section>
+								</div>
+
+								<div class="bottom-chart">
+									{{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
+										<div class="chart-x">
+											{{#each ~/bottomChartLabels}}
+												{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/bottomChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
+													<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key)}}% - 100px);">
+														<div class="x-number">{{_.formatNumber(~/bottomChartData[@key])}}</div>
+														<div class="x-date">{{this}}</div>
+														<div class="x-line"></div>
+													</div>
+												{{/if}}
+											{{/each}}
+										</div>
+									{{/if}}
+
+									<div class="chart-y">
+										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
+											{{#each range}}
+												<div style="height: {{250 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
+											{{/each}}
+										{{/with}}
+									</div>
+
+									<canvas width="100%" height="250"></canvas>
+								</div>
+							{{else}}
+								<div class="container">
+									<section class="package-usage-empty"></section>
+								</div>
+							{{/if}}
+						</div>
 
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
@@ -282,77 +338,6 @@
 			</div>
 		{{/if}}
 	</div>
-
-	<!-- {{#if totalStats.total}}
-		<div class="container">
-			<section class="package-usage">
-				<div class="row">
-					<div class="col-md-12">
-						<h2 class="small-headline">
-							Package usage
-
-							<div class="btn-group pull-right hidden-xs">
-								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									Show requests per: {{~/statsPeriods[statsPeriod]}} <i class="fa fa-angle-down" aria-hidden="true"></i>
-								</button>
-
-								<ul class="dropdown-menu">
-									{{#each ~/statsPeriods}}
-										<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
-									{{/each}}
-								</ul>
-							</div>
-						</h2>
-
-						<h3 class="small-headline total-headline">
-							{{#if versionStatsData.rank !== null && versionStatsData.rank < 100}}
-								{{~/name}} is the {{_.nth(versionStatsData.rank + 1)}} most popular package on jsDelivr,
-								with {{_.formatNumber(versionStatsData.total)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
-								<a class="share-twitter" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(versionStatsData.rank + 1)} most popular package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
-									<i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter
-								</a>
-							{{else}}
-								{{~/name}} had {{_.formatNumber(versionStatsData.total)}} CDN hits in the last {{~/statsPeriods[~/statsPeriod]}}
-								<a class="share-twitter" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} had ${_.formatNumber(versionStatsData.total)} hits at @jsDelivr CDN in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
-									<i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter
-								</a>
-							{{/if}}
-						</h3>
-					</div>
-				</div>
-			</section>
-		</div>
-
-		<div class="bottom-chart">
-			{{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
-				<div class="chart-x">
-					{{#each ~/bottomChartLabels}}
-					{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/bottomChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
-					<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key)}}% - 100px);">
-						<div class="x-number">{{_.formatNumber(~/bottomChartData[@key])}}</div>
-						<div class="x-date">{{this}}</div>
-						<div class="x-line"></div>
-					</div>
-					{{/if}}
-					{{/each}}
-				</div>
-			{{/if}}
-
-			<div class="chart-y">
-				{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
-				{{#each range}}
-				<div style="height: {{250 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
-				{{/each}}
-				{{/with}}
-			</div>
-
-			<canvas width="100%" height="250"></canvas>
-		</div>
-	{{else}}
-		<div class="container">
-			<section class="package-usage-empty"></section>
-		</div>
-	{{/if}} -->
 </div>
 
 <script>
@@ -465,7 +450,7 @@
 					}
 				});
 
-				this.observe('statsPeriod version', () => {
+				this.observe('statsPeriod version navRoute', () => {
 					if (this.get('statsPeriod') && this.get('version')) {
 						let type = this.get('type');
 						let name = this.get('name');
