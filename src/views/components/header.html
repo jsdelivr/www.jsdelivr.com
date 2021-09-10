@@ -1,7 +1,7 @@
 <link rel="ractive" href="./search-compact.html" name="c-search-compact">
 
 <header class="c-header">
-	<nav class="navbar navbar-default {{!actualPath || actualPath === '/about' ? 'about-navbar-default' : ''}}">
+	<nav class="navbar navbar-default {{!actualPath || alternateBgRoutes.includes(actualPath) ? 'about-navbar-default' : ''}}">
 		<div class="container">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
@@ -16,7 +16,7 @@
 						Looking for the logo?
 						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
 					-->
-					{{#if actualPath && actualPath === '/about'}}
+					{{#if actualPath && alternateBgRoutes.includes(actualPath)}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/icons/jsdelivr-logo-horizontal.svg" title="jsDelivr">
 					{{elseif actualPath}}
 						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
@@ -29,7 +29,7 @@
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
-				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : actualPath === '/about' ? 'about-navbar-right' : 'default-navbar-right'}}">
+				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : alternateBgRoutes.includes(actualPath) ? 'about-navbar-right' : 'default-navbar-right'}}">
 					<li><a href="/features">Features</a></li>
 					<li><a href="/network">Network</a></li>
 					<li><a href="/statistics">Stats</a></li>
@@ -69,6 +69,14 @@
 
 <script>
 	component.exports = {
+		data () {
+			return {
+				alternateBgRoutes: [
+					'/about',
+					'/github',
+				]
+			}
+		},
 		onrender () {
 			this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
 		},
