@@ -71,7 +71,9 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
-app.router.addRoute('/rawgit', cRawGit);
+// redirect /rawgit to main
+// app.router.addRoute('/rawgit', cRawGit);
+app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
 app.router.addRoute('/github', cGithub);
 app.router.addRoute('/foundationcdn', cFoundationCdn);
 app.router.addRoute('/unpkg', cUnpkg);
