@@ -2,7 +2,8 @@ require('./polyfills');
 
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
-const cRawGit = require('../../views/pages/rawgit.html');
+// redirect /rawgit to main
+// const cRawGit = require('../../views/pages/rawgit.html');
 const cGithub = require('../../views/pages/github.html');
 const cFoundationCdn = require('../../views/pages/foundationcdn.html');
 const cUnpkg = require('../../views/pages/unpkg.html');
