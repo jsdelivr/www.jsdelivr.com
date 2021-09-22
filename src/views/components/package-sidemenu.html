@@ -1,0 +1,115 @@
+<div class="c-package-stats">
+	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
+		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
+		{{#if navRoute !== "stats"}}
+			<div class="stats-title">
+				<span class="text-secondary">Statistics</span>
+				<div style="display: none">{{console.log("++++ versionStatsData", versionStatsData)}}</div>
+
+				<div class="btn-group">
+					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span>{{~/statsPeriods[statsPeriod]}}</span>
+						<i class="fa fa-angle-down" aria-hidden="true"></i>
+					</button>
+
+					<ul class="dropdown-menu">
+						{{#each ~/statsPeriods}}
+							<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="stats-title mb-24">
+				<span>Requests Served</span>
+				<span class="text-secondary">{{_.formatNumber(versionStatsData.total)}}</span>
+			</div>
+
+			<div class="stats-chart"></div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="stats-title mb-24">
+				<span>Bandwidth</span>
+				<span class="text-secondary">52.5 GB</span>
+			</div>
+
+			<div class="stats-chart"></div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+		{{/if}}
+
+		<div class="stats-title mb-24">
+			<span>Top version - {{versionStats[0].version}}</span>
+			<span class="text-secondary">{{_.formatNumber(versionStats[0].hits)}}</span>
+		</div>
+
+		{{#if navRoute !== "config"}}
+			<a target="_blank" href="/" rel="noopener" class="btn-full-stats">Full {{name}} Download Stats</a>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="twitter-share">
+				<div>{{_.nth(versionStatsData.rank + 1)}} most popular on jsDelivr</div>
+				<a class="btn-twitter-share mt-8"
+					target="_blank"
+					rel="noopener"
+					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(versionStatsData.rank + 1)} most popular package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
+					Share
+				</a>
+			</div>
+
+			{{#if package.keywords}}
+				<div class="stats-keywords mt-32">
+					<div class="stats-keywords-header text-secondary">Keywords</div>
+					<div class="stats-keywords-badges">
+						{{#each package.keywords}}
+							<div class="keyword-badge">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			{{/if}}
+		{{/if}}
+	</div>
+
+	{{#if navRoute !== "config"}}
+		<div class="box-badge mt-32">
+			<div class="box-title text-secondary">Get a badge for your package</div>
+			<img width="140"
+				height="20"
+				src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
+			<img as-clipboard="'Copy markdown to clipboard', 'bottom'"
+				data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
+			<img as-tooltip="'Alternate badge style', 'bottom'"
+				on-click="@this.toggle('badgeAltStyle')"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/alternate-btn.svg">
+		</div>
+	{{/if}}
+</div>
+
+
+<script>
+	const _ = require('../../public/js/_');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+			};
+		},
+		decorators: {
+			clipboard,
+			tooltip,
+		},
+	};
+</script>
