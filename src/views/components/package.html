@@ -262,13 +262,13 @@
 
 										<div class="btn-group">
 											<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-												<span>{{~/statsPeriods[statsPeriod]}}</span>
+												<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
 												<i class="fa fa-angle-down" aria-hidden="true"></i>
 											</button>
 
 											<ul class="dropdown-menu">
-												{{#each ~/statsPeriods}}
-													<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+												{{#each ~/usageChartGroupByValues}}
+													<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
 												{{/each}}
 											</ul>
 										</div>
@@ -276,28 +276,6 @@
 								</div>
 
 								<div class="bottom-chart">
-									<!-- {{#if (~/bottomChartLabels.length - 2) / chartXInterval > 3 && ~/bottomChartData}}
-										<div class="chart-x">
-											{{#each ~/bottomChartLabels}}
-												{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/bottomChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
-													<div style="left: calc({{(100 / (~/bottomChartLabels.length - 1)) * (@key)}}% - 100px);">
-														<div class="x-number">{{_.formatNumber(~/bottomChartData[@key])}}</div>
-														<div class="x-date">{{this}}</div>
-														<div class="x-line"></div>
-													</div>
-												{{/if}}
-											{{/each}}
-										</div>
-									{{/if}}
-
-									<div class="chart-y">
-										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
-											{{#each range}}
-												<div style="height: {{290 / range.length + 7}}px;">{{_.formatNumber(this)}}</div>
-											{{/each}}
-										{{/with}}
-									</div> -->
-
 									<canvas id="stats-tab-chart" width="1224" height="290"></canvas>
 								</div>
 							{{else}}
@@ -396,6 +374,12 @@
 				_resizeId: 0,
 				navRoute: 'readme',
 				showBandwidth: false,
+				usageChartGroupByValues: {
+					'day': 'day',
+					'week': 'week',
+					'month': 'month',
+				},
+				usageChartGroupBy: 'day',
 			};
 		},
 		decorators: {
@@ -548,24 +532,6 @@
 												},
 											},
 										},
-										// maintainAspectRatio: false,
-										// fill: true,
-										// legend: {
-										// 	display: false,
-										// },
-										// scales: {
-										// 	yAxes: [{
-										// 		display: true,
-										// 		ticks: {
-										// 			min: 0,
-										// 			max: this.get('totalStatsMax'),
-										// 			beginAtZero: true,
-										// 		},
-										// 	}],
-										// 	xAxes: [{
-										// 		display: true,
-										// 	}],
-										// },
 									},
 								});
 							});
