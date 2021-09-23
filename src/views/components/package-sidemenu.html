@@ -4,16 +4,16 @@
 		{{#if navRoute !== "stats"}}
 			<div class="stats-title">
 				<span class="text-secondary">Statistics</span>
-				<div style="display: none">{{console.log("++++ versionStatsData", versionStatsData)}}</div>
+				<!-- <div style="display: none">{{console.log("++++ versionStatsData", versionStatsData)}}</div> -->
 
 				<div class="btn-group">
 					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<span>{{~/statsPeriods[statsPeriod]}}</span>
+						<span>{{statsPeriodValues[statsPeriod]}}</span>
 						<i class="fa fa-angle-down" aria-hidden="true"></i>
 					</button>
 
 					<ul class="dropdown-menu">
-						{{#each ~/statsPeriods}}
+						{{#each statsPeriodValues}}
 							<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
 						{{/each}}
 					</ul>
@@ -27,7 +27,9 @@
 				<span class="text-secondary">{{_.formatNumber(versionStatsData.total)}}</span>
 			</div>
 
-			<div class="stats-chart"></div>
+			<div class="requests-chart-wrapper">
+				<canvas id="requests-chart" width="294" height="40"></canvas>
+			</div>
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
 
@@ -36,7 +38,9 @@
 				<span class="text-secondary">52.5 GB</span>
 			</div>
 
-			<div class="stats-chart"></div>
+			<div class="bandwidth-chart-wrapper">
+				<canvas id="bandwidth-chart" width="294" height="40"></canvas>
+			</div>
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
 		{{/if}}
@@ -56,7 +60,7 @@
 				<a class="btn-twitter-share mt-8"
 					target="_blank"
 					rel="noopener"
-					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(versionStatsData.rank + 1)} most popular package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${~/statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
+					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(versionStatsData.rank + 1)} most popular package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 					Share
 				</a>
@@ -100,16 +104,112 @@
 	const _ = require('../../public/js/_');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
+	const http = require('../../public/js/utils/http');
 
 	component.exports = {
 		data () {
 			return {
 				_,
+				statsPeriodValues: {
+					1: 'day',
+					7: 'week',
+					30: 'month',
+					365: 'year',
+				},
+				statsPeriod: 30,
 			};
 		},
 		decorators: {
 			clipboard,
 			tooltip,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				let requestsChart;
+
+				this.observe('statsPeriod version', () => {
+					if (this.get('statsPeriod') && this.get('version') && this.get('type')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let statsPeriodValues = this.get('statsPeriodValues');
+						let statsPeriod = this.get('statsPeriod');
+						let period = statsPeriodValues[statsPeriod];
+
+						// Requests chart
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							if (!response.total) {
+								return;
+							}
+
+							let array = [];
+
+							Object.keys(response.dates).forEach((date) => {
+								array.push([ date, response.dates[date] ]);
+							});
+
+							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+							if (requestsChart) {
+								requestsChart.destroy();
+								requestsChart = null;
+							}
+
+							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+							let data = array.map(value => value[1].total);
+
+							// this.set('bottomChartLabels', labels);
+							// this.set('bottomChartData', data);
+
+							let chartEl = this.find('#requests-chart');
+							let chartBarContext = chartEl.getContext('2d');
+							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+							requestsChart = new Chart(chartEl, {
+								type: 'bar',
+								data: {
+									labels,
+									datasets: [{
+										data,
+										backgroundColor: barBackground,
+										borderWidth: 0,
+										pointRadius: 0,
+										barThickness: 4,
+									}],
+								},
+								options: {
+									plugins: {
+										legend: {
+											display: false,
+										},
+										tooltip: {
+											callbacks: {
+												title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
+												label: () => '',
+												body: () => '',
+												footer: () => '',
+											},
+										},
+									},
+									scales: {
+										x: {
+											display: false,
+										},
+										y: {
+											display: false,
+										},
+									},
+								},
+							});
+						});
+					}
+				});
+
+				if (!this.get('version')) {
+					this.set('version', this.get('package.version'));
+				}
+			}
 		},
 	};
 </script>
