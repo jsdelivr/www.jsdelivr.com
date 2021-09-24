@@ -128,12 +128,27 @@
 				let requestsChart;
 
 				this.observe('statsPeriod version', () => {
-					if (this.get('statsPeriod') && this.get('version') && this.get('type')) {
+					if (this.get('statsPeriod') && this.get('version')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let statsPeriodValues = this.get('statsPeriodValues');
 						let statsPeriod = this.get('statsPeriod');
 						let period = statsPeriodValues[statsPeriod];
+
+						http.fetchPackageVersionStats(type, name, period).then((data) => {
+							let versionsStatsArr = [];
+
+							Object.keys(data.versions).forEach((key) => {
+								versionsStatsArr.push({
+									version: key,
+									hits: data.versions[key].total,
+								});
+							});
+
+							this.animate('versionStats', versionsStatsArr.sort((a, b) => b.hits - a.hits));
+							this.animate('versionStatsData', data);
+						});
+
 
 						// Requests chart
 						http.fetchPackageDateStats(type, name, period).then((response) => {
