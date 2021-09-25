@@ -1,14 +1,20 @@
 <link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
 
-<r-page noYield="{{noYield}}" title="{{title}}" noFooter="true">
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-header></c-header>
+
 	<div class="p-github">
-		<div class="bg"></div>
+		<div class="about-gradient">
+			<img class="about-gradient-primary" width="100%" height="556" src="{{@shared.assetsHost}}/img/about/about-gradient.png" />
+			<div class="about-gradient-secondary"></div>
+		</div>
 
 		<div class="content">
 			<div class="title">
 				<h1>Migrating from GitHub to jsDelivr</h1>
 
-				<h2 class="subtitle">
+				<h2>
 					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
 					Most GitHub links can be easily converted to jsDelivr links.
 				</h2>
@@ -16,22 +22,22 @@
 
 			<div class="container">
 				<div class="box">
-					<div class="bar {{#if out}}active{{/if}}">
+					<div class="bar">
 						<div class="circle"></div>
-						<div class="line"><div class="line-inner"></div></div>
-						<div class="circle circle-bottom"></div>
+						<div class="line {{#if out}}filled{{/if}}"></div>
+						<div class="circle bottom {{#unless out}}circle-disabled{{/unless}}"></div>
 					</div>
 
 					<div class="icon-competitor">
-						<img src="/img/github.png" srcset="/img/github@2x.png 2x">
+						<img width="84" height="30" src="{{@shared.assetsHost}}/img/github.svg">
 					</div>
 
-					<div class="input-wrapper">
+					<div class="input-wrapper mb-48">
 						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a GitHub link here" value="{{in}}">
 					</div>
 
 					<div class="icon-jsdelivr">
-						<img src="/img/logo-horizontal.svg">
+						<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
 					</div>
 
 					<div class="input-wrapper">
@@ -45,15 +51,23 @@
 					{{#if displayHtmlWarning}}
 						<div class="alert alert-warning" role="alert">
 							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
-							We recommend using <a href="https://pages.github.com/" target="_blank">GitHub Pages</a> if this is a problem.
+							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a> if this is a problem.
 						</div>
-					{{else}}
-						<div style="height: 1px;"></div>
 					{{/if}}
+				</div>
 
-					<div class="buttons">
-						<a href="/?docs=gh" class="start-using">See All Features</a>
-					</div>
+				<div class="jsdelivr-descr-title">
+					jsDelivr is a free CDN (Content Delivery Network)
+					<br />
+					for open source files
+				</div>
+
+				<div class="jsdelivr-descr-text">
+					By using jsDelivr CDN URLs you get better performance globally thanks to our multi-CDN infrastructure. We also permanently cache all files to ensure reliability, even if your files get deleted from Github they will continue to work on jsDelivr without breaking any sites using them. The jsDelivr CDN is designed for production use with multiple layers of failover to ensure best possible uptime.
+				</div>
+
+				<div class="buttons">
+					<a href="/?docs=gh" class="all-features">See All Features</a>
 				</div>
 			</div>
 		</div>

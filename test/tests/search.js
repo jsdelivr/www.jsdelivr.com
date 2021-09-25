@@ -11,9 +11,9 @@ describe('search', () => {
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.package-name' }).getText()).to.eventually.contain('jsdelivr');
 		await expect(browser.findElement({ css: '.package-name' }).getAttribute('href')).to.eventually.contain('/package/npm/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(1)' }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(2)' }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(3)' }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(2)' }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
+		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(3)' }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
+		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(4)' }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
 	});
 
 	it('by author works', async () => {

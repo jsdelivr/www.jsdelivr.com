@@ -1,0 +1,357 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/infographic-banner.html" name="c-infographic-banner">
+<link rel="ractive" href="../components/stats-table.html" name="c-stats-table">
+<link rel="ractive" href="../components/spinner.html" name="c-spinner">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<div class="p-esm page">
+		<div class="bg">
+			<div class="bg-inner"></div>
+		</div>
+
+		<div class="content">
+			<section class="title">
+				<h1>esm.run<sup>BETA</sup></h1>
+				by <img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal-white.svg" title="jsDelivr" height="24px">
+				<br><br><br>
+
+				<h2>A New-Age CDN for JavaScript modules</h2>
+
+				<h3 class="subtitle">
+					Load modern JavaScript packages built for you on-demand<br>
+					Works in modern web browsers, node.js, and deno
+				</h3>
+			</section>
+
+			<section class="main-box">
+				<div class="container">
+					<div class="box">
+						<div class="code">
+							import <input value="{{name}}" placeholder="name" class="base-code-input package-name-input" as-autogrow="'name'" tabindex="1">
+							<span class="code-from">from 'https://esm.run/<span class="base-code-input" as-autogrow="'name'" tabindex="-1" value="{{name || 'name'}}">{{name || 'name'}}</span>';</span>
+						</div>
+
+						<div class="buttons">
+							<form action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
+								<input type="hidden" name="title" value="esm.run {{name}} demo">
+								<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+								<button type="submit" class="btn btn-primary" tabindex="2">Open in JSFiddle</button>
+								<span class="buttons-or">or</span>
+								<a class="btn btn-secondary" target="_blank" rel="noopener" href="https://esm.run/{{name}}" tabindex="3">Open in a new tab</a>
+							</form>
+						</div>
+
+						<div class="warning-dev-only">
+							You can use esm.run links for quick demos or prototyping.<br>
+							In production (once this feature is out of beta), always use our main domain{{#if name}}: <a target="_blank" href="https://cdn.jsdelivr.net/npm/{{name}}/+esm" tabindex="4">https://cdn.jsdelivr.net/npm/{{name}}/+esm</a>{{else}}.{{/if}}
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="warning">
+				<div class="container">
+					<div class="alert alert-warning">
+						esm.run is currently in beta.<br>
+						There may be breaking changes until it's out of beta and we do not recommend using it for critical applications.<br>
+						Only packages that ship ESM code are supported at this time.
+						See <a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr/issues/18263">the announcement at GitHub</a>
+						for technical details or to provide feedback.
+					</div>
+				</div>
+			</section>
+
+			<section class="features">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="feature-icon"><img width="48" height="48" src="/img/esm/global-multi-cdn.svg" alt=""></div>
+							<h4 class="feature-title">Global Multi-CDN powered by jsDelivr</h4>
+
+							<div class="feature-content">
+								esm.run is powered by jsDelivr and it's sponsors like Cloudflare, Fastly, Bunny, Quantil, and appfleet.
+								This guarantees the best performance and uptime globally, including mainland China.
+							</div>
+						</div>
+
+						<div class="col-md-4">
+							<div class="feature-icon"><img width="48" height="48" src="/img/esm/permanent-storage.svg" alt=""></div>
+							<h4 class="feature-title">On-demand builds with permanent storage</h4>
+
+							<div class="feature-content">
+								Once built, files are stored in a permanent storage
+								shared by all edge servers. That means future access will be
+								always fast, even for files not yet cached at the CDN edge.
+							</div>
+						</div>
+
+						<div class="col-md-4">
+							<div class="feature-icon"><img width="48" height="48" src="/img/esm/optimized-delivery.svg" alt=""></div>
+							<h4 class="feature-title">State-of-the-art delivery</h4>
+
+							<div class="feature-content">
+								HTTP/2, HTTP/3, code minification, brotli compression, fine-tuned HTTP caching, dependency preloading
+								- we always use all available options for improving the overall performance.
+							</div>
+						</div>
+					</div>
+
+					<a href="/?query=*%20type%3A%20esm" class="btn btn-featured btn-learn-more">Browse available packages</a>
+				</div>
+			</section>
+
+			<section class="performance">
+				<div class="container">
+					<h2 class="section-title">Performance comparison</h2>
+
+					<div class="row">
+						<div class="col-md-6">
+							<c-stats-table title="{{statsName}} - load time" data="{{sortedStats.duration}}" columns="{{statsColumns}}" formatValue="{{formatMs}}" valueKey="duration" desc="false">
+								{{#partial column1}}
+								{{#if error}}
+								<span style="color: #f00;">Failed - {{name}}</span>
+								{{else}}
+								{{name}}
+								{{/if}}
+								{{/partial}}
+							</c-stats-table>
+						</div>
+
+						<div class="col-md-6">
+							<c-stats-table title="{{statsName}} - number of requests" data="{{sortedStats.requests}}" columns="{{statsColumns}}" valueKey="requests" desc="false">
+								{{#partial column1}}
+								{{#if error}}
+								<span style="color: #f00;">Failed - {{name}}</span>
+								{{else}}
+								{{name}}
+								{{/if}}
+								{{/partial}}
+							</c-stats-table>
+						</div>
+					</div>
+
+					<div class="benchmark-text">
+						{{#if ~/showInstructions}}
+						<div class="benchmark-instructions">
+							Please keep in mind the following to get correct benchmark results:<br><br>
+
+							<ol class="text-left">
+								<li>
+									There is currently no way for our code to bypass browser caching. To benchmark the real network performance,
+									you need to open you browser's DevTools and disable HTTP caching. If you run the benchmark with caching enabled,
+									the results show the efficiency of the caching strategy employed by each service - this is also useful, just make sure you understand
+									the difference.
+								</li>
+
+								<li>
+									On the first run, it is possible that one service will have some files already cached at the edge server closest to you and other services will not.
+									Always run the benchmark at least twice and disregard the results from the first run.
+								</li>
+							</ol>
+						</div>
+						{{else}}
+						<div>
+							{{#if ~/loading}}
+							<c-spinner></c-spinner>
+							{{else}}
+							<div>{{statsMessage}}</div>
+							{{/if}}
+						</div>
+						{{/if}}
+					</div>
+
+					<div class="benchmark-buttons">
+						{{#if ~/showInstructions}}
+						<a class="btn btn-primary" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
+						{{else}}
+						<a class="btn btn-primary" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
+						{{/if}}
+					</div>
+				</div>
+			</section>
+
+			<section class="infographic">
+				<div class="container">
+					<c-infographic-banner>
+						{{#partial text}}
+						Learn more<br>
+						about the infrastructure<br>
+						that powers esm.run
+						{{/partial}}
+					</c-infographic-banner>
+				</div>
+			</section>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	const _ = require('../../public/js/_');
+	const search = require('../../public/js/utils/search');
+
+	component.exports = {
+		decorators: {
+			autogrow (node, keypath) {
+				let $node = $(node).inputAutogrow({ maxWidth: 400, trailingSpace: -20 });
+
+				let observer = this.observe(keypath, () => {
+					$node.trigger('autogrow');
+				}, { defer: true });
+
+				return {
+					teardown () {
+						$node.inputAutogrow('destroy');
+						observer.cancel();
+					},
+				};
+			},
+		},
+		computed: {
+			importName () {
+				let name = this.get('name').split(/[ ._-]/g).reduce((acc, value) => {
+					return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
+				}).replace(/[^a-zA-Z0-9_$]/g, '');
+
+				if (/^\d/.test(name)) {
+					return `_${name}`;
+				}
+
+				return name || 'm';
+			},
+			jsFiddleJsCode () {
+				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
+			},
+		},
+		data () {
+			return {
+				name: 'd3',
+				title: 'esm.run by jsDelivr - A New-Age CDN for JavaScript modules',
+				description: 'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
+				formatMs (value) {
+					return `${_.formatNumber(value)} ms`;
+				},
+				stats: [
+					{ name: 'jsDelivr', duration: 137, requests: 32 },
+					{ name: 'Skypack', duration: 532, requests: 33 },
+					{ name: 'Unpkg', duration: 1556, requests: 660 },
+				],
+				statsColumns: [
+					{ width: '20%' },
+					{ width: '20%' },
+					{ width: '60%' },
+				],
+				statsKeys: [ 'duration', 'requests' ],
+				statsMessage: 'Median of 10 benchmarks run on Feb 06, 2021 measuring the initial load time. To run a real-time benchmark with a package of your choice, use the button bellow.',
+				statsName: 'd3',
+			};
+		},
+		onrender () {
+			if (!this.isServer) {
+				this.updateSortedStats();
+
+				let ac = $(this.find('.package-name-input')).autocomplete({ hint: false }, [
+					{
+						source: (query, cb) => {
+							search(`${query}`, 0, 5).then(result => cb(result.response.hits, result.response)).catch((e) => { console.error(e); cb([]); });
+						},
+						displayKey: 'name',
+					},
+				]).on('autocomplete:cursorchanged autocomplete:selected autocomplete:autocompleted', () => {
+					this.updateModel('name');
+				}).on('keyup', (e) => {
+					if (e.key === 'Enter') {
+						internal.close();
+					}
+				});
+
+				// This is an ugly hack and upgrading to a new version may break it.
+				let internal = ac.data('aaAutocomplete');
+				let originalSetCursor = internal.dropdown._setCursor;
+				internal.dropdown._setCursor = function (v) { return originalSetCursor.call(this, v, false); };
+
+				this.find('.package-name-input').focus();
+			}
+		},
+		run (name) {
+			if (this.get('loading')) {
+				return;
+			}
+
+			let providers = [
+				{
+					name: 'jsDelivr',
+					url: `https://cdn.jsdelivr.net/npm/${name}/+esm`,
+				},
+				{
+					name: 'Skypack',
+					url: `https://cdn.skypack.dev/${name}?min`,
+				},
+				{
+					name: 'Unpkg',
+					url: `https://unpkg.com/${name}?module`,
+					countRequests (entries) {
+						let packageUriPattern = /^\/((?:@[^/@]+\/)?[^/@]+)(?:@?([^/]+))?(\/.*)?$/;
+						let semverPattern = /^(((\d+)\.(\d+)\.(\d+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/;
+
+						// We are not able to detect redirects via the performance.getEntriesByType() API
+						// but we can simulate the unpkg behavior and count them by analyzing the requested URLs.
+						return entries.reduce((acc, entry) => {
+							let pathname = new URL(entry.name).pathname;
+							let [ ,, version, file ] = packageUriPattern.exec(pathname);
+
+							// No static version in the URL => add +1 for a version redirect.
+							if (!semverPattern.test(version)) {
+								acc += 1;
+							}
+
+							// No explicit file in the URL => add +1 for a file redirect.
+							if (!file) {
+								acc += 1;
+							}
+
+							return acc + 1;
+						}, 0);
+					},
+				},
+			];
+
+			let iframe = document.createElement('iframe');
+			iframe.classList.add('benchmark-iframe');
+			iframe.src = '/esm-benchmark';
+			document.win = window;
+
+			iframe.onload = () => {
+				window.runEsmBenchmark(providers).then((result) => {
+					iframe.remove();
+					this.set('stats', result);
+					this.set('statsMessage', `Showing results from ${new Date().toGMTString()}.`);
+					this.set('statsName', this.get('name'));
+					this.set('loading', false);
+					this.updateSortedStats();
+				}).catch(console.error);
+			};
+
+			document.body.appendChild(iframe);
+			this.set('showInstructions', false);
+			this.set('loading', true);
+		},
+		showInstructions () {
+			if (!this.get('loading')) {
+				this.set('showInstructions', true);
+			}
+		},
+		updateSortedStats () {
+			let anyFailed = this.get('stats').some(result => result.error);
+
+			this.get('statsKeys').forEach((key) => {
+				if (anyFailed) {
+					// Ractive somehow doesn't update correctly in this case, so we force it by setting an empty array first.
+					this.set(Ractive.joinKeys('sortedStats', key), []);
+				}
+
+				this.animate(Ractive.joinKeys('sortedStats', key), this.get('stats').slice().sort((a, b) => a[key] - b[key]));
+			});
+		},
+	};
+
+</script>

@@ -1,30 +1,35 @@
 <div class="c-collection-box">
 	{{#with collection}}
-	<div class="box box-rounded">
-		<div class="box-header">
-			Selected files <i class="fa fa-trash" aria-hidden="true" on-click="@this.set('collection', [])" as-tooltip="'Remove all'" style="{{#unless collection}}visibility: hidden;{{/unless}}"></i>
-		</div>
-
-		<div class="box-content">
-			{{#each this}}
-			<div as-sortable class="box-content-line">
-				<i class="fa fa-bars" aria-hidden="true" as-tooltip="'Drag & Drop to reorder'"></i>
-				<a href="/package/{{type}}/{{name}}">{{name}}</a>{{file}}
-				<i class="fa fa-times" aria-hidden="true" on-click="@this.splice('collection', 	@index, 1)" as-tooltip="'Remove this file'"></i>
-			</div>
-			{{else}}
-			<div class="box-message">
-				No files selected. Select the files you want to use using the switches on the left.
-			</div>
-			{{/each}}
-
-			{{#if this}}
-			<a on-click="slide-next" class="box-content-button box-content-line">
-				SHOW &amp; CONFIGURE ALL LINKS <i class="fa fa-chevron-right" aria-hidden="true"></i>
-			</a>
+		<div class="collection-header">
+			<span class="header-text">Selected files</span>
+			{{#if collection}}
+				<span class="remove-text" on-click="@this.set('collection', [])">Remove all</span>
 			{{/if}}
 		</div>
-	</div>
+
+		<div class="collection-list">
+			{{#each this}}
+				<div as-sortable class="collection-item">
+					<span><a href="/package/{{type}}/{{name}}">{{name}}</a>{{file}}</span>
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/icons/remove-icon.svg"
+						loading="lazy"
+						on-click="@this.splice('collection', @index, 1)"
+						as-tooltip="'Remove this file'">
+				</div>
+			{{else}}
+				<div class="box-message">
+					No files selected. Select the files you want to use using the switches on the left.
+				</div>
+			{{/each}}
+		</div>
+
+		{{#if this}}
+			<a on-click="slide-next" class="config-btn">
+				Show &amp; Configure all links
+			</a>
+		{{/if}}
 	{{/with}}
 </div>
 

@@ -3,9 +3,9 @@
 <div class="c-stats-table">
 	<table class="stats-table-table">
 		<colgroup>
-			<col style="width:50%;">
-			<col style="width:22%;">
-			<col style="width:28%;">
+			{{#each columns}}
+			<col style="width:{{width}};">
+			{{/each}}
 		</colgroup>
 
 		<thead>
@@ -24,9 +24,9 @@
 			{{#each ~/data}}
 			<tr>
 				<td>{{>column1}}</td>
-				<td class="hits">{{_.formatNumber(hits)}}</td>
+				<td class="hits">{{formatValue(this[valueKey])}}</td>
 				<td>
-					<div class="table-chart" style="width: {{hits / data[0].hits * 100}}px"></div>
+					<div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
 				</td>
 			</tr>
 			{{/each}}
@@ -40,7 +40,14 @@
 	component.exports = {
 		data () {
 			return {
-				_,
+				columns: [
+					{ width: '50%' },
+					{ width: '22%' },
+					{ width: '28%' },
+				],
+				desc: true,
+				formatValue: _.formatNumber,
+				valueKey: 'hits',
 			};
 		},
 	};

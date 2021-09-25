@@ -1,5 +1,7 @@
+<link rel="ractive" href="./search-compact.html" name="c-search-compact">
+
 <header class="c-header">
-	<nav class="navbar navbar-default">
+	<nav class="navbar navbar-default {{!actualPath || alternateBgRoutes.includes(actualPath) ? 'about-navbar-default' : ''}}">
 		<div class="container">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
@@ -9,34 +11,77 @@
 					<span class="icon-bar"></span>
 				</button>
 
-				<a class="navbar-brand" href="/">
+				<a href="/">
 					<!--
-Looking for the logo?
-Get all versions here: https://github.com/jsdelivr/jsdelivr-media
--->
-					<img src="/img/logo-horizontal.svg" title="jsDelivr">
+						Looking for the logo?
+						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
+					-->
+					{{#if actualPath && alternateBgRoutes.includes(actualPath)}}
+						<img width="140" height="34" src="{{@shared.assetsHost}}/img/icons/jsdelivr-logo-horizontal.svg" title="jsDelivr">
+					{{elseif actualPath}}
+						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
+					{{/if}}
 				</a>
+
+				{{#if actualPath.includes('/package/npm')}}
+					<c-search-compact></c-search-compact>
+				{{/if}}
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
-				<ul class="nav navbar-nav navbar-right">
+				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : alternateBgRoutes.includes(actualPath) ? 'about-navbar-right' : 'default-navbar-right'}}">
 					<li><a href="/features">Features</a></li>
 					<li><a href="/network">Network</a></li>
 					<li><a href="/statistics">Stats</a></li>
 					<li><a href="/sponsors">Sponsors</a></li>
 					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools <i class="fa fa-angle-down" aria-hidden="true"></i></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							Tools <i class="fa fa-angle-down" aria-hidden="true"></i>
+						</a>
 						<ul class="dropdown-menu">
 							<li><a href="/tools/debug">Debug tool</a></li>
 							<li><a href="/tools/purge">Purge cache</a></li>
+							<li role="separator" class="divider"></li>
+							<li class="dropdown-header"><div>Convert from</div></li>
+							<li><a href="/github">GitHub</a></li>
+							<li><a href="/google">Google Hosted Libraries</a></li>
+							<li><a href="/rawgit">RawGit</a></li>
+							<li><a href="/unpkg">unpkg</a></li>
 						</ul>
 					</li>
-					<li><a target="_blank" href="/blog/" class="router-ignore">Blog</a></li>
-					<li><a target="_blank" href="https://jsdelivr.us11.list-manage.com/subscribe?u=0c85fe2c9a60310df9a3d6751&id=283887f736" class="featured">Newsletter</a></li>
-					<li><a target="_blank" href="https://github.com/jsdelivr/jsdelivr" class="featured" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a></li>
-					<li><a target="_blank" href="https://twitter.com/jsDelivr" class="featured" title="Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							Resources <i class="fa fa-angle-down" aria-hidden="true"></i>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a target="_blank" href="/blog/" class="router-ignore">Blog</a></li>
+							<li><a target="_blank" rel="noopener" href="https://jsdelivr.us11.list-manage.com/subscribe?u=0c85fe2c9a60310df9a3d6751&id=283887f736">Newsletter</a></li>
+						</ul>
+					</li>
+					<li><a target="_blank" rel="noopener" href="https://twitter.com/jsDelivr" title="Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+					<li><a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a></li>
+					<li><a href="/esm">esm.run</a></li>
 				</ul>
 			</div>
 		</div>
 	</nav>
 </header>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				alternateBgRoutes: [
+					'/about',
+					'/github',
+					'/google',
+					'/unpkg',
+					'/rawgit',
+				],
+			};
+		},
+		onrender () {
+			this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
+		},
+	};
+</script>
