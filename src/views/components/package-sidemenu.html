@@ -1,10 +1,10 @@
 <div class="c-package-stats">
 	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
 		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
-		{{#if navRoute !== "stats"}}
+
+		<div style="{{#unless navRoute !== 'stats'}}display: none;{{/unless}}">
 			<div class="stats-title">
 				<span class="text-secondary">Statistics</span>
-				<!-- <div style="display: none">{{console.log("++++ versionStatsData", versionStatsData)}}</div> -->
 
 				<div class="btn-group">
 					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -43,7 +43,7 @@
 			</div>
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
-		{{/if}}
+		</div>
 
 		<div class="stats-title mb-24">
 			<span>Top version - {{versionStats[0].version}}</span>
@@ -125,16 +125,15 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let requestsChart;
-
-				this.observe('statsPeriod version', () => {
-					if (this.get('statsPeriod') && this.get('version')) {
+				this.observe('statsPeriod', () => {
+					if (this.get('statsPeriod')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let statsPeriodValues = this.get('statsPeriodValues');
 						let statsPeriod = this.get('statsPeriod');
 						let period = statsPeriodValues[statsPeriod];
 
+						// get package version stats
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
 							let versionsStatsArr = [];
 
@@ -150,92 +149,98 @@
 						});
 
 
-						// Requests chart
+						// get package date stats
 						http.fetchPackageDateStats(type, name, period).then((response) => {
-							if (!response.total) {
-								return;
+							if (response.total) {
+								// console.log("++++ REQUEST CALLED");
+								this.set('packageDateStats', response);
 							}
-
-							let array = [];
-
-							Object.keys(response.dates).forEach((date) => {
-								array.push([ date, response.dates[date] ]);
-							});
-
-							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-							if (requestsChart) {
-								requestsChart.destroy();
-								requestsChart = null;
-							}
-
-							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-							let data = array.map(value => value[1].total);
-
-							// this.set('bottomChartLabels', labels);
-							// this.set('bottomChartData', data);
-
-							let chartEl = this.find('#requests-chart');
-							let chartBarContext = chartEl.getContext('2d');
-							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
-
-							requestsChart = new Chart(chartEl, {
-								type: 'bar',
-								data: {
-									labels,
-									datasets: [{
-										data,
-										backgroundColor: barBackground,
-										borderWidth: 0,
-										pointRadius: 0,
-										barThickness: 4,
-									}],
-								},
-								options: {
-									plugins: {
-										legend: {
-											display: false,
-										},
-										tooltip: {
-											callbacks: {
-												title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
-												label: () => null,
-											},
-											backgroundColor: 'rgba(17, 26, 44, 0.9)',
-											titleFontSize: 12,
-											titleFontWeight: 600,
-											titleFontColor: '#fff',
-											cornerRadius: 4,
-											xAlign: 'center',
-											yAlign: 'bottom',
-											// displayColors: false,
-											// padding: {
-											// 	top: 6,
-											// 	right: 6,
-											// 	bottom: 6,
-											// 	left: 6,
-											// }
-										},
-									},
-									scales: {
-										x: {
-											display: false,
-										},
-										y: {
-											display: false,
-										},
-									},
-								},
-							});
 						});
 					}
 				});
 
-				if (!this.get('version')) {
-					this.set('version', this.get('package.version'));
-				}
+				this.observe('packageDateStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let requestsChart = this.get('requestsChart');
+					let packageDateStats = this.get('packageDateStats');
+
+					if (!packageDateStats) {
+						return null;
+					}
+
+					let array = [];
+
+					Object.keys(packageDateStats.dates).forEach((date) => {
+						array.push([ date, packageDateStats.dates[date] ]);
+					});
+
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+					if (requestsChart) {
+						requestsChart.destroy();
+						requestsChart = null;
+						this.set('requestsChart', null);
+					}
+
+					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+					let data = array.map(value => value[1].total);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#requests-chart');
+						let chartBarContext = chartEl.getContext('2d');
+						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+						requestsChart = new Chart(chartEl, {
+							type: 'bar',
+							data: {
+								labels,
+								datasets: [{
+									data,
+									backgroundColor: barBackground,
+									borderWidth: 0,
+									pointRadius: 0,
+									barThickness: 4,
+								}],
+							},
+							options: {
+								plugins: {
+									legend: {
+										display: false,
+									},
+									tooltip: {
+										callbacks: {
+											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
+											label: () => null,
+										},
+										backgroundColor: 'rgba(17, 26, 44, 0.9)',
+										titleFontSize: 12,
+										titleFontWeight: 600,
+										titleFontColor: '#fff',
+										cornerRadius: 4,
+										xAlign: 'center',
+										yAlign: 'bottom',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						});
+
+						this.set('requestsChart', requestsChart);
+					}, 100);
+				});
 			}
 		},
 	};
