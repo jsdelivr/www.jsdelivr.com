@@ -318,7 +318,8 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let bottomChart;
+				let requestsChart;
+				let hitsChart;
 
 				// Load package versions.
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
@@ -373,6 +374,80 @@
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
+						// get data and create stats chart
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							let maxValue = Math.max(...Object.keys(response.dates).map(date => response.dates[date].total));
+							let magnitude = Math.floor(Math.log10(maxValue));
+							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+							this.set('totalStats', response);
+
+							if (!response.total) {
+								return;
+							}
+
+							let array = [];
+
+							Object.keys(response.dates).forEach((date) => {
+								array.push([ date, response.dates[date] ]);
+							});
+
+							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+							if (requestsChart) {
+								requestsChart.destroy();
+								requestsChart = null;
+							}
+
+							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+							let data = array.map(value => value[1].total);
+
+							this.set('bottomChartLabels', labels);
+							this.set('bottomChartData', data);
+
+							let chartEl = this.find('#stats-chart');
+							let chartBarContext = chartEl.getContext('2d');
+							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+							requestsChart = new Chart(chartEl, {
+								type: 'bar',
+								data: {
+									labels,
+									datasets: [{
+										data,
+										backgroundColor: barBackground,
+										borderWidth: 0,
+										pointRadius: 0,
+										barThickness: 10,
+									}],
+								},
+								options: {
+									plugins: {
+										legend: {
+											display: false,
+										},
+									},
+									scales: {
+										x: {
+											grid: {
+												display: false,
+												drawBorder: false,
+												borderColor: '#dadde2',
+											},
+										},
+										y: {
+											grid: {
+												display: false,
+												borderColor: '#dadde2',
+											},
+										},
+									},
+								},
+							});
+						});
+
+						// get data and create hits chart
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
 							let array = [];
 
@@ -389,82 +464,54 @@
 							if (array[0]) {
 								this.set('fileStatsVersion', array[0].version);
 							}
-						});
 
-						// Bottom chart.
-						if (period !== 'day') {
-							http.fetchPackageDateStats(type, name, period).then((response) => {
-								let maxValue = Math.max(...Object.keys(response.dates).map(date => response.dates[date].total));
-								let magnitude = Math.floor(Math.log10(maxValue));
-								this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-								this.set('totalStats', response);
+							if (hitsChart) {
+								hitsChart.destroy();
+								hitsChart = null;
+							}
 
-								if (!response.total) {
-									return;
-								}
+							let chartEl = this.find('#hits-chart');
+							let chartBarContext = chartEl.getContext('2d');
+							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
-								let array = [];
-
-								Object.keys(response.dates).forEach((date) => {
-									array.push([ date, response.dates[date] ]);
-								});
-
-								array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-								if (bottomChart) {
-									bottomChart.destroy();
-									bottomChart = null;
-								}
-
-								let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-								let data = array.map(value => value[1].total);
-
-								this.set('bottomChartLabels', labels);
-								this.set('bottomChartData', data);
-
-								let chartEl = this.find('#stats-chart');
-								let chartBarContext = chartEl.getContext('2d');
-								let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-								barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-								barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
-
-								bottomChart = new Chart(chartEl, {
-									type: 'bar',
-									data: {
-										labels,
-										datasets: [{
-											data,
-											backgroundColor: barBackground,
-											borderWidth: 0,
-											pointRadius: 0,
-											barThickness: 10,
-										}],
+							hitsChart = new Chart(chartEl, {
+								type: 'line',
+								data: {
+									labels: [],
+									datasets: [{
+										data: array.slice(0, 5),
+										backgroundColor: barBackground,
+										borderWidth: 0,
+										pointRadius: 0,
+										// barThickness: 10,
+									}],
+								},
+								options: {
+									plugins: {
+										legend: {
+											display: false,
+										},
 									},
-									options: {
-										plugins: {
-											legend: {
+									scales: {
+										x: {
+											grid: {
 												display: false,
+												drawBorder: false,
+												borderColor: '#dadde2',
 											},
 										},
-										scales: {
-											x: {
-												grid: {
-													display: false,
-													drawBorder: false,
-													borderColor: '#dadde2',
-												},
-											},
-											y: {
-												grid: {
-													display: false,
-													borderColor: '#dadde2',
-												},
+										y: {
+											grid: {
+												display: false,
+												borderColor: '#dadde2',
 											},
 										},
 									},
-								});
+								},
 							});
-						}
+						});
 					}
 				});
 
