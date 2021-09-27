@@ -148,12 +148,18 @@
 							this.animate('versionStatsData', data);
 						});
 
-
 						// get package date stats
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
-								// console.log("++++ REQUEST CALLED");
 								this.set('packageDateStats', response);
+							}
+						});
+
+						// get package bandwidth stats
+						// TODO: replace it with real endpoint call
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							if (response.total) {
+								this.set('packageBandwidthStats', response);
 							}
 						});
 					}
@@ -239,6 +245,90 @@
 						});
 
 						this.set('requestsChart', requestsChart);
+					}, 100);
+				});
+
+				this.observe('packageBandwidthStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let bandwidthChart = this.get('bandwidthChart');
+					let packageBandwidthStats = this.get('packageBandwidthStats');
+
+					if (!packageBandwidthStats) {
+						return null;
+					}
+
+					let array = [];
+
+					Object.keys(packageBandwidthStats.dates).forEach((date) => {
+						array.push([ date, packageBandwidthStats.dates[date] ]);
+					});
+
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+					if (bandwidthChart) {
+						bandwidthChart.destroy();
+						bandwidthChart = null;
+						this.set('bandwidthChart', null);
+					}
+
+					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+					// TODO: temp, until real endpoint is used
+					let data = array.map(value => value[1].total / 10 ** 6 + Math.random() * 100);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#bandwidth-chart');
+						let chartBarContext = chartEl.getContext('2d');
+						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+						bandwidthChart = new Chart(chartEl, {
+							type: 'bar',
+							data: {
+								labels,
+								datasets: [{
+									data,
+									backgroundColor: barBackground,
+									borderWidth: 0,
+									pointRadius: 0,
+									barThickness: 4,
+								}],
+							},
+							options: {
+								plugins: {
+									legend: {
+										display: false,
+									},
+									tooltip: {
+										callbacks: {
+											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
+											label: () => null,
+										},
+										backgroundColor: 'rgba(17, 26, 44, 0.9)',
+										titleFontSize: 12,
+										titleFontWeight: 600,
+										titleFontColor: '#fff',
+										cornerRadius: 4,
+										xAlign: 'center',
+										yAlign: 'bottom',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						});
+
+						this.set('bandwidthChart', bandwidthChart);
 					}, 100);
 				});
 			}
