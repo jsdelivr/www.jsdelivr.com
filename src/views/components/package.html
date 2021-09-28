@@ -454,10 +454,14 @@
 								array.push({
 									version: key,
 									hits: data.versions[key].total,
+									dates: data.versions[key].dates,
 								});
 							});
 
-							this.animate('versionStats', array.sort((a, b) => b.hits - a.hits));
+							let sortedArray = array.sort((a, b) => b.hits - a.hits);
+							let topFiveVersions = sortedArray.slice(0, 5);
+
+							this.animate('versionStats', sortedArray);
 							this.animate('versionStatsData', data);
 
 							// Maybe we have no stats yet.
@@ -471,22 +475,49 @@
 							}
 
 							let chartEl = this.find('#hits-chart');
-							let chartBarContext = chartEl.getContext('2d');
-							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
 							hitsChart = new Chart(chartEl, {
 								type: 'line',
 								data: {
 									labels: [],
-									datasets: [{
-										data: array.slice(0, 5),
-										backgroundColor: barBackground,
-										borderWidth: 0,
-										pointRadius: 0,
-										// barThickness: 10,
-									}],
+									datasets: [
+										{
+											data: topFiveVersions[0].dates,
+											backgroundColor: '#5C667A',
+											borderColor: '#5C667A',
+											borderWidth: '3',
+											pointRadius: 0,
+										},
+										{
+											data: topFiveVersions[1].dates,
+											backgroundColor: '#BC5090',
+											borderColor: '#BC5090',
+											borderWidth: '3',
+											pointRadius: 0,
+
+										},
+										{
+											data: topFiveVersions[2].dates,
+											backgroundColor: '#FFA600',
+											borderColor: '#FFA600',
+											borderWidth: '3',
+											pointRadius: 0,
+										},
+										{
+											data: topFiveVersions[3].dates,
+											backgroundColor: '#FF6361',
+											borderColor: '#FF6361',
+											borderWidth: '3',
+											pointRadius: 0,
+										},
+										{
+											data: topFiveVersions[4].dates,
+											backgroundColor: '#69C4F7',
+											borderColor: '#69C4F7',
+											borderWidth: '3',
+											pointRadius: 0,
+										},
+									],
 								},
 								options: {
 									plugins: {
@@ -504,7 +535,7 @@
 										},
 										y: {
 											grid: {
-												display: false,
+												display: true,
 												borderColor: '#dadde2',
 											},
 										},
