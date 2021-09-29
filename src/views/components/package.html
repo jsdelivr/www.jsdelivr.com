@@ -214,8 +214,8 @@
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
 						<div class="chart-tops">
-							{{#if ~/versionStats}}
-								<c-top-stats-table title="Top 5 versions" data="{{~/versionStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+							{{#if ~/topFiveVersions}}
+								<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 									{{#partial column1}}
 										<a on-click="@this.set('version', version)">{{version}}</a>
 									{{/partial}}
@@ -480,10 +480,8 @@
 								});
 							});
 
-							let sortedArray = array.sort((a, b) => b.hits - a.hits);
-							let topFiveVersions = sortedArray.slice(0, 5);
+							let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
 
-							this.animate('versionStats', sortedArray);
 							this.animate('versionStatsData', data);
 							this.set('topFiveVersions', topFiveVersions);
 
