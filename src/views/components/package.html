@@ -235,35 +235,67 @@
 
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
-						<div class="chart-per-day">
-							<div class="package-usage">
-								<div class="small-headline">Hits per day per version</div>
-							</div>
-							<div class="hits-chart-wrapper">
-								<canvas id="hits-chart" width="1224" height="297"></canvas>
-							</div>
-							<div class="hits-chart-legend">
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[0].version}}
+						<div class="chart-per-period">
+							{{#if totalHitsStats.total}}
+								<div class="package-usage">
+									<div class="small-headline">Hits per day per version</div>
 								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[1].version}}
+
+								<div class="hits-chart-block">
+									{{#if (~/hitsChartLabels.length - 2) / chartXInterval > 3 && ~/hitsChartData}}
+										<div class="chart-x">
+											{{#each ~/hitsChartLabels}}
+												{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/hitsChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
+												<div style="left: calc({{(100 / (~/hitsChartLabels.length - 1)) * (@key)}}% - 100px);">
+													<div class="x-number">{{_.formatNumber(~/hitsChartData[@key])}}</div>
+													<div class="x-date">{{this}}</div>
+													<div class="x-line"></div>
+												</div>
+												{{/if}}
+											{{/each}}
+										</div>
+									{{/if}}
+							
+									<div class="chart-y">
+										{{#with _.linRange(totalHitsStatsMax, 8).reverse() as range}}
+											{{#each range}}
+												<div>
+													{{_.formatNumber(this)}}
+													<div class="y-line"></div>
+												</div>
+												
+											{{/each}}
+										{{/with}}
+									</div>
+
+									<div class="hits-chart-wrapper">
+										<canvas id="hits-chart" width="1110" height="225"></canvas>
+									</div>
 								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[2].version}}
+
+								<div class="hits-chart-legend">
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[0].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[1].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[2].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[3].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[4].version}}
+									</div>
 								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[3].version}}
-								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[4].version}}
-								</div>
-							</div>
+							{{/if}}
 						</div>
 					</div>
 				{{/if}}
@@ -482,6 +514,10 @@
 
 							let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
 
+							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
+							let magnitude = Math.floor(Math.log10(maxValue));
+							this.set('totalHitsStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+							this.set('totalHitsStats', data);
 							this.animate('versionStatsData', data);
 							this.animate('topFiveVersions', topFiveVersions);
 
@@ -494,6 +530,9 @@
 								hitsChart.destroy();
 								hitsChart = null;
 							}
+
+							this.set('hitsChartLabels', topFiveVersions.map(value => _.formatDate(new Date(value[0])).toUpperCase()));
+							this.set('hitsChartData', topFiveVersions.map(value => value.hits));
 
 							let chartEl = this.find('#hits-chart');
 
@@ -549,6 +588,7 @@
 											},
 										},
 										y: {
+											display: false,
 											grid: {
 												display: true,
 												borderColor: '#dadde2',
