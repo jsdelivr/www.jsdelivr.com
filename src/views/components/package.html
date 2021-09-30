@@ -242,19 +242,14 @@
 								</div>
 
 								<div class="hits-chart-block">
-									{{#if (~/hitsChartLabels.length - 2) / chartXInterval > 3 && ~/hitsChartData}}
 										<div class="chart-x">
+											<div style="display: none;">{{console.log('++++++hitsChartLabels', hitsChartLabels)}}</div>
 											{{#each ~/hitsChartLabels}}
-												{{#if (@key + 1) % ~/chartXInterval === 1 % ~/chartXInterval && @key !== 0 && @key !== Math.floor((~/hitsChartData.length - 1) / ~/chartXInterval) * ~/chartXInterval}}
-												<div style="left: calc({{(100 / (~/hitsChartLabels.length - 1)) * (@key)}}% - 100px);">
-													<div class="x-number">{{_.formatNumber(~/hitsChartData[@key])}}</div>
+												<div>
 													<div class="x-date">{{this}}</div>
-													<div class="x-line"></div>
 												</div>
-												{{/if}}
 											{{/each}}
 										</div>
-									{{/if}}
 							
 									<div class="chart-y">
 										{{#with _.linRange(totalHitsStatsMax, 8).reverse() as range}}
@@ -531,8 +526,7 @@
 								hitsChart = null;
 							}
 
-							this.set('hitsChartLabels', topFiveVersions.map(value => _.formatDate(new Date(value[0])).toUpperCase()));
-							this.set('hitsChartData', topFiveVersions.map(value => value.hits));
+							this.set('hitsChartLabels', Object.keys(topFiveVersions[0].dates).map(value => _.formatDate(new Date(value)).toUpperCase()));
 
 							let chartEl = this.find('#hits-chart');
 
