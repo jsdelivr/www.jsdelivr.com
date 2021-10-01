@@ -243,12 +243,17 @@
 
 								<div class="hits-chart-block">
 										<div class="chart-x">
-											<div style="display: none;">{{console.log('++++++hitsChartLabels', hitsChartLabels)}}</div>
-											{{#each ~/hitsChartLabels}}
-												<div>
-													<div class="x-date">{{this}}</div>
-												</div>
-											{{/each}}
+											<div class="x-day-row">
+												{{#each ~/hitsChartDates.periodDays}}
+													<div>{{this}}</div>
+												{{/each}}
+											</div>
+
+											<div class="x-month-row">
+												{{#each ~/hitsChartDates.periodMonths}}
+													<div>{{this}}</div>
+												{{/each}}
+											</div>
 										</div>
 							
 									<div class="chart-y">
@@ -526,7 +531,34 @@
 								hitsChart = null;
 							}
 
-							this.set('hitsChartLabels', Object.keys(topFiveVersions[0].dates).map(value => _.formatDate(new Date(value)).toUpperCase()));
+							let chartPeriodDates = Object.keys(topFiveVersions[0].dates);
+
+							// TODO: once it is done mv to separate file _.js
+							let getChartDates = (periodDates) => {
+								let periodDays = [];
+								let periodMonths = [];
+
+								periodDates.forEach((date) => {
+									let dateDay = date.split('-').slice(-1)[0];
+									let uniqueYYMM = date.split('-').slice(0, 2).join('-');
+
+									periodDays.push(dateDay);
+
+									let periodMonthFormatted = _.formatDate(new Date(uniqueYYMM)).split(' ')[0];
+
+									if (periodMonths.indexOf(periodMonthFormatted) === -1) {
+										periodMonths.push(periodMonthFormatted);
+									}
+								});
+
+								return {
+									periodMonths,
+									periodDays,
+								};
+							};
+
+							this.set('hitsChartDates', getChartDates(chartPeriodDates));
+							this.set('hitsChartLabels', chartPeriodDates.map(value => _.formatDate(new Date(value)).toUpperCase()));
 
 							let chartEl = this.find('#hits-chart');
 
@@ -562,7 +594,7 @@
 									layout: {
 										padding: {
 											top: 20,
-										}
+										},
 									},
 									elements: {
 										line: {
