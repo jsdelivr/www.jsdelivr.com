@@ -1,4 +1,4 @@
-<div class="c-package-stats">
+<div class="c-package-sidemenu">
 	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
 		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
 
@@ -24,7 +24,7 @@
 
 			<div class="stats-title mb-24">
 				<span>Requests Served</span>
-				<span class="text-secondary">{{_.formatNumber(versionStatsData.total)}}</span>
+				<span class="text-secondary">{{_.formatNumber(packageTotal)}}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
@@ -56,11 +56,11 @@
 			<div class="horizontal-divider mt-24 mb-24"></div>
 
 			<div class="twitter-share">
-				<div>{{_.nth(versionStatsData.rank + 1)}} most popular on jsDelivr</div>
+				<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
 				<a class="btn-twitter-share mt-8"
 					target="_blank"
 					rel="noopener"
-					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(versionStatsData.rank + 1)} most popular package on @jsDelivr CDN, with ${_.formatNumber(versionStatsData.total)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 					Share
 				</a>
@@ -145,7 +145,8 @@
 							});
 
 							this.animate('versionStats', versionsStatsArr.sort((a, b) => b.hits - a.hits));
-							this.animate('versionStatsData', data);
+							this.animate('packageTotal', data.total);
+							this.animate('packageRank', data.rank + 1);
 						});
 
 						// get package date stats
