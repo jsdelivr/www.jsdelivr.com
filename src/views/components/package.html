@@ -152,7 +152,7 @@
 									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
 								</div>
 								<div class="card-main-stat">
-									<span>{{_.formatNumber(versionStatsData.total)}}</span>
+									<span>{{_.formatNumber(versionsHitsData.total)}}</span>
 									<span>Requests Served</span>
 								</div>
 								<div class="card-growth">
@@ -263,7 +263,7 @@
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
 						<div class="chart-hits-per-period">
-							{{#if totalHitsStats.total}}
+							{{#if versionsHitsData.total}}
 								<div class="package-usage">
 									<div class="small-headline">Hits per day per version</div>
 								</div>
@@ -290,7 +290,6 @@
 													{{_.formatNumber(this)}}
 													<div class="y-line"></div>
 												</div>
-												
 											{{/each}}
 										{{/with}}
 									</div>
@@ -546,8 +545,7 @@
 							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
 							let magnitude = Math.floor(Math.log10(maxValue));
 							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-							this.set('totalHitsStats', data);
-							this.animate('versionStatsData', data);
+							this.animate('versionsHitsData', data);
 							this.animate('topFiveVersions', topFiveVersions);
 
 							// Maybe we have no stats yet.
