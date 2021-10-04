@@ -94,4 +94,26 @@ module.exports = {
 
 		return `${n}th`;
 	},
+	getPackageTabChartYDates (periodDates) {
+		let periodDays = [];
+		let periodMonths = [];
+
+		periodDates.forEach((date) => {
+			let dateDay = date.split('-').slice(-1)[0];
+			let uniqueYYMM = date.split('-').slice(0, 2).join('-');
+
+			periodDays.push(dateDay);
+
+			let periodMonthFormatted = months[new Date(uniqueYYMM).getUTCMonth()];
+
+			if (periodMonths.indexOf(periodMonthFormatted) === -1) {
+				periodMonths.push(periodMonthFormatted);
+			}
+		});
+
+		return {
+			periodMonths,
+			periodDays,
+		};
+	},
 };

@@ -562,31 +562,7 @@
 
 							let chartPeriodDates = Object.keys(topFiveVersions[0].dates);
 
-							// TODO: once it is done mv to separate file _.js
-							let getChartDates = (periodDates) => {
-								let periodDays = [];
-								let periodMonths = [];
-
-								periodDates.forEach((date) => {
-									let dateDay = date.split('-').slice(-1)[0];
-									let uniqueYYMM = date.split('-').slice(0, 2).join('-');
-
-									periodDays.push(dateDay);
-
-									let periodMonthFormatted = _.formatDate(new Date(uniqueYYMM)).split(' ')[0];
-
-									if (periodMonths.indexOf(periodMonthFormatted) === -1) {
-										periodMonths.push(periodMonthFormatted);
-									}
-								});
-
-								return {
-									periodMonths,
-									periodDays,
-								};
-							};
-
-							this.set('hitsChartDates', getChartDates(chartPeriodDates));
+							this.set('hitsChartDates', _.getPackageTabChartYDates(chartPeriodDates));
 							this.set('hitsChartLabels', chartPeriodDates.map(value => _.formatDate(new Date(value)).toUpperCase()));
 
 							let chartEl = this.find('#hits-chart');
