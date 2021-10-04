@@ -339,10 +339,11 @@
 
 	component.exports = {
 		computed: {
-			chartXInterval () {
-				this.get('_resizeId'); // Keep this here so that it updates on resize.
-				return this.get('bottomChartLabels') ? Math.ceil(this.get('bottomChartLabels').length / Math.floor(innerWidth / 140)) : 1;
-			},
+			// TODO: add resizing to both stats and hits charts
+			// chartXInterval () {
+			// 	this.get('_resizeId'); // Keep this here so that it updates on resize.
+			// 	return this.get('bottomChartLabels') ? Math.ceil(this.get('bottomChartLabels').length / Math.floor(innerWidth / 140)) : 1;
+			// },
 			hasSourceMaps () {
 				let files = this.get('files');
 				let hasMin, hasMap;
@@ -453,7 +454,7 @@
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-						// get data and create stats chart
+						// get package date stats data and create stats chart
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							let maxValue = Math.max(...Object.keys(response.dates).map(date => response.dates[date].total));
 							let magnitude = Math.floor(Math.log10(maxValue));
@@ -480,8 +481,8 @@
 							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
 							let data = array.map(value => value[1].total);
 
-							this.set('bottomChartLabels', labels);
-							this.set('bottomChartData', data);
+							let chartPeriodDates = array.map(date => date[0]);
+							this.set('statsChartDates', _.getPackageTabChartYDates(chartPeriodDates));
 
 							let chartEl = this.find('#stats-chart');
 							let chartBarContext = chartEl.getContext('2d');
@@ -528,7 +529,7 @@
 							});
 						});
 
-						// get data and create hits chart
+						// get package versions data and create hits chart
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
 							let array = [];
 
