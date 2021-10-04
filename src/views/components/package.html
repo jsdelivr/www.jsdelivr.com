@@ -177,7 +177,7 @@
 						</div>
 
 						<div class="chart-stats-per-period">
-							{{#if totalStats.total}}
+							{{#if statsDateData.total}}
 								<div class="package-usage">
 									<div class="small-headline">Stats for last month</div>
 
@@ -456,16 +456,16 @@
 
 						// get package date stats data and create stats chart
 						http.fetchPackageDateStats(type, name, period).then((response) => {
-							let maxValue = Math.max(...Object.keys(response.dates).map(date => response.dates[date].total));
-							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-							this.set('totalStats', response);
+							let array = [];
 
 							if (!response.total) {
 								return;
 							}
 
-							let array = [];
+							let maxValue = Math.max(...Object.values(response.dates).map(date => date.total));
+							let magnitude = Math.floor(Math.log10(maxValue));
+							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+							this.set('statsDateData', response);
 
 							Object.keys(response.dates).forEach((date) => {
 								array.push([ date, response.dates[date] ]);
