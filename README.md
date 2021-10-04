@@ -1,12 +1,20 @@
 # [www.jsdelivr.com](https://www.jsdelivr.com)
 
 [![Build Status](https://github.com/jsdelivr/www.jsdelivr.com/workflows/Node%20CI/badge.svg)](https://github.com/jsdelivr/www.jsdelivr.com/actions?query=workflow%3A%22Node+CI%22)
-[![dependencies](https://img.shields.io/david/jsdelivr/www.jsdelivr.com.svg?style=flat-square)](https://david-dm.org/jsdelivr/www.jsdelivr.com)
-[![devDependencies](https://img.shields.io/david/dev/jsdelivr/www.jsdelivr.com.svg?style=flat-square)](https://david-dm.org/jsdelivr/www.jsdelivr.com?type=dev)
 
 Related projects:
  - [jsDelivr CDN](https://github.com/jsdelivr/jsdelivr)
  - [jsDelivr API](https://github.com/jsdelivr/data.jsdelivr.com)
+
+## Web performance
+
+We use [SpeedCurve](https://www.speedcurve.com/) to track the performance of our website. All data and dashboards are public. 
+We invite everyone to analyze it and send us PRs to help us improve the performance of our website.
+
+We track 2 of our web pages, the homepage and a package page and benchmark them 3 times per day. You begin be checking the following dashboards:
+- [What needs improvement dashboard](https://app.speedcurve.com/jsdelivr/improve/?cs=md&r=us-west-1&s=731471&share=l70t06wl9d84acvkggm99yopzfdxg3)
+- [Site perf summary](https://app.speedcurve.com/jsdelivr/site/?b=chrome&cs=md&d=30&dc=2&de=1&ds=1&r=us-west-1&s=731471&u=3867360)
+
 
 ## Development
 
