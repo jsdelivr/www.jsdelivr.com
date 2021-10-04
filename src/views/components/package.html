@@ -176,7 +176,7 @@
 							</div>
 						</div>
 
-						<div class="chart-stats">
+						<div class="chart-stats-per-period">
 							{{#if totalStats.total}}
 								<div class="package-usage">
 									<div class="small-headline">Stats for last month</div>
@@ -201,8 +201,35 @@
 									</div>
 								</div>
 
-								<div class="usage-chart-wrapper">
-									<canvas id="stats-chart" width="1224" height="290"></canvas>
+								<div class="stats-chart-block">
+									<div class="chart-x">
+										<div class="x-day-row">
+											{{#each ~/statsChartDates.periodDays}}
+												<div>{{this}}</div>
+											{{/each}}
+										</div>
+
+										<div class="x-month-row">
+											{{#each ~/statsChartDates.periodMonths}}
+												<div>{{this}}</div>
+											{{/each}}
+										</div>
+									</div>
+							
+									<div class="chart-y">
+										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
+											{{#each range}}
+												<div>
+													{{_.formatNumber(this)}}
+												</div>
+												
+											{{/each}}
+										{{/with}}
+									</div>
+
+									<div class="stats-chart-wrapper">
+										<canvas id="stats-chart" width="1116" height="264"></canvas>
+									</div>
 								</div>
 							{{else}}
 								<div class="container">
@@ -235,29 +262,29 @@
 
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
-						<div class="chart-per-period">
+						<div class="chart-hits-per-period">
 							{{#if totalHitsStats.total}}
 								<div class="package-usage">
 									<div class="small-headline">Hits per day per version</div>
 								</div>
 
 								<div class="hits-chart-block">
-										<div class="chart-x">
-											<div class="x-day-row">
-												{{#each ~/hitsChartDates.periodDays}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
-
-											<div class="x-month-row">
-												{{#each ~/hitsChartDates.periodMonths}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
+									<div class="chart-x">
+										<div class="x-day-row">
+											{{#each ~/hitsChartDates.periodDays}}
+												<div>{{this}}</div>
+											{{/each}}
 										</div>
+
+										<div class="x-month-row">
+											{{#each ~/hitsChartDates.periodMonths}}
+												<div>{{this}}</div>
+											{{/each}}
+										</div>
+									</div>
 							
 									<div class="chart-y">
-										{{#with _.linRange(totalHitsStatsMax, 8).reverse() as range}}
+										{{#with _.linRange(hitsChartYMax, 8).reverse() as range}}
 											{{#each range}}
 												<div>
 													{{_.formatNumber(this)}}
@@ -371,7 +398,7 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let requestsChart;
+				let statsChart;
 				let hitsChart;
 
 				// Load package versions.
@@ -446,9 +473,9 @@
 
 							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
 
-							if (requestsChart) {
-								requestsChart.destroy();
-								requestsChart = null;
+							if (statsChart) {
+								statsChart.destroy();
+								statsChart = null;
 							}
 
 							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
@@ -463,7 +490,7 @@
 							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
 							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
-							requestsChart = new Chart(chartEl, {
+							statsChart = new Chart(chartEl, {
 								type: 'bar',
 								data: {
 									labels,
@@ -483,6 +510,7 @@
 									},
 									scales: {
 										x: {
+											display: false,
 											grid: {
 												display: false,
 												drawBorder: false,
@@ -490,6 +518,7 @@
 											},
 										},
 										y: {
+											display: false,
 											grid: {
 												display: false,
 												borderColor: '#dadde2',
@@ -516,7 +545,7 @@
 
 							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
 							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('totalHitsStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
 							this.set('totalHitsStats', data);
 							this.animate('versionStatsData', data);
 							this.animate('topFiveVersions', topFiveVersions);
@@ -621,7 +650,7 @@
 										y: {
 											display: false,
 											min: 0,
-											max: this.get('totalHitsStatsMax'),
+											max: this.get('hitsChartYMax'),
 											grid: {
 												display: true,
 												borderColor: '#dadde2',
