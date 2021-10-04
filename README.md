@@ -1,7 +1,5 @@
 # [www.jsdelivr.com](https://www.jsdelivr.com)
 
-[![Build Status](https://github.com/jsdelivr/www.jsdelivr.com/workflows/Node%20CI/badge.svg)](https://github.com/jsdelivr/www.jsdelivr.com/actions?query=workflow%3A%22Node+CI%22)
-
 Related projects:
  - [jsDelivr CDN](https://github.com/jsdelivr/jsdelivr)
  - [jsDelivr API](https://github.com/jsdelivr/data.jsdelivr.com)
