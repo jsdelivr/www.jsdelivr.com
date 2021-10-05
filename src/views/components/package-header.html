@@ -255,16 +255,17 @@
 				let packageVersion = '';
 				let selectedVersion = this.get('selectedVersion');
 				let packageName = this.get('name');
+				let version = this.get('version');
 
 				if (selectedVersion === 'Static') {
-					packageVersion = this.get('version');
+					packageVersion = version;
 				} else if (selectedVersion === 'Major') {
-					packageVersion = 'major';
+					packageVersion = version.split('.')[0];
 				} else if (selectedVersion === 'Minor') {
-					packageVersion = 'minor';
+					packageVersion = version.split('.').slice(0, 2).join('.');
 				} else {
 					packageVersion = 'latest';
-				} 
+				}
 
 				this.set('installScriptSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${packageVersion}/dist/${packageName}.min.js`);
 			});
