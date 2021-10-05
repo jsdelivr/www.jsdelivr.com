@@ -186,7 +186,13 @@
 				{{else}}
 					<div class="install-esm-ctrls">
 						<a href="https://esm.run/{{name}}" class="esm-ctrl" target="_blank" rel="nofollow noopener">Open in new tab</a>
-						<a href="https://jsfiddle.net/TODO" class="esm-ctrl" target="_blank" rel="nofollow noopener">Open in jsfiddle</a>
+
+						<form class="jsfiddle-form" action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
+							<input type="hidden" name="title" value="esm.run {{name}} demo">
+							<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+							<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
+						</form>
+
 						<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="nofollow noopener">Learn more</a>
 					</div>
 				{{/if}}
@@ -206,6 +212,20 @@
 				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
 					+ `?title=No package release on GitHub`
 					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
+			},
+			importName () {
+				let name = this.get('name').split(/[ ._-]/g).reduce((acc, value) => {
+					return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
+				}).replace(/[^a-zA-Z0-9_$]/g, '');
+
+				if (/^\d/.test(name)) {
+					return `_${name}`;
+				}
+
+				return name || 'm';
+			},
+			jsFiddleJsCode () {
+				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
 			},
 		},
 		oninit () {
