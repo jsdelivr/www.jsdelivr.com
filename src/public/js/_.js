@@ -94,4 +94,13 @@ module.exports = {
 
 		return `${n}th`;
 	},
+	// escaping code: https://github.com/component/escape-html/blob/master/index.js
+	unescapeHtml (text) {
+		return text
+			.replace(/&quot;/g, '"')
+			.replace(/&amp;/g, '&')
+			.replace(/&#39;/g, '\'')
+			.replace(/&lt;/g, '<')
+			.replace(/&gt;/g, '>');
+	},
 };
