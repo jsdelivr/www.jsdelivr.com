@@ -114,13 +114,13 @@
 						<label for="type-select">Type:&nbsp;&nbsp;</label>
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/installType}}</span>
+								<span>{{~/selectedType}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
-								{{#each ~/installTypes}}
-									<li><a on-click="@this.set('installType', this)">{{this}}</a></li>
+								{{#each ~/typesList}}
+									<li><a on-click="@this.set('selectedType', this)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -130,13 +130,13 @@
 						<label for="version-select">Version:&nbsp;&nbsp;</label>
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/installVersion}}</span>
+								<span>{{~/selectedVersion}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
-								{{#each ~/installVersions}}
-									<li><a on-click="@this.set('installVersion', this)">{{this}}</a></li>
+								{{#each ~/versionsList}}
+									<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -146,10 +146,10 @@
 				<div class="horizontal-divider-19"></div>
 
 				<div class="install-script">
-					{{#if installType === "Default"}}
+					{{#if selectedType === "Default"}}
 						<div class="script-wrapper-default">
 							<span class="script-tag">&#60;script src="</span>
-							<span class="script-text">https://cdn.jsdelivr.net/npm/{{name}}@{{version}}/dist/{{name}}.min.js</span>
+							<span class="script-text">{{~/installScriptSrc}}</span>
 							<span class="script-tag">"&#62;&#60;/script&#62;</span>
 						</div>
 					{{else}}
@@ -176,7 +176,7 @@
 
 				<div class="horizontal-divider-19"></div>
 
-				{{#if installType === "Default"}}
+				{{#if selectedType === "Default"}}
 					<div class="install-default-warning">
 						URL is guessed and might not be correct.
 						<a target="_blank" rel="nofollow noopener" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM package</a>
@@ -250,18 +250,39 @@
 					});
 				}
 			});
+
+			this.observe('selectedVersion', () => {
+				let packageVersion = '';
+				let selectedVersion = this.get('selectedVersion');
+				let packageName = this.get('name');
+
+				if (selectedVersion === 'Static') {
+					packageVersion = this.get('version');
+				} else if (selectedVersion === 'Major') {
+					packageVersion = 'major';
+				} else if (selectedVersion === 'Minor') {
+					packageVersion = 'minor';
+				} else {
+					packageVersion = 'latest';
+				} 
+
+				this.set('installScriptSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${packageVersion}/dist/${packageName}.min.js`);
+			});
 		},
 		data () {
 			return {
-				installTypes: [
+				typesList: [
 					'Default',
 					'ESM',
 				],
-				installVersions: [
+				versionsList: [
 					'Static',
+					'Major',
+					'Minor',
+					'Latest',
 				],
-				installType: 'Default',
-				installVersion: 'Static',
+				selectedType: 'Default',
+				selectedVersion: 'Static',
 			};
 		},
 		decorators: {
