@@ -145,7 +145,7 @@ app.use(async (ctx, next) => {
 	await next();
 
 	if (ctx.maxAge) {
-		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}`);
+		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, stale-while-revalidate=600, stale-if-error=86400`);
 	} else if (ctx.expires) {
 		ctx.set('Cache-Control', `public`);
 		ctx.set('Expires', ctx.expires);
@@ -262,7 +262,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/_package.html', data);
-		ctx.maxAge = 5 * 60;
+		ctx.maxAge = 10 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
@@ -285,7 +285,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
-		ctx.maxAge = 5 * 60;
+		ctx.maxAge = 10 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
