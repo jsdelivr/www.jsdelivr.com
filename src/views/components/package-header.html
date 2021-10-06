@@ -166,7 +166,7 @@
 											</li>
 											<li>
 												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="Copy SRI">
+													data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
 													Copy SRI
 												</a>
 											</li>
@@ -206,7 +206,7 @@
 											</li>
 											<li>
 												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="Copy SRI">
+													data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
 													Copy SRI
 												</a>
 											</li>
@@ -266,6 +266,7 @@
 <script>
 	const http = require('../../public/js/utils/http');
 	const clipboard = require('../../public/js/decorators/clipboard');
+	const { buildIntegrity } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -344,6 +345,25 @@
 						this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
 						this.set('packageCssEntrypoint', packageCssEntrypoint);
 					}
+
+
+					http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
+						if (packageJsEntrypoint) {
+							data.files.forEach((file) => {
+								if (file.name === this.get('packageJsEntrypoint')) {
+									this.set('packageJsHash', file.hash);
+								}
+							});
+						}
+
+						if (packageCssEntrypoint) {
+							data.files.forEach((file) => {
+								if (file.name === this.get('packageCssEntrypoint')) {
+									this.set('packageCssHash', file.hash);
+								}
+							});
+						}
+					});
 				});
 			});
 		},
@@ -361,6 +381,7 @@
 				],
 				selectedType: 'Default',
 				selectedVersion: 'Static',
+				buildIntegrity,
 			};
 		},
 		decorators: {
