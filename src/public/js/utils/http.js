@@ -45,3 +45,7 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 		url: `${SNYK_API_HOST}/test/npm/lib/${name}/${version}`,
 	});
 };
+
+module.exports.fetchPackageEntrypoints = (type, name, version) => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints`);
+};
