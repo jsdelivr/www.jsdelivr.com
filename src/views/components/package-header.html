@@ -288,8 +288,21 @@
 					installPackageVersion = 'latest';
 				}
 
-				http.fetchPackageFiles(packageType, packageName, installPackageVersion).then((data) => {
-					this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${data.default}`);
+				http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
+					let packageJsEntrypoint = '';
+					let packageCssEntrypoint = '';
+
+					if (data.js) {
+						packageJsEntrypoint = data.js.file;
+						this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
+						this.set('packageJsEntrypoint', packageJsEntrypoint);
+					}
+
+					if (data.css) {
+						packageCssEntrypoint = data.css.file;
+						// TODO: set installLinkHref for CSS
+						this.set('packageCssEntrypoint', packageCssEntrypoint);
+					}
 				});
 			});
 		},
