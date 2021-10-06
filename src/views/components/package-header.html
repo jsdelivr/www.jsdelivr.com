@@ -154,6 +154,14 @@
 								<span class="script-tag">"&#62;&#60;/script&#62;</span>
 							</div>
 						{{/if}}
+
+						{{#if ~/packageCssEntrypoint}}
+						<div class="script-wrapper-default">
+							<span class="script-tag">&#60;link href="</span>
+							<span class="script-text">{{~/installLinkHref}}</span>
+							<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
+						</div>
+					{{/if}}
 					{{else}}
 						<div class="script-wrapper-esm">
 							<span class="script-tag">&#60;script type="module"&#62;</span>
@@ -302,7 +310,7 @@
 
 					if (data.css) {
 						packageCssEntrypoint = data.css.file;
-						// TODO: set installLinkHref for CSS
+						this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
 						this.set('packageCssEntrypoint', packageCssEntrypoint);
 					}
 				});
