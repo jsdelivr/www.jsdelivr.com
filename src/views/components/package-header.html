@@ -272,22 +272,25 @@
 			});
 
 			this.observe('selectedVersion', () => {
-				let packageVersion = '';
+				let installPackageVersion = '';
 				let selectedVersion = this.get('selectedVersion');
 				let packageName = this.get('name');
-				let version = this.get('version');
+				let packageVersion = this.get('version');
+				let packageType = this.get('type');
 
 				if (selectedVersion === 'Static') {
-					packageVersion = version;
+					installPackageVersion = packageVersion;
 				} else if (selectedVersion === 'Major') {
-					packageVersion = version.split('.')[0];
+					installPackageVersion = packageVersion.split('.')[0];
 				} else if (selectedVersion === 'Minor') {
-					packageVersion = version.split('.').slice(0, 2).join('.');
+					installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
 				} else {
-					packageVersion = 'latest';
+					installPackageVersion = 'latest';
 				}
 
-				this.set('installScriptSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${packageVersion}/dist/${packageName}.min.js`);
+				http.fetchPackageFiles(packageType, packageName, installPackageVersion).then((data) => {
+					this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${data.default}`);
+				});
 			});
 		},
 		data () {
