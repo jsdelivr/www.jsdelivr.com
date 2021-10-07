@@ -164,24 +164,32 @@
 													Copy URL
 												</a>
 											</li>
-											<li>
-												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
-													Copy SRI
-												</a>
-											</li>
-											<li>
-												<a as-clipboard="'Copy HTML to clipboard', 'right'"
-													data-clipboard-text='<script src="{{~/installScriptSrc}}"></script>'>
-													Copy HTML
-												</a>
-											</li>
-											<li>
-												<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-													data-clipboard-text="Copy HTML + SRI">
-													Copy HTML + SRI
-												</a>
-											</li>
+
+											{{#if ~/packageJsHash}}
+												<li>
+													<a as-clipboard="'Copy SRI to clipboard', 'right'"
+														data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
+														Copy SRI
+													</a>
+												</li>
+											{{/if}}
+
+											{{#if canBuildHtml(~/installScriptSrc)}}
+												<li>
+													<a as-clipboard="'Copy HTML to clipboard', 'right'"
+														data-clipboard-text="{{buildHtml(~/installScriptSrc)}}">
+														Copy HTML
+													</a>
+												</li>
+												{{#if ~/packageJsHash}}
+													<li>
+														<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
+															data-clipboard-text="{{buildHtml(~/installScriptSrc, ~/packageJsHash)}}">
+															Copy HTML + SRI
+														</a>
+													</li>
+												{{/if}}
+											{{/if}}
 									</ul>
 								</div>
 							</div>
@@ -204,24 +212,31 @@
 													Copy URL
 												</a>
 											</li>
-											<li>
-												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
-													Copy SRI
-												</a>
-											</li>
-											<li>
-												<a as-clipboard="'Copy HTML to clipboard', 'right'"
-													data-clipboard-text='<link href="{{installLinkHref}}" rel="stylesheet"></link>'>
-													Copy HTML
-												</a>
-											</li>
-											<li>
-												<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-													data-clipboard-text="Copy HTML + SRI">
-													Copy HTML + SRI
-												</a>
-											</li>
+											{{#if ~/packageCssHash}}
+												<li>
+													<a as-clipboard="'Copy SRI to clipboard', 'right'"
+														data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
+														Copy SRI
+													</a>
+												</li>
+											{{/if}}
+
+											{{#if canBuildHtml(~/installLinkHref)}}
+												<li>
+													<a as-clipboard="'Copy HTML to clipboard', 'right'"
+														data-clipboard-text="{{buildHtml(~/installLinkHref)}}">
+														Copy HTML
+													</a>
+												</li>
+												{{#if ~/packageCssHash}}
+													<li>
+														<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
+															data-clipboard-text="{{buildHtml(~/installLinkHref, ~/packageCssHash)}}">
+															Copy HTML + SRI
+														</a>
+													</li>
+												{{/if}}
+											{{/if}}
 									</ul>
 								</div>
 							</div>
@@ -266,7 +281,7 @@
 <script>
 	const http = require('../../public/js/utils/http');
 	const clipboard = require('../../public/js/decorators/clipboard');
-	const { buildIntegrity } = require('../../public/js/utils/build-links');
+	const { buildIntegrity, canBuildHtml, buildHtml } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -346,7 +361,6 @@
 						this.set('packageCssEntrypoint', packageCssEntrypoint);
 					}
 
-
 					http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 						if (packageJsEntrypoint) {
 							data.files.forEach((file) => {
@@ -382,6 +396,8 @@
 				selectedType: 'Default',
 				selectedVersion: 'Static',
 				buildIntegrity,
+				canBuildHtml,
+				buildHtml,
 			};
 		},
 		decorators: {
