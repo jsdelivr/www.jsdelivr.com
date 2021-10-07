@@ -95,7 +95,7 @@ module.exports = {
 		return `${n}th`;
 	},
 	getPackageTabChartXData (periodDates) {
-		let chartYDates = {
+		let chartXDates = {
 			// all days during period
 			periodDays: [],
 			// all months during period
@@ -108,21 +108,21 @@ module.exports = {
 			let dateMonth = splittedDate.slice(0, 2).join('-');
 			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
 
-			if (!chartYDates[dateMonth]) {
-				chartYDates[dateMonth] = {
+			if (!chartXDates[dateMonth]) {
+				chartXDates[dateMonth] = {
 					month: periodMonthFormatted,
 					days: [],
 				};
 			}
 
-			chartYDates[dateMonth].days.push(dateDay);
-			chartYDates.periodDays.push(dateDay);
+			chartXDates[dateMonth].days.push(dateDay);
+			chartXDates.periodDays.push(dateDay);
 
-			if (chartYDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
-				chartYDates.periodMonths.push(periodMonthFormatted);
+			if (chartXDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
+				chartXDates.periodMonths.push(periodMonthFormatted);
 			}
 		});
 
-		return chartYDates;
+		return chartXDates;
 	},
 };
