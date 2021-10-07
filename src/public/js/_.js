@@ -95,26 +95,34 @@ module.exports = {
 		return `${n}th`;
 	},
 	getPackageTabChartYDates (periodDates) {
-		let periodDays = [];
-		let periodMonths = [];
+		let chartYDates = {
+			// all days during period
+			periodDays: [],
+			// all months during period
+			periodMonths: [],
+		};
 
 		periodDates.forEach((date) => {
 			let splittedDate = date.split('-');
 			let dateDay = splittedDate.slice(-1)[0];
 			let dateMonth = splittedDate.slice(0, 2).join('-');
-
-			periodDays.push(dateDay);
-
 			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
 
-			if (periodMonths.indexOf(periodMonthFormatted) === -1) {
-				periodMonths.push(periodMonthFormatted);
+			if (!chartYDates[dateMonth]) {
+				chartYDates[dateMonth] = {
+					month: periodMonthFormatted,
+					days: [],
+				};
+			}
+
+			chartYDates[dateMonth].days.push(dateDay);
+			chartYDates.periodDays.push(dateDay);
+
+			if (chartYDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
+				chartYDates.periodMonths.push(periodMonthFormatted);
 			}
 		});
 
-		return {
-			periodMonths,
-			periodDays,
-		};
+		return chartYDates;
 	},
 };
