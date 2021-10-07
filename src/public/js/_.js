@@ -108,14 +108,11 @@ module.exports = {
 			let dateMonth = splittedDate.slice(0, 2).join('-');
 			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
 
-			if (!chartXDates[dateMonth]) {
-				chartXDates[dateMonth] = {
-					month: periodMonthFormatted,
-					days: [],
-				};
+			if (!chartXDates[periodMonthFormatted]) {
+				chartXDates[periodMonthFormatted] = [];
 			}
 
-			chartXDates[dateMonth].days.push(dateDay);
+			chartXDates[periodMonthFormatted].push(dateDay);
 			chartXDates.periodDays.push(dateDay);
 
 			if (chartXDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
