@@ -94,7 +94,7 @@ module.exports = {
 
 		return `${n}th`;
 	},
-	getPackageTabChartYData (periodDates) {
+	getPackageTabChartXData (periodDates) {
 		let chartYDates = {
 			// all days during period
 			periodDays: [],
