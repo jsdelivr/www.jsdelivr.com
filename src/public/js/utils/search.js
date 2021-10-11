@@ -9,7 +9,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			page,
 			hitsPerPage,
 			attributesToHighlight: [],
-			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version' ],
+			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version', 'popular', 'moduleTypes' ],
 			analyticsTags: [ 'jsdelivr' ],
 		};
 
