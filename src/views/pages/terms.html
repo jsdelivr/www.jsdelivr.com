@@ -2,6 +2,7 @@
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
 <link rel="ractive" href="../components/github-md-documents-prefetch.html" name="c-github-md-documents-prefetch">
+<link rel="ractive" href="../components/markdown.html" name="c-markdown">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-github-md-documents-prefetch></c-github-md-documents-prefetch>
@@ -17,11 +18,14 @@
 					<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
 
 					<div class="section-list">
-						<div>
-							<a href="/terms/acceptable-use-policy-jsdelivr-net">Acceptable Use Policy</a>
+						<div on-click="@this.set('currentPolicy', 'cdn-acceptable')"
+							class="{{#if currentPolicy === 'cdn-acceptable'}}active{{/if}}">
+								Acceptable Use Policy
 						</div>
-						<div>
-							<a href="/terms/privacy-policy-jsdelivr-net">Privacy Policy</a>
+
+						<div on-click="@this.set('currentPolicy', 'cdn-privacy')"
+							class="{{#if currentPolicy === 'cdn-privacy'}}active{{/if}}">
+								Privacy Policy
 						</div>
 					</div>
 				</div>
@@ -32,15 +36,22 @@
 					<strong class="section-title">Website - jsdelivr.com</strong>
 
 					<div class="section-list">
-						<div>
-							<a href="/terms/privacy-policy-jsdelivr-com">Privacy Policy</a>
+						<div on-click="@this.set('currentPolicy', 'web-privacy')"
+							class="{{#if currentPolicy === 'web-privacy'}}active{{/if}}">
+								Privacy Policy
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="main-content">
-				Main content
+				{{#if currentPolicy === 'cdn-acceptable'}}
+					<c-markdown text="{{@shared.ppComText}}"></c-markdown>
+				{{elseif currentPolicy === 'cdn-privacy'}}
+					<c-markdown text="{{@shared.ppNetText}}"></c-markdown>
+				{{else}}
+					<c-markdown text="{{@shared.auNetText}}"></c-markdown>
+				{{/if}}
 			</div>
 		</div>
 	</div>
@@ -51,6 +62,7 @@
 		data () {
 			return {
 				title: 'Terms & Policies - jsDelivr',
+				currentPolicy: 'cdn-acceptable',
 			};
 		},
 	};
