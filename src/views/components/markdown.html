@@ -5,12 +5,14 @@
 <script>
 	component.exports = {
 		data () {
-			marked.setOptions({
-				langPrefix: 'hljs language-',
-				highlight (code) {
-					return hljs.highlightAuto(code, [ 'html', 'javascript' ]).value;
-				},
-			});
+			if (!Ractive.isServer) {
+				marked.setOptions({
+					langPrefix: 'hljs language-',
+					highlight (code) {
+						return hljs.highlightAuto(code, [ 'html', 'javascript' ]).value;
+					},
+				});
+			}
 
 			return {
 				text: '',
