@@ -21,9 +21,11 @@
 					</c-package-header>
 
 					<div class="package-nav">
-						<a on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
-						</a>
+						{{#if package.readme}}
+							<a on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
+							</a>
+						{{/if}}
 						<a on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
 						</a>
@@ -37,14 +39,7 @@
 
 					{{#if navRoute === 'readme'}}
 						<div class="package-readme">
-							<div style="display: none;">{{console.log("+++++ package", package)}}</div>
-							{{#if package.readme}}
-								<c-markdown text="{{package.readme}}"></c-markdown>
-							{{else}}
-								<div class="package-readme-absent">
-									There is no readme
-								</div>
-							{{/if}}
+							<c-markdown text="{{package.readme}}"></c-markdown>
 						</div>
 					{{/if}}
 				</div>
@@ -608,6 +603,12 @@
 								},
 							});
 						});
+					}
+				});
+
+				this.observe('package', () => {
+					if (!this.get('package').readme) {
+						this.set('navRoute', 'stats');
 					}
 				});
 
