@@ -4,9 +4,9 @@
 			<div class="col-sm-8">
 				<div class="package-name-wrapper">
 					{{#if onlyHeader}}
-					<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
+						<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
 					{{else}}
-					<h1 class="package-name">{{name}}</h1>
+						<h1 class="package-name">{{name}}</h1>
 					{{/if}}
 				</div>
 
@@ -338,7 +338,11 @@
 				}
 			});
 
-			this.observe('selectedVersion', () => {
+			this.observe('selectedVersion onlyHeader', () => {
+				if (this.get('onlyHeader')) {
+					return;
+				}
+
 				let installPackageVersion = '';
 				let selectedVersion = this.get('selectedVersion');
 				let packageName = this.get('name');
