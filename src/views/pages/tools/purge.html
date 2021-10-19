@@ -5,36 +5,47 @@
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
 	<c-header></c-header>
-	<div class="header-gradient">
-		<img class="header-gradient-primary" width="100%" height="556" src="{{@shared.assetsHost}}/img/about/about-gradient.png" />
-		<div class="header-gradient-secondary"></div>
-	</div>
 
 	<div class="p-purge">
+		<div class="header-gradient">
+			<img class="header-gradient-primary" width="100%" height="556" src="{{@shared.assetsHost}}/img/about/about-gradient.png" />
+			<div class="header-gradient-secondary"></div>
+		</div>
+
 		<div class="container">
 			<section class="heading">
 				<h1 class="page-title">Purge jsDelivr CDN cache</h1>
-				<div class="subtitle">Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</div>
-				<div class="row">
-					<div class="col-md-10">
-						<textarea class-loading="purging" class="input" rows="2" placeholder="You can cache up to 10 URLs, separated by a comma &quot;,&quot;" value="{{urls}}"></textarea>
-					</div>
-					<div class="col-md-2">
-						<a on-click="@this.purge()" class-loading="purging" class="btn btn-featured">
-							{{#if purging}}
-								<div class="load-animation"></div>
-							{{else}}
-								PURGE NOW
-							{{/if}}
-						</a>
-						{{#if requestFailed}}
-							<label class="error">An error occurred while purging!</label>
-						{{/if}}
-					</div>
+				<div class="subtitle">
+					<span>Purge the cache of a @latest or version aliased URL to force your users to get the new</span>
+					<span>updated version. Otherwise they might wait up to 7 days.</span>
 				</div>
-				<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
-				<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+
+				<div class="purge-form">
+					<textarea
+						class-loading="purging"
+						class="input"
+						rows="2"
+						placeholder="You can cache up to 10 URLs, separated by a comma &quot;,&quot;"
+						value="{{urls}}">
+					</textarea>
+
+					<a on-click="@this.purge()" class-loading="purging">
+						{{#if purging}}
+							<div class="load-animation"></div>
+						{{else}}
+							Purge now
+						{{/if}}
+					</a>
+
+					{{#if requestFailed}}
+						<label class="error">An error occurred while purging!</label>
+					{{/if}}
+
+					<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+				</div>
 			</section>
+
 			<section class="results">
 				{{#if results.length}}
 					<table>
