@@ -22,7 +22,7 @@ describe('other', () => {
 
 	it('sponsors page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/sponsors`);
-		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Our Sponsors');
+		await expect(browser.findElement({ css: '.head-title' }).getText()).to.eventually.contain('Our Sponsors');
 	});
 
 	it('debug tool page loads', async () => {
