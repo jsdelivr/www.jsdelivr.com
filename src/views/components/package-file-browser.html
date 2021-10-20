@@ -28,7 +28,16 @@
 						href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
 						as-tooltip="'Default file: ' + ~/default">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
-						/{{~/default.split("/")[1]}}/<span class="file-path">{{~/default.split("/")[2]}}</span>
+
+						{{#each default.split("/"):i}}
+							{{#if i === default.split("/").length - 1}}
+								<span class="file-path">{{default.split("/")[i]}}</span>
+							{{elseif default.split("/")[i]}}
+								{{default.split("/")[i]}}/
+							{{else}}
+								/
+							{{/if}}
+						{{/each}}
 					</a>
 
 					<div class="file-default-ctrls">
