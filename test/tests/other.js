@@ -32,6 +32,6 @@ describe('other', () => {
 
 	it('cache purge tool page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/tools/purge`);
-		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('A tool for purging CDN cache is coming soon');
+		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Purge jsDelivr CDN cache');
 	});
 });
