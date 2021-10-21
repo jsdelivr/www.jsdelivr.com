@@ -61,9 +61,10 @@ describe('package', () => {
 	it('copying url works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(4) .c-copy-dropdown span' }).click();
+		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .c-copy-dropdown span' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(4) .dropdown-menu a' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .dropdown-menu a' }).click();
 		await browser.sleep(1000);
 		await browser.executeScript(`let ele = document.createElement('input'); ele.setAttribute('id', 'testInput'); document.body.appendChild(ele)`);
 		await browser.findElement({ css: '#testInput' }).sendKeys(KEY.CONTROL, 'v');
