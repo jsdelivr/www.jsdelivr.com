@@ -38,10 +38,11 @@ describe('package', () => {
 	it('opening files works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2&path=demos`);
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(2) a' }).click();
-		await expect(browser.findElement({ css: 'pre' }).getText()).to.eventually.have.lengthOf.at.least(1);
+		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(4) > a' }).click();
 		let tabs = await browser.getAllWindowHandles();
 		await browser.switchTo().window(tabs[1]);
+		await expect(browser.findElement({ css: 'pre' }).getText()).to.eventually.have.lengthOf.at.least(1);
 		await browser.close();
 		await browser.switchTo().window(tabs[0]);
 	});
