@@ -24,14 +24,15 @@ describe('package', () => {
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'navRouteConfig' }).click();
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
-		await expect(browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('demos/api_demo.js');
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('demos/api_demo.js');
 	});
 
 	it('going up in directories works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2&path=demos`);
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.c-package-file-browser .box-content .file-link:nth-of-type(1) a' }).click();
-		await expect(browser.findElement({ css: '.box-content .file-link:nth-of-type(1) .file-path' }).getText()).to.eventually.equal('demos');
+			await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .files-list-back a' }).click();
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(2) > a .file-path' }).getText()).to.eventually.equal('demos');
 	});
 
 	it('opening files works', async () => {
