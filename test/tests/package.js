@@ -109,9 +109,9 @@ describe('package', () => {
 	it('top files switching versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/slick-carousel?version=1.8.1`);
 		await browser.sleep(4000);
-		let version = await browser.findElement({ css: '.c-stats-table:nth-of-type(1) tr:nth-of-type(2) a' }).getText();
-		await browser.findElement({ css: '.c-stats-table:nth-of-type(1) .stats-table-table tr:nth-of-type(2) a' }).click();
+		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
+		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.c-stats-table .version-dropdown-selected-version a' }).getText()).to.eventually.equal(version);
+		await expect(browser.findElement({ css: '.c-top-stats-table:nth-child(2) .table-header span' }).getText()).to.eventually.equal(version);
 	});
 });
