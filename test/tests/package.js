@@ -86,14 +86,15 @@ describe('package', () => {
 	});
 
 	it('removing all files from collection works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(4) label' }).click();
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(5) label' }).click();
+		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(5) label' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(6) label' }).click();
 		await browser.sleep(1000);
-		await browser.executeScript(`arguments[0].click();`, await browser.findElement({ css: '.box-header .fa-trash' }));
+		await browser.executeScript(`arguments[0].click();`, await browser.findElement({ css: '.collection-header .remove-text' }));
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.hidden-sm > .c-collection-box .box-content .box-message' }).getText()).to.eventually.equal('No files selected. Select the files you want to use using the switches on the left.');
+		await expect(browser.findElement({ css: '.c-collection-box .collection-list .box-message' }).getText()).to.eventually.equal('No files selected. Select the files you want to use using the switches on the left.');
 	});
 
 	it('show all files works', async () => {
