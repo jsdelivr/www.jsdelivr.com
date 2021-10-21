@@ -74,12 +74,13 @@ describe('package', () => {
 	});
 
 	it('adding files to collection works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(7) label' }).click();
-		await browser.findElement({ css: '.box-content .file-link:nth-of-type(8) label' }).click();
+		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(8) label' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(9) label' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.hidden-sm > .c-collection-box .box-content-button' }).click();
+		await browser.findElement({ css: '.c-collection-box .config-btn' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.c-collection-links .collection-link:nth-of-type(3) a' }).getText()).to.eventually.equal('https://cdn.jsdelivr.net/npm/jsdelivr@0.1.2/demo.min.js');
 	});
