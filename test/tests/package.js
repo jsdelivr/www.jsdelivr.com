@@ -98,11 +98,12 @@ describe('package', () => {
 	});
 
 	it('show all files works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
+		await browser.findElement({ id: 'navRouteConfig' }).click();
 		await browser.findElement({ css: '.c-package-file-browser .show-more-toggle a' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.c-package-file-browser .box-content div:nth-of-type(11) .file-link:nth-of-type(1) span' }).getText()).to.eventually.contain('README.md');
+		await expect(browser.findElement({ css: '.c-package-file-browser .files-list > div:nth-child(12) .file-item .file-path' }).getText()).to.eventually.contain('README.md');
 	});
 
 	it('top files switching versions works', async () => {
