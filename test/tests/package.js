@@ -9,7 +9,8 @@ describe('package', () => {
 	it('displays default file', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('/index.min.js');
+		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('index.min.js');
 	});
 
 	it('displays no default file', async () => {
