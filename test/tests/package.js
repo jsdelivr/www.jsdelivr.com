@@ -50,11 +50,12 @@ describe('package', () => {
 	it('changing versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
 		await browser.sleep(4000);
+		await browser.findElement({ id: 'navRouteConfig' }).click();
 		await browser.findElement({ css: '.version-dropdown-selected-version' }).click();
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.dropdown-menu-right li:last-of-type a' }).click();
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.box-content .file-link:nth-of-type(7) .file-path' }).getText()).to.eventually.equal('index.js');
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(8) > a .file-path' }).getText()).to.eventually.equal('index.js');
 	});
 
 	it('copying url works', async () => {
