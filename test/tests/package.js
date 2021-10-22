@@ -13,12 +13,6 @@ describe('package', () => {
 		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('index.min.js');
 	});
 
-	it('displays no default file', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/font-awesome`);
-		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.file-message' })).to.eventually.not.equal(null);
-	});
-
 	it('opening directories works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
