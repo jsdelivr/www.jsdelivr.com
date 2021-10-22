@@ -94,7 +94,7 @@
 				{{/if}}
 
 				{{#if license}}
-					<span class="package-label package-label-neutral" title="{{license}}">License <span>{{license}}</span></span>
+					<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
 				{{/if}}
 
 				{{#if ~/vulnerabilities !== undefined}}
@@ -289,6 +289,7 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const { buildIntegrity, canBuildHtml, buildHtml } = require('../../public/js/utils/build-links');
@@ -397,6 +398,7 @@
 		},
 		data () {
 			return {
+				_,
 				typesList: [
 					'Default',
 					'ESM',
