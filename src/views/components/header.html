@@ -1,7 +1,7 @@
 <link rel="ractive" href="./search-compact.html" name="c-search-compact">
 
 <header class="c-header">
-	<nav class="navbar navbar-default {{!actualPath || alternateBgRoutes.includes(actualPath) ? 'about-navbar-default' : ''}}">
+	<nav class="navbar navbar-default {{!actualPath || withFullWhiteLogoRoutes.includes(actualPath) ? 'about-navbar-default' : ''}}">
 		<div class="container">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
@@ -16,10 +16,12 @@
 						Looking for the logo?
 						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
 					-->
-					{{#if actualPath && alternateBgRoutes.includes(actualPath)}}
-						<img width="140" height="34" src="{{@shared.assetsHost}}/img/icons/jsdelivr-logo-horizontal.svg" title="jsDelivr">
-					{{elseif actualPath}}
+					{{#if actualPath && withFullWhiteLogoRoutes.includes(actualPath)}}
+						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-full-white.svg" title="jsDelivr">
+					{{elseif actualPath && actualPath.startsWith('/package/')}}
 						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
+					{{elseif actualPath}}
+						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg" title="jsDelivr">
 					{{/if}}
 				</a>
 
@@ -29,7 +31,7 @@
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
-				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : alternateBgRoutes.includes(actualPath) ? 'about-navbar-right' : 'default-navbar-right'}}">
+				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : withFullWhiteLogoRoutes.includes(actualPath) ? 'about-navbar-right' : 'default-navbar-right'}}">
 					<li><a href="/features">Features</a></li>
 					<li><a href="/network">Network</a></li>
 					<li><a href="/statistics">Stats</a></li>
@@ -71,13 +73,14 @@
 	component.exports = {
 		data () {
 			return {
-				alternateBgRoutes: [
+				withFullWhiteLogoRoutes: [
 					'/about',
+					'/tools/purge',
+					'/esm',
 					'/github',
 					'/google',
 					'/unpkg',
 					'/rawgit',
-					'/tools/purge',
 				],
 			};
 		},
