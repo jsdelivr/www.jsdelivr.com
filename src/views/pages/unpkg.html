@@ -1,88 +1,81 @@
 <link rel="ractive" href="../r-page.html">
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/comparison-table.html" name="c-comparison-table">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
 
 	<div class="p-unpkg">
 		<div class="p-github">
-			<div class="header-gradient">
-				<img class="header-gradient-primary"
-					width="100%"
-					height="2000"
-					style="height: 556px; object-fit: cover;"
-					src="{{@shared.assetsHost}}/img/about/about-gradient.png" />
+			<c-header-gradient></c-header-gradient>
 
-				<div class="header-gradient-secondary"></div>
-			</div>
+			<div class="content">
+				<div class="title">
+					<h1>Migrating from unpkg to jsDelivr</h1>
 
-		<div class="content">
-			<div class="title">
-				<h1>Migrating from unpkg to jsDelivr</h1>
-
-				<h2>
-					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
-					Most unpkg links can be easily converted to jsDelivr links.
-				</h2>
-			</div>
-
-			<div class="container">
-				<div class="box">
-					<div class="bar">
-						<div class="circle"></div>
-						<div class="line {{#if out}}filled{{/if}}"></div>
-						<div class="circle bottom {{#unless out}}circle-disabled{{/unless}}"></div>
-					</div>
-
-					<div class="icon-competitor">
-						<img width="91" height="50" src="{{@shared.assetsHost}}/img/unpkg.png" srcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
-					</div>
-
-					<div class="input-wrapper mb-48">
-						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste an unpkg link here" value="{{in}}">
-					</div>
-
-					<div class="icon-jsdelivr">
-						<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
-					</div>
-
-					<div class="input-wrapper">
-						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
-
-						{{#if out && !error}}
-							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
-						{{/if}}
-					</div>
-
-					{{#if displayHtmlWarning}}
-						<div class="alert alert-warning" role="alert">
-							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
-							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a> if this is a problem.
-						</div>
-					{{/if}}
-			</div>
-
-			<div class="host-descr-title">
-				unpkg and jsDelivr comparison
-			</div>
-
-			<div class="host-descr-text">
-				jsDelivr is a great alternative for unpkg and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
-			</div>
-
-			<div class="container">
-				<c-comparison-table
-					competitorImgSrc="{{@shared.assetsHost}}/img/unpkg.png"
-					competitorImgWidth="91"
-					competitorImgHeight="50"
-					competitorImgSrcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
-				</c-comparison-table>
-
-				<div class="buttons">
-					<a href="/" class="all-features">See All Features</a>
+					<h2>
+						jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+						Most unpkg links can be easily converted to jsDelivr links.
+					</h2>
 				</div>
-			</div>
+
+				<div class="container">
+					<div class="box">
+						<div class="bar">
+							<div class="circle"></div>
+							<div class="line {{#if out}}filled{{/if}}"></div>
+							<div class="circle bottom {{#unless out}}circle-disabled{{/unless}}"></div>
+						</div>
+
+						<div class="icon-competitor">
+							<img width="91" height="50" src="{{@shared.assetsHost}}/img/unpkg.png" srcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
+						</div>
+
+						<div class="input-wrapper mb-48">
+							<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste an unpkg link here" value="{{in}}">
+						</div>
+
+						<div class="icon-jsdelivr">
+							<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
+						</div>
+
+						<div class="input-wrapper">
+							<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+							{{#if out && !error}}
+								<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+							{{/if}}
+						</div>
+
+						{{#if displayHtmlWarning}}
+							<div class="alert alert-warning" role="alert">
+								For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+								We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a> if this is a problem.
+							</div>
+						{{/if}}
+				</div>
+
+				<div class="host-descr-title">
+					unpkg and jsDelivr comparison
+				</div>
+
+				<div class="host-descr-text">
+					jsDelivr is a great alternative for unpkg and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
+				</div>
+
+				<div class="container">
+					<c-comparison-table
+						competitorImgSrc="{{@shared.assetsHost}}/img/unpkg.png"
+						competitorImgWidth="91"
+						competitorImgHeight="50"
+						competitorImgSrcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
+					</c-comparison-table>
+
+					<div class="buttons">
+						<a href="/" class="all-features">See All Features</a>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
