@@ -93,37 +93,45 @@
 
 
 			<section class="performance">
-				<div class="container">
-					<h2 class="section-title">Performance comparison</h2>
+				<h2>Performance comparison</h2>
 
-					<div class="row">
-						<div class="col-md-6">
-							<c-stats-table title="{{statsName}} - load time" data="{{sortedStats.duration}}" columns="{{statsColumns}}" formatValue="{{formatMs}}" valueKey="duration" desc="false">
-								{{#partial column1}}
+				<div class="performance-tables">
+					<div class="load-time">
+						<c-stats-table title="{{statsName}} - load time"
+							data="{{sortedStats.duration}}"
+							columns="{{statsColumns}}"
+							formatValue="{{formatMs}}"
+							valueKey="duration"
+							desc="false">
+							{{#partial column1}}
 								{{#if error}}
-								<span style="color: #f00;">Failed - {{name}}</span>
+									<span style="color: #f00;">Failed - {{name}}</span>
 								{{else}}
-								{{name}}
+									{{name}}
 								{{/if}}
-								{{/partial}}
-							</c-stats-table>
-						</div>
-
-						<div class="col-md-6">
-							<c-stats-table title="{{statsName}} - number of requests" data="{{sortedStats.requests}}" columns="{{statsColumns}}" valueKey="requests" desc="false">
-								{{#partial column1}}
-								{{#if error}}
-								<span style="color: #f00;">Failed - {{name}}</span>
-								{{else}}
-								{{name}}
-								{{/if}}
-								{{/partial}}
-							</c-stats-table>
-						</div>
+							{{/partial}}
+						</c-stats-table>
 					</div>
 
-					<div class="benchmark-text">
-						{{#if ~/showInstructions}}
+					<div class="requests-numbers">
+						<c-stats-table title="{{statsName}} - number of requests"
+							data="{{sortedStats.requests}}"
+							columns="{{statsColumns}}"
+							valueKey="requests"
+							desc="false">
+							{{#partial column1}}
+								{{#if error}}
+									<span style="color: #f00;">Failed - {{name}}</span>
+								{{else}}
+									{{name}}
+								{{/if}}
+							{{/partial}}
+						</c-stats-table>
+					</div>
+				</div>
+
+				<div class="benchmark-text">
+					{{#if ~/showInstructions}}
 						<div class="benchmark-instructions">
 							Please keep in mind the following to get correct benchmark results:<br><br>
 
@@ -141,24 +149,23 @@
 								</li>
 							</ol>
 						</div>
-						{{else}}
+					{{else}}
 						<div>
 							{{#if ~/loading}}
-							<c-spinner></c-spinner>
+								<c-spinner></c-spinner>
 							{{else}}
-							<div>{{statsMessage}}</div>
+								<div class="stats-message">{{statsMessage}}</div>
 							{{/if}}
 						</div>
-						{{/if}}
-					</div>
+					{{/if}}
+				</div>
 
-					<div class="benchmark-buttons">
-						{{#if ~/showInstructions}}
-						<a class="btn btn-primary" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
-						{{else}}
-						<a class="btn btn-primary" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
-						{{/if}}
-					</div>
+				<div class="benchmark-buttons">
+					{{#if ~/showInstructions}}
+						<a class="btn-primary" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
+					{{else}}
+						<a class="btn-primary" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
+					{{/if}}
 				</div>
 			</section>
 
