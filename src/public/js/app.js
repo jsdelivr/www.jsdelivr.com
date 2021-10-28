@@ -22,6 +22,7 @@ const cPP = require('../../views/pages/terms.html');
 const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
 const cEsm = require('../../views/pages/esm.html');
+const cHistory = require('../../views/pages/history.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -89,6 +90,7 @@ app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
 app.router.addRoute('/terms', cPP);
+app.router.addRoute('/history', cHistory);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
