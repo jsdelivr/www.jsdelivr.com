@@ -22,7 +22,21 @@
 
 						{{#each events}}
 							<div class="event-block">
-								<div class="event-data-left">{{leftData}}</div>
+								<div class="event-data-left">
+									{{#if leftData.text}}
+										{{leftData.text}}
+									{{/if}}
+
+									{{#if leftData.type}}
+										<img width="80" height="80" src="{{@shared.assetsHost}}/img/history/{{leftData.type}}.svg" />
+									{{/if}}
+
+									{{#if leftData.imgData}}
+										<img width="{{leftData.imgData.imgWidth}}"
+											height="{{leftData.imgData.imgHeight}}"
+											src="{{leftData.imgData.imgSrc}}" />
+									{{/if}}
+								</div>
 
 								<div class="event-month">
 									<div class="binding"></div>
@@ -30,7 +44,21 @@
 									<div class="binding"></div>
 								</div>
 
-								<div class="event-data-right">{{rightData}}</div>
+								<div class="event-data-right">
+									{{#if rightData.imgData}}
+										<img width="{{rightData.imgData.imgWidth}}"
+											height="{{rightData.imgData.imgHeight}}"
+											src="{{rightData.imgData.imgSrc}}" />
+									{{/if}}
+
+									{{#if rightData.type}}
+										<img width="80" height="80" src="{{@shared.assetsHost}}/img/history/{{rightData.type}}.svg" />
+									{{/if}}
+
+									{{#if rightData.text}}
+										{{rightData.text}}
+									{{/if}}
+								</div>
 							</div>
 						{{/each}}
 					</section>
@@ -54,53 +82,33 @@
 								month: 'October',
 								leftData: {
 									text: 'On-the-fly SVG optimization goes live',
-									type: '',
-									imgSrc: '',
+									type: 'updates',
 								},
-								rightData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								rightData: {},
 							},
 							{
 								month: 'September',
-								leftData: {
-									text: 'Served 130B requests',
-									type: '',
-									imgSrc: '',
-								},
+								leftData: {},
 								rightData: {
-									text: '6 PB of bandwidth per month',
-									type: '',
-									imgSrc: '',
+									text: 'Served 130B requests, 6 PB of bandwidth per month',
+									type: 'numbers',
 								},
 							},
 							{
 								month: 'May',
 								leftData: {
 									text: 'RawGit CDN becomes part of jsDelivr',
-									type: '',
-									imgSrc: '',
+									type: 'deals',
 								},
-								rightData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								rightData: {},
 							},
 							{
 								month: 'February',
 								leftData: {
 									text: 'Bunny CDN joins as a sponsor',
-									type: '',
-									imgSrc: '',
+									type: 'deals',
 								},
-								rightData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								rightData: {},
 							},
 						],
 					},
@@ -111,52 +119,35 @@
 								month: 'October',
 								leftData: {
 									text: 'esm.run launches',
-									type: '',
-									imgSrc: '',
+									type: 'updates',
 								},
-								rightData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								rightData: {},
 							},
 							{
 								month: 'October',
-								leftData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								leftData: {},
 								rightData: {
 									text: 'Bootstrap CDN becomes part of jsDelivr',
-									type: '',
-									imgSrc: '',
+									type: 'deals',
 								},
 							},
 							{
 								month: 'October',
 								leftData: {
 									text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
-									type: '',
-									imgSrc: '',
+									type: 'deals',
 								},
-								rightData: {
-									text: '',
-									type: '',
-									imgSrc: '',
-								},
+								rightData: {},
 							},
 							{
 								month: 'May',
 								leftData: {
 									text: 'CocoaPods becomes powered by jsDelivr',
-									type: '',
-									imgSrc: '',
+									type: 'deals',
 								},
 								rightData: {
 									text: 'speeding up the installation of packages',
-									type: '',
-									imgSrc: '',
+									type: 'updates',
 								},
 							},
 						],
@@ -166,16 +157,238 @@
 						events: [
 							{
 								month: 'October',
+								leftData: {},
+								rightData: {
+									text: 'Served 60B requests, reaching the 2B / day average',
+									type: 'numbers',
+								},
+							},
+							{
+								month: 'May',
 								leftData: {
-									text: 'Served 60B requests',
-									type: '',
-									imgSrc: '',
+									text: 'PerfOps joins as a sponsor',
+									type: 'deals',
 								},
 								rightData: {
-									text: 'reaching the 2B / day average',
-									type: '',
-									imgSrc: '',
+									text: 'improves the multi-CDN routing',
+									type: 'updates',
 								},
+							},
+						],
+					},
+					{
+						year: '2018',
+						events: [
+							{
+								month: 'October',
+								leftData: {
+									text: 'Plugins for Atom, IntelliJ, and Visual Studio released',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+							{
+								month: 'September',
+								leftData: {},
+								rightData: {
+									text: 'Served 30 billion requests per month, reaching a daily average of 1B for the first time',
+									type: 'numbers',
+								},
+							},
+						],
+					},
+					{
+						year: '2017',
+						events: [
+							{
+								month: 'August',
+								leftData: {},
+								rightData: {
+									text: 'Website rebuilt to support the new automated system',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'July',
+								leftData: {
+									text: 'Data API launches, providing detailed download statistics',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+							{
+								month: 'May',
+								leftData: {},
+								rightData: {
+									text: 'Fully automated npm and GitHub proxies launch',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'April',
+								leftData: {
+									text: 'Fastly joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {},
+							},
+						],
+					},
+					{
+						year: '2016',
+						events: [
+							{
+								leftData: {
+									text: 'OSS CDN becomes part of jsDelivr',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+						],
+					},
+					{
+						year: '2015',
+						events: [
+							{
+								month: 'November',
+								leftData: {
+									text: 'Served 7 billion requests, 132 TB per month',
+									type: 'numbers',
+								},
+								rightData: {},
+							},
+							{
+								month: 'September',
+								leftData: {
+									text: 'Quantil joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {
+									text: 'adds locations in mainland China',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'September',
+								leftData: {
+									text: 'Complete redesign of the website',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+						],
+					},
+					{
+						year: '2014',
+						events: [
+							{
+								month: 'December',
+								leftData: {
+									text: 'NS1 joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {},
+							},
+							{
+								month: 'December',
+								leftData: {},
+								rightData: {
+									text: 'WordPress plugins proxy launches',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'November',
+								leftData: {
+									text: 'Purge API launches',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+							{
+								month: 'July',
+								leftData: {},
+								rightData: {
+									text: 'Serving multiple files in one response possible thanks to /g/',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'June',
+								leftData: {
+									text: 'Automated project updates via libgrabber',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+							{
+								month: 'April',
+								leftData: {},
+								rightData: {
+									text: 'jsDelivr becomes the fastest open-source CDN according to CDNPerf',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'March',
+								leftData: {
+									text: 'Cloudflare joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {},
+							},
+						],
+					},
+					{
+						year: '2013',
+						events: [
+							{
+								month: 'December',
+								leftData: {
+									text: 'Public data API launches',
+									type: 'updates',
+								},
+								rightData: {},
+							},
+							{
+								month: 'June',
+								leftData: {
+									text: 'Cedexis joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {
+									text: 'allows multi-CDN routing based on RUM',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'May',
+								leftData: {
+									text: 'CDN.NET joins as a sponsor',
+									type: 'deals',
+								},
+								rightData: {},
+							},
+						],
+					},
+					{
+						year: '2012',
+						events: [
+							{
+								month: 'June',
+								leftData: {},
+								rightData: {
+									text: 'MaxCDN joins as a sponsor',
+									type: 'deals',
+								},
+							},
+							{
+								month: 'May',
+								leftData: {
+									text: 'Dmitriy Akulov founds jsDelivr',
+									type: 'updates',
+								},
+								rightData: {},
 							},
 						],
 					},
