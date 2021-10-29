@@ -23,21 +23,23 @@
 						{{#each events}}
 							<div class="event-block">
 								<div class="event-data-left">
-									{{#if leftData.text}}
-										{{leftData.text}}
+									{{#if leftData}}
+										{{#if leftData.text}}
+											{{leftData.text}}
+										{{/if}}
+
+										{{#if leftData.type}}
+											<img class="event-type-icon"
+												width="80"
+												height="80"
+												src="{{@shared.assetsHost}}/img/history/{{leftData.type}}.svg" />
+										{{/if}}
 									{{/if}}
 
-									{{#if leftData.type}}
-										<img class="event-type-icon"
-											width="80"
-											height="80"
-											src="{{@shared.assetsHost}}/img/history/{{leftData.type}}.svg" />
-									{{/if}}
-
-									{{#if leftData.imgData}}
-										<img width="{{leftData.imgData.imgWidth}}"
-											height="{{leftData.imgData.imgHeight}}"
-											src="{{leftData.imgData.imgSrc}}" />
+									{{#if rightData.img}}
+										<img width="{{rightData.img.imgWidth}}"
+											height="{{rightData.img.imgHeight}}"
+											src="{{@shared.assetsHost}}/img/history/{{rightData.img.imgName}}" />
 									{{/if}}
 								</div>
 
@@ -48,21 +50,23 @@
 								</div>
 
 								<div class="event-data-right">
-									{{#if rightData.imgData}}
-										<img width="{{rightData.imgData.imgWidth}}"
-											height="{{rightData.imgData.imgHeight}}"
-											src="{{rightData.imgData.imgSrc}}" />
+									{{#if leftData.img}}
+										<img width="{{leftData.img.imgWidth}}"
+											height="{{leftData.img.imgHeight}}"
+											src="{{@shared.assetsHost}}/img/history/{{leftData.img.imgName}}" />
 									{{/if}}
 
-									{{#if rightData.type}}
-										<img class="event-type-icon"
-											width="80"
-											height="80"
-											src="{{@shared.assetsHost}}/img/history/{{rightData.type}}.svg" />
-									{{/if}}
+									{{#if rightData}}
+										{{#if rightData.type}}
+											<img class="event-type-icon"
+												width="80"
+												height="80"
+												src="{{@shared.assetsHost}}/img/history/{{rightData.type}}.svg" />
+										{{/if}}
 
-									{{#if rightData.text}}
-										{{rightData.text}}
+										{{#if rightData.text}}
+											{{rightData.text}}
+										{{/if}}
 									{{/if}}
 								</div>
 							</div>
@@ -90,11 +94,9 @@
 									text: 'On-the-fly SVG optimization goes live',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'September',
-								leftData: {},
 								rightData: {
 									text: 'Served 130B requests, 6 PB of bandwidth per month',
 									type: 'numbers',
@@ -105,16 +107,24 @@
 								leftData: {
 									text: 'RawGit CDN becomes part of jsDelivr',
 									type: 'deals',
+									img: {
+										imgName: 'rawgit.svg',
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
-								rightData: {},
 							},
 							{
 								month: 'February',
 								leftData: {
 									text: 'Bunny CDN joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'bunny.svg',
+										imgWidth: '148',
+										imgHeight: '43',
+									},
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -127,14 +137,17 @@
 									text: 'esm.run launches',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'October',
-								leftData: {},
 								rightData: {
 									text: 'Bootstrap CDN becomes part of jsDelivr',
 									type: 'deals',
+									img: {
+										imgName: 'bootstrap.svg',
+										imgWidth: '147',
+										imgHeight: '34',
+									},
 								},
 							},
 							{
@@ -142,18 +155,23 @@
 								leftData: {
 									text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
 									type: 'deals',
+									img: {
+										imgName: 'pyodide.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
-								rightData: {},
 							},
 							{
 								month: 'May',
 								leftData: {
-									text: 'CocoaPods becomes powered by jsDelivr',
+									text: 'CocoaPods becomes powered by jsDelivr, speeding up the installation of packages',
 									type: 'deals',
-								},
-								rightData: {
-									text: 'speeding up the installation of packages',
-									type: 'updates',
+									img: {
+										imgName: 'cocoapods.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
 							},
 						],
@@ -163,7 +181,6 @@
 						events: [
 							{
 								month: 'October',
-								leftData: {},
 								rightData: {
 									text: 'Served 60B requests, reaching the 2B / day average',
 									type: 'numbers',
@@ -172,12 +189,13 @@
 							{
 								month: 'May',
 								leftData: {
-									text: 'PerfOps joins as a sponsor',
+									text: 'PerfOps joins as a sponsor, improves the multi-CDN routing',
 									type: 'deals',
-								},
-								rightData: {
-									text: 'improves the multi-CDN routing',
-									type: 'updates',
+									img: {
+										imgName: 'perfops.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
 							},
 						],
@@ -191,11 +209,9 @@
 									text: 'Plugins for Atom, IntelliJ, and Visual Studio released',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'September',
-								leftData: {},
 								rightData: {
 									text: 'Served 30 billion requests per month, reaching a daily average of 1B for the first time',
 									type: 'numbers',
@@ -208,7 +224,6 @@
 						events: [
 							{
 								month: 'August',
-								leftData: {},
 								rightData: {
 									text: 'Website rebuilt to support the new automated system',
 									type: 'updates',
@@ -220,11 +235,9 @@
 									text: 'Data API launches, providing detailed download statistics',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'May',
-								leftData: {},
 								rightData: {
 									text: 'Fully automated npm and GitHub proxies launch',
 									type: 'updates',
@@ -235,8 +248,12 @@
 								leftData: {
 									text: 'Fastly joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'fastly.svg',
+										imgWidth: '84',
+										imgHeight: '40',
+									},
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -248,7 +265,6 @@
 									text: 'OSS CDN becomes part of jsDelivr',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -261,17 +277,17 @@
 									text: 'Served 7 billion requests, 132 TB per month',
 									type: 'numbers',
 								},
-								rightData: {},
 							},
 							{
 								month: 'September',
 								leftData: {
-									text: 'Quantil joins as a sponsor',
+									text: 'Quantil joins as a sponsor, adds locations in mainland China',
 									type: 'deals',
-								},
-								rightData: {
-									text: 'adds locations in mainland China',
-									type: 'updates',
+									img: {
+										imgName: 'quantil.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
 							},
 							{
@@ -280,7 +296,6 @@
 									text: 'Complete redesign of the website',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -292,12 +307,15 @@
 								leftData: {
 									text: 'NS1 joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'ns1.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
-								rightData: {},
 							},
 							{
 								month: 'December',
-								leftData: {},
 								rightData: {
 									text: 'WordPress plugins proxy launches',
 									type: 'updates',
@@ -309,11 +327,9 @@
 									text: 'Purge API launches',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'July',
-								leftData: {},
 								rightData: {
 									text: 'Serving multiple files in one response possible thanks to /g/',
 									type: 'updates',
@@ -325,11 +341,9 @@
 									text: 'Automated project updates via libgrabber',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'April',
-								leftData: {},
 								rightData: {
 									text: 'jsDelivr becomes the fastest open-source CDN according to CDNPerf',
 									type: 'updates',
@@ -340,8 +354,12 @@
 								leftData: {
 									text: 'Cloudflare joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'cloudflare.svg',
+										imgWidth: '118',
+										imgHeight: '42',
+									},
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -354,17 +372,17 @@
 									text: 'Public data API launches',
 									type: 'updates',
 								},
-								rightData: {},
 							},
 							{
 								month: 'June',
 								leftData: {
-									text: 'Cedexis joins as a sponsor',
+									text: 'Cedexis joins as a sponsor, allows multi-CDN routing based on RUM',
 									type: 'deals',
-								},
-								rightData: {
-									text: 'allows multi-CDN routing based on RUM',
-									type: 'updates',
+									img: {
+										imgName: 'cedexis.svg',
+										imgWidth: '119',
+										imgHeight: '50',
+									},
 								},
 							},
 							{
@@ -372,8 +390,12 @@
 								leftData: {
 									text: 'CDN.NET joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'cdnnet.svg', // TODO
+										imgWidth: '68',
+										imgHeight: '38',
+									},
 								},
-								rightData: {},
 							},
 						],
 					},
@@ -382,19 +404,27 @@
 						events: [
 							{
 								month: 'June',
-								leftData: {},
 								rightData: {
 									text: 'MaxCDN joins as a sponsor',
 									type: 'deals',
+									img: {
+										imgName: 'maxcdn.svg',
+										imgWidth: '132',
+										imgHeight: '30',
+									},
 								},
 							},
 							{
 								month: 'May',
 								leftData: {
 									text: 'Dmitriy Akulov founds jsDelivr',
-									type: 'updates',
+									type: 'deals',
+									img: {
+										imgName: 'akulov.png',
+										imgWidth: '80',
+										imgHeight: '80',
+									},
 								},
-								rightData: {},
 							},
 						],
 					},
