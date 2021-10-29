@@ -36,10 +36,15 @@
 										{{/if}}
 									{{/if}}
 
-									{{#if rightData.img}}
-										<img width="{{rightData.img.imgWidth}}"
-											height="{{rightData.img.imgHeight}}"
-											src="{{@shared.assetsHost}}/img/history/{{rightData.img.imgName}}" />
+									{{#if rightData.img && rightData.img.ext === ".svg"}}
+										<img width="{{rightData.img.width}}"
+											height="{{rightData.img.height}}"
+											src="{{@shared.assetsHost}}/img/history/{{rightData.img.name}}{{rightData.img.ext}}" />
+									{{elseif rightData.img && rightData.img.ext === ".png"}}
+										<img width="{{rightData.img.width}}"
+											height="{{rightData.img.height}}"
+											src="{{@shared.assetsHost}}/img/history/{{rightData.img.name}}{{rightData.img.ext}}"
+											srcset="{{@shared.assetsHost}}/img/history/{{rightData.img.name}}{{rightData.img.ext}} 2x" />
 									{{/if}}
 								</div>
 
@@ -50,10 +55,15 @@
 								</div>
 
 								<div class="event-data-right">
-									{{#if leftData.img}}
-										<img width="{{leftData.img.imgWidth}}"
-											height="{{leftData.img.imgHeight}}"
-											src="{{@shared.assetsHost}}/img/history/{{leftData.img.imgName}}" />
+									{{#if leftData.img && leftData.img.ext === ".svg"}}
+										<img width="{{leftData.img.width}}"
+											height="{{leftData.img.height}}"
+											src="{{@shared.assetsHost}}/img/history/{{leftData.img.name}}{{leftData.img.ext}}" />
+									{{elseif leftData.img && leftData.img.ext === ".png"}}
+										<img width="{{leftData.img.width}}"
+											height="{{leftData.img.height}}"
+											src="{{@shared.assetsHost}}/img/history/{{leftData.img.name}}{{leftData.img.ext}}"
+											srcset="{{@shared.assetsHost}}/img/history/{{leftData.img.name}}{{leftData.img.ext}} 2x" />
 									{{/if}}
 
 									{{#if rightData}}
@@ -108,9 +118,10 @@
 									text: 'RawGit CDN becomes part of jsDelivr',
 									type: 'deals',
 									img: {
-										imgName: 'rawgit.svg',
-										imgWidth: '68',
-										imgHeight: '38',
+										name: 'rawgit',
+										width: '68',
+										height: '38',
+										ext: '.svg',
 									},
 								},
 							},
@@ -120,9 +131,10 @@
 									text: 'Bunny CDN joins as a sponsor',
 									type: 'deals',
 									img: {
-										imgName: 'bunny.svg',
-										imgWidth: '148',
-										imgHeight: '43',
+										name: 'bunny',
+										width: '148',
+										height: '43',
+										ext: '.svg',
 									},
 								},
 							},
@@ -144,36 +156,39 @@
 									text: 'Bootstrap CDN becomes part of jsDelivr',
 									type: 'deals',
 									img: {
-										imgName: 'bootstrap.svg',
-										imgWidth: '147',
-										imgHeight: '34',
+										name: 'bootstrap',
+										width: '147',
+										height: '34',
+										ext: '.svg',
 									},
 								},
 							},
-							{
-								month: 'October',
-								leftData: {
-									text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
-									type: 'deals',
-									img: {
-										imgName: 'pyodide.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
-									},
-								},
-							},
-							{
-								month: 'May',
-								leftData: {
-									text: 'CocoaPods becomes powered by jsDelivr, speeding up the installation of packages',
-									type: 'deals',
-									img: {
-										imgName: 'cocoapods.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
-									},
-								},
-							},
+							// {
+							// 	month: 'October',
+							// 	leftData: {
+							// 		text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
+							// 		type: 'deals',
+							// 		img: {
+							// 			name: 'pyodide', // TODO
+							// 			width: '68',
+							// 			height: '38',
+							// 			ext: '.svg',
+							// 		},
+							// 	},
+							// },
+							// {
+							// 	month: 'May',
+							// 	leftData: {
+							// 		text: 'CocoaPods becomes powered by jsDelivr, speeding up the installation of packages',
+							// 		type: 'deals',
+							// 		img: {
+							// 			name: 'cocoapods', // TODO
+							// 			width: '68',
+							// 			height: '38',
+							// 			ext: '.svg',
+							// 		},
+							// 	},
+							// },
 						],
 					},
 					{
@@ -186,18 +201,19 @@
 									type: 'numbers',
 								},
 							},
-							{
-								month: 'May',
-								leftData: {
-									text: 'PerfOps joins as a sponsor, improves the multi-CDN routing',
-									type: 'deals',
-									img: {
-										imgName: 'perfops.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
-									},
-								},
-							},
+							// {
+							// 	month: 'May',
+							// 	leftData: {
+							// 		text: 'PerfOps joins as a sponsor, improves the multi-CDN routing',
+							// 		type: 'deals',
+							// 		img: {
+							// 			name: 'perfops', // TODO
+							// 			width: '68',
+							// 			height: '38',
+							// 			ext: '.svg',
+							// 		},
+							// 	},
+							// },
 						],
 					},
 					{
@@ -249,9 +265,10 @@
 									text: 'Fastly joins as a sponsor',
 									type: 'deals',
 									img: {
-										imgName: 'fastly.svg',
-										imgWidth: '84',
-										imgHeight: '40',
+										name: 'fastly',
+										width: '84',
+										height: '40',
+										ext: '.svg',
 									},
 								},
 							},
@@ -284,9 +301,10 @@
 									text: 'Quantil joins as a sponsor, adds locations in mainland China',
 									type: 'deals',
 									img: {
-										imgName: 'quantil.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
+										name: 'quantil',
+										width: '131',
+										height: '50',
+										ext: '.png',
 									},
 								},
 							},
@@ -308,9 +326,10 @@
 									text: 'NS1 joins as a sponsor',
 									type: 'deals',
 									img: {
-										imgName: 'ns1.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
+										name: 'ns1',
+										width: '94',
+										height: '50',
+										ext: '.png',
 									},
 								},
 							},
@@ -355,9 +374,10 @@
 									text: 'Cloudflare joins as a sponsor',
 									type: 'deals',
 									img: {
-										imgName: 'cloudflare.svg',
-										imgWidth: '118',
-										imgHeight: '42',
+										name: 'cloudflare',
+										width: '118',
+										height: '42',
+										ext: '.svg',
 									},
 								},
 							},
@@ -379,24 +399,26 @@
 									text: 'Cedexis joins as a sponsor, allows multi-CDN routing based on RUM',
 									type: 'deals',
 									img: {
-										imgName: 'cedexis.svg',
-										imgWidth: '119',
-										imgHeight: '50',
+										name: 'cedexis',
+										width: '119',
+										height: '50',
+										ext: '.svg',
 									},
 								},
 							},
-							{
-								month: 'May',
-								leftData: {
-									text: 'CDN.NET joins as a sponsor',
-									type: 'deals',
-									img: {
-										imgName: 'cdnnet.svg', // TODO
-										imgWidth: '68',
-										imgHeight: '38',
-									},
-								},
-							},
+							// {
+							// 	month: 'May',
+							// 	leftData: {
+							// 		text: 'CDN.NET joins as a sponsor',
+							// 		type: 'deals',
+							// 		img: {
+							// 			name: 'cdnnet', // TODO
+							// 			width: '68',
+							// 			height: '38',
+							// 			ext: '.svg',
+							// 		},
+							// 	},
+							// },
 						],
 					},
 					{
@@ -408,24 +430,26 @@
 									text: 'MaxCDN joins as a sponsor',
 									type: 'deals',
 									img: {
-										imgName: 'maxcdn.svg',
-										imgWidth: '132',
-										imgHeight: '30',
+										name: 'maxcdn',
+										width: '132',
+										height: '30',
+										ext: '.svg',
 									},
 								},
 							},
-							{
-								month: 'May',
-								leftData: {
-									text: 'Dmitriy Akulov founds jsDelivr',
-									type: 'deals',
-									img: {
-										imgName: 'akulov.png',
-										imgWidth: '80',
-										imgHeight: '80',
-									},
-								},
-							},
+							// {
+							// 	month: 'May',
+							// 	leftData: {
+							// 		text: 'Dmitriy Akulov founds jsDelivr',
+							// 		type: 'deals',
+							// 		img: {
+							// 			name: 'akulov',
+							// 			width: '80',
+							// 			height: '80',
+							// 			ext: '.png',
+							// 		},
+							// 	},
+							// },
 						],
 					},
 				],
