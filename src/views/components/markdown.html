@@ -12,6 +12,18 @@
 						return hljs.highlightAuto(code, [ 'html', 'javascript' ]).value;
 					},
 				});
+
+				let renderer = {
+					link (href, title, text) {
+						return `
+							<a href="${href}" target="_blank" rel="nofollow">
+								${text}
+							</a>
+						`;
+					},
+				};
+
+				marked.use({ renderer });
 			}
 
 			return {
