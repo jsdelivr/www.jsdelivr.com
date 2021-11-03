@@ -2,8 +2,6 @@ require('./polyfills');
 
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
-// redirect /rawgit to main
-// const cRawGit = require('../../views/pages/rawgit.html');
 const cGithub = require('../../views/pages/github.html');
 const cFoundationCdn = require('../../views/pages/foundationcdn.html');
 const cUnpkg = require('../../views/pages/unpkg.html');
@@ -69,8 +67,6 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
-// redirect /rawgit to main
-// app.router.addRoute('/rawgit', cRawGit);
 app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
 app.router.addRoute('/features', () => { location.pathname = '/'; });
 app.router.addRoute('/github', cGithub);
