@@ -43,9 +43,17 @@
 	<div class="row">
 		<div class="col-xs-12">
 			{{#if ~/type === 'gh'}}
-			<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20">{{owner.name}}</a>
+				<a target="_blank" rel="nofollow noopener" href="https://github.com/{{owner.name}}" class="package-owner">
+					<img width="20" height="20" src="{{owner.avatar}}?s=20">
+					{{owner.name}}
+				</a>
 			{{else}}
-			<a href="/?query=author%3A%20{{owner.name}}" class="package-owner"><img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">{{owner.name}}</a>
+				{{#if owner}}
+					<a href="/?query=author%3A%20{{owner.name}}" class="package-owner">
+						<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
+						{{owner.name}}
+					</a>
+				{{/if}}
 			{{/if}}
 			{{#if version}}<span class="package-label" title="{{version}}"><i class="fa fa-tag" aria-hidden="true"></i> {{version}}</span>{{/if}}
 			{{#if license}}<span class="package-label" title="{{_.unescapeHtml(license)}}"><i class="fa fa-balance-scale" aria-hidden="true"></i> {{_.unescapeHtml(license)}}</span>{{/if}}
