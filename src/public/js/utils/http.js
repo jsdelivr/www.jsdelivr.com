@@ -47,13 +47,6 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 };
 
 module.exports.fetchRegistryNpmPackage = (name) => {
-	// TODO: temp part for testing only, rm it
-	$.ajaxPrefilter((options) => {
-		if (options.crossDomain && jQuery.support.cors) {
-			options.url = 'https://cors-anywhere.herokuapp.com/' + options.url;
-		}
-	});
-
 	return $.ajax({
 		dataType: 'json',
 		url: `https://registry.npmjs.com/${name}`,
