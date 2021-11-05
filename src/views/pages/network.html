@@ -1,7 +1,7 @@
 <link rel="ractive" href="../r-page.html">
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
-<link rel="ractive" href="../components/infographic-banner.html" name="c-infographic-banner">
+<link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<style>
@@ -44,7 +44,7 @@
 		<div class="container">
 			<h1 class="page-title">Our network</h1>
 
-			<section id="map">
+			<div id="map" class="map">
 				<div class="network-controls">
 					{{#each providers}}
 					<input type="checkbox" class="switch-inline {{this}}" data-color="{{getColor(this)}}" id="provider-{{this}}" checked="{{enabled[@key]}}" twoway="false">
@@ -53,7 +53,7 @@
 				</div>
 
 				<div class="network-map"></div>
-			</section>
+			</div>
 
 			<section>
 				<p>
@@ -78,8 +78,15 @@
 					Jealous? We can build a similar system for you. We offer CDN and web peformance consultation services.
 				</p>-->
 
-				<c-infographic-banner></c-infographic-banner>
 			</section>
+
+			<c-new-infographic-banner>
+				{{#partial text}}
+					Learn more about<br />
+					the infrastructure that<br />
+					powers <a href="/network/infographic" target="_blank" class="router-ignore">jsDelivr</a>
+				{{/partial}}
+			</c-new-infographic-banner>
 
 			<section id="failover">
 				<h3>Failover on every layer</h3>
@@ -107,7 +114,13 @@
 			<section id="china">
 				<h3>Big network in China</h3>
 
-				<div class="china-banner">
+				<p>jsDelivr is the only public CDN with a valid ICP license issued by the Chinese government, and hundreds of locations directly in Mainland China.</p>
+
+				<div class="china-map">
+					<img width="806" height="380" src="{{@shared.assetsHost}}/img/network/china-map.svg">
+				</div>
+
+				<!-- <div class="china-banner">
 					<div class="china-bg">
 						<img width="1140" height="328" src="{{@shared.assetsHost}}/img/network/china-bg.jpg" srcset="{{@shared.assetsHost}}/img/network/china-bg@2x.jpg 2x" loading="lazy">
 
@@ -117,7 +130,7 @@
 							and hundreds of locations directly in Mainland China.
 						</p>
 					</div>
-				</div>
+				</div> -->
 			</section>
 		</div>
 	</div>
@@ -167,6 +180,8 @@
 				draggableCursor: 'default',
 				mapTypeControl: false,
 				streetViewControl: false,
+				zoomControl: false,
+				fullscreenControl: false,
 			});
 
 			this.observe('enabled', () => {
