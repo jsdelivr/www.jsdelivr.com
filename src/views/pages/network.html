@@ -42,18 +42,20 @@
 
 	<div class="p-network text-page">
 		<div class="container">
-			<h1 class="page-title">Our network</h1>
+			<div id="map" class="map-wrapper">
+				<h1 class="page-title">Network</h1>
 
-			<div id="map" class="map">
 				<div class="network-controls">
 					{{#each providers}}
-						<input class="switch-inline {{this}}"
-							type="checkbox"
-							data-color="{{getColor(this)}}"
-							id="provider-{{this}}"
-							checked="{{enabled[@key]}}"
-							twoway="false">
-						<label class="network-control" for="provider-{{this}}" on-click="@this.toggleMap(@key)"></label>{{this}}
+						<div class="network-control">
+							<input class="switch-inline {{this}}"
+								type="checkbox"
+								data-color="{{getColor(this)}}"
+								id="provider-{{this}}"
+								checked="{{enabled[@key]}}"
+								twoway="false">
+							<label for="provider-{{this}}" on-click="@this.toggleMap(@key)"></label>{{this}}
+						</div>
 					{{/each}}
 				</div>
 
@@ -154,7 +156,7 @@
 			return {
 				getColor,
 				providers,
-				enabled: { 0: true, 1: true, 2: true, 3: true, 4: true },
+				enabled: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true },
 				title: 'Our network - jsDelivr',
 				description: 'jsDelivr uses Cloudflare, Fastly, Bunny, and Quantil, as well as custom servers in locations where CDNs have little or no presence.',
 			};
