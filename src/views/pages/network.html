@@ -6,35 +6,35 @@
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<style>
 		{{#each providers}}
-		.{{this}}.switch-inline + label:before {
-			background-color: {{getColor(this)}};
-		}
+			.{{this}}.switch-inline + label:before {
+				background-color: {{getColor(this)}};
+			}
 
-		.{{this}}.switch-inline:checked + label {
-			background-color: {{getColor(this)}};
-			border-color: {{getColor(this)}};
-		}
+			.{{this}}.switch-inline:checked + label {
+				background-color: {{getColor(this)}};
+				border-color: {{getColor(this)}};
+			}
 
-		.{{this}}.switch-inline:checked + label:before {
-			background-color: #fff;
-		}
+			.{{this}}.switch-inline:checked + label:before {
+				background-color: #fff;
+			}
 		{{/each}}
 	</style>
 
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
-	<script>
-		/* eslint-disable */
-		function initMap () {
-			$(function () {
-				app.loaded = true;
+		<script>
+			/* eslint-disable */
+			function initMap () {
+				$(function () {
+					app.loaded = true;
 
-				if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
-					app.router.route.view.initMap();
-				}
-			});
-		}
-	</script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -47,8 +47,13 @@
 			<div id="map" class="map">
 				<div class="network-controls">
 					{{#each providers}}
-					<input type="checkbox" class="switch-inline {{this}}" data-color="{{getColor(this)}}" id="provider-{{this}}" checked="{{enabled[@key]}}" twoway="false">
-					<label class="network-control" for="provider-{{this}}" on-click="@this.toggleMap(@key)"></label>{{this}}
+						<input class="switch-inline {{this}}"
+							type="checkbox"
+							data-color="{{getColor(this)}}"
+							id="provider-{{this}}"
+							checked="{{enabled[@key]}}"
+							twoway="false">
+						<label class="network-control" for="provider-{{this}}" on-click="@this.toggleMap(@key)"></label>{{this}}
 					{{/each}}
 				</div>
 
