@@ -7,7 +7,7 @@ chai.use(chaiAsPromised);
 describe('other', () => {
 	it('network page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/network`);
-		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Our network');
+		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Network');
 	});
 
 	it('stats page loads', async () => {
