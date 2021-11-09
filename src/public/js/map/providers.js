@@ -2,6 +2,6 @@ module.exports = [
 	'Bunny',
 	'Cloudflare',
 	'Fastly',
-	'G-Core',
+	'GCore',
 	'QUANTIL',
 ];
