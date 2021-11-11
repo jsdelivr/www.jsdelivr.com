@@ -24,7 +24,7 @@
 				<div class="file-default">
 					<a class="file-default-link"
 						target="_blank"
-						rel="nofollow noopener"
+						rel="noopener noreferrer"
 						href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
 						as-tooltip="'Default file: ' + ~/default">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
@@ -76,7 +76,7 @@
 								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
 						{{else}}
-							<a target="_blank" rel="nofollow noopener" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+							<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
 								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
@@ -199,9 +199,9 @@
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${this.get('type') === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
-										errorHtml += `<br><br>Consider <a target="_blank" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+										errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 									}).always(() => {
-										errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+										errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 										this.set('filesLoadingMessage', errorHtml);
 									});
 								}
