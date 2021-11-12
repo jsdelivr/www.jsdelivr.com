@@ -11,34 +11,34 @@
 
 		<div class="search-results">
 			{{#each packages}}
-			<div class="c-package">
-				<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true"></c-package-header>
-			</div>
+				<div class="c-package">
+					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true"></c-package-header>
+				</div>
 			{{elseif query && nbHits === 0}}
 				No results founds
 			{{/each}}
 		</div>
 
 		{{#if hideLanding}}
-		<nav class="search-pagination" aria-label="Search results pagination">
-			<ul class="pagination">
-				<li style="{{#unless page}}visibility: hidden;{{/unless}}">
-					<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
-						<span aria-hidden="true">&laquo;</span>
-					</a>
-				</li>
+			<nav class="search-pagination" aria-label="Search results pagination">
+				<ul class="pagination">
+					<li style="{{#unless page}}visibility: hidden;{{/unless}}">
+						<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
 
-				{{#each pagination(page, nbPages)}}
-				<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
-				{{/each}}
+					{{#each pagination(page, nbPages)}}
+					<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+					{{/each}}
 
-				<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
-					<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
-						<span aria-hidden="true">&raquo;</span>
-					</a>
-				</li>
-			</ul>
-		</nav>
+					<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
+						<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
 		{{/if}}
 	</div>
 </div>
