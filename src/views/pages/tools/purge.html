@@ -27,19 +27,23 @@
 						value="{{urls}}">
 					</textarea>
 
-					<a on-click="@this.purge()" class-loading="purging">
-						{{#if purging}}
-							<div class="load-animation"></div>
-						{{else}}
-							Purge now
-						{{/if}}
-					</a>
+					{{#if purging}}
+						<a class="animated" class-loading="purging">
+							<div class="animation"></div>
+						</a>
+					{{else}}
+						<a class="btn-primary">
+							<span on-click="@this.set('proceedToCaptcha', true)">Purge now</span>
+						</a>
+					{{/if}}
 
 					{{#if requestFailed}}
 						<label class="error">An error occurred while purging!</label>
 					{{/if}}
 
-					<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					<div class="recaptcha-wrapper{{#if proceedToCaptcha}} visible{{/if}}">
+						<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					</div>
 					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
 				</div>
 			</section>
@@ -82,6 +86,7 @@
 				requestFailed: false,
 				results: [],
 				captchaToken: '',
+				proceedToCaptcha: false,
 			};
 		},
 		oninit () {
@@ -95,13 +100,16 @@
 				$(document).ready(() => {
 					window.recaptchaCallback = recaptchaCallback;
 				});
+
+
+				this.observe('captchaToken', (token) => {
+					if (token) {
+						this.purge();
+					}
+				});
 			}
 		},
 		purge () {
-			if (this.get('captchaToken') === '') {
-				return;
-			}
-
 			this.set('purging', true);
 			this.set('requestFailed', false);
 
@@ -115,7 +123,8 @@
 			paths = paths.split(',');
 
 			if (paths.length > 10) {
-				this.set('purging', false);				return;
+				this.set('purging', false);
+				return;
 			}
 
 			$.ajax({
@@ -126,22 +135,24 @@
 				},
 				url: 'https://purge.jsdelivr.net/captcha',
 				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
-			}).done((response) => {
-				let results = [];
-				let providers = Object.keys(response.cdn);
+			}).done(() => {
+				// let results = [];
+				// let providers = Object.keys(response.cdn);
 
-				for (let provider of providers) {
-					results.push({
-						name: provider,
-						result: response.cdn[provider],
-					});
-				}
+				// for (let provider of providers) {
+				// 	results.push({
+				// 		name: provider,
+				// 		result: response.cdn[provider],
+				// 	});
+				// }
 
-				this.set('results', results);
+				// this.set('results', results);
 				this.set('purging', false);
+				this.set('proceedToCaptcha', false);
 			}).fail(() => {
 				this.set('purging', false);
 				this.set('requestFailed', true);
+				this.set('proceedToCaptcha', false);
 			});
 		},
 	};
