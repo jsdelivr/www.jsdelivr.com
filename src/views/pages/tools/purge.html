@@ -48,30 +48,34 @@
 				</div>
 			</section>
 
-			<section class="results">
-				{{#if results.length}}
-					<table>
-						<tr>
-							<th>CDN Name</th>
-							<th>Message</th>
-						</tr>
+			<!-- {{#if results.length}} -->
+			{{#if true}}
+				<section class="results">
+					<h2>
+						<span>Results</span>
+						<span>Show details</span>
+					</h2>
+
+					<div class="results-table">
 						{{#each results}}
-							<tr>
-								<td>{{this.name}}</td>
-								<td>
-									{{#if this.result}}
-										<i class="fa fa-check success"></i>
-										<span>Success</span>
-									{{else}}
-										<i class="fa fa-times failed"></i>
-										<span>Failed</span>
-									{{/if}}
-								</td>
-							</tr>
+							<div class="results-item">
+								<div class="item-descr">
+									<span>{{this.fileName}}</span>
+									<span class="status-success">{{this.message}}</span>
+								</div>
+
+								<div class="divider"></div>
+
+								<div class="item-cdns">
+									{{#each this.status}}
+										<span>{{this.name}}</span>
+									{{/each}}
+								</div>
+							</div>
 						{{/each}}
-					</table>
-				{{/if}}
-			</section>
+					</div>
+				</section>
+			{{/if}}
 		</div>
 	</div>
 
@@ -84,69 +88,7 @@
 				title: 'Purge CDN cache - jsDelivr',
 				purging: false,
 				requestFailed: false,
-				results: [],
-				captchaToken: '',
-				proceedToCaptcha: false,
-			};
-		},
-		oninit () {
-			if (!Ractive.isServer) {
-				let recaptchaCallback = (token) => {
-					this.set('captchaToken', token);
-				};
-
-				window.recaptchaCallback = undefined;
-
-				$(document).ready(() => {
-					window.recaptchaCallback = recaptchaCallback;
-				});
-
-
-				this.observe('captchaToken', (token) => {
-					if (token) {
-						this.purge();
-					}
-				});
-			}
-		},
-		purge () {
-			this.set('purging', true);
-			this.set('requestFailed', false);
-
-			let paths = this.get('urls').replace(/\s+/g, '');
-
-			if (paths === '') {
-				this.set('purging', false);
-				return;
-			}
-
-			paths = paths.split(',');
-
-			if (paths.length > 10) {
-				this.set('purging', false);
-				return;
-			}
-
-			$.ajax({
-				type: 'POST',
-				crossOrigin: true,
-				headers: {
-					'content-type': 'application/json',
-				},
-				url: 'https://purge.jsdelivr.net/captcha',
-				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
-			}).done(() => {
-				// let results = [];
-				// let providers = Object.keys(response.cdn);
-
-				// for (let provider of providers) {
-				// 	results.push({
-				// 		name: provider,
-				// 		result: response.cdn[provider],
-				// 	});
-				// }
-
-				let mockResults = [
+				results: [
 					{
 						fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
 						message: 'Success',
@@ -212,10 +154,139 @@
 								success: true,
 							},
 						],
-					}
-				];
+					},
+				],
+				captchaToken: '',
+				proceedToCaptcha: false,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				let recaptchaCallback = (token) => {
+					this.set('captchaToken', token);
+				};
 
-				this.set('results', mockResults);
+				window.recaptchaCallback = undefined;
+
+				$(document).ready(() => {
+					window.recaptchaCallback = recaptchaCallback;
+				});
+
+
+				this.observe('captchaToken', (token) => {
+					if (token) {
+						this.purge();
+					}
+				});
+			}
+		},
+		purge () {
+			this.set('purging', true);
+			this.set('requestFailed', false);
+
+			let paths = this.get('urls').replace(/\s+/g, '');
+
+			if (paths === '') {
+				this.set('purging', false);
+				return;
+			}
+
+			paths = paths.split(',');
+
+			if (paths.length > 10) {
+				this.set('purging', false);
+				return;
+			}
+
+			$.ajax({
+				type: 'POST',
+				crossOrigin: true,
+				headers: {
+					'content-type': 'application/json',
+				},
+				url: 'https://purge.jsdelivr.net/captcha',
+				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
+			}).done(() => {
+				// let results = [];
+				// let providers = Object.keys(response.cdn);
+
+				// for (let provider of providers) {
+				// 	results.push({
+				// 		name: provider,
+				// 		result: response.cdn[provider],
+				// 	});
+				// }
+
+				// let mockResults = [
+				// 	{
+				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
+				// 		message: 'Success',
+				// 		status: [
+				// 			{
+				// 				name: "Bunny.net",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Cloudflare",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Fastly",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Quantil",
+				// 				success: true,
+				// 			},
+				// 		],
+				// 	},
+				// 	{
+				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Example.txt',
+				// 		message: 'One provider failed',
+				// 		status: [
+				// 			{
+				// 				name: "Bunny.net",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Cloudflare",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Fastly",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Quantil",
+				// 				success: false,
+				// 			},
+				// 		],
+				// 	},
+				// 	{
+				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Default.txt',
+				// 		message: 'Success',
+				// 		status: [
+				// 			{
+				// 				name: "Bunny.net",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Cloudflare",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Fastly",
+				// 				success: true,
+				// 			},
+				// 			{
+				// 				name: "Quantil",
+				// 				success: true,
+				// 			},
+				// 		],
+				// 	},
+				// ];
+
+				// this.set('results', mockResults);
 
 				this.set('purging', false);
 				this.set('proceedToCaptcha', false);
