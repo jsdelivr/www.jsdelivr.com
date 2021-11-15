@@ -48,8 +48,7 @@
 				</div>
 			</section>
 
-			<!-- {{#if results.length}} -->
-			{{#if true}}
+			{{#if results.length}}
 				<section class="results">
 					<h2>
 						<span>Results</span>
@@ -67,24 +66,24 @@
 						{{#each results: idx}}
 							<div class="results-item">
 								<div class="item-descr">
-									<span>{{this.fileName}}</span>
+									<span>{{this.path}}</span>
 									<div
 										class="item-status success {{#if openedResultsList.includes(idx)}}opened{{/if}}"
 										on-click="@this.set('toggleOpenResult', {newIdx: idx})">
-										{{this.message}}
+										{{this.status}}
 										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 									</div>
 								</div>
 
 								<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
-									{{#each this.status}}
+									{{#each this.providers}}
 										<span>
-											{{#if this.success === true}}
+											{{#if this[1] === true}}
 												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
 											{{else}}
 												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
 											{{/if}}
-											{{this.name}}
+											{{this[0]}}
 										</span>
 									{{/each}}
 								</div>
@@ -99,81 +98,13 @@
 </r-page>
 
 <script>
-	const mockResults = [
-		{
-			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
-			message: 'Success',
-			status: [
-				{
-					name: 'Bunny.net',
-					success: true,
-				},
-				{
-					name: 'Cloudflare',
-					success: true,
-				},
-				{
-					name: 'Fastly',
-					success: true,
-				},
-				{
-					name: 'Quantil',
-					success: true,
-				},
-			],
-		},
-		{
-			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Example.txt',
-			message: 'One provider failed',
-			status: [
-				{
-					name: 'Bunny.net',
-					success: true,
-				},
-				{
-					name: 'Cloudflare',
-					success: true,
-				},
-				{
-					name: 'Fastly',
-					success: true,
-				},
-				{
-					name: 'Quantil',
-					success: false,
-				},
-			],
-		},
-		{
-			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Default.txt',
-			message: 'Success',
-			status: [
-				{
-					name: 'Bunny.net',
-					success: true,
-				},
-				{
-					name: 'Cloudflare',
-					success: true,
-				},
-				{
-					name: 'Fastly',
-					success: true,
-				},
-				{
-					name: 'Quantil',
-					success: true,
-				},
-			],
-		},
-	];
 	component.exports = {
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
 				purging: false,
 				requestFailed: false,
-				results: mockResults,
+				results: [],
 				captchaToken: '',
 				proceedToCaptcha: false,
 				showDetails: false,
@@ -255,9 +186,23 @@
 				let intervalId = null;
 
 				intervalId = setInterval(() => {
-					this.getCDNstatus(response.id).then((res) => {
-						if (res.status === 'finished') {
+					this.getCDNstatus(response.id).then((data) => {
+						if (data.status === 'finished') {
 							clearInterval(intervalId);
+
+							let results = Object.keys(data.paths).map((path) => {
+								let providers = data.paths[path].providers ? Object.entities(data.paths[path].providers) : [];
+
+								let status = providers.length ? () => {} : 'Throttled';
+
+								return {
+									path: path.replace(/^\//, ''),
+									status,
+									providers,
+								};
+							});
+
+							this.set('results', results);
 							this.set('purging', false);
 							this.set('proceedToCaptcha', false);
 						}
