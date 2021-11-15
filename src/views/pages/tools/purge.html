@@ -53,7 +53,8 @@
 				<section class="results">
 					<h2>
 						<span>Results</span>
-						<span>Show details</span>
+						<span>Hide details</span>
+						<!-- <span>Show details</span> -->
 					</h2>
 
 					<div class="results-table">
@@ -61,14 +62,24 @@
 							<div class="results-item">
 								<div class="item-descr">
 									<span>{{this.fileName}}</span>
-									<span class="status-success">{{this.message}}</span>
+									<span class="item-status success">
+										{{this.message}}
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+									</span>
 								</div>
 
 								<div class="divider"></div>
 
 								<div class="item-cdns">
 									{{#each this.status}}
-										<span>{{this.name}}</span>
+										<span>
+											{{#if this.success === true}}
+												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+											{{else}}
+												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+											{{/if}}
+											{{this.name}}
+										</span>
 									{{/each}}
 								</div>
 							</div>
@@ -82,80 +93,81 @@
 </r-page>
 
 <script>
+	const mockResults = [
+		{
+			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
+			message: 'Success',
+			status: [
+				{
+					name: 'Bunny.net',
+					success: true,
+				},
+				{
+					name: 'Cloudflare',
+					success: true,
+				},
+				{
+					name: 'Fastly',
+					success: true,
+				},
+				{
+					name: 'Quantil',
+					success: true,
+				},
+			],
+		},
+		{
+			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Example.txt',
+			message: 'One provider failed',
+			status: [
+				{
+					name: 'Bunny.net',
+					success: true,
+				},
+				{
+					name: 'Cloudflare',
+					success: true,
+				},
+				{
+					name: 'Fastly',
+					success: true,
+				},
+				{
+					name: 'Quantil',
+					success: false,
+				},
+			],
+		},
+		{
+			fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Default.txt',
+			message: 'Success',
+			status: [
+				{
+					name: 'Bunny.net',
+					success: true,
+				},
+				{
+					name: 'Cloudflare',
+					success: true,
+				},
+				{
+					name: 'Fastly',
+					success: true,
+				},
+				{
+					name: 'Quantil',
+					success: true,
+				},
+			],
+		},
+	];
 	component.exports = {
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
 				purging: false,
 				requestFailed: false,
-				results: [
-					{
-						fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
-						message: 'Success',
-						status: [
-							{
-								name: "Bunny.net",
-								success: true,
-							},
-							{
-								name: "Cloudflare",
-								success: true,
-							},
-							{
-								name: "Fastly",
-								success: true,
-							},
-							{
-								name: "Quantil",
-								success: true,
-							},
-						],
-					},
-					{
-						fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Example.txt',
-						message: 'One provider failed',
-						status: [
-							{
-								name: "Bunny.net",
-								success: true,
-							},
-							{
-								name: "Cloudflare",
-								success: true,
-							},
-							{
-								name: "Fastly",
-								success: true,
-							},
-							{
-								name: "Quantil",
-								success: false,
-							},
-						],
-					},
-					{
-						fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Default.txt',
-						message: 'Success',
-						status: [
-							{
-								name: "Bunny.net",
-								success: true,
-							},
-							{
-								name: "Cloudflare",
-								success: true,
-							},
-							{
-								name: "Fastly",
-								success: true,
-							},
-							{
-								name: "Quantil",
-								success: true,
-							},
-						],
-					},
-				],
+				results: mockResults,
 				captchaToken: '',
 				proceedToCaptcha: false,
 			};
@@ -216,75 +228,6 @@
 				// 		result: response.cdn[provider],
 				// 	});
 				// }
-
-				// let mockResults = [
-				// 	{
-				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/AUTHORS.txt',
-				// 		message: 'Success',
-				// 		status: [
-				// 			{
-				// 				name: "Bunny.net",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Cloudflare",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Fastly",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Quantil",
-				// 				success: true,
-				// 			},
-				// 		],
-				// 	},
-				// 	{
-				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Example.txt',
-				// 		message: 'One provider failed',
-				// 		status: [
-				// 			{
-				// 				name: "Bunny.net",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Cloudflare",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Fastly",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Quantil",
-				// 				success: false,
-				// 			},
-				// 		],
-				// 	},
-				// 	{
-				// 		fileName: 'https://cdn.jsdelivr.net/npm/jquery@3.2.1/Default.txt',
-				// 		message: 'Success',
-				// 		status: [
-				// 			{
-				// 				name: "Bunny.net",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Cloudflare",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Fastly",
-				// 				success: true,
-				// 			},
-				// 			{
-				// 				name: "Quantil",
-				// 				success: true,
-				// 			},
-				// 		],
-				// 	},
-				// ];
 
 				// this.set('results', mockResults);
 
