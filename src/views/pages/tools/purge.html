@@ -53,13 +53,17 @@
 				<section class="results">
 					<h2>
 						<span>Results</span>
-						<span class="results-toggle closed">
+						<span on-click="@this.toggle('showDetails')" class="results-toggle{{#if showDetails}} hide-details{{/if}}">
 							<img width="20" height="20"  src="{{@shared.assetsHost}}/img/icons/chevron-down.orange.svg" />
-							Hide details
+							{{#if showDetails}}
+								Hide details
+							{{else}}
+								Show details
+							{{/if}}
 						</span>
-						<!-- <span>Show details</span> -->
 					</h2>
 
+					{{#if showDetails}}
 					<div class="results-table">
 						{{#each results}}
 							<div class="results-item">
@@ -88,6 +92,7 @@
 							</div>
 						{{/each}}
 					</div>
+					{{/if}}
 				</section>
 			{{/if}}
 		</div>
@@ -173,6 +178,7 @@
 				results: mockResults,
 				captchaToken: '',
 				proceedToCaptcha: false,
+				showDetails: false,
 			};
 		},
 		oninit () {
