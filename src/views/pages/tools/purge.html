@@ -215,6 +215,16 @@
 				});
 			}
 		},
+		getCDNstatus (id) {
+			return $.ajax({
+				type: 'GET',
+				crossOrigin: true,
+				headers: {
+					'content-type': 'application/json',
+				},
+				url: `https://purge.jsdelivr.net/status/${id}`,
+			});
+		},
 		purge () {
 			this.set('purging', true);
 			this.set('requestFailed', false);
@@ -241,21 +251,18 @@
 				},
 				url: 'https://purge.jsdelivr.net/captcha',
 				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
-			}).done(() => {
-				// let results = [];
-				// let providers = Object.keys(response.cdn);
+			}).done((response) => {
+				let intervalId = null;
 
-				// for (let provider of providers) {
-				// 	results.push({
-				// 		name: provider,
-				// 		result: response.cdn[provider],
-				// 	});
-				// }
-
-				// this.set('results', mockResults);
-
-				this.set('purging', false);
-				this.set('proceedToCaptcha', false);
+				intervalId = setInterval(() => {
+					this.getCDNstatus(response.id).then((res) => {
+						if (res.status === 'finished') {
+							clearInterval(intervalId);
+							this.set('purging', false);
+							this.set('proceedToCaptcha', false);
+						}
+					});
+				}, 1000);
 			}).fail(() => {
 				this.set('purging', false);
 				this.set('requestFailed', true);
