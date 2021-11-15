@@ -168,6 +168,7 @@
 				line-height: 20px;
 				color: #f65128;
 				cursor: pointer;
+				user-select: none;
 
 				>img {
 					margin-right: 8px;
@@ -182,6 +183,18 @@
 		}
 
 		.results-table {
+			// max-height: 0;
+			overflow: hidden;
+			transition: max-height 3s linear;
+
+			&.show-details {
+				max-height: 10000px;
+			}
+
+			&.hide-details {
+				max-height: 0;
+			}
+
 			.results-item {
 				display: flex;
 				flex-direction: column;
@@ -211,6 +224,7 @@
 						display: flex;
 						align-items: center;
 						cursor: pointer;
+						user-select: none;
 
 						>img {
 							margin-left: 8px;
@@ -222,6 +236,12 @@
 
 						&.failed {
 							color: #eb3333;
+						}
+
+						&.opened {
+							>img {
+								transform: rotate(180deg) scaleX(-1);
+							}
 						}
 					}
 				}

@@ -63,13 +63,14 @@
 						</span>
 					</h2>
 
-					{{#if showDetails}}
-					<div class="results-table">
-						{{#each results}}
+					<div class="results-table {{#if showDetails}}show-details{{else}}hide-details{{/if}}">
+						{{#each results: idx}}
 							<div class="results-item">
 								<div class="item-descr">
 									<span>{{this.fileName}}</span>
-									<span class="item-status success">
+									<span
+										class="item-status success {{#if openedResultsList.includes(idx)}}opened{{/if}}"
+										on-click="@this.set('toggleOpenResult', {newIdx: idx})">
 										{{this.message}}
 										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 									</span>
@@ -92,7 +93,6 @@
 							</div>
 						{{/each}}
 					</div>
-					{{/if}}
 				</section>
 			{{/if}}
 		</div>
@@ -179,6 +179,7 @@
 				captchaToken: '',
 				proceedToCaptcha: false,
 				showDetails: false,
+				openedResultsList: [],
 			};
 		},
 		oninit () {
@@ -198,6 +199,21 @@
 					if (token) {
 						this.purge();
 					}
+				});
+
+				this.observe('toggleOpenResult', (data) => {
+					if (typeof data === 'undefined') { return; }
+
+					let openedResultsList = this.get('openedResultsList');
+					let indexOfResult = openedResultsList.indexOf(data.newIdx);
+
+					if (indexOfResult === -1) {
+						openedResultsList.push(data.newIdx);
+					} else {
+						openedResultsList.splice(indexOfResult, 1);
+					}
+
+					this.set('openedResultsList', openedResultsList);
 				});
 			}
 		},
