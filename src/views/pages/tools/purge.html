@@ -62,34 +62,36 @@
 						</span>
 					</h2>
 
-					<div class="results-table {{#if showDetails}}show-details{{else}}hide-details{{/if}}">
-						{{#each results: idx}}
-							<div class="results-item">
-								<div class="item-descr">
-									<span>{{this.path}}</span>
-									<div
-										class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}}"
-										on-click="@this.set('toggleOpenResult', {newIdx: idx})">
-										{{this.status}}
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+					{{#if showDetails}}
+						<div class="results-table">
+							{{#each results: idx}}
+								<div class="results-item">
+									<div class="item-descr">
+										<span>{{this.path}}</span>
+										<div
+											class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}}"
+											on-click="@this.set('toggleOpenResult', {newIdx: idx})">
+											{{this.status}}
+											<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+										</div>
+									</div>
+
+									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+										{{#each this.providers}}
+											<span>
+												{{#if this[1] === true}}
+													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+												{{else}}
+													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+												{{/if}}
+												{{this[0]}}
+											</span>
+										{{/each}}
 									</div>
 								</div>
-
-								<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
-									{{#each this.providers}}
-										<span>
-											{{#if this[1] === true}}
-												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
-											{{else}}
-												<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
-											{{/if}}
-											{{this[0]}}
-										</span>
-									{{/each}}
-								</div>
-							</div>
-						{{/each}}
-					</div>
+							{{/each}}
+						</div>
+					{{/if}}
 				</section>
 			{{/if}}
 		</div>
