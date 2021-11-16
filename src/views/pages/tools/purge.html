@@ -77,6 +77,7 @@
 									</div>
 
 									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+										{{#if this.providers.length === 0}}TODO: no providers list{{/if}}
 										{{#each this.providers}}
 											<span>
 												{{#if this[1] === true}}
@@ -193,12 +194,7 @@
 							clearInterval(intervalId);
 
 							let results = Object.keys(data.paths).map((path) => {
-								let test = [];
-								test.push([ 'test.bunny', true ]);
-								test.push([ 'test.cloudflare', false ]);
-								test.push([ 'test.fastly', true ]);
-								test.push([ 'test.quantill', false ]);
-								let providers = data.paths[path].providers ? Object.entries(data.paths[path].providers) : test;
+								let providers = data.paths[path].providers ? Object.entries(data.paths[path].providers) : [];
 
 								let getProvidersStatus = (providers) => {
 									let providersStatus = '';
