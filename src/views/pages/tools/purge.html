@@ -191,9 +191,45 @@
 							clearInterval(intervalId);
 
 							let results = Object.keys(data.paths).map((path) => {
-								let providers = data.paths[path].providers ? Object.entities(data.paths[path].providers) : [];
+								let test = [];
+								test.push([ 'test.bunny', true ]);
+								test.push([ 'test.cloudflare', false ]);
+								test.push([ 'test.fastly', true ]);
+								test.push([ 'test.quantill', false ]);
+								let providers = data.paths[path].providers ? Object.entries(data.paths[path].providers) : test;
 
-								let status = providers.length ? () => {} : 'Throttled';
+								let getProvidersStatus = (providers) => {
+									let providersStatus = '';
+									let failedAmount = providers.reduce((failedAmount, provider) => {
+										if (provider[1] === true) { return failedAmount; }
+
+										return failedAmount + 1;
+									}, 0);
+
+									switch (failedAmount) {
+										case 1:
+											providersStatus = 'One provider failed';
+											break;
+										case 2:
+											providersStatus = 'Two providers failed';
+											break;
+										case 3:
+											providersStatus = 'Three providers failed';
+											break;
+										case 4:
+											providersStatus = 'Four providers failed';
+											break;
+										case 5:
+											providersStatus = 'Five providers failed';
+											break;
+										default:
+											providersStatus = 'Success';
+									}
+
+									return providersStatus;
+								};
+
+								let status = providers.length ? getProvidersStatus(providers) : 'TODO: Throttled';
 
 								return {
 									path: path.replace(/^\//, ''),
