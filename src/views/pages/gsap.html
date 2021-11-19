@@ -59,8 +59,39 @@
 
 				<div class="files-table-wrapper">
 					<div class="ctrls">
-						<span>Version: 3.8.0</span>
-						<span>Aliasing: Minor</span>
+						<div class="ctrl">
+							<span>Version:</span>
+
+							<div class="btn-group">
+								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{versionsList[versionIdx]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each versionsList:idx}}
+										<li><a on-click="@this.set('versionIdx', idx)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+
+						<div class="ctrl">
+							<span>Aliasing:</span>
+
+							<div class="btn-group">
+								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{aliasingList[aliasingIdx]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each aliasingList:idx}}
+										<li><a on-click="@this.set('aliasingIdx', idx)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
 					</div>
 
 					<div class="divider"></div>
@@ -265,6 +296,14 @@
 		data () {
 			return {
 				showESMFiles: false,
+				versionsList: [
+					'3.8.0',
+				],
+				aliasingList: [
+					'Minor'
+				],
+				versionIdx: 0,
+				aliasingIdx: 0,
 			};
 		},
 		decorators: {
