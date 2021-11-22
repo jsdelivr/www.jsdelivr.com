@@ -103,6 +103,8 @@
 </r-page>
 
 <script>
+	const isUrlValid = require('../../../public/js/utils/is-url-valid');
+
 	component.exports = {
 		data () {
 			return {
@@ -152,7 +154,16 @@
 				});
 
 				this.observe('urls', (newValue) => {
-					if (newValue.replace(/\s+/g, '').length > 0) {
+					let paths = newValue.replace(/\s+/g, '');
+					let pathsArr = paths.split(',');
+
+					let isPathsValid = pathsArr.reduce((isValid, path) => {
+						if (isUrlValid(path)) { return isValid && true; }
+
+						return false;
+					}, true);
+
+					if (paths.length > 0 && isPathsValid) {
 						this.set('purgeBtnDisabled', false);
 					} else {
 						this.set('purgeBtnDisabled', true);
