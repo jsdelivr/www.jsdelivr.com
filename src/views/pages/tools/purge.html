@@ -27,7 +27,7 @@
 						value="{{urls}}">
 					</textarea>
 
-					{{#if purging}}
+					{{#if purgingInProcess}}
 						<a class="animated" class-loading="purging">
 							<div class="animation"></div>
 						</a>
@@ -105,7 +105,7 @@
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
-				purging: false,
+				purgingInProcess: false,
 				requestFailed: false,
 				results: [],
 				captchaToken: '',
@@ -160,20 +160,20 @@
 			});
 		},
 		purge () {
-			this.set('purging', true);
+			this.set('purgingInProcess', true);
 			this.set('requestFailed', false);
 
 			let paths = this.get('urls').replace(/\s+/g, '');
 
 			if (paths === '') {
-				this.set('purging', false);
+				this.set('purgingInProcess', false);
 				return;
 			}
 
 			paths = paths.split(',');
 
 			if (paths.length > 10) {
-				this.set('purging', false);
+				this.set('purgingInProcess', false);
 				return;
 			}
 
@@ -237,7 +237,7 @@
 							});
 
 							this.set('results', results);
-							this.set('purging', false);
+							this.set('purgingInProcess', false);
 							this.set('proceedToCaptcha', false);
 							this.set('showDetails', false);
 							this.set('openedResultsList', []);
@@ -245,8 +245,8 @@
 					});
 				}, 1000);
 			}).fail(() => {
-				this.set('purging', false);
 				this.set('requestFailed', true);
+				this.set('purgingInProcess', false);
 				this.set('proceedToCaptcha', false);
 				this.set('showDetails', false);
 				this.set('openedResultsList', []);
