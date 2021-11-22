@@ -32,7 +32,9 @@
 							<div class="animation"></div>
 						</a>
 					{{else}}
-						<a class="btn-primary" on-click="@this.set('proceedToCaptcha', true)">
+						<a
+							class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
+							on-click="@this.checkPurgeBtnStatus()">
 							Purge now
 						</a>
 					{{/if}}
@@ -112,6 +114,7 @@
 				proceedToCaptcha: false,
 				showDetails: false,
 				openedResultsList: [],
+				purgeBtnDisabled: true,
 			};
 		},
 		oninit () {
@@ -147,7 +150,20 @@
 
 					this.set('openedResultsList', openedResultsList);
 				});
+
+				this.observe('urls', (newValue) => {
+					if (newValue.replace(/\s+/g, '').length > 0) {
+						this.set('purgeBtnDisabled', false);
+					} else {
+						this.set('purgeBtnDisabled', true);
+					}
+				});
 			}
+		},
+		checkPurgeBtnStatus () {
+			if (this.get('purgeBtnDisabled')) { return; }
+
+			this.set('proceedToCaptcha', true);
 		},
 		getCDNstatus (id) {
 			return $.ajax({
