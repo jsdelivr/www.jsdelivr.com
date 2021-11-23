@@ -42,10 +42,12 @@
 						<label class="error">{{purgeErrorMsg}}</label>
 					{{/if}}
 
-					<div class="recaptcha-wrapper{{#if proceedToCaptcha}} visible{{/if}}">
-						<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
-					</div>
-					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+					{{#if proceedToCaptcha}}
+						<div class="recaptcha-wrapper">
+							<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+						</div>
+						<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+					{{/if}}
 				</div>
 			</section>
 
@@ -126,15 +128,14 @@
 
 				window.recaptchaCallback = undefined;
 
-				$(document).ready(() => {
+				// $(document).ready(() => {
+				$('.recaptcha-wrapper').ready(() => {
 					window.recaptchaCallback = recaptchaCallback;
 				});
 
 
 				this.observe('captchaToken', (token) => {
-					if (token) {
-						this.purge();
-					}
+					if (token) { this.purge(); }
 				});
 
 				this.observe('toggleOpenResult', (data) => {
@@ -176,9 +177,12 @@
 						this.set('purgeBtnDisabled', true);
 					}
 				});
-			
+
 				this.observe('proceedToCaptcha', (newValue) => {
-					if (newValue) { this.set('results', []); }
+					if (newValue) {
+						this.set('captchaToken', '');
+						this.set('results', []);
+					}
 				});
 			}
 		},
