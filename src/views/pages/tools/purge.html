@@ -72,26 +72,27 @@
 									<div class="item-descr">
 										<span>{{this.path}}</span>
 										<div
-											class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}}"
+											class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}"
 											on-click="@this.set('toggleOpenResult', {newIdx: idx})">
 											{{this.status}}
 											<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 										</div>
 									</div>
 
-									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
-										{{#if this.providers.length === 0}}TODO: no providers list{{/if}}
-										{{#each this.providers}}
-											<span>
-												{{#if this[1] === true}}
-													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
-												{{else}}
-													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
-												{{/if}}
-												{{this[0]}}
-											</span>
-										{{/each}}
-									</div>
+									{{#unless this.throttled}}
+										<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+											{{#each this.providers}}
+												<span>
+													{{#if this[1] === true}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+													{{else}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+													{{/if}}
+													{{this[0]}}
+												</span>
+											{{/each}}
+										</div>
+									{{/unless}}
 								</div>
 							{{/each}}
 						</div>
@@ -238,7 +239,7 @@
 								let providers = data.paths[path].providers ? Object.entries(data.paths[path].providers) : [];
 
 								let getProvidersStatus = (providers) => {
-									let providersStatus = '';
+									let failedProvidersStatus = '';
 									let amountOfFailed = providers.reduce((amountOfFailed, provider) => {
 										if (provider[1] === true) { return amountOfFailed; }
 
@@ -247,33 +248,34 @@
 
 									switch (amountOfFailed) {
 										case 1:
-											providersStatus = 'One provider failed';
+											failedProvidersStatus = 'One provider failed';
 											break;
 										case 2:
-											providersStatus = 'Two providers failed';
+											failedProvidersStatus = 'Two providers failed';
 											break;
 										case 3:
-											providersStatus = 'Three providers failed';
+											failedProvidersStatus = 'Three providers failed';
 											break;
 										case 4:
-											providersStatus = 'Four providers failed';
+											failedProvidersStatus = 'Four providers failed';
 											break;
 										case 5:
-											providersStatus = 'Five providers failed';
+											failedProvidersStatus = 'Five providers failed';
 											break;
 										default:
-											providersStatus = 'Success';
+											failedProvidersStatus = 'Success';
 									}
 
-									return providersStatus;
+									return failedProvidersStatus;
 								};
 
-								let status = providers.length ? getProvidersStatus(providers) : 'TODO: Throttled';
+								let status = data.paths[path].throttled ? 'All providers throttled' : getProvidersStatus(providers);
 
 								return {
 									path: path.replace(/^\//, ''),
 									status,
 									providers,
+									throttled: data.paths[path].throttled,
 								};
 							});
 
