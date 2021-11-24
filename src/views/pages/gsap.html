@@ -108,7 +108,7 @@
 						<div class="files-item">
 							<div class="title">GSAP (core)</div>
 							<div class="block-core">
-								<span>https://cdn.jsdelivr.net/ajax/libs/gsap/3.8.0/CSSRulePlugin.min.js</span>
+								<span>{{coreFile}}</span>
 
 								<div class="data-type-ctrl">
 									<input id="type-switch"
@@ -123,7 +123,7 @@
 								</div>
 
 								<a as-clipboard="'Copy URL to clipboard', 'right'"
-									data-clipboard-text="https://cdn.jsdelivr.net/ajax/libs/gsap/3.8.0/CSSRulePlugin.min.js">
+									data-clipboard-text="{{coreFile}}">
 									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
 								</a>
 							</div>
@@ -322,6 +322,18 @@
 					this.set('versionsList', data.versions);
 				}).catch((error) => {
 					console.error(`Gsap versions not found.`, error);
+				});
+
+				// get core file of GSAP package
+				this.observe('versionIdx versionsList', () => {
+					let versionIdx = this.get('versionIdx');
+					let versionsList = this.get('versionsList');
+
+					if (versionsList.length === 0) { return; }
+
+					http.fetchPackageEntrypoints('npm', 'gsap', versionsList[versionIdx]).then((data) => {
+						this.set('coreFile', `https://cdn.jsdelivr.net/npm/gsap@${versionsList[versionIdx]}${data.js.file}`);
+					});
 				});
 			}
 		},
