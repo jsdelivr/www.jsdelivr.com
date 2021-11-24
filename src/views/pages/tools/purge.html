@@ -68,7 +68,8 @@
 					{{#if showDetails}}
 						<div class="results-table">
 							{{#each results: idx}}
-								<div class="results-item">
+								<div class="results-item {{#if currentActiveResult.newIdx === idx}}results-item-active{{/if}}"
+									on-click="@this.set('currentActiveResult', {newIdx: idx})">
 									<div class="item-descr">
 										<span>{{this.path}}</span>
 										<div
@@ -123,6 +124,7 @@
 				proceedToCaptcha: false,
 				showDetails: false,
 				openedResultsList: [],
+				currentActiveResult: {},
 				purgeBtnDisabled: true,
 			};
 		},
@@ -137,7 +139,6 @@
 				$('.recaptcha-wrapper').ready(() => {
 					window.recaptchaCallback = recaptchaCallback;
 				});
-
 
 				this.observe('captchaToken', (token) => {
 					if (token) { this.purge(); }
@@ -187,6 +188,16 @@
 					if (newValue) {
 						this.set('captchaToken', '');
 						this.set('results', []);
+					}
+				});
+
+				this.observe('currentActiveResult', (data, prevData) => {
+					if (typeof prevData === 'undefined' || prevData === null) { return; }
+
+					if (prevData.newIdx === data.newIdx) {
+						this.set('currentActiveResult', null);
+					} else {
+						this.set('currentActiveResult', data);
 					}
 				});
 			}
