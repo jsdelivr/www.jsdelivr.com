@@ -68,7 +68,7 @@
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
-								<ul class="dropdown-menu">
+								<ul class="dropdown-menu versions-menu">
 									{{#each versionsList:idx}}
 										<li>
 											<a on-click="@this.set('versionIdx', idx)" class="{{#if idx === versionIdx}}current{{/if}}">
@@ -299,14 +299,12 @@
 
 <script>
 	const clipboard = require('../../public/js/decorators/clipboard');
+	const http = require('../../public/js/utils/http');
 
 	component.exports = {
 		data () {
 			return {
 				showESMFiles: false,
-				versionsList: [
-					'3.8.0',
-				],
 				aliasingList: [
 					'Minor',
 					'Static',
@@ -315,7 +313,17 @@
 				],
 				versionIdx: 0,
 				aliasingIdx: 0,
+				versionsList: [],
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchPackageVersions('npm', 'gsap').then((data) => {
+					this.set('versionsList', data.versions);
+				}).catch((error) => {
+					console.error(`Gsap versions not found.`, error);
+				});
+			}
 		},
 		decorators: {
 			clipboard,
