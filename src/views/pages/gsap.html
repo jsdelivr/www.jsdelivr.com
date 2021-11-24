@@ -93,7 +93,7 @@
 									{{#each aliasingList:idx}}
 										<li>
 											<a on-click="@this.set('aliasingIdx', idx)" class="{{#if idx === aliasingIdx}}current{{/if}}">
-												{{this}}
+												{{this}} {{@this.createAliasing(this, versionsList[versionIdx])}}
 											</a>
 										</li>
 									{{/each}}
@@ -323,6 +323,21 @@
 				}).catch((error) => {
 					console.error(`Gsap versions not found.`, error);
 				});
+			}
+		},
+		createAliasing (aliasingBase, version) {
+			let versionSplitted = version.split('.');
+
+			switch (aliasingBase) {
+				case 'Minor':
+					return `(${versionSplitted[0]}.${versionSplitted[1]}.x)`;
+				case 'Static':
+					return `(${version})`;
+				case 'Major':
+					return `(${versionSplitted[0]}.x.x)`;
+				case 'Latest':
+				default:
+					return '';
 			}
 		},
 		decorators: {
