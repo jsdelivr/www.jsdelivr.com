@@ -273,6 +273,7 @@
 					http.fetchPackageFiles(this.get('packageType'), this.get('packageName'), version).then((data) => {
 						let distFiles = [];
 						let filesList = this.get('filesList');
+						// let filesData = fileList;// temp
 
 						for (let key in data.files) {
 							if (data.files[key].name === 'dist') {
@@ -288,30 +289,62 @@
 							for (let key in distFiles) {
 								if (distFiles[key].name.includes(fileName)) {
 									filesList[fileName] = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}/dist/${distFiles[key].name}`;
+									// filesData[fileName].path = distFiles[key].name;
 									break;
 								}
 							}
 						});
 
 						this.set('filesList', filesList);
+						// this.set('filesData', filesData);
 					});
+
+					// this.observe('filesData aliasingIdx aliasingList versionIdx versionsList', () => {
+					// 	let newFilesList = {};
+					// 	let filesData = this.get('filesData');
+					// 	let version = this.get('versionsList')[this.get('versionIdx')];
+					// 	let aliasing = this.get('aliasingList')[this.get('aliasingIdx')];
+					// 	let packageType = this.get('packageType');
+					// 	let packageName = this.get('packageName');
+
+					// 	if (!version) { return; }
+
+					// 	let modVersion = '';
+
+					// 	modVersion = this.createAliasing(aliasing, version);
+
+					// 	Object.keys(filesData).forEach((fileName) => {
+					// 		newFilesList[fileName] = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}/dist/${distFiles[key].name}`;
+					// 	});
+
+					// });
 				});
 			}
 		},
-		createAliasing (aliasingBase, version) {
+		createAliasing (aliasingBase, version, full = true) {
 			let versionSplitted = version.split('.');
+			let prepVersionBase = '';
+			let prepVersionPart = '';
 
 			switch (aliasingBase) {
 				case 'Minor':
-					return `(${versionSplitted[0]}.${versionSplitted[1]}.x)`;
+					prepVersionBase = `${versionSplitted[0]}.${versionSplitted[1]}`;
+					prepVersionPart = '.x';
+					break;
 				case 'Static':
-					return `(${version})`;
+					prepVersionBase = version;
+					break;
 				case 'Major':
-					return `(${versionSplitted[0]}.x.x)`;
-				case 'Latest':
-				default:
-					return '';
+					prepVersionBase = versionSplitted[0];
+					prepVersionPart = '.x.x';
+					break;
 			}
+
+			if (full) {
+				return prepVersionBase ? `(${prepVersionBase}${prepVersionPart})` : '';
+			}
+
+			return prepVersionBase;
 		},
 		decorators: {
 			clipboard,
