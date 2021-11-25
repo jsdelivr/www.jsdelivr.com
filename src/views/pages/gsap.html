@@ -108,9 +108,11 @@
 						<div class="files-item">
 							<div class="title">GSAP (core)</div>
 							<div class="block-core">
-								<span>{{coreFile}}</span>
-
 								{{#if coreFile}}
+									<span>
+										https://cdn.jsdelivr.net/{{packageType}}/{{packageName}}@{{@this.createAliasing(aliasingList[aliasingIdx], versionsList[versionIdx], false)}}{{coreFile}}
+									</span>
+
 									<div class="data-type-ctrl">
 										<input id="type-switch"
 											type="checkbox"
@@ -261,16 +263,13 @@
 
 				this.observe('versionIdx versionsList', () => {
 					let version = this.get('versionsList')[this.get('versionIdx')];
-					let packageType = this.get('packageType');
-					let packageName = this.get('packageName');
 
 					if (!version) { return; }
 
 					// get core file of GSAP package
 					http.fetchPackageEntrypoints(this.get('packageType'), this.get('packageName'), version).then((data) => {
-						this.set('coreFile', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}${data.js.file}`);
+						this.set('coreFile', data.js.file);
 					});
-
 
 					// get the rest of files of GSAP package
 					http.fetchPackageFiles(this.get('packageType'), this.get('packageName'), version).then((data) => {
