@@ -1,0 +1,336 @@
+<div class="c-package-sidemenu">
+	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
+		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
+
+		<div style="{{#unless navRoute !== 'stats'}}display: none;{{/unless}}">
+			<div class="sidemenu-title">
+				<span>Statistics</span>
+
+				<div class="btn-group">
+					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span>{{statsPeriodValues[statsPeriod]}}</span>
+						<i class="fa fa-angle-down" aria-hidden="true"></i>
+					</button>
+
+					<ul class="dropdown-menu">
+						{{#each statsPeriodValues}}
+							<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="stats-section mb-24">
+				<span>Requests Served</span>
+				<span>{{_.formatNumber(packageTotal)}}</span>
+			</div>
+
+			<div class="requests-chart-wrapper">
+				<canvas id="requests-chart" width="294" height="40"></canvas>
+			</div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="stats-section mb-24">
+				<span>Bandwidth</span>
+				<span>52.5 GB</span>
+			</div>
+
+			<div class="bandwidth-chart-wrapper">
+				<canvas id="bandwidth-chart" width="294" height="40"></canvas>
+			</div>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+		</div>
+
+		<div class="stats-section mb-24">
+			<span>Top version - {{versionStats[0].version}}</span>
+			<span>{{_.formatNumber(versionStats[0].hits)}}</span>
+		</div>
+
+		{{#if navRoute !== "config"}}
+			<a on-click="@this.set('navRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
+
+			<div class="horizontal-divider mt-24 mb-24"></div>
+
+			<div class="twitter-share">
+				<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
+				<a class="btn-twitter-share mt-8"
+					target="_blank"
+					rel="noopener noreferrer"
+					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
+					Share
+				</a>
+			</div>
+
+			{{#if package.keywords}}
+				<div class="stats-keywords mt-32">
+					<div class="stats-keywords-header">Keywords</div>
+					<div class="stats-keywords-badges">
+						{{#each package.keywords}}
+							<div class="keyword-badge">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			{{/if}}
+		{{/if}}
+	</div>
+
+	{{#if navRoute !== "config"}}
+		<div class="box-badge mt-32 mb-32">
+			<div class="box-title">Get a badge for your package</div>
+			<img src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
+			<img as-clipboard="'Copy markdown to clipboard', 'bottom'"
+				data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
+			<img as-tooltip="'Alternate badge style', 'bottom'"
+				on-click="@this.toggle('badgeAltStyle')"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/alternate-btn.svg">
+		</div>
+	{{/if}}
+</div>
+
+
+<script>
+	const _ = require('../../public/js/_');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+				statsPeriodValues: {
+					1: 'day',
+					7: 'week',
+					30: 'month',
+					365: 'year',
+				},
+				statsPeriod: 30,
+			};
+		},
+		decorators: {
+			clipboard,
+			tooltip,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('statsPeriod', () => {
+					if (this.get('statsPeriod')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let statsPeriodValues = this.get('statsPeriodValues');
+						let statsPeriod = this.get('statsPeriod');
+						let period = statsPeriodValues[statsPeriod];
+
+						// get package version stats
+						http.fetchPackageVersionStats(type, name, period).then((data) => {
+							let versionsStatsArr = [];
+
+							Object.keys(data.versions).forEach((key) => {
+								versionsStatsArr.push({
+									version: key,
+									hits: data.versions[key].total,
+								});
+							});
+
+							this.animate('versionStats', versionsStatsArr.sort((a, b) => b.hits - a.hits));
+							this.animate('packageTotal', data.total);
+							this.animate('packageRank', data.rank + 1);
+						});
+
+						// get package date stats
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							if (response.total) {
+								this.set('packageDateStats', response);
+							}
+						});
+
+						// get package bandwidth stats
+						// TODO: replace it with real endpoint call
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							if (response.total) {
+								this.set('packageBandwidthStats', response);
+							}
+						});
+					}
+				});
+
+				this.observe('packageDateStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let requestsChart = this.get('requestsChart');
+					let packageDateStats = this.get('packageDateStats');
+
+					if (!packageDateStats) {
+						return null;
+					}
+
+					let array = [];
+
+					Object.keys(packageDateStats.dates).forEach((date) => {
+						array.push([ date, packageDateStats.dates[date] ]);
+					});
+
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+					if (requestsChart) {
+						requestsChart.destroy();
+						requestsChart = null;
+						this.set('requestsChart', null);
+					}
+
+					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+					let data = array.map(value => value[1].total);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#requests-chart');
+						let chartBarContext = chartEl.getContext('2d');
+						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+						requestsChart = new Chart(chartEl, {
+							type: 'bar',
+							data: {
+								labels,
+								datasets: [{
+									data,
+									backgroundColor: barBackground,
+									borderWidth: 0,
+									pointRadius: 0,
+									barThickness: 4,
+								}],
+							},
+							options: {
+								plugins: {
+									legend: {
+										display: false,
+									},
+									tooltip: {
+										callbacks: {
+											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
+											label: () => null,
+										},
+										backgroundColor: 'rgba(17, 26, 44, 0.9)',
+										titleFontSize: 12,
+										titleFontWeight: 600,
+										titleFontColor: '#fff',
+										cornerRadius: 4,
+										xAlign: 'center',
+										yAlign: 'bottom',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						});
+
+						this.set('requestsChart', requestsChart);
+					}, 100);
+				});
+
+				this.observe('packageBandwidthStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let bandwidthChart = this.get('bandwidthChart');
+					let packageBandwidthStats = this.get('packageBandwidthStats');
+
+					if (!packageBandwidthStats) {
+						return null;
+					}
+
+					let array = [];
+
+					Object.keys(packageBandwidthStats.dates).forEach((date) => {
+						array.push([ date, packageBandwidthStats.dates[date] ]);
+					});
+
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+					if (bandwidthChart) {
+						bandwidthChart.destroy();
+						bandwidthChart = null;
+						this.set('bandwidthChart', null);
+					}
+
+					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+					// TODO: temp, until real endpoint is used
+					let data = array.map(value => value[1].total / 10 ** 6 + Math.random() * 100);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#bandwidth-chart');
+						let chartBarContext = chartEl.getContext('2d');
+						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
+						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+						bandwidthChart = new Chart(chartEl, {
+							type: 'bar',
+							data: {
+								labels,
+								datasets: [{
+									data,
+									backgroundColor: barBackground,
+									borderWidth: 0,
+									pointRadius: 0,
+									barThickness: 4,
+								}],
+							},
+							options: {
+								plugins: {
+									legend: {
+										display: false,
+									},
+									tooltip: {
+										callbacks: {
+											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
+											label: () => null,
+										},
+										backgroundColor: 'rgba(17, 26, 44, 0.9)',
+										titleFontSize: 12,
+										titleFontWeight: 600,
+										titleFontColor: '#fff',
+										cornerRadius: 4,
+										xAlign: 'center',
+										yAlign: 'bottom',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						});
+
+						this.set('bandwidthChart', bandwidthChart);
+					}, 100);
+				});
+			}
+		},
+	};
+</script>
