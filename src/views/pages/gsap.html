@@ -131,11 +131,14 @@
 							</div>
 						</div>
 
-						{{#each filesList:key}}
+						{{#each filesData:key}}
 							<div class="files-item">
 								<div class="title">{{key}}</div>
 								<div class="block">
-									<span>{{this}}</span>
+									<span>
+										https://cdn.jsdelivr.net/{{packageType}}/{{packageName}}@{{@this.createAliasing(aliasingList[aliasingIdx], versionsList[versionIdx], false)}}/dist/{{this}}
+									</span>
+									
 									{{#if this}}
 										<a as-clipboard="'Copy URL to clipboard', 'right'"
 											data-clipboard-text="{{this}}">
@@ -232,9 +235,9 @@
 					'Latest',
 				],
 				versionIdx: 0,
-				aliasingIdx: 0,
+				aliasingIdx: 1,
 				versionsList: [],
-				filesList: {
+				filesData: {
 					CSSRulePlugin: '',
 					Draggable: '',
 					EasePack: '',
@@ -272,9 +275,9 @@
 					// get the rest of files of GSAP package
 					http.fetchPackageFiles(this.get('packageType'), this.get('packageName'), version).then((data) => {
 						let distFiles = [];
-						let filesList = this.get('filesList');
-						// let filesData = fileList;// temp
+						let filesData = this.get('filesData');
 
+						// get /dist files, filter for .min.js only
 						for (let key in data.files) {
 							if (data.files[key].name === 'dist') {
 								distFiles = data.files[key].files.filter((file) => {
@@ -285,39 +288,18 @@
 							}
 						}
 
-						Object.keys(filesList).forEach((fileName) => {
+						// get all existing file paths
+						Object.keys(filesData).forEach((fileName) => {
 							for (let key in distFiles) {
 								if (distFiles[key].name.includes(fileName)) {
-									filesList[fileName] = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}/dist/${distFiles[key].name}`;
-									// filesData[fileName].path = distFiles[key].name;
+									filesData[fileName] = distFiles[key].name;
 									break;
 								}
 							}
 						});
 
-						this.set('filesList', filesList);
-						// this.set('filesData', filesData);
+						this.set('filesData', filesData);
 					});
-
-					// this.observe('filesData aliasingIdx aliasingList versionIdx versionsList', () => {
-					// 	let newFilesList = {};
-					// 	let filesData = this.get('filesData');
-					// 	let version = this.get('versionsList')[this.get('versionIdx')];
-					// 	let aliasing = this.get('aliasingList')[this.get('aliasingIdx')];
-					// 	let packageType = this.get('packageType');
-					// 	let packageName = this.get('packageName');
-
-					// 	if (!version) { return; }
-
-					// 	let modVersion = '';
-
-					// 	modVersion = this.createAliasing(aliasing, version);
-
-					// 	Object.keys(filesData).forEach((fileName) => {
-					// 		newFilesList[fileName] = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}/dist/${distFiles[key].name}`;
-					// 	});
-
-					// });
 				});
 			}
 		},
@@ -344,7 +326,7 @@
 				return prepVersionBase ? `(${prepVersionBase}${prepVersionPart})` : '';
 			}
 
-			return prepVersionBase;
+			return prepVersionBase ? prepVersionBase : 'latest';
 		},
 		decorators: {
 			clipboard,
