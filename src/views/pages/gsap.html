@@ -183,8 +183,8 @@
 	
 			<div class="side-content">
 				<c-gsap-package-sidemenu
-					name="gsap"
-					type="npm"
+					name="{{packageName}}"
+					type="{{packageType}}"
 					package="{{package}}">
 				</c-gsap-package-sidemenu>
 			</div>
@@ -222,6 +222,8 @@
 	component.exports = {
 		data () {
 			return {
+				packageName: 'gsap',
+				packageType: 'npm',
 				showESMFiles: false,
 				aliasingList: [
 					'Minor',
@@ -248,7 +250,7 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				// get versions
-				http.fetchPackageVersions('npm', 'gsap').then((data) => {
+				http.fetchPackageVersions(this.get('packageType'), this.get('packageName')).then((data) => {
 					this.set('versionsList', data.versions);
 				}).catch((error) => {
 					console.error(`Gsap versions not found.`, error);
@@ -256,17 +258,19 @@
 
 				this.observe('versionIdx versionsList', () => {
 					let version = this.get('versionsList')[this.get('versionIdx')];
+					let packageType = this.get('packageType');
+					let packageName = this.get('packageName');
 
 					if (!version) { return; }
 
 					// get core file of GSAP package
-					http.fetchPackageEntrypoints('npm', 'gsap', version).then((data) => {
-						this.set('coreFile', `https://cdn.jsdelivr.net/npm/gsap@${version}${data.js.file}`);
+					http.fetchPackageEntrypoints(this.get('packageType'), this.get('packageName'), version).then((data) => {
+						this.set('coreFile', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}${data.js.file}`);
 					});
 
 
 					// get the rest of files of GSAP package
-					http.fetchPackageFiles('npm', 'gsap', version).then((data) => {
+					http.fetchPackageFiles(this.get('packageType'), this.get('packageName'), version).then((data) => {
 						let distFiles = [];
 						let filesList = this.get('filesList');
 
@@ -283,7 +287,7 @@
 						Object.keys(filesList).forEach((fileName) => {
 							for (let key in distFiles) {
 								if (distFiles[key].name.includes(fileName)) {
-									filesList[fileName] = `https://cdn.jsdelivr.net/npm/gsap@${version}/dist/${distFiles[key].name}`;
+									filesList[fileName] = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${version}/dist/${distFiles[key].name}`;
 									break;
 								}
 							}
