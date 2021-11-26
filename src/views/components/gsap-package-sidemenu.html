@@ -11,33 +11,41 @@
 
 				<ul class="dropdown-menu">
 					{{#each periodsList}}
-						<li><a on-click="@this.set('periodKey', @key)">{{this}}</a></li>
+						<li>
+							<a on-click="@this.set('periodKey', @key)">
+								{{this}}
+							</a>
+						</li>
 					{{/each}}
 				</ul>
 			</div>
 		</div>
 
-		<div class="stats-section mb-24">
-			<span>Requests Served</span>
-			<span>{{_.formatNumber(packageTotal)}}</span>
+		<div class="chart-block">
+			<div class="chart-header">
+				<span>Requests Served</span>
+				<span>{{_.formatNumber(packageTotal)}}</span>
+			</div>
+
+			<div class="requests-chart-wrapper">
+				<canvas id="requests-chart" width="294" height="41"></canvas>
+			</div>
 		</div>
 
-		<div class="requests-chart-wrapper">
-			<canvas id="requests-chart" width="294" height="40"></canvas>
+		<div class="chart-block">
+			<div class="chart-header">
+				<span>Bandwidth</span>
+				<span>52.5 GB</span>
+			</div>
+
+			<div class="bandwidth-chart-wrapper">
+				<canvas id="bandwidth-chart" width="294" height="41"></canvas>
+			</div>
 		</div>
 
-		<div class="stats-section mb-24">
-			<span>Bandwidth</span>
-			<span>52.5 GB</span>
-		</div>
-
-		<div class="bandwidth-chart-wrapper">
-			<canvas id="bandwidth-chart" width="294" height="40"></canvas>
-		</div>
-
-		<div class="stats-section mb-24">
+		<div class="top-version-block">
 			<span>Top version - {{versionStats[0].version}}</span>
-			<span>{{_.formatNumber(versionStats[0].hits)}}</span>
+			<span>{{_.formatNumber(versionStats[0].hits)}} hits</span>
 		</div>
 	</div>
 </div>
@@ -137,10 +145,6 @@
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
 						let chartEl = this.find('#requests-chart');
-						let chartBarContext = chartEl.getContext('2d');
-						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
 						requestsChart = new Chart(chartEl, {
 							type: 'bar',
@@ -148,7 +152,7 @@
 								labels,
 								datasets: [{
 									data,
-									backgroundColor: barBackground,
+									backgroundColor: '#6fb936',
 									borderWidth: 0,
 									pointRadius: 0,
 									barThickness: 4,
@@ -217,10 +221,6 @@
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
 						let chartEl = this.find('#bandwidth-chart');
-						let chartBarContext = chartEl.getContext('2d');
-						let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-						barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-						barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
 						bandwidthChart = new Chart(chartEl, {
 							type: 'bar',
@@ -228,7 +228,7 @@
 								labels,
 								datasets: [{
 									data,
-									backgroundColor: barBackground,
+									backgroundColor: '#6fb936',
 									borderWidth: 0,
 									pointRadius: 0,
 									barThickness: 4,
