@@ -11,7 +11,7 @@ const screenshotsDir = __dirname + '/screenshots';
 let failureCounter = 0;
 
 global.BASE_URL = 'http://localhost:4401';
-global.browser = utils.initBrowser({ width: 1600, height: 900 });
+global.browser = utils.initBrowser({ width: 1600, height: 1000 });
 
 describe('Acceptance tests', function () {
 	this.timeout(30000);

@@ -7,6 +7,7 @@ chai.use(chaiAsPromised);
 describe('search', () => {
 	it('works', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
+		await browser.sleep(4000);
 		await browser.findElement({ css: '.search-input' }).sendKeys('jsdelivr');
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.package-name' }).getText()).to.eventually.contain('jsdelivr');
