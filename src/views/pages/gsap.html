@@ -93,7 +93,7 @@
 									{{#each aliasingList:idx}}
 										<li>
 											<a on-click="@this.set('aliasingIdx', idx)" class="{{#if idx === aliasingIdx}}current{{/if}}">
-												{{this}} {{@this.createAliasing(this, versionsList[versionIdx])}}
+												{{this}} {{@this.createAliasing(this, versionsList[versionIdx], true)}}
 											</a>
 										</li>
 									{{/each}}
@@ -110,7 +110,7 @@
 							<div class="block-core">
 								{{#if coreFile}}
 									<span>
-										https://cdn.jsdelivr.net/{{packageType}}/{{packageName}}@{{@this.createAliasing(aliasingList[aliasingIdx], versionsList[versionIdx], false)}}{{coreFile}}
+										{{@this.createUrl(coreFile, showESMFiles, true)}}
 									</span>
 
 									<div class="data-type-ctrl">
@@ -126,7 +126,7 @@
 									</div>
 
 									<a as-clipboard="'Copy URL to clipboard', 'right'"
-										data-clipboard-text="{{coreFile}}">
+										data-clipboard-text="{{@this.createUrl(coreFile, showESMFiles, true)}}">
 										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
 									</a>
 								{{/if}}
@@ -139,11 +139,11 @@
 								<div class="block">
 									{{#if this}}
 										<span>
-											https://cdn.jsdelivr.net/{{packageType}}/{{packageName}}@{{@this.createAliasing(aliasingList[aliasingIdx], versionsList[versionIdx], false)}}/dist/{{this}}
+											{{@this.createUrl(this, showESMFiles)}}
 										</span>
 
 										<a as-clipboard="'Copy URL to clipboard', 'right'"
-											data-clipboard-text="{{this}}">
+											data-clipboard-text="{{@this.createUrl(this, showESMFiles)}}">
 												<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
 										</a>
 									{{/if}}
@@ -302,7 +302,7 @@
 				});
 			}
 		},
-		createAliasing (aliasingBase, version, full = true) {
+		createAliasing (aliasingBase, version, full = false) {
 			let versionSplitted = version.split('.');
 			let prepVersionBase = '';
 			let prepVersionPart = '';
@@ -326,6 +326,26 @@
 			}
 
 			return prepVersionBase ? prepVersionBase : 'latest';
+		},
+		createUrl (filePath, isEsm, isCore = false) {
+			let packageName = this.get('packageName');
+			let packageType = this.get('packageType');
+			let version = this.get('versionsList')[this.get('versionIdx')];
+			let aliasing = this.get('aliasingList')[this.get('aliasingIdx')];
+
+			if (!version || !filePath) { return; }
+
+			let URLbase = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${this.createAliasing(aliasing, version)}`;
+
+			if (isCore && isEsm) {
+				return `${URLbase}/+esm`;
+			} else if (isCore && !isEsm) {
+				return `${URLbase}${filePath}`;
+			} else if (!isCore && isEsm) {
+				return `${URLbase}/dist/${filePath}/+esm`;
+			} else {
+				return `${URLbase}/dist/${filePath}`;
+			}
 		},
 		decorators: {
 			clipboard,
