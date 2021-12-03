@@ -111,7 +111,7 @@
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
 							</div>
 							<div class="card-main-stat">
-								<span>{{_.formatNumber(versionsHitsData.total)}}</span>
+								<span>{{_.formatNumber(versionsHitsTotal)}}</span>
 								<span>Requests Served</span>
 							</div>
 							<div class="card-growth">
@@ -202,10 +202,6 @@
 										<canvas id="stats-chart" width="1116" height="236"></canvas>
 									</div>
 								</div>
-							{{else}}
-								<div class="container">
-									<section class="package-usage-empty"></section>
-								</div>
 							{{/if}}
 						</div>
 
@@ -234,7 +230,7 @@
 						<div class="horizontal-divider mt-40 mb-40"></div>
 
 						<div class="chart-hits-per-period">
-							{{#if versionsHitsData.total}}
+							{{#if versionsHitsTotal}}
 								<div class="package-usage">
 									<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
 								</div>
@@ -369,6 +365,7 @@
 				algoliaReadmeErrMsg: 'ERROR: No README data found!',
 				noPackageStatsData: false,
 				noVersionsData: false,
+				versionsHitsTotal: 0,
 			};
 		},
 		decorators: {
@@ -531,7 +528,7 @@
 							let magnitude = Math.floor(Math.log10(maxValue));
 							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
 
-							this.animate('versionsHitsData', data);
+							this.animate('versionsHitsTotal', data.total);
 							this.animate('topFiveVersions', topFiveVersions);
 
 							// Maybe we have no stats yet.
