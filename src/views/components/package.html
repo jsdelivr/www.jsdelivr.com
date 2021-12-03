@@ -104,6 +104,7 @@
 							</div>
 						</div>
 					</div>
+
 					<div class="stats-cards">
 						<div>
 							<div class="card-icon">
@@ -134,163 +135,171 @@
 						</div>
 					</div>
 
-					<div class="chart-stats-per-period">
-						{{#if statsDateData.total}}
-							<div class="package-usage">
-								<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+					{{#if noPackageStatsData && noVersionsData}}
+						<div class="no-data-wrapper">
+							<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+							<span>No statistics yet</span>
+							<span>This is probably not a very popular package :(</span>
+						</div>
+					{{else}}
+						<div class="chart-stats-per-period">
+							{{#if statsDateData.total}}
+								<div class="package-usage">
+									<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
 
-								<div class="group-by-ctrl">
-									<span>
-										Group by:
-									</span>
+									<div class="group-by-ctrl">
+										<span>
+											Group by:
+										</span>
 
-									<div class="btn-group">
-										<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-											<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
-											<i class="fa fa-angle-down" aria-hidden="true"></i>
-										</button>
+										<div class="btn-group">
+											<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+												<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
+												<i class="fa fa-angle-down" aria-hidden="true"></i>
+											</button>
 
-										<ul class="dropdown-menu">
-											{{#each ~/usageChartGroupByValues}}
-												<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
-											{{/each}}
-										</ul>
+											<ul class="dropdown-menu">
+												{{#each ~/usageChartGroupByValues}}
+													<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
+												{{/each}}
+											</ul>
+										</div>
 									</div>
 								</div>
-							</div>
 
-							<div class="stats-chart-block">
-								<div class="chart-x">
-									{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-										<div class="x-day-row">
-											{{#each ~/statsChartDates.periodDays}}
-												<div>{{this}}</div>
+								<div class="stats-chart-block">
+									<div class="chart-x">
+										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
+											<div class="x-day-row">
+												{{#each ~/statsChartDates.periodDays}}
+													<div>{{this}}</div>
+												{{/each}}
+											</div>
+										{{/if}}
+
+										<div class="x-month-row">
+											{{#each ~/statsChartDates.periodMonths}}
+												<div style="flex-grow: {{~/statsChartDates[this].length/~/statsChartDates.periodDays.length}};"
+												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
+													{{this}}
+												</div>
 											{{/each}}
 										</div>
-									{{/if}}
+									</div>
 
-									<div class="x-month-row">
-										{{#each ~/statsChartDates.periodMonths}}
-											<div style="flex-grow: {{~/statsChartDates[this].length/~/statsChartDates.periodDays.length}};"
-											class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-												{{this}}
-											</div>
-										{{/each}}
+									<div class="chart-y">
+										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
+											{{#each range}}
+												<div>
+													{{_.formatNumber(this)}}
+												</div>
+
+											{{/each}}
+										{{/with}}
+									</div>
+
+									<div class="stats-chart-wrapper">
+										<canvas id="stats-chart" width="1116" height="236"></canvas>
 									</div>
 								</div>
+							{{else}}
+								<div class="container">
+									<section class="package-usage-empty"></section>
+								</div>
+							{{/if}}
+						</div>
 
-								<div class="chart-y">
-									{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
-										{{#each range}}
-											<div>
-												{{_.formatNumber(this)}}
+						<div class="horizontal-divider mt-40 mb-40"></div>
+
+						<div class="chart-tops">
+							{{#if ~/topFiveVersions}}
+								<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+									{{#partial column1}}
+										<a on-click="@this.set('version', version)">{{version}}</a>
+									{{/partial}}
+								</c-top-stats-table>
+
+								<c-top-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
+									{{#partial header}}
+										Top 5 files in v<span>{{~/version}}</span>
+									{{/partial}}
+
+									{{#partial column1}}
+										<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+									{{/partial}}
+								</c-top-stats-table>
+							{{/if}}
+						</div>
+
+						<div class="horizontal-divider mt-40 mb-40"></div>
+
+						<div class="chart-hits-per-period">
+							{{#if versionsHitsData.total}}
+								<div class="package-usage">
+									<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
+								</div>
+
+								<div class="hits-chart-block">
+									<div class="chart-x">
+										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
+											<div class="x-day-row">
+												{{#each ~/hitsChartDates.periodDays}}
+													<div>{{this}}</div>
+												{{/each}}
 											</div>
+										{{/if}}
 
-										{{/each}}
-									{{/with}}
-								</div>
-
-								<div class="stats-chart-wrapper">
-									<canvas id="stats-chart" width="1116" height="236"></canvas>
-								</div>
-							</div>
-						{{else}}
-							<div class="container">
-								<section class="package-usage-empty"></section>
-							</div>
-						{{/if}}
-					</div>
-
-					<div class="horizontal-divider mt-40 mb-40"></div>
-
-					<div class="chart-tops">
-						{{#if ~/topFiveVersions}}
-							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-								{{#partial column1}}
-									<a on-click="@this.set('version', version)">{{version}}</a>
-								{{/partial}}
-							</c-top-stats-table>
-
-							<c-top-stats-table data="{{~/fileStats.slice(0, 5)}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
-								{{#partial header}}
-									Top 5 files in v<span>{{~/version}}</span>
-								{{/partial}}
-
-								{{#partial column1}}
-									<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-								{{/partial}}
-							</c-top-stats-table>
-						{{/if}}
-					</div>
-
-					<div class="horizontal-divider mt-40 mb-40"></div>
-
-					<div class="chart-hits-per-period">
-						{{#if versionsHitsData.total}}
-							<div class="package-usage">
-								<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
-							</div>
-
-							<div class="hits-chart-block">
-								<div class="chart-x">
-									{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-										<div class="x-day-row">
-											{{#each ~/hitsChartDates.periodDays}}
-												<div>{{this}}</div>
+										<div class="x-month-row">
+											{{#each ~/hitsChartDates.periodMonths}}
+												<div style="flex-grow: {{~/hitsChartDates[this].length/~/hitsChartDates.periodDays.length}};"
+												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
+													{{this}}
+												</div>
 											{{/each}}
 										</div>
-									{{/if}}
+									</div>
 
-									<div class="x-month-row">
-										{{#each ~/hitsChartDates.periodMonths}}
-											<div style="flex-grow: {{~/hitsChartDates[this].length/~/hitsChartDates.periodDays.length}};"
-											class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-												{{this}}
-											</div>
-										{{/each}}
+									<div class="chart-y">
+										{{#with _.linRange(hitsChartYMax, 8).reverse() as range}}
+											{{#each range}}
+												<div>
+													{{_.formatNumber(this)}}
+													<div class="y-line"></div>
+												</div>
+											{{/each}}
+										{{/with}}
+									</div>
+
+									<div class="hits-chart-wrapper">
+										<canvas id="hits-chart" width="1110" height="245"></canvas>
 									</div>
 								</div>
 
-								<div class="chart-y">
-									{{#with _.linRange(hitsChartYMax, 8).reverse() as range}}
-										{{#each range}}
-											<div>
-												{{_.formatNumber(this)}}
-												<div class="y-line"></div>
-											</div>
-										{{/each}}
-									{{/with}}
+								<div class="hits-chart-legend">
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[0].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[1].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[2].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[3].version}}
+									</div>
+									<div class="legend-item">
+										<div></div>
+										{{topFiveVersions[4].version}}
+									</div>
 								</div>
-
-								<div class="hits-chart-wrapper">
-									<canvas id="hits-chart" width="1110" height="245"></canvas>
-								</div>
-							</div>
-
-							<div class="hits-chart-legend">
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[0].version}}
-								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[1].version}}
-								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[2].version}}
-								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[3].version}}
-								</div>
-								<div class="legend-item">
-									<div></div>
-									{{topFiveVersions[4].version}}
-								</div>
-							</div>
-						{{/if}}
-					</div>
+							{{/if}}
+						</div>
+					{{/if}}
 				</div>
 			</div>
 		{{/if}}
@@ -358,6 +367,8 @@
 				},
 				usageChartGroupBy: 'day',
 				algoliaReadmeErrMsg: 'ERROR: No README data found!',
+				noPackageStatsData: false,
+				noVersionsData: false,
 			};
 		},
 		decorators: {
@@ -424,12 +435,12 @@
 
 						// get package date stats data and create stats chart
 						http.fetchPackageDateStats(type, name, period).then((response) => {
-							let array = [];
-
 							if (!response.total) {
+								this.set('noPackageStatsData', true);
 								return;
 							}
 
+							let array = [];
 							let maxValue = Math.max(...Object.values(response.dates).map(date => date.total));
 							let magnitude = Math.floor(Math.log10(maxValue));
 							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
@@ -499,6 +510,11 @@
 
 						// get package versions data and create hits chart
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
+							if (!data.total) {
+								this.set('noVersionsData', true);
+								return;
+							}
+
 							let array = [];
 
 							Object.keys(data.versions).forEach((key) => {
@@ -514,6 +530,7 @@
 							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
 							let magnitude = Math.floor(Math.log10(maxValue));
 							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
+
 							this.animate('versionsHitsData', data);
 							this.animate('topFiveVersions', topFiveVersions);
 
