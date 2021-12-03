@@ -24,7 +24,7 @@
 
 			<div class="stats-section mb-24">
 				<span>Requests Served</span>
-				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(packageTotal)}}</span>
+				<span>{{noDataOfVersions ? 'No data' : _.formatNumber(packageTotal)}}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
@@ -55,25 +55,28 @@
 
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
-			<span>Top version - {{versionStats[0].version || package.version}}</span>
-			<span>{{versionStats[0].hits ? _.formatNumber(versionStats[0].hits) : 'No data'}}</span>
+			<span>Top version - {{noDataOfVersions ? package.version : versionStats[0].version}}</span>
+			<span>{{noDataOfVersions ? 'No data' : _.formatNumber(topVersionHits)}}</span>
 		</div>
 
 		{{#if navRoute !== "config"}}
 			<a on-click="@this.set('navRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
 
-			<div class="horizontal-divider mt-24 mb-24"></div>
+			
+			{{#unless noDataOfVersions}}
+				<div class="horizontal-divider mt-24 mb-24"></div>
 
-			<div class="twitter-share">
-				<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
-				<a class="btn-twitter-share mt-8"
-					target="_blank"
-					rel="noopener noreferrer"
-					href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
-					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
-					Share
-				</a>
-			</div>
+				<div class="twitter-share">
+					<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
+					<a class="btn-twitter-share mt-8"
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
+						Share
+					</a>
+				</div>
+			{{/unless}}
 
 			{{#if package.keywords}}
 				<div class="stats-keywords mt-32">
@@ -130,7 +133,9 @@
 				statsPeriod: 30,
 				noDataOfRequests: false,
 				noDataOfBandwidth: false,
+				noDataOfVersions: false,
 				packageTotal: 0,
+				topVersionHits: 0,
 			};
 		},
 		decorators: {
@@ -149,18 +154,25 @@
 
 						// get package version stats
 						http.fetchPackageVersionStats(type, name, period).then((data) => {
-							let versionsStatsArr = [];
+							if (data.total) {
+								let versionsStatsArr = [];
 
-							Object.keys(data.versions).forEach((key) => {
-								versionsStatsArr.push({
-									version: key,
-									hits: data.versions[key].total,
+								Object.keys(data.versions).forEach((key) => {
+									versionsStatsArr.push({
+										version: key,
+										hits: data.versions[key].total,
+									});
 								});
-							});
 
-							this.animate('versionStats', versionsStatsArr.sort((a, b) => b.hits - a.hits));
-							this.animate('packageTotal', data.total);
-							this.animate('packageRank', data.rank + 1);
+								let versionStats = versionsStatsArr.sort((a, b) => b.hits - a.hits);
+
+								this.animate('versionStats', versionStats);
+								this.animate('packageTotal', data.total);
+								this.animate('packageRank', data.rank + 1);
+								this.animate('topVersionHits', versionStats[0].hits);
+							} else {
+								this.set('noDataOfVersions', true);
+							}
 						});
 
 						// get package date stats
