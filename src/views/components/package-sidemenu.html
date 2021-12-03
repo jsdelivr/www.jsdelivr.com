@@ -24,22 +24,30 @@
 
 			<div class="stats-section mb-24">
 				<span>Requests Served</span>
-				<span>{{_.formatNumber(packageTotal)}}</span>
+				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(packageTotal)}}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
-				<canvas id="requests-chart" width="294" height="40"></canvas>
+				{{#if noDataOfRequests}}
+					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
+				{{else}}
+					<canvas id="requests-chart" width="294" height="40"></canvas>
+				{{/if}}
 			</div>
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
 
 			<div class="stats-section mb-24">
 				<span>Bandwidth</span>
-				<span>52.5 GB</span>
+				<span>{{noDataOfBandwidth ? 'No data': '52.5 GB'}}</span>
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
-				<canvas id="bandwidth-chart" width="294" height="40"></canvas>
+				{{#if noDataOfBandwidth}}
+					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
+				{{else}}
+					<canvas id="bandwidth-chart" width="294" height="40"></canvas>
+				{{/if}}
 			</div>
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
@@ -120,6 +128,8 @@
 					365: 'year',
 				},
 				statsPeriod: 30,
+				noDataOfRequests: false,
+				noDataOfBandwidth: false,
 			};
 		},
 		decorators: {
@@ -156,6 +166,8 @@
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
 								this.set('packageDateStats', response);
+							} else {
+								this.set('noDataOfRequests', true);
 							}
 						});
 
@@ -164,6 +176,8 @@
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
 								this.set('packageBandwidthStats', response);
+							} else {
+								this.set('noDataOfBandwidth', true);
 							}
 						});
 					}
