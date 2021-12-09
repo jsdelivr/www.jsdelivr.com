@@ -387,6 +387,15 @@
 					});
 				});
 			});
+
+			this.observe('package.moduleTypes', (value) => {
+				if (
+					this.get('onlyHeader') !== true
+					&& (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1)
+				) {
+					this.set('selectedType', 'ESM');
+				}
+			});
 		},
 		data () {
 			return {
