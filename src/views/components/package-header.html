@@ -245,7 +245,7 @@
 							{{else}}
 								<div class="script-wrapper-esm">
 									<span class="script-tag">&#60;script type="module"&#62;</span>
-									<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from 'https://cdn.jsdelivr.net/npm/{{name}}/+esm'</span>
+									<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
 									<span class="script-tag">&#60;/script&#62;</span>
 								</div>
 							{{/if}}
@@ -368,6 +368,8 @@
 						this.set('packageCssEntrypoint', packageCssEntrypoint);
 					}
 
+					this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
+
 					http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 						if (packageJsEntrypoint) {
 							data.files.forEach((file) => {
@@ -406,8 +408,8 @@
 				],
 				versionsList: [
 					'Static',
-					'Major',
 					'Minor',
+					'Major',
 					'Latest',
 				],
 				selectedType: 'Default',
