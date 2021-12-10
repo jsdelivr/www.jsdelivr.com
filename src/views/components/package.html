@@ -533,41 +533,53 @@
 
 							let chartEl = this.find('#hits-chart');
 
-							let datasets = topFiveVersions.reduce((result, version, idx) => {
-								let dataset = {};
-
+							let datasets = topFiveVersions.reduce((datasets, version, idx) => {
 								switch (idx) {
 									case 0:
-										dataset.data = version.dates;
-										dataset.borderColor = '#5C667A';
+										datasets.push({
+											data: version.dates,
+											borderColor: '#5C667A',
+										});
+
 										break;
 									case 1:
-										dataset.data = version.dates;
-										dataset.borderColor = '#BC5090';
+										datasets.push({
+											data: version.dates,
+											borderColor: '#BC5090',
+										});
+
 										break;
 									case 2:
-										dataset.data = version.dates;
-										dataset.borderColor = '#FFA600';
+										datasets.push({
+											data: version.dates,
+											borderColor: '#FFA600',
+										});
+
 										break;
 									case 3:
-										dataset.data = version.dates;
-										dataset.borderColor = '#FF6361';
+										datasets.push({
+											data: version.dates,
+											borderColor: '#FF6361',
+										});
+
 										break;
 									case 4:
-										dataset.data = version.dates;
-										dataset.borderColor = '#69C4F7';
+										datasets.push({
+											data: version.dates,
+											borderColor: '#69C4F7',
+										});
+
 										break;
 								}
-								result.push(dataset);
 
-								return result;
+								return datasets;
 							}, []);
 
 							hitsChart = new Chart(chartEl, {
 								type: 'line',
 								data: {
 									labels: [],
-									datasets: datasets,
+									datasets,
 								},
 								options: {
 									layout: {
