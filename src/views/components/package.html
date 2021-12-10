@@ -272,26 +272,12 @@
 								</div>
 
 								<div class="hits-chart-legend">
-									<div class="legend-item">
-										<div></div>
-										{{topFiveVersions[0].version}}
-									</div>
-									<div class="legend-item">
-										<div></div>
-										{{topFiveVersions[1].version}}
-									</div>
-									<div class="legend-item">
-										<div></div>
-										{{topFiveVersions[2].version}}
-									</div>
-									<div class="legend-item">
-										<div></div>
-										{{topFiveVersions[3].version}}
-									</div>
-									<div class="legend-item">
-										<div></div>
-										{{topFiveVersions[4].version}}
-									</div>
+									{{#each topFiveVersions}}
+										<div class="legend-item">
+											<div></div>
+											{{version}}
+										</div>
+									{{/each}}
 								</div>
 							{{/if}}
 						</div>
@@ -547,33 +533,41 @@
 
 							let chartEl = this.find('#hits-chart');
 
+							let datasets = topFiveVersions.reduce((result, version, idx) => {
+								let dataset = {};
+
+								switch (idx) {
+									case 0:
+										dataset.data = version.dates;
+										dataset.borderColor = '#5C667A';
+										break;
+									case 1:
+										dataset.data = version.dates;
+										dataset.borderColor = '#BC5090';
+										break;
+									case 2:
+										dataset.data = version.dates;
+										dataset.borderColor = '#FFA600';
+										break;
+									case 3:
+										dataset.data = version.dates;
+										dataset.borderColor = '#FF6361';
+										break;
+									case 4:
+										dataset.data = version.dates;
+										dataset.borderColor = '#69C4F7';
+										break;
+								}
+								result.push(dataset);
+
+								return result;
+							}, []);
+
 							hitsChart = new Chart(chartEl, {
 								type: 'line',
 								data: {
 									labels: [],
-									datasets: [
-										{
-											data: topFiveVersions[0].dates,
-											borderColor: '#5C667A',
-										},
-										{
-											data: topFiveVersions[1].dates,
-											borderColor: '#BC5090',
-
-										},
-										{
-											data: topFiveVersions[2].dates,
-											borderColor: '#FFA600',
-										},
-										{
-											data: topFiveVersions[3].dates,
-											borderColor: '#FF6361',
-										},
-										{
-											data: topFiveVersions[4].dates,
-											borderColor: '#69C4F7',
-										},
-									],
+									datasets: datasets,
 								},
 								options: {
 									layout: {
