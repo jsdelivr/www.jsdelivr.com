@@ -234,13 +234,15 @@
 			return -1;
 		},
 		getFile (file) {
-			if (!file) {
+			let files = this.get('files');
+
+			if (!file || files.length === 0) {
 				return {};
 			}
 
 			let p = file.split('/');
 			let n = p.slice(-1)[0];
-			let f = _.listFiles(this.get('files'), p.slice(1, -1)).filter(f => f.name === n)[0];
+			let f = _.listFiles(files, p.slice(1, -1)).filter(f => f.name === n)[0];
 
 			if (!f) {
 				if (file === this.get('default') && _.getNonMinifiedName(file) !== file) {
