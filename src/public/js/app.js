@@ -22,6 +22,7 @@ const cEsm = require('../../views/pages/esm.html');
 const cHistory = require('../../views/pages/history.html');
 const cGsap = require('../../views/pages/gsap.html');
 const cSkypack = require('../../views/pages/skypack.html');
+const cEsmcdn = require('../../views/pages/esmcdn.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -90,6 +91,7 @@ app.router.addRoute('/terms', cPP);
 app.router.addRoute('/history', cHistory);
 app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
+app.router.addRoute('/esmcdn', cEsmcdn);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {

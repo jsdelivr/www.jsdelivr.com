@@ -1,0 +1,229 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/comparison-table.html" name="c-comparison-table">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-header></c-header>
+
+	<div class="p-esmcdn">
+		<c-header-gradient></c-header-gradient>
+
+		<div class="content">
+			<div class="title">
+				<h1>Migrating from ESM>CDN to jsDelivr</h1>
+
+				<h2>
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+					Most ESM>CDN links can be easily converted to jsDelivr links.
+				</h2>
+			</div>
+
+			<div class="container">
+				<div class="box">
+					<div class="bar">
+						<div class="circle"></div>
+						<div class="line {{#if out}}filled{{/if}}"></div>
+						<div class="circle bottom {{#unless out}}circle-disabled{{/unless}}"></div>
+					</div>
+
+					<div class="icon-competitor">
+						<img width="111" height="24" src="{{@shared.assetsHost}}/img/skypack.svg">
+					</div>
+
+					<div class="input-wrapper mb-48">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a ESM>CDN link here" value="{{in}}">
+					</div>
+
+					<div class="icon-jsdelivr">
+						<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
+					</div>
+
+					<div class="input-wrapper">
+						<input type="text" class="input {{#if out && !error}}input-jsdelivr-copy{{/if}} {{#if out}}active{{/if}}" placeholder="Get a jsDelivr link here" value="{{out}}">
+
+						{{#if out && !error}}
+							<a class="copy" as-clipboard data-clipboard-text="{{out}}">Copy</a>
+						{{/if}}
+					</div>
+
+					{{#if displayHtmlWarning}}
+						<div class="alert alert-warning" role="alert">
+							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
+							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a> if this is a problem.
+						</div>
+					{{/if}}
+				</div>
+
+				<div class="host-descr-title">
+					ESM>CDN and jsDelivr comparison
+				</div>
+
+				<div class="host-descr-text">
+					jsDelivr is a great alternative for ESM>CDN and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
+				</div>
+			</div>
+
+			<div class="container">
+				<c-comparison-table
+					competitorImgSrc="{{@shared.assetsHost}}/img/skypack.svg"
+					competitorImgWidth="111"
+					competitorImgHeight="24">
+				</c-comparison-table>
+
+				<div class="buttons">
+					<a href="/" class="all-features">See All Features</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<c-footer></c-footer>
+</r-page>
+
+<script>
+	/* eslint-disable no-throw-literal */
+
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const defaultError = 'Sorry, this doesn\'t look like a valid ESM>CDN link :(';
+
+	const options = {
+		'd3js': {
+			getPath (version, file) {
+				return `/npm/d3@${version}/dist/${file}`;
+			},
+		},
+		'dojo': {
+			getPath (version, file) {
+				return `/gh/dojo/dojo@${version}/${file.slice(5, -3)}.min.js`;
+			},
+		},
+		'hammerjs': {
+			getPath (version, file) {
+				return `/npm/hammerjs@${version}/${file}`;
+			},
+		},
+		'indefinite-observable': {
+			getPath (version, file) {
+				return `/npm/indefinite-observable@${version}/dist/${file}`;
+			},
+		},
+		'jquery': {
+			getPath (version, file) {
+				return `/npm/jquery@${version}/dist/${file}`;
+			},
+		},
+		'jquerymobile': {
+			getPath (version, file) {
+				return `/npm/jquery-mobile@${version}/dist/${file}`;
+			},
+			isError (version, file) {
+				if (version !== '1.4.1' || (!file.endsWith('js') && !file.endsWith('css'))) {
+					return true;
+				}
+			},
+		},
+		'jqueryui': {
+			getPath (version, file) {
+				return `/npm/jquery-ui-dist@${version}/${file}`;
+			},
+			isError (version, file) {
+				if (file.includes('themes')) {
+					return true;
+				}
+			},
+		},
+		'mootools': {
+			getPath () {
+				return `/npm/mootools-core-dist@1.5.1/dist/mootools-core.min.js`;
+			},
+		},
+		'myanmar-tools': {
+			getPath (version, file) {
+				return `/npm/myanmar-tools@${version}/build_node/${file}`;
+			},
+		},
+		'shaka-player': {
+			getPath (version, file) {
+				return `/npm/shaka-player@${version}/dist/${file}`;
+			},
+		},
+		'spf': {
+			getPath (version, file) {
+				return `/npm/spf@${version}/dist/${file}`;
+			},
+		},
+		'swfobject': {
+			getPath (version, file) {
+				return `/gh/swfobject/swfobject@2.2.0/${file}`;
+			},
+			isError (version) {
+				if (version !== '2.2') {
+					return true;
+				}
+			},
+		},
+		'threejs': {
+			getPath (version, file) {
+				return `/npm/three@0.${version.slice(-2)}.0/build/${file}`;
+			},
+		},
+		'webfont': {
+			getPath (version, file) {
+				return `/npm/webfontloader@${version}/${file.slice(0, -3)}loader.js`;
+			},
+		},
+	};
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				title: 'Migrate from ESM>CDN to jsDelivr',
+				description: 'Migrate from ESM>CDN to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+			};
+		},
+		oninit () {
+			let google2jsDelivr = google => Promise.resolve().then(() => {
+				let pattern = /^https?:\/\/ajax\.googleapis\.com\/ajax\/libs\/([^/@]+)\/([^/@]+)\/(.*)$/i;
+				let match = pattern.exec(google);
+
+				if (match) {
+					let [ , name, version, file ] = match;
+
+					if (options[name].isError && options[name].isError(version, file)) {
+						throw defaultError;
+					} else {
+						return `https://cdn.jsdelivr.net${options[name].getPath(version, file)}`;
+					}
+				}
+
+				throw defaultError;
+			});
+
+			this.observe('in', debounce(throttle((google) => {
+				this.set('displayHtmlWarning', google.slice(-5) === '.html');
+
+				if (!google) {
+					return this.set('out', '');
+				}
+
+				google2jsDelivr(google).then((jsDelivr) => {
+					this.set('error', false);
+
+					if (this.get('in') === google) {
+						this.set('out', jsDelivr);
+					}
+				}).catch((error) => {
+					this.set('error', true);
+					this.set('out', typeof error === 'string' ? error : defaultError);
+				});
+			}, 1000)));
+		},
+	};
+</script>
