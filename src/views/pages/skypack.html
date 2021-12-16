@@ -101,12 +101,12 @@
 			};
 		},
 		oninit () {
-			let buildJsDelivrLink = (name, version = '', isHooks = '') => {
-				return `https://cdn.jsdelivr.net/npm/${name}${version}${isHooks}/+esm`;
+			let buildJsDelivrLink = (name, version = "", isHooks = "") => {
+				return `https://cdn.jsdelivr.net/npm/${name}${version.replace("^", "")}${isHooks}/+esm`;
 			};
 
 			let skypack2jsDelivr = skypack => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/cdn\.skypack\.dev\/([A-Za-z-0-9]+)(@\d+.\d+.\d+|@\d+.\d+|@\d+)?(\/hooks$)?/ig;
+				let pattern = /^https?:\/\/cdn\.skypack\.dev\/([A-Za-z-0-9]+)(@\^?\d+.\d+.\d+|@\^?\d+.\d+|@\^?\d+|@next)?(\/hooks$)?/ig;
 				let match = pattern.exec(skypack);
 
 				if (match) {
