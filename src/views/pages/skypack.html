@@ -101,11 +101,11 @@
 			};
 		},
 		oninit () {
-			let buildJsDelivrLink = (name, version = '', restPath = '') => {
+			let buildJsDelivrLink = (name, scope = '', version = '', restPath = '') => {
 				if (restPath === '/hooks') {
-					return `https://cdn.jsdelivr.net/npm/${name}${version.replace('^', '')}${restPath}/+esm`;
+					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}${restPath}/+esm`;
 				} else {
-					return `https://cdn.jsdelivr.net/npm/${name}${version.replace('^', '')}/+esm`;
+					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}/+esm`;
 				}
 			};
 
@@ -114,10 +114,10 @@
 				let match = pattern.exec(skypack);
 
 				if (match) {
-					let [ matchedInput,, name, version,, restPath ] = match;
+					let [ matchedInput, scope, name, version,, restPath ] = match;
 
 					if (matchedInput === skypack) {
-						return buildJsDelivrLink(name, version, restPath);
+						return buildJsDelivrLink(name, scope, version, restPath);
 					}
 				}
 
