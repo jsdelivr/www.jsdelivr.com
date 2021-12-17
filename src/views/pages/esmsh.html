@@ -7,16 +7,16 @@
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
 
-	<div class="p-esmcdn">
+	<div class="p-esmsh">
 		<c-header-gradient></c-header-gradient>
 
 		<div class="content">
 			<div class="title">
-				<h1>Migrating from ESM>CDN to jsDelivr</h1>
+				<h1>Migrating from esm.sh to jsDelivr</h1>
 
 				<h2>
 					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
-					Most ESM>CDN links can be easily converted to jsDelivr links.
+					Most esm.sh links can be easily converted to jsDelivr links.
 				</h2>
 			</div>
 
@@ -29,11 +29,11 @@
 					</div>
 
 					<div class="icon-competitor">
-						<p class="icon-as-text">ESM>CDN</p>
+						<p class="icon-as-text">esm.sh</p>
 					</div>
 
 					<div class="input-wrapper mb-48">
-						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a ESM>CDN link here" value="{{in}}">
+						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a esm.sh link here" value="{{in}}">
 					</div>
 
 					<div class="icon-jsdelivr">
@@ -57,17 +57,17 @@
 				</div>
 
 				<div class="host-descr-title">
-					ESM>CDN and jsDelivr comparison
+					esm.sh and jsDelivr comparison
 				</div>
 
 				<div class="host-descr-text">
-					jsDelivr is a great alternative for ESM>CDN and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
+					jsDelivr is a great alternative for esm.sh and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
 				</div>
 			</div>
 
 			<div class="container">
 				<c-comparison-table
-					competitorTitleEl="{{`<p class='icon-as-text'>ESM&#62;CDN</p>`}}"
+					competitorTitleEl="{{`<p class='icon-as-text'>ESM.SH</p>`}}"
 					competitorImgWidth="111"
 					competitorImgHeight="24">
 				</c-comparison-table>
@@ -88,7 +88,7 @@
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
-	const defaultError = 'Sorry, this doesn\'t look like a valid ESM>CDN link :(';
+	const defaultError = 'Sorry, this doesn\'t look like a valid esm.sh link :(';
 
 	component.exports = {
 		decorators: {
@@ -96,8 +96,8 @@
 		},
 		data () {
 			return {
-				title: 'Migrate from ESM>CDN to jsDelivr',
-				description: 'Migrate from ESM>CDN to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+				title: 'Migrate from esm.sh to jsDelivr',
+				description: 'Migrate from esm.sh to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
 			};
 		},
 		oninit () {
@@ -105,14 +105,14 @@
 				return `https://cdn.jsdelivr.net/npm/${name}${version}${restPath}/+esm`;
 			};
 
-			let esmcdn2jsDelivr = esmcdn => Promise.resolve().then(() => {
+			let esmsh2jsDelivr = esmsh => Promise.resolve().then(() => {
 				let pattern = /^https?:\/\/esm\.sh\/([A-Za-z0-9-_]+)(@\d+\.\d+\.\d+|@\d+\.\d+|@\d+)?((\/\w+)?(\/\w+)*(\.\w+){0,2})?(\?[A-Za-z0-9-_=:/&@.]+)?/i;
-				let match = pattern.exec(esmcdn);
+				let match = pattern.exec(esmsh);
 
 				if (match) {
 					let [ matchedInput, name, version, restPath ] = match;
 
-					if (matchedInput === esmcdn) {
+					if (matchedInput === esmsh) {
 						return buildJsDelivrLink(name, version, restPath);
 					}
 				}
@@ -120,17 +120,17 @@
 				throw defaultError;
 			});
 
-			this.observe('in', debounce(throttle((esmcdn) => {
-				this.set('displayHtmlWarning', esmcdn.slice(-5) === '.html');
+			this.observe('in', debounce(throttle((esmsh) => {
+				this.set('displayHtmlWarning', esmsh.slice(-5) === '.html');
 
-				if (!esmcdn) {
+				if (!esmsh) {
 					return this.set('out', '');
 				}
 
-				esmcdn2jsDelivr(esmcdn).then((jsDelivr) => {
+				esmsh2jsDelivr(esmsh).then((jsDelivr) => {
 					this.set('error', false);
 
-					if (this.get('in') === esmcdn) {
+					if (this.get('in') === esmsh) {
 						this.set('out', jsDelivr);
 					}
 				}).catch((error) => {
