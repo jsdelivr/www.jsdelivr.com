@@ -101,23 +101,23 @@
 			};
 		},
 		oninit () {
-			let buildJsDelivrLink = (name, scope = '', version = '', restPath = '') => {
-				if (restPath === '/hooks') {
-					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}${restPath}/+esm`;
+			let buildJsDelivrLink = (name, scope = '', version = '', hooks = '',restPath = '') => {
+				if (hooks) {
+					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}${hooks}/+esm`;
 				} else {
-					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}/+esm`;
+					return `https://cdn.jsdelivr.net/npm/${scope}${name}${version}${restPath}/+esm`;
 				}
 			};
 
 			let skypack2jsDelivr = skypack => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/cdn\.skypack\.dev\/(@scope\/)?([A-Za-z-0-9-_]+)(@\^?\d+.\d+.\d+|@\^?\d+.\d+|@\^?\d+|@next)?(\?\w+)?(\/hooks$)?((\/\w*)+(.\w+)*)?/i;
+				let pattern = /^https?:\/\/cdn\.skypack\.dev\/(@scope\/)?([A-Za-z-0-9-_]+)(@\^?\d+\.\d+\.\d+|@\^?\d+\.\d+|@\^?\d+|@next)?(\/hooks)?((\/\w*)+(\.[a-z]+)+)?(\?\w+)?/i;
 				let match = pattern.exec(skypack);
 
 				if (match) {
-					let [ matchedInput, scope, name, version,, restPath ] = match;
+					let [ matchedInput, scope, name, version, hooks, restPath ] = match;
 
 					if (matchedInput === skypack) {
-						return buildJsDelivrLink(name, scope, version, restPath);
+						return buildJsDelivrLink(name, scope, version, hooks, restPath);
 					}
 				}
 
