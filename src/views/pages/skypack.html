@@ -110,11 +110,11 @@
 			};
 
 			let skypack2jsDelivr = skypack => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/cdn\.skypack\.dev\/(@scope\/)?([A-Za-z-0-9-_]+)(@\^?\d+.\d+.\d+|@\^?\d+.\d+|@\^?\d+|@next)?(\/hooks$)?((\/\w*)*(.\w+)*)?/i;
+				let pattern = /^https?:\/\/cdn\.skypack\.dev\/(@scope\/)?([A-Za-z-0-9-_]+)(@\^?\d+.\d+.\d+|@\^?\d+.\d+|@\^?\d+|@next)?(\?\w+)?(\/hooks$)?((\/\w*)+(.\w+)*)?/i;
 				let match = pattern.exec(skypack);
 
 				if (match) {
-					let [ matchedInput, ,name, version, restPath ] = match;
+					let [ matchedInput,, name, version,, restPath ] = match;
 
 					if (matchedInput === skypack) {
 						return buildJsDelivrLink(name, version, restPath);
