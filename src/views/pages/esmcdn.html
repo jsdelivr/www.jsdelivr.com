@@ -90,94 +90,6 @@
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const defaultError = 'Sorry, this doesn\'t look like a valid ESM>CDN link :(';
 
-	const options = {
-		'd3js': {
-			getPath (version, file) {
-				return `/npm/d3@${version}/dist/${file}`;
-			},
-		},
-		'dojo': {
-			getPath (version, file) {
-				return `/gh/dojo/dojo@${version}/${file.slice(5, -3)}.min.js`;
-			},
-		},
-		'hammerjs': {
-			getPath (version, file) {
-				return `/npm/hammerjs@${version}/${file}`;
-			},
-		},
-		'indefinite-observable': {
-			getPath (version, file) {
-				return `/npm/indefinite-observable@${version}/dist/${file}`;
-			},
-		},
-		'jquery': {
-			getPath (version, file) {
-				return `/npm/jquery@${version}/dist/${file}`;
-			},
-		},
-		'jquerymobile': {
-			getPath (version, file) {
-				return `/npm/jquery-mobile@${version}/dist/${file}`;
-			},
-			isError (version, file) {
-				if (version !== '1.4.1' || (!file.endsWith('js') && !file.endsWith('css'))) {
-					return true;
-				}
-			},
-		},
-		'jqueryui': {
-			getPath (version, file) {
-				return `/npm/jquery-ui-dist@${version}/${file}`;
-			},
-			isError (version, file) {
-				if (file.includes('themes')) {
-					return true;
-				}
-			},
-		},
-		'mootools': {
-			getPath () {
-				return `/npm/mootools-core-dist@1.5.1/dist/mootools-core.min.js`;
-			},
-		},
-		'myanmar-tools': {
-			getPath (version, file) {
-				return `/npm/myanmar-tools@${version}/build_node/${file}`;
-			},
-		},
-		'shaka-player': {
-			getPath (version, file) {
-				return `/npm/shaka-player@${version}/dist/${file}`;
-			},
-		},
-		'spf': {
-			getPath (version, file) {
-				return `/npm/spf@${version}/dist/${file}`;
-			},
-		},
-		'swfobject': {
-			getPath (version, file) {
-				return `/gh/swfobject/swfobject@2.2.0/${file}`;
-			},
-			isError (version) {
-				if (version !== '2.2') {
-					return true;
-				}
-			},
-		},
-		'threejs': {
-			getPath (version, file) {
-				return `/npm/three@0.${version.slice(-2)}.0/build/${file}`;
-			},
-		},
-		'webfont': {
-			getPath (version, file) {
-				return `/npm/webfontloader@${version}/${file.slice(0, -3)}loader.js`;
-			},
-		},
-	};
-
 	component.exports = {
 		decorators: {
 			clipboard,
@@ -189,34 +101,36 @@
 			};
 		},
 		oninit () {
-			let google2jsDelivr = google => Promise.resolve().then(() => {
-				let pattern = /^https?:\/\/ajax\.googleapis\.com\/ajax\/libs\/([^/@]+)\/([^/@]+)\/(.*)$/i;
-				let match = pattern.exec(google);
+			let buildJsDelivrLink = (name, version = '', restPath = '') => {
+				return `https://cdn.jsdelivr.net/npm/${name}${version}${restPath}/+esm`;
+			};
+
+			let esmcdn2jsDelivr = esmcdn => Promise.resolve().then(() => {
+				let pattern = /^https?:\/\/esm\.sh\/([A-Za-z0-9-_]+)(@\d+\.\d+\.\d+|@\d+\.\d+|@\d+)?((\/\w+)?(\/\w+)*(\.\w+){0,2})?(\?[A-Za-z0-9-_=:/&@.]+)?/i;
+				let match = pattern.exec(esmcdn);
 
 				if (match) {
-					let [ , name, version, file ] = match;
+					let [ matchedInput, name, version, restPath ] = match;
 
-					if (options[name].isError && options[name].isError(version, file)) {
-						throw defaultError;
-					} else {
-						return `https://cdn.jsdelivr.net${options[name].getPath(version, file)}`;
+					if (matchedInput === esmcdn) {
+						return buildJsDelivrLink(name, version, restPath);
 					}
 				}
 
 				throw defaultError;
 			});
 
-			this.observe('in', debounce(throttle((google) => {
-				this.set('displayHtmlWarning', google.slice(-5) === '.html');
+			this.observe('in', debounce(throttle((esmcdn) => {
+				this.set('displayHtmlWarning', esmcdn.slice(-5) === '.html');
 
-				if (!google) {
+				if (!esmcdn) {
 					return this.set('out', '');
 				}
 
-				google2jsDelivr(google).then((jsDelivr) => {
+				esmcdn2jsDelivr(esmcdn).then((jsDelivr) => {
 					this.set('error', false);
 
-					if (this.get('in') === google) {
+					if (this.get('in') === esmcdn) {
 						this.set('out', jsDelivr);
 					}
 				}).catch((error) => {
