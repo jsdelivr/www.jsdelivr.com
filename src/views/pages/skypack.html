@@ -110,9 +110,10 @@
 				let match = pattern.exec(skypack);
 
 				if (match) {
-					let [ , name, version, isHooks ] = match;
-
-					return buildJsDelivrLink(name, version, isHooks);
+					let [ matchedInput, name, version, isHooks ] = match;
+					if (matchedInput === skypack) {
+						return buildJsDelivrLink(name, version, isHooks);
+					}
 				}
 
 				throw defaultError;
