@@ -575,22 +575,21 @@
 								return datasets;
 							}, []);
 
-
 							let tooltipLine = {
 								id: 'tooltipLine',
 								beforeDraw: (chart) => {
-									if (chart.tooltip._active && chart.tooltip._active.length) {
-										let ctx = chart.ctx;
+									let { ctx, tooltip, chartArea } = chart;
 
+									if (tooltip._active && tooltip._active.length) {
 										ctx.save();
-										let activePoint = chart.tooltip._active[0];
+										let activePoint = tooltip._active[0];
 
 										ctx.beginPath();
 										// empty arr for solid line
 										ctx.setLineDash([]);
 										// TODO: -20 because of options.layout.padding.top: 20, should be fixed
-										ctx.moveTo(activePoint.element.x, chart.chartArea.top - 20);
-										ctx.lineTo(activePoint.element.x, chart.chartArea.bottom);
+										ctx.moveTo(activePoint.element.x, chartArea.top - 20);
+										ctx.lineTo(activePoint.element.x, chartArea.bottom);
 										ctx.lineWidth = 2;
 										ctx.strokeStyle = '#dadde2';
 										ctx.stroke();
@@ -623,6 +622,9 @@
 									plugins: {
 										legend: {
 											display: false,
+										},
+										tooltip: {
+											yAlign: 'bottom',
 										},
 									},
 									scales: {
