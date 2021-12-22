@@ -533,40 +533,51 @@
 
 							let chartEl = this.find('#hits-chart');
 
+							// setup hitsChart datasets
 							let datasets = topFiveVersions.reduce((datasets, version, idx) => {
 								switch (idx) {
 									case 0:
 										datasets.push({
+											label: `v${version.version}`,
 											data: version.dates,
 											borderColor: '#5C667A',
+											backgroundColor: '#5C667A',
 										});
 
 										break;
 									case 1:
 										datasets.push({
+											label: `v${version.version}`,
 											data: version.dates,
 											borderColor: '#BC5090',
+											backgroundColor: '#BC5090',
 										});
 
 										break;
 									case 2:
 										datasets.push({
+											label: `v${version.version}`,
 											data: version.dates,
 											borderColor: '#FFA600',
+											backgroundColor: '#FFA600',
 										});
 
 										break;
 									case 3:
 										datasets.push({
+											label: `v${version.version}`,
 											data: version.dates,
 											borderColor: '#FF6361',
+											backgroundColor: '#FF6361',
 										});
 
 										break;
 									case 4:
 										datasets.push({
+											label: `v${version.version}`,
 											data: version.dates,
 											borderColor: '#69C4F7',
+											backgroundColor: '#69C4F7',
 										});
 
 										break;
@@ -575,6 +586,7 @@
 								return datasets;
 							}, []);
 
+							// show vertical line and a tooltip on chart hover
 							let tooltipLine = {
 								id: 'tooltipLine',
 								beforeDraw: (chart) => {
@@ -597,6 +609,7 @@
 								},
 							};
 
+							// configure the hitsChart
 							let hitsChartConfig = {
 								type: 'line',
 								data: {
@@ -625,6 +638,22 @@
 										},
 										tooltip: {
 											yAlign: 'bottom',
+											borderWidth: 1,
+											borderColor: '#F65128',
+											backgroundColor: '#FFF',
+											bodyColor: '#111A2C',
+											titleColor: '#111A2C',
+											footerColor: '#111A2C',
+											titleAlign: 'center',
+											bodyFont: {
+												family: 'Lexend, sans-serif',
+												size: 14,
+												lineHeight: 1.5,
+											},
+											// itemSort: (what) => {
+											// 	console.log("++++ waht", what);
+											// 	console.log("+___________________");
+											// },
 										},
 									},
 									scales: {
@@ -658,6 +687,7 @@
 								],
 							};
 
+							// create hitsChart instance
 							hitsChart = new Chart(chartEl, hitsChartConfig);
 						});
 					}
