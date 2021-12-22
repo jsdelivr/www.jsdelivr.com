@@ -638,22 +638,30 @@
 										},
 										tooltip: {
 											yAlign: 'bottom',
-											borderWidth: 1,
+											borderWidth: 2,
 											borderColor: '#F65128',
 											backgroundColor: '#FFF',
 											bodyColor: '#111A2C',
 											titleColor: '#111A2C',
 											footerColor: '#111A2C',
 											titleAlign: 'center',
-											bodyFont: {
+											titleFont: {
 												family: 'Lexend, sans-serif',
-												size: 14,
+												size: 16,
 												lineHeight: 1.5,
 											},
-											// itemSort: (what) => {
-											// 	console.log("++++ waht", what);
-											// 	console.log("+___________________");
-											// },
+											bodyFont: {
+												family: 'Lexend, sans-serif',
+												size: 16,
+												lineHeight: 1.5,
+											},
+											callbacks: {
+												title: (title) => {
+													let options = { day: 'numeric', month: 'long', year: 'numeric' };
+
+													return new Date(title[0].label).toLocaleDateString('en-US', options);
+												},
+											},
 										},
 									},
 									scales: {
