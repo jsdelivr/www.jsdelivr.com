@@ -15,7 +15,7 @@
 						package="{{package}}"
 						type="{{type}}"
 						name="{{name}}"
-						version="{{version}}"
+						version="{{versionP}}"
 						packageVersionsNotFound="{{packageVersionsNotFound}}"
 						navRoute="{{navRoute}}">
 					</c-package-header>
@@ -58,7 +58,7 @@
 						type="{{type}}"
 						name="{{name}}"
 						github="{{package.githubRepo}}"
-						version="{{version}}"
+						version="{{versionP}}"
 						versions="{{versions}}"
 						path="{{path}}"
 						collection="{{collection}}"
@@ -217,7 +217,7 @@
 
 								<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
 									{{#partial header}}
-										Top 5 files in v<span>{{~/version}}</span>
+										Top 5 files in v<span>{{version}}</span>
 									{{/partial}}
 
 									{{#partial column1}}
@@ -378,8 +378,8 @@
 					}
 
 					// Set version for GitHub packages or when an invalid version is selected.
-					if (!this.get('version') || data.versions.indexOf(this.get('version')) === -1) {
-						this.set('version', data.versions[0]);
+					if (!this.get('versionP') || data.versions.indexOf(this.get('versionP')) === -1) {
+						this.set('versionP', data.versions[0]);
 					}
 				}).catch((error) => {
 					this.set({ packageNotFound: true });
@@ -410,8 +410,8 @@
 					}
 				});
 
-				this.observe('statsPeriod version navRoute', () => {
-					if (this.get('statsPeriod') && this.get('version')) {
+				this.observe('statsPeriod versionP navRoute', () => {
+					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
@@ -721,8 +721,8 @@
 					}
 				});
 
-				if (!this.get('version')) {
-					this.set('version', this.get('package.version'));
+				if (!this.get('versionP')) {
+					this.set('versionP', this.get('package.version'));
 				}
 			}
 		},
