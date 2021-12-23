@@ -215,9 +215,29 @@
 									{{/partial}}
 								</c-top-stats-table>
 
-								<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}" versions="{{versions}}">
+								<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+									type="{{~/type}}"
+									name="{{~/name}}"
+									version="{{~/fileStatsVersion}}"
+									versions="{{~/versions}}">
 									{{#partial header}}
-										Top 5 files in v<span>{{version}}</span>
+										Top 5 files in version
+										<div class="btn-group">
+											<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+												<span>{{version}}</span>
+												<i class="fa fa-angle-down" aria-hidden="true"></i>
+											</button>
+			
+											<ul class="dropdown-menu versions-menu">
+												{{#each versions}}
+													<li>
+														<a on-click="@this.set('version', this)" class="{{#if this === version}}current{{/if}}">
+															{{this}}
+														</a>
+													</li>
+												{{/each}}
+											</ul>
+										</div>
 									{{/partial}}
 
 									{{#partial column1}}
