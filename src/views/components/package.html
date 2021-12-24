@@ -2,7 +2,6 @@
 <link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
 <link rel="ractive" href="./package-header.html" name="c-package-header">
 <link rel="ractive" href="./top-stats-table.html" name="c-top-stats-table">
-<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
 <link rel="ractive" href="./package-sidemenu.html" name="c-package-sidemenu">
 <link rel="ractive" href="./markdown.html" name="c-markdown">
 
@@ -222,22 +221,7 @@
 									versions="{{~/versions}}">
 									{{#partial header}}
 										Top 5 files in version
-										<div class="btn-group">
-											<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-												<span>{{version}}</span>
-												<i class="fa fa-angle-down" aria-hidden="true"></i>
-											</button>
-			
-											<ul class="dropdown-menu versions-menu">
-												{{#each versions}}
-													<li>
-														<a on-click="@this.set('version', this)" class="{{#if this === version}}current{{/if}}">
-															{{this}}
-														</a>
-													</li>
-												{{/each}}
-											</ul>
-										</div>
+										<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
 									{{/partial}}
 
 									{{#partial column1}}
