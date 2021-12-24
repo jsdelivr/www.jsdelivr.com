@@ -106,6 +106,6 @@ describe('package', () => {
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.c-top-stats-table:nth-child(2) .table-header span' }).getText()).to.eventually.equal(version);
+		await expect(browser.findElement({ css: '.c-top-stats-table:nth-child(2) .version-dropdown-selected-version a' }).getText()).to.eventually.equal(version);
 	});
 });
