@@ -626,10 +626,9 @@
 									// create title element
 									let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
 
-									bodyLines.forEach((line) => {
-										innerHtml += `<div class='tooltipBodyItem'><span class='tooltipSquare'></span>`;
-
-										// square.style.background = tooltipModel.labelColors[lineIdx].backgroundColor;
+									bodyLines.forEach((line, lineIdx) => {
+										let coloredSquare = `<span class='tooltipSquare' style='background: ${tooltipModel.labelColors[lineIdx].backgroundColor}'></span>`
+										innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
 
 										line.split(' ').forEach((part, partIdx) => {
 											let prepPart = part;
@@ -651,8 +650,9 @@
 								// Display, position, and set styles for font
 								tooltipInstance.style.opacity = 1;
 								tooltipInstance.style.left = tooltipModel.caretX + 'px';
-								// tooltipInstance.style.top = tooltipModel.caretY + 'px';
-								tooltipInstance.style.top = '50%';
+								// tooltipInstance.style.left = '50%';
+								tooltipInstance.style.top = tooltipModel.caretY + 'px';
+								// tooltipInstance.style.top = '50%';
 							};
 
 							// configure for the hitsChart
