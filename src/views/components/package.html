@@ -609,6 +609,9 @@
 									let wrapper = document.createElement('div');
 									wrapper.classList.add('tooltipWrapper');
 									tooltipInstance.appendChild(wrapper);
+									let verticalLine = document.createElement('div');
+									verticalLine.classList.add('tooltipVerticalLine');
+									tooltipInstance.appendChild(verticalLine);
 									chart.canvas.parentNode.appendChild(tooltipInstance);
 								}
 
@@ -647,12 +650,11 @@
 									tooltipWrapper.innerHTML = innerHtml;
 								}
 
-								// Display, position, and set styles for font
 								tooltipInstance.style.opacity = 1;
-								tooltipInstance.style.left = tooltipModel.caretX + 'px';
-								// tooltipInstance.style.left = '50%';
-								tooltipInstance.style.top = tooltipModel.caretY + 'px';
-								// tooltipInstance.style.top = '50%';
+								let { offsetLeft, offsetTop } = chart.canvas;
+								tooltipInstance.style.left = offsetLeft + tooltipModel.caretX + 'px';
+								// 8px from top because of the custom axis-y and its horizontal line
+								tooltipInstance.style.top = '8px';
 							};
 
 							// configure for the hitsChart
