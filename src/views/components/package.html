@@ -595,26 +595,64 @@
 								return datasets;
 							}, []);
 
-							// show vertical line and a tooltip on chart hover
-							let tooltipLine = {
-								id: 'tooltipLine',
-								beforeDraw: (chart) => {
-									let { ctx, tooltip, chartArea } = chart;
+							// handle tooltip
+							let externalTooltip = (ctx) => {
+								let { chart, tooltip: tooltipModel } = ctx;
 
-									if (tooltip._active && tooltip._active.length) {
-										ctx.save();
-										let activePoint = tooltip._active[0];
+								let tooltipInstance = document.getElementById('chartjs-tooltip');
 
-										ctx.beginPath();
-										ctx.setLineDash([]);
-										// TODO: -20 because of options.layout.padding.top: 20, should be fixed
-										ctx.moveTo(activePoint.element.x, chartArea.top - 20);
-										ctx.lineTo(activePoint.element.x, chartArea.bottom);
-										ctx.lineWidth = 2;
-										ctx.strokeStyle = '#dadde2';
-										ctx.stroke();
-									}
-								},
+								// Create element on first render
+								if (!tooltipInstance) {
+									tooltipInstance = document.createElement('div');
+									tooltipInstance.id = 'chartjs-tooltip';
+									tooltipInstance.classList.add('tooltipEl');
+									let wrapper = document.createElement('div');
+									wrapper.classList.add('tooltipWrapper');
+									tooltipInstance.appendChild(wrapper);
+									chart.canvas.parentNode.appendChild(tooltipInstance);
+								}
+
+								// Hide if no tooltip
+								if (tooltipModel.opacity === 0) {
+									tooltipInstance.style.opacity = 0;
+									return;
+								}
+
+								if (tooltipModel.body) {
+									// get title text and body lines
+									let titleText = new Date(tooltipModel.title[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+									let bodyLines = tooltipModel.body.map(item => item.lines[0]);
+
+									// create title element
+									let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
+
+									bodyLines.forEach((line) => {
+										innerHtml += `<div class='tooltipBodyItem'><span class='tooltipSquare'></span>`;
+
+										// square.style.background = tooltipModel.labelColors[lineIdx].backgroundColor;
+
+										line.split(' ').forEach((part, partIdx) => {
+											let prepPart = part;
+
+											if (partIdx === 0) {
+												prepPart = prepPart.replace(':', '');
+											}
+
+											innerHtml += `<span>${prepPart}</span>`;
+										});
+
+										innerHtml += '</div>';
+									});
+
+									let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
+									tooltipWrapper.innerHTML = innerHtml;
+								}
+
+								// Display, position, and set styles for font
+								tooltipInstance.style.opacity = 1;
+								tooltipInstance.style.left = tooltipModel.caretX + 'px';
+								// tooltipInstance.style.top = tooltipModel.caretY + 'px';
+								tooltipInstance.style.top = '50%';
 							};
 
 							// configure for the hitsChart
@@ -636,7 +674,7 @@
 										},
 										point: {
 											pointRadius: 0,
-											pointHitRadius: 20,
+											pointHitRadius: 15,
 											pointHoverRadius: 0,
 										},
 									},
@@ -645,39 +683,8 @@
 											display: false,
 										},
 										tooltip: {
-											xAlign: 'left',
-											yAlign: 'center',
-											caretPadding: 20,
-											borderWidth: 2,
-											borderColor: '#F65128',
-											backgroundColor: '#FFF',
-											bodyColor: '#111A2C',
-											titleColor: '#111A2C',
-											footerColor: '#111A2C',
-											titleAlign: 'center',
-											titleFont: {
-												family: 'Lexend, sans-serif',
-												size: 16,
-												lineHeight: 1.5,
-											},
-											bodyFont: {
-												family: 'Lexend, sans-serif',
-												size: 16,
-												lineHeight: 1.5,
-											},
-											bodySpacing: 10,
-											padding: 20,
-											boxWidth: 16,
-											boxHeight: 16,
-											boxPadding: 8,
-											caretSize: 0,
-											callbacks: {
-												title: (title) => {
-													let options = { day: 'numeric', month: 'long', year: 'numeric' };
-
-													return new Date(title[0].label).toLocaleDateString('en-US', options);
-												},
-											},
+											enabled: false,
+											external: externalTooltip,
 										},
 									},
 									scales: {
@@ -706,9 +713,6 @@
 										intersect: false,
 									},
 								},
-								plugins: [
-									tooltipLine,
-								],
 							};
 
 							// create hitsChart instance
