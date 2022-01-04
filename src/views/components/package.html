@@ -241,14 +241,6 @@
 
 								<div class="hits-chart-block">
 									<div class="chart-x">
-										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-											<div class="x-day-row">
-												{{#each ~/hitsChartDates.periodDays}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
-										{{/if}}
-
 										<div class="x-month-row">
 											{{#each ~/hitsChartDates.periodMonths}}
 												<div style="flex-grow: {{~/hitsChartDates[this].length/~/hitsChartDates.periodDays.length}};"
@@ -271,7 +263,7 @@
 									</div>
 
 									<div class="hits-chart-wrapper">
-										<canvas id="hits-chart" width="1110" height="245"></canvas>
+										<canvas id="hits-chart" width="1110" height="261"></canvas>
 									</div>
 								</div>
 
@@ -532,65 +524,43 @@
 							}
 
 							let chartPeriodDates = Object.keys(topFiveVersions[0].dates);
+							let packageChartXData = _.getPackageTabChartXData(chartPeriodDates);
 
-							this.set('hitsChartDates', _.getPackageTabChartXData(chartPeriodDates));
+							this.set('hitsChartDates', packageChartXData);
 
 							let chartEl = this.find('#hits-chart');
 
 							// setup hitsChart datasets
 							let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+								let dataset = {
+									label: `v${tfvItem.version}`,
+									data: Object.values(tfvItem.dates),
+								};
+
 								switch (idx) {
 									case 0:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#5C667A',
-											borderWidth: 3,
-											backgroundColor: '#5C667A',
-										});
-
+										dataset.borderColor = '#5C667A';
+										dataset.backgroundColor = '#5C667A';
 										break;
 									case 1:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#BC5090',
-											borderWidth: 3,
-											backgroundColor: '#BC5090',
-										});
-
+										dataset.borderColor = '#BC5090';
+										dataset.backgroundColor = '#BC5090';
 										break;
 									case 2:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#FFA600',
-											borderWidth: 3,
-											backgroundColor: '#FFA600',
-										});
-
+										dataset.borderColor = '#FFA600';
+										dataset.backgroundColor = '#FFA600';
 										break;
 									case 3:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#FF6361',
-											borderWidth: 3,
-											backgroundColor: '#FF6361',
-										});
-
+										dataset.borderColor = '#FF6361';
+										dataset.backgroundColor = '#FF6361';
 										break;
 									case 4:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#69C4F7',
-											borderWidth: 3,
-											backgroundColor: '#69C4F7',
-										});
-
+										dataset.borderColor = '#69C4F7';
+										dataset.backgroundColor = '#69C4F7';
 										break;
 								}
+
+								datasets.push(dataset);
 
 								return datasets;
 							}, []);
@@ -674,7 +644,7 @@
 							let hitsChartConfig = {
 								type: 'line',
 								data: {
-									labels: [],
+									labels: packageChartXData.periodDays,
 									datasets,
 								},
 								options: {
@@ -684,12 +654,9 @@
 										},
 									},
 									elements: {
-										line: {
-											borderWidth: 3,
-										},
 										point: {
 											pointRadius: 0,
-											pointHitRadius: 19,
+											pointHitRadius: 18.6,
 											pointHoverRadius: 0,
 										},
 									},
@@ -705,7 +672,15 @@
 									scales: {
 										x: {
 											beginAtZero: true,
-											display: false,
+											display: true,
+											ticks: {
+												color: '#5C667A',
+												font: {
+													size: 12,
+													lineHeight: 16,
+													family: 'Lexend, sans-serif',
+												},
+											},
 											grid: {
 												display: false,
 												drawBorder: false,
@@ -713,14 +688,7 @@
 											},
 										},
 										y: {
-											beginAtZero: true,
 											display: false,
-											min: 0,
-											max: this.get('hitsChartYMax'),
-											grid: {
-												display: true,
-												borderColor: '#dadde2',
-											},
 										},
 									},
 									interaction: {
