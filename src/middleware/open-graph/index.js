@@ -148,10 +148,18 @@ const render = async (svg) => {
 };
 
 module.exports = async (ctx) => {
-	let data = await composeTemplate(ctx.params.name);
-	let svg = await ctx.render('og-pkg-template.svg', data);
+	try {
+		let data = await composeTemplate(ctx.params.name);
+		let svg = await ctx.render('og-pkg-template.svg', data);
 
-	ctx.set('Content-Type', 'image/png');
-	ctx.maxAge = 24 * 60 * 60;
-	ctx.body = await render(svg).catch(err => console.log(err));
+		ctx.set('Content-Type', 'image/png');
+		ctx.maxAge = 24 * 60 * 60;
+		ctx.body = await render(svg);
+	} catch (error) {
+		if (error?.statusCode === 404) {
+			return; // 404 response
+		}
+
+		throw error;
+	}
 };
