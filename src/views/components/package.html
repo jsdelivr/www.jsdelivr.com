@@ -239,32 +239,8 @@
 									<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
 								</div>
 
-								<div class="hits-chart-block">
-									<div class="chart-x">
-										<div class="x-month-row">
-											{{#each ~/hitsChartDates.periodMonths}}
-												<div style="flex-grow: {{~/hitsChartDates[this].length/~/hitsChartDates.periodDays.length}};"
-												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-													{{this}}
-												</div>
-											{{/each}}
-										</div>
-									</div>
-
-									<div class="chart-y">
-										{{#with _.linRange(hitsChartYMax, 8).reverse() as range}}
-											{{#each range}}
-												<div>
-													{{_.formatNumber(this)}}
-													<div class="y-line"></div>
-												</div>
-											{{/each}}
-										{{/with}}
-									</div>
-
-									<div class="hits-chart-wrapper">
-										<canvas id="hits-chart" width="1110" height="261"></canvas>
-									</div>
+								<div class="hits-chart-wrapper">
+									<canvas id="hits-chart"></canvas>
 								</div>
 
 								<div class="hits-chart-legend">
@@ -530,6 +506,10 @@
 
 							let chartEl = this.find('#hits-chart');
 
+							// get range of y-axis
+							let yAxisTicksAmount = 8;
+							let yAxisRange = _.linRange(this.get('hitsChartYMax'), yAxisTicksAmount).reverse();
+
 							// setup hitsChart datasets
 							let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
 								let dataset = {
@@ -648,6 +628,7 @@
 									datasets,
 								},
 								options: {
+									maintainAspectRatio: false,
 									layout: {
 										padding: {
 											top: 20,
@@ -671,8 +652,8 @@
 									},
 									scales: {
 										x: {
-											beginAtZero: true,
 											display: true,
+											beginAtZero: true,
 											ticks: {
 												color: '#5C667A',
 												font: {
@@ -684,11 +665,21 @@
 											grid: {
 												display: false,
 												drawBorder: false,
-												borderColor: '#dadde2',
 											},
 										},
 										y: {
-											display: false,
+											display: true,
+											beginAtZero: false,
+											min: yAxisRange[yAxisTicksAmount - 1],
+											max: yAxisRange[0],
+											ticks: {
+												stepSize: yAxisRange[yAxisTicksAmount - 1],
+												count: yAxisTicksAmount,
+												padding: 24,
+											},
+											grid: {
+												drawBorder: false,
+											},
 										},
 									},
 									interaction: {
