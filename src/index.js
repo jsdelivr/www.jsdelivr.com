@@ -47,6 +47,7 @@ const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
+const ogImage = require('./middleware/open-graph');
 const legacyMapping = require('../data/legacy-mapping.json');
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
@@ -272,6 +273,10 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/_index.html', data);
 	}
 });
+
+koaElasticUtils.addRoutes(router, [
+	[ '/og-image/npm/:name', '/og-image/:type(npm)/:scope?/:name' ],
+], ogImage);
 
 /**
  * All other pages.
