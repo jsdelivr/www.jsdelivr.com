@@ -1,12 +1,12 @@
-const path = require('path');
+process.env.FONTCONFIG_PATH = 'fonts';
+
 const got = require('got');
+const sharp = require('sharp');
 const wordwrap = require('wordwrap');
 const LRU = require('lru-cache');
-const { spawn } = require('child_process');
 const { npmIndex } = require('../../lib/algolia');
 
 const API_HOST = 'https://data.jsdelivr.com';
-const RENDER_BINARY = path.join(__dirname, `../../../bin/svg-to-png-${process.platform}${process.platform === 'win32' ? '.exe' : ''}`);
 const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
@@ -142,20 +142,9 @@ const composeTemplate = async (name) => {
 };
 
 const render = async (svg) => {
-	return new Promise((resolve, reject) => {
-		let child = spawn(RENDER_BINARY);
-		child.on('error', err => reject(err));
-
-		let output = [];
-		child.stdout.on('data', (chunk) => {
-			output.push(chunk);
-		});
-
-		child.stdout.on('end', () => resolve(Buffer.concat(output)));
-
-		child.stdin.write(svg);
-		child.stdin.end();
-	});
+	return sharp(Buffer.from(svg))
+		.png()
+		.toBuffer();
 };
 
 module.exports = async (ctx) => {
@@ -164,5 +153,5 @@ module.exports = async (ctx) => {
 
 	ctx.set('Content-Type', 'image/png');
 	ctx.maxAge = 24 * 60 * 60;
-	ctx.body = await render(svg);
+	ctx.body = await render(svg).catch(err => console.log(err));
 };
