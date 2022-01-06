@@ -620,6 +620,23 @@
 								tooltipInstance.style.top = '8px';
 							};
 
+							// vertical y-axis border line
+							let verticalYAxisBorder = {
+								id: 'verticalYAxisBorder',
+								beforeDraw (chart) {
+									let {  canvas } = chart;
+									let ctx = canvas.getContext('2d');
+									ctx.save();
+									ctx.beginPath();
+									ctx.moveTo(89, 0);
+									ctx.lineTo(89, 297);
+									ctx.lineWidth = 1;
+									ctx.strokeStyle = "#DADDE2";
+									ctx.stroke();
+									ctx.restore();
+								},
+							};
+
 							// configure for the hitsChart
 							let hitsChartConfig = {
 								type: 'line',
@@ -663,14 +680,13 @@
 										},
 										y: {
 											display: true,
-											beginAtZero: false,
 											min: yAxisRange[yAxisTicksAmount - 1],
 											max: yAxisRange[0],
 											ticks: {
 												stepSize: yAxisRange[yAxisTicksAmount - 1],
 												count: yAxisTicksAmount,
-												padding: 24,
 												color: '#5C667A',
+												crossAlign: 'far',
 												font: {
 													size: 12,
 													family: 'Lexend, sans-serif',
@@ -681,6 +697,9 @@
 												color: '#CFD6DD',
 												tickLength: 0,
 											},
+											afterFit: (scale) => {
+												scale.width = 114;
+											},
 										},
 									},
 									interaction: {
@@ -688,6 +707,7 @@
 										intersect: false,
 									},
 								},
+								plugins: [verticalYAxisBorder],
 							};
 
 							// create hitsChart instance
