@@ -50,19 +50,27 @@ const fetchLogo = async (url) => {
 	});
 };
 
+const truncateString = (str, length) => {
+	if (str && str.length > length) {
+		return str.substr(0, length - 3) + '...';
+	}
+
+	return str;
+};
+
 const processDescription = (description) => {
 	let charsPerLine = 65;
 	let lineOffset = 205;
 	let lineHeight = 36;
 
-	let lines = wordwrap(charsPerLine)(description.substring(0, charsPerLine * 2)).split('\n');
+	let lines = wordwrap.hard(charsPerLine)(description).split('\n');
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
 		let lastLine = lines.pop();
 
-		if (lastLine.length > charsPerLine - 3) {
-			lastLine = lastLine.split(' ').slice(0, -1).join(' ');
+		if (lastLine.length > charsPerLine) {
+			lastLine = lastLine.substr(0, charsPerLine - 3);
 		}
 
 		lines.push(lastLine + '...');
@@ -82,7 +90,7 @@ const processRequestsChart = (records, max) => {
 	let offsetY = 418;
 
 	return records.map((record, idx) => {
-		let h = Math.floor((record.total / max) * barHeight);
+		let h = max === 0 ? 0 : Math.floor((record.total / max) * barHeight);
 		let x = offsetX + barPadding * idx;
 		let y = offsetY + barHeight - h;
 
@@ -127,11 +135,13 @@ const prepareStats = async (name) => {
 	};
 };
 
-const composeTemplate = async (name) => {
-	let [ metadata, stats ] = await Promise.all([ prepareMetadata(name), prepareStats(name) ]);
+const composeTemplate = async (name, scope = null) => {
+	let pkg = scope ? scope + '/' + name : name;
+	let [ metadata, stats ] = await Promise.all([ prepareMetadata(pkg), prepareStats(pkg) ]);
 
 	return {
-		name: metadata.name,
+		name: truncateString(name, 20),
+		scope: truncateString(scope, 26),
 		description: metadata.description,
 		version: metadata.version,
 		author: metadata.owner.name,
@@ -149,7 +159,7 @@ const render = async (svg) => {
 
 module.exports = async (ctx) => {
 	try {
-		let data = await composeTemplate(ctx.params.name);
+		let data = await composeTemplate(ctx.params.name, ctx.params.scope);
 		let svg = await ctx.render('og-pkg-template.svg', data);
 
 		ctx.type = 'image/png';
