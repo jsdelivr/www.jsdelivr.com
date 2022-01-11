@@ -152,7 +152,7 @@ module.exports = async (ctx) => {
 		let data = await composeTemplate(ctx.params.name);
 		let svg = await ctx.render('og-pkg-template.svg', data);
 
-		ctx.set('Content-Type', 'image/png');
+		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
 		ctx.body = await render(svg);
 	} catch (error) {

@@ -275,7 +275,7 @@ koaElasticUtils.addRoutes(router, [
 });
 
 koaElasticUtils.addRoutes(router, [
-	[ '/og-image/npm/:name', '/og-image/:type(npm)/:scope?/:name' ],
+	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
 
 /**
