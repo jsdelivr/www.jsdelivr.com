@@ -499,11 +499,6 @@
 								hitsChart = null;
 							}
 
-							let chartPeriodDates = Object.keys(topFiveVersions[0].dates);
-							let packageChartXData = _.getPackageTabChartXData(chartPeriodDates);
-
-							this.set('hitsChartDates', packageChartXData);
-
 							let chartEl = this.find('#hits-chart');
 
 							// get range of y-axis
@@ -573,7 +568,7 @@
 
 								if (tooltipModel.body) {
 									// get title text and body lines
-									let titleText = new Date(tooltipModel.title[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+									let titleText = new Date(tooltipModel.title[0].split(',')[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 									let bodyLines = tooltipModel.body.map(item => item.lines[0]);
 
 									// create title element
@@ -640,7 +635,7 @@
 							let hitsChartConfig = {
 								type: 'line',
 								data: {
-									labels: packageChartXData.periodDays,
+									labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates)),
 									datasets,
 								},
 								options: {
@@ -670,6 +665,16 @@
 												font: {
 													size: 12,
 													family: 'Lexend, sans-serif',
+													lineHeight: 2,
+												},
+												callback (val) {
+													let labelValue = this.getLabelForValue(val);
+
+													if (Array.isArray(labelValue)) {
+														return [ labelValue[0].split('-').slice(-1)[0], labelValue[1] ];
+													}
+
+													return [ labelValue.split('-').slice(-1)[0] ];
 												},
 											},
 											grid: {

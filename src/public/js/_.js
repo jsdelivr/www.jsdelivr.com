@@ -122,6 +122,36 @@ module.exports = {
 
 		return chartXDates;
 	},
+	getChartXAxisData (periodDates) {
+		let chartXData = [];
+		let res = [];
+
+		periodDates.forEach((date) => {
+			let splittedDate = date.split('-');
+			let dateMonth = splittedDate.slice(0, 2).join('-');
+			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
+
+			if (!chartXData[periodMonthFormatted]) {
+				chartXData[periodMonthFormatted] = [];
+			}
+
+			chartXData[periodMonthFormatted].push(date);
+		});
+
+		Object.keys(chartXData).forEach((month) => {
+			let middleLength = Math.round(chartXData[month].length / 2);
+
+			chartXData[month].forEach((day, idx) => {
+				if (idx === middleLength - 1) {
+					res.push([ day, month ]);
+				} else {
+					res.push(day);
+				}
+			});
+		});
+
+		return res;
+	},
 	// escaping code: https://github.com/component/escape-html/blob/master/index.js
 	unescapeHtml (text) {
 		return text
