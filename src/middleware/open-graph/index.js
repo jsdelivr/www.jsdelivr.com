@@ -64,8 +64,6 @@ const processDescription = (description) => {
 	let lineOffset = 209;
 	let lineHeight = 40;
 
-	description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.';
-
 	let lines = wordwrap.hard(charsPerLine)(description).split('\n');
 
 	if (lines.length > 2) {
