@@ -60,9 +60,11 @@ const truncateString = (str, length) => {
 };
 
 const processDescription = (description) => {
-	let charsPerLine = 65;
-	let lineOffset = 205;
-	let lineHeight = 36;
+	let charsPerLine = 62;
+	let lineOffset = 209;
+	let lineHeight = 40;
+
+	description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.';
 
 	let lines = wordwrap.hard(charsPerLine)(description).split('\n');
 
@@ -84,7 +86,7 @@ const processDescription = (description) => {
 	return lines;
 };
 
-const processChart = (records, max, offsetX = 88, offsetY = 418) => {
+const processChart = (records, max, offsetX = 88, offsetY = 414) => {
 	let barHeight = 40;
 	let barPadding = 10;
 
@@ -144,8 +146,8 @@ const composeTemplate = async (name, scope = null) => {
 	let [ metadata, stats ] = await Promise.all([ prepareMetadata(pkg), prepareStats(pkg) ]);
 
 	return {
-		name: truncateString(name, 20),
-		scope: truncateString(scope, 26),
+		name: truncateString(name, 24),
+		scope: truncateString(scope, 36),
 		description: metadata.description,
 		version: metadata.version,
 		author: metadata.owner.name,
