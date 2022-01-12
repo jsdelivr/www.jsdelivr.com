@@ -597,7 +597,7 @@
 								}
 
 								tooltipInstance.style.opacity = 1;
-								let { offsetLeft } = chart.canvas;
+								let { canvas: { offsetLeft }, chartArea } = chart;
 
 								let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
 
@@ -611,8 +611,8 @@
 									tooltipInstance.style.left = 120 + offsetLeft + tooltipModel.caretX + 'px';
 								}
 
-								// 8px from top because of the custom axis-y and its horizontal line
-								tooltipInstance.style.top = '8px';
+								tooltipVerticalLine.style.height = chartArea.height + 'px';
+								tooltipInstance.style.top = chartArea.top + 'px';
 							};
 
 							// vertical y-axis border line
