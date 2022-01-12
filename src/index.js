@@ -159,6 +159,11 @@ app.use(async (ctx, next) => {
 app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
+	serverHost: app.env === 'production'
+		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
+			? process.env.RENDER_EXTERNAL_URL
+			: serverConfig.host
+		: '',
 	assetsHost: app.env === 'production'
 		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
 			? process.env.RENDER_EXTERNAL_URL
