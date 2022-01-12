@@ -55,7 +55,12 @@ module.exports = (proxyTarget, host) => {
 		// Remove Cloudflare cookies.
 		if (proxyReq.getHeader('cookie')) {
 			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
-			proxyReq.setHeader('cookie', _.map(cookies, (value, name) => cookie.serialize(name, value)).join('; '));
+
+			proxyReq.setHeader('cookie', _.map(cookies, (value, name) => {
+				try {
+					return cookie.serialize(name, value);
+				} catch { /* possibly invalid cookie sent */ }
+			}).join('; '));
 		}
 
 		proxyReq.setHeader('X-Forwarded-For', req.ip);
