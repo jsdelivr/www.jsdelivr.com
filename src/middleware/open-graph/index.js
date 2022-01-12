@@ -83,11 +83,9 @@ const processDescription = (description) => {
 	return lines;
 };
 
-const processRequestsChart = (records, max) => {
+const processChart = (records, max, offsetX = 88, offsetY = 418) => {
 	let barHeight = 40;
 	let barPadding = 10;
-	let offsetX = 88;
-	let offsetY = 418;
 
 	return records.map((record, idx) => {
 		let h = max === 0 ? 0 : Math.floor((record.total / max) * barHeight);
@@ -126,12 +124,17 @@ const prepareStats = async (name) => {
 		return { total: stats.total };
 	});
 
-	let requestsChart = processRequestsChart(records, max);
-
 	return {
-		total: stats.total,
-		totalFormatted: formatNum(stats.total),
-		requestsChart,
+		requests: {
+			total: stats.total,
+			totalFormatted: formatNum(stats.total),
+			chart: processChart(records, max),
+		},
+		bandwidth: {
+			total: stats.total,
+			totalFormatted: formatNum(stats.total),
+			chart: processChart(records, max, 580),
+		},
 	};
 };
 
@@ -146,8 +149,7 @@ const composeTemplate = async (name, scope = null) => {
 		version: metadata.version,
 		author: metadata.owner.name,
 		logo: metadata.owner.logo,
-		requests_total: stats.totalFormatted,
-		requests_chart: stats.requestsChart,
+		stats,
 	};
 };
 
