@@ -1,3 +1,5 @@
+// mac only. see: https://github.com/lovell/sharp/issues/2399#issuecomment-714381300
+// process.env.PANGOCAIRO_BACKEND = 'fontconfig';
 process.env.FONTCONFIG_PATH = 'fonts';
 
 const got = require('got');
@@ -60,7 +62,7 @@ const truncateString = (str, length) => {
 };
 
 const processDescription = (description) => {
-	let charsPerLine = 62;
+	let charsPerLine = 54;
 	let lineOffset = 209;
 	let lineHeight = 40;
 
