@@ -1,6 +1,7 @@
 process.env.FONTCONFIG_PATH = 'fonts';
 
 const got = require('got');
+const bytes = require('bytes');
 const sharp = require('sharp');
 const wordwrap = require('wordwrap');
 const LRU = require('lru-cache');
@@ -132,7 +133,7 @@ const prepareStats = async (name) => {
 		},
 		bandwidth: {
 			total: stats.total,
-			totalFormatted: formatNum(stats.total),
+			totalFormatted: bytes(stats.total),
 			chart: processChart(records, max, 580),
 		},
 	};
