@@ -128,24 +128,25 @@ module.exports = {
 
 		periodDates.forEach((date) => {
 			let splittedDate = date.split('-');
+			let dateYear = splittedDate[0];
 			let dateMonth = splittedDate.slice(0, 2).join('-');
 			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
 
-			if (!dataPerMonths[periodMonthFormatted]) {
-				dataPerMonths[periodMonthFormatted] = [];
+			if (!dataPerMonths[`${dateYear} ${periodMonthFormatted}`]) {
+				dataPerMonths[`${dateYear} ${periodMonthFormatted}`] = [];
 			}
 
-			dataPerMonths[periodMonthFormatted].push(date);
+			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
 		});
 
-		Object.keys(dataPerMonths).forEach((month) => {
-			let middleLength = Math.round(dataPerMonths[month].length / 2);
+		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
+			let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
 
-			dataPerMonths[month].forEach((day, idx) => {
+			dataPerMonths[yearMonthKey].forEach((day, idx) => {
 				// for every case except we set month in the middle of the days
 				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
 				if (idx === middleLength - 1 || period === 'year') {
-					chartXData.push([ day, month ]);
+					chartXData.push([ day, yearMonthKey.split(" ")[1] ]);
 				} else {
 					chartXData.push(day);
 				}
