@@ -135,7 +135,7 @@ const prepareStats = async (name) => {
 		},
 		bandwidth: {
 			total: stats.total,
-			totalFormatted: bytes(stats.total),
+			totalFormatted: bytes(stats.total, { unitSeparator: ' ' }),
 			chart: processChart(records, max, 580),
 		},
 	};
