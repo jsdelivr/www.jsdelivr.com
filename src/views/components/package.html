@@ -540,7 +540,7 @@
 								return datasets;
 							}, []);
 
-							// handle tooltip
+							// create external tooltip
 							let externalTooltip = (ctx) => {
 								let { chart, tooltip: tooltipModel } = ctx;
 
@@ -615,7 +615,7 @@
 								tooltipInstance.style.top = chartArea.top + 'px';
 							};
 
-							// vertical y-axis border line
+							// create vertical y-axis border line
 							let verticalYAxisBorder = {
 								id: 'verticalYAxisBorder',
 								beforeDraw (chart) {
@@ -631,11 +631,14 @@
 								},
 							};
 
+							// get period for chart representation
+							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+
 							// configure for the hitsChart
 							let hitsChartConfig = {
 								type: 'line',
 								data: {
-									labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates)),
+									labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
 									datasets,
 								},
 								options: {
@@ -666,14 +669,22 @@
 													family: 'Lexend, sans-serif',
 													lineHeight: 2,
 												},
-												callback (val) {
-													let labelValue = this.getLabelForValue(val);
+												// whole callback needed to prepare dates for displaying on the x-axis
+												// since we need only the day and not full date (which we must to pass here for the tooltip title)
+												callback (tickIdx) {
+													let labelValue = this.getLabelForValue(tickIdx);
+													// check if it is not contains only a date but also a month
+													let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-													if (Array.isArray(labelValue)) {
-														return [ labelValue[0].split('-').slice(-1)[0], labelValue[1] ];
+													if (chartPeriod === 'year' && day !== '01') {
+														return;
 													}
 
-													return [ labelValue.split('-').slice(-1)[0] ];
+													if (Array.isArray(labelValue)) {
+														return [ day, labelValue[1] ];
+													}
+
+													return [ day ];
 												},
 											},
 											grid: {

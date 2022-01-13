@@ -122,35 +122,37 @@ module.exports = {
 
 		return chartXDates;
 	},
-	getChartXAxisData (periodDates) {
+	getChartXAxisData (periodDates, period = 'month') {
+		let dataPerMonths = [];
 		let chartXData = [];
-		let res = [];
 
 		periodDates.forEach((date) => {
 			let splittedDate = date.split('-');
 			let dateMonth = splittedDate.slice(0, 2).join('-');
 			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
 
-			if (!chartXData[periodMonthFormatted]) {
-				chartXData[periodMonthFormatted] = [];
+			if (!dataPerMonths[periodMonthFormatted]) {
+				dataPerMonths[periodMonthFormatted] = [];
 			}
 
-			chartXData[periodMonthFormatted].push(date);
+			dataPerMonths[periodMonthFormatted].push(date);
 		});
 
-		Object.keys(chartXData).forEach((month) => {
-			let middleLength = Math.round(chartXData[month].length / 2);
+		Object.keys(dataPerMonths).forEach((month) => {
+			let middleLength = Math.round(dataPerMonths[month].length / 2);
 
-			chartXData[month].forEach((day, idx) => {
-				if (idx === middleLength - 1) {
-					res.push([ day, month ]);
+			dataPerMonths[month].forEach((day, idx) => {
+				// for every case except we set month in the middle of the days
+				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
+				if (idx === middleLength - 1 || period === 'year') {
+					chartXData.push([ day, month ]);
 				} else {
-					res.push(day);
+					chartXData.push(day);
 				}
 			});
 		});
 
-		return res;
+		return chartXData;
 	},
 	// escaping code: https://github.com/component/escape-html/blob/master/index.js
 	unescapeHtml (text) {
