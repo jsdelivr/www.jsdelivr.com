@@ -146,7 +146,7 @@ module.exports = {
 				// for every case except we set month in the middle of the days
 				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
 				if (idx === middleLength - 1 || period === 'year') {
-					chartXData.push([ day, yearMonthKey.split(" ")[1] ]);
+					chartXData.push([ day, yearMonthKey.split(' ')[1] ]);
 				} else {
 					chartXData.push(day);
 				}
