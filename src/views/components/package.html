@@ -364,9 +364,6 @@
 							}
 
 							let array = [];
-							let maxValue = Math.max(...Object.values(response.dates).map(date => date.total));
-							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
 							this.set('statsDateData', response);
 
 							Object.keys(response.dates).forEach((date) => {
@@ -384,9 +381,6 @@
 							let xAxisDates = array.map(value => value[0]);
 							let data = array.map(value => value[1].total);
 
-							let chartPeriodDates = array.map(date => date[0]);
-							this.set('statsChartDates', _.getPackageTabChartXData(chartPeriodDates));
-
 							let chartEl = this.find('#stats-chart');
 
 							// create bar with background with gradient
@@ -400,6 +394,29 @@
 
 							// get period for chart representation
 							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+
+							// get range of y-axis
+							let maxValue = Math.max(...data);
+							let magnitude = Math.floor(Math.log10(maxValue));
+							let statsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+							let yAxisTicksAmount = 8;
+							let yAxisRange = _.linRange(statsChartYMax, yAxisTicksAmount).reverse();
+
+							// create vertical y-axis border line
+							let verticalYAxisBorder = {
+								id: 'statsChartYBorder',
+								beforeDraw (chart) {
+									let { ctx } = chart;
+									ctx.save();
+									ctx.beginPath();
+									ctx.moveTo(89, 0);
+									ctx.lineTo(89, 290);
+									ctx.lineWidth = 1;
+									ctx.strokeStyle = '#DADDE2';
+									ctx.stroke();
+									ctx.restore();
+								},
+							};
 
 							// statsChart configuration
 							let statsChartConfig = {
@@ -456,14 +473,30 @@
 											},
 										},
 										y: {
-											display: false,
+											display: true,
+											min: yAxisRange[yAxisTicksAmount - 1],
+											max: yAxisRange[0],
+											ticks: {
+												stepSize: yAxisRange[yAxisTicksAmount - 1],
+												count: yAxisTicksAmount,
+												color: '#5C667A',
+												crossAlign: 'far',
+												font: {
+													size: 12,
+													family: 'Lexend, sans-serif',
+												},
+											},
 											grid: {
 												display: false,
-												borderColor: '#dadde2',
+												drawBorder: false,
+											},
+											afterFit: (scale) => {
+												scale.width = 114;
 											},
 										},
 									},
 								},
+								plugins: [ verticalYAxisBorder ],
 							};
 
 							// create statsChart instance
@@ -624,7 +657,7 @@
 
 							// create vertical y-axis border line
 							let verticalYAxisBorder = {
-								id: 'verticalYAxisBorder',
+								id: 'hitsChartYBorder',
 								beforeDraw (chart) {
 									let { ctx } = chart;
 									ctx.save();
