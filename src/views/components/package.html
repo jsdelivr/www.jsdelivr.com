@@ -429,17 +429,20 @@
 								return barBackground;
 							};
 
+							// get period for chart representation
+							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+
 							// statsChart config
 							let statsChartConfig = {
 								type: 'bar',
 								data: {
 									labels,
-									datasets: [{
+									datasets: [{ 
 										data,
 										backgroundColor: createBarWithGradient(chartEl),
 										borderWidth: 0,
 										pointRadius: 0,
-										barThickness: 10,
+										barThickness: chartPeriod === 'year' ? 2 : 10,
 									}],
 								},
 								options: {
