@@ -419,18 +419,24 @@
 							this.set('statsChartDates', _.getPackageTabChartXData(chartPeriodDates));
 
 							let chartEl = this.find('#stats-chart');
-							let chartBarContext = chartEl.getContext('2d');
-							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
 
-							statsChart = new Chart(chartEl, {
+							// create bar with background with gradient
+							let createBarWithGradient = (chart) => {
+								let barBackground = chart.getContext('2d').createLinearGradient(0, 0, 0, 300);
+								barBackground.addColorStop(0, 'rgb(246, 81, 40)');
+								barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
+
+								return barBackground;
+							};
+
+							// statsChart config
+							let statsChartConfig = {
 								type: 'bar',
 								data: {
 									labels,
 									datasets: [{
 										data,
-										backgroundColor: barBackground,
+										backgroundColor: createBarWithGradient(chartEl),
 										borderWidth: 0,
 										pointRadius: 0,
 										barThickness: 10,
@@ -460,7 +466,10 @@
 										},
 									},
 								},
-							});
+							};
+
+							// create statsChart instance
+							statsChart = new Chart(chartEl, statsChartConfig);
 						});
 
 						// get package versions data and create hits chart
