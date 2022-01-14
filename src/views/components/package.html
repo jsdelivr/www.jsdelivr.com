@@ -166,40 +166,8 @@
 									</div>
 								</div>
 
-								<div class="stats-chart-block">
-									<div class="chart-x">
-										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-											<div class="x-day-row">
-												{{#each ~/statsChartDates.periodDays}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
-										{{/if}}
-
-										<div class="x-month-row">
-											{{#each ~/statsChartDates.periodMonths}}
-												<div style="flex-grow: {{~/statsChartDates[this].length/~/statsChartDates.periodDays.length}};"
-												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-													{{this}}
-												</div>
-											{{/each}}
-										</div>
-									</div>
-
-									<div class="chart-y">
-										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
-											{{#each range}}
-												<div>
-													{{_.formatNumber(this)}}
-												</div>
-
-											{{/each}}
-										{{/with}}
-									</div>
-
-									<div class="stats-chart-wrapper">
-										<canvas id="stats-chart" width="1116" height="236"></canvas>
-									</div>
+								<div class="stats-chart-wrapper">
+									<canvas id="stats-chart"></canvas>
 								</div>
 							{{/if}}
 						</div>
@@ -412,7 +380,8 @@
 								statsChart = null;
 							}
 
-							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
+							// create chart data, labels etc.
+							let xAxisDates = array.map(value => value[0]);
 							let data = array.map(value => value[1].total);
 
 							let chartPeriodDates = array.map(date => date[0]);
@@ -432,20 +401,21 @@
 							// get period for chart representation
 							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 
-							// statsChart config
+							// statsChart configuration
 							let statsChartConfig = {
 								type: 'bar',
 								data: {
-									labels,
-									datasets: [{ 
+									labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+									datasets: [{
 										data,
 										backgroundColor: createBarWithGradient(chartEl),
 										borderWidth: 0,
-										pointRadius: 0,
 										barThickness: chartPeriod === 'year' ? 2 : 10,
 									}],
 								},
 								options: {
+									responsive: true,
+									maintainAspectRatio: false,
 									plugins: {
 										legend: {
 											display: false,
@@ -453,11 +423,36 @@
 									},
 									scales: {
 										x: {
-											display: false,
+											display: true,
+											ticks: {
+												color: '#5C667A',
+												font: {
+													size: 12,
+													family: 'Lexend, sans-serif',
+													lineHeight: 2,
+												},
+												callback (tickIdx) {
+													let labelValue = this.getLabelForValue(tickIdx);
+													let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+													if (chartPeriod === 'year') {
+														if (tickIdx !== 0 && tickIdx % 30 === 0) {
+															return [ labelValue[1] ];
+														}
+
+														return;
+													}
+
+													if (Array.isArray(labelValue)) {
+														return [ day, labelValue[1] ];
+													}
+
+													return [ day ];
+												},
+											},
 											grid: {
 												display: false,
 												drawBorder: false,
-												borderColor: '#dadde2',
 											},
 										},
 										y: {
@@ -646,7 +641,7 @@
 							// get period for chart representation
 							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 
-							// configure for the hitsChart
+							// hitsChart configuration
 							let hitsChartConfig = {
 								type: 'line',
 								data: {
