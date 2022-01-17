@@ -418,6 +418,19 @@
 								},
 							};
 
+							// handle mouse out of the chrt area to restore bar colors
+							let createChartMouseOutHandler = {
+								id: 'chartMouseOutHandler',
+								afterEvent(chart, args, pluginOptions) {
+									let { event } = args;
+									if (event.type === 'mouseout') {
+										event.native.target.style.cursor = 'default';
+										chart.config._config.options.elements.bar.backgroundColor = createBarWithGradient(chartEl);
+										chart.update();
+									}
+								}
+							};
+
 							// statsChart configuration
 							let statsChartConfig = {
 								type: 'bar',
@@ -436,16 +449,17 @@
 											event.native.target.style.cursor = 'pointer';
 											chart.config._config.options.elements.bar.backgroundColor = '#FAE5E0';
 											chart.update();
-										} else {
-											event.native.target.style.cursor = 'default';
-											chart.config._config.options.elements.bar.backgroundColor = createBarWithGradient(chartEl);
-											chart.update();
 										}
 									},
 									elements: {
 										bar: {
 											backgroundColor: createBarWithGradient(chartEl),
 										},
+									},
+									interaction: {
+										axis: 'x',
+										mode: 'nearest',
+										intersect: false,
 									},
 									responsive: true,
 									maintainAspectRatio: false,
@@ -542,7 +556,7 @@
 										},
 									},
 								},
-								plugins: [ verticalYAxisBorder ],
+								plugins: [ verticalYAxisBorder, createChartMouseOutHandler ],
 							};
 
 							// create statsChart instance
