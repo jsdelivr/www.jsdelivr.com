@@ -418,17 +418,27 @@
 								},
 							};
 
-							// handle mouse out of the chrt area to restore bar colors
+							// handle hover over the chart to change colors of the bars
+							let createChartHoverHandler = (event, elements, chart) => {
+								if (elements.length !== 1) { return; }
+
+								event.native.target.style.cursor = 'pointer';
+								chart.config._config.options.elements.bar.backgroundColor = '#FAE5E0';
+								chart.update();
+							};
+
+							// handle mouse out of the chart area to restore bar colors
 							let createChartMouseOutHandler = {
 								id: 'chartMouseOutHandler',
-								afterEvent(chart, args, pluginOptions) {
+								afterEvent (chart, args) {
 									let { event } = args;
+
 									if (event.type === 'mouseout') {
 										event.native.target.style.cursor = 'default';
 										chart.config._config.options.elements.bar.backgroundColor = createBarWithGradient(chartEl);
 										chart.update();
 									}
-								}
+								},
 							};
 
 							// statsChart configuration
@@ -444,13 +454,7 @@
 									}],
 								},
 								options: {
-									onHover: (event, elements, chart) => {
-										if (elements.length === 1) {
-											event.native.target.style.cursor = 'pointer';
-											chart.config._config.options.elements.bar.backgroundColor = '#FAE5E0';
-											chart.update();
-										}
-									},
+									onHover: createChartHoverHandler,
 									elements: {
 										bar: {
 											backgroundColor: createBarWithGradient(chartEl),
