@@ -425,12 +425,28 @@
 									labels: _.getChartXAxisData(xAxisDates, chartPeriod),
 									datasets: [{
 										data,
-										backgroundColor: createBarWithGradient(chartEl),
 										borderWidth: 0,
 										barThickness: chartPeriod === 'year' ? 2 : 10,
+										hoverBackgroundColor: '#F65128',
 									}],
 								},
 								options: {
+									onHover: (event, elements, chart) => {
+										if (elements.length === 1) {
+											event.native.target.style.cursor = 'pointer';
+											chart.config._config.options.elements.bar.backgroundColor = "#FAE5E0";
+											chart.update();
+										} else {
+											event.native.target.style.cursor = 'default';
+											chart.config._config.options.elements.bar.backgroundColor = createBarWithGradient(chartEl);
+											chart.update();
+										}
+									},
+									elements:{
+										bar: {
+											backgroundColor: createBarWithGradient(chartEl),
+										}
+									},
 									responsive: true,
 									maintainAspectRatio: false,
 									plugins: {
