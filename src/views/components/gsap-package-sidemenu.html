@@ -159,35 +159,82 @@
 					setTimeout(() => {
 						let chartEl = this.find('#requests-chart');
 
-						requestsChart = new Chart(chartEl, {
+						// handle hover over the chart to change colors of the bars
+						let createChartHoverHandler = (event, elements, chart) => {
+							if (elements.length !== 1) { return; }
+
+							event.native.target.style.cursor = 'pointer';
+							chart.config._config.options.elements.bar.backgroundColor = '#ecf7e3';
+							chart.update();
+						};
+
+						// handle mouse out of the chart area to restore bar colors
+						let createChartMouseOutHandler = {
+							id: 'reqChartMouseOutHandler',
+							afterEvent (chart, args) {
+								let { event } = args;
+
+								if (event.type === 'mouseout') {
+									event.native.target.style.cursor = 'default';
+									chart.config._config.options.elements.bar.backgroundColor = '#6fb936';
+									chart.update();
+								}
+							},
+						};
+
+						// requestsChart configuration
+						let reqChartConfig = {
 							type: 'bar',
 							data: {
 								labels,
 								datasets: [{
 									data,
-									backgroundColor: '#6fb936',
 									borderWidth: 0,
-									pointRadius: 0,
 									barThickness: 4,
+									hoverBackgroundColor: '#57922a',
 								}],
 							},
 							options: {
+								responsive: true,
+								maintainAspectRatio: false,
+								elements: {
+									bar: {
+										backgroundColor: '#6fb936',
+									},
+								},
 								plugins: {
 									legend: {
 										display: false,
 									},
 									tooltip: {
-										callbacks: {
-											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
-											label: () => null,
-										},
-										backgroundColor: 'rgba(17, 26, 44, 0.9)',
-										titleFontSize: 12,
-										titleFontWeight: 600,
-										titleFontColor: '#fff',
+										enable: true,
+										bodyColor: '#fff',
+										backgroundColor: 'rgba(17, 26, 44, .9)',
 										cornerRadius: 4,
+										padding: 6,
+										caretSize: 0,
+										caretPadding: 8,
+										bodyAlign: 'center',
+										displayColors: false,
 										xAlign: 'center',
 										yAlign: 'bottom',
+										bodyFont: {
+											size: 12,
+											weight: 600,
+											family: 'Lexend, sans-serif',
+											style: 'normal',
+											lineHeight: 1.3,
+										},
+										callbacks: {
+											title: () => {},
+											footer: () => {},
+											label: (ctx) => {
+												let { formattedValue } = ctx;
+												// TODO: for future use, to return measurement units e.g.
+												// return `${formattedValue} GB`;
+												return _.formatNumber(formattedValue.replace(/\D/g, ''));
+											},
+										},
 									},
 								},
 								scales: {
@@ -198,8 +245,18 @@
 										display: false,
 									},
 								},
+								interaction: {
+									axis: 'x',
+									mode: 'nearest',
+									intersect: false,
+								},
+								onHover: createChartHoverHandler,
 							},
-						});
+							plugins: [ createChartMouseOutHandler ],
+						};
+
+						// create requestsChart instance
+						requestsChart = new Chart(chartEl, reqChartConfig);
 
 						this.set('requestsChart', requestsChart);
 					}, 100);
