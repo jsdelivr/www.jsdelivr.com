@@ -1,10 +1,14 @@
 const _ = require('../_');
 
-function createBarChart (chartEl, chartData = {}, chartConfig = {}) {
-	// console.log("+++++ chartEl", chartEl);
-	// console.log("+++++ chartData", chartData);
-	// console.log("+++++ chartConfig", chartConfig);
-	// console.log("+___________________");
+// chartEl - canvas element
+// chartData (labels, datasets) - data to render within the chart
+// chartSettings - additionalparams for the chart
+//	chartSettings.onHoverNotActiveBarsBGColor - all bars color except the hovered one
+// chartConfig - config of the chart(chartjs lib config), shallow merge
+
+function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfig = {}) {
+	if (!chartEl) { return; }
+
 	// create bar with background with gradient
 	let createBarWithGradient = (chart) => {
 		let barBackground = chart.getContext('2d').createLinearGradient(0, 0, 0, 300);
@@ -19,7 +23,7 @@ function createBarChart (chartEl, chartData = {}, chartConfig = {}) {
 		if (elements.length !== 1) { return; }
 
 		event.native.target.style.cursor = 'pointer';
-		chart.config._config.options.elements.bar.backgroundColor = '#FAE5E0';
+		chart.config._config.options.elements.bar.backgroundColor = chartSettings.onHoverNotActiveBarsBGColor || '#FAE5E0';
 		chart.update();
 	};
 
@@ -31,7 +35,7 @@ function createBarChart (chartEl, chartData = {}, chartConfig = {}) {
 
 			if (event.type === 'mouseout') {
 				event.native.target.style.cursor = 'default';
-				chart.config._config.options.elements.bar.backgroundColor = createBarWithGradient(chartEl);
+				chart.config._config.options.elements.bar.backgroundColor = chartConfig?.options?.elements?.bar.backgroundColor || createBarWithGradient(chartEl);
 				chart.update();
 			}
 		},
@@ -50,6 +54,7 @@ function createBarChart (chartEl, chartData = {}, chartConfig = {}) {
 			elements: {
 				bar: {
 					backgroundColor: createBarWithGradient(chartEl),
+					...chartConfig?.options?.elements?.bar,
 				},
 			},
 			plugins: {
@@ -106,7 +111,7 @@ function createBarChart (chartEl, chartData = {}, chartConfig = {}) {
 	};
 
 	// create chart instance
-	return new Chart(chartEl, { ...defaultConfig, ...chartConfig });
+	return new Chart(chartEl, defaultConfig);
 }
 
 
