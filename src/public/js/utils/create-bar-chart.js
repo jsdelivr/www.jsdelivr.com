@@ -41,6 +41,34 @@ function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfi
 		},
 	};
 
+	// create vertical y-axis border line
+	let verticalYAxisBorder = {
+		id: 'statsChartYBorder',
+		beforeDraw (chart) {
+			let { ctx } = chart;
+			ctx.save();
+			ctx.beginPath();
+			ctx.moveTo(89, 0);
+			ctx.lineTo(89, 290);
+			ctx.lineWidth = 1;
+			ctx.strokeStyle = '#DADDE2';
+			ctx.stroke();
+			ctx.restore();
+		},
+	};
+
+	// get chart plugins
+	let getChartPlugins = () => {
+		let { useYAxisBorderPlugin } = chartSettings;
+		let plugins = [ chartMouseOutHandler ];
+
+		if (useYAxisBorderPlugin) {
+			plugins.push(verticalYAxisBorder);
+		}
+
+		return plugins;
+	};
+
 	// chart configuration
 	let defaultConfig = {
 		type: 'bar',
@@ -95,9 +123,11 @@ function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfi
 			scales: {
 				x: {
 					display: false,
+					...chartConfig?.options?.scales?.x,
 				},
 				y: {
 					display: false,
+					...chartConfig?.options?.scales?.y,
 				},
 			},
 			interaction: {
@@ -107,7 +137,7 @@ function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfi
 			},
 			onHover: handleChartOnHover,
 		},
-		plugins: [ chartMouseOutHandler ],
+		plugins: getChartPlugins(),
 	};
 
 	// create chart instance
