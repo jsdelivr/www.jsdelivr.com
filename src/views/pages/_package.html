@@ -6,6 +6,7 @@
 <link rel="ractive" href="../components/package.html" name="c-package">
 <link rel="ractive" href="../components/slider.html" name="c-slider">
 <link rel="ractive" href="../components/slide.html" name="c-slide">
+<link rel="ractive" href="../components/search-compact.html" name="c-search-compact">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	{{#partial css}}
@@ -17,7 +18,14 @@
 	<script async src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js" data-pace-options='{ "restartOnPushState": false, "restartOnRequestAfter": false }'></script>
 
 	<c-notification></c-notification>
-	<c-header name={{name}}></c-header>
+
+	{{#if hideLanding}}
+		<div class="c-search-compact__overlay"></div>
+	{{/if}}
+	
+	<c-header name={{name}}>
+		<c-search-compact __ready="{{__ready}}" hideLanding="{{hideLanding}}" page="{{page}}" query="{{query}}" caretPosition="{{caretPosition}}"></c-search-compact>
+	</c-header>	
 
 	<div class="p-package page">
 		<c-slider active="{{activeSlide}}">
