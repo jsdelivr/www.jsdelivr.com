@@ -63,7 +63,7 @@ const fetchLogo = async (url) => {
  * @param {string} fontFamily
  * @param {number} fontSize
  * @param {number} maxWidth
- * @return {string|null}
+ * @return {{width: number, text: string}}
  */
 const truncateString = (input, fontFamily, fontSize, maxWidth) => {
 	let width = str => fontsProcessor.computeWidth(str, fontFamily, fontSize);
@@ -194,9 +194,9 @@ module.exports = async (ctx) => {
 		let data = await composeTemplate(ctx.params.name, ctx.params.scope);
 		let svg = await ctx.render('og-image-template.svg', data);
 
+		ctx.body = await render(svg);
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
-		ctx.body = await render(svg);
 	} catch (error) {
 		if (error?.statusCode === 404) {
 			return; // 404 response
