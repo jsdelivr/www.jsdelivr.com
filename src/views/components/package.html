@@ -7,220 +7,218 @@
 
 <div class="c-package">
 	<div class="container">
-		{{#if versions}}
-			<div class="row">
-				<div class="main-content">
-					<c-package-header
-						package="{{package}}"
-						type="{{type}}"
-						name="{{name}}"
-						version="{{versionP}}"
-						packageVersionsNotFound="{{packageVersionsNotFound}}"
-						navRoute="{{navRoute}}">
-					</c-package-header>
+		<div class="row">
+			<div class="main-content">
+				<c-package-header
+					package="{{package}}"
+					type="{{type}}"
+					name="{{name}}"
+					version="{{versionP}}"
+					packageVersionsNotFound="{{packageVersionsNotFound}}"
+					navRoute="{{navRoute}}">
+				</c-package-header>
 
-					<div class="package-nav">
-						{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
-							<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
-							</a>
-						{{/if}}
-						<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+				<div class="package-nav">
+					{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
+						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
 						</a>
-						<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
-							<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
-						</a>
+					{{/if}}
+					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+					</a>
+					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
+					</a>
+					<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
+						<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+					</a>
+				</div>
+
+				{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
+					<div class="package-readme">
+						<c-markdown text="{{package.readme}}"></c-markdown>
+					</div>
+				{{/if}}
+			</div>
+
+			<div class="side-content">
+				<c-package-sidemenu
+					navRoute="{{navRoute}}"
+					name="{{name}}"
+					type="{{type}}"
+					package="{{package}}">
+				</c-package-sidemenu>
+			</div>
+
+			<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
+				<c-package-file-browser
+					type="{{type}}"
+					name="{{name}}"
+					github="{{package.githubRepo}}"
+					version="{{versionP}}"
+					versions="{{versions}}"
+					path="{{path}}"
+					collection="{{collection}}"
+					files="{{~/files}}">
+				</c-package-file-browser>
+
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+
+			<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
+				<div class="header">
+					<div class="header-title">Statistics</div>
+					<div class="header-ctrls">
+						<div class="data-range-ctrl">
+							<span>Data range:</span>
+
+							<div class="btn-group">
+								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{~/statsPeriods[statsPeriod]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each ~/statsPeriods}}
+										<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="stats-cards">
+					<div>
+						<div class="card-icon">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+						</div>
+						<div class="card-main-stat">
+							<span>{{_.formatNumber(versionsHitsTotal)}}</span>
+							<span>Requests Served</span>
+						</div>
+						<div class="card-growth">
+							<span class="growth-positive">+34%</span>
+							<span>monthly growth</span>
+						</div>
 					</div>
 
-					{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
-						<div class="package-readme">
-							<c-markdown text="{{package.readme}}"></c-markdown>
+					<div>
+						<div class="card-icon">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
 						</div>
-					{{/if}}
+						<div class="card-main-stat">
+							<span>648 414</span>
+							<span>Bandwidth</span>
+						</div>
+						<div class="card-growth">
+							<span class="growth-negative">-9%</span>
+							<span>monthly growth</span>
+						</div>
+					</div>
 				</div>
 
-				<div class="side-content">
-					<c-package-sidemenu
-						navRoute="{{navRoute}}"
-						name="{{name}}"
-						type="{{type}}"
-						package="{{package}}">
-					</c-package-sidemenu>
-				</div>
+				{{#if noPackageStatsData && noVersionsData}}
+					<div class="no-data-wrapper">
+						<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+						<span>No statistics yet</span>
+						<span>This is probably not a very popular package :(</span>
+					</div>
+				{{else}}
+					<div class="chart-stats-per-period">
+						<div class="package-usage">
+							<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
 
-				<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
-					<c-package-file-browser
-						type="{{type}}"
-						name="{{name}}"
-						github="{{package.githubRepo}}"
-						version="{{versionP}}"
-						versions="{{versions}}"
-						path="{{path}}"
-						collection="{{collection}}"
-						files="{{~/files}}">
-					</c-package-file-browser>
+							<div class="chart-type-ctrl">
+								<span>Show numbers of</span>
 
-					<c-collection-box collection="{{collection}}"></c-collection-box>
-				</div>
+								<input id="chart-switch"
+									type="checkbox"
+									class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
+									twoway="false">
 
-				<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
-					<div class="header">
-						<div class="header-title">Statistics</div>
-						<div class="header-ctrls">
-							<div class="data-range-ctrl">
-								<span>Data range:</span>
+								<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
+									<span>Request</span>
+									<span>GB</span>
+								</label>
+							</div>
+
+							<div class="group-by-ctrl">
+								<span>
+									Group by:
+								</span>
 
 								<div class="btn-group">
 									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/statsPeriods[statsPeriod]}}</span>
+										<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
 										<i class="fa fa-angle-down" aria-hidden="true"></i>
 									</button>
 
 									<ul class="dropdown-menu">
-										{{#each ~/statsPeriods}}
-											<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+										{{#each ~/usageChartGroupByValues}}
+											<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
 										{{/each}}
 									</ul>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="stats-cards">
-						<div>
-							<div class="card-icon">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
-							</div>
-							<div class="card-main-stat">
-								<span>{{_.formatNumber(versionsHitsTotal)}}</span>
-								<span>Requests Served</span>
-							</div>
-							<div class="card-growth">
-								<span class="growth-positive">+34%</span>
-								<span>monthly growth</span>
-							</div>
-						</div>
-
-						<div>
-							<div class="card-icon">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
-							</div>
-							<div class="card-main-stat">
-								<span>648 414</span>
-								<span>Bandwidth</span>
-							</div>
-							<div class="card-growth">
-								<span class="growth-negative">-9%</span>
-								<span>monthly growth</span>
-							</div>
+						<div class="stats-chart-wrapper">
+							<canvas id="stats-chart"></canvas>
 						</div>
 					</div>
 
-					{{#if noPackageStatsData && noVersionsData}}
-						<div class="no-data-wrapper">
-							<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
-							<span>No statistics yet</span>
-							<span>This is probably not a very popular package :(</span>
-						</div>
-					{{else}}
-						<div class="chart-stats-per-period">
-							<div class="package-usage">
-								<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+					<div class="horizontal-divider mt-40 mb-40"></div>
 
-								<div class="chart-type-ctrl">
-									<span>Show numbers of</span>
-	
-									<input id="chart-switch"
-										type="checkbox"
-										class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
-										twoway="false">
-	
-									<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-										<span>Request</span>
-										<span>GB</span>
-									</label>
+					<div class="chart-tops">
+						{{#if ~/topFiveVersions}}
+							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+								{{#partial column1}}
+									<a on-click="@this.set('version', version)">{{version}}</a>
+								{{/partial}}
+							</c-top-stats-table>
+
+							<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+								type="{{~/type}}"
+								name="{{~/name}}"
+								version="{{~/fileStatsVersion}}"
+								versions="{{~/versions}}">
+								{{#partial header}}
+									Top 5 files in version
+									<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
+								{{/partial}}
+
+								{{#partial column1}}
+									<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+								{{/partial}}
+							</c-top-stats-table>
+						{{/if}}
+					</div>
+
+					<div class="horizontal-divider mt-40 mb-40"></div>
+
+					<div class="chart-hits-per-period">
+						<div class="package-usage">
+							<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
+						</div>
+
+						<div class="hits-chart-wrapper">
+							<canvas id="hits-chart"></canvas>
+						</div>
+
+						<div class="hits-chart-legend">
+							{{#each topFiveVersions}}
+								<div class="legend-item">
+									<div></div>
+									{{version}}
 								</div>
-
-								<div class="group-by-ctrl">
-									<span>
-										Group by:
-									</span>
-
-									<div class="btn-group">
-										<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-											<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
-											<i class="fa fa-angle-down" aria-hidden="true"></i>
-										</button>
-
-										<ul class="dropdown-menu">
-											{{#each ~/usageChartGroupByValues}}
-												<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
-											{{/each}}
-										</ul>
-									</div>
-								</div>
-							</div>
-
-							<div class="stats-chart-wrapper">
-								<canvas id="stats-chart"></canvas>
-							</div>
+							{{/each}}
 						</div>
-
-						<div class="horizontal-divider mt-40 mb-40"></div>
-
-						<div class="chart-tops">
-							{{#if ~/topFiveVersions}}
-								<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-									{{#partial column1}}
-										<a on-click="@this.set('version', version)">{{version}}</a>
-									{{/partial}}
-								</c-top-stats-table>
-
-								<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
-									type="{{~/type}}"
-									name="{{~/name}}"
-									version="{{~/fileStatsVersion}}"
-									versions="{{~/versions}}">
-									{{#partial header}}
-										Top 5 files in version
-										<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
-									{{/partial}}
-
-									{{#partial column1}}
-										<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-									{{/partial}}
-								</c-top-stats-table>
-							{{/if}}
-						</div>
-
-						<div class="horizontal-divider mt-40 mb-40"></div>
-
-						<div class="chart-hits-per-period">
-							<div class="package-usage">
-								<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
-							</div>
-
-							<div class="hits-chart-wrapper">
-								<canvas id="hits-chart"></canvas>
-							</div>
-
-							<div class="hits-chart-legend">
-								{{#each topFiveVersions}}
-									<div class="legend-item">
-										<div></div>
-										{{version}}
-									</div>
-								{{/each}}
-							</div>
-						</div>
-					{{/if}}
-				</div>
+					</div>
+				{{/if}}
 			</div>
-		{{/if}}
+		</div>
 	</div>
 </div>
 
@@ -298,9 +296,7 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let statsChart;
 				let hitsChart;
-
 				// Load package versions.
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
@@ -360,104 +356,7 @@
 								this.set('noPackageStatsData', true);
 								return;
 							}
-
-							let array = [];
 							this.set('statsDateData', response);
-
-							Object.keys(response.dates).forEach((date) => {
-								array.push([ date, response.dates[date] ]);
-							});
-
-							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-							if (statsChart) {
-								statsChart.destroy();
-								statsChart = null;
-							}
-
-							let xAxisDates = array.map(value => value[0]);
-							let data = array.map(value => value[1].total);
-							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-							let maxValue = Math.max(...data);
-							let magnitude = Math.floor(Math.log10(maxValue));
-							let statsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
-							let yAxisTicksAmount = 8;
-							let yAxisRange = _.linRange(statsChartYMax, yAxisTicksAmount).reverse();
-							let chartData = {
-								labels: _.getChartXAxisData(xAxisDates, chartPeriod),
-								datasets: [{
-									data,
-									borderWidth: 0,
-									barThickness: chartPeriod === 'year' ? 2 : 10,
-									hoverBackgroundColor: '#F65128',
-								}],
-							};
-							let chartSettings = {
-								useYAxisBorderPlugin: true,
-							};
-							let chartConfig = {
-								options: {
-									scales: {
-										x: {
-											display: true,
-											ticks: {
-												color: '#5C667A',
-												font: {
-													size: 12,
-													family: 'Lexend, sans-serif',
-													lineHeight: 2,
-												},
-												callback (tickIdx) {
-													let labelValue = this.getLabelForValue(tickIdx);
-													let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-
-													if (chartPeriod === 'year') {
-														if (tickIdx !== 0 && tickIdx % 30 === 0) {
-															return [ labelValue[1] ];
-														}
-
-														return;
-													}
-
-													if (Array.isArray(labelValue)) {
-														return [ day, labelValue[1] ];
-													}
-
-													return [ day ];
-												},
-											},
-											grid: {
-												display: false,
-												drawBorder: false,
-											},
-										},
-										y: {
-											display: true,
-											min: yAxisRange[yAxisTicksAmount - 1],
-											max: yAxisRange[0],
-											ticks: {
-												stepSize: yAxisRange[yAxisTicksAmount - 1],
-												count: yAxisTicksAmount,
-												color: '#5C667A',
-												crossAlign: 'far',
-												font: {
-													size: 12,
-													family: 'Lexend, sans-serif',
-												},
-											},
-											grid: {
-												display: false,
-												drawBorder: false,
-											},
-											afterFit: (scale) => {
-												scale.width = 114;
-											},
-										},
-									},
-								},
-							};
-
-							statsChart = createBarChart(this.find('#stats-chart'), chartData, chartSettings, chartConfig);
 						});
 
 						// get package versions data and create hits chart
@@ -625,6 +524,110 @@
 			}
 		},
 		onrender () {
+			let statsChart;
+			let statsChartCanvasEl = this.find('#stats-chart');
+
+			// create stats chart
+			this.observe('statsDateData', (statsDateData) => {
+				if (!statsDateData || !statsChartCanvasEl) { return; };
+				let array = [];
+
+				Object.keys(statsDateData.dates).forEach((date) => {
+					array.push([ date, statsDateData.dates[date] ]);
+				});
+
+				array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+				if (statsChart) {
+					statsChart.destroy();
+					statsChart = null;
+				}
+
+				let xAxisDates = array.map(value => value[0]);
+				let data = array.map(value => value[1].total);
+				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+				let maxValue = Math.max(...data);
+				let magnitude = Math.floor(Math.log10(maxValue));
+				let statsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+				let yAxisTicksAmount = 8;
+				let yAxisRange = _.linRange(statsChartYMax, yAxisTicksAmount).reverse();
+				let chartData = {
+					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+					datasets: [{
+						data,
+						borderWidth: 0,
+						barThickness: chartPeriod === 'year' ? 2 : 10,
+						hoverBackgroundColor: '#F65128',
+					}],
+				};
+				let chartSettings = {
+					useYAxisBorderPlugin: true,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+										if (chartPeriod === 'year') {
+											if (tickIdx !== 0 && tickIdx % 30 === 0) {
+												return [ labelValue[1] ];
+											}
+
+											return;
+										}
+
+										if (Array.isArray(labelValue)) {
+											return [ day, labelValue[1] ];
+										}
+
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: yAxisRange[yAxisTicksAmount - 1],
+								max: yAxisRange[0],
+								ticks: {
+									stepSize: yAxisRange[yAxisTicksAmount - 1],
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+								afterFit: (scale) => {
+									scale.width = 114;
+								},
+							},
+						},
+					},
+				};
+
+				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+			});
+
 			let resize = debounce(() => {
 				this.add('_resizeId');
 			});
