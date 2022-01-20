@@ -2,9 +2,10 @@ const _ = require('../_');
 
 // chartEl - canvas element
 // chartData (labels, datasets) - data to render within the chart
-// chartSettings - additionalparams for the chart
+// chartSettings - additional params for the chart
 //	chartSettings.onHoverNotActiveBarsBGColor - all bars color except the hovered one
-// chartConfig - config of the chart(chartjs lib config), shallow merge
+//	chartSettings.useYAxisBorderPlugin - use plugin to render vertical y-axis border
+// chartConfig - config of the chart(chartjs lib config)
 
 function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfig = {}) {
 	if (!chartEl) { return; }
