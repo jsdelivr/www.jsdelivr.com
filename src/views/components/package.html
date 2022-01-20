@@ -296,7 +296,6 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let hitsChart;
 				// Load package versions.
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
@@ -350,161 +349,24 @@
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-						// get package date stats data and create stats chart
+						// get package date stats data
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (!response.total) {
 								this.set('noPackageStatsData', true);
 								return;
 							}
+
 							this.set('statsDateData', response);
 						});
 
-						// get package versions data and create hits chart
-						http.fetchPackageVersionStats(type, name, period).then((data) => {
-							if (!data.total) {
+						// get package versions data
+						http.fetchPackageVersionStats(type, name, period).then((response) => {
+							if (!response.total) {
 								this.set('noVersionsData', true);
 								return;
 							}
 
-							let array = [];
-
-							Object.keys(data.versions).forEach((key) => {
-								array.push({
-									version: key,
-									hits: data.versions[key].total,
-									dates: data.versions[key].dates,
-								});
-							});
-
-							let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
-							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-
-							this.animate('versionsHitsTotal', data.total);
-							this.animate('topFiveVersions', topFiveVersions);
-
-							// Maybe we have no stats yet.
-							if (array[0]) {
-								this.set('fileStatsVersion', array[0].version);
-							}
-
-							if (hitsChart) {
-								hitsChart.destroy();
-								hitsChart = null;
-							}
-
-							let yAxisTicksAmount = 8;
-							let yAxisRange = _.linRange(this.get('hitsChartYMax'), yAxisTicksAmount).reverse();
-							let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
-								let dataset = {
-									label: `v${tfvItem.version}`,
-									data: Object.values(tfvItem.dates),
-								};
-
-								switch (idx) {
-									case 0:
-										dataset.borderColor = '#5C667A';
-										dataset.backgroundColor = '#5C667A';
-										break;
-									case 1:
-										dataset.borderColor = '#BC5090';
-										dataset.backgroundColor = '#BC5090';
-										break;
-									case 2:
-										dataset.borderColor = '#FFA600';
-										dataset.backgroundColor = '#FFA600';
-										break;
-									case 3:
-										dataset.borderColor = '#FF6361';
-										dataset.backgroundColor = '#FF6361';
-										break;
-									case 4:
-										dataset.borderColor = '#69C4F7';
-										dataset.backgroundColor = '#69C4F7';
-										break;
-								}
-
-								datasets.push(dataset);
-
-								return datasets;
-							}, []);
-							let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-							let chartData = {
-								labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
-								datasets,
-							};
-							let chartSettings = {
-								useExternalTooltip: true,
-							};
-							let chartConfig = {
-								options: {
-									scales: {
-										x: {
-											display: true,
-											ticks: {
-												color: '#5C667A',
-												font: {
-													size: 12,
-													family: 'Lexend, sans-serif',
-													lineHeight: 2,
-												},
-												// whole callback needed to prepare dates for displaying on the x-axis
-												// since we need only the day and not full date (which we must to pass here for the tooltip title)
-												callback (tickIdx) {
-													let labelValue = this.getLabelForValue(tickIdx);
-													// check if it is not contains only a date but also a month
-													let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-
-													if (chartPeriod === 'year') {
-														if (tickIdx !== 0 && tickIdx % 30 === 0) {
-															return [ labelValue[1] ];
-														}
-
-														return;
-													}
-
-													if (Array.isArray(labelValue)) {
-														return [ day, labelValue[1] ];
-													}
-
-													return [ day ];
-												},
-											},
-											grid: {
-												display: false,
-												drawBorder: false,
-											},
-										},
-										y: {
-											display: true,
-											min: yAxisRange[yAxisTicksAmount - 1],
-											max: yAxisRange[0],
-											ticks: {
-												stepSize: yAxisRange[yAxisTicksAmount - 1],
-												count: yAxisTicksAmount,
-												color: '#5C667A',
-												crossAlign: 'far',
-												font: {
-													size: 12,
-													family: 'Lexend, sans-serif',
-												},
-											},
-											grid: {
-												drawBorder: false,
-												color: '#CFD6DD',
-												tickLength: 0,
-											},
-											afterFit: (scale) => {
-												scale.width = 114;
-											},
-										},
-									},
-								},
-							};
-
-							hitsChart = createLineChart(this.find('#hits-chart'), chartData, chartSettings, chartConfig);
+							this.set('hitsData', response);
 						});
 					}
 				});
@@ -525,11 +387,14 @@
 		},
 		onrender () {
 			let statsChart;
+			let hitsChart;
 			let statsChartCanvasEl = this.find('#stats-chart');
+			let hitsChartCanvasEl = this.find('#hits-chart');
 
 			// create stats chart
 			this.observe('statsDateData', (statsDateData) => {
-				if (!statsDateData || !statsChartCanvasEl) { return; };
+				if (!statsDateData || !statsChartCanvasEl) { return; }
+
 				let array = [];
 
 				Object.keys(statsDateData.dates).forEach((date) => {
@@ -626,6 +491,150 @@
 				};
 
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+			});
+
+			// create hits chart
+			this.observe('hitsData', (hitsData) => {
+				if (!hitsData || !hitsChartCanvasEl) { return; }
+
+				let array = [];
+
+				Object.keys(hitsData.versions).forEach((key) => {
+					array.push({
+						version: key,
+						hits: hitsData.versions[key].total,
+						dates: hitsData.versions[key].dates,
+					});
+				});
+
+				let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
+				let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
+				let magnitude = Math.floor(Math.log10(maxValue));
+				let hitsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+
+				this.animate('versionsHitsTotal', hitsData.total);
+				this.animate('topFiveVersions', topFiveVersions);
+
+				// Maybe we have no stats yet.
+				if (array[0]) {
+					this.set('fileStatsVersion', array[0].version);
+				}
+
+				if (hitsChart) {
+					hitsChart.destroy();
+					hitsChart = null;
+				}
+
+				let yAxisTicksAmount = 8;
+				let yAxisRange = _.linRange(hitsChartYMax, yAxisTicksAmount).reverse();
+				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+					let dataset = {
+						label: `v${tfvItem.version}`,
+						data: Object.values(tfvItem.dates),
+					};
+
+					switch (idx) {
+						case 0:
+							dataset.borderColor = '#5C667A';
+							dataset.backgroundColor = '#5C667A';
+							break;
+						case 1:
+							dataset.borderColor = '#BC5090';
+							dataset.backgroundColor = '#BC5090';
+							break;
+						case 2:
+							dataset.borderColor = '#FFA600';
+							dataset.backgroundColor = '#FFA600';
+							break;
+						case 3:
+							dataset.borderColor = '#FF6361';
+							dataset.backgroundColor = '#FF6361';
+							break;
+						case 4:
+							dataset.borderColor = '#69C4F7';
+							dataset.backgroundColor = '#69C4F7';
+							break;
+					}
+
+					datasets.push(dataset);
+
+					return datasets;
+				}, []);
+				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+				let chartData = {
+					labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
+					datasets,
+				};
+				let chartSettings = {
+					useExternalTooltip: true,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									// whole callback needed to prepare dates for displaying on the x-axis
+									// since we need only the day and not full date (which we must to pass here for the tooltip title)
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										// check if it is not contains only a date but also a month
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+										if (chartPeriod === 'year') {
+											if (tickIdx !== 0 && tickIdx % 30 === 0) {
+												return [ labelValue[1] ];
+											}
+
+											return;
+										}
+
+										if (Array.isArray(labelValue)) {
+											return [ day, labelValue[1] ];
+										}
+
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: yAxisRange[yAxisTicksAmount - 1],
+								max: yAxisRange[0],
+								ticks: {
+									stepSize: yAxisRange[yAxisTicksAmount - 1],
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+								},
+								grid: {
+									drawBorder: false,
+									color: '#CFD6DD',
+									tickLength: 0,
+								},
+								afterFit: (scale) => {
+									scale.width = 114;
+								},
+							},
+						},
+					},
+				};
+
+				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
 
 			let resize = debounce(() => {
