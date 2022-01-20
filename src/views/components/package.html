@@ -233,11 +233,6 @@
 
 	component.exports = {
 		computed: {
-			// TODO: add resizing to both stats and hits charts
-			// chartXInterval () {
-			// 	this.get('_resizeId'); // Keep this here so that it updates on resize.
-			// 	return this.get('bottomChartLabels') ? Math.ceil(this.get('bottomChartLabels').length / Math.floor(innerWidth / 140)) : 1;
-			// },
 			hasSourceMaps () {
 				let files = this.get('files');
 				let hasMin, hasMap;
@@ -275,7 +270,6 @@
 				statsPeriod: 30,
 				versions: [],
 				link: location.href,
-				_resizeId: 0,
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
@@ -636,14 +630,6 @@
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
-
-			let resize = debounce(() => {
-				this.add('_resizeId');
-			});
-
-			this.on('unrender', () => $(window).off('resize', resize));
-			$(window).on('resize', resize);
-			resize();
 		},
 	};
 </script>
