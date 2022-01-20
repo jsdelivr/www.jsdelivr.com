@@ -2,11 +2,12 @@
 // process.env.PANGOCAIRO_BACKEND = 'fontconfig';
 process.env.FONTCONFIG_PATH = 'fonts';
 
+const path = require('path');
 const got = require('got');
 const bytes = require('bytes');
 const sharp = require('sharp');
-const wordwrap = require('wordwrap');
 const LRU = require('lru-cache');
+const FontsProcessor = require('./fonts');
 const { npmIndex } = require('../../lib/algolia');
 
 const API_HOST = 'https://data.jsdelivr.com';
@@ -14,6 +15,10 @@ const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
 const http = got.extend({ cache });
+
+const fontsProcessor = new FontsProcessor();
+fontsProcessor.addFont('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
+fontsProcessor.addFont('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
 	return http.get(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`).json();
@@ -53,27 +58,49 @@ const fetchLogo = async (url) => {
 	});
 };
 
-const truncateString = (str, length) => {
-	if (str && str.length > length) {
-		return str.substr(0, length - 3) + '...';
-	}
+/**
+ * @param {string} input
+ * @param {string} fontFamily
+ * @param {number} fontSize
+ * @param {number} maxWidth
+ * @return {string|null}
+ */
+const truncateString = (input, fontFamily, fontSize, maxWidth) => {
+	let width = str => fontsProcessor.computeWidth(str, fontFamily, fontSize);
+	let truncate = (str) => {
+		let strWidth = width(str);
+		let dotsWidth = width('...');
 
-	return str;
+		if (strWidth <= maxWidth) {
+			return { text: str, width: strWidth };
+		}
+
+		while (strWidth > maxWidth - dotsWidth) {
+			str = str.substr(0, str.length - 1);
+			strWidth = width(str);
+		}
+
+		return { text: str + '...', width: strWidth + dotsWidth };
+	};
+
+	return truncate(input);
 };
 
 const processDescription = (description) => {
-	let charsPerLine = 54;
-	let lineOffset = 209;
-	let lineHeight = 40;
+	let maxLineWidth = 760;
+	let lineOffset = 263;
+	let lineHeight = 48;
 
-	let lines = wordwrap.hard(charsPerLine)(description).split('\n');
+	let lines = fontsProcessor.wrap(description, 'Lexend Regular', 28, maxLineWidth);
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
 		let lastLine = lines.pop();
+		let lastLineWidth = () => fontsProcessor.computeWidth(lastLine, 'Lexend Regular', 28);
+		let dotsWidth = fontsProcessor.computeWidth('...', 'Lexend Regular', 28);
 
-		if (lastLine.length > charsPerLine) {
-			lastLine = lastLine.substr(0, charsPerLine - 3);
+		while (lastLineWidth() + dotsWidth >= maxLineWidth) {
+			lastLine = lastLine.substr(0, lastLine.length - 1);
 		}
 
 		lines.push(lastLine + '...');
@@ -86,7 +113,7 @@ const processDescription = (description) => {
 	return lines;
 };
 
-const processChart = (records, max, offsetX = 88, offsetY = 414) => {
+const processChart = (records, max, offsetX = 88, offsetY = 386) => {
 	let barHeight = 40;
 	let barPadding = 10;
 
@@ -136,7 +163,7 @@ const prepareStats = async (name) => {
 		bandwidth: {
 			total: stats.total,
 			totalFormatted: bytes(stats.total, { unitSeparator: ' ' }),
-			chart: processChart(records, max, 580),
+			chart: processChart(records, max, 550),
 		},
 	};
 };
@@ -146,11 +173,11 @@ const composeTemplate = async (name, scope = null) => {
 	let [ metadata, stats ] = await Promise.all([ prepareMetadata(pkg), prepareStats(pkg) ]);
 
 	return {
-		name: truncateString(name, 24),
-		scope: truncateString(scope, 36),
+		name: truncateString(name, 'Lexend SemiBold', scope ? 54 : 60, 760),
+		scope: scope ? truncateString(scope, 'Lexend SemiBold', 38, 760) : null,
 		description: metadata.description,
-		version: metadata.version,
-		author: metadata.owner.name,
+		author: truncateString(metadata.owner.name, 'Lexend SemiBold', 30, 340),
+		version: truncateString(metadata.version, 'Lexend SemiBold', 30, 260),
 		logo: metadata.owner.logo,
 		stats,
 	};
@@ -165,7 +192,7 @@ const render = async (svg) => {
 module.exports = async (ctx) => {
 	try {
 		let data = await composeTemplate(ctx.params.name, ctx.params.scope);
-		let svg = await ctx.render('og-pkg-template.svg', data);
+		let svg = await ctx.render('og-image-template.svg', data);
 
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
