@@ -164,4 +164,25 @@ module.exports = {
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
 	},
+	getValueByMagnitude (value, isMaxBased = true) {
+		let magnitude = Math.floor(Math.log10(value));
+
+		if (isMaxBased) {
+			return Math.ceil(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+		}
+
+		return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+	},
+	getDividedByStepsRange (minValue, maxValue, stepsAmount) {
+		let range = [];
+		let statsChartYMax = this.getValueByMagnitude(maxValue);
+		let statsChartYMin = this.getValueByMagnitude(minValue, false);
+		let stepSize = (statsChartYMax - statsChartYMin) / stepsAmount - 2;
+
+		for (let i = 0; i <= stepsAmount; i++) {
+			range.push(statsChartYMin + Math.ceil(i * stepSize));
+		}
+
+		return range;
+	},
 };

@@ -445,11 +445,10 @@
 				let xAxisDates = array.map(value => value[0]);
 				let data = array.map(value => value[1].total);
 				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-				let maxValue = Math.max(...data);
-				let magnitude = Math.floor(Math.log10(maxValue));
-				let statsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 				let yAxisTicksAmount = 8;
-				let yAxisRange = _.linRange(statsChartYMax, yAxisTicksAmount).reverse();
+
+				let yAxisRange = _.getDividedByStepsRange(Math.min(...data), Math.max(...data), yAxisTicksAmount);
+
 				let chartData = {
 					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
 					datasets: [{
