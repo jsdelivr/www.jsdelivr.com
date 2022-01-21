@@ -151,13 +151,19 @@
 
 								<div class="btn-group">
 									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
+										<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
 										<i class="fa fa-angle-down" aria-hidden="true"></i>
 									</button>
 
 									<ul class="dropdown-menu">
 										{{#each ~/usageChartGroupByValues}}
-											<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
+											<li>
+												{{#if this.isDisabled}}
+													<a class="disabled">{{this.value}}</a>
+												{{else}}
+													<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+												{{/if}}
+											</li>
 										{{/each}}
 									</ul>
 								</div>
@@ -272,9 +278,9 @@
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
-					day: 'day',
-					week: 'week',
-					month: 'month',
+					day: { value: 'day', isDisabled: false },
+					week: { value: 'week', isDisabled: false },
+					month: { value: 'month', isDisabled: false },
 				},
 				usageChartGroupBy: 'day',
 				algoliaReadmeErrMsg: 'ERROR: No README data found!',
@@ -336,6 +342,7 @@
 					}
 				});
 
+				// get package data (for charts, etc.)
 				this.observe('statsPeriod versionP navRoute', () => {
 					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
@@ -376,6 +383,40 @@
 				if (!this.get('versionP')) {
 					this.set('versionP', this.get('package.version'));
 				}
+
+				// control the value of the DateRange and change the value of the GroupBy respectively
+				this.observe('statsPeriod', (statsPeriod) => {
+					let statsPeriods = this.get('statsPeriods');
+					let usageChartGroupByValues = this.get('usageChartGroupByValues');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+
+					switch (statsPeriods[statsPeriod]) {
+						case 'day':
+							usageChartGroupBy = 'day';
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = true;
+							usageChartGroupByValues.month.isDisabled = true;
+							break;
+
+						case 'week':
+							if (usageChartGroupBy === 'month') {
+								usageChartGroupBy = 'week';
+							}
+
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = false;
+							usageChartGroupByValues.month.isDisabled = true;
+							break;
+
+						default:
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = false;
+							usageChartGroupByValues.month.isDisabled = false;
+					}
+
+					this.set('usageChartGroupBy', usageChartGroupBy);
+					this.set('usageChartGroupByValues', usageChartGroupByValues);
+				});
 			}
 		},
 		onrender () {
