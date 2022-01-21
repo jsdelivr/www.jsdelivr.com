@@ -17,8 +17,8 @@ const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
 const http = got.extend({ cache });
 
 const fontsProcessor = new FontsProcessor();
-fontsProcessor.addFont('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
-fontsProcessor.addFont('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
+fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
+fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
 	return http.get(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`).json();
@@ -63,10 +63,11 @@ const fetchLogo = async (url) => {
  * @param {string} fontFamily
  * @param {number} fontSize
  * @param {number} maxWidth
+ * @param {number} letterSpacing
  * @return {{width: number, text: string}}
  */
-const truncateString = (input, fontFamily, fontSize, maxWidth) => {
-	let width = str => fontsProcessor.computeWidth(str, fontFamily, fontSize);
+const truncateString = (input, fontFamily, fontSize, maxWidth, letterSpacing = 0) => {
+	let width = str => fontsProcessor.computeWidth(str, fontFamily, fontSize, letterSpacing);
 	let truncate = (str) => {
 		let strWidth = width(str);
 		let dotsWidth = width('...');
@@ -90,14 +91,16 @@ const processDescription = (description) => {
 	let maxLineWidth = 760;
 	let lineOffset = 263;
 	let lineHeight = 48;
+	let fontSize = 30;
+	let letterSpacing = -0.6;
 
-	let lines = fontsProcessor.wrap(description, 'Lexend Regular', 28, maxLineWidth);
+	let lines = fontsProcessor.wrap(description, 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
 		let lastLine = lines.pop();
-		let lastLineWidth = () => fontsProcessor.computeWidth(lastLine, 'Lexend Regular', 28);
-		let dotsWidth = fontsProcessor.computeWidth('...', 'Lexend Regular', 28);
+		let lastLineWidth = () => fontsProcessor.computeWidth(lastLine, 'Lexend Regular', fontSize, letterSpacing);
+		let dotsWidth = fontsProcessor.computeWidth('...', 'Lexend Regular', fontSize, letterSpacing);
 
 		while (lastLineWidth() + dotsWidth >= maxLineWidth) {
 			lastLine = lastLine.substr(0, lastLine.length - 1);
