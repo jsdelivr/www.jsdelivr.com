@@ -1,13 +1,13 @@
 <link rel="ractive" href="./package-header.html" name="c-package-header">
 
-<div class="c-search-compact">
+<div class="c-search-compact {{#if (searchOpened && hideLanding) }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
+		<input type="text" class="search-input" on-focus="@this.set('searchOpened', true)" placeholder="search all of npm" value="{{query}}">
 	</div>
 
-	{{#if hideLanding}}
-		<div class="c-search-compact__wrapper">
+	{{#if (searchOpened && hideLanding) }}
+		<div class="c-search-compact-wrapper">
 			<div class="search-results">
 				{{#each packages}}
 					<div class="c-package">
@@ -74,7 +74,6 @@
 			if (!this.isServer) {
 				app = this.get('@shared.app');
 				let offsetTop = pageYOffset;
-				this.find('.search-input').focus();
 				scrollTo(0, offsetTop);
 
 				if (this.get('caretPosition')) {
@@ -84,6 +83,11 @@
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page'), 5).then((result) => {
+
+							result.response.hits.forEach(hit => {
+								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);			
+							});
+
 							// The query might have changed since we sent the request.
 							if (result.query === this.get('query')) {
 								this.set('packages', result.response.hits, { shuffle: 'name' });
@@ -126,6 +130,12 @@
 						}
 					}
 				});
+
+				document.onclick = (e) => {
+					if (!e.target.closest('.c-search-compact-wrapper') && !e.target.closest('.search-input')) {
+						this.set('searchOpened', false)
+					}
+				}
 			}
 		},
 		scrollToSearch () {
@@ -138,5 +148,21 @@
 				app.config.animateScrolling = true;
 			}
 		},
+		nFormatter(num) {
+			const lookup = [
+				{ value: 1, symbol: "" },
+				{ value: 1e3, symbol: "K" },
+				{ value: 1e6, symbol: "M" },
+				{ value: 1e9, symbol: "G" },
+				{ value: 1e12, symbol: "T" },
+				{ value: 1e15, symbol: "P" },
+				{ value: 1e18, symbol: "E" }
+			];
+			const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+			var item = lookup.slice().reverse().find(function(item) {
+				return num >= item.value;
+			});
+			return item ? (num / item.value).toFixed(1).replace(rx, "$1") + item.symbol : "0";
+		},			
 	};
 </script>
