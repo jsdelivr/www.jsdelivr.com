@@ -167,6 +167,8 @@ module.exports = {
 	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0) {
 		let magnitude = Math.floor(Math.log10(value)) - magnitudeCorrection;
 
+		if (value < 10) { return 0; }
+
 		switch (rounding) {
 			case 'round':
 				return Math.round(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
