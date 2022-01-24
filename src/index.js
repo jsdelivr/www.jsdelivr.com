@@ -47,6 +47,7 @@ const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
+const ogImage = require('./middleware/open-graph');
 const legacyMapping = require('../data/legacy-mapping.json');
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
@@ -158,6 +159,11 @@ app.use(async (ctx, next) => {
 app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
+	serverHost: app.env === 'production'
+		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
+			? process.env.RENDER_EXTERNAL_URL
+			: serverConfig.host
+		: '',
 	assetsHost: app.env === 'production'
 		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
 			? process.env.RENDER_EXTERNAL_URL
@@ -272,6 +278,10 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/_index.html', data);
 	}
 });
+
+koaElasticUtils.addRoutes(router, [
+	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
+], ogImage);
 
 /**
  * All other pages.
