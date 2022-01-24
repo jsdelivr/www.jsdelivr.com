@@ -446,8 +446,8 @@
 				let data = array.map(value => value[1].total);
 				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 				let yAxisTicksAmount = 8;
-
-				let { stepSize, minRangeValue, maxRangeValue } = _.getDividedByStepsRange(Math.min(...data), Math.max(...data), yAxisTicksAmount);
+				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
+				let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
 
 				let chartData = {
 					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
@@ -502,13 +502,16 @@
 								min: minRangeValue,
 								max: maxRangeValue,
 								ticks: {
-									stepSize,
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'far',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(labelValue, 'round', 1);
 									},
 								},
 								grid: {
@@ -556,10 +559,14 @@
 				}
 
 				let yAxisTicksAmount = 8;
-				let { stepSize, minRangeValue, maxRangeValue } = _.getDividedByStepsRange(
+				let minRangeValue = _.getValueByMagnitude(
 					Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates))).filter(v => v !== 0)),
+					'floor',
+				);
+				let maxRangeValue = _.getValueByMagnitude(
 					Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
-					yAxisTicksAmount
+					'ceil',
+					1
 				);
 				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
 					let dataset = {
@@ -646,13 +653,16 @@
 								min: minRangeValue,
 								max: maxRangeValue,
 								ticks: {
-									stepSize,
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'far',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(labelValue, 'round', 1);
 									},
 								},
 								grid: {

@@ -176,21 +176,4 @@ module.exports = {
 				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 		}
 	},
-	getDividedByStepsRange (minValue, maxValue, stepsAmount) {
-		let statsChartYMax = this.getValueByMagnitude(maxValue, 'ceil', 1);
-		let statsChartYMin = this.getValueByMagnitude(minValue, 'floor', 0);
-		let range = [];
-		let stepSize = this.getValueByMagnitude((statsChartYMax - statsChartYMin) / (stepsAmount - 1), 'round', 0);
-
-		for (let i = 0; i < stepsAmount; i++) {
-			range.push(statsChartYMin + (i * stepSize));
-		}
-
-		return {
-			range,
-			stepSize,
-			minRangeValue: statsChartYMin,
-			maxRangeValue: statsChartYMax,
-		};
-	},
 };
