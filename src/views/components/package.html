@@ -447,7 +447,7 @@
 				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 				let yAxisTicksAmount = 8;
 
-				let yAxisRange = _.getDividedByStepsRange(Math.min(...data), Math.max(...data), yAxisTicksAmount);
+				let { stepSize, minRangeValue, maxRangeValue } = _.getDividedByStepsRange(Math.min(...data), Math.max(...data), yAxisTicksAmount);
 
 				let chartData = {
 					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
@@ -499,10 +499,10 @@
 							},
 							y: {
 								display: true,
-								min: yAxisRange[yAxisTicksAmount - 1],
-								max: yAxisRange[0],
+								min: minRangeValue,
+								max: maxRangeValue,
 								ticks: {
-									stepSize: yAxisRange[yAxisTicksAmount - 1],
+									stepSize,
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'far',
@@ -541,9 +541,6 @@
 				});
 
 				let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-				let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
-				let magnitude = Math.floor(Math.log10(maxValue));
-				let hitsChartYMax = Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 
 				this.animate('versionsHitsTotal', hitsData.total);
 				this.animate('topFiveVersions', topFiveVersions);
@@ -559,7 +556,11 @@
 				}
 
 				let yAxisTicksAmount = 8;
-				let yAxisRange = _.linRange(hitsChartYMax, yAxisTicksAmount).reverse();
+				let { stepSize, minRangeValue, maxRangeValue } = _.getDividedByStepsRange(
+					Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates))).filter(v => v !== 0)),
+					Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
+					yAxisTicksAmount
+				);
 				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
 					let dataset = {
 						label: `v${tfvItem.version}`,
@@ -642,10 +643,10 @@
 							},
 							y: {
 								display: true,
-								min: yAxisRange[yAxisTicksAmount - 1],
-								max: yAxisRange[0],
+								min: minRangeValue,
+								max: maxRangeValue,
 								ticks: {
-									stepSize: yAxisRange[yAxisTicksAmount - 1],
+									stepSize,
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'far',

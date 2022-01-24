@@ -164,25 +164,33 @@ module.exports = {
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
 	},
-	getValueByMagnitude (value, isMaxBased = true) {
-		let magnitude = Math.floor(Math.log10(value));
+	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0) {
+		let magnitude = Math.floor(Math.log10(value)) - magnitudeCorrection;
 
-		if (isMaxBased) {
-			return Math.ceil(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+		switch (rounding) {
+			case 'round':
+				return Math.round(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+			case 'ceil':
+				return Math.ceil(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+			case 'floor':
+				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 		}
-
-		return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 	},
 	getDividedByStepsRange (minValue, maxValue, stepsAmount) {
+		let statsChartYMax = this.getValueByMagnitude(maxValue, 'ceil', 1);
+		let statsChartYMin = this.getValueByMagnitude(minValue, 'floor', 0);
 		let range = [];
-		let statsChartYMax = this.getValueByMagnitude(maxValue);
-		let statsChartYMin = this.getValueByMagnitude(minValue, false);
-		let stepSize = (statsChartYMax - statsChartYMin) / stepsAmount - 2;
+		let stepSize = this.getValueByMagnitude((statsChartYMax - statsChartYMin) / (stepsAmount - 1), 'round', 0);
 
-		for (let i = 0; i <= stepsAmount; i++) {
-			range.push(statsChartYMin + Math.ceil(i * stepSize));
+		for (let i = 0; i < stepsAmount; i++) {
+			range.push(statsChartYMin + (i * stepSize));
 		}
 
-		return range;
+		return {
+			range,
+			stepSize,
+			minRangeValue: statsChartYMin,
+			maxRangeValue: statsChartYMax,
+		};
 	},
 };
