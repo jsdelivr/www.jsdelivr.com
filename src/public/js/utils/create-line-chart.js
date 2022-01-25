@@ -11,12 +11,12 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 	let externalTooltip = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 
-		let tooltipInstance = document.getElementById('hitsChart-tooltip');
+		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
 		// Create element on first render
 		if (!tooltipInstance) {
 			tooltipInstance = document.createElement('div');
-			tooltipInstance.id = 'hitsChart-tooltip';
+			tooltipInstance.id = 'lineChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
 			wrapper.classList.add('tooltipWrapper');
@@ -84,7 +84,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 
 	// create vertical y-axis border line
 	let verticalYAxisBorder = {
-		id: 'hitsChartYBorder',
+		id: 'lineChartYBorder',
 		beforeDraw (chart) {
 			let { ctx } = chart;
 			ctx.save();
