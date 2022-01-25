@@ -5,9 +5,10 @@ const _ = require('../_');
 // chartSettings - additional params for the chart
 //	chartSettings.onHoverNotActiveBarsBGColor - all bars color except the hovered one
 //	chartSettings.useYAxisBorderPlugin - use plugin to render vertical y-axis border
+//	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
-function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfig = {}) {
+function createBarChart (chartEl, chartData = {}, chartSettings = { useExternalTooltip: false }, chartConfig = {}) {
 	if (!chartEl) { return; }
 
 	// create bar with background with gradient
@@ -58,6 +59,36 @@ function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfi
 		},
 	};
 
+	// create external tooltip
+	let externalTooltip = (ctx) => {
+		let { chart, tooltip: tooltipModel } = ctx;
+		let tooltipInstance = document.getElementById('barChart-tooltip');
+		console.log('++++++ chart', chart);
+		console.log('++++++ tooltipModel', tooltipModel);
+		console.log('+___________________________________');
+
+		// Create element on first render
+		if (!tooltipInstance) {
+			tooltipInstance = document.createElement('div');
+			tooltipInstance.id = 'barChart-tooltip';
+			tooltipInstance.classList.add('tooltipEl');
+			let wrapper = document.createElement('div');
+			wrapper.classList.add('tooltipWrapper');
+			tooltipInstance.appendChild(wrapper);
+			chart.canvas.parentNode.appendChild(tooltipInstance);
+		}
+
+		// Hide if no tooltip
+		if (tooltipModel.opacity === 0) {
+			tooltipInstance.style.opacity = 0;
+			return;
+		}
+
+		tooltipInstance.style.opacity = 1;
+		tooltipInstance.style.top = 0;
+		tooltipInstance.style.left = 0;
+	};
+
 	// get chart plugins
 	let getChartPlugins = () => {
 		let { useYAxisBorderPlugin } = chartSettings;
@@ -92,6 +123,8 @@ function createBarChart (chartEl, chartData = {}, chartSettings = {}, chartConfi
 				},
 				tooltip: {
 					enable: true,
+					enabled: !chartSettings.useExternalTooltip && true,
+					external: chartSettings.useExternalTooltip ? externalTooltip : null,
 					bodyColor: '#fff',
 					backgroundColor: 'rgba(17, 26, 44, .9)',
 					cornerRadius: 4,
