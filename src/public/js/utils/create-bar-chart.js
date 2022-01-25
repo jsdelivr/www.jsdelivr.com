@@ -8,7 +8,12 @@ const _ = require('../_');
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
-function createBarChart (chartEl, chartData = {}, chartSettings = { useExternalTooltip: false }, chartConfig = {}) {
+function createBarChart (
+	chartEl,
+	chartData = {},
+	chartSettings = {},
+	chartConfig = {}
+) {
 	if (!chartEl) { return; }
 
 	// create bar with background with gradient
@@ -63,9 +68,6 @@ function createBarChart (chartEl, chartData = {}, chartSettings = { useExternalT
 	let externalTooltip = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById('barChart-tooltip');
-		console.log('++++++ chart', chart);
-		console.log('++++++ tooltipModel', tooltipModel);
-		console.log('+___________________________________');
 
 		// Create element on first render
 		if (!tooltipInstance) {
@@ -73,7 +75,7 @@ function createBarChart (chartEl, chartData = {}, chartSettings = { useExternalT
 			tooltipInstance.id = 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('tooltipWrapper');
+			wrapper.classList.add('barTooltipWrapper');
 			tooltipInstance.appendChild(wrapper);
 			chart.canvas.parentNode.appendChild(tooltipInstance);
 		}
@@ -84,9 +86,16 @@ function createBarChart (chartEl, chartData = {}, chartSettings = { useExternalT
 			return;
 		}
 
+		if (tooltipModel.body) {
+			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
+			let innerHtml = `<span>${bodyValue}</span>`;
+			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
+			tooltipWrapper.innerHTML = innerHtml;
+		}
+
 		tooltipInstance.style.opacity = 1;
-		tooltipInstance.style.top = 0;
-		tooltipInstance.style.left = 0;
+		tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
+		tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX + 'px';
 	};
 
 	// get chart plugins
