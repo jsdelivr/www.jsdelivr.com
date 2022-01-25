@@ -36,14 +36,23 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 		if (tooltipModel.body) {
 			// get title text and body lines
 			let titleText = new Date(tooltipModel.title[0].split(',')[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-			let bodyLines = tooltipModel.body.map(item => item.lines[0]);
+
+			// prepare body lines and color map for lines-backgrounds
+			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
+				res.lines.push(item.lines[0]);
+				res.linesMap[item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+				return res;
+			}, { lines: [], linesMap: {} });
+
+			// sort body lines from max to min
+			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replaceAll(',', '') - a.split(': ')[1].replaceAll(',', ''));
 
 			// create title element
 			let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
 
 			// create body lines
-			bodyLines.forEach((line, lineIdx) => {
-				let coloredSquare = `<span class='tooltipSquare' style='background: ${tooltipModel.labelColors[lineIdx].backgroundColor}'></span>`;
+			sortedBodyLines.forEach((line) => {
+				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
 
 				line.split(' ').forEach((part, partIdx) => {
