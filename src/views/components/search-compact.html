@@ -14,29 +14,32 @@
 						<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true"></c-package-header>
 					</div>
 				{{elseif query && nbHits === 0}}
-					No results founds
+					<p class="c-search-compact-empty">No results found</p>
 				{{/each}}
 			</div>
 		
-			<nav class="search-pagination" aria-label="Search results pagination">
-				<ul class="pagination">
-					<li style="{{#unless page}}visibility: hidden;{{/unless}}">
-						<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
-							<span aria-hidden="true">&laquo;</span>
-						</a>
-					</li>
+			{{#if query && nbHits !== 0}}
+				<nav class="search-pagination" aria-label="Search results pagination">
+					<ul class="pagination">
+						<li style="{{#unless page}}visibility: hidden;{{/unless}}">
+							<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						</li>
 
-					{{#each pagination(page, nbPages)}}
-					<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
-					{{/each}}
+						{{#each pagination(page, nbPages)}}
+						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+						{{/each}}
 
-					<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
-						<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
-							<span aria-hidden="true">&raquo;</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
+						<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
+							<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			{{/if}}
+			
 		</div>
 	{{/if}}
 </div>
@@ -75,10 +78,7 @@
 				app = this.get('@shared.app');
 				let offsetTop = pageYOffset;
 				scrollTo(0, offsetTop);
-
-				if (this.get('caretPosition')) {
-					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
-				}
+				this.set('initialValue', this.get('query'));
 
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
@@ -133,19 +133,20 @@
 				document.onclick = (e) => {
 					if (!e.target.closest('.c-search-compact-wrapper') && !e.target.closest('.search-input')) {
 						this.set('searchOpened', false);
+
+						if (!this.find('.search-input').value) {
+							this.set('query', this.get('initialValue'));
+						}
 					}
 				};
 			}
 		},
 		scrollToSearch () {
-			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
-				});
-			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
-				app.config.animateScrolling = true;
-			}
+			scrollTo({
+				top: 0,
+				left: Math.floor($('.search-input').offset().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
 		nFormatter (num) {
 			let lookup = [

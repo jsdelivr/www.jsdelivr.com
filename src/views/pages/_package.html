@@ -20,7 +20,7 @@
 	<c-notification></c-notification>
 
 	<c-header name={{name}}>
-		<c-search-compact __ready="{{__ready}}" hideLanding="{{hideLanding}}" page="{{page}}" query="{{query}}" caretPosition="{{caretPosition}}"></c-search-compact>
+		<c-search-compact __ready="{{__ready}}" hideLanding="{{hideLanding}}" page="{{page}}" query="{{packageName}}"></c-search-compact>
 	</c-header>	
 
 	<div class="p-package page">
@@ -146,16 +146,7 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				app = this.get('@shared.app');
-			}
-		},
-		scrollToSearch () {
-			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
-				});
-			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
-				app.config.animateScrolling = true;
+				this.set('packageName', this.get('name'));
 			}
 		},
 	};
