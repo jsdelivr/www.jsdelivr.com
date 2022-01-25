@@ -6,6 +6,7 @@ const _ = require('../_');
 //	chartSettings.onHoverNotActiveBarsBGColor - all bars color except the hovered one
 //	chartSettings.useYAxisBorderPlugin - use plugin to render vertical y-axis border
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
+// 	chartSettings.externalTooltipId - if there are more than one barChart on the page you should set different ids for tooltips
 // chartConfig - config of the chart(chartjs lib config)
 
 function createBarChart (
@@ -67,12 +68,12 @@ function createBarChart (
 	// create external tooltip
 	let externalTooltip = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
-		let tooltipInstance = document.getElementById('barChart-tooltip');
+		let tooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
 
 		// Create element on first render
 		if (!tooltipInstance) {
 			tooltipInstance = document.createElement('div');
-			tooltipInstance.id = 'barChart-tooltip';
+			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
 			wrapper.classList.add('barTooltipWrapper');
