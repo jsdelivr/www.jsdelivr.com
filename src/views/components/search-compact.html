@@ -1,17 +1,19 @@
 <link rel="ractive" href="./package-header.html" name="c-package-header">
 
-<div class="c-search-compact {{#if (searchOpened && hideLanding) }}active{{/if}}">
+<div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" on-focus="@this.set('searchOpened', true)" placeholder="search all of npm" value="{{query}}">
+		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 	</div>
 
-	{{#if (searchOpened && hideLanding) }}
+	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
+
+	{{#if searchOpened }}
 		<div class="c-search-compact-wrapper">
 			<div class="search-results">
 				{{#each packages}}
 					<div class="c-package">
-						<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true"></c-package-header>
+						<c-package-header package="{{this}}" version="{{version}}" query="{{query}}" searchOpened={{searchOpened}} onlyHeader="true"></c-package-header>
 					</div>
 				{{elseif query && nbHits === 0}}
 					<p class="c-search-compact-empty">No results found</p>
@@ -90,7 +92,12 @@
 							// The query might have changed since we sent the request.
 							if (result.query === this.get('query')) {
 								this.set('packages', result.response.hits, { shuffle: 'name' });
-								this.set('hideLanding', true);
+
+								if (this.get('inputFocused') && this.get('query')) {
+									this.set('searchOpened', true);
+								} else {
+									// this.set('searchOpened', false);
+								}
 
 								this.set({
 									fadeIn: true,
@@ -122,7 +129,7 @@
 						if (keypath === 'query' && this.get('page') !== 0) {
 							this.set('page', 0);
 						} else if (!this.get('query')) {
-							this.set('hideLanding', false);
+							this.set('searchOpened', false);
 							this.set('packages', []);
 						} else {
 							s(keypath);
@@ -130,19 +137,13 @@
 					}
 				});
 
-				document.onclick = (e) => {
-					if (!e.target.closest('.c-search-compact-wrapper') && !e.target.closest('.search-input')) {
-						this.set('searchOpened', false);
-
-						if (!this.find('.search-input').value) {
-							this.set('query', this.get('initialValue'));
-						}
+				this.observe('inputFocused', (value) => {
+					if (value) {
+						this.set('searchOpened', true);
+					} else if (!value && !this.find('.search-input').value) {
+						this.set('query', this.get('initialValue'));
 					}
-
-					if (e.target.closest('.package-name') && e.target.href === window.location.href) {
-						this.set('searchOpened', false);
-					}
-				};
+				});
 			}
 		},
 		scrollToSearch () {

@@ -4,7 +4,7 @@
 			<div class="col-sm-8">
 				<div class="package-name-wrapper">
 					{{#if onlyHeader}}
-						<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
+						<a href="/package/npm/{{name}}" on-click="@this.set('searchOpened', false)" class="package-name">{{name}}</a>
 					{{else}}
 						<h1 class="package-name">{{name}}</h1>
 					{{/if}}
@@ -17,7 +17,8 @@
 							{{owner.name}}
 						</a>
 					{{else}}
-						<a href="/?query=author%3A%20{{owner.name}}" class="package-owner">
+						<!-- <a href="/?query=author%3A%20{{owner.name}}" class="package-owner"> -->
+						<a on-click="@this.set('query', `author: ${owner.name}`)" class="package-owner">
 							<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
 							{{owner.name}}
 						</a>
