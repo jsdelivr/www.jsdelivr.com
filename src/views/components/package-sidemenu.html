@@ -31,7 +31,7 @@
 				{{#if noDataOfRequests}}
 					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
 				{{else}}
-					<canvas id="requests-chart" width="294" height="40"></canvas>
+					<canvas id="requests-chart"></canvas>
 				{{/if}}
 			</div>
 
@@ -46,7 +46,7 @@
 				{{#if noDataOfBandwidth}}
 					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
 				{{else}}
-					<canvas id="bandwidth-chart" width="294" height="40"></canvas>
+					<canvas id="bandwidth-chart"></canvas>
 				{{/if}}
 			</div>
 
@@ -238,9 +238,14 @@
 								borderRadius: 1,
 							}],
 						};
+						let chartSettings = {
+							useExternalTooltip: true,
+							externalTooltipId: 'packageSidemenuRequestsChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
 						let chartConfig = {};
 
-						requestsChart = createBarChart(chartEl, chartData, chartConfig);
+						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
 						this.set('requestsChart', requestsChart);
 					}, 100);
@@ -290,9 +295,14 @@
 								borderRadius: 1,
 							}],
 						};
+						let chartSettings = {
+							useExternalTooltip: true,
+							externalTooltipId: 'packageSidemenuBandwidthChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
 						let chartConfig = {};
 
-						bandwidthChart = createBarChart(chartEl, chartData, chartConfig);
+						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
 						this.set('bandwidthChart', bandwidthChart);
 					}, 100);
