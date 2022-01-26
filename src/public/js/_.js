@@ -164,10 +164,11 @@ module.exports = {
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
 	},
-	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0) {
-		let magnitude = Math.floor(Math.log10(value)) - magnitudeCorrection;
+	// ignoreExtremlySmallValue: true when you need to find min value for the axis min e.g.
+	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0, ignoreExtremlySmallValue = true) {
+		let magnitude = Math.floor(Math.log10(value) === -Infinity ? 0 : Math.log10(value)) - magnitudeCorrection;
 
-		if (value < 10) { return 0; }
+		if (ignoreExtremlySmallValue && value < 10) { return 0; }
 
 		switch (rounding) {
 			case 'round':
