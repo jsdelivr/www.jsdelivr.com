@@ -80,10 +80,10 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 		// caretX min 0 max 1110
 		// 120px based on the half width of the tooltip + vertical line and gap
 		if (tooltipModel.caretX > 882) {
-			tooltipVerticalLine.style.left = '228px';
+			tooltipVerticalLine.style.left = '230px';
 			tooltipInstance.style.left = -120 + offsetLeft + tooltipModel.caretX + 'px';
 		} else {
-			tooltipVerticalLine.style.left = '-8px';
+			tooltipVerticalLine.style.left = '-10px';
 			tooltipInstance.style.left = 120 + offsetLeft + tooltipModel.caretX + 'px';
 		}
 
