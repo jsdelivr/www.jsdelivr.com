@@ -31,7 +31,7 @@ function createBarChart (
 		if (elements.length !== 1) { return; }
 
 		event.native.target.style.cursor = 'pointer';
-		chart.config._config.options.elements.bar.backgroundColor = chartSettings.onHoverNotActiveBarsBGColor || '#FAE5E0';
+		chart.options.elements.bar.backgroundColor = chartSettings.onHoverNotActiveBarsBGColor || '#FAE5E0';
 		chart.update();
 	};
 
@@ -43,7 +43,7 @@ function createBarChart (
 
 			if (event.type === 'mouseout') {
 				event.native.target.style.cursor = 'default';
-				chart.config._config.options.elements.bar.backgroundColor = chartConfig?.options?.elements?.bar.backgroundColor || createBarWithGradient(chartEl);
+				chart.options.elements.bar.backgroundColor = chartConfig?.options?.elements?.bar.backgroundColor || createBarWithGradient(chartEl);
 				chart.update();
 			}
 		},
