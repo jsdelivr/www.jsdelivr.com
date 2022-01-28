@@ -45,7 +45,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 			}, { lines: [], linesMap: {} });
 
 			// sort body lines from max to min
-			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replaceAll(',', '') - a.split(': ')[1].replaceAll(',', ''));
+			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
 
 			// create title element
 			let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;

@@ -149,7 +149,7 @@ const prepareMetadata = async (pkg) => {
 const prepareStats = async (name) => {
 	let stats = await fetchStats(name);
 
-	let formatNum = num => num.toLocaleString().replaceAll(',', ' ');
+	let formatNum = num => num.toLocaleString().replace(/,/g, '');
 	let max = 0;
 
 	let records = Object.values(stats.dates).map((stats) => {
