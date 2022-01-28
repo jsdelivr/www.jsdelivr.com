@@ -32,7 +32,7 @@
 					There might be a problem with your internet connection. Try refreshing the page a few times.<br>
 				</div>
 				{{elseif package}}
-				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{query}}" packageNotFound="{{packageNotFound}}"></c-package>
+				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{packageName}}" packageNotFound="{{packageNotFound}}"></c-package>
 				{{/if}}
 			</c-slide>
 
@@ -48,7 +48,6 @@
 <script>
 	const has = require('../../public/js/utils/has');
 	const search = require('../../public/js/utils/search');
-	let app;
 
 	component.exports = {
 		computed: {
@@ -145,7 +144,6 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				app = this.get('@shared.app');
 				this.set('packageName', this.get('name'));
 			}
 		},

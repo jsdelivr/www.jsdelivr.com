@@ -49,7 +49,6 @@
 <script>
 	const debounce = require('../../public/js/utils/debounce');
 	const search = require('../../public/js/utils/search');
-	let app;
 
 	component.exports = {
 		data () {
@@ -77,7 +76,6 @@
 		},
 		onrender () {
 			if (!this.isServer) {
-				app = this.get('@shared.app');
 				let offsetTop = pageYOffset;
 				scrollTo(0, offsetTop);
 				this.set('initialValue', this.get('query'));
@@ -93,7 +91,7 @@
 							if (result.query === this.get('query')) {
 								this.set('packages', result.response.hits, { shuffle: 'name' });
 
-								if (this.get('inputFocused') && this.get('query')) {
+								if (this.get('inputFocused') || this.get('query').indexOf('author:') !== -1) {
 									this.set('searchOpened', true);
 								}
 
@@ -138,7 +136,7 @@
 				this.observe('inputFocused', (value) => {
 					if (value) {
 						this.set('searchOpened', true);
-					} else if (!value && !this.find('.search-input').value) {
+					} else if (!this.find('.search-input').value) {
 						this.set('query', this.get('initialValue'));
 					}
 				});
