@@ -23,6 +23,7 @@ const cHistory = require('../../views/pages/history.html');
 const cGsap = require('../../views/pages/gsap.html');
 const cSkypack = require('../../views/pages/skypack.html');
 const cEsmsh = require('../../views/pages/esmsh.html');
+const cCustomCdnOss = require('../../views/pages/custom-cdn-oss.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -92,6 +93,7 @@ app.router.addRoute('/history', cHistory);
 app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
 app.router.addRoute('/esmsh', cEsmsh);
+app.router.addRoute('/custom-cdn-oss', cCustomCdnOss);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
