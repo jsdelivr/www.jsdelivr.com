@@ -1,6 +1,4 @@
-const algoliasearch = require('algoliasearch');
-const algolia = algoliasearch('OFCNCOG2CU', 'f54e21fa3a2a0160595bb058179bfb1e', { protocol: 'https:' });
-const index = algolia.initIndex('npm-search');
+const { npmIndex } = require('../../../lib/algolia');
 
 module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	return Promise.resolve().then(() => {
@@ -17,7 +15,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			options.facetFilters = parsed.facetFilters;
 		}
 
-		return index.search(parsed.query, options).then((response) => {
+		return npmIndex.search(parsed.query, options).then((response) => {
 			// An exact match should always come first.
 			response.hits.sort((a, b) => {
 				return a.name === parsed.query ? -1 : b.name === parsed.query;
@@ -32,7 +30,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 };
 
 module.exports.getByName = (name) => {
-	return index.getObject(name).then((pkg) => {
+	return npmIndex.getObject(name).then((pkg) => {
 		return $.extend(true, {}, pkg);
 	});
 };

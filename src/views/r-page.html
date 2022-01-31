@@ -14,15 +14,25 @@
 			<meta property="og:type" content="website">
 			<meta property="og:title" content="{{title || 'jsDelivr - A free, fast, and reliable CDN for Open Source'}}">
 			<meta property="og:description" content="{{description || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month. Built for production use.'}}">
-			<meta property="og:url" content="https://www.jsdelivr.com/">
+			<meta property="og:url" content="{{@shared.serverHost}}">
 			<meta property="og:site_name" content="jsDelivr">
-			<meta property="og:image" content="https://www.jsdelivr.com/img/logo@2x.png">
-			<meta property="og:image:secure_url" content="https://www.jsdelivr.com/img/logo@2x.png">
-			<meta name="twitter:card" content="summary">
+
+			{{#if openGraphImage}}
+			<meta property="og:image" content="{{openGraphImage}}">
+			<meta property="og:image:secure_url" content="{{openGraphImage}}">
+			<meta property="og:image:width" content="1200">
+			<meta property="og:image:height" content="600">
+			<meta name="twitter:image" content="{{openGraphImage}}">
+			{{else}}
+			<meta property="og:image" content="{{@shared.serverHost}}/img/logo@2x.png">
+			<meta property="og:image:secure_url" content="{{@shared.serverHost}}/img/logo@2x.png">
+			<meta name="twitter:image" content="https://www.jsdelivr.com/img/logo@2x.png">
+			{{/if}}
+
+			<meta name="twitter:card" content="summary_large_image">
 			<meta name="twitter:description" content="{{description || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month. Built for production use.'}}">
 			<meta name="twitter:title" content="{{title || 'jsDelivr - A free, fast, and reliable CDN for Open Source'}}">
 			<meta name="twitter:site" content="@jsdelivr">
-			<meta name="twitter:image" content="https://www.jsdelivr.com/img/logo@2x.png">
 			<meta name="twitter:creator" content="@jsdelivr">
 			<title>{{title || 'jsDelivr - A free, fast, and reliable CDN for open source'}}</title>
 			{{yield seo}}
@@ -79,7 +89,7 @@
 			<script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.2/dist/chart.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/marked@3.0.7/marked.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.2.0/build/highlight.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/input-autogrow@1.1.1/dist/input-autogrow.min.js"></script>

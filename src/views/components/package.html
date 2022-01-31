@@ -7,71 +7,130 @@
 
 <div class="c-package">
 	<div class="container">
-		{{#if versions}}
-			<div class="row">
-				<div class="main-content">
-					<c-package-header
-						package="{{package}}"
-						type="{{type}}"
-						name="{{name}}"
-						version="{{versionP}}"
-						query="{{query}}"
-						packageVersionsNotFound="{{packageVersionsNotFound}}"
-						navRoute="{{navRoute}}">
-					</c-package-header>
+		<div class="row">
+			<div class="main-content">
+				<c-package-header
+					package="{{package}}"
+					type="{{type}}"
+					name="{{name}}"
+					version="{{versionP}}"
+          query="{{query}}"
+					packageVersionsNotFound="{{packageVersionsNotFound}}"
+					navRoute="{{navRoute}}">
+				</c-package-header>
 
-					<div class="package-nav">
-						{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
-							<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
-							</a>
-						{{/if}}
-						<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+				<div class="package-nav">
+					{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
+						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
 						</a>
-						<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
-							<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
-						</a>
+					{{/if}}
+					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+					</a>
+					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
+					</a>
+					<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
+						<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+					</a>
+				</div>
+
+				{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
+					<div class="package-readme">
+						<c-markdown text="{{package.readme}}"></c-markdown>
+					</div>
+				{{/if}}
+			</div>
+
+			<div class="side-content">
+				<c-package-sidemenu
+					navRoute="{{navRoute}}"
+					name="{{name}}"
+					type="{{type}}"
+					package="{{package}}">
+				</c-package-sidemenu>
+			</div>
+
+			<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
+				<c-package-file-browser
+					type="{{type}}"
+					name="{{name}}"
+					github="{{package.githubRepo}}"
+					version="{{versionP}}"
+					versions="{{versions}}"
+					path="{{path}}"
+					collection="{{collection}}"
+					files="{{~/files}}">
+				</c-package-file-browser>
+
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+
+			<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
+				<div class="header">
+					<div class="header-title">Statistics</div>
+					<div class="header-ctrls">
+						<div class="data-range-ctrl">
+							<span>Data range:</span>
+
+							<div class="btn-group">
+								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{~/statsPeriods[statsPeriod]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each ~/statsPeriods}}
+										<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="stats-cards">
+					<div>
+						<div class="card-icon">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+						</div>
+						<div class="card-main-stat">
+							<span>{{_.formatNumber(versionsHitsTotal)}}</span>
+							<span>Requests Served</span>
+						</div>
+						<div class="card-growth">
+							<span class="growth-positive">+34%</span>
+							<span>monthly growth</span>
+						</div>
 					</div>
 
-					{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
-						<div class="package-readme">
-							<c-markdown text="{{package.readme}}"></c-markdown>
+					<div>
+						<div class="card-icon">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
 						</div>
-					{{/if}}
+						<div class="card-main-stat">
+							<span>648 414</span>
+							<span>Bandwidth</span>
+						</div>
+						<div class="card-growth">
+							<span class="growth-negative">-9%</span>
+							<span>monthly growth</span>
+						</div>
+					</div>
 				</div>
 
-				<div class="side-content">
-					<c-package-sidemenu
-						navRoute="{{navRoute}}"
-						name="{{name}}"
-						type="{{type}}"
-						package="{{package}}">
-					</c-package-sidemenu>
-				</div>
+				{{#if noPackageStatsData && noVersionsData}}
+					<div class="no-data-wrapper">
+						<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+						<span>No statistics yet</span>
+						<span>This is probably not a very popular package :(</span>
+					</div>
+				{{else}}
+					<div class="chart-stats-per-period">
+						<div class="package-usage">
+							<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
 
-				<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
-					<c-package-file-browser
-						type="{{type}}"
-						name="{{name}}"
-						github="{{package.githubRepo}}"
-						version="{{versionP}}"
-						versions="{{versions}}"
-						path="{{path}}"
-						collection="{{collection}}"
-						files="{{~/files}}">
-					</c-package-file-browser>
-
-					<c-collection-box collection="{{collection}}"></c-collection-box>
-				</div>
-
-				<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
-					<div class="header">
-						<div class="header-title">Statistics</div>
-						<div class="header-ctrls">
 							<div class="chart-type-ctrl">
 								<span>Show numbers of</span>
 
@@ -86,227 +145,100 @@
 								</label>
 							</div>
 
-							<div class="data-range-ctrl">
-								<span>Data range:</span>
+							<div class="group-by-ctrl">
+								<span>
+									Group by:
+								</span>
 
 								<div class="btn-group">
 									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/statsPeriods[statsPeriod]}}</span>
+										<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
 										<i class="fa fa-angle-down" aria-hidden="true"></i>
 									</button>
 
 									<ul class="dropdown-menu">
-										{{#each ~/statsPeriods}}
-											<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+										{{#each ~/usageChartGroupByValues}}
+											<li>
+												{{#if this.isDisabled}}
+													<a class="disabled">{{this.value}}</a>
+												{{else}}
+													<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+												{{/if}}
+											</li>
 										{{/each}}
 									</ul>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="stats-cards">
-						<div>
-							<div class="card-icon">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
-							</div>
-							<div class="card-main-stat">
-								<span>{{_.formatNumber(versionsHitsTotal)}}</span>
-								<span>Requests Served</span>
-							</div>
-							<div class="card-growth">
-								<span class="growth-positive">+34%</span>
-								<span>monthly growth</span>
-							</div>
-						</div>
-
-						<div>
-							<div class="card-icon">
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
-							</div>
-							<div class="card-main-stat">
-								<span>648 414</span>
-								<span>Bandwidth</span>
-							</div>
-							<div class="card-growth">
-								<span class="growth-negative">-9%</span>
-								<span>monthly growth</span>
-							</div>
+						<div class="stats-chart-wrapper">
+							<canvas id="stats-chart"></canvas>
 						</div>
 					</div>
 
-					{{#if noPackageStatsData && noVersionsData}}
-						<div class="no-data-wrapper">
-							<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
-							<span>No statistics yet</span>
-							<span>This is probably not a very popular package :(</span>
-						</div>
-					{{else}}
-						<div class="chart-stats-per-period">
-							{{#if statsDateData.total}}
-								<div class="package-usage">
-									<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+					<div class="horizontal-divider mt-40 mb-40"></div>
 
-									<div class="group-by-ctrl">
-										<span>
-											Group by:
-										</span>
+					<div class="chart-tops">
+						{{#if ~/topFiveVersions}}
+							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+								{{#partial column1}}
+									<a on-click="@this.set('version', version)">{{version}}</a>
+								{{/partial}}
+							</c-top-stats-table>
 
-										<div class="btn-group">
-											<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-												<span>{{~/usageChartGroupByValues[usageChartGroupBy]}}</span>
-												<i class="fa fa-angle-down" aria-hidden="true"></i>
-											</button>
+							<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+								type="{{~/type}}"
+								name="{{~/name}}"
+								version="{{~/fileStatsVersion}}"
+								versions="{{~/versions}}">
+								{{#partial header}}
+									Top 5 files in version
+									<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
+								{{/partial}}
 
-											<ul class="dropdown-menu">
-												{{#each ~/usageChartGroupByValues}}
-													<li><a on-click="@this.set('usageChartGroupBy', @key)">{{this}}</a></li>
-												{{/each}}
-											</ul>
-										</div>
-									</div>
-								</div>
+								{{#partial column1}}
+									<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+								{{/partial}}
+							</c-top-stats-table>
+						{{/if}}
+					</div>
 
-								<div class="stats-chart-block">
-									<div class="chart-x">
-										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-											<div class="x-day-row">
-												{{#each ~/statsChartDates.periodDays}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
-										{{/if}}
+					<div class="horizontal-divider mt-40 mb-40"></div>
 
-										<div class="x-month-row">
-											{{#each ~/statsChartDates.periodMonths}}
-												<div style="flex-grow: {{~/statsChartDates[this].length/~/statsChartDates.periodDays.length}};"
-												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-													{{this}}
-												</div>
-											{{/each}}
-										</div>
-									</div>
-
-									<div class="chart-y">
-										{{#with _.linRange(totalStatsMax, 8).reverse() as range}}
-											{{#each range}}
-												<div>
-													{{_.formatNumber(this)}}
-												</div>
-
-											{{/each}}
-										{{/with}}
-									</div>
-
-									<div class="stats-chart-wrapper">
-										<canvas id="stats-chart" width="1116" height="236"></canvas>
-									</div>
-								</div>
-							{{/if}}
+					<div class="chart-hits-per-period">
+						<div class="package-usage">
+							<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
 						</div>
 
-						<div class="horizontal-divider mt-40 mb-40"></div>
-
-						<div class="chart-tops">
-							{{#if ~/topFiveVersions}}
-								<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-									{{#partial column1}}
-										<a on-click="@this.set('version', version)">{{version}}</a>
-									{{/partial}}
-								</c-top-stats-table>
-
-								<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
-									type="{{~/type}}"
-									name="{{~/name}}"
-									version="{{~/fileStatsVersion}}"
-									versions="{{~/versions}}">
-									{{#partial header}}
-										Top 5 files in version
-										<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
-									{{/partial}}
-
-									{{#partial column1}}
-										<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-									{{/partial}}
-								</c-top-stats-table>
-							{{/if}}
+						<div class="hits-chart-wrapper">
+							<canvas id="hits-chart"></canvas>
 						</div>
 
-						<div class="horizontal-divider mt-40 mb-40"></div>
-
-						<div class="chart-hits-per-period">
-							{{#if versionsHitsTotal}}
-								<div class="package-usage">
-									<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
+						<div class="hits-chart-legend">
+							{{#each topFiveVersions}}
+								<div class="legend-item">
+									<div></div>
+									{{version}}
 								</div>
-
-								<div class="hits-chart-block">
-									<div class="chart-x">
-										{{#if ~/statsPeriods[statsPeriod] !== "year"}}
-											<div class="x-day-row">
-												{{#each ~/hitsChartDates.periodDays}}
-													<div>{{this}}</div>
-												{{/each}}
-											</div>
-										{{/if}}
-
-										<div class="x-month-row">
-											{{#each ~/hitsChartDates.periodMonths}}
-												<div style="flex-grow: {{~/hitsChartDates[this].length/~/hitsChartDates.periodDays.length}};"
-												class="{{#if ~/statsPeriods[statsPeriod] === 'day'}}data-range-day{{/if}} {{#if ~/statsPeriods[statsPeriod] === 'week'}}data-range-week {{/if}}">
-													{{this}}
-												</div>
-											{{/each}}
-										</div>
-									</div>
-
-									<div class="chart-y">
-										{{#with _.linRange(hitsChartYMax, 8).reverse() as range}}
-											{{#each range}}
-												<div>
-													{{_.formatNumber(this)}}
-													<div class="y-line"></div>
-												</div>
-											{{/each}}
-										{{/with}}
-									</div>
-
-									<div class="hits-chart-wrapper">
-										<canvas id="hits-chart" width="1110" height="245"></canvas>
-									</div>
-								</div>
-
-								<div class="hits-chart-legend">
-									{{#each topFiveVersions}}
-										<div class="legend-item">
-											<div></div>
-											{{version}}
-										</div>
-									{{/each}}
-								</div>
-							{{/if}}
+							{{/each}}
 						</div>
-					{{/if}}
-				</div>
+					</div>
+				{{/if}}
 			</div>
-		{{/if}}
+		</div>
 	</div>
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const debounce = require('../../public/js/utils/debounce');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
+	const createLineChart = require('../../public/js/utils/create-line-chart');
 
 	component.exports = {
 		computed: {
-			// TODO: add resizing to both stats and hits charts
-			// chartXInterval () {
-			// 	this.get('_resizeId'); // Keep this here so that it updates on resize.
-			// 	return this.get('bottomChartLabels') ? Math.ceil(this.get('bottomChartLabels').length / Math.floor(innerWidth / 140)) : 1;
-			// },
 			hasSourceMaps () {
 				let files = this.get('files');
 				let hasMin, hasMap;
@@ -344,13 +276,12 @@
 				statsPeriod: 30,
 				versions: [],
 				link: location.href,
-				_resizeId: 0,
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
-					day: 'day',
-					week: 'week',
-					month: 'month',
+					day: { value: 'day', isDisabled: false },
+					week: { value: 'week', isDisabled: false },
+					month: { value: 'month', isDisabled: false },
 				},
 				usageChartGroupBy: 'day',
 				algoliaReadmeErrMsg: 'ERROR: No README data found!',
@@ -365,9 +296,6 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let statsChart;
-				let hitsChart;
-
 				// Load package versions.
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
@@ -415,324 +343,31 @@
 					}
 				});
 
+				// get package data (for charts, etc.)
 				this.observe('statsPeriod versionP navRoute', () => {
 					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
-						// get package date stats data and create stats chart
+						// get package date stats data
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (!response.total) {
 								this.set('noPackageStatsData', true);
 								return;
 							}
 
-							let array = [];
-							let maxValue = Math.max(...Object.values(response.dates).map(date => date.total));
-							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('totalStatsMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
 							this.set('statsDateData', response);
-
-							Object.keys(response.dates).forEach((date) => {
-								array.push([ date, response.dates[date] ]);
-							});
-
-							array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-							if (statsChart) {
-								statsChart.destroy();
-								statsChart = null;
-							}
-
-							let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-							let data = array.map(value => value[1].total);
-
-							let chartPeriodDates = array.map(date => date[0]);
-							this.set('statsChartDates', _.getPackageTabChartXData(chartPeriodDates));
-
-							let chartEl = this.find('#stats-chart');
-							let chartBarContext = chartEl.getContext('2d');
-							let barBackground = chartBarContext.createLinearGradient(0, 0, 0, 300);
-							barBackground.addColorStop(0, 'rgb(246, 81, 40)');
-							barBackground.addColorStop(1, 'rgba(246, 81, 40, 0.08)');
-
-							statsChart = new Chart(chartEl, {
-								type: 'bar',
-								data: {
-									labels,
-									datasets: [{
-										data,
-										backgroundColor: barBackground,
-										borderWidth: 0,
-										pointRadius: 0,
-										barThickness: 10,
-									}],
-								},
-								options: {
-									plugins: {
-										legend: {
-											display: false,
-										},
-									},
-									scales: {
-										x: {
-											display: false,
-											grid: {
-												display: false,
-												drawBorder: false,
-												borderColor: '#dadde2',
-											},
-										},
-										y: {
-											display: false,
-											grid: {
-												display: false,
-												borderColor: '#dadde2',
-											},
-										},
-									},
-								},
-							});
 						});
 
-						// get package versions data and create hits chart
-						http.fetchPackageVersionStats(type, name, period).then((data) => {
-							if (!data.total) {
+						// get package versions data
+						http.fetchPackageVersionStats(type, name, period).then((response) => {
+							if (!response.total) {
 								this.set('noVersionsData', true);
 								return;
 							}
 
-							let array = [];
-
-							Object.keys(data.versions).forEach((key) => {
-								array.push({
-									version: key,
-									hits: data.versions[key].total,
-									dates: data.versions[key].dates,
-								});
-							});
-
-							let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-							let maxValue = Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates))));
-							let magnitude = Math.floor(Math.log10(maxValue));
-							this.set('hitsChartYMax', Math.ceil(maxValue / Math.pow(10, magnitude)) * Math.pow(10, magnitude));
-
-							this.animate('versionsHitsTotal', data.total);
-							this.animate('topFiveVersions', topFiveVersions);
-
-							// Maybe we have no stats yet.
-							if (array[0]) {
-								this.set('fileStatsVersion', array[0].version);
-							}
-
-							if (hitsChart) {
-								hitsChart.destroy();
-								hitsChart = null;
-							}
-
-							let chartPeriodDates = Object.keys(topFiveVersions[0].dates);
-
-							this.set('hitsChartDates', _.getPackageTabChartXData(chartPeriodDates));
-
-							let chartEl = this.find('#hits-chart');
-
-							// setup hitsChart datasets
-							let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
-								switch (idx) {
-									case 0:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#5C667A',
-											borderWidth: 3,
-											backgroundColor: '#5C667A',
-										});
-
-										break;
-									case 1:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#BC5090',
-											borderWidth: 3,
-											backgroundColor: '#BC5090',
-										});
-
-										break;
-									case 2:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#FFA600',
-											borderWidth: 3,
-											backgroundColor: '#FFA600',
-										});
-
-										break;
-									case 3:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#FF6361',
-											borderWidth: 3,
-											backgroundColor: '#FF6361',
-										});
-
-										break;
-									case 4:
-										datasets.push({
-											label: `v${tfvItem.version}`,
-											data: tfvItem.dates,
-											borderColor: '#69C4F7',
-											borderWidth: 3,
-											backgroundColor: '#69C4F7',
-										});
-
-										break;
-								}
-
-								return datasets;
-							}, []);
-
-							// handle tooltip
-							let externalTooltip = (ctx) => {
-								let { chart, tooltip: tooltipModel } = ctx;
-
-								let tooltipInstance = document.getElementById('chartjs-tooltip');
-
-								// Create element on first render
-								if (!tooltipInstance) {
-									tooltipInstance = document.createElement('div');
-									tooltipInstance.id = 'chartjs-tooltip';
-									tooltipInstance.classList.add('tooltipEl');
-									let wrapper = document.createElement('div');
-									wrapper.classList.add('tooltipWrapper');
-									tooltipInstance.appendChild(wrapper);
-									let verticalLine = document.createElement('div');
-									verticalLine.classList.add('tooltipVerticalLine');
-									tooltipInstance.appendChild(verticalLine);
-									chart.canvas.parentNode.appendChild(tooltipInstance);
-								}
-
-								// Hide if no tooltip
-								if (tooltipModel.opacity === 0) {
-									tooltipInstance.style.opacity = 0;
-									return;
-								}
-
-								if (tooltipModel.body) {
-									// get title text and body lines
-									let titleText = new Date(tooltipModel.title[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-									let bodyLines = tooltipModel.body.map(item => item.lines[0]);
-
-									// create title element
-									let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
-
-									// create body lines
-									bodyLines.forEach((line, lineIdx) => {
-										let coloredSquare = `<span class='tooltipSquare' style='background: ${tooltipModel.labelColors[lineIdx].backgroundColor}'></span>`;
-										innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
-
-										line.split(' ').forEach((part, partIdx) => {
-											let prepPart = part;
-
-											if (partIdx === 0) {
-												prepPart = prepPart.replace(':', '');
-											}
-
-											innerHtml += `<span>${prepPart}</span>`;
-										});
-
-										innerHtml += '</div>';
-									});
-
-									let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
-									tooltipWrapper.innerHTML = innerHtml;
-								}
-
-								tooltipInstance.style.opacity = 1;
-								let { offsetLeft } = chart.canvas;
-
-								let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
-
-								// caretX min 0 max 1110
-								// 120px based on the half width of the tooltip + vertical line and gap
-								if (tooltipModel.caretX > 228) {
-									tooltipVerticalLine.style.left = '228px';
-									tooltipInstance.style.left = -120 + offsetLeft + tooltipModel.caretX + 'px';
-								} else {
-									tooltipVerticalLine.style.left = '-8px';
-									tooltipInstance.style.left = 120 + offsetLeft + tooltipModel.caretX + 'px';
-								}
-
-								// 8px from top because of the custom axis-y and its horizontal line
-								tooltipInstance.style.top = '8px';
-							};
-
-							// configure for the hitsChart
-							let hitsChartConfig = {
-								type: 'line',
-								data: {
-									labels: [],
-									datasets,
-								},
-								options: {
-									layout: {
-										padding: {
-											top: 20,
-										},
-									},
-									elements: {
-										line: {
-											borderWidth: 3,
-										},
-										point: {
-											pointRadius: 0,
-											pointHitRadius: 19,
-											pointHoverRadius: 0,
-										},
-									},
-									plugins: {
-										legend: {
-											display: false,
-										},
-										tooltip: {
-											enabled: false,
-											external: externalTooltip,
-										},
-									},
-									scales: {
-										x: {
-											beginAtZero: true,
-											display: false,
-											grid: {
-												display: false,
-												drawBorder: false,
-												borderColor: '#dadde2',
-											},
-										},
-										y: {
-											beginAtZero: true,
-											display: false,
-											min: 0,
-											max: this.get('hitsChartYMax'),
-											grid: {
-												display: true,
-												borderColor: '#dadde2',
-											},
-										},
-									},
-									interaction: {
-										mode: 'x',
-										intersect: false,
-									},
-								},
-							};
-
-							// create hitsChart instance
-							hitsChart = new Chart(chartEl, hitsChartConfig);
+							this.set('hitsData', response);
 						});
 					}
 				});
@@ -749,16 +384,305 @@
 				if (!this.get('versionP')) {
 					this.set('versionP', this.get('package.version'));
 				}
+
+				// control the value of the DateRange and change the value of the GroupBy respectively
+				this.observe('statsPeriod', (statsPeriod) => {
+					let statsPeriods = this.get('statsPeriods');
+					let usageChartGroupByValues = this.get('usageChartGroupByValues');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+
+					switch (statsPeriods[statsPeriod]) {
+						case 'day':
+							usageChartGroupBy = 'day';
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = true;
+							usageChartGroupByValues.month.isDisabled = true;
+							break;
+
+						case 'week':
+							if (usageChartGroupBy === 'month') {
+								usageChartGroupBy = 'week';
+							}
+
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = false;
+							usageChartGroupByValues.month.isDisabled = true;
+							break;
+
+						default:
+							usageChartGroupByValues.day.isDisabled = false;
+							usageChartGroupByValues.week.isDisabled = false;
+							usageChartGroupByValues.month.isDisabled = false;
+					}
+
+					this.set('usageChartGroupBy', usageChartGroupBy);
+					this.set('usageChartGroupByValues', usageChartGroupByValues);
+				});
 			}
 		},
 		onrender () {
-			let resize = debounce(() => {
-				this.add('_resizeId');
+			let statsChart;
+			let hitsChart;
+			let statsChartCanvasEl = this.find('#stats-chart');
+			let hitsChartCanvasEl = this.find('#hits-chart');
+
+			// create stats chart
+			this.observe('statsDateData', (statsDateData) => {
+				if (!statsDateData || !statsChartCanvasEl) { return; }
+
+				let array = [];
+
+				Object.keys(statsDateData.dates).forEach((date) => {
+					array.push([ date, statsDateData.dates[date] ]);
+				});
+
+				array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+				if (statsChart) {
+					statsChart.destroy();
+					statsChart = null;
+				}
+
+				let xAxisDates = array.map(value => value[0]);
+				let data = array.map(value => value[1].total);
+				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+				let yAxisTicksAmount = 8;
+				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
+				let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
+
+				let chartData = {
+					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+					datasets: [{
+						data,
+						borderWidth: 0,
+						barThickness: chartPeriod === 'year' ? 2 : 10,
+						hoverBackgroundColor: '#F65128',
+					}],
+				};
+				let chartSettings = {
+					useYAxisBorderPlugin: true,
+					useExternalTooltip: true,
+					externalTooltipVerticalOffset: 40,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+										if (chartPeriod === 'year') {
+											if (tickIdx !== 0 && tickIdx % 30 === 0) {
+												return [ labelValue[1] ];
+											}
+
+											return;
+										}
+
+										if (Array.isArray(labelValue)) {
+											return [ day, labelValue[1] ];
+										}
+
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: minRangeValue,
+								max: maxRangeValue,
+								ticks: {
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+								afterFit: (scale) => {
+									scale.width = 114;
+								},
+							},
+						},
+					},
+				};
+
+				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
 
-			this.on('unrender', () => $(window).off('resize', resize));
-			$(window).on('resize', resize);
-			resize();
+			// create hits chart
+			this.observe('hitsData', (hitsData) => {
+				if (!hitsData || !hitsChartCanvasEl) { return; }
+
+				let array = [];
+
+				Object.keys(hitsData.versions).forEach((key) => {
+					array.push({
+						version: key,
+						hits: hitsData.versions[key].total,
+						dates: hitsData.versions[key].dates,
+					});
+				});
+
+				let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
+
+				this.animate('versionsHitsTotal', hitsData.total);
+				this.animate('topFiveVersions', topFiveVersions);
+
+				// Maybe we have no stats yet.
+				if (array[0]) {
+					this.set('fileStatsVersion', array[0].version);
+				}
+
+				if (hitsChart) {
+					hitsChart.destroy();
+					hitsChart = null;
+				}
+
+				let yAxisTicksAmount = 8;
+				let minRangeValue = _.getValueByMagnitude(
+					Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates).filter(v => v !== 0)))),
+					'floor'
+				);
+				let maxRangeValue = _.getValueByMagnitude(
+					Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
+					'ceil',
+					1
+				);
+				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+					let dataset = {
+						label: `v${tfvItem.version}`,
+						data: Object.values(tfvItem.dates),
+					};
+
+					switch (idx) {
+						case 0:
+							dataset.borderColor = '#5C667A';
+							dataset.backgroundColor = '#5C667A';
+							break;
+						case 1:
+							dataset.borderColor = '#BC5090';
+							dataset.backgroundColor = '#BC5090';
+							break;
+						case 2:
+							dataset.borderColor = '#FFA600';
+							dataset.backgroundColor = '#FFA600';
+							break;
+						case 3:
+							dataset.borderColor = '#FF6361';
+							dataset.backgroundColor = '#FF6361';
+							break;
+						case 4:
+							dataset.borderColor = '#69C4F7';
+							dataset.backgroundColor = '#69C4F7';
+							break;
+					}
+
+					datasets.push(dataset);
+
+					return datasets;
+				}, []);
+				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+				let chartData = {
+					labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
+					datasets,
+				};
+				let chartSettings = {
+					useExternalTooltip: true,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									// whole callback needed to prepare dates for displaying on the x-axis
+									// since we need only the day and not full date (which we must to pass here for the tooltip title)
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										// check if it is not contains only a date but also a month
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+										if (chartPeriod === 'year') {
+											if (tickIdx !== 0 && tickIdx % 30 === 0) {
+												return [ labelValue[1] ];
+											}
+
+											return;
+										}
+
+										if (Array.isArray(labelValue)) {
+											return [ day, labelValue[1] ];
+										}
+
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: minRangeValue,
+								max: maxRangeValue,
+								ticks: {
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+									},
+								},
+								grid: {
+									drawBorder: false,
+									color: '#CFD6DD',
+									tickLength: 0,
+								},
+								afterFit: (scale) => {
+									scale.width = 114;
+								},
+							},
+						},
+					},
+				};
+
+				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+			});
 		},
 	};
 </script>

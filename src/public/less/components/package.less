@@ -20,6 +20,90 @@
 			color: #111a2c;
 		}
 
+		.chart-type-ctrl {
+			display: flex;
+			align-items: center;
+			margin-right: 32px;
+			margin-left: auto;
+
+			>span {
+				margin-right: 16px;
+			}
+
+			.chart-type-switch {
+				display: none;
+
+				& + label {
+					display: flex;
+					align-items: center;
+					padding-left: 4px;
+					padding-right: 4px;
+					width: 184px;
+					height: 40px;
+					cursor: pointer;
+					font-weight: 400;
+					transition: background-color 400ms ease, border-color 400ms ease, padding-left 400ms ease;
+					background: #f3f5f7;
+					border: 1px solid #cfd6dd;
+					box-sizing: border-box;
+					border-radius: 6px;
+					position: relative;
+					margin-bottom: 0;
+
+					>span:nth-child(1),
+					>span:nth-child(2) {
+						user-select: none;
+						position: absolute;
+						top: 10px;
+						background: transparent;
+						z-index: 2;
+					}
+
+					>span:nth-child(1) {
+						color: #111a2c;
+						left: 16.5px;
+					}
+
+					>span:nth-child(2) {
+						right: 37.5px;
+					}
+
+					&:before {
+						display: flex;
+						width: 88px;
+						height: 32px;
+						content: "";
+						text-align: center;
+						vertical-align: top;
+						background: #fff;
+						box-shadow: 0 4px 2px -2px rgba(23, 35, 59, .06), 0 2px 8px rgba(23, 35, 59, .04);
+						border-radius: 4px;
+						font-size: 14px;
+						line-height: 20px;
+						z-index: 1;
+					}
+				}
+
+				&.checked + label {
+					background: #f3f5f7;
+					padding-left: 92px;
+
+					>span:nth-child(1) {
+						color: #5c667a;
+					}
+
+					>span:nth-child(2) {
+						color: #111a2c;
+					}
+
+					&:before {
+						background-color: #fff;
+						content: "";
+					}
+				}
+			}
+		}
+
 		.group-by-ctrl {
 			display: flex;
 			align-items: center;
@@ -104,6 +188,16 @@
 					&:hover {
 						background: #f3f5f7;
 						border-radius: 4px;
+					}
+				}
+
+				> li > a.disabled {
+					color: #b2bdc7;
+
+					&:hover {
+						cursor: default;
+						background: transparent;
+						color: #b2bdc7;
 					}
 				}
 			}
@@ -232,89 +326,6 @@
 			}
 		}
 
-		.chart-type-ctrl {
-			display: flex;
-			align-items: center;
-			margin-right: 32px;
-
-			>span {
-				margin-right: 16px;
-			}
-
-			.chart-type-switch {
-				display: none;
-
-				& + label {
-					display: flex;
-					align-items: center;
-					padding-left: 4px;
-					padding-right: 4px;
-					width: 184px;
-					height: 40px;
-					cursor: pointer;
-					font-weight: 400;
-					transition: background-color 400ms ease, border-color 400ms ease, padding-left 400ms ease;
-					background: #f3f5f7;
-					border: 1px solid #cfd6dd;
-					box-sizing: border-box;
-					border-radius: 6px;
-					position: relative;
-					margin-bottom: 0;
-
-					>span:nth-child(1),
-					>span:nth-child(2) {
-						user-select: none;
-						position: absolute;
-						top: 10px;
-						background: transparent;
-						z-index: 2;
-					}
-
-					>span:nth-child(1) {
-						color: #111a2c;
-						left: 16.5px;
-					}
-
-					>span:nth-child(2) {
-						right: 37.5px;
-					}
-
-					&:before {
-						display: flex;
-						width: 88px;
-						height: 32px;
-						content: "";
-						text-align: center;
-						vertical-align: top;
-						background: #fff;
-						box-shadow: 0 4px 2px -2px rgba(23, 35, 59, .06), 0 2px 8px rgba(23, 35, 59, .04);
-						border-radius: 4px;
-						font-size: 14px;
-						line-height: 20px;
-						z-index: 1;
-					}
-				}
-
-				&.checked + label {
-					background: #f3f5f7;
-					padding-left: 92px;
-
-					>span:nth-child(1) {
-						color: #5c667a;
-					}
-
-					>span:nth-child(2) {
-						color: #111a2c;
-					}
-
-					&:before {
-						background-color: #fff;
-						content: "";
-					}
-				}
-			}
-		}
-
 		.data-range-ctrl {
 			display: flex;
 			align-items: center;
@@ -427,6 +438,7 @@
 		}
 
 		.chart-hits-per-period {
+			position: relative;
 			height: 397px;
 
 			.hits-chart-legend {
@@ -473,185 +485,18 @@
 				}
 			}
 
-			.hits-chart-block {
+			.hits-chart-wrapper {
 				position: relative;
+				width: 1224px;
 				height: 297px;
-
-				.hits-chart-wrapper {
-					position: absolute;
-					left: 114px;
-					top: 0;
-					width: 1110px;
-					height: 225px;
-				}
-
-				.chart-x {
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					position: absolute;
-					bottom: 0;
-					left: 114px;
-					height: 64px;
-					user-select: none;
-
-					.x-day-row {
-						margin-top: 16px;
-
-						>div {
-							justify-content: center;
-						}
-					}
-
-					.x-month-row {
-						margin-top: 16px;
-
-						>div {
-							padding-left: 10px;
-						}
-
-						.data-range-day, .data-range-week {
-							padding-left: 0;
-							justify-content: center;
-						}
-					}
-
-					.x-day-row, .x-month-row {
-						display: flex;
-						align-items: center;
-						justify-content: flex-start;
-						width: 1110px;
-
-						>div {
-							display: flex;
-							font-size: 12px;
-							line-height: 16px;
-							flex-grow: 1;
-							flex-basis: 0;
-							color: #5c667a;
-						}
-					}
-				}
-
-				.chart-y {
-					display: flex;
-					flex-direction: column;
-					position: absolute;
-					height: 297px;
-					min-width: 90px;
-					left: 0;
-					top: 0;
-					padding-right: 24px;
-					border-right: 1px solid #dadde2;
-
-					>div {
-						position: relative;
-						font-size: 12px;
-						line-height: 16px;
-						text-align: right;
-						color: #5c667a;
-
-						&:not(:nth-last-child(1)) {
-							margin-bottom: 16px;
-						}
-
-						.y-line {
-							position: absolute;
-							width: 1110px;
-							height: 1px;
-							bottom: 50%;
-							left: 114px;
-							background-color: #cfd6dd;
-						}
-					}
-				}
 			}
 		}
 
 		.chart-stats-per-period {
-			.stats-chart-block {
+			.stats-chart-wrapper {
 				position: relative;
+				width: 1224px;
 				height: 290px;
-
-				.stats-chart-wrapper {
-					position: absolute;
-					left: 114px;
-					top: 0;
-					width: 1116px;
-					height: 236px;
-				}
-
-				.chart-x {
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					position: absolute;
-					bottom: 0;
-					left: 114px;
-					height: 54px;
-					user-select: none;
-
-					.x-day-row {
-						margin-top: 12px;
-
-						>div {
-							justify-content: center;
-						}
-					}
-
-					.x-month-row {
-						margin-top: 10px;
-
-						>div {
-							padding-left: 10px;
-						}
-
-						.data-range-day, .data-range-week {
-							padding-left: 0;
-							justify-content: center;
-						}
-					}
-
-					.x-day-row, .x-month-row {
-						display: flex;
-						align-items: center;
-						justify-content: flex-start;
-						width: 1116px;
-
-						>div {
-							display: flex;
-							font-size: 12px;
-							line-height: 16px;
-							flex-grow: 1;
-							flex-basis: 0;
-							color: #5c667a;
-						}
-					}
-				}
-
-				.chart-y {
-					display: flex;
-					flex-direction: column;
-					position: absolute;
-					height: 290px;
-					min-width: 90px;
-					left: 0;
-					top: 0;
-					padding-right: 24px;
-					border-right: 1px solid #dadde2;
-
-					>div {
-						position: relative;
-						font-size: 12px;
-						line-height: 16px;
-						text-align: right;
-						color: #5c667a;
-
-						&:not(:nth-last-child(1)) {
-							margin-bottom: 16px;
-						}
-					}
-				}
 			}
 		}
 
@@ -771,75 +616,6 @@
 
 				.hljs-built_in {
 					color: #a7921b;
-				}
-			}
-		}
-	}
-}
-
-.tooltipEl {
-	overflow: visible;
-	opacity: 1;
-	pointer-events: none;
-	position: absolute;
-	transform: translate(-50%, 0);
-	transition: all .1s ease;
-
-	.tooltipVerticalLine {
-		position: absolute;
-		top: 0;
-		left: -8px;
-		background: #17233b;
-		opacity: .5;
-		border-radius: 2px;
-		width: 2px;
-		height: 225px;
-	}
-
-	.tooltipWrapper {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 220px;
-		height: 216px;
-		background: #fff;
-		border: 1px solid #dfe3e7;
-		box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
-		border-radius: 6px;
-		padding: 18px 18px 14px;
-
-		.tooltipTitle {
-			font-size: 14px;
-			line-height: 20px;
-			color: #17233b;
-			margin-bottom: 16px;
-		}
-
-		.tooltipBody {
-			width: 100%;
-
-			.tooltipBodyItem {
-				display: flex;
-				align-items: center;
-				justify-content: flex-start;
-				width: 100%;
-				font-size: 14px;
-				line-height: 20px;
-				color: #5c667a;
-
-				&:not(:nth-last-child(1)) {
-					margin-bottom: 12px;
-				}
-
-				.tooltipSquare {
-					width: 16px;
-					height: 16px;
-					border-radius: 2px;
-					margin-right: 8px;
-				}
-
-				>span:nth-last-child(1) {
-					margin-left: auto;
 				}
 			}
 		}

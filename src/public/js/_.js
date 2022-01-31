@@ -122,6 +122,39 @@ module.exports = {
 
 		return chartXDates;
 	},
+	getChartXAxisData (periodDates, period = 'month') {
+		let dataPerMonths = [];
+		let chartXData = [];
+
+		periodDates.forEach((date) => {
+			let splittedDate = date.split('-');
+			let dateYear = splittedDate[0];
+			let dateMonth = splittedDate.slice(0, 2).join('-');
+			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
+
+			if (!dataPerMonths[`${dateYear} ${periodMonthFormatted}`]) {
+				dataPerMonths[`${dateYear} ${periodMonthFormatted}`] = [];
+			}
+
+			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
+		});
+
+		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
+			let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
+
+			dataPerMonths[yearMonthKey].forEach((day, idx) => {
+				// for every case except we set month in the middle of the days
+				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
+				if (idx === middleLength - 1 || period === 'year') {
+					chartXData.push([ day, yearMonthKey.split(' ')[1] ]);
+				} else {
+					chartXData.push(day);
+				}
+			});
+		});
+
+		return chartXData;
+	},
 	// escaping code: https://github.com/component/escape-html/blob/master/index.js
 	unescapeHtml (text) {
 		return text
@@ -130,5 +163,20 @@ module.exports = {
 			.replace(/&#39;/g, '\'')
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
+	},
+	// ignoreExtremlySmallValue: true when you need to find min value for the axis min e.g.
+	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0, ignoreExtremlySmallValue = true) {
+		let magnitude = Math.floor(Math.log10(value) === -Infinity ? 0 : Math.log10(value)) - magnitudeCorrection;
+
+		if (ignoreExtremlySmallValue && value < 10) { return 0; }
+
+		switch (rounding) {
+			case 'round':
+				return Math.round(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+			case 'ceil':
+				return Math.ceil(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+			case 'floor':
+				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+		}
 	},
 };

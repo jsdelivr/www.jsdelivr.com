@@ -28,7 +28,7 @@
 			</div>
 
 			<div class="requests-chart-wrapper">
-				<canvas id="requests-chart" width="294" height="41"></canvas>
+				<canvas id="requests-chart"></canvas>
 			</div>
 		</div>
 
@@ -39,7 +39,7 @@
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
-				<canvas id="bandwidth-chart" width="294" height="41"></canvas>
+				<canvas id="bandwidth-chart"></canvas>
 			</div>
 		</div>
 
@@ -69,6 +69,7 @@
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const http = require('../../public/js/utils/http');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
 
 	component.exports = {
 		data () {
@@ -159,47 +160,33 @@
 					setTimeout(() => {
 						let chartEl = this.find('#requests-chart');
 
-						requestsChart = new Chart(chartEl, {
-							type: 'bar',
-							data: {
-								labels,
-								datasets: [{
-									data,
-									backgroundColor: '#6fb936',
-									borderWidth: 0,
-									pointRadius: 0,
-									barThickness: 4,
-								}],
-							},
+						let chartData = {
+							labels,
+							datasets: [{
+								data,
+								borderWidth: 0,
+								barThickness: 4,
+								hoverBackgroundColor: '#57922a',
+								borderRadius: 1,
+							}],
+						};
+						let chartSettings = {
+							onHoverNotActiveBarsBGColor: '#ecf7e3',
+							useExternalTooltip: true,
+							externalTooltipId: 'gsapRequestsChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
+						let chartConfig = {
 							options: {
-								plugins: {
-									legend: {
-										display: false,
-									},
-									tooltip: {
-										callbacks: {
-											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
-											label: () => null,
-										},
-										backgroundColor: 'rgba(17, 26, 44, 0.9)',
-										titleFontSize: 12,
-										titleFontWeight: 600,
-										titleFontColor: '#fff',
-										cornerRadius: 4,
-										xAlign: 'center',
-										yAlign: 'bottom',
-									},
-								},
-								scales: {
-									x: {
-										display: false,
-									},
-									y: {
-										display: false,
+								elements: {
+									bar: {
+										backgroundColor: '#6fb936',
 									},
 								},
 							},
-						});
+						};
+
+						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
 						this.set('requestsChart', requestsChart);
 					}, 100);
@@ -235,47 +222,33 @@
 					setTimeout(() => {
 						let chartEl = this.find('#bandwidth-chart');
 
-						bandwidthChart = new Chart(chartEl, {
-							type: 'bar',
-							data: {
-								labels,
-								datasets: [{
-									data,
-									backgroundColor: '#6fb936',
-									borderWidth: 0,
-									pointRadius: 0,
-									barThickness: 4,
-								}],
-							},
+						let chartData = {
+							labels,
+							datasets: [{
+								data,
+								borderWidth: 0,
+								barThickness: 4,
+								hoverBackgroundColor: '#57922a',
+								borderRadius: 1,
+							}],
+						};
+						let chartSettings = {
+							onHoverNotActiveBarsBGColor: '#ecf7e3',
+							useExternalTooltip: true,
+							externalTooltipId: 'gsapBandwidthChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
+						let chartConfig = {
 							options: {
-								plugins: {
-									legend: {
-										display: false,
-									},
-									tooltip: {
-										callbacks: {
-											title: tooltipItems => _.formatNumber(tooltipItems[0].parsed.y),
-											label: () => null,
-										},
-										backgroundColor: 'rgba(17, 26, 44, 0.9)',
-										titleFontSize: 12,
-										titleFontWeight: 600,
-										titleFontColor: '#fff',
-										cornerRadius: 4,
-										xAlign: 'center',
-										yAlign: 'bottom',
-									},
-								},
-								scales: {
-									x: {
-										display: false,
-									},
-									y: {
-										display: false,
+								elements: {
+									bar: {
+										backgroundColor: '#6fb936',
 									},
 								},
 							},
-						});
+						};
+
+						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
 						this.set('bandwidthChart', bandwidthChart);
 					}, 100);
