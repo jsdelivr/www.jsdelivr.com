@@ -6,6 +6,7 @@
 <link rel="ractive" href="../components/package.html" name="c-package">
 <link rel="ractive" href="../components/slider.html" name="c-slider">
 <link rel="ractive" href="../components/slide.html" name="c-slide">
+<link rel="ractive" href="../components/search-compact.html" name="c-search-compact">
 
 <r-page
 	noYield="{{noYield}}"
@@ -22,7 +23,10 @@
 	<script async src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js" data-pace-options='{ "restartOnPushState": false, "restartOnRequestAfter": false }'></script>
 
 	<c-notification></c-notification>
-	<c-header name={{name}}></c-header>
+
+	<c-header name={{name}} searchOpened="{{searchOpened}}">
+		<c-search-compact __ready="{{__ready}}" searchOpened="{{searchOpened}}" page="{{page}}" query="{{packageName}}"></c-search-compact>
+	</c-header>	
 
 	<div class="p-package page">
 		<c-slider active="{{activeSlide}}">
@@ -33,7 +37,7 @@
 					There might be a problem with your internet connection. Try refreshing the page a few times.<br>
 				</div>
 				{{elseif package}}
-				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{query}}" packageNotFound="{{packageNotFound}}"></c-package>
+				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{packageName}}" packageNotFound="{{packageNotFound}}"></c-package>
 				{{/if}}
 			</c-slide>
 
@@ -49,7 +53,6 @@
 <script>
 	const has = require('../../public/js/utils/has');
 	const search = require('../../public/js/utils/search');
-	let app;
 
 	component.exports = {
 		computed: {
@@ -146,17 +149,7 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				app = this.get('@shared.app');
-			}
-		},
-		scrollToSearch () {
-			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
-				});
-			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
-				app.config.animateScrolling = true;
+				this.set('packageName', this.get('name'));
 			}
 		},
 	};
