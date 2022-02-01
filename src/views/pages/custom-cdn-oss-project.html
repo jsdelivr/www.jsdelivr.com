@@ -87,6 +87,43 @@
 			</div>
 		</div>
 
+		{{#if noPackageStatsData}}
+			<div class="no-data-wrapper">
+				<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+				<span>No statistics yet</span>
+				<span>This is probably not a very popular package :(</span>
+			</div>
+		{{else}}
+			<div class="group-by-ctrl">
+				<span>
+					Group by:
+				</span>
+
+				<div class="btn-group">
+					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
+						<i class="fa fa-angle-down" aria-hidden="true"></i>
+					</button>
+
+					<ul class="dropdown-menu">
+						{{#each ~/usageChartGroupByValues}}
+							<li>
+								{{#if this.isDisabled}}
+									<a class="disabled">{{this.value}}</a>
+								{{else}}
+									<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+								{{/if}}
+							</li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+
+			<div class="chart-wrapper">
+				<canvas id="cdn-stats-chart"></canvas>
+			</div>
+		{{/if}}
+
 		<c-new-infographic-banner>
 			{{#partial text}}
 				Learn more about<br />
@@ -102,6 +139,10 @@
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
+
 	component.exports = {
 		data () {
 			return {
@@ -113,7 +154,144 @@
 				},
 				statsPeriod: 30,
 				showChartBandwidth: false,
+				usageChartGroupByValues: {
+					day: { value: 'day', isDisabled: false },
+					week: { value: 'week', isDisabled: false },
+					month: { value: 'month', isDisabled: false },
+				},
+				usageChartGroupBy: 'day',
+				noPackageStatsData: false,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('statsPeriod', () => {
+					if (this.get('statsPeriod')) {
+						let type = 'npm';
+						let name = 'cocoapods';
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+
+						// get package date stats data
+						http.fetchPackageDateStats(type, name, period).then((response) => {
+							if (!response.total) {
+								this.set('noPackageStatsData', true);
+								return;
+							}
+
+							this.set('statsDateData', response);
+						});
+					}
+				});
+			}
+		},
+		onrender () {
+			let statsChart;
+			let statsChartCanvasEl = this.find('#cdn-stats-chart');
+
+			this.observe('statsDateData', (statsDateData) => {
+				if (!statsDateData || !statsChartCanvasEl) { return; }
+
+				let array = [];
+
+				Object.keys(statsDateData.dates).forEach((date) => {
+					array.push([ date, statsDateData.dates[date] ]);
+				});
+
+				array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+				if (statsChart) {
+					statsChart.destroy();
+					statsChart = null;
+				}
+
+				let xAxisDates = array.map(value => value[0]);
+				let data = array.map(value => value[1].total);
+				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+				let yAxisTicksAmount = 8;
+				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
+				let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
+
+				let chartData = {
+					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+					datasets: [{
+						data,
+						borderWidth: 0,
+						barThickness: chartPeriod === 'year' ? 2 : 10,
+						hoverBackgroundColor: '#F65128',
+					}],
+				};
+				let chartSettings = {
+					useYAxisBorderPlugin: true,
+					useExternalTooltip: true,
+					externalTooltipVerticalOffset: 40,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+										if (chartPeriod === 'year') {
+											if (tickIdx !== 0 && tickIdx % 30 === 0) {
+												return [ labelValue[1] ];
+											}
+
+											return;
+										}
+
+										if (Array.isArray(labelValue)) {
+											return [ day, labelValue[1] ];
+										}
+
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: minRangeValue,
+								max: maxRangeValue,
+								ticks: {
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+								afterFit: (scale) => {
+									scale.width = 114;
+								},
+							},
+						},
+					},
+				};
+
+				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+			});
 		},
 	};
 </script>
