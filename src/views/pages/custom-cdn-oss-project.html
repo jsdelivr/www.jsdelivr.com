@@ -21,6 +21,28 @@
 
 		<div class="divider"></div>
 
+		<div class="ctrls-block">
+			<div class="ctrls-block-title">Statistics</div>
+			<div class="ctrls-block-ctrls">
+				<div class="data-range-ctrl">
+					<span>Data range:</span>
+
+					<div class="btn-group">
+						<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span>{{~/statsPeriods[statsPeriod]}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each ~/statsPeriods}}
+								<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+							{{/each}}
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<c-new-infographic-banner>
 			{{#partial text}}
 				Learn more about<br />
@@ -34,3 +56,21 @@
 
 	<c-footer></c-footer>
 </r-page>
+
+
+<script>
+
+	component.exports = {
+		data () {
+			return {
+				statsPeriods: {
+					1: 'day',
+					7: 'week',
+					30: 'month',
+					365: 'year',
+				},
+				statsPeriod: 30,
+			};
+		},
+	};
+</script>
