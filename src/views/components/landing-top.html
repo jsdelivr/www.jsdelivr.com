@@ -2,225 +2,278 @@
 <link rel="ractive" href="./slide.html" name="c-slide">
 
 <div class="c-landing-top">
-	<div class="bg-wrapper">
-		<div class="bg"></div>
-		<div class="bg-height"></div>
-	</div>
 
 	<div class="content">
 		<div class="container">
-			<section class="heading">
-				<h1>A free CDN for Open Source</h1>
-				<h2>fast, reliable, and automated</h2>
 
-				<div class="heading-message">
-					{{#if headingMessage === 0}}
-					<div slide-in-out>serving ~ {{_.formatHits(networkStats.hits.total)}} billion requests / month</div>
-					{{elseif headingMessage === 1}}
-					<div slide-in-out>serving ~ {{_.formatMiB2TiB(networkStats.megabytes.total)}} TiB / month</div>
-					{{elseif headingMessage === 2}}
-					<div slide-in-out>around since 2012</div>
-					{{/if}}
-				</div>
+			<section class="heading">
+				<span>Fast. Reliable. Automated.</span>
+				<h1>A free CDN for open source projects</h1>
+				<p>Optimized for JS and ESM delivery. Full NPM and GitHub integration. Works with all web formats.</p>
+				<p>Operating since 2012.</p>
 			</section>
 
+			<section class="stats">
+				<div>
+					<h3>{{_.formatHits(networkStats.hits.total)}} billion request</h3>
+					<span>per month</span>
+				</div>
+				<div>
+					<h3>over {{_.formatMiB2TiB(networkStats.megabytes.total)}} TiB</h3>
+					<span>per month</span>
+				</div>
+			</section>	
+
 			<section class="docs">
-				<div class="row">
-					<div class="col-md-3 docs-tabs">
+				<div class="docs-tabs">
+					<div class="docs-wrapper flex">
 						<div class="docs-tab">
 							<a on-click="@this.set('activeDocs', '')" class="{{#unless activeDocs}}active{{/unless}}">
-								<img width="100" height="39" src="{{@shared.assetsHost}}/img/landing/npm.png" srcset="{{@shared.assetsHost}}/img/landing/npm@2x.png 2x" title="CDN for npm">
+								<svg width="50" height="14" viewBox="0 0 50 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M15.3846 16H21.7949V12.8H28.2051V0H15.3846V16ZM21.7949 3.2H25V9.6H21.7949V3.2ZM30.7692 0V12.8H37.1795V3.2H40.3846V12.8H43.5897V3.2H46.7949V12.8H50V0H30.7692ZM0 12.8H6.41026V3.2H9.61539V12.8H12.8205V0H0V12.8Z" fill="white"/>
+								</svg>
 							</a>
 						</div>
-
+						
+						<div class="docs-tab">
+							<a on-click="@this.set('activeDocs', 'esm')" class="{{#unless activeDocs === 'esm'}}active{{/unless}}">
+								<svg width="44" height="17" viewBox="0 0 44 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M0.817251 16V0.599999H11.5533V3.79H4.44725V12.81H11.7733V16H0.817251ZM2.57725 9.686V6.65H10.5633V9.686H2.57725ZM19.5009 16.22C18.4889 16.22 17.5723 16.1027 16.7509 15.868C15.9443 15.6187 15.2256 15.2667 14.5949 14.812C13.9643 14.3427 13.3996 13.7927 12.9009 13.162L15.1669 10.588C15.9003 11.5707 16.6336 12.2307 17.3669 12.568C18.1149 12.9053 18.8849 13.074 19.6769 13.074C20.0729 13.074 20.4323 13.0227 20.7549 12.92C21.0776 12.8173 21.3269 12.6707 21.5029 12.48C21.6789 12.2747 21.7669 12.0253 21.7669 11.732C21.7669 11.512 21.7083 11.314 21.5909 11.138C21.4883 10.962 21.3416 10.808 21.1509 10.676C20.9603 10.544 20.7329 10.4267 20.4689 10.324C20.2049 10.2067 19.9263 10.1113 19.6329 10.038C19.3396 9.95 19.0389 9.87667 18.7309 9.818C17.8803 9.62733 17.1396 9.39267 16.5089 9.114C15.8783 8.83533 15.3503 8.498 14.9249 8.102C14.5143 7.69133 14.2063 7.22933 14.0009 6.716C13.7956 6.188 13.6929 5.60133 13.6929 4.956C13.6929 4.26667 13.8469 3.636 14.1549 3.064C14.4776 2.47733 14.9029 1.97867 15.4309 1.568C15.9736 1.14267 16.5969 0.819999 17.3009 0.599999C18.0049 0.365333 18.7383 0.248 19.5009 0.248C20.5129 0.248 21.3783 0.357999 22.0969 0.577999C22.8303 0.783333 23.4536 1.084 23.9669 1.48C24.4949 1.876 24.9423 2.35267 25.3089 2.91L22.9989 5.132C22.6909 4.75067 22.3536 4.43533 21.9869 4.186C21.6349 3.93667 21.2536 3.746 20.8429 3.614C20.4469 3.482 20.0363 3.416 19.6109 3.416C19.1709 3.416 18.7896 3.47467 18.4669 3.592C18.1589 3.69467 17.9169 3.84867 17.7409 4.054C17.5649 4.24467 17.4769 4.47933 17.4769 4.758C17.4769 5.00733 17.5503 5.22 17.6969 5.396C17.8436 5.572 18.0416 5.73333 18.2909 5.88C18.5403 6.012 18.8263 6.12933 19.1489 6.232C19.4716 6.32 19.8089 6.39333 20.1609 6.452C20.9676 6.61333 21.6936 6.826 22.3389 7.09C22.9989 7.354 23.5636 7.67667 24.0329 8.058C24.5169 8.43933 24.8836 8.894 25.1329 9.422C25.3969 9.93533 25.5289 10.5367 25.5289 11.226C25.5289 12.2967 25.2649 13.206 24.7369 13.954C24.2236 14.6873 23.5123 15.252 22.6029 15.648C21.7083 16.0293 20.6743 16.22 19.5009 16.22ZM27.7403 16V0.599999H31.0843L36.6943 9.73L34.2963 9.708L39.9723 0.599999H43.1843V16H39.5543V11.204C39.5543 9.884 39.5836 8.696 39.6423 7.64C39.7156 6.584 39.833 5.53533 39.9943 4.494L40.4123 5.638L36.1443 12.26H34.6923L30.5123 5.682L30.9303 4.494C31.0916 5.47667 31.2016 6.48867 31.2603 7.53C31.3336 8.55667 31.3703 9.78133 31.3703 11.204V16H27.7403Z" fill="white"/>
+								</svg>	
+							</a>
+						</div>
+	
 						<div class="docs-tab">
 							<a on-click="@this.set('activeDocs', 'gh')" class="{{#if activeDocs === 'gh'}}active{{/if}}">
-								<img width="100" height="27" src="{{@shared.assetsHost}}/img/landing/github.png" srcset="{{@shared.assetsHost}}/img/landing/github@2x.png 2x" title="CDN for GitHub">
+								<svg width="67" height="19" viewBox="0 0 67 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M28.0891 15.0183H28.0593C28.0727 15.0183 28.0817 15.0332 28.0951 15.0347H28.104L28.0891 15.0198V15.0183ZM28.0951 15.0347C27.9566 15.0362 27.6082 15.1094 27.2404 15.1094C26.0791 15.1094 25.6771 14.5718 25.6771 13.8699V9.19428H28.0444C28.1784 9.19428 28.2827 9.07481 28.2827 8.91054V6.37188C28.2827 6.23748 28.1636 6.11801 28.0444 6.11801H25.6771V2.96708C25.6771 2.84761 25.6027 2.77294 25.4687 2.77294H22.2527C22.1187 2.77294 22.0442 2.84761 22.0442 2.96708V6.20761C22.0442 6.20761 20.4213 6.61081 20.3171 6.62574C20.198 6.65561 20.1236 6.76014 20.1236 6.87961V8.91054C20.1236 9.07481 20.2427 9.19428 20.3767 9.19428H22.0293V14.0924C22.0293 17.7361 24.5604 18.1095 26.2876 18.1095C27.0767 18.1095 28.0296 17.8556 28.1784 17.7809C28.2678 17.7511 28.3124 17.6465 28.3124 17.542V15.302C28.3145 15.2385 28.2936 15.1763 28.2537 15.127C28.2138 15.0776 28.1575 15.0443 28.0951 15.0332V15.0347ZM63.3758 11.7479C63.3758 9.04494 62.2889 8.68654 61.1424 8.80601C60.2491 8.86574 59.5344 9.31374 59.5344 9.31374V14.5703C59.5344 14.5703 60.264 15.078 61.3509 15.1079C62.8844 15.1527 63.3758 14.6001 63.3758 11.7479ZM66.9938 11.5089C66.9938 16.6311 65.3411 18.0945 62.4527 18.0945C60.0109 18.0945 58.7007 16.8551 58.7007 16.8551C58.7007 16.8551 58.6411 17.542 58.5667 17.6316C58.522 17.7212 58.4476 17.7511 58.3582 17.7511H56.1547C56.0058 17.7511 55.8718 17.6316 55.8718 17.4972L55.9016 0.906277C55.9016 0.771877 56.0207 0.65241 56.1547 0.65241H59.326C59.46 0.65241 59.5791 0.771877 59.5791 0.906277V6.53614C59.5791 6.53614 60.8 5.74468 62.5867 5.74468L62.5718 5.71481C64.3584 5.71481 66.9938 6.38681 66.9938 11.5089ZM54.0107 6.11801H50.884C50.7202 6.11801 50.6309 6.23748 50.6309 6.40174V14.5255C50.6309 14.5255 49.812 15.1079 48.6953 15.1079C47.5787 15.1079 47.2511 14.6001 47.2511 13.4801V6.38681C47.2511 6.25241 47.132 6.13294 46.998 6.13294H43.8118C43.6778 6.13294 43.5587 6.25241 43.5587 6.38681V14.0177C43.5587 17.3031 45.39 18.1244 47.9062 18.1244C49.9758 18.1244 51.6582 16.9745 51.6582 16.9745C51.6582 16.9745 51.7327 17.5569 51.7773 17.6465C51.8071 17.7212 51.9113 17.7809 52.0156 17.7809H54.0107C54.1744 17.7809 54.2638 17.6615 54.2638 17.5271L54.2936 6.37188C54.2936 6.23748 54.1744 6.11801 54.0107 6.11801ZM18.724 6.10308H15.5527C15.4187 6.10308 15.2996 6.23748 15.2996 6.40174V17.3628C15.2996 17.6615 15.4931 17.766 15.7462 17.766H18.6049C18.9027 17.766 18.9771 17.6316 18.9771 17.3628V6.35694C18.9771 6.22254 18.858 6.10308 18.724 6.10308ZM17.1607 1.05561C16.0142 1.05561 15.106 1.96654 15.106 3.11641C15.106 4.26628 16.0142 5.17721 17.1607 5.17721C18.2773 5.17721 19.1856 4.26628 19.1856 3.11641C19.1856 1.96654 18.2773 1.05561 17.1607 1.05561ZM41.7124 0.682277H38.5709C38.4369 0.682277 38.3178 0.801743 38.3178 0.936143V7.04388H33.3896V0.936143C33.3896 0.801743 33.2704 0.682277 33.1364 0.682277H29.9651C29.8311 0.682277 29.712 0.801743 29.712 0.936143V17.5271C29.712 17.6615 29.846 17.7809 29.9651 17.7809H33.1364C33.2704 17.7809 33.3896 17.6615 33.3896 17.5271V10.4337H38.3178L38.288 17.5271C38.288 17.6615 38.4071 17.7809 38.5411 17.7809H41.7124C41.8464 17.7809 41.9656 17.6615 41.9656 17.5271V0.936143C41.9656 0.801743 41.8464 0.682277 41.7124 0.682277ZM13.6171 8.02948V16.6012C13.6171 16.6609 13.6022 16.7655 13.5278 16.7953C13.5278 16.7953 11.6667 18.1244 8.59956 18.1244C4.89222 18.1244 0.5 16.9596 0.5 9.28388C0.5 1.60814 4.34133 0.0252099 8.09333 0.0401433C11.3391 0.0401433 12.6493 0.771877 12.8578 0.906277C12.9173 0.980943 12.9471 1.04068 12.9471 1.11534L12.3218 3.77348C12.3218 3.90788 12.1878 4.07214 12.024 4.02734C11.488 3.86308 10.684 3.53454 8.79311 3.53454C6.60444 3.53454 4.252 4.16174 4.252 9.10468C4.252 14.0476 6.48533 14.63 8.09333 14.63C9.46311 14.63 9.95444 14.4657 9.95444 14.4657V11.0311H7.76578C7.602 11.0311 7.48289 10.9116 7.48289 10.7772V8.02948C7.48289 7.89508 7.602 7.77561 7.76578 7.77561H13.3342C13.498 7.77561 13.6171 7.89508 13.6171 8.02948Z" fill="white"/>
+								</svg>
+									
 							</a>
 						</div>
-
+	
 						<div class="docs-tab">
 							<a on-click="@this.set('activeDocs', 'wp')" class="{{#if activeDocs === 'wp'}}active{{/if}}">
-								<img width="100" height="62" src="{{@shared.assetsHost}}/img/landing/wordpress.png" srcset="{{@shared.assetsHost}}/img/landing/wordpress@2x.png 2x" title="CDN for WordPress">
+								<svg width="107" height="22" viewBox="0 0 107 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M40.2349 5.83333L37.9045 14.7667L35.574 5.83333H33.2268L33.7698 7.75L31.7233 15.0667L29.4847 5.83333H27.2294L30.4035 17.5H32.876L34.7805 11.2583L36.5596 17.5H39.0238L42.3649 5.83333H40.2349ZM63.9489 9.21667C63.4392 9.09901 62.9184 9.03477 62.3953 9.025C59.5553 9.025 58.0016 10.9167 58.0016 13.6917C58.0016 16.45 59.5553 17.7083 61.3846 17.7083C62.3571 17.6767 63.2939 17.335 64.0575 16.7333V17.5H66.0038V5.83333H63.9489V9.21667ZM63.9489 15.1167C63.2807 15.725 62.6542 16.0583 61.9944 16.0583C60.8583 16.0583 60.1316 15.3083 60.1316 13.55C60.1316 11.65 61.0338 10.6583 62.6041 10.6583C63.0635 10.6583 63.5229 10.75 63.9406 10.9167V15.1167H63.9489ZM54.1259 10.5833H54.0507V9.21667H52.1295V17.5H54.1927V12.5667C54.8359 11.35 55.6211 10.95 56.9325 10.95H57.1413V9.16667C56.9554 9.14619 56.7686 9.13507 56.5816 9.13333C55.4623 9.13333 54.6939 9.56667 54.1259 10.5917V10.5833ZM46.2908 9.00833C43.4508 9.00833 42.1143 10.8417 42.1143 13.3667C42.1143 15.8833 43.4508 17.7 46.2908 17.7C49.1308 17.7 50.484 15.8833 50.484 13.3667C50.484 10.8417 49.1141 9.00833 46.2825 9.00833H46.2908ZM46.2908 16.0417C44.9543 16.0417 44.236 15.175 44.236 13.3667C44.236 11.55 44.9544 10.6833 46.2992 10.6833C47.6356 10.6833 48.3373 11.55 48.3373 13.3667C48.3373 15.175 47.6273 16.0417 46.2825 16.0417H46.2908ZM79.9615 10.575H79.8947V9.21667H77.9652V17.5H80.02V12.5667C80.6632 11.35 81.4484 10.95 82.7598 10.95H82.9686V9.16667C82.7827 9.14619 82.5959 9.13507 82.4089 9.13333C81.298 9.13333 80.5295 9.56667 79.9532 10.5917H79.9615V10.575ZM72.3771 5.83333H68.5514V17.5H70.7566V13.4417H72.3687C74.8662 13.4417 76.6788 12.1 76.6788 9.59167C76.6788 7.09167 74.8662 5.83333 72.3687 5.83333H72.3771ZM72.3938 11.7333H70.7566V7.55833H72.3854C73.7219 7.55833 74.3734 8.29167 74.3734 9.59167C74.3734 10.9 73.7636 11.7333 72.3854 11.7333H72.3938ZM102.481 11.5417C102.481 10.9167 103.166 10.675 103.901 10.675C104.678 10.6833 105.455 10.8083 106.198 11.0333V9.33333C105.397 9.10751 104.567 9.00081 103.734 9.01667C101.746 9.01667 100.351 9.95833 100.351 11.4917C100.351 14.4667 104.461 13.7 104.461 15.15C104.461 15.8583 103.818 16.05 102.874 16.05C102.205 16.05 101.145 15.8 100.376 15.525V17.2167C101.147 17.5242 101.968 17.6907 102.798 17.7083C104.736 17.7083 106.582 17.1333 106.582 15.0667C106.607 12.1917 102.489 12.9333 102.489 11.5417H102.481ZM87.8634 9.01667C85.2072 9.01667 83.8289 11.075 83.8289 13.3167C83.8289 16.4 85.4494 17.7083 88.0889 17.7083C89.1239 17.7105 90.1528 17.5502 91.1378 17.2333V15.525C90.2774 15.8417 89.4922 16.0333 88.6569 16.0333C87.12 16.0333 86.0926 15.6167 86.0425 13.8083H91.3549C91.4051 13.4 91.4301 12.9917 91.4218 12.5917C91.4218 10.8417 90.4946 9.01667 87.8551 9.01667H87.8634ZM86.0592 12.45C86.1845 11.3 86.8109 10.5667 87.8383 10.5667C88.9409 10.5667 89.2751 11.4417 89.2751 12.45H86.0592ZM94.9968 11.5417C94.9968 10.9167 95.6734 10.675 96.4085 10.675C97.1853 10.6833 97.9621 10.8083 98.7055 11.0333V9.33333C97.9069 9.10833 97.0795 9.00163 96.2498 9.01667C94.2618 9.01667 92.8585 9.95833 92.8585 11.4917C92.8585 14.4667 96.9765 13.7 96.9765 15.15C96.9765 15.8583 96.3249 16.05 95.3894 16.05C94.7212 16.05 93.6603 15.8 92.8835 15.525V17.2167C93.6548 17.5244 94.4754 17.6909 95.3059 17.7083C97.2438 17.7083 99.0981 17.1333 99.0981 15.0667C99.1148 12.1917 94.9968 12.9333 94.9968 11.5417ZM1.93671 10.8333C1.93671 14.5583 4.10847 17.7667 7.24918 19.2917L2.75529 7.00833C2.21567 8.21166 1.93673 9.51507 1.93671 10.8333ZM11.3588 20.2333C12.4531 20.2333 13.5055 20.0417 14.4912 19.7L14.4244 19.575L11.5259 11.6583L8.70259 19.85C9.53788 20.1 10.4316 20.2333 11.3588 20.2333ZM12.6535 6.425L16.0615 16.5333L17.0054 13.4C17.4064 12.1 17.7154 11.1667 17.7154 10.3583C17.7154 9.19167 17.2978 8.39167 16.9469 7.775C16.4625 6.99167 16.0198 6.33333 16.0198 5.56667C16.0198 4.7 16.6713 3.9 17.6068 3.9H17.7238C15.9876 2.30993 13.7156 1.42942 11.3588 1.43333C9.79834 1.43304 8.26225 1.81977 6.88876 2.55873C5.51526 3.29769 4.34744 4.36569 3.49035 5.66667L4.09176 5.68333C5.07741 5.68333 6.59765 5.55833 6.59765 5.55833C7.11553 5.53333 7.174 6.275 6.66447 6.33333C6.66447 6.33333 6.15494 6.4 5.57859 6.425L9.02 16.6083L11.0832 10.4417L9.61306 6.425C9.28376 6.40687 8.95507 6.37908 8.62741 6.34167C8.11788 6.30833 8.17635 5.53333 8.68588 5.55833C8.68588 5.55833 10.2395 5.68333 11.1667 5.68333C12.1524 5.68333 13.6726 5.55833 13.6726 5.55833C14.1821 5.53333 14.2489 6.275 13.7394 6.33333C13.7394 6.33333 13.2299 6.39167 12.6535 6.425ZM16.0949 18.9583C17.5203 18.1315 18.7033 16.9459 19.5256 15.5202C20.3479 14.0944 20.7807 12.4783 20.7809 10.8333C20.7809 9.2 20.3633 7.66667 19.6282 6.325C19.7775 7.80107 19.5535 9.29092 18.9767 10.6583L16.0949 18.9583ZM11.3588 21.6667C8.47888 21.6667 5.7169 20.5253 3.68048 18.4937C1.64405 16.462 0.5 13.7065 0.5 10.8333C0.5 7.96016 1.64405 5.20465 3.68048 3.17301C5.7169 1.14137 8.47888 0 11.3588 0C14.2388 0 17.0007 1.14137 19.0372 3.17301C21.0736 5.20465 22.2176 7.96016 22.2176 10.8333C22.2176 13.7065 21.0736 16.462 19.0372 18.4937C17.0007 20.5253 14.2388 21.6667 11.3588 21.6667Z" fill="white"/>
+								</svg>
 							</a>
 						</div>
 
-						<div class="active-tab-arrow" style="top: {{activeDocsArrowTop}}%"></div>
-					</div>
-
-					<div class="col-md-9 docs-code">
-						<div class="docs-code-bg">
-							<c-slider active="{{activeSlide}}" direction="vertical" distance="500">
-								<c-slide>
-									<div class="docs-code-slide">
-										<p class="docs-comment">// load any project hosted on npm</p>
-										<p class="docs-link">https://cdn.jsdelivr.net/npm/package@version/file</p>
-										<br>
-										<p class="docs-comment">// load jQuery v3.2.1</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// use a version range instead of a specific version</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js
-											</a>
-										</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// omit the version completely to get the latest one</p>
-										<p class="docs-comment">// you should NOT use this in production</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
-										<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/src/core.min.js">
-												https://cdn.jsdelivr.net/npm/jquery@3.2.1/src/core.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// omit the file path to get the default file</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2">
-												https://cdn.jsdelivr.net/npm/jquery@3.2
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// add / at the end to get a directory listing</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/">https://cdn.jsdelivr.net/npm/jquery/</a>
-										</p>
-									</div>
-								</c-slide>
-
-								<c-slide>
-									<div class="docs-code-slide">
-										<p class="docs-comment">// load any GitHub release, commit, or branch</p>
-										<p class="docs-comment">// note: we recommend using npm for projects that support it</p>
-										<p class="docs-link">https://cdn.jsdelivr.net/gh/user/repo@version/file</p>
-										<br>
-										<p class="docs-comment">// load jQuery v3.2.1</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// use a version range instead of a specific version</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js
-											</a>
-										</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// omit the version completely to get the latest one</p>
-										<p class="docs-comment">// you should NOT use this in production</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js">
-												https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
-										<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js">
-												https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// add / at the end to get a directory listing</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/">
-												https://cdn.jsdelivr.net/gh/jquery/jquery/
-											</a>
-										</p>
-									</div>
-								</c-slide>
-
-								<c-slide>
-									<div class="docs-code-slide docs-code-slide-wp">
-										<p class="docs-comment">// load any plugin from the WordPress.org plugins SVN repo</p>
-										<p class="docs-link">https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file</p>
-										<br>
-										<p class="docs-comment">// load an exact version</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js">
-												https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// load the latest version</p>
-										<p class="docs-comment">// you should NOT use this in production</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/trunk/wp-slimstat.js">
-												https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/trunk/wp-slimstat.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// load any theme from the WordPress.org themes SVN repo</p>
-										<p class="docs-link">https://cdn.jsdelivr.net/wp/themes/project/version/file</p>
-										<br>
-										<p class="docs-comment">// load an exact version</p>
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js">
-												https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js
-											</a>
-										</p>
-										<br>
-										<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
-										<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
-									</div>
-								</c-slide>
-							</c-slider>
-						</div>
+						<div class="active-tab-line" style="left: {{activeDocsLineLeft}}%"></div>
 					</div>
 				</div>
+				
+
+				<div class="docs-code">
+					<div class="docs-wrapper">
+						<c-slider active="{{activeSlide}}" direction="horizontal" distance="500">
+							<c-slide>
+								<div class="docs-code-slide">
+									<p class="docs-comment">// load any project hosted on npm</p>
+									<p class="docs-link">https://cdn.jsdelivr.net/npm/package@version/file</p>
+									<br>
+									<p class="docs-comment">// load jQuery v3.2.1</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// use a version range instead of a specific version</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js
+										</a>
+									</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// omit the version completely to get the latest one</p>
+									<p class="docs-comment">// you should NOT use this in production</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
+									<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/src/core.min.js">
+											https://cdn.jsdelivr.net/npm/jquery@3.2.1/src/core.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// omit the file path to get the default file</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2">
+											https://cdn.jsdelivr.net/npm/jquery@3.2
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add / at the end to get a directory listing</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/">https://cdn.jsdelivr.net/npm/jquery/</a>
+									</p>
+								</div>
+							</c-slide>
+
+							<c-slide>
+								<div class="docs-code-slide">
+									<p class="docs-comment">// load any GitHub release, commit, or branch</p>
+									<p class="docs-comment">// note: we recommend using npm for projects that support it</p>
+									<p class="docs-link">https://cdn.jsdelivr.net/gh/user/repo@version/file</p>
+									<br>
+									<p class="docs-comment">// load jQuery v3.2.1</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// use a version range instead of a specific version</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js
+										</a>
+									</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// omit the version completely to get the latest one</p>
+									<p class="docs-comment">// you should NOT use this in production</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
+									<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add / at the end to get a directory listing</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/">
+											https://cdn.jsdelivr.net/gh/jquery/jquery/
+										</a>
+									</p>
+								</div>
+							</c-slide>
+
+							<c-slide>
+								<div class="docs-code-slide">
+									<p class="docs-comment">// load any GitHub release, commit, or branch</p>
+									<p class="docs-comment">// note: we recommend using npm for projects that support it</p>
+									<p class="docs-link">https://cdn.jsdelivr.net/gh/user/repo@version/file</p>
+									<br>
+									<p class="docs-comment">// load jQuery v3.2.1</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// use a version range instead of a specific version</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js
+										</a>
+									</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// omit the version completely to get the latest one</p>
+									<p class="docs-comment">// you should NOT use this in production</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
+									<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js">
+											https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add / at the end to get a directory listing</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/">
+											https://cdn.jsdelivr.net/gh/jquery/jquery/
+										</a>
+									</p>
+								</div>
+							</c-slide>
+	
+							<c-slide>
+								<div class="docs-code-slide docs-code-slide-wp">
+									<p class="docs-comment">// load any plugin from the WordPress.org plugins SVN repo</p>
+									<p class="docs-link">https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file</p>
+									<br>
+									<p class="docs-comment">// load an exact version</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js">
+											https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// load the latest version</p>
+									<p class="docs-comment">// you should NOT use this in production</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/trunk/wp-slimstat.js">
+											https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/trunk/wp-slimstat.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// load any theme from the WordPress.org themes SVN repo</p>
+									<p class="docs-link">https://cdn.jsdelivr.net/wp/themes/project/version/file</p>
+									<br>
+									<p class="docs-comment">// load an exact version</p>
+									<p class="docs-link">
+										<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js">
+											https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js
+										</a>
+									</p>
+									<br>
+									<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
+									<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
+								</div>
+							</c-slide>
+						</c-slider>
+					</div>
+				</div>
+
 			</section>
 
 			<section class="sponsors">
-				<div class="sponsors-text">jsDelivr operates thanks to our main sponsors:</div>
-
-				<div class="sponsor">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com"><img width="149" height="50" src="{{@shared.assetsHost}}/img/landing/cloudflare.png" srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x" title="Sponsored by Cloudflare"></a>
-				</div>
-
-				<div class="sponsor">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com"><img width="116" height="50" src="{{@shared.assetsHost}}/img/landing/fastly.png" srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x" title="Sponsored by Fastly"></a>
-				</div>
-
-				<div class="sponsor">
-					<a target="_blank" rel="noopener noreferrer" href="https://ns1.com"><img width="94" height="50" src="{{@shared.assetsHost}}/img/landing/ns1.png" srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x" title="Sponsored by NS1"></a>
-				</div>
+				<span>jsDelivr operates thanks to our main sponsors:</span>
 				
-				<div class="sponsor">
+				<div class="flex">
+					<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com"><img width="149" height="50" src="{{@shared.assetsHost}}/img/landing/cloudflare.png" srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x" title="Sponsored by Cloudflare"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com"><img width="116" height="50" src="{{@shared.assetsHost}}/img/landing/fastly.png" srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x" title="Sponsored by Fastly"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://ns1.com"><img width="94" height="50" src="{{@shared.assetsHost}}/img/landing/ns1.png" srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x" title="Sponsored by NS1"></a>
 					<a target="_blank" rel="noopener noreferrer" href="https://www.quantil.com"><img width="131" height="50" src="{{@shared.assetsHost}}/img/landing/quantil.png" srcset="{{@shared.assetsHost}}/img/landing/quantil@2x.png 2x" title="Sponsored by Quantil"></a>
-				</div>
-
-				<div class="sponsor">
 					<a target="_blank" rel="noopener noreferrer" href="https://bunny.net"><img width="172" height="50" src="{{@shared.assetsHost}}/img/landing/bunny.png" srcset="{{@shared.assetsHost}}/img/landing/bunny@2x.png 2x" title="Sponsored by bunny.net"></a>
-				</div>
-
-				<div class="sponsor">
 					<a target="_blank" rel="noopener noreferrer" href="https://render.com/"><img width="186" height="50" src="{{@shared.assetsHost}}/img/landing/render.png" srcset="{{@shared.assetsHost}}/img/landing/render@2x.png 2x" title="Sponsored by render.com"></a>
 				</div>
+
 			</section>
 		</div>
 	</div>
@@ -229,13 +282,14 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const docs = [ '', 'gh', 'wp' ];
+	const docs = [ '', 'esm', 'gh', 'wp' ];
 
 	component.exports = {
 		noIntro: true,
 		computed: {
-			activeDocsArrowTop () {
-				return this.get('activeSlide') * 100 / 3 + 100 / 6;
+			activeDocsLineLeft () {
+				console.log(this.get('activeSlide'));
+				return this.get('activeSlide') * 25;
 			},
 		},
 		data () {
