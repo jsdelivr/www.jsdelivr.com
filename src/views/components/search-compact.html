@@ -1,28 +1,170 @@
-<div class="c-search-compact">
+<link rel="ractive" href="./package-header.html" name="c-package-header">
+
+<div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" on-keydown="@this.onKeyDown()">
+		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 	</div>
+
+	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
+
+	{{#if searchOpened }}
+		<div class="c-search-compact-wrapper">
+			<div class="search-results">
+				{{#each packages}}
+					<div class="c-package">
+						<c-package-header package="{{this}}" version="{{version}}" query="{{query}}" searchOpened={{searchOpened}} onlyHeader="true"></c-package-header>
+					</div>
+				{{elseif query && nbHits === 0}}
+					<p class="c-search-compact-empty">No results found</p>
+				{{/each}}
+			</div>
+		
+			{{#if query && nbHits !== 0}}
+				<nav class="search-pagination" aria-label="Search results pagination">
+					<ul class="pagination">
+						<li style="{{#unless page}}visibility: hidden;{{/unless}}">
+							<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						</li>
+
+						{{#each pagination(page, nbPages)}}
+						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+						{{/each}}
+
+						<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
+							<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			{{/if}}
+			
+		</div>
+	{{/if}}
 </div>
 
 <script>
+	const debounce = require('../../public/js/utils/debounce');
+	const search = require('../../public/js/utils/search');
+
 	component.exports = {
+		data () {
+			return {
+				page: 0,
+				query: '',
+				packages: [],
+				pagination (page, nbPages) {
+					let start = Math.max(page - 2, 0);
+					let pages = [];
+
+					if (nbPages - page === 1) {
+						start = Math.max(Math.min(start, start - 1, start - 2), 0);
+					} else if (nbPages - page === 2) {
+						start = Math.max(Math.min(start, start - 1), 0);
+					}
+
+					for (let i = 0; i < 5 && start + i < nbPages; i++) {
+						pages.push(start + i);
+					}
+
+					return pages;
+				},
+			};
+		},
 		onrender () {
 			if (!this.isServer) {
-				this.observe('query', (newValue) => {
-					this.goTo(newValue);
-				}, { init: false });
+				let offsetTop = pageYOffset;
+				scrollTo(0, offsetTop);
+				this.set('initialValue', this.get('query'));
+
+				let s = debounce((keypath) => {
+					if (this.get('query')) {
+						search(this.get('query'), this.get('page'), 5).then((result) => {
+							result.response.hits.forEach((hit) => {
+								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
+							});
+
+							// The query might have changed since we sent the request.
+							if (result.query === this.get('query')) {
+								this.set('packages', result.response.hits, { shuffle: 'name' });
+
+								if (this.get('inputFocused') || this.get('query').indexOf('author:') !== -1) {
+									this.set('searchOpened', true);
+								}
+
+								this.set({
+									fadeIn: true,
+									nbPages: result.response.nbPages,
+									nbHits: result.response.nbHits,
+								});
+
+								// Scroll to the results.
+								if (!pageYOffset || keypath === 'page') {
+									this.scrollToSearch();
+								}
+							}
+						});
+					}
+				}, 40);
+
+				// Make sure query is always a string.
+				this.observe('query', (value) => {
+					if (typeof value !== 'string') {
+						this.set('query', String(value));
+					}
+				});
+
+				// Update results on input.
+				this.observe('page query __ready', (newValue, oldValue, keypath) => {
+					// Don't send requests before have all the data.
+					if (this.get('__ready')) {
+						// Reset page on query change.
+						if (keypath === 'query' && this.get('page') !== 0) {
+							this.set('page', 0);
+						} else if (!this.get('query')) {
+							this.set('searchOpened', false);
+							this.set('packages', []);
+						} else {
+							s(keypath);
+						}
+					}
+				});
+
+				this.observe('inputFocused', (value) => {
+					if (value) {
+						this.set('searchOpened', true);
+					} else if (!this.find('.search-input').value) {
+						this.set('query', this.get('initialValue'));
+					}
+				});
 			}
 		},
-		onKeyDown () {
-			// noinspection JSDeprecatedSymbols
-			if (this.event.original.keyCode === 13) {
-				this.goTo(this.get('query'));
-			}
+		scrollToSearch () {
+			scrollTo({
+				top: 0,
+				left: Math.floor($('.search-input').offset().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
-		goTo (query) {
-			app.router.dispatch(`/?query=${encodeURIComponent(query)}`, { state: { caretPosition: this.find('.search-input').selectionStart } });
-			scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+		nFormatter (num) {
+			let lookup = [
+				{ value: 1, symbol: '' },
+				{ value: 1e3, symbol: 'K' },
+				{ value: 1e6, symbol: 'M' },
+				{ value: 1e9, symbol: 'G' },
+				{ value: 1e12, symbol: 'T' },
+				{ value: 1e15, symbol: 'P' },
+				{ value: 1e18, symbol: 'E' },
+			];
+			let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+			let item = lookup.slice().reverse().find((item) => {
+				return num >= item.value;
+			});
+			return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 		},
 	};
 </script>
