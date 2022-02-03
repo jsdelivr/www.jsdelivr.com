@@ -95,7 +95,7 @@ app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
 app.router.addRoute('/esmsh', cEsmsh);
 app.router.addRoute('/custom-cdn-oss', cCustomCdnOss);
-app.router.addRoute('/custom-cdn-oss/:projectName', cCustomCdnOssProject, { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/custom-cdn-oss/:name', cCustomCdnOssProject);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
