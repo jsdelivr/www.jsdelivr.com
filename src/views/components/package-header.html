@@ -45,10 +45,33 @@
 							{{/if}}
 						</div>
 					{{/if}}
+
+					{{#if homeSearch}}
+						{{#if version}}
+							<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+						{{/if}}
+
+						{{#if license}}
+							<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
+						{{/if}}
+
+						{{#if ~/vulnerabilities !== undefined}}
+							<span class="package-label package-label-neutral" title="view details at snyk.io">
+								Vulnerabilities <span>{{~/vulnerabilities}}</span>
+							</span>
+						{{/if}}
+					{{/if}}
 				</div>
-				<p class="package-description">
-					{{{description}}}
-				</p>
+
+				{{#if compactSearch }}
+					<p class="package-description">
+						{{{description}}}
+					</p>
+				{{elseif description}}
+					<p class="package-description">
+						{{{description}}}
+					</p>
+				{{/if}}
 			</div>
 
 			<div class="col-sm-4">
@@ -85,28 +108,43 @@
 			</div>
 		</div>
 
-		<div class="row package-header-bottom">
-			<div class="col-xs-12">
-				
-				{{#if !onlyHeader}}
+		{{#if !onlyHeader}}
+			<div class="row package-header-bottom">
+				<div class="col-xs-12">
+
 					<div class="horizontal-divider-16"></div>
-				{{/if}}
 
-				{{#if version}}
-					<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
-				{{/if}}
+					{{#if version}}
+						<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+					{{/if}}
 
-				{{#if license}}
-					<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
-				{{/if}}
+					{{#if license}}
+						<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
+					{{/if}}
 
-				{{#if ~/vulnerabilities !== undefined}}
-					<span class="package-label package-label-neutral" title="view details at snyk.io">
-						Vulnerabilities <span>{{~/vulnerabilities}}</span>
-					</span>
-				{{/if}}
+					{{#if ~/vulnerabilities !== undefined}}
+						<span class="package-label package-label-neutral" title="view details at snyk.io">
+							Vulnerabilities <span>{{~/vulnerabilities}}</span>
+						</span>
+					{{/if}}
+					
+				</div>
 			</div>
-		</div>
+
+		{{elseif homeSearch && keywords}}
+
+			<div class="row package-header-bottom">
+				<div class="col-xs-12">
+
+				{{#each keywords}}
+					<span class="package-label package-label-keyword" title="{{this}}">{{this}}</span>
+				{{/each}}
+
+				</div>
+			</div>
+
+		{{/if}}
+		
 
 		{{#if !onlyHeader}}
 			<div class="row">

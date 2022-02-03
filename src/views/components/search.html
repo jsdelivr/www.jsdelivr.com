@@ -12,7 +12,7 @@
 		<div class="search-results">
 			{{#each packages}}
 				<div class="c-package">
-					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" query="{{query}}"></c-package-header>
+					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}"></c-package-header>
 				</div>
 			{{elseif query && nbHits === 0}}
 				No results founds
@@ -85,7 +85,7 @@
 
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
-						search(this.get('query'), this.get('page'), 5).then((result) => {
+						search(this.get('query'), this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
 								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
 							});
