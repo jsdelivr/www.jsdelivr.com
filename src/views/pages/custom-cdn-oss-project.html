@@ -10,14 +10,23 @@
 	<c-header></c-header>
 
 	<div class="p-custom-cdn-oss-project">
-		<c-cdn-oss-head
-			name="cocoapods"
-			title="CocoaPods"
-			descr="CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and 
-				is used in over 3 million apps. CocoaPods can help you scale your projects elegantly."
-			link="www.cocoapods.org"
-			imgW="202"
-			imgH="46">
+		<c-cdn-oss-head name="{{name}}"
+			link="{{projectLink}}"
+			title="{{projectTitle}}"
+			descr="{{projectDescr}}"
+			imgW="{{projectImgW}}"
+			imgH="{{projectImgH}}">
+			{{#partial title}}
+				{{title}}
+			{{/partial}}
+
+			{{#partial descr}}
+				{{descr}}
+			{{/partial}}
+
+			{{#partial img}}
+				<img width="{{imgW}}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}.svg">
+			{{/partial}}
 		</c-cdn-oss-head>
 
 		<div class="divider"></div>
@@ -136,6 +145,33 @@
 				},
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
+				projectsData: {
+					cocoapods: {
+						title: 'CocoaPods',
+						descr: 'CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.',
+						link: 'www.cocoapods.org',
+						imgW: '202',
+						imgH: '46',
+					},
+					pyodide: {
+						title: 'Pyodide',
+						descr: 'Pyodide brings the Python 3.9 runtime to the browser via WebAssembly, thanks to Emscripten. It builds the Python scientific stack including NumPy, Pandas, Matplotlib, SciPy, and scikit-learn. Over 75 packages are currently available. In addition, it’s possible to install pure Python wheels from PyPI.',
+						link: 'pyodide.org',
+						imgW: '170',
+						imgH: '56',
+					},
+					musescore: {
+						title: 'MuseScore',
+						descr: 'Create, play and print beautiful sheet music. The world’s most popular notation software.',
+						link: 'musescore.org',
+						imgW: '213',
+						imgH: '48',
+					},
+				},
+				projectTitle: '',
+				projectDescr: '',
+				projectImgW: '',
+				projectImgH: '',
 			};
 		},
 		oninit () {
@@ -156,6 +192,16 @@
 							this.set('statsDateData', response);
 						});
 					}
+				});
+
+				this.observe('name', (name) => {
+					let projectsData = this.get('projectsData');
+
+					this.set('projectTitle', projectsData[name].title);
+					this.set('projectDescr', projectsData[name].descr);
+					this.set('projectImgW', projectsData[name].imgW);
+					this.set('projectImgH', projectsData[name].imgH);
+					this.set('projectLink', projectsData[name].link);
 				});
 			}
 		},
