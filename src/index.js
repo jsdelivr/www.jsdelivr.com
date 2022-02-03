@@ -279,6 +279,27 @@ koaElasticUtils.addRoutes(router, [
 	}
 });
 
+/**
+ * Custom CDN OSS pages.
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/custom-cdn-oss/:name', '/custom-cdn-oss/:name' ],
+], async (ctx) => {
+	let data = {};
+
+	try {
+		ctx.body = await ctx.render('pages/custom-cdn-oss-project.html', data);
+		ctx.maxAge = 10 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		data.noYield = true;
+		ctx.body = await ctx.render('pages/_index.html', data);
+	}
+});
+
 koaElasticUtils.addRoutes(router, [
 	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
