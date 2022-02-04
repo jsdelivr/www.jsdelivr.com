@@ -76,28 +76,31 @@
 				<span>This is probably not a very popular package :(</span>
 			</div>
 		{{else}}
-			<div class="group-by-ctrl">
-				<span>
-					Group by:
-				</span>
+			<div class="chart-ctrls">
+				<div class="chart-ctrls-title">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+				<div class="chart-ctrls-group-by">
+					<span>
+						Group by:
+					</span>
 
-				<div class="btn-group">
-					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
-						<i class="fa fa-angle-down" aria-hidden="true"></i>
-					</button>
+					<div class="btn-group">
+						<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
 
-					<ul class="dropdown-menu">
-						{{#each ~/usageChartGroupByValues}}
-							<li>
-								{{#if this.isDisabled}}
-									<a class="disabled">{{this.value}}</a>
-								{{else}}
-									<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
-								{{/if}}
-							</li>
-						{{/each}}
-					</ul>
+						<ul class="dropdown-menu">
+							{{#each ~/usageChartGroupByValues}}
+								<li>
+									{{#if this.isDisabled}}
+										<a class="disabled">{{this.value}}</a>
+									{{else}}
+										<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+									{{/if}}
+								</li>
+							{{/each}}
+						</ul>
+					</div>
 				</div>
 			</div>
 
@@ -179,7 +182,7 @@
 				this.observe('statsPeriod', () => {
 					if (this.get('statsPeriod')) {
 						let type = 'npm';
-						let name = 'cocoapods';
+						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
 						// get package date stats data
