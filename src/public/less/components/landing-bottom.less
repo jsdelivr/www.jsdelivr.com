@@ -89,6 +89,120 @@
 		border: 1px solid #CFD6DD;
 		box-shadow: 0px 4px 2px -2px rgba(23, 35, 59, 0.06), 0px 2px 8px rgba(23, 35, 59, 0.04);
 		border-radius: 6px;
+		overflow: hidden;
+
+		&-head {
+			height: 40px;
+			padding: 0 15px;
+			display: flex;
+			align-items: center;
+			background: #F3F5F7;
+
+			span, &::before, &::after {
+				content: '';
+				width: 10px;
+				margin-right: 6px;
+				border-radius: 50%;
+				height: 10px;
+				background: #CFD6DD;
+
+			}
+		}
+
+		&-tabs {
+			padding: 0 24px;
+			gap: 48px;
+			background: #F3F5F7;
+			position: relative;
+
+			a {
+				font-size: 14px;
+				line-height: 20px;
+				color: #5C667A;
+				transition: color .2s;
+				padding: 12px 0 14px;
+
+				&.active {
+					color: #17233B;
+				}
+			}
+
+			&-line {
+				position: absolute;
+				display: block;
+				bottom: 0;
+				height: 2px;
+				width: 150px;
+				left: 24px;
+				background: @c-orange;
+				transition: left .4s, width .4s;
+			}
+		}
+
+		&-slider {			
+			position: relative;
+
+			.c-slider {
+				width: 100%;
+				overflow: hidden;
+				overflow-y: auto;
+				height: 310px;
+			}
+		}
+
+		&-slide {
+			position: absolute;
+			// width: 100%;
+			// height: 100%;
+			overflow-y: auto;
+			top: 0;
+			left: 0;
+			padding: 24px 24px 24px 52px;
+			font-weight: 500;
+			font-size: 14px;
+			line-height: 1.42;
+			font-family: Source Code Pro;
+			counter-reset: section; 
+
+			> * {
+				position: relative;
+			}
+			> *::before {
+				counter-increment: section;
+				content: counter(section);
+				color: #B2BDC7;
+				position: absolute;
+				width: 20px;
+				left: -28px;
+				top: 0;
+			}
+			
+			p {
+				margin: 0;	
+				display: block;
+			}
+		}
+
+		&-link {
+			color: #F65128;
+		}
+
+		&-key {
+			color: #1481B8;
+		}
+
+		&-string {
+			color: #A7921B;
+		}
+
+		&-boolean {
+			color: #549711;
+		}
+
+		&-comment {
+			color: #B2BDC7;
+			margin: 0;
+		}
 	}
 
 	.features-list {
@@ -193,20 +307,20 @@
 	}
 
 	.api {
-		.flex {
+		> .flex {
 			justify-content: space-between;
-		}
-
-		h3 {
-			margin-bottom: 16px;
-		}
-
-		p {
-			margin-bottom: 22px;
 		}
 
 		&-content {
 			width: 40.5%;
+
+			h3 {
+				margin-bottom: 16px;
+			}
+	
+			p {
+				margin-bottom: 22px;
+			}
 		}
 
 		&-code {
@@ -229,6 +343,12 @@
 		.container-lg {
 			padding-top: 80px;
 			padding-bottom: 80px;
+		}
+
+		&-wrap {
+			.container-lg {
+				padding-top: 64px;
+			}
 		}
 
 		.flex {
