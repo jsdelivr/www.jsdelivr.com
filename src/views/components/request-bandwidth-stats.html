@@ -9,7 +9,7 @@
 		</div>
 		<div class="card-growth">
 			<span class="growth-positive">{{requestsGrowth}}</span>
-			<span>monthly growth</span>
+			<span>{{growthPeriod}} growth</span>
 		</div>
 	</div>
 
@@ -23,7 +23,7 @@
 		</div>
 		<div class="card-growth">
 			<span class="growth-negative">{{bandwidthGrowth}}</span>
-			<span>monthly growth</span>
+			<span>{{growthPeriod}} growth</span>
 		</div>
 	</div>
 </div>
@@ -40,6 +40,13 @@
 				bandwidthAmount: 0,
 				requestsGrowth: '+34%',
 				bandwidthGrowth: '-9%',
+				growthPeriods: {
+					day: 'daily',
+					week: 'weekly',
+					month: 'monthly',
+					year: 'yearly',
+				},
+				growthPeriod: 'monthly',
 			};
 		},
 		oninit () {
@@ -57,6 +64,12 @@
 
 						this.set('bandwidthAmount', _.numConvertAndFormat(response.total));
 					});
+				});
+
+				this.observe('period', (period) => {
+					if (!period) { return; }
+
+					this.set('growthPeriod', this.get('growthPeriods')[period]);
 				});
 			}
 		},
