@@ -49,3 +49,7 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 module.exports.fetchPackageEntrypoints = (type, name, version) => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints`);
 };
+
+module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
+	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}`);
+};
