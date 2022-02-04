@@ -18,7 +18,7 @@
 			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
 		</div>
 		<div class="card-main-stat">
-			<span>{{_.formatNumber(bandwidthAmount)}}</span>
+			<span>{{bandwidthAmount}}</span>
 			<span>Bandwidth</span>
 		</div>
 		<div class="card-growth">
@@ -30,16 +30,34 @@
 
 <script>
 	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
 
 	component.exports = {
 		data () {
 			return {
 				_,
 				requestsAmount: '406745962',
-				bandwidthAmount: '648414',
+				bandwidthAmount: 0,
 				requestsGrowth: '+34%',
 				bandwidthGrowth: '-9%',
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('name period', () => {
+					let type = 'npm';
+					let name = this.get('name');
+					let period = this.get('period');
+
+					http.fetchPackageBandwidthStats(type, name, period).then((response) => {
+						if (!response.total) {
+							return;
+						}
+
+						this.set('bandwidthAmount', _.numConvertAndFormat(response.total));
+					});
+				});
+			}
 		},
 	};
 </script>
