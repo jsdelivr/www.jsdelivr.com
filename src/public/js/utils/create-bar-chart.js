@@ -132,7 +132,7 @@ function createBarChart (
 					display: false,
 				},
 				tooltip: {
-					enable: true,
+					enabled: true,
 					enabled: !chartSettings.useExternalTooltip && true,
 					external: chartSettings.useExternalTooltip ? externalTooltip : null,
 					bodyColor: '#fff',
