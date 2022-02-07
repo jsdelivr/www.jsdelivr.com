@@ -181,14 +181,14 @@
 				<div>
 					<img src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg" alt="">
 
-					<h3>7 145</h3>
+					<h3>{{ Math.round(requestsPerSecond) }}</h3>
 					<span>requests per second</span>
 				</div>
 
 				<div>
 					<img src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" alt="">
 						
-					<h3>754.2 Mbps</h3>
+					<h3>{{ bandwidth.toFixed(1) }} Mbps</h3>
 					<span>bandwidth</span>
 				</div>
 			</div>
@@ -483,11 +483,6 @@
 	const code_tabs = [ 'entrypoints', 'versions', 'files' ];
 
 	component.exports = {
-		easing: {
-			random (t) {
-				return Math.pow(t, 2);
-			},
-		},
 		computed: {
 			activeTabLineData () {
 				let activeSlideEl = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
@@ -505,39 +500,39 @@
 		oninit () {
 			this.findComponent('c-slider').set('active', code_tabs.indexOf(this.get('activeTab')) !== -1 ? code_tabs.indexOf(this.get('activeTab')) : 0);
 			
-			if (!this.get('@shared.requestsServed')) {
-				this.set('@shared.requestsServed', 0);
-			}
-
 			if (!Ractive.isServer) {
 				this.observe('activeTab', (newValue) => {
 					document.querySelector('.code-slider .c-slider').scrollTop = 0;
 					this.findComponent('c-slider').show(code_tabs.indexOf(newValue) !== -1 ? code_tabs.indexOf(newValue) : 0);
 				}, { init: false });
 
-				if (!this.get('@shared.requestsServed')) {
-					let served = 0;
-					let animateRequests = () => {
-						let seconds = Math.floor(Math.random() * 15 + 5);
-						served += 30800 * seconds;
-						this.animate('@shared.requestsServed', served, { duration: (seconds + 1) * 1000, easing: 'easeOut' });
-						setTimeout(animateRequests, seconds * 1000);
-					};
-
-					animateRequests();
-				}
-
 				// Load top packages.
 				http.fetchTopPackages().then((data) => {
 					this.set('topPackages', data);
 				});
+
+				// Load network stats for the previous day
+				http.fetchNetworkStats('day').then((data) => {
+					this.set('baseRequestsPerSecond', (data.hits.total / 24 / 60 / 60));
+					this.set('baseBandwidth', 900)
+				});
+
+				let animationConfig = {
+					duration: 1000, 
+					easing: (x) => x === 1 ? 1 : 1 - Math.pow(2, -10 * x) 
+				};
+
+				setInterval(() => {
+					let requestsPerSecond = this.getRandom(85, 115) / 100 * this.get('baseRequestsPerSecond'),
+						bandwidth = this.getRandom(85, 115) / 100 * this.get('baseBandwidth');
+
+					this.animate( 'requestsPerSecond', requestsPerSecond, animationConfig );
+					this.animate( 'bandwidth', bandwidth, animationConfig );
+				}, 2000);
 			}
 		},
-		setActiveLine () {
-			let activeSlideEl = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
-			if(!activeSlideEl) return;
-
-			return [activeSlideEl.offsetLeft, activeSlideEl.clientWidth];
+		getRandom(min, max) {
+			return Math.floor(Math.random() * (max - min + 1) + min);
 		},
 	};
 </script>
