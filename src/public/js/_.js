@@ -94,34 +94,6 @@ module.exports = {
 
 		return `${n}th`;
 	},
-	getPackageTabChartXData (periodDates) {
-		let chartXDates = {
-			// all days during period
-			periodDays: [],
-			// all months during period
-			periodMonths: [],
-		};
-
-		periodDates.forEach((date) => {
-			let splittedDate = date.split('-');
-			let dateDay = splittedDate.slice(-1)[0];
-			let dateMonth = splittedDate.slice(0, 2).join('-');
-			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
-
-			if (!chartXDates[periodMonthFormatted]) {
-				chartXDates[periodMonthFormatted] = [];
-			}
-
-			chartXDates[periodMonthFormatted].push(dateDay);
-			chartXDates.periodDays.push(dateDay);
-
-			if (chartXDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
-				chartXDates.periodMonths.push(periodMonthFormatted);
-			}
-		});
-
-		return chartXDates;
-	},
 	getChartXAxisData (periodDates, period = 'month') {
 		let dataPerMonths = [];
 		let chartXData = [];
