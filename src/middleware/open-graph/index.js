@@ -21,7 +21,12 @@ fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../f
 fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
-	return http.get(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`).json();
+	let [ requests, bandwidth ] = await Promise.all([
+		http.get(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`).json().catch(() => {}),
+		http.get(`${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}`).json().catch(() => {}),
+	]);
+
+	return { requests, bandwidth };
 };
 
 const fetchLogo = async (url) => {
@@ -147,27 +152,29 @@ const prepareMetadata = async (pkg) => {
 };
 
 const prepareStats = async (name) => {
-	let stats = await fetchStats(name);
+	let { requests, bandwidth } = await fetchStats(name);
 
-	let formatNum = num => num.toLocaleString().replace(/,/g, '');
-	let max = 0;
+	let formatRequests = num => num.toLocaleString().replace(/,/g, ' ');
+	let formatBytes = num => bytes(num, { unitSeparator: ' ' });
 
-	let records = Object.values(stats.dates).map((stats) => {
-		max = Math.max(max, stats.total);
-		return { total: stats.total };
-	});
+	let processStats = (data, chartOffset, totalFormatter) => {
+		let max = 0;
+
+		let records = Object.values(data.dates).map((stats) => {
+			max = Math.max(max, stats.total);
+			return { total: stats.total };
+		});
+
+		return {
+			total: data.total,
+			totalFormatted: totalFormatter(data.total),
+			chart: processChart(records, max, chartOffset),
+		};
+	};
 
 	return {
-		requests: {
-			total: stats.total,
-			totalFormatted: formatNum(stats.total),
-			chart: processChart(records, max),
-		},
-		bandwidth: {
-			total: stats.total,
-			totalFormatted: bytes(stats.total, { unitSeparator: ' ' }),
-			chart: processChart(records, max, 550),
-		},
+		requests: requests ? processStats(requests, 88, formatRequests) : undefined,
+		bandwidth: bandwidth ? processStats(bandwidth, 550, formatBytes) : undefined,
 	};
 };
 
