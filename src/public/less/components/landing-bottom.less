@@ -265,12 +265,100 @@
 		&-map {
 			position: absolute;
 			width: 100%;
-			height: 100%;
-			top: 0;
-			left: 0;
-			object-fit: contain;
+			max-width: 910px;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
 			z-index: 1;
+
+			&-wrap {
+				position: relative;
+				padding-bottom: 47.13%;
+			}
+
+			img, svg {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				top: 0;
+				left: 0;
+				object-fit: contain;
+			}
+
+			g {
+				&:nth-child(4n) circle {
+					animation-delay: .8s;
+				}
+				
+				&:nth-child(4n - 1) circle {
+					animation-delay: 1.6s;
+				}
+
+				&:nth-child(4n - 2) circle {
+					animation-delay: 2.4s;
+				}
+				
+				&:nth-child(4n - 3) circle {
+					animation-delay: 3.2s;
+				}
+			}
+
+			circle {
+
+				&:first-child {
+					fill: #FA8F76;
+					animation: pulse1 3s ease-in-out infinite;
+				}
+
+				&:last-child {
+					fill: rgba(#FA8F76, .5);
+					animation: pulse2 3s ease-in-out infinite;
+				}
+			}
 		}		
+	}
+	
+	@keyframes pulse1 {
+		0% {
+			opacity: 0;
+		}
+
+		25% {
+			opacity: 1;
+		}
+
+		40% {
+			opacity: 1;
+		}
+
+		50% {
+			opacity: 0;
+		}
+
+		100% {
+			opacity: 0;
+		}
+	}
+	
+	@keyframes pulse2 {
+		0% {
+			transform: scale(1);
+			opacity: 0;
+		}
+
+		25% {
+			opacity: 1;
+		}
+
+		50% {
+			transform: scale(5);
+			opacity: 0;
+		}
+
+		100% {
+			transform: scale(1);
+			opacity: 0;
+		}
 	}
 
 	.dev-friendly {
