@@ -480,17 +480,9 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const code_tabs = [ 'entrypoints', 'versions', 'files' ];
+	const codeTabs = [ 'entrypoints', 'versions', 'files' ];
 
 	component.exports = {
-		computed: {
-			activeTabLineData () {
-				let activeSlideEl = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
-				if(!activeSlideEl) return;
-
-				return [activeSlideEl.offsetLeft, activeSlideEl.clientWidth];
-			},
-		},
 		data () {
 			return {
 				_,
@@ -498,12 +490,15 @@
 			};
 		},
 		oninit () {
-			this.findComponent('c-slider').set('active', code_tabs.indexOf(this.get('activeTab')) !== -1 ? code_tabs.indexOf(this.get('activeTab')) : 0);
-			
+			this.findComponent('c-slider').set('active', codeTabs.indexOf(this.get('activeTab')) !== -1 ? codeTabs.indexOf(this.get('activeTab')) : 0);
+
 			if (!Ractive.isServer) {
 				this.observe('activeTab', (newValue) => {
 					document.querySelector('.code-slider .c-slider').scrollTop = 0;
-					this.findComponent('c-slider').show(code_tabs.indexOf(newValue) !== -1 ? code_tabs.indexOf(newValue) : 0);
+					this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
+
+					let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
+					this.set('activeTabLineData', [ activeTabLink.offsetLeft, activeTabLink.clientWidth ]);
 				}, { init: false });
 
 				// Load top packages.
@@ -513,25 +508,25 @@
 
 				// Load network stats for the previous day
 				http.fetchNetworkStats('day').then((data) => {
-					this.set('baseRequestsPerSecond', (data.hits.total / 24 / 60 / 60));
-					this.set('baseBandwidth', 900)
+					this.set('baseRequestsPerSecond', data.hits.total / 24 / 60 / 60);
+					this.set('baseBandwidth', 900);
 				});
 
 				let animationConfig = {
-					duration: 1000, 
-					easing: (x) => x === 1 ? 1 : 1 - Math.pow(2, -10 * x) 
+					duration: 1000,
+					easing: x => x === 1 ? 1 : 1 - Math.pow(2, -10 * x),
 				};
 
 				setInterval(() => {
 					let requestsPerSecond = this.getRandom(85, 115) / 100 * this.get('baseRequestsPerSecond'),
 						bandwidth = this.getRandom(85, 115) / 100 * this.get('baseBandwidth');
 
-					this.animate( 'requestsPerSecond', requestsPerSecond, animationConfig );
-					this.animate( 'bandwidth', bandwidth, animationConfig );
+					this.animate('requestsPerSecond', requestsPerSecond, animationConfig);
+					this.animate('bandwidth', bandwidth, animationConfig);
 				}, 2000);
 			}
 		},
-		getRandom(min, max) {
+		getRandom (min, max) {
 			return Math.floor(Math.random() * (max - min + 1) + min);
 		},
 	};

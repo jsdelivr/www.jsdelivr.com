@@ -48,6 +48,6 @@ describe('homepage', () => {
 
 	it('top packages table loads', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
-		await expect(browser.findElement({ css: '.stats-table-table thead th' }).getText()).to.eventually.contain('Top 10 npm packages last 30 days');
+		await expect(browser.findElement({ css: '.stats-table-table td:nth-child(2)' }).getText()).to.eventually.contain('npm');
 	});
 });
