@@ -151,35 +151,33 @@ module.exports = {
 				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 		}
 	},
-	numConvertAndFormat (num, metric = 'GB') {
-		let metricValue = null;
+	convertBytesToUnits (bytesAmount, units = 'GB') {
+		let unitsBase = null;
+		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
-		switch (metric) {
+		switch (units) {
 			case 'kB':
-				metricValue = 1e3;
+				unitsBase = 1e3;
 				break;
 			case 'MB':
-				metricValue = 1e6;
+				unitsBase = 1e6;
 				break;
 			case 'GB':
-				metricValue = 1e9;
+				unitsBase = 1e9;
 				break;
 			case 'TB':
-				metricValue = 1e12;
+				unitsBase = 1e12;
 				break;
 			case 'PB':
-				metricValue = 1e15;
+				unitsBase = 1e15;
 				break;
 			case 'EB':
-				metricValue = 1e18;
+				unitsBase = 1e18;
 				break;
 			default:
-				metricValue = 1e9;
+				unitsBase = 1e9;
 		}
 
-		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-		let convertedNum = (num / metricValue).toFixed(1).replace(rx, '$1');
-
-		return this.formatNumber(convertedNum);
+		return (bytesAmount / unitsBase).toFixed(1).replace(rx, '$1');
 	},
 };
