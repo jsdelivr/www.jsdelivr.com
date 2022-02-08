@@ -18,7 +18,7 @@
 			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
 		</div>
 		<div class="card-main-stat">
-			<span>{{bandwidthAmount}}</span>
+			<span>{{_.formatNumber(bandwidthAmount)}}</span>
 			<span>Bandwidth</span>
 		</div>
 		<div class="card-growth">
@@ -51,10 +51,9 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('name period', () => {
+				this.observe('period', (period) => {
 					let type = 'npm';
 					let name = this.get('name');
-					let period = this.get('period');
 
 					// TODO: this endpoint is only for packages, the custom-cdn-oss pages (cocoapods, musescore, pyodide) will use another custom ednpoints
 					http.fetchPackageBandwidthStats(type, name, period).then((response) => {
@@ -62,7 +61,7 @@
 							return;
 						}
 
-						this.set('bandwidthAmount', _.numConvertAndFormat(response.total));
+						this.animate('bandwidthAmount', _.convertBytesToUnits(response.total), {duration: 1000});
 					});
 				});
 
