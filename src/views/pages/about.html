@@ -269,17 +269,16 @@
 			};
 		},
 		onrender () {
-			let options = { threshold: 1 },
-				that = this;
+			let options = { threshold: 1 };
 
-			let callback = function (entries, observer) {
+			let callback = (entries, observer) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
 						let el = entry.target.dataset.target,
 							newValue = entry.target.dataset.value;
 
 						setTimeout(() => {
-							that.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
+							this.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
 							observer.unobserve(entry.target);
 						}, 300);
 					}
