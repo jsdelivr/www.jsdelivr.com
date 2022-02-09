@@ -153,7 +153,6 @@ module.exports = {
 	},
 	convertBytesToUnits (bytesAmount, units = 'GB') {
 		let unitsBase = null;
-		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
 		switch (units) {
 			case 'kB':
@@ -178,6 +177,6 @@ module.exports = {
 				unitsBase = 1e9;
 		}
 
-		return (bytesAmount / unitsBase).toFixed(1).replace(rx, '$1');
+		return Math.round(bytesAmount / unitsBase);
 	},
 };
