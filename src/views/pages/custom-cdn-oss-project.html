@@ -196,6 +196,7 @@
 								return;
 							}
 
+							this.set('noPackageStatsData', false);
 							this.set('statsDateData', response);
 						});
 					}
@@ -214,9 +215,10 @@
 		},
 		onrender () {
 			let statsChart;
-			let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
 			this.observe('statsDateData', (statsDateData) => {
+				let statsChartCanvasEl = this.find('#cdn-stats-chart');
+
 				if (!statsDateData || !statsChartCanvasEl) { return; }
 
 				let array = [];
