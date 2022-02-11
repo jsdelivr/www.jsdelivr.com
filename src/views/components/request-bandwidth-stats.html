@@ -36,7 +36,7 @@
 		data () {
 			return {
 				_,
-				requestsAmount: '406745962',
+				requestsAmount: 0,
 				bandwidthAmount: 0,
 				requestsGrowth: '+34%',
 				bandwidthGrowth: '-9%',
@@ -55,13 +55,18 @@
 					let type = 'npm';
 					let name = this.get('name');
 
-					// TODO: this endpoint is only for packages, the custom-cdn-oss pages (cocoapods, musescore, pyodide) will use another custom ednpoints
-					http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-						if (!response.total) {
-							return;
+					// TODO: these endpoints are only for packages, the custom-cdn-oss pages (cocoapods, musescore, pyodide) will use another custom ednpoints
+					Promise.all([
+						http.fetchPackageDateStats(type, name, period),
+						http.fetchPackageBandwidthStats(type, name, period),
+					]).then((responses) => {
+						if (responses[0].total) {
+							this.animate('requestsAmount', responses[0].total, { duration: 1000 });
 						}
 
-						this.animate('bandwidthAmount', _.convertBytesToUnits(response.total), { duration: 1000 });
+						if (responses[1].total) {
+							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total), { duration: 1000 });
+						}
 					});
 
 					this.set('growthPeriod', this.get('growthPeriods')[period]);
