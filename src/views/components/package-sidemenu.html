@@ -24,7 +24,7 @@
 
 			<div class="stats-section mb-24">
 				<span>Requests Served</span>
-				<span>{{noDataOfVersions ? 'No data' : _.formatNumber(packageTotal)}}</span>
+				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(requestsTotal)}}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
@@ -71,7 +71,7 @@
 					<a class="btn-twitter-share mt-8"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 						Share
 					</a>
@@ -134,9 +134,9 @@
 				noDataOfRequests: false,
 				noDataOfBandwidth: false,
 				noDataOfVersions: false,
-				packageTotal: 0,
 				topVersionHits: 0,
 				bandwidthTotal: 0,
+				requestsTotal: 0,
 			};
 		},
 		decorators: {
@@ -168,7 +168,6 @@
 								let versionStats = versionsStatsArr.sort((a, b) => b.hits - a.hits);
 
 								this.animate('versionStats', versionStats, { duration: 1000 });
-								this.animate('packageTotal', data.total, { duration: 1000 });
 								this.animate('packageRank', data.rank + 1, { duration: 1000 });
 								this.animate('topVersionHits', versionStats[0].hits, { duration: 1000 });
 							} else {
@@ -181,6 +180,7 @@
 							if (response.total) {
 								this.set('noDataOfRequests', false);
 								this.set('packageDateStats', response);
+								this.animate('requestsTotal', response.total, { duration: 1000 } );
 							} else {
 								this.set('noDataOfRequests', true);
 							}
