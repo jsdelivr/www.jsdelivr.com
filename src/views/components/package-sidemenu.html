@@ -179,6 +179,7 @@
 						// get package date stats
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
+								this.set('noDataOfRequests', false);
 								this.set('packageDateStats', response);
 							} else {
 								this.set('noDataOfRequests', true);
@@ -188,6 +189,7 @@
 						// get package bandwidth stats
 						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
 							if (response.total) {
+								this.set('noDataOfBandwidth', false);
 								this.set('packageBandwidthStats', response);
 								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
 							} else {
@@ -284,7 +286,6 @@
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
 						let chartEl = this.find('#bandwidth-chart');
-
 						let chartData = {
 							labels,
 							datasets: [{
