@@ -60,11 +60,11 @@
 						http.fetchPackageDateStats(type, name, period),
 						http.fetchPackageBandwidthStats(type, name, period),
 					]).then((responses) => {
-						if (responses[0].total) {
+						if (responses[0].total >= 0) {
 							this.animate('requestsAmount', responses[0].total, { duration: 1000 });
 						}
 
-						if (responses[1].total) {
+						if (responses[1].total >= 0) {
 							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total), { duration: 1000 });
 						}
 					});
