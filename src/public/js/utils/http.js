@@ -1,6 +1,9 @@
+
+const _ = require('../_');
 const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
+const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
@@ -52,4 +55,10 @@ module.exports.fetchPackageEntrypoints = (type, name, version) => {
 
 module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
 	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}`);
+};
+
+module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
+	return _.makeHTTPRequest({
+		url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
+	});
 };
