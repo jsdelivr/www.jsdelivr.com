@@ -103,6 +103,7 @@ describe('package', () => {
 	it('top files switching versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/slick-carousel?version=1.8.1`);
 		await browser.sleep(4000);
+		await browser.findElement({ id: 'navRouteStats' }).click();
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
