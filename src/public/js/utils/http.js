@@ -6,7 +6,7 @@ const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/stats/network/${period}`);
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/${period}` });
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
@@ -61,12 +61,12 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 	return new Promise((resolve, reject) => {
 		_.makeHTTPRequest({
 			url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
-		}).then((response) => {
+		}, true).then((response) => {
 			resolve(response);
 		}).catch(() => {
 			_.makeHTTPRequest({
 				url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.markdown`,
-			}).then((response) => {
+			}, true).then((response) => {
 				resolve(response);
 			}).catch((err) => {
 				reject(err);
