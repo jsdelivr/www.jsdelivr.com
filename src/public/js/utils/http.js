@@ -58,7 +58,19 @@ module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
 };
 
 module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
-	return _.makeHTTPRequest({
-		url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
+	return new Promise((resolve, reject) => {
+		_.makeHTTPRequest({
+			url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
+		}).then((response) => {
+			resolve(response);
+		}).catch(() => {
+			_.makeHTTPRequest({
+				url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.markdown`,
+			}).then((response) => {
+				resolve(response);
+			}).catch((err) => {
+				reject(err);
+			});
+		});
 	});
 };

@@ -21,7 +21,7 @@
 				</c-package-header>
 
 				<div class="package-nav">
-					{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
+					{{#if package.readme}}
 						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
 						</a>
@@ -37,7 +37,7 @@
 					</a>
 				</div>
 
-				{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
+				{{#if navRoute === 'readme' && package.readme}}
 					<div class="package-readme">
 						<c-markdown text="{{package.readme}}"></c-markdown>
 					</div>
@@ -259,7 +259,6 @@
 					month: { value: 'month', isDisabled: false },
 				},
 				usageChartGroupBy: 'day',
-				algoliaReadmeErrMsg: 'ERROR: No README data found!',
 				noPackageStatsData: false,
 				noVersionsData: false,
 				versionsHitsTotal: 0,
@@ -351,9 +350,8 @@
 
 				this.observe('package', () => {
 					let readme = this.get('package').readme;
-					let errMsg = this.get('algoliaReadmeErrMsg');
 
-					if (!readme || readme === errMsg) {
+					if (!readme) {
 						this.set('navRoute', 'stats');
 					}
 				});
