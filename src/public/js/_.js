@@ -197,7 +197,7 @@ module.exports = {
 
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 	},
-	makeHTTPRequest (obj) {
+	makeHTTPRequest (obj, rawResponse = false) {
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
 			xhr.open(obj.method || 'GET', obj.url);
@@ -208,7 +208,7 @@ module.exports = {
 
 			xhr.onload = () => {
 				if (xhr.status >= 200 && xhr.status < 300) {
-					resolve(xhr.response);
+					resolve(rawResponse ? xhr.response : JSON.parse(xhr.response));
 				} else {
 					reject(xhr.statusText);
 				}
