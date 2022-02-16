@@ -42,10 +42,11 @@ module.exports.findProjectIssue = (owner, repo, title) => {
 };
 
 module.exports.fetchPackageVulnerabilities = (name, version) => {
-	return $.ajax({
-		beforeSend: (request) => { request.setRequestHeader('Authorization', '8U@$Kh6Qs#b@9qxYB!QhtvLeD=e+?Hq$_b#5%x*t'); },
-		dataType: 'json',
+	return _.makeHTTPRequest({
 		url: `${SNYK_API_HOST}/test/npm/lib/${name}/${version}`,
+		headers: {
+			Authorization: '8U@$Kh6Qs#b@9qxYB!QhtvLeD=e+?Hq$_b#5%x*t',
+		},
 	});
 };
 
