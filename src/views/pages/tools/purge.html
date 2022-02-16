@@ -114,6 +114,7 @@
 
 <script>
 	const isUrlValid = require('../../../public/js/utils/is-url-valid');
+	const _ = require('../../../public/js/_');
 
 	component.exports = {
 		data () {
@@ -210,13 +211,11 @@
 			this.set('proceedToCaptcha', true);
 		},
 		getCDNstatus (id) {
-			return $.ajax({
-				type: 'GET',
-				crossOrigin: true,
+			return _.makeHTTPRequest({
+				url: `https://purge.jsdelivr.net/status/${id}`,
 				headers: {
 					'content-type': 'application/json',
 				},
-				url: `https://purge.jsdelivr.net/status/${id}`,
 			});
 		},
 		purge () {
@@ -237,15 +236,14 @@
 				return;
 			}
 
-			$.ajax({
-				type: 'POST',
-				crossOrigin: true,
+			_.makeHTTPRequest({
+				method: 'POST',
+				url: 'https://purge.jsdelivr.net/captcha',
 				headers: {
 					'content-type': 'application/json',
 				},
-				url: 'https://purge.jsdelivr.net/captcha',
-				data: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
-			}).done((response) => {
+				body: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
+			}).then((response) => {
 				let intervalId = null;
 
 				intervalId = setInterval(() => {
@@ -305,7 +303,7 @@
 						}
 					});
 				}, 1000);
-			}).fail(() => {
+			}).catch(() => {
 				this.set('purgeErrorMsg', 'An error occurred while purging!');
 				this.set('purgingInProcess', false);
 				this.set('proceedToCaptcha', false);
