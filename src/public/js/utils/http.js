@@ -14,7 +14,7 @@ module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 };
 
 module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`);
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/date/${period}` });
 };
 
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month') => {
