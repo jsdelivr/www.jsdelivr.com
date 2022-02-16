@@ -198,12 +198,14 @@ module.exports = {
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 	},
 	makeHTTPRequest (obj, rawResponse = false) {
+		let { method = 'GET', body, url, headers } = obj;
+
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
-			xhr.open(obj.method || 'GET', obj.url);
+			xhr.open(method || 'GET', method === 'GET' && body ? url + this.createQueryString(body) : url);
 
-			if (obj.headers) {
-				Object.keys(obj.headers).forEach(key => xhr.setRequestHeader(key, obj.headers[key]));
+			if (headers) {
+				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
 			}
 
 			xhr.onload = () => {
@@ -215,7 +217,10 @@ module.exports = {
 			};
 
 			xhr.onerror = () => reject(xhr.statusText);
-			xhr.send(obj.body);
+			xhr.send(body);
 		});
+	},
+	createQueryString (params) {
+		return '?' + Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
 	},
 };
