@@ -10,7 +10,7 @@ module.exports.fetchNetworkStats = (period = 'month') => {
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
-	return $.getJSON(`${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}`);
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
 };
 
 module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
