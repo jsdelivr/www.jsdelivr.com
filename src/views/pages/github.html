@@ -82,6 +82,7 @@
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const defaultError = 'Sorry, this doesn\'t look like a valid GitHub link :(';
+	const _ = require('../../public/js/_');
 
 	component.exports = {
 		decorators: {
@@ -103,7 +104,7 @@
 			};
 
 			let isCommitPrefixOrTag = (user, repo, sha) => {
-				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/commits/${sha}`).then((response) => {
+				return _.makeHTTPRequest({ url: `https://api.github.com/repos/${user}/${repo}/commits/${sha}` }).then((response) => {
 					return response.sha.indexOf(sha) === 0 ? response.sha : sha;
 				}).catch(() => {
 					return false;
@@ -111,6 +112,9 @@
 			};
 
 			let gitHub2jsDelivr = gitHub => Promise.resolve().then(() => {
+				// TODO: broken match (version instead of sha, no file etc.)
+				// pattern must be broken, need to be rewrited
+				// why is it working if api.github returns 422
 				let pattern = /^https?:\/\/(?:github|raw\.githubusercontent)\.com\/([^/]+)\/([^/]+)(?:\/blob)?\/([^/]+)\/(.*)$/i;
 				let commitPattern = /^[0-9a-f]{40}$/;
 				let match = pattern.exec(gitHub);
