@@ -62,12 +62,14 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 	return new Promise((resolve, reject) => {
 		_.makeHTTPRequest({
 			url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
-		}, true).then((response) => {
+			rawResponse: true,
+		}).then((response) => {
 			resolve(response);
 		}).catch(() => {
 			_.makeHTTPRequest({
 				url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.markdown`,
-			}, true).then((response) => {
+				rawResponse: true,
+			}).then((response) => {
 				resolve(response);
 			}).catch((err) => {
 				reject(err);
