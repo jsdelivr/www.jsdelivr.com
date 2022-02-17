@@ -27,7 +27,7 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', n
 	clipboard.on('success', () => {
 		$node
 			.tooltip('destroy')
-			.tooltip($.extend({}, tooltipOptions, { trigger: 'manual', title: 'Copied!' }))
+			.tooltip(Object.assign({}, tooltipOptions, { trigger: 'manual', title: 'Copied!' }))
 			.tooltip('show');
 
 		setTimeout(setDefaultTooltip, 1000);
@@ -36,7 +36,7 @@ module.exports = (node, title = 'Copy to Clipboard', tooltipPlacement = 'top', n
 	clipboard.on('error', () => {
 		$node
 			.tooltip('destroy')
-			.tooltip($.extend({}, tooltipOptions, { trigger: 'manual', title: 'Press Ctrl+C to copy' }))
+			.tooltip(Object.assign({}, tooltipOptions, { trigger: 'manual', title: 'Press Ctrl+C to copy' }))
 			.tooltip('show');
 
 		setTimeout(setDefaultTooltip, 1000);
