@@ -197,8 +197,8 @@ module.exports = {
 
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 	},
-	makeHTTPRequest (obj, rawResponse = false) {
-		let { method = 'GET', body, url, headers } = obj;
+	makeHTTPRequest (obj) {
+		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
 
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
