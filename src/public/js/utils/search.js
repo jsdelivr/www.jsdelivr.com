@@ -32,7 +32,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 
 module.exports.getByName = (name) => {
 	return npmIndex.getObject(name).then((pkg) => {
-		return $.extend(true, {}, pkg);
+		return _.deepExtend({}, pkg);
 	});
 };
 
