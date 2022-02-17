@@ -223,4 +223,27 @@ module.exports = {
 	createQueryString (params) {
 		return '?' + Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
 	},
+	deepExtend (out = {}, ...rest) {
+		for (let i = 0; i < rest.length; i++) {
+			let obj = rest[i];
+
+			if (!obj) { continue; }
+
+			for (let key in obj) {
+				if (Object.prototype.hasOwnProperty.call(obj, key)) {
+					if (typeof obj[key] === 'object' && obj[key] !== null) {
+						if (obj[key] instanceof Array) {
+							out[key] = obj[key].slice(0);
+						} else {
+							out[key] = this.deepExtend(out[key], obj[key]);
+						}
+					} else {
+						out[key] = obj[key];
+					}
+				}
+			}
+		}
+
+		return out;
+	},
 };
