@@ -1,4 +1,5 @@
 const { npmIndex } = require('../../../lib/algolia');
+const _ = require('../../../public/js/_');
 
 module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	return Promise.resolve().then(() => {
@@ -22,7 +23,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			});
 
 			return {
-				response: $.extend(true, {}, response),
+				response: _.deepExtend({}, response),
 				query: queryString,
 			};
 		});
