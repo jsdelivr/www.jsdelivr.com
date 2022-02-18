@@ -1,5 +1,6 @@
 require('./polyfills');
 
+const _ = require('./_');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
 const cGithub = require('../../views/pages/github.html');
@@ -98,7 +99,7 @@ app.router.addRoute('/custom-cdn-oss', cCustomCdnOss);
 app.router.addRoute('/custom-cdn-oss/:name', cCustomCdnOssProject);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
-$(() => {
+_.onDocumentReady(() => {
 	let ractive = new Ractive();
 	ractive.set('@shared.app', app);
 
