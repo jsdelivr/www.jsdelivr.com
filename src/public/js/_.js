@@ -246,4 +246,11 @@ module.exports = {
 
 		return out;
 	},
+	onDocumentReady (fn) {
+		if (document.readyState !== 'loading') {
+			fn();
+		} else {
+			document.addEventListener('DOMContentLoaded', fn);
+		}
+	},
 };
