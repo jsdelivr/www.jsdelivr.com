@@ -64,7 +64,7 @@ describe('package', () => {
 		await browser.findElement({ css: '#testInput' }).sendKeys(KEY.CONTROL, 'v');
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '#testInput' }).getAttribute('value')).to.eventually.equal('https://cdn.jsdelivr.net/npm/jsdelivr@0.1.2/.jshintrc');
-		await browser.executeScript(`$('#testInput').remove()`);
+		await browser.executeScript(`let ele = document.querySelector('#testInput'); ele.parentNode.removeChild(ele)`);
 	});
 
 	it('adding files to collection works', async () => {
