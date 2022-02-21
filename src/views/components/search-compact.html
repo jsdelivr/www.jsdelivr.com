@@ -78,11 +78,9 @@
 		},
 		onrender () {
 			if (!this.isServer) {
-				let offsetTop = pageYOffset;
-				scrollTo(0, offsetTop);
 				this.set('initialValue', this.get('query'));
 
-				let s = debounce((keypath) => {
+				let s = debounce(() => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page'), 5).then((result) => {
 							result.response.hits.forEach((hit) => {
@@ -102,11 +100,6 @@
 									nbPages: result.response.nbPages,
 									nbHits: result.response.nbHits,
 								});
-
-								// Scroll to the results.
-								if (!pageYOffset || keypath === 'page') {
-									this.scrollToSearch();
-								}
 							}
 						});
 					}
@@ -143,13 +136,6 @@
 					}
 				});
 			}
-		},
-		scrollToSearch () {
-			scrollTo({
-				top: 0,
-				left: Math.floor($('.search-input').offset().top / 100) * 100,
-				behavior: 'smooth',
-			});
 		},
 	};
 </script>
