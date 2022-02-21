@@ -189,7 +189,7 @@
 
 							{{#if files.length > 5}}
 								{{#if showMoreFiles}}
-									<div on-click="@this.showLessFiles()" class="showmoreless"><span><i class="fa fa-chevron-up"></i> Show less...</span></div>
+									<div on-click="@this.toggle('showMoreFiles')" class="showmoreless"><span><i class="fa fa-chevron-up"></i> Show less...</span></div>
 								{{else}}
 									<div on-click="@this.toggle('showMoreFiles')" class="showmoreless"><span><i class="fa fa-chevron-down"></i> Show more...</span></div>
 								{{/if}}
@@ -461,13 +461,6 @@
 		},
 		getFileObject (name, hash) {
 			return { file: name, hash, type: 'npm', name: 'foundation-sites', version: this.get('selectedVersion'), selected: false };
-		},
-		showLessFiles () {
-			this.toggle('showMoreFiles').then(() => {
-				$('html, body').animate({
-					scrollTop: $('#customize').offset().top - $('#customize .customize-bar').outerHeight(),
-				});
-			});
 		},
 	};
 </script>
