@@ -125,9 +125,9 @@
 				{{#if _.listFiles(~/files, path).length > filesLimit}}
 					<div class="show-more-toggle">
 						{{#if showMoreFiles}}
-						<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
+							<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
 						{{else}}
-						<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
+							<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
 						{{/if}}
 					</div>
 				{{/if}}
@@ -200,7 +200,7 @@
 							let defaultError = 'Failed to load the file listing.';
 
 							if (error.responseJSON && error.responseJSON.message) {
-								let errorHtml = defaultError + '<br>' + $('<div></div>').text(error.responseJSON.message).html();
+								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
 
 								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
@@ -287,9 +287,14 @@
 		},
 		toggleShowMoreFiles () {
 			this.toggle('showMoreFiles').then(() => {
-				if (!this.get('showMoreFiles') && $('.c-package').offset().top < $(document).scrollTop()) {
-					$('html, body').animate({
-						scrollTop: 0,
+				if (
+					!this.get('showMoreFiles')
+					&& document.querySelector('.c-package').getBoundingClientRect().top + document.documentElement.scrollTop
+					< (window.pageYOffset || document.documentElement.scrollTop)
+				) {
+					window.scrollTo({
+						top: 0,
+						behavior: 'smooth',
 					});
 				}
 			});
