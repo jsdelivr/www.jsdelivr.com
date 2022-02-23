@@ -33,11 +33,11 @@ let tooltipDecorator =  (
 
 		switch (position) {
 			case 'top':
-				yPos = top - 10;
+				yPos = top - tooltip.clientHeight - 10;
 				break;
 			case 'left':
 			case 'right':
-				yPos = top + (bottom - top) / 2;
+				yPos = (top + bottom) / 2 - tooltip.clientHeight / 2;
 				break;
 			default:
 				yPos = bottom + 10;
@@ -55,7 +55,7 @@ let tooltipDecorator =  (
 				xPos = left - tooltip.clientWidth - 10;
 				break;
 			case 'right':
-				xPos = right + tooltip.clientWidth + 10;
+				xPos = right + 10;
 				break;
 			default:
 				xPos = left + (right - left) / 2 - tooltip.clientWidth / 2;
