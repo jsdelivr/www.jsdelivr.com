@@ -11,13 +11,16 @@ module.exports = (
 	let getPositionClass = (position) => {
 		let resClass;
 
-		switch(position) {
+		switch (position) {
 			case 'top':
-				resClass = 'ractive-tooltip-top';break;
+				resClass = 'ractive-tooltip-top';
+				break;
 			case 'left':
-				resClass = 'ractive-tooltip-left';break;
+				resClass = 'ractive-tooltip-left';
+				break;
 			case 'right':
-				resClass = 'ractive-tooltip-right';break;
+				resClass = 'ractive-tooltip-right';
+				break;
 			default:
 				resClass = 'ractive-tooltip-bottom';
 		}
