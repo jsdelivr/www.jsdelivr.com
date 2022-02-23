@@ -43,7 +43,7 @@ let tooltipDecorator =  (
 				yPos = bottom + 10;
 		}
 
-		return yPos;
+		return Math.round(yPos);
 	};
 
 	let getXPos = (position) => {
@@ -61,7 +61,7 @@ let tooltipDecorator =  (
 				xPos = left + (right - left) / 2 - tooltip.clientWidth / 2;
 		}
 
-		return xPos;
+		return Math.round(xPos);
 	};
 
 	handlers = {
