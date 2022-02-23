@@ -1,4 +1,4 @@
-let tooltipDecorator =  (
+let tooltipDecorator = (
 	node,
 	content,
 	position = 'bottom',
@@ -66,17 +66,21 @@ let tooltipDecorator =  (
 
 	handlers = {
 		mouseover () {
-			tooltip = document.createElement(elementName);
-			tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
-			tooltip.textContent = content;
-      document.body.appendChild( tooltip );
+			if (document.querySelector('#ractive-tooltip-instance') !== null) {
+				tooltip = document.createElement(elementName);
+				tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
+				tooltip.textContent = content;
+				tooltip.id = 'ractive-tooltip-instance';
+				document.body.appendChild(tooltip);
+			}
 		},
 		mousemove () {
 			tooltip.style.left = `${offsetX ? offsetX : getXPos(position)}px`;
 			tooltip.style.top = `${offsetY ? offsetY : getYPos(position)}px`;
 		},
 		mouseleave () {
-			tooltip.parentNode.removeChild(tooltip);
+			let tooltipInsance = document.querySelector('#ractive-tooltip-instance');
+			tooltipInsance.parentElement.removeChild(tooltipInsance);
 		},
 	};
 
