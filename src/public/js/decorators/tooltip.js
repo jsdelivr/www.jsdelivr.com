@@ -27,17 +27,53 @@ module.exports = (
 
 		return resClass;
 	};
+	let getYPos = (position) => {
+		let yPos;
+		let { top, bottom } = node.getBoundingClientRect();
+
+		switch (position) {
+			case 'top':
+				yPos = top - 10;
+				break;
+			case 'left':
+			case 'right':
+				yPos = top + (bottom - top) / 2;
+				break;
+			default:
+				yPos = bottom + 10;
+		}
+
+		return yPos;
+	};
+
+	let getXPos = (position) => {
+		let xPos;
+		let { left, right } = node.getBoundingClientRect();
+
+		switch (position) {
+			case 'left':
+				xPos = left - tooltip.clientWidth - 10;
+				break;
+			case 'right':
+				xPos = right + tooltip.clientWidth + 10;
+				break;
+			default:
+				xPos = left + (right - left) / 2 - tooltip.clientWidth / 2;
+		}
+
+		return xPos;
+	};
 
 	handlers = {
 		mouseover () {
 			tooltip = document.createElement(elementName);
 			tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
 			tooltip.textContent = content;
-			node.parentNode.insertBefore(tooltip, node);
+      node.parentNode.insertBefore( tooltip, node );
 		},
 		mousemove (event) {
-			tooltip.style.left = `${offsetX ? offsetX : event.clientX - Math.round(tooltip.offsetWidth / 2)}px`;
-			tooltip.style.top = `${offsetY ? offsetY : event.clientY - tooltip.clientHeight - 20}px`;
+			tooltip.style.left = `${offsetX ? offsetX : getXPos(position)}px`;
+			tooltip.style.top = `${offsetY ? offsetY : getYPos(position)}px`;
 		},
 		mouseleave () {
 			tooltip.parentNode.removeChild(tooltip);
