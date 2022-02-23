@@ -1,4 +1,4 @@
-module.exports = (
+let tooltipDecorator =  (
 	node,
 	content,
 	position = 'bottom',
@@ -69,9 +69,9 @@ module.exports = (
 			tooltip = document.createElement(elementName);
 			tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
 			tooltip.textContent = content;
-      node.parentNode.insertBefore( tooltip, node );
+      document.body.appendChild( tooltip );
 		},
-		mousemove (event) {
+		mousemove () {
 			tooltip.style.left = `${offsetX ? offsetX : getXPos(position)}px`;
 			tooltip.style.top = `${offsetY ? offsetY : getYPos(position)}px`;
 		},
@@ -96,3 +96,5 @@ module.exports = (
 		},
 	};
 };
+
+module.exports = tooltipDecorator;
