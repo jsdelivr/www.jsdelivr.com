@@ -66,7 +66,7 @@ let tooltipDecorator = (
 
 	handlers = {
 		mouseover () {
-			if (document.querySelector('#ractive-tooltip-instance') !== null) {
+			if (document.querySelector('#ractive-tooltip-instance') === null) {
 				tooltip = document.createElement(elementName);
 				tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
 				tooltip.textContent = content;
@@ -79,8 +79,8 @@ let tooltipDecorator = (
 			tooltip.style.top = `${offsetY ? offsetY : getYPos(position)}px`;
 		},
 		mouseleave () {
-			let tooltipInsance = document.querySelector('#ractive-tooltip-instance');
-			tooltipInsance.parentElement.removeChild(tooltipInsance);
+			let tooltipInstance = document.querySelector('#ractive-tooltip-instance');
+			tooltipInstance.parentElement.removeChild(tooltipInstance);
 		},
 	};
 
