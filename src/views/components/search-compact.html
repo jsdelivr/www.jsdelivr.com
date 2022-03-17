@@ -13,7 +13,7 @@
 			<div class="search-results">
 				{{#each packages}}
 					<div class="c-package">
-						<c-package-header package="{{this}}" version="{{version}}" query="{{query}}" searchOpened={{searchOpened}} onlyHeader="true"></c-package-header>
+						<c-package-header package="{{this}}" version="{{version}}" query="{{query}}" compactSearch="true" searchOpened={{searchOpened}} onlyHeader="true"></c-package-header>
 					</div>
 				{{elseif query && nbHits === 0}}
 					<p class="c-search-compact-empty">No results found</p>
@@ -78,9 +78,13 @@
 		},
 		onrender () {
 			if (!this.isServer) {
+
+				let offsetTop = pageYOffset;
+				scrollTo(0, offsetTop);
+
 				this.set('initialValue', this.get('query'));
 
-				let s = debounce(() => {
+				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page'), 5).then((result) => {
 							result.response.hits.forEach((hit) => {
@@ -100,6 +104,11 @@
 									nbPages: result.response.nbPages,
 									nbHits: result.response.nbHits,
 								});
+
+								// Scroll to the results.
+								if (!pageYOffset || keypath === 'page') {
+									this.scrollToSearch();
+								}
 							}
 						});
 					}
@@ -136,6 +145,13 @@
 					}
 				});
 			}
+		},
+		scrollToSearch () {
+			scrollTo({
+				top: 0,
+				left: Math.floor($('.search-input').offset().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
 	};
 </script>

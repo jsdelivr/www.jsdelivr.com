@@ -1,28 +1,37 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
 
 <div class="c-stats-table">
+  <div class="flex">
+    {{#each ~/data: i}}
+    <div class="item">
+    {{#if rowIndexes}}
+    <span class="index">{{i+1}}</span>
+    {{/if}}
+    {{>column1}}
+      <span class="hits">{{formatValue(this[valueKey])}}</span>
+       <div class="table-chart-lg">
+        <div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
 	<table class="stats-table-table">
-		<colgroup>
-			{{#each columns}}
-			<col style="width:{{width}};">
-			{{/each}}
-		</colgroup>
-
-		<thead>
-			<tr>
-				<th colspan="3">
-					{{#if title}}
-					{{title}}
-					{{else}}
-					{{>header}}
-					{{/if}}
-				</th>
-			</tr>
-		</thead>
+		{{#if title}}
+			<thead>
+				<tr>
+					<th colspan="3">
+						{{title}}
+					</th>
+				</tr>
+			</thead>
+		{{/if}}
 
 		<tbody>
-			{{#each ~/data}}
+			{{#each ~/data: i}}
 			<tr>
+				{{#if rowIndexes}}
+					<td><span class="index">{{i+1}}</span></td>
+				{{/if}}
 				<td>{{>column1}}</td>
 				<td class="hits">{{formatValue(this[valueKey])}}</td>
 				<td>
@@ -41,11 +50,6 @@
 	component.exports = {
 		data () {
 			return {
-				columns: [
-					{ width: '50%' },
-					{ width: '22%' },
-					{ width: '28%' },
-				],
 				desc: true,
 				formatValue: _.formatNumber,
 				valueKey: 'hits',

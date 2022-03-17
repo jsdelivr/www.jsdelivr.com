@@ -24,7 +24,7 @@ describe('homepage', () => {
 
 	it('usage table gh (click)', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
-		await browser.findElement({ css: '.docs-tab:nth-of-type(2)' }).click();
+		await browser.findElement({ css: '.docs-tab:nth-of-type(3)' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.docs-link' }).getText()).to.eventually.contain('https://cdn.jsdelivr.net/gh/user/repo@version/file');
 	});
@@ -36,7 +36,7 @@ describe('homepage', () => {
 
 	it('usage table wordpress (click)', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
-		await browser.findElement({ css: '.docs-tab:nth-of-type(3)' }).click();
+		await browser.findElement({ css: '.docs-tab:nth-of-type(4)' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.docs-link' }).getText()).to.eventually.contain('https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file');
 	});
@@ -48,6 +48,6 @@ describe('homepage', () => {
 
 	it('top packages table loads', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
-		await expect(browser.findElement({ css: '.stats-table-table thead th' }).getText()).to.eventually.contain('Top 10 npm packages last 30 days');
+		await expect(browser.findElement({ css: '.stats-table-table td:nth-child(2)' }).getText()).to.eventually.contain('npm');
 	});
 });

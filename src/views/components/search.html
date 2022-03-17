@@ -3,19 +3,19 @@
 <div class="c-search">
 	<div class="container">
 		<div class="search-input-wrapper clearfix">
-			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
-			<a class="search-by" target="_blank" rel="noopener noreferrer" href="https://www.algolia.com">
+			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+			<!-- <a class="search-by" target="_blank" rel="noopener noreferrer" href="https://www.algolia.com">
 				Real-time search by <img width="80" height="20" src="{{@shared.assetsHost}}/img/algolia.png" srcset="{{@shared.assetsHost}}/img/algolia@2x.png 2x" title="Algolia">
-			</a>
+			</a> -->
 		</div>
 
 		<div class="search-results">
 			{{#each packages}}
 				<div class="c-package">
-					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" query="{{query}}"></c-package-header>
+					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}"></c-package-header>
 				</div>
 			{{elseif query && nbHits === 0}}
-				No results founds
+				<p class="c-search-empty">No results found</p>
 			{{/each}}
 		</div>
 
@@ -85,9 +85,9 @@
 
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
-						search(this.get('query'), this.get('page'), 5).then((result) => {
+						search(this.get('query'), this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
-								hit.jsDelivrHits = _.autoConvertBytesToUnits(hit.jsDelivrHits);
+								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
 							});
 
 							// The query might have changed since we sent the request.
@@ -139,6 +139,23 @@
 				top: Math.floor(document.querySelector('.search-input').getBoundingClientRect().top / 100) * 100,
 				behavior: 'smooth',
 			});
+		},
+		nFormatter (num) {
+			let lookup = [
+				{ value: 1, symbol: '' },
+				{ value: 1e3, symbol: 'K' },
+				{ value: 1e6, symbol: 'M' },
+				{ value: 1e9, symbol: 'G' },
+				{ value: 1e12, symbol: 'T' },
+				{ value: 1e15, symbol: 'P' },
+				{ value: 1e18, symbol: 'E' },
+			];
+			let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+			let item = lookup.slice().reverse().find((item) => {
+				return num >= item.value;
+			});
+			return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 		},
 	};
 </script>
