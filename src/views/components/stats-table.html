@@ -1,6 +1,20 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
 
 <div class="c-stats-table">
+  <div class="flex">
+    {{#each ~/data: i}}
+    <div class="item">
+    {{#if rowIndexes}}
+    <span class="index">{{i+1}}</span>
+    {{/if}}
+    {{>column1}}
+      <span class="hits">{{formatValue(this[valueKey])}}</span>
+       <div class="table-chart-lg">
+        <div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
 	<table class="stats-table-table">
 		{{#if title}}
 			<thead>

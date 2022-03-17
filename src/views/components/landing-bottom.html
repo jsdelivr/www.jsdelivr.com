@@ -155,49 +155,18 @@
 						</g>
 						<g transform="translate(170, 298)">
 							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(226, 378)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-
-						<g transform="translate(386, 130)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(402, 90)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(402, 138)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(418, 98)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(442, 50)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(442, 106)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(466, 114)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-
-						<g transform="translate(850, 354)">
-							<circle r="2" />
-							<circle r="2" />
-						</g>
-						<g transform="translate(818, 378)">
-							<circle r="2" />
-							<circle r="2" />
+							&:not(.active) { display: none; @media (min-width:
+							@screen-sm-min) { display: block; } } } &-line {
+							position: absolute; display: block; bottom: 0;
+							height: 2px; width: 150px; left: 24px; background:
+							@c-orange; transition: left 0.4s, width 0.4s; } }
+							&-slider { position: relative; .c-slider { width:
+							100%; overflow: hidden; overflow-y: auto; height:
+							310px; } } &-slide { position: absolute; // width:
+							100%; // height: 100%; overflow-y: auto; top: 0;
+							left: 0; padding: 24px 24px 24px 52px;
+							padding-right: 0; @media (min-width: @screen-sm-min)
+							{ padding: 24px 24px 24px 52px; >
 						</g>
 
 						<g transform="translate(794, 226)">
@@ -399,7 +368,7 @@
 				<div class="code-tabs flex">
 					<a
 						on-click="@this.set('activeTab', '')"
-						class="{{#unless activeTab}}active{{/unless}}"
+						class="{{#if activeTab === 'entrypoints'}}active{{/if}}"
 					>
 						Get project entrypoint
 					</a>
@@ -422,6 +391,36 @@
 						class="code-tabs-line"
 						style="left: {{activeTabLineData[0]}}px; width: {{activeTabLineData[1]}}px;"
 					></div>
+
+					<div class="dropdown">
+						<button
+							class="dropdown-toggle"
+							type="button"
+							id="cdn-dropdown"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="true"
+						>
+							<img
+								width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/icons/chevron-down.svg"
+								loading="lazy"
+							/>
+						</button>
+						<ul
+							class="dropdown-menu dropdown-menu-right"
+							aria-labelledby="cdn-dropdown"
+						>
+							{{#each ~/codeList}}
+							<li>
+								<a on-click="@this.set('activeTab', this)"
+									>{{this}}</a
+								>
+							</li>
+							{{/each}}
+						</ul>
+					</div>
 				</div>
 
 				<div class="code-slider">
@@ -435,120 +434,52 @@
 								<p class="code-link">
 									https://data.jsdelivr.com/v1/package/npm/bootstrap@5.1.0/entrypoints
 								</p>
-								<p></p>
+                <p>&nbsp;</p>
 								<p>// =></p>
 								<p>{</p>
-								<p>"<span class="code-key">js</span>": {</p>
 								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>js</span
+									>": {
+								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									"<span class="code-key">file</span>": "<span
 										class="code-string"
 										>/dist/js/bootstrap.min.js</span
 									>",
 								</p>
 								<p>
-									"<span class="code-key">guessed</span>":
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>guessed</span
+									>":
 									<span class="code-boolean">false</span>
 								</p>
-								<p>},</p>
-								<p>"<span class="code-key">css</span>": {</p>
+								<p>&nbsp;&nbsp;&nbsp;&nbsp;},</p>
 								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>css</span
+									>": {
+								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>file</span
+									>": "<span class="code-string"
 										>/dist/css/bootstrap.min.css</span
 									>",
 								</p>
 								<p>
-									"<span class="code-key">guessed</span>":
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>guessed</span
+									>":
 									<span class="code-boolean">false</span>
 								</p>
-								<p>}</p>
-								<p>},</p>
-								<p>{</p>
-								<p>"<span class="code-key">js</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/js/bootstrap.min.js</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>},</p>
-								<p>"<span class="code-key">css</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/css/bootstrap.min.css</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>}</p>
-								<p>},</p>
-								<p>{</p>
-								<p>"<span class="code-key">js</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/js/bootstrap.min.js</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>},</p>
-								<p>"<span class="code-key">css</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/css/bootstrap.min.css</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>}</p>
-								<p>},</p>
-							</div>
-						</c-slide>
-
-						<c-slide>
-							<div class="code-slide">
-								<p class="code-link">
-									https://data.jsdelivr.com/v1/package/npm/bootstrap@5.1.0/entrypoints
-								</p>
-								<p></p>
-								<p>// =></p>
-								<p>{</p>
-								<p>"<span class="code-key">js</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/js/bootstrap.min.js</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>},</p>
-								<p>"<span class="code-key">css</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
-										class="code-string"
-										>/dist/css/bootstrap.min.css</span
-									>",
-								</p>
-								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
+								<p>&nbsp;&nbsp;&nbsp;&nbsp;}</p>
 								<p>}</p>
 							</div>
 						</c-slide>
@@ -556,35 +487,182 @@
 						<c-slide>
 							<div class="code-slide">
 								<p class="code-link">
-									https://data.jsdelivr.com/v1/package/npm/bootstrap@5.1.0/entrypoints
+									https://data.jsdelivr.com/v1/package/npm/jquery
 								</p>
-								<p></p>
+                <p>&nbsp;</p>
 								<p>// =></p>
 								<p>{</p>
-								<p>"<span class="code-key">js</span>": {</p>
 								<p>
-									"<span class="code-key">file</span>": "<span
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>tags</span
+									>": {
+								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									"<span class="code-key">beta</span>": "<span
 										class="code-string"
-										>/dist/js/bootstrap.min.js</span
+										>3.2.1</span
 									>",
 								</p>
 								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
-								</p>
-								<p>},</p>
-								<p>"<span class="code-key">css</span>": {</p>
-								<p>
-									"<span class="code-key">file</span>": "<span
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									"<span class="code-key">latest</span>": "<span
 										class="code-string"
-										>/dist/css/bootstrap.min.css</span
+										>3.2.1</span
 									>",
 								</p>
+								<p>&nbsp;&nbsp;&nbsp;&nbsp;},</p>
 								<p>
-									"<span class="code-key">guessed</span>":
-									<span class="code-boolean">false</span>
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>versions</span
+									>": [
 								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-string"
+										>3.2.1</span
+									>",
+                </p>
+                  <p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-string"
+										>3.2.0</span
+									>",
+                </p>
+<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-string"
+										>3.1.1</span
+									>",
+                </p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</p>
+								<p>&nbsp;&nbsp;&nbsp;&nbsp;]</p>
 								<p>}</p>
+							</div>
+						</c-slide>
+
+						<c-slide>
+							<div class="code-slide">
+								<p class="code-link">
+									https://data.jsdelivr.com/v1/package/npm/jquery@3.2.1
+								</p>
+                <p>&nbsp;</p>
+								<p>// =></p>
+								<p>{</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>default</span
+                  >": "<span class="code-string">/dist/jquery.min.js</span>",
+								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">files</span>": [
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+                  </p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">type</span>": "<span class="code-string">directory</span>",</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>name</span
+                  >": "<span class="code-string">dist</span>",
+								</p>
+								<p>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span
+										class="code-key"
+										>files</span
+									>": [
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+								</p>
+
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">type</span>": "<span class="code-string">file</span>",
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">name</span>": "<span class="code-string">core.js</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">hash</span>": "<span class="code-string">BSsbXsDErniq/HpuhULFor8x1CpA2sPPwQLlEoEri+0=</span>", <span class="code-comment">// base64-encoded sha256</span>
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">time</span>": "<span class="code-string">2017-03-20T19:01:15.000Z</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">size</span>": <span class="code-number">11197</span>,
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+								</p>
+
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+								</p>
+
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">type</span>": "<span class="code-string">file</span>",
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">name</span>": "<span class="code-string">jquery.js</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">hash</span>": "<span class="code-string">DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">time</span>": "<span class="code-string">2017-03-20T19:01:15.000Z</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">size</span>": <span class="code-number">268039</span>,
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+								</p>
+
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">type</span>": "<span class="code-string">file</span>",
+								</p>
+								<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">name</span>": "<span class="code-string">jquery.min.js</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">hash</span>": "<span class="code-string">hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">time</span>": "<span class="code-string">2017-03-20T19:01:15.000Z</span>",
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<span class="code-key">size</span>": <span class="code-number">86659</span>,
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...
+								</p>
+<p>
+                  &nbsp;&nbsp;&nbsp;&nbsp;]
+								</p>
+                <p>}</p>
+
+
+
+
 							</div>
 						</c-slide>
 					</c-slider>
@@ -601,6 +679,25 @@
 				<div class="code-head">
 					<span></span>
 				</div>
+        <pre>
+<span>import _ from 'https://esm.run/lodash-es'</span>
+<span>import * as d3 from 'https://esm.run/d3';</span>
+<span>import colors from 'https://esm.run/nice-color-palettes';</span>
+
+<span>const message = 'jsDelivr is Awesome!';</span>
+
+<span>for (let char of message.split(' ')) {</span>
+<span>	d3.select('#msg')</span>
+<span>		.append('span')</span>
+<span>		.text(char + ' ')</span>
+<span>		.style('color', colors[_.random(0, 99)][_.random(0, 4)]);</span>
+<span>}</span>
+</pre>
+        <div class="code-footer">
+          <span>230 ms loaded from CDN</span>
+          <button class="btn-primary" >Run</button>
+
+        </div>
 			</div>
 
 			<div class="js-modules-content api-content">
@@ -684,50 +781,50 @@
 
 	<section class="top-packages endpoints section">
 		<div class="container-lg flex">
-			<div class="top-packages-table endpoints-flex">
-				<div>
-					<img
-						width="202"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint1.png"
-						srcset="
-							{{@shared.assetsHost}}/img/landing/new/endpoint1@2x.png 2x
-						"
-					/>
-					<p>406 745 962</p>
-					<span>Requests Served last month</span>
-					<p>52.3 GB</p>
-					<span>Bandwidth last month</span>
-				</div>
-				<div>
-					<img
-						width="170"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint2.png"
-						srcset="
-							{{@shared.assetsHost}}/img/landing/new/endpoint2@2x.png 2x
-						"
-					/>
-					<p>884 745 962</p>
-					<span>Requests Served last month</span>
-					<p>45.2 GB</p>
-					<span>Bandwidth last month</span>
-				</div>
-				<div>
-					<img
-						width="213"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint3.png"
-						srcset="
-							{{@shared.assetsHost}}/img/landing/new/endpoint3@2x.png 2x
-						"
-					/>
-					<p>28 745 962</p>
-					<span>Requests Served last month</span>
-					<p>34.5 GB</p>
-					<span>Bandwidth last month</span>
-				</div>
-			</div>
+      <div class="top-packages-table-wrapper"><div class="top-packages-table endpoints-flex">
+        <div>
+          <img
+            width="202"
+            height="56"
+            src="{{@shared.assetsHost}}/img/landing/new/endpoint1.png"
+            srcset="
+            {{@shared.assetsHost}}/img/landing/new/endpoint1@2x.png 2x
+            "
+          />
+          <p>406 745 962</p>
+        <span>Requests Served last month</span>
+          <p>52.3 GB</p>
+          <span>Bandwidth last month</span>
+        </div>
+        <div>
+          <img
+            width="170"
+            height="56"
+            src="{{@shared.assetsHost}}/img/landing/new/endpoint2.png"
+            srcset="
+            {{@shared.assetsHost}}/img/landing/new/endpoint2@2x.png 2x
+            "
+          />
+          <p>884 745 962</p>
+        <span>Requests Served last month</span>
+          <p>45.2 GB</p>
+          <span>Bandwidth last month</span>
+        </div>
+        <div>
+          <img
+            width="213"
+            height="56"
+            src="{{@shared.assetsHost}}/img/landing/new/endpoint3.png"
+            srcset="
+            {{@shared.assetsHost}}/img/landing/new/endpoint3@2x.png 2x
+            "
+          />
+          <p>28 745 962</p>
+        <span>Requests Served last month</span>
+          <p>34.5 GB</p>
+          <span>Bandwidth last month</span>
+        </div>
+      </div></div>
 
 			<div class="top-packages-title">
 				<h5>Custom OSS Endpoints</h5>
@@ -744,10 +841,18 @@
 					/>
 				</a>
 			</div>
+<a class="btn-arrow" href="/custom-cdn-oss">
+					Explore all custom endpoints
+					<img
+						width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/icons/arrow-right.svg"
+					/>
+				</a>
 		</div>
 	</section>
 
-	<section class="top-packages section">
+	<section class="top-packages sponsors section">
 		<div class="container-lg flex">
 			<div class="top-packages-title">
 				<h5>jsDelivr is used by millions of websites globally</h5>
@@ -782,7 +887,8 @@
 		data() {
 			return {
 				_,
-				activeTab: "",
+				activeTab: "entrypoints",
+                                codeList: ["entrypoints", "versions", "files"],
 			};
 		},
 		oninit() {
