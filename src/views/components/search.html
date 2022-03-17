@@ -44,13 +44,14 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
 	const debounce = require('../../public/js/utils/debounce');
 	const search = require('../../public/js/utils/search');
-	let app;
 
 	component.exports = {
 		data () {
 			return {
+				_,
 				page: 0,
 				query: '',
 				packages: [],
@@ -74,10 +75,9 @@
 		},
 		onrender () {
 			if (!this.isServer) {
-				app = this.get('@shared.app');
 				let offsetTop = pageYOffset;
 				this.find('.search-input').focus();
-				scrollTo(0, offsetTop);
+				window.scrollTo(0, offsetTop);
 
 				if (this.get('caretPosition')) {
 					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
@@ -135,14 +135,10 @@
 			}
 		},
 		scrollToSearch () {
-			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
-				});
-			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
-				app.config.animateScrolling = true;
-			}
+			window.scrollTo({
+				top: Math.floor(document.querySelector('.search-input').getBoundingClientRect().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
 		nFormatter (num) {
 			let lookup = [

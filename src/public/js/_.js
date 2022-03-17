@@ -94,34 +94,6 @@ module.exports = {
 
 		return `${n}th`;
 	},
-	getPackageTabChartXData (periodDates) {
-		let chartXDates = {
-			// all days during period
-			periodDays: [],
-			// all months during period
-			periodMonths: [],
-		};
-
-		periodDates.forEach((date) => {
-			let splittedDate = date.split('-');
-			let dateDay = splittedDate.slice(-1)[0];
-			let dateMonth = splittedDate.slice(0, 2).join('-');
-			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
-
-			if (!chartXDates[periodMonthFormatted]) {
-				chartXDates[periodMonthFormatted] = [];
-			}
-
-			chartXDates[periodMonthFormatted].push(dateDay);
-			chartXDates.periodDays.push(dateDay);
-
-			if (chartXDates.periodMonths.indexOf(periodMonthFormatted) === -1) {
-				chartXDates.periodMonths.push(periodMonthFormatted);
-			}
-		});
-
-		return chartXDates;
-	},
 	getChartXAxisData (periodDates, period = 'month') {
 		let dataPerMonths = [];
 		let chartXData = [];
@@ -168,7 +140,7 @@ module.exports = {
 	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0, ignoreExtremlySmallValue = true) {
 		let magnitude = Math.floor(Math.log10(value) === -Infinity ? 0 : Math.log10(value)) - magnitudeCorrection;
 
-		if (ignoreExtremlySmallValue && value < 10) { return 0; }
+		if (ignoreExtremlySmallValue && value < 10) { return rounding === 'ceil' ? 10 : 0; }
 
 		switch (rounding) {
 			case 'round':
@@ -177,6 +149,108 @@ module.exports = {
 				return Math.ceil(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 			case 'floor':
 				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
+		}
+	},
+	convertBytesToUnits (bytesAmount, units = 'GB') {
+		let unitsBase = null;
+
+		switch (units) {
+			case 'kB':
+				unitsBase = 1e3;
+				break;
+			case 'MB':
+				unitsBase = 1e6;
+				break;
+			case 'GB':
+				unitsBase = 1e9;
+				break;
+			case 'TB':
+				unitsBase = 1e12;
+				break;
+			case 'PB':
+				unitsBase = 1e15;
+				break;
+			case 'EB':
+				unitsBase = 1e18;
+				break;
+			default:
+				unitsBase = 1e9;
+		}
+
+		return Math.round(bytesAmount / unitsBase);
+	},
+	autoConvertBytesToUnits (num) {
+		let lookup = [
+			{ value: 1, symbol: '' },
+			{ value: 1e3, symbol: 'K' },
+			{ value: 1e6, symbol: 'M' },
+			{ value: 1e9, symbol: 'G' },
+			{ value: 1e12, symbol: 'T' },
+			{ value: 1e15, symbol: 'P' },
+			{ value: 1e18, symbol: 'E' },
+		];
+		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+		let item = lookup.slice().reverse().find((item) => {
+			return num >= item.value;
+		});
+
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+	},
+	makeHTTPRequest (obj) {
+		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
+
+		return new Promise((resolve, reject) => {
+			let xhr = new XMLHttpRequest();
+			xhr.open(method || 'GET', method === 'GET' && body ? url + this.createQueryString(body) : url);
+
+			if (headers) {
+				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+			}
+
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					resolve(rawResponse ? xhr.response : JSON.parse(xhr.response));
+				} else {
+					reject(xhr.statusText);
+				}
+			};
+
+			xhr.onerror = () => reject(xhr.statusText);
+			xhr.send(body);
+		});
+	},
+	createQueryString (params) {
+		return '?' + Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
+	},
+	deepExtend (out = {}, ...rest) {
+		for (let i = 0; i < rest.length; i++) {
+			let obj = rest[i];
+
+			if (!obj) { continue; }
+
+			for (let key in obj) {
+				if (Object.prototype.hasOwnProperty.call(obj, key)) {
+					if (typeof obj[key] === 'object' && obj[key] !== null) {
+						if (obj[key] instanceof Array) {
+							out[key] = obj[key].slice(0);
+						} else {
+							out[key] = this.deepExtend(out[key], obj[key]);
+						}
+					} else {
+						out[key] = obj[key];
+					}
+				}
+			}
+		}
+
+		return out;
+	},
+	onDocumentReady (fn) {
+		if (document.readyState !== 'loading') {
+			fn();
+		} else {
+			document.addEventListener('DOMContentLoaded', fn);
 		}
 	},
 };

@@ -189,7 +189,7 @@
 
 							{{#if files.length > 5}}
 								{{#if showMoreFiles}}
-									<div on-click="@this.showLessFiles()" class="showmoreless"><span><i class="fa fa-chevron-up"></i> Show less...</span></div>
+									<div on-click="@this.toggle('showMoreFiles')" class="showmoreless"><span><i class="fa fa-chevron-up"></i> Show less...</span></div>
 								{{else}}
 									<div on-click="@this.toggle('showMoreFiles')" class="showmoreless"><span><i class="fa fa-chevron-down"></i> Show more...</span></div>
 								{{/if}}
@@ -220,7 +220,7 @@
 											<label for="enableSRIM">Enable SRI</label>
 										</div>
 									</div>
-									<i on-click="@this.hideModal()" class="fa fa-close"></i>
+									<i class="fa fa-close" data-dismiss="modal"></i>
 								</div>
 
 								<div class="bottom">
@@ -380,27 +380,27 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-				$(window).on('scroll', () => {
-					let $customizeBar = $('.section-2 .customize-bar');
+				document.addEventListener('scroll', () => {
+					let $customizeBar = document.querySelector('.section-2 .customize-bar');
 
-					if ($(document).width() >= 992) {
-						let offset = $('.section-1').height();
-						let scrolled = $(window).scrollTop();
+					if (document.body.clientWidth >= 992) {
+						let offset = parseFloat(getComputedStyle(document.querySelector('.section-1'), null).height.replace('px', ''));
+						let scrolled = window.pageYOffset;
 
-						if ($customizeBar.hasClass('fixed-cb')) {
+						if ($customizeBar.classList.contains('fixed-cb')) {
 							if (offset > scrolled) {
-								$customizeBar.removeClass('fixed-cb');
-								$('.section-2').css({ 'margin-top': 0 });
+								$customizeBar.classList.remove('fixed-cb');
+								document.querySelector('.section-2').style.marginTop = 0;
 							}
 						} else {
 							if (offset < scrolled) {
-								$customizeBar.addClass('fixed-cb');
-								$('.section-2').css({ 'margin-top': $customizeBar.outerHeight() });
+								$customizeBar.classList.add('fixed-cb');
+								document.querySelector('.section-2').style.marginTop = $customizeBar.offsetHeight;
 							}
 						}
-					} else if ($customizeBar.hasClass('fixed-cb')) {
-						$customizeBar.removeClass('fixed-cb');
-						$('.section-2').css({ 'margin-top': 0 });
+					} else if ($customizeBar.classList.contains('fixed-cb')) {
+						$customizeBar.classList.remove('fixed-cb');
+						document.querySelector('.section-2').style.marginTop = 0;
 					}
 				});
 			}
@@ -461,16 +461,6 @@
 		},
 		getFileObject (name, hash) {
 			return { file: name, hash, type: 'npm', name: 'foundation-sites', version: this.get('selectedVersion'), selected: false };
-		},
-		hideModal () {
-			$('#modal').modal('hide');
-		},
-		showLessFiles () {
-			this.toggle('showMoreFiles').then(() => {
-				$('html, body').animate({
-					scrollTop: $('#customize').offset().top - $('#customize .customize-bar').outerHeight(),
-				});
-			});
 		},
 	};
 </script>

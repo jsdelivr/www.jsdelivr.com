@@ -28,7 +28,7 @@ function buildLinks (collection, html, optimize, alias, sri, outArray) {
 	}
 
 	let collectionCopy = collection.map((file) => {
-		let copy = $.extend(true, {}, file);
+		let copy = _.deepExtend({}, file);
 
 		if (optimize && copy.file === _.getNonMinifiedName(copy.file)) {
 			copy.file = _.getMinifiedName(file.file);

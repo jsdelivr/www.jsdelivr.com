@@ -4,6 +4,7 @@
 <link rel="ractive" href="./top-stats-table.html" name="c-top-stats-table">
 <link rel="ractive" href="./package-sidemenu.html" name="c-package-sidemenu">
 <link rel="ractive" href="./markdown.html" name="c-markdown">
+<link rel="ractive" href="./request-bandwidth-stats.html" name="c-request-bandwidth-stats">
 
 <div class="c-package">
 	<div class="container">
@@ -20,7 +21,7 @@
 				</c-package-header>
 
 				<div class="package-nav">
-					{{#if package.readme && package.readme !== algoliaReadmeErrMsg}}
+					{{#if package.readme}}
 						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
 						</a>
@@ -36,7 +37,7 @@
 					</a>
 				</div>
 
-				{{#if navRoute === 'readme' && package.readme !== algoliaReadmeErrMsg}}
+				{{#if navRoute === 'readme' && package.readme}}
 					<div class="package-readme">
 						<c-markdown text="{{package.readme}}"></c-markdown>
 					</div>
@@ -90,35 +91,9 @@
 					</div>
 				</div>
 
-				<div class="stats-cards">
-					<div>
-						<div class="card-icon">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
-						</div>
-						<div class="card-main-stat">
-							<span>{{_.formatNumber(versionsHitsTotal)}}</span>
-							<span>Requests Served</span>
-						</div>
-						<div class="card-growth">
-							<span class="growth-positive">+34%</span>
-							<span>monthly growth</span>
-						</div>
-					</div>
-
-					<div>
-						<div class="card-icon">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
-						</div>
-						<div class="card-main-stat">
-							<span>648 414</span>
-							<span>Bandwidth</span>
-						</div>
-						<div class="card-growth">
-							<span class="growth-negative">-9%</span>
-							<span>monthly growth</span>
-						</div>
-					</div>
-				</div>
+				{{#if navRoute === "stats"}}
+					<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
+				{{/if}}
 
 				{{#if noPackageStatsData && noVersionsData}}
 					<div class="no-data-wrapper">
@@ -284,7 +259,6 @@
 					month: { value: 'month', isDisabled: false },
 				},
 				usageChartGroupBy: 'day',
-				algoliaReadmeErrMsg: 'ERROR: No README data found!',
 				noPackageStatsData: false,
 				noVersionsData: false,
 				versionsHitsTotal: 0,
@@ -357,6 +331,7 @@
 								return;
 							}
 
+							this.set('noPackageStatsData', false);
 							this.set('statsDateData', response);
 						});
 
@@ -367,6 +342,7 @@
 								return;
 							}
 
+							this.set('noVersionsData', false);
 							this.set('hitsData', response);
 						});
 					}
@@ -374,9 +350,8 @@
 
 				this.observe('package', () => {
 					let readme = this.get('package').readme;
-					let errMsg = this.get('algoliaReadmeErrMsg');
 
-					if (!readme || readme === errMsg) {
+					if (!readme) {
 						this.set('navRoute', 'stats');
 					}
 				});
@@ -423,11 +398,11 @@
 		onrender () {
 			let statsChart;
 			let hitsChart;
-			let statsChartCanvasEl = this.find('#stats-chart');
-			let hitsChartCanvasEl = this.find('#hits-chart');
 
 			// create stats chart
 			this.observe('statsDateData', (statsDateData) => {
+				let statsChartCanvasEl = this.find('#stats-chart');
+
 				if (!statsDateData || !statsChartCanvasEl) { return; }
 
 				let array = [];
@@ -534,6 +509,8 @@
 
 			// create hits chart
 			this.observe('hitsData', (hitsData) => {
+				let hitsChartCanvasEl = this.find('#hits-chart');
+
 				if (!hitsData || !hitsChartCanvasEl) { return; }
 
 				let array = [];

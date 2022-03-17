@@ -1,5 +1,5 @@
 global._ = require('lodash');
-global.Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 const Logger = require('h-logger2');
 const ElasticWriter = require('h-logger2-elastic');
@@ -25,4 +25,4 @@ global.logger = new Logger(
 global.log = logger.scope('global');
 
 const fs = require('fs-extra');
-Promise.promisifyAll(fs);
+Bluebird.promisifyAll(fs);

@@ -24,9 +24,16 @@
 
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			};
 			/* eslint-disable */
 			function initMap () {
-				$(function () {
+				onDocumentReady(function () {
 					app.loaded = true;
 
 					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
