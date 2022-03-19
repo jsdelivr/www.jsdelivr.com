@@ -64,7 +64,7 @@ describe('package', () => {
 		await browser.findElement({ css: '#testInput' }).sendKeys(KEY.CONTROL, 'v');
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '#testInput' }).getAttribute('value')).to.eventually.equal('https://cdn.jsdelivr.net/npm/jsdelivr@0.1.2/.jshintrc');
-		await browser.executeScript(`$('#testInput').remove()`);
+		await browser.executeScript(`let ele = document.querySelector('#testInput'); ele.parentNode.removeChild(ele)`);
 	});
 
 	it('adding files to collection works', async () => {
@@ -103,6 +103,7 @@ describe('package', () => {
 	it('top files switching versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/slick-carousel?version=1.8.1`);
 		await browser.sleep(4000);
+		await browser.findElement({ id: 'navRouteStats' }).click();
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);

@@ -3,19 +3,19 @@
 <div class="c-search">
 	<div class="container">
 		<div class="search-input-wrapper clearfix">
-			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}">
-			<a class="search-by" target="_blank" rel="noopener noreferrer" href="https://www.algolia.com">
+			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+			<!-- <a class="search-by" target="_blank" rel="noopener noreferrer" href="https://www.algolia.com">
 				Real-time search by <img width="80" height="20" src="{{@shared.assetsHost}}/img/algolia.png" srcset="{{@shared.assetsHost}}/img/algolia@2x.png 2x" title="Algolia">
-			</a>
+			</a> -->
 		</div>
 
 		<div class="search-results">
 			{{#each packages}}
 				<div class="c-package">
-					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" query="{{query}}"></c-package-header>
+					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}"></c-package-header>
 				</div>
 			{{elseif query && nbHits === 0}}
-				No results founds
+				<p class="c-search-empty">No results found</p>
 			{{/each}}
 		</div>
 
@@ -44,13 +44,14 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
 	const debounce = require('../../public/js/utils/debounce');
 	const search = require('../../public/js/utils/search');
-	let app;
 
 	component.exports = {
 		data () {
 			return {
+				_,
 				page: 0,
 				query: '',
 				packages: [],
@@ -74,10 +75,9 @@
 		},
 		onrender () {
 			if (!this.isServer) {
-				app = this.get('@shared.app');
 				let offsetTop = pageYOffset;
 				this.find('.search-input').focus();
-				scrollTo(0, offsetTop);
+				window.scrollTo(0, offsetTop);
 
 				if (this.get('caretPosition')) {
 					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
@@ -85,7 +85,7 @@
 
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
-						search(this.get('query'), this.get('page'), 5).then((result) => {
+						search(this.get('query'), this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
 								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
 							});
@@ -135,14 +135,10 @@
 			}
 		},
 		scrollToSearch () {
-			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
-				});
-			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
-				app.config.animateScrolling = true;
-			}
+			window.scrollTo({
+				top: Math.floor(document.querySelector('.search-input').getBoundingClientRect().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
 		nFormatter (num) {
 			let lookup = [

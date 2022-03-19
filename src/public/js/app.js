@@ -1,5 +1,6 @@
 require('./polyfills');
 
+const _ = require('./_');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
 const cGithub = require('../../views/pages/github.html');
@@ -23,6 +24,8 @@ const cHistory = require('../../views/pages/history.html');
 const cGsap = require('../../views/pages/gsap.html');
 const cSkypack = require('../../views/pages/skypack.html');
 const cEsmsh = require('../../views/pages/esmsh.html');
+const cCustomCdnOss = require('../../views/pages/custom-cdn-oss.html');
+const cCustomCdnOssProject = require('../../views/pages/custom-cdn-oss-project.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -59,7 +62,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	}
 
 	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for open source';
-	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
+	document.querySelector('meta[name=description]').setAttribute('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
 
 	gtag('set', 'page', this.getUri());
 	gtag('send', 'pageview');
@@ -92,9 +95,11 @@ app.router.addRoute('/history', cHistory);
 app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
 app.router.addRoute('/esmsh', cEsmsh);
+app.router.addRoute('/custom-cdn-oss', cCustomCdnOss);
+app.router.addRoute('/custom-cdn-oss/:name', cCustomCdnOssProject);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
-$(() => {
+_.onDocumentReady(() => {
 	let ractive = new Ractive();
 	ractive.set('@shared.app', app);
 
@@ -106,7 +111,7 @@ $(() => {
 	};
 
 	try {
-		let shared = JSON.parse(unescape($('#ractive-shared').html().trim()));
+		let shared = JSON.parse(unescape(document.querySelector('#ractive-shared').innerHTML.trim()));
 
 		if (shared) {
 			Object.keys(shared).forEach((key) => {

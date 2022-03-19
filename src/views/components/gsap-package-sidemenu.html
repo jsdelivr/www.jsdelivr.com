@@ -24,7 +24,7 @@
 		<div class="chart-block">
 			<div class="chart-header">
 				<span>Requests Served</span>
-				<span>{{packageTotal ? _.formatNumber(packageTotal) : ''}}</span>
+				<span>{{ _.formatNumber(packageTotal) }}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
@@ -35,7 +35,7 @@
 		<div class="chart-block">
 			<div class="chart-header">
 				<span>Bandwidth</span>
-				<span>52.5 GB</span>
+				<span>{{ _.formatNumber(bandwidthTotal) }} GB</span>
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
@@ -44,8 +44,8 @@
 		</div>
 
 		<div class="top-version-block">
-			<span>Top version - {{versionStats[0].version}}</span>
-			<span>{{versionStats[0].hits ? _.formatNumber(versionStats[0].hits) + ' hits' : ''}}</span>
+			<span>Top version {{ topVersion ? '- ' + topVersion : '' }}</span>
+			<span>{{ _.formatNumber(topVersionHits) + ' hits' }}</span>
 		</div>
 
 		<div class="banner-block">
@@ -82,6 +82,10 @@
 					365: 'year',
 				},
 				periodKey: '30',
+				packageTotal: 0,
+				bandwidthTotal: 0,
+				topVersion: '',
+				topVersionHits: 0,
 			};
 		},
 		decorators: {
@@ -109,9 +113,12 @@
 								});
 							});
 
-							this.animate('versionStats', versionsStatsArr.sort((a, b) => b.hits - a.hits));
-							this.animate('packageTotal', data.total);
-							this.animate('packageRank', data.rank + 1);
+							let topVersionData = versionsStatsArr.sort((a, b) => b.hits - a.hits)[0];
+
+							this.animate('topVersion', topVersionData.version, { duration: 1000 });
+							this.animate('topVersionHits', topVersionData.hits, { duration: 1000 });
+							this.animate('packageTotal', data.total, { duration: 1000 });
+							this.animate('packageRank', data.rank + 1, { duration: 1000 });
 						});
 
 						// get package date stats
@@ -122,10 +129,10 @@
 						});
 
 						// get package bandwidth stats
-						// TODO: replace it with real endpoint call
-						http.fetchPackageDateStats(type, name, period).then((response) => {
+						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
 							if (response.total) {
 								this.set('packageBandwidthStats', response);
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
 							}
 						});
 					}
@@ -215,8 +222,7 @@
 					}
 
 					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					// TODO: temp, until real endpoint is used
-					let data = array.map(value => value[1].total / 10 ** 6 + Math.random() * 100);
+					let data = array.map(value => _.convertBytesToUnits(value[1].total));
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {

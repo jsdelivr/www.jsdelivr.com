@@ -24,7 +24,7 @@
 
 			<div class="stats-section mb-24">
 				<span>Requests Served</span>
-				<span>{{noDataOfVersions ? 'No data' : _.formatNumber(packageTotal)}}</span>
+				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(requestsTotal)}}</span>
 			</div>
 
 			<div class="requests-chart-wrapper">
@@ -39,7 +39,7 @@
 
 			<div class="stats-section mb-24">
 				<span>Bandwidth</span>
-				<span>{{noDataOfBandwidth ? 'No data': '52.5 GB'}}</span>
+				<span>{{noDataOfBandwidth ? 'No data': _.formatNumber(bandwidthTotal) + ' GB'}}</span>
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
@@ -71,7 +71,7 @@
 					<a class="btn-twitter-share mt-8"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(packageTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 						Share
 					</a>
@@ -103,7 +103,7 @@
 				width="20"
 				height="20"
 				src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
-			<img as-tooltip="'Alternate badge style', 'bottom'"
+			<img as-tooltip="'Alternate badge style'"
 				on-click="@this.toggle('badgeAltStyle')"
 				width="20"
 				height="20"
@@ -134,8 +134,9 @@
 				noDataOfRequests: false,
 				noDataOfBandwidth: false,
 				noDataOfVersions: false,
-				packageTotal: 0,
 				topVersionHits: 0,
+				bandwidthTotal: 0,
+				requestsTotal: 0,
 			};
 		},
 		decorators: {
@@ -166,10 +167,9 @@
 
 								let versionStats = versionsStatsArr.sort((a, b) => b.hits - a.hits);
 
-								this.animate('versionStats', versionStats);
-								this.animate('packageTotal', data.total);
-								this.animate('packageRank', data.rank + 1);
-								this.animate('topVersionHits', versionStats[0].hits);
+								this.animate('versionStats', versionStats, { duration: 1000 });
+								this.animate('packageRank', data.rank + 1, { duration: 1000 });
+								this.animate('topVersionHits', versionStats[0].hits, { duration: 1000 });
 							} else {
 								this.set('noDataOfVersions', true);
 							}
@@ -178,17 +178,20 @@
 						// get package date stats
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
+								this.set('noDataOfRequests', false);
 								this.set('packageDateStats', response);
+								this.animate('requestsTotal', response.total, { duration: 1000 });
 							} else {
 								this.set('noDataOfRequests', true);
 							}
 						});
 
 						// get package bandwidth stats
-						// TODO: replace it with real endpoint call
-						http.fetchPackageDateStats(type, name, period).then((response) => {
+						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
 							if (response.total) {
+								this.set('noDataOfBandwidth', false);
 								this.set('packageBandwidthStats', response);
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
 							} else {
 								this.set('noDataOfBandwidth', true);
 							}
@@ -278,13 +281,11 @@
 					}
 
 					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					// TODO: temp, until real endpoint is used
-					let data = array.map(value => value[1].total / 10 ** 6 + Math.random() * 100);
+					let data = array.map(value => _.convertBytesToUnits(value[1].total));
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
 						let chartEl = this.find('#bandwidth-chart');
-
 						let chartData = {
 							labels,
 							datasets: [{
