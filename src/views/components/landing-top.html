@@ -28,26 +28,26 @@
       <section class="docs {{#docsExpanded}}expanded{{/docsExpanded}}">
 				<div class="docs-tabs">
 					<div class="docs-wrapper flex">
-                                              <div class="docs-tab {{#if activeCdn === 'npm'}}active-docs-tab{{/if}}">
-							<a on-click="@this.set('activeCdn', 'npm')" class="{{#if activeCdn === 'npm'}}active{{/if}}">
+                                              <div class="docs-tab {{#unless activeDocs}}active-docs-tab{{/unless}}">
+							<a on-click="@this.set('activeDocs', '')" class="{{#unless activeDocs}}active{{/unless}}">
 								<img width="50" height="14" src="{{@shared.assetsHost}}/img/landing/new/docs-code/npm.svg">
 							</a>
 						</div>
 						
-            <div class="docs-tab {{#if activeCdn === 'esm'}}active-docs-tab{{/if}}">
-							<a on-click="@this.set('activeCdn', 'esm')" class="{{#if activeCdn === 'esm'}}active{{/if}}">
+            <div class="docs-tab {{#if activeDocs === 'esm'}}active-docs-tab{{/if}}">
+							<a on-click="@this.set('activeDocs', 'esm')" class="{{#if activeDocs === 'esm'}}active{{/if}}">
 								<img width="44" height="17" src="{{@shared.assetsHost}}/img/landing/new/docs-code/esm.svg">	
 							</a>
 						</div>
 	
-            <div class="docs-tab {{#if activeCdn === 'GitHub'}}active-docs-tab{{/if}}">
-							<a on-click="@this.set('activeCdn', 'GitHub')" class="{{#if activeCdn === 'GitHub'}}active{{/if}}">
+            <div class="docs-tab {{#if activeDocs === 'gh'}}active-docs-tab{{/if}}">
+							<a on-click="@this.set('activeDocs', 'gh')" class="{{#if activeDocs === 'gh'}}active{{/if}}">
 								<img width="67" height="19" src="{{@shared.assetsHost}}/img/landing/new/docs-code/github.svg">
 							</a>
 						</div>
 	
-            <div class="docs-tab {{#if activeCdn === 'WordPress'}}active-docs-tab{{/if}}">
-							<a on-click="@this.set('activeCdn', 'WordPress')" class="{{#if activeCdn === 'WordPress'}}active{{/if}}">
+            <div class="docs-tab {{#if activeDocs === 'wp'}}active-docs-tab{{/if}}">
+							<a on-click="@this.set('activeDocs', 'wp')" class="{{#if activeDocs === 'wp'}}active{{/if}}">
 								<img width="107" height="122" src="{{@shared.assetsHost}}/img/landing/new/docs-code/wordpress.svg">
 							</a>
 						</div>
@@ -60,7 +60,7 @@
   <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="cdn-dropdown">
 
 										{{#each ~/cdnsList}}
-											<li><a on-click="@this.set('activeCdn', this)">{{this}}</a></li>
+											<li><a on-click="@this.set('activeDocs', .slug)">{{.label}}</a></li>
 										{{/each}}
   </ul>
 </div>
@@ -292,7 +292,7 @@ Load more
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const docs = [ 'npm', 'esm', 'GitHub', 'WordPress' ];
+	const docs = [ '', 'esm', 'gh', 'wp' ];
 
 	component.exports = {
 		noIntro: true,
@@ -312,8 +312,7 @@ Load more
 						total: 1800 * 1024 * 1024,
 					},
 				},
-				cdnsList: [ 'npm', 'esm', 'GitHub', 'WordPress' ],
-				activeCdn: 'npm',
+				cdnsList: [{ slug:'', label:'npm'},{ slug:'esm', label:'esm'},{ slug:'gh', label:'GitHub'}, {slug:'wp', label:'WordPress'} ],
 				docsExpanded: false,
 
 
@@ -321,10 +320,10 @@ Load more
 		},
 		oninit () {
 			// It's too soon to call the show method here.
-			this.findComponent('c-slider').set('active', docs.indexOf(this.get('activeCdn')) !== -1 ? docs.indexOf(this.get('activeCdn')) : 0);
+			this.findComponent('c-slider').set('active', docs.indexOf(this.get('activeDocs')) !== -1 ? docs.indexOf(this.get('activeDocs')) : 0);
 
 			if (!Ractive.isServer) {
-				this.observe('activeCdn', (newValue) => {
+				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
 				}, { init: false });
 
