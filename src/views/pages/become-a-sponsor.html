@@ -44,12 +44,12 @@
 
 			<h3 class="main-title">For corporate Sponsors</h3>
       <div class="plans-tabs">
-        <div class="tab active">Platinum</div>
-        <div class="tab">Gold</div>
-        <div class="tab">Bronze</div>
+        <button class="tab {{#unless activePlan}}active{{/unless}}" on-click="@this.set('activePlan', '')">Platinum</button>
+        <button class="tab {{#if activePlan === 'gold'}}active{{/if}}" on-click="@this.set('activePlan', 'gold')">Gold</button>
+        <button class="tab {{#if activePlan === 'bronze'}}active{{/if}}" on-click="@this.set('activePlan', 'bronze')">Bronze</button>
       </div>
 
-      <div class="plans-wrapper"><div class="plans">
+      <div class="plans-wrapper"><div class="plans" on-scroll="selectPlan">
         <div class="plan platinum">
           <div class="sp-topline">&nbsp;</div>
           <div class="sp-top">
@@ -105,7 +105,8 @@
               <div class="sp-tooltip">$500/month worth of services,<br /> developer hours or monthly donation</div>
             </div>
             <div class="month">/month</div>
-              <div class="sp-desc">$500/month worth of services,<br /> developer hours or monthly donation</div>
+
+              <div class="sp-desc">$500/month worth of services, developer hours or monthly donation</div>
           </div>
 
           <a class="sp-button" href="mailto:dak@prospectone.io?subject=Become a gold sponsor">Become a sponsor</a>
@@ -152,7 +153,8 @@
               </div>
             </div>
             <div class="month">/month</div>
-              <div class="sp-desc">$150/month worth of services,<br /> developer hours or monthly donation
+
+              <div class="sp-desc">$150/month worth of services, developer hours or monthly donation</div>
           </div>
 
           <a class="sp-button" href="mailto:dak@prospectone.io?subject=Become a bronze sponsor">Become a sponsor</a>
@@ -254,7 +256,38 @@
 			return {
 				title: 'Become a sponsor - jsDelivr',
 				description: 'Become a sponsor and help us make jsDelivr better!',
+              activePlan: ''
 			};
 		},
+          oninit () {
+
+			if (!Ractive.isServer) {
+				this.observe('activePlan', (newValue) => {
+                const plans = document.querySelector('.plans');
+                if (newValue === '') {
+                plans.scrollLeft = 0
+                }
+                if (newValue === 'gold') {
+                plans.scrollLeft = 300
+                }
+                if (newValue === 'bronze') {
+                plans.scrollLeft = 600
+                }
+				});
+          }
+
+            this.on('selectPlan', () => {
+			const scrollPosition = this.event.original.target.scrollLeft;
+              if (scrollPosition < 300) {
+                this.set('activePlan', '')
+              }
+              if (scrollPosition > 300 && scrollPosition < 600) {
+                this.set('activePlan', 'gold')
+              }
+              if (scrollPosition > 600) {
+                this.set('activePlan', 'bronze')
+              }
+		})
+      }
 	};
 </script>
