@@ -2,11 +2,29 @@
 
 .c-top-stats-table {
 	display: flex;
-	width: 50%;
+	width: 100%;
+        @media (min-width: @screen-sm-min) {
+          width: 50%;
+        }
 	font-family: Lexend, sans-serif;
 	font-style: normal;
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
+
+        &:nth-child(2) {
+          margin-top: 24px;
+        @media (min-width: @screen-sm-min) {
+          margin-top: 0;
+        }
+		.table-header {
+                  justify-content: space-between;
+                  margin-bottom: 24px;
+        @media (min-width: @screen-sm-min) {
+                  justify-content: flex-start;
+                  margin-bottom: 16px;
+        }
+                }
+        }
 
 	.table-wrapper {
 		width: 100%;
@@ -15,14 +33,20 @@
 			display: flex;
 			align-items: center;
 			font-weight: 600;
-			font-size: 20px;
-			line-height: 40px;
 			letter-spacing: .2px;
 			color: #111a2c;
+			margin-bottom: 16px;
+			font-size: 18px;
+			line-height: 26px;
+			@media (min-width: @screen-sm-min) {
 			margin-bottom: 24px;
+			font-size: 20px;
+			line-height: 40px;
+                      }
 
 			.version-dropdown {
 				margin-left: 12px;
+                                font-weight: 400;
 			}
 		}
 
@@ -33,11 +57,24 @@
 			background: #fff;
 
 			.table-row {
+                          display: grid;
+                          grid-template-columns: repeat(2, 1fr);
+                          grid-template-rows: repeat(2, auto);
+                          padding: 10px 16px;
+                          height: auto;
+                          row-gap: 12px;
+
+                          & > div:first-child {
+                            grid-column: 1 / span 2;
+                          }
+
+			@media (min-width: @screen-sm-min) {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				height: 40px;
 				padding: 0 16px;
+				height: 40px;
+                              }
 				font-weight: 400;
 				font-size: 14px;
 				line-height: 20px;
@@ -50,18 +87,29 @@
 
 				.hits {
 					color: #f65128;
+                                        margin-left: 0;
+			@media (min-width: @screen-sm-min) {
 					margin-left: auto;
-				}
+                                      }
+                                        grid-column: 1/2;
+                                        grid-row: -1/-2;
+                                      }
 
 				.percentage-bar {
 					width: 80px;
 					margin-left: 24px;
+                                        grid-row: -1 / -2;
+                                        justify-self: end;
 
 					.table-chart {
 						max-width: 100%;
 						background-color: @c-orange;
 						border-radius: 5px;
 						height: 5px;
+                          margin-left: auto;
+			@media (min-width: @screen-sm-min) {
+                                                margin-left: 0;
+                        }
 					}
 				}
 			}

@@ -115,9 +115,9 @@
 
 		{{#if !onlyHeader}}
 			<div class="row package-header-bottom">
+                                <div class="horizontal-divider-16"></div>
 				<div class="col-xs-12">
 
-					<div class="horizontal-divider-16"></div>
 
 					{{#if version}}
 						<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
@@ -149,6 +149,48 @@
 			</div>
 
 		{{/if}}
+
+                <div class="package-buttons-mobile">
+                  {{#if !~/type || ~/type === 'npm'}}
+                  <a target="_blank" rel="noopener noreferrer" href="https://openbase.com/js/{{name}}" class="button" title="{{name}} docs & info">
+                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg" alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
+                  </a>
+                  {{#if homepage}}
+                  <a target="_blank" rel="noopener noreferrer nofollow" href="{{homepage}}" class="button" title="Homepage">
+                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg" alt="{{name}} JS library homepage" title="{{name}} homepage">
+                  </a>
+                  {{/if}}
+                  {{#if githubRepo}}
+                  <a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
+                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg" alt="{{name}} JS library on GitHub" title="{{name}} on GitHub">
+                  </a>
+                  {{/if}}
+                  <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm">
+                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm" title="{{name}} on npm">
+                  </a>
+                  <a rel="noopener noreferrer" href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button" title="Download">
+                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg" alt="Download {{name}} JS library" title="Download {{name}}">
+                  </a>
+                  {{else}}
+                  <a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
+                  <i class="fa fa-github" aria-hidden="true"></i>
+                  </a>
+                  {{/if}}
+                </div>
+
+                {{#if package.keywords}}
+                <div class="stats-keywords-mobile">
+                  <div class="stats-keywords-header">Keywords</div>
+                  <div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
+                    {{#each package.keywords}}
+                    <div class="keyword-badge">{{this}}</div>
+                    {{/each}}
+                    {{#if true === 'stats'}}
+                    <div class="badge-cover"></div>
+                    {{/if}}
+                  </div>
+                </div>
+                {{/if}}
 		
 
 		{{#if !onlyHeader}}
@@ -186,6 +228,44 @@
 									</ul>
 								</div>
 							</div>
+          <button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
+            <img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/settings-white.svg">
+          </button>
+          {{#if mobileSettingsVisible }}
+          <div class="overlay" on-click="@this.set('mobileSettingsVisible', false)"></div>
+          <div class="settings-mobile" slide-in slide-out>
+<div class="switch-wrapper">
+								<span>Type:</span>
+								<input id="switch-id"
+									type="checkbox"
+									twoway="false"
+									class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+
+								<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
+									<span>ESM</span>
+									<span>Default</span>
+								</label>
+							</div>
+<div class="dropdown-wrapper dropup">
+								<label for="version-select">Version:&nbsp;&nbsp;</label>
+								<div class="btn-group">
+									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+										<span>{{~/selectedVersion}}</span>
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+									</button>
+
+									<ul class="dropdown-menu">
+										{{#each ~/versionsList}}
+											<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+										{{/each}}
+									</ul>
+								</div>
+							</div>
+
+				<button class="btn-primary"  on-click="@this.set('mobileSettingsVisible', false)">Apply</button>
+							<button class="btn-secondary" on-click="@this.set('mobileSettingsVisible', false)">Cancel</button>
+          </div>
+          {{/if}}
 						</div>
 
 						<div class="horizontal-divider-19"></div>
@@ -442,6 +522,17 @@
 					this.set('isDefaultPackage', false);
 				}
 			});
+
+        this.observe('mobileSettingsVisible', (newValue) => {
+                const body = document.querySelector('body');
+              if (newValue === true) {
+                body.classList.add('noscroll');
+              } else {
+                body.classList.remove('noscroll');
+              }
+        })
+
+
 		},
 		data () {
 			return {
@@ -457,6 +548,7 @@
 				buildIntegrity,
 				canBuildHtml,
 				buildHtml,
+              mobileSettingsVisible: false
 			};
 		},
 		decorators: {
