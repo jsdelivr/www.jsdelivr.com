@@ -218,8 +218,8 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg"
 					/>
 
-      <h3 id="hits"></h3>
-					<span>requests per second</span>
+<h3>{{ Math.round(requestsPerSecond) }}</h3>	
+          <span>requests per second</span>
 				</div>
 
 				<div>
@@ -227,7 +227,7 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg"
 					/>
 
-					<h3 id="bandwidth"></h3>
+				<h3>{{ bandwidth.toFixed(1) }} Mbps</h3>	
 					<span>bandwidth</span>
 				</div>
 			</div>
@@ -928,35 +928,28 @@
 				});
 
 				// Load network stats for the previous day
-				http.fetchNetworkStats('month').then((data) => {
+              				http.fetchNetworkStats('month').then((data) => {
+					this.set(
+						'baseRequestsPerSecond',
+						data.hits.total / 30 / 24 / 60 / 60
+					);
 
-                const bandwidthVal = data.bandwidth.total / 30 / 24 / 60 / 60
-                const hitsVal = data.hits.total / 30 / 24 / 60 / 60
-                const bandwidthCount = new window.countUp.CountUp('bandwidth', bandwidthVal, {startVal: bandwidthVal *0.98,  duration: 120, suffix: "<br>Mbps"});
-                const hitsCount = new window.countUp.CountUp('hits', hitsVal, { startVal: hitsVal * 0.98, duration: 120, });
-                if (!hitsCount.error) {
-  hitsCount.start();
-} else {
-  console.error(hitsCount.error);
-}
-                if (!bandwidthCount.error) {
-  bandwidthCount.start();
-} else {
-  console.error(bandwidthCount.error);
-}
-              })
+					this.set('baseBandwidth', data.bandwidth.total / 30 / 24 / 60 / 60 / 1e6);
+				});
+
+
 
 				let animationConfig = {
-					duration: 1000,
-					easing: x => (x === 1 ? 1 : 1 - Math.pow(2, -10 * x)),
+					duration: 4,
+                easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)) 
 				};
 
 				setInterval(() => {
 					let requestsPerSecond
-						= (this.getRandom(85, 115) / 100)
+						= (this.getRandom(97, 102) / 100)
 						* this.get('baseRequestsPerSecond'),
 						bandwidth
-						= (this.getRandom(85, 115) / 100)
+						= (this.getRandom(97, 102) / 100)
 						* this.get('baseBandwidth');
 
 					this.animate(
@@ -966,7 +959,7 @@
 					);
 
 					this.animate('bandwidth', bandwidth, animationConfig);
-				}, 2000);
+				}, 800);
 			}
 		},
 		getRandom (min, max) {
