@@ -218,7 +218,7 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg"
 					/>
 
-					<h3>{{ Math.round(requestsPerSecond) }}</h3>
+      <h3 id="hits"></h3>
 					<span>requests per second</span>
 				</div>
 
@@ -227,7 +227,7 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg"
 					/>
 
-					<h3>{{ bandwidth.toFixed(1) }} Mbps</h3>
+					<h3 id="bandwidth"></h3>
 					<span>bandwidth</span>
 				</div>
 			</div>
@@ -900,6 +900,7 @@
 			);
 
 			if (!Ractive.isServer) {
+
 				this.observe(
 					'activeTab',
 					(newValue) => {
@@ -927,14 +928,23 @@
 				});
 
 				// Load network stats for the previous day
-				http.fetchNetworkStats('day').then((data) => {
-					this.set(
-						'baseRequestsPerSecond',
-						data.hits.total / 24 / 60 / 60
-					);
+				http.fetchNetworkStats('month').then((data) => {
 
-					this.set('baseBandwidth', 900);
-				});
+                const bandwidthVal = data.bandwidth.total / 30 / 24 / 60 / 60
+                const hitsVal = data.hits.total / 30 / 24 / 60 / 60
+                const bandwidthCount = new window.countUp.CountUp('bandwidth', bandwidthVal, {startVal: bandwidthVal *0.98,  duration: 120, suffix: "<br>Mbps"});
+                const hitsCount = new window.countUp.CountUp('hits', hitsVal, { startVal: hitsVal * 0.98, duration: 120, });
+                if (!hitsCount.error) {
+  hitsCount.start();
+} else {
+  console.error(hitsCount.error);
+}
+                if (!bandwidthCount.error) {
+  bandwidthCount.start();
+} else {
+  console.error(bandwidthCount.error);
+}
+              })
 
 				let animationConfig = {
 					duration: 1000,
