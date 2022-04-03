@@ -120,9 +120,9 @@
 			</section>
 
 			<section id="china">
-				<h2>Big network in China</h2>
+				<h2>Low latency "Near China" network</h2>
 
-				<p>jsDelivr is the only public CDN with a valid ICP license issued by the Chinese government, and hundreds of locations directly in Mainland China.</p>
+				<p>jsDelivr has multiple locations close Chinese urban centers to ensure low latency and high performance for all Chinese users.</p>
 
 				<div class="china-map">
 					<img width="806" height="380" src="{{@shared.assetsHost}}/img/network/china-map.svg" loading="lazy">
@@ -167,11 +167,11 @@
 		initMap () {
 			infoWindows.splice(0);
 			markers.splice(0);
-
-			let CENTER = { lat: 30, lng: 18 };
+            const mq = window.matchMedia( "(min-width: 768px)" );
+			let CENTER = { lat: 48, lng: 16 };
 			map = new google.maps.Map(this.find('.network-map'), {
 				styles,
-				zoom: 2.14,
+				zoom: 3.74,
 				center: CENTER,
 				mapTypeId: 'roadmap',
 				draggableCursor: 'default',
@@ -181,6 +181,10 @@
 				fullscreenControl: false,
 				gestureHandling: 'none',
 			});
+            if (mq.matches) {
+            			CENTER = { lat: 30, lng: 18 };
+            map.setZoom(2.14)
+            }
 
 			this.observe('enabled', () => {
 				this.updateMarkers();
