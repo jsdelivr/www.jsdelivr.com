@@ -218,8 +218,8 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg"
 					/>
 
-					<h3>{{ Math.round(requestsPerSecond) }}</h3>
-					<span>requests per second</span>
+<h3>{{ Math.round(requestsPerSecond) }}</h3>	
+          <span>requests per second</span>
 				</div>
 
 				<div>
@@ -227,7 +227,7 @@
 						src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg"
 					/>
 
-					<h3>{{ bandwidth.toFixed(1) }} Mbps</h3>
+				<h3>{{ bandwidth.toFixed(1) }} Mbps</h3>	
 					<span>bandwidth</span>
 				</div>
 			</div>
@@ -900,6 +900,7 @@
 			);
 
 			if (!Ractive.isServer) {
+
 				this.observe(
 					'activeTab',
 					(newValue) => {
@@ -927,26 +928,28 @@
 				});
 
 				// Load network stats for the previous day
-				http.fetchNetworkStats('day').then((data) => {
+              				http.fetchNetworkStats('month').then((data) => {
 					this.set(
 						'baseRequestsPerSecond',
-						data.hits.total / 24 / 60 / 60
+						data.hits.total / 30 / 24 / 60 / 60
 					);
 
-					this.set('baseBandwidth', 900);
+					this.set('baseBandwidth', data.bandwidth.total / 30 / 24 / 60 / 60 / 1e6);
 				});
 
+
+
 				let animationConfig = {
-					duration: 1000,
-					easing: x => (x === 1 ? 1 : 1 - Math.pow(2, -10 * x)),
+					duration: 4,
+                easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)) 
 				};
 
 				setInterval(() => {
 					let requestsPerSecond
-						= (this.getRandom(85, 115) / 100)
+						= (this.getRandom(97, 102) / 100)
 						* this.get('baseRequestsPerSecond'),
 						bandwidth
-						= (this.getRandom(85, 115) / 100)
+						= (this.getRandom(97, 102) / 100)
 						* this.get('baseBandwidth');
 
 					this.animate(
@@ -956,7 +959,7 @@
 					);
 
 					this.animate('bandwidth', bandwidth, animationConfig);
-				}, 2000);
+				}, 800);
 			}
 		},
 		getRandom (min, max) {
