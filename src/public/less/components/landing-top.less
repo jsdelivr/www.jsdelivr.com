@@ -89,7 +89,6 @@
 		align-items: center;
 		justify-content: center;
 		text-align: center;
-		border-top: 1px solid #dfe3e7;
 
 		@media (min-width: @screen-sm-min) {
 			flex-direction: row;
@@ -133,7 +132,7 @@
 		background: #17233b;
 		border-radius: 8px;
 		position: relative;
-
+		
 		.docs-wrapper {
 			width: 100%;
 			max-width: 808px;
@@ -148,7 +147,6 @@
 
 		.docs-tabs {
 			display: flex;
-			padding: 0 24px;
 
 			@media (min-width: @screen-sm-min) {
 				padding: 0 20px;
@@ -157,16 +155,11 @@
 		}
 
 		.docs-tab {
+			display: none;
+
 			@media (min-width: @screen-sm-min) {
 				width: 25%;
-			}
-
-			&:not(.active-docs-tab) {
-				display: none;
-
-				@media (min-width: @screen-sm-min) {
-					display: block;
-				}
+				display: block;
 			}
 
 			a {
@@ -196,17 +189,6 @@
 			}
 		}
 
-		.dropdown-toggle {
-			padding: 0;
-			color: #fff;
-			background: none;
-			border-width: 0;
-
-			@media (min-width: @screen-sm-min) {
-				display: none;
-			}
-		}
-
 		&.expanded {
 			.docs-code {
 				height: 792px;
@@ -224,16 +206,42 @@
 			white-space: normal;
 			height: 120px;
 			overflow-y: hidden;
-                        scrollbar-width: none;
-                        &::-webkit-scrollbar {
-                          display: none;
-                        }
+			scrollbar-width: none;
+			&::-webkit-scrollbar {
+				display: none;
+			}
                         
 
 			@media (min-width: @screen-sm-min) {
 				white-space: nowrap;
 				padding: 0 20px;
 				height: 510px;
+			}
+			.btn-docview {
+				position:absolute;
+				bottom: 15px;
+				right: 20px;
+				display: flex;
+				padding: 6px 12px;
+				align-items: center;
+				justify-content: center;
+				height: 40px;
+				background: #394356;
+				border-radius: 6px;
+				font-size: 14px;
+				line-height: 20px;
+				text-align: center;
+				color: #fff;
+				text-decoration: none;
+				cursor: pointer;
+				border: none;
+
+				i {
+					width: 18px;
+    				height: 18px;
+					border: 2px solid white;
+					border-radius: 50%;
+				}
 			}
 		}
 
@@ -263,24 +271,48 @@
 		}
 
 		.dropdown {
+			display: flex;
+			width: 100%;
+			padding: 0px 24px;
 			z-index: 2;
 			margin-top: auto;
 			margin-bottom: auto;
+
+			@media (min-width: @screen-sm-min) {
+				display: none;
+			}
+
+			.selected {
+				display: flex;
+				align-items: center;
+				height: 70px;
+			}
+		}
+
+		.dropdown-toggle {
+			margin-left: auto;
+			padding: 0;
+			color: #fff;
+			background: none;
+			border-width: 0;
 		}
 
 		.dropdown-menu {
-			background: #fff;
-			border: 1px solid #dfe3e7;
+			background: #17233b;
+			border-bottom: 2px solid #dfe3e7;
 			box-sizing: border-box;
 			box-shadow:
 				0 4px 4px rgba(23, 35, 59, .06),
 				0 0 1px 1px rgba(23, 35, 59, .11),
 				0 10px 22px -2px rgba(23, 35, 59, .08);
 			border-radius: 6px;
-			padding: 8px;
-			width: 130px;
-			margin-top: 9px;
+			padding: 0px;
+			width: 100%;
 
+			> li {
+				padding: 16px 24px;
+				border-bottom: 2px solid #394356;
+			}
 			> li > a {
 				display: flex;
 				align-items: center;
@@ -288,8 +320,8 @@
 				height: 40px;
 				font-size: 14px;
 				line-height: 20px;
-				color: #111a2c;
-				padding: 0 10px;
+				color: white;
+				padding: 0px;
 
 				&:hover {
 					background: #f3f5f7;
@@ -353,7 +385,7 @@
 
 	.sponsors {
 		text-align: center;
-		margin: 24px 0 60px;
+		margin: 64px 0 60px;
 		position: relative;
 
 		span {
@@ -363,28 +395,35 @@
 		}
 
 		.flex {
-			overflow-x: scroll;
-			scrollbar-color: #16223a #dfe3e7;
+			justify-content: center;
+			flex-wrap: wrap;
 			margin-right: -24px;
 			padding-right: 24px;
 
 			@media (min-width: @screen-sm-min) {
-				overflow-x: auto;
-				margin: 40px 0 60px;
-				margin-right: 0;
+				justify-content: space-between;
+				margin: 0px 0px 60px;
 				padding-right: 0;
 			}
 
-			> * + * {
-				margin-left: 24px;
+			> .sponsor-item + * {
 
 				@media (min-width: @screen-sm-min) {
 					margin-left: 0;
 				}
 			}
+			> .sponsor-item {
+				width: 45%;
+				margin-bottom: 24px;
+				display: flex;
+				justify-content: center;
 
-			@media (min-width: @screen-sm-min) {
-				justify-content: space-between;
+				@media (min-width: @screen-sm-min) {
+					width: 30%;
+				}
+				@media (min-width: @screen-md-min) {
+					width: auto;
+				}
 			}
 		}
 
@@ -397,5 +436,14 @@
 				max-height: 40px;
 			}
 		}
+	}
+}
+
+.bg-gradient .c-landing-top {
+	.heading *{
+		color: white;
+	}
+	.stats *{
+		color: white;
 	}
 }
