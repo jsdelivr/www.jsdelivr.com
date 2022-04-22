@@ -260,9 +260,8 @@
 
 			.c-slider {
 				width: 100%;
-				overflow: hidden;
 				overflow-y: auto;
-				overflow-x: scroll;
+				overflow-x: auto;
 				height: 212px;
 
 				@media (min-width: @screen-sm-min) {
@@ -274,14 +273,12 @@
 
 		&-slide {
 			position: absolute;
-			// width: 100%;
+			width: 100%;
 			// height: 100%;
-			overflow-y: auto;
 			top: 0;
 			left: 0;
 			padding: 24px 24px 24px 52px;
 			padding-right: 0;
-			min-width: 903px;
 
 			@media (min-width: @screen-sm-min) {
 				min-width: 0;
@@ -563,15 +560,10 @@
 		margin-left: -24px;
 		padding-right: 24px;
 		padding-left: 24px;
-		padding-bottom: 319px;
-		background: linear-gradient(75.43deg, #17233b 0%, #1b2946 100%);
-		background:
-			url("../../img/landing/new/dev-bg-mobile.png") no-repeat top
-			right / cover;
-		background-position-y: -40px;
-
+		background: linear-gradient(75.43deg, #17233B 0%, #1B2946 100%);
+		
 		@media (min-width: @screen-sm-min) {
-			background-image: none;
+			background: none;
 			margin: 65px 0px 0px 0px;
 			padding: 0;
 		}
@@ -579,6 +571,8 @@
 		.container-lg {
 			background: none;
 			padding: 0;
+			border-radius: 6px;
+			font-family: "Source Code Pro", monospace;
 
 			@media (min-width: @screen-sm-min) {
 				padding: 88px 20px;
@@ -586,8 +580,17 @@
 					url("../../img/landing/new/dev-bg.svg") no-repeat
 					top right / cover;
 			}
-			border-radius: 6px;
-			font-family: "Source Code Pro", monospace;
+		}
+
+		.bg-for-mobile {
+			display: flex;
+			justify-content: center;
+			margin-top: 40px;
+			margin-left: 4.5px;
+
+			@media (min-width: @screen-sm-min) {
+				display: none;
+			}
 		}
 
 		h3 {
@@ -925,7 +928,7 @@
 
 				each(range(19), {
 					img:nth-child(@{index}) {
-						opacity: if( @index > 3, if( @index > 9, 0, calc(2 / @index)) , 0.6);
+						opacity: if( @index > 3, if( @index > 9, 0, calc(1.5 / @index)) , 0.5);
 						display: if( @index > 9, none, block);
 					}
 				})
@@ -935,12 +938,12 @@
 					
 					@media (min-width: @screen-sm-min) {
 						margin: 10px 10px;
-						opacity: 0.6 !important;
+						opacity: 0.5 !important;
 						display: block !important;
 					}
 				}
 				&.expanded img{
-					opacity: 0.6;
+					opacity: 0.5;
 					display: block;
 				}
 			}
