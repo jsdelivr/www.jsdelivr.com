@@ -3,14 +3,16 @@
 	font-style: normal;
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
-	// to fix the absence of default footer
 	margin-bottom: -80px;
 
 	header {
 		position: relative;
 		height: 34px;
 		z-index: 1;
-
+    max-width: 1140px;
+    margin-right: auto;
+    margin-left: auto;
+		
 		.header-link {
 			font-size: 14px;
 			line-height: 24px;
@@ -87,6 +89,10 @@
 				.main-logo {
 					margin-right: 16px;
 				}
+				@media (max-width: @screen-sm-min) {
+					flex-direction: column;
+					justify-content: flex-start;
+				}
 			}
 			.menu-right {
 				display: flex;
@@ -161,7 +167,7 @@
 			}
 		}
 		
-		@media only screen and (max-width: 992px) {
+		@media only screen and (max-width: @screen-sm-min) {
 			.menu-right {
 				display: none !important;
 			}
@@ -178,33 +184,37 @@
 		padding-top: 122px;
 		margin-top: -58px;
 		background: #222;
-		height: 484px;
+		min-height: 484px;
 
 		.jumbotron {
 			position: relative;
-			width: 1140px;
+			max-width: 1140px;
 			padding-left: 15px;
 			padding-right: 15px;
 			margin-right: auto;
 			margin-left: auto;
 
 			.title {
-				margin: 0 0 16px;
+				margin: 32px 0 4px;
 				font-weight: 600;
 				font-size: 48px;
 				line-height: 64px;
 				letter-spacing: -.8px;
 				color: #fff;
+				@media (max-width: @screen-sm-min) {
+					text-align: center;
+				}
 			}
 
 			.description {
-				width: 730px;
 				font-weight: 500;
 				font-size: 16px;
 				line-height: 26px;
 				letter-spacing: -.4px;
 				color: #a6a6a6;
-
+				@media (min-width: @screen-sm-min) {
+					margin-right: 128px;
+				}
 				p {
 					margin: 12px 0 0;
 				}
@@ -213,11 +223,35 @@
 					color: #57c224;
 				}
 			}
+			
+			.description-box {
+				display: flex;
+				.boxes {
+					position: relative;
+					top: -198px;
+					margin-bottom: -198px;
+					@media (max-width: @screen-sm-min) {
+						display: none;
+					}
+				}
+			}
+			.boxes-bottom {
 
-			.boxes {
-				position: absolute;
-				top: -122px;
-				right: 6px;
+				@media (min-width: @screen-sm-min) {
+					display: none;
+				}
+					height: 128px;
+					overflow: hidden;
+					text-align: center;
+					margin-top: 32px;
+				>img {
+					border-radius: 24px;
+				}
+				>img:nth-child(2) {
+					position: relative;
+					top: 32px;
+					margin-left: 31px;
+				}
 			}
 		}
 	}
@@ -234,22 +268,22 @@
 	.content-wrapper {
 		display: flex;
 		justify-content: space-between;
-		max-width: 1224px;
-		padding: 64px 15px 0;
+		max-width: 1140px;
+		padding: 64px 15px;
 		margin-right: auto;
 		margin-left: auto;
-		padding-bottom: 64px;
+		@media (max-width: @screen-sm-min) {
+			padding-bottom: 40px;
+		}
 
 		.main-content {
-			width: 100%;
-
 			@media (min-width: @screen-sm-min) {
-				width: 53.5%;
+				margin-right: 54px;
 			}
-
-			//width: 730px;
-
 			.title {
+				@media (max-width: @screen-sm-min) {
+					font-size: 24px;
+				}
 				font-weight: 600;
 				font-size: 32px;
 				line-height: 48px;
@@ -259,6 +293,9 @@
 			}
 
 			.description {
+				@media (max-width: @screen-sm-min) {
+					font-size: 16px;
+				}
 				font-weight: 500;
 				font-size: 18px;
 				line-height: 28px;
@@ -287,9 +324,11 @@
 						display: flex;
 						align-items: center;
 						@media (max-width: @screen-sm-min) {
+							margin-bottom: 8px;
 							width: 100%;
-							margin: 0 !important;
-							border: 1px solid black;
+							margin-right: 0 !important;
+							border: 1px solid #E1E1E1;
+							border-radius: 4px;
 							padding: 12px;
 						}
 						
@@ -299,6 +338,10 @@
 						}
 
 						.btn-group {
+							@media (max-width: @screen-sm-min) {
+								width: 100%;
+								
+							}
 							margin-left: 12px;
 
 							&.open {
@@ -314,7 +357,7 @@
 								background: #fff;
 								padding: 0;
 								box-shadow: none;
-
+								width: 100%;
 								>span {
 									font-weight: 600;
 									font-size: 16px;
@@ -327,7 +370,7 @@
 									display: flex;
 									align-items: center;
 									justify-content: center;
-									margin-left: 12px;
+									margin-left: auto;
 									color: #111a2c;
 									padding: 0;
 									background: #f2f2f2;
@@ -389,6 +432,9 @@
 					border-radius: 6px;
 					height: 1px;
 					margin: 15px 0 32px;
+					@media (max-width: @screen-sm-min) {
+						display: none;
+					}
 				}
 
 				.files-table {
@@ -409,12 +455,12 @@
 					}
 
 					.btn-more {
-						// position: absolute;
-						// bottom: 0px;
-						// z-index: 1;
+						color: #6FB936 !important;
 						width: 100%;
 						margin-top: 24px;
-
+						background: transparent;
+						border: 1px solid #6FB936;
+						height: 40px;
 						@media (min-width: @screen-sm-min) {
 							display: none;
 						}
@@ -632,33 +678,38 @@
 
 		.side-content {
 			margin-top: 40px;
-			width: 100%;
-			max-height: 304px;
-
 			@media (min-width: @screen-sm-min) {
 				margin-top: 0;
-				width: 40%;
-				max-height: 100%;
 			}
-			//width: 326px;
 		}
 	}
 
 	.footer-wrapper {
-		height: 152px;
+		@media (max-width: @screen-sm-min) {
+			margin-bottom: 40px;
+			padding: 32px 0 64px;
+		}
 		border-top: 1px solid #d8dfee;
 		padding: 40px 0 64px;
 
 		.footer {
 			display: flex;
-			align-items: center;
 			justify-content: flex-start;
-			width: 1140px;
+			@media (max-width: @screen-sm-min) {
+				flex-direction: column;
+				justify-content: center;
+			}
+			align-items: center;
+			max-width: 1140px;
 			padding: 0 15px;
 			margin: 0 auto;
 
 			.footer-logo {
 				margin-right: 50px;
+				@media (max-width: @screen-sm-min) {
+					margin-right: 0px;
+					margin-bottom: 32px;
+				}
 			}
 
 			.footer-link {
@@ -671,21 +722,43 @@
 
 			.powered {
 				display: flex;
-				flex-direction: column;
 				align-items: flex-start;
+				flex-direction: column;
+				@media (max-width: @screen-sm-min) {
+					align-items: center;
+					margin-bottom: 32px;
+				}
 				font-weight: 500;
 				font-size: 14px;
 				line-height: 24px;
 				letter-spacing: -.2px;
 				color: #222;
+				>span:nth-child(2) {
+					@media (max-width: @screen-sm-min) {
+						text-align: center;
+					}
+					
+				}
 			}
 
 			.nav {
+				@media (max-width: @screen-sm-min) {
+					margin-left: 0;
+				}
 				margin-left: auto;
 
 				>a {
+					@media (max-width: @screen-sm-min) {
+						margin-left: 0;
+					}
 					margin-left: 32px;
 				}
+				>a:nth-child(2) {
+					@media (max-width: @screen-sm-min) {
+						margin-left: 32px;
+					}
+				}
+
 			}
 		}
 	}
