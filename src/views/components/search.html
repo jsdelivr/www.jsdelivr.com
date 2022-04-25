@@ -11,6 +11,19 @@
 					<img width="80" height="20" src="{{@shared.assetsHost}}/img/algolia_grey.svg" title="Algolia">
 				</a>
 			</div>
+			{{ #if hideLanding }}
+				<div class="filter-by">
+					<span>Filter for: </span>
+					<button class="btn-esm {{ #if type === 'esm' }}active{{ /if }}"
+							on-click="onFilterItemClick('esm')">ESM</button>
+					<button class="btn-cjs {{ #if type === 'cjs' }}active{{ /if }}"
+							on-click="onFilterItemClick('cjs')">CJS</button>
+					<button class="btn-js {{ #if type === 'js' }}active{{ /if }}"
+							on-click="onFilterItemClick('js')">JS</button>
+					<button class="btn-styles {{ #if type === 'styles' }}active{{ /if }}"
+							on-click="onFilterItemClick('styles')">Styles</button>
+				</div>
+			{{ /if }}
 		</div>
 
 		<div class="search-results">
@@ -19,14 +32,14 @@
 					<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}"></c-package-header>
 				</div>
 			{{elseif query && nbHits === 0}}
-                                <div class="no-results">
+                <div class="no-results">
 					<img
 						width="270"
 						height="148"
 						src="{{@shared.assetsHost}}/img/landing/new/no-results.png"
 					/>
-				<p class="c-search-empty">No results found</p>
-      </div>
+					<p class="c-search-empty">No results found</p>
+      			</div>
 			{{/each}}
 		</div>
 
@@ -66,6 +79,16 @@
 				page: 0,
 				query: '',
 				packages: [],
+				type: '',
+				onFilterItemClick( filter ) {
+					let active = this.get('type');
+					
+					if(active === filter)
+						this.set('type', '');
+					else {
+						this.set('type', filter);
+					}
+				},
 				pagination (page, nbPages) {
 					let start = Math.max(page - 2, 0);
 					let pages = [];
@@ -96,13 +119,23 @@
 
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
-						search(this.get('query'), this.get('page'), 10).then((result) => {
+						let newQuery = this.get('query');
+						
+						if(this.get('type') === 'styles')
+							newQuery +=  " style:-none";
+						if(this.get('type') === 'js')
+							newQuery +=  " type:-none";
+						if(this.get('type') === 'esm' || this.get('type') === 'cjs')
+							newQuery += " type:" + this.get('type');
+						
+
+						search(newQuery, this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
 								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
 							});
 
 							// The query might have changed since we sent the request.
-							if (result.query === this.get('query')) {
+							if (result.query === newQuery) {
 								this.set('packages', result.response.hits, { shuffle: 'name' });
 								this.set('hideLanding', true);
 
@@ -129,7 +162,7 @@
 				});
 
 				// Update results on input.
-				this.observe('page query __ready', (newValue, oldValue, keypath) => {
+				this.observe('page query type __ready', (newValue, oldValue, keypath) => {
 					// Don't send requests before have all the data.
 					if (this.get('__ready')) {
 						// Reset page on query change.

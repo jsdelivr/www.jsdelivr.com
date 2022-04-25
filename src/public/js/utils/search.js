@@ -41,6 +41,7 @@ const QUERY_REGEXP = /^((?:(?:[^\s:]+(?![a-z]*\s*:))\s*)*)/i;
 const filterMapping = {
 	author: 'owner.name',
 	type: 'moduleTypes',
+	style: 'styleTypes'
 };
 
 function parseQuery (queryString) {

@@ -70,7 +70,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	return this;
 };
 
-app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query', 'type' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
