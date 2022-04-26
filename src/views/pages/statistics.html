@@ -178,10 +178,79 @@
 				  {{/each}}
 				</div>
 			</div>
-			<div class="hits-chart-wrapper">
-				<canvas id="hits-chart"></canvas>
-			</div>
+		</div>
+		<div class="grey">
+			<div class="container">
+				<div class="network-data">
+					<div class="network-data-info">
+						<img
+							width="44"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/network.svg"
+							loading="lazy"
+						/>
+						<h2 class="title">Network data</h2>
+					</div>
+					<div class="network-data-action">
+						<input class="search" placeholder="Filter for a specific country or a continent..."/>
+						<div class="data-range-ctrl">
+							<div class="btn-group">
+								<button
+									type="button"
+									class="btn dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false"
+								>
+									<span>{{statsPeriod}}</span>
+									<i
+										class="fa fa-angle-down"
+										aria-hidden="true"
+									></i>
+								</button>
 
+								<ul class="dropdown-menu">
+									{{#each statsPeriods}}
+									<li>
+										<a
+											on-click="@this.set('statsPeriod', @key)"
+											>{{this}}</a
+										>
+									</li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="verticalLine" />
+				<div class="chart">
+					<div class="chart-header">
+						<h3>Requests served over time</h3>
+						<div>
+							<button class="button selected">Requests</button>
+							<button class="button">Bandwidth</button>
+						</div>
+					</div>
+					<div class="hits-chart-wrapper">
+						<div class="switch-block">
+							{{#each switchList}}
+								<div class="switch-item">
+									<label class="switch">
+										<input type="checkbox" checked>
+										<span class="slider round"></span>
+								  	</label>
+									  <span class="name">{{name}}</span>
+								</div>
+							{{/each}}
+						</div>
+						<div class="verticalLine" />
+						<div class="hits-chart-block">
+							<canvas id="hits-chart"></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 	<c-footer></c-footer>
@@ -2466,7 +2535,8 @@
 							},
 						},
 					},
-				} };
+				},
+				switchList: [{ name: 'Bunny' }, { name: 'Bunny' }, { name: 'Bunny' }, { name: 'Bunny' }, { name: 'Bunny' }] };
 		},
 		decorators: {
 			tooltip,
