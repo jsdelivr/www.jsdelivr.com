@@ -1,18 +1,166 @@
-<link rel="ractive" href="../r-page.html">
-<link rel="ractive" href="../components/coming-soon.html" name="c-coming-soon">
-<link rel="ractive" href="../components/header.html" name="c-header">
-<link rel="ractive" href="../components/footer.html" name="c-footer">
-<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../r-page.html" />
+<link
+	rel="ractive"
+	href="../components/coming-soon.html"
+	name="c-coming-soon"
+/>
+<link rel="ractive" href="../components/header.html" name="c-header" />
+<link rel="ractive" href="../components/footer.html" name="c-footer" />
+<link
+	rel="ractive"
+	href="../components/notification.html"
+	name="c-notification"
+/>
+<link
+	rel="ractive"
+	href="../components/stats-table.html"
+	name="c-stats-table"
+/>
 
+<link rel="ractive" href="../components/request-bandwidth-stats.html" name="c-request-bandwidth-stats">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
 	<c-header></c-header>
+	<div class="p-statistics">
+		<div class="container">
+			<div class="head-wrapper">
+				<img
+					class="head-map-bg"
+					width="800"
+					height="428"
+					src="{{@shared.assetsHost}}/img/sponsors/map.svg"
+				/>
+				<h2 class="head-title">Statistics</h2>
+				<p class="head-text">
+					Global internet insights from jsDelivr based on anonymous
+					aggregated data
+				</p>
+				<div class="global_data">
+					<div class="global_data_info">
+						<img
+							width="44"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/globalData.svg"
+							loading="lazy"
+						/>
+						<h2 class="title">Global data</h2>
+					</div>
+					<div class="header-ctrls">
+						<div class="data-range-ctrl">
+							<div class="btn-group">
+								<button
+									type="button"
+									class="btn dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false"
+								>
+									<span>{{statsPeriod}}</span>
+									<i
+										class="fa fa-angle-down"
+										aria-hidden="true"
+									></i>
+								</button>
 
-	<div class="p-statistics old-text-page">
-		<c-coming-soon title="Detailed package usage and network statistics are coming soon"></c-coming-soon>
+								<ul class="dropdown-menu">
+									{{#each statsPeriods}}
+									<li>
+										<a
+											on-click="@this.set('statsPeriod', @key)"
+											>{{this}}</a
+										>
+									</li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="verticalLine" />
+				<div class="bandwidth">
+					<div class="block">
+						<h3>Requests Served</h3>
+						<div class="table">
+							<div class="bandwidth-stats">
+								<div>
+									<div class="card-icon">
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+									</div>
+									<div class="card-main-stat">
+										<span>{{requestsAmount}}</span>
+
+									</div>
+									<div class="card-growth">
+										<span class="growth-positive">{{requestsGrowth}}</span>
+										<span>{{growthPeriod}} growth</span>
+									</div>
+								</div>
+							</div>
+							<div class="bandwidth-list">
+								{{#each bandwidthList}}
+									<div class="list">
+										<div class="icon">
+											<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+											<span >{{name}}</span>
+										</div>
+										<div class="chart">
+											<div class="value">{{value}}</div>
+											<div class="percentage-bar">
+												<div class="barWidth">
+
+												</div>
+											</div>
+											<div class="interest">{{interest}}</div>
+										</div>
+									</div>
+								{{/each}}
+							</div>
+						</div>
+					</div>
+					<div class="block">
+						<h3>Bandwidth</h3>
+						<div class="table">
+							<div class="bandwidth-stats">
+								<div>
+									<div class="card-icon">
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
+									</div>
+									<div class="card-main-stat">
+										<span>{{bandAmount}}</span>
+
+									</div>
+									<div class="card-growth">
+										<span class="growth-negative">{{bandGrowth}}</span>
+										<span>{{bandPeriod}} growth</span>
+									</div>
+								</div>
+							</div>
+							<div class="bandwidth-list">
+								{{#each bandwidthList}}
+									<div class="list">
+										<div class="icon">
+											<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+											<span >{{name}}</span>
+										</div>
+										<div class="chart">
+											<div class="value">{{value}}</div>
+											<div class="percentage-bar">
+												<div class="barWidth">
+
+												</div>
+											</div>
+											<div class="interest">{{interest}}</div>
+										</div>
+									</div>
+								{{/each}}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-
 	<c-footer></c-footer>
 </r-page>
 
@@ -20,7 +168,21 @@
 	component.exports = {
 		data () {
 			return {
+				desc: true,
 				title: 'Usage statistics - jsDelivr',
+				name: 'd3',
+				statsPeriod: 'last 30 days',
+				statsPeriods: [ 'last 30 days', 'last 30 days', 'last 30 days' ],
+				description:
+					'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
+				requestsAmount: '623 351 937',
+				requestsGrowth: '+34%',
+				growthPeriod: 'monthly',
+				bandAmount: '648 414 GB',
+				bandGrowth: '-9%',
+				bandPeriod: 'monthly',
+				bandwidthList: [{ svg: '/img/statistics/reqExample.png', name: 'Cloudflare', value: '183 849 174', interest: '45.2%' }, { svg: '/img/statistics/reqExample.png', name: 'Cloudflare', value: '183 849 174', interest: '45.2%' }, { svg: '/img/statistics/reqExample.png', name: 'Cloudflare', value: '183 849 174', interest: '45.2%' }, { svg: '/img/statistics/reqExample.png', name: 'Cloudflare', value: '183 849 174', interest: '45.2%' }],
+
 			};
 		},
 	};
