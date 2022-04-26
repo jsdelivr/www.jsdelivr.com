@@ -1,5 +1,5 @@
 .p-gsap {
-	font-family: Lexend, sans-serif;
+	font-family: Inter, Lexend, sans-serif;
 	font-style: normal;
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
@@ -9,7 +9,6 @@
 		position: relative;
 		height: 34px;
 		z-index: 1;
-    max-width: 1140px;
     margin-right: auto;
     margin-left: auto;
 		
@@ -88,6 +87,9 @@
 				margin-right: auto;
 				.main-logo {
 					margin-right: 16px;
+					@media (max-width: @screen-sm-min) {
+						margin-bottom: 12px;
+					}
 				}
 				@media (max-width: @screen-sm-min) {
 					flex-direction: column;
@@ -370,7 +372,7 @@
 									display: flex;
 									align-items: center;
 									justify-content: center;
-									margin-left: auto;
+									margin-left: 12px;
 									color: #111a2c;
 									padding: 0;
 									background: #f2f2f2;
@@ -444,13 +446,20 @@
 					color: #222;
 
 					.extra-file-items {
-						display: none;
-						@media (min-width: @screen-sm-min) {
-							display: block;
+						height: 100%;
+						visibility: visible;
+						opacity: 1;
+						overflow: hidden;
+						transition: all 0.5s ease-out;
+						@media (max-width: @screen-sm-min) {
+							height: 0px;
+							visibility: hidden;
+							opacity: 0;
 						}
 						&.expanded{
-							
-							display: block;
+							height: 1150px;
+							visibility: visible;
+							opacity: 1;
 						}
 					}
 
@@ -521,6 +530,17 @@
 								width: 100%;
 								@media (min-width: @screen-sm-min) {
 									display: none;
+								}
+								.data-type-ctrl {
+									.btn-label {
+										display: flex;
+										position: absolute;
+										z-index: 2;
+										justify-content: space-between;
+										width: 50%;
+										margin-top: 7px;
+										pointer-events: none;
+									}
 								}
 								.data-content {
 									display: flex;

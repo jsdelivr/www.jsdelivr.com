@@ -2,7 +2,7 @@
 
 <div class="c-search">
 	<div class="container">
-		<div class="search-input-wrapper clearfix">
+		<div class="search-input-wrapper clearfix {{ #if query }}active{{ /if }}">
 			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 			
 			<div class="search-by">
@@ -15,13 +15,13 @@
 				<div class="filter-by">
 					<span>Filter for: </span>
 					<button class="btn-esm {{ #if type === 'esm' }}active{{ /if }}"
-							on-click="onFilterItemClick('esm')">ESM</button>
+							on-click="@this.onFilterItemClick('esm')">ESM</button>
 					<button class="btn-cjs {{ #if type === 'cjs' }}active{{ /if }}"
-							on-click="onFilterItemClick('cjs')">CJS</button>
+							on-click="@this.onFilterItemClick('cjs')">CJS</button>
 					<button class="btn-js {{ #if type === 'js' }}active{{ /if }}"
-							on-click="onFilterItemClick('js')">JS</button>
-					<button class="btn-styles {{ #if type === 'styles' }}active{{ /if }}"
-							on-click="onFilterItemClick('styles')">Styles</button>
+							on-click="@this.onFilterItemClick('js')">JS</button>
+					<button class="btn-styles {{ #if style === 'styles' }}active{{ /if }}"
+							on-click="@this.onFilterItemClick('styles')">Styles</button>
 				</div>
 			{{ /if }}
 		</div>
@@ -80,15 +80,7 @@
 				query: '',
 				packages: [],
 				type: '',
-				onFilterItemClick( filter ) {
-					let active = this.get('type');
-					
-					if(active === filter)
-						this.set('type', '');
-					else {
-						this.set('type', filter);
-					}
-				},
+				style: '',
 				pagination (page, nbPages) {
 					let start = Math.max(page - 2, 0);
 					let pages = [];
@@ -121,7 +113,7 @@
 					if (this.get('query')) {
 						let newQuery = this.get('query');
 
-						if(this.get('type') === 'styles')
+						if(this.get('style') === 'styles')
 							newQuery +=  " style:-none";
 						if(this.get('type') === 'js')
 							newQuery +=  " type:-none";
@@ -162,7 +154,7 @@
 				});
 
 				// Update results on input.
-				this.observe('page query type __ready', (newValue, oldValue, keypath) => {
+				this.observe('page query type style __ready', (newValue, oldValue, keypath) => {
 					// Don't send requests before have all the data.
 					if (this.get('__ready')) {
 						// Reset page on query change.
@@ -176,6 +168,23 @@
 						}
 					}
 				});
+			}
+		},
+		onFilterItemClick( filterBy ) {
+			let activeType = this.get('type');
+			let activeStyle = this.get('style');
+			
+			if(activeType === filterBy)
+				this.set('type', '');
+			else if(activeStyle === filterBy)
+				this.set('style', '');
+			else if(filterBy === 'styles') {
+				this.set('type', '');
+				this.set('style', 'styles');
+			}
+			else {
+				this.set('type', filterBy);
+				this.set('style', '');
 			}
 		},
 		scrollToSearch () {
