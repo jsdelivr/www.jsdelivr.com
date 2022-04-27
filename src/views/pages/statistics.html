@@ -250,6 +250,35 @@
 						</div>
 					</div>
 				</div>
+				<div class="map"></div>
+				<div class="tops">
+					<div class="top-block">
+						<div class="info">
+							<h3>Top platforms</h3>
+							<div class="switch-block">
+								<label class="switch">
+									<input type="checkbox" checked>
+									<span class="slider round"></span>
+								</label>
+								<span class="name">Group platform versions</span>
+							</div>
+						</div>
+						<div class="table"></div>
+					</div>
+					<div class="top-block">
+						<div class="info">
+							<h3>Top browsers</h3>
+							<div class="switch-block">
+								<label class="switch">
+									<input type="checkbox" checked>
+									<span class="slider round"></span>
+								</label>
+								<span class="name">Group platform versions</span>
+							</div>
+						</div>
+						<div class="table"></div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -2642,7 +2671,6 @@
 									// whole callback needed to prepare dates for displaying on the x-axis
 									// since we need only the day and not full date (which we must to pass here for the tooltip title)
 									callback (tickIdx) {
-										console.log(1);
 										let labelValue = this.getLabelForValue(tickIdx);
 										// check if it is not contains only a date but also a month
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
@@ -2681,8 +2709,6 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										console.log(labelValue);
-										console.log(labelValue.replace(/\s/g, ''));
 										return _.getValueByMagnitude(Math.round(labelValue.replace(/\s/g, '').replace(',', '.')), 'round', 1, false);
 									},
 								},
@@ -2693,15 +2719,12 @@
 								},
 								afterFit: (scale) => {
 									scale.width = 114;
+									scale.border = 'none';
 								},
 							},
 						},
 					},
 				};
-				console.log(hitsChartCanvasEl, 'hitsChartCanvasEl');
-				console.log(chartData, 'chartData');
-				console.log(chartSettings, 'chartSettings');
-				console.log(chartConfig, 'chartConfig');
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
