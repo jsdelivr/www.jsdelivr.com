@@ -28,7 +28,7 @@
 				</div>
 				<div class="menu-icon">
 					<p class="header-link">Menu</p>
-					<div class="hamburger-icon" on-click="@.toggle('ismobile')">
+					<div class="hamburger-icon" on-click="@.toggle('ismobile_menu')">
 						<div class="bar1"></div>
 						<div class="bar2"></div>
 						<div class="bar3"></div>
@@ -37,8 +37,8 @@
 			</div>
 
 			<div class="menu-dropdown">
-				<ul class="menu-mobile {{#if ismobile}} open {{/if}}">
-					<div class="menu-icon close" on-click="@.toggle('ismobile')">
+				<ul class="menu-mobile {{#if ismobile_menu}} open {{/if}}">
+					<div class="menu-icon close" on-click="@.toggle('ismobile_menu')">
 						<p class="header-link">Close</p>
 						<div class="hamburger-icon">
 							<div class="bar1"></div>
@@ -105,12 +105,12 @@
 							<span>Version:</span>
 
 							<div class="btn-group">
-								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<button id="btn_version" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
 									<span>{{versionsList[versionIdx]}}</span>
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
-								<ul class="dropdown-menu versions-menu">
+								<ul class="menu-versions-web dropdown-menu">
 									{{#each versionsList:idx}}
 										<li>
 											<a on-click="@this.set('versionIdx', idx)" class="{{#if idx === versionIdx}}current{{/if}}">
@@ -119,6 +119,20 @@
 										</li>
 									{{/each}}
 								</ul>
+								<div class="menu-mobile-bg"></div>
+								<div class="menu-versions-mobile dropdown-menu">
+									<p>Version:</p>
+									<div class="select-cdn">
+										{{#each versionsList:idx}}
+											<div>
+												<input type="radio" class="select-cdn-tools" id={{idx}} name="Version" {{#if idx === versionIdxTmp}}checked{{/if}} >
+												<label on-click="@this.set('versionIdxTmp', idx)" for={{idx}}>{{this}}</label>
+											</div>
+										{{/each}}
+									</div>
+									<button on-click="@this.set('versionIdx', versionIdxTmp)" class="select-cdn-btn apply">Apply</button>
+									<button on-click="@this.set('versionIdxTmp', versionIdx)" class="menu-versions-mobile-btn-cancel select-cdn-btn cancel">Cancel</button>
+								</div>
 							</div>
 						</div>
 
@@ -126,12 +140,12 @@
 							<span>Aliasing:</span>
 
 							<div class="btn-group">
-								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<button id="btn_aliasing" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 									<span>{{aliasingList[aliasingIdx]}}</span>
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
-								<ul class="dropdown-menu">
+								<ul class="menu-aliasing-web dropdown-menu">
 									{{#each aliasingList:idx}}
 										<li>
 											<a on-click="@this.set('aliasingIdx', idx)" class="{{#if idx === aliasingIdx}}current{{/if}}">
@@ -140,6 +154,20 @@
 										</li>
 									{{/each}}
 								</ul>
+								<div class="menu-mobile-bg"></div>
+								<div class="menu-aliasing-mobile dropdown-menu">
+									<p>Aliasing:</p>
+									<div class="select-cdn">
+										{{#each aliasingList:idx}}
+											<div>
+												<input type="radio" class="select-cdn-tools" id={{idx}} name="Aliasing" {{#if idx === aliasingIdxTmp}}checked{{/if}} >
+												<label on-click="@this.set('aliasingIdxTmp', idx)" for={{idx}}>{{this}} {{@this.createAliasing(this, versionsList[versionIdx], true)}}</label>
+											</div>
+										{{/each}}
+									</div>
+									<button on-click="@this.set('aliasingIdx', aliasingIdxTmp)" class="select-cdn-btn apply">Apply</button>
+									<button on-click="@this.set('aliasingIdxTmp', aliasingIdx)" class="select-cdn-btn cancel">Cancel</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -317,7 +345,9 @@
 					'Latest',
 				],
 				versionIdx: 0,
+				versionIdxTmp: 0,
 				aliasingIdx: 0,
+				aliasingIdxTmp: 0,
 				versionsList: [],
 				filesData: {
 					CSSRulePlugin: '',
@@ -429,6 +459,22 @@
 		},
 		decorators: {
 			clipboard,
+		},
+		oncomplete () {
+			$('.menu-versions-mobile').click(function () {
+				event.stopPropagation();
+
+				if(event.target.matches('button')) {
+					$('#btn_version').parent().removeClass('open');
+				}
+			});
+			
+			$('.menu-aliasing-mobile').click(function () {
+				event.stopPropagation();
+				if(event.target.matches('button')) {
+					$('#btn_aliasing').parent().removeClass('open');
+				}
+			});
 		},
 	};
 </script>
