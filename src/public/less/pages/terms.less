@@ -4,27 +4,114 @@
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
 
+	.dropdown {
+		.dropdown-toggle {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			padding: 16px 24px;
+			background: #fff;
+			font-family: 'Lexend';
+			font-weight: 600;
+			font-size: 14px;
+			letter-spacing: 0.2px;
+			color: #17233B;
+			box-shadow: inset 0px -1px 0px #DFE3E7;
+
+			.toggle-icon {
+				margin-left: auto;
+
+				.toggle-bar {
+					width: 10px;
+					height: 1.5px;
+					border-top: 1.5px solid #111A2C;
+					transition: .3s;
+
+					&:nth-child(2) {
+						transform: rotate(-90deg) translate(1px, 0.3px);
+					}
+				}
+			}
+		}
+		&.open {
+			.toggle-bar:nth-child(1) {
+				transform: rotate(180deg) !important;
+			}
+			.toggle-bar:nth-child(2) {
+				transform: rotate(0deg) translate(0px, 0.3px) !important;
+			}
+		}
+		.dropdown-menu {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			border: none;
+			box-shadow: 0px 5px 16px -10px rgb(0 0 0 / 76%);
+
+			>li {
+				.dropdown-subtitle {
+					padding: 8px 24px;
+					font-family: 'Lexend';
+					font-weight: 400;
+					font-size: 12px;
+					line-height: 16px;
+					background: #F9FAFB;
+					color: #79849A;
+					border-bottom: 1.5px solid #DFE3E7;
+				}
+				.dropdown-item {
+					padding: 16px 24px;
+					font-family: 'Lexend';
+					font-weight: 400;
+					font-size: 14px;
+					line-height: 20px;
+					color: #17233B;
+					border-bottom: 1.5px solid #DFE3E7;
+
+					&.active {
+						color: #F65128;
+					}
+				}
+			}
+		}
+	}
 	.page-title {
 		display: flex;
 		justify-content: center;
 		font-weight: 600;
-		font-size: 48px;
+		font-size: 32px;
 		line-height: 68px;
 		letter-spacing: .2px;
 		color: #17233b;
-		margin: 80px auto;
+		margin: 40px auto;
 		width: 100%;
+
+		@media (min-width: @screen-sm-min) {
+			font-size: 48px;
+			margin: 80px auto;
+		}
 	}
 
 	.container {
-		width: 1254px;
-		display: flex;
 		justify-content: center;
+		padding: 0px 24px 32px;
+		
+		@media (min-width: @screen-sm-min)  {
+			display: flex;
+			padding: 0px;
+		}
+		@media (min-width: @screen-lg-min) {
+			width: 1224px;
+		}
 
 		.side-menu {
-			width: 224px;
 			margin-right: 88px;
+			display: none;
+			min-width: 224px;
 
+			@media (min-width: @screen-sm-min) {
+				display: block;
+			}
 			.menu-section {
 				display: flex;
 				flex-direction: column;
@@ -75,9 +162,15 @@
 		}
 
 		.main-content {
-			width: 912px;
+			// width: 912px;
 
 			.c-markdown {
+
+				text-align: left;
+
+				@media (min-width: @screen-sm-min) {
+					text-align: justify;
+				}
 				h1, h2, h3, h4 {
 					font-weight: 600;
 					letter-spacing: .2px;
@@ -85,19 +178,31 @@
 				}
 
 				h2, h3, h4 {
-					margin-top: 32px;
+					margin-top: 24px;
 					margin-bottom: 8px;
+
+					@media (min-width: @screen-sm-min) {
+						margin-top: 32px;
+					}
 				}
 
 				h1 {
 					font-size: 24px;
 					line-height: 36px;
-					margin: 0 0 32px;
+					margin: 0 0 24px;
+
+					@media (min-width: @screen-sm-min) {
+						margin: 0 0 32px;
+					}
 				}
 
 				h2 {
 					font-size: 24px;
 					line-height: 36px;
+
+					& ~ p {
+						margin-bottom: 8px;
+					}
 				}
 
 				h3 {
@@ -123,6 +228,7 @@
 
 				ul, ol {
 					padding-left: 20px;
+					margin-bottom: 8px;
 
 					li, li > strong {
 						font-size: 14px;

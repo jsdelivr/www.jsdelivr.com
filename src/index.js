@@ -217,11 +217,36 @@ koaElasticUtils.addRoutes(router, [
  * Additional redirects
  */
 koaElasticUtils.addRoutes(router, [
+	[ '/acceptable-use-policy-jsdelivr-net', '/acceptable-use-policy-jsdelivr-net' ],
 	[ '/privacy-policy-jsdelivr-com', '/privacy-policy-jsdelivr-com' ],
 	[ '/privacy-policy-jsdelivr-net', '/privacy-policy-jsdelivr-net' ],
 ], async (ctx) => {
 	ctx.status = 301;
 	return ctx.redirect(`/terms${ctx.path}`);
+});
+
+/**
+ * terms pages
+ */
+koaElasticUtils.addRoutes(router, [
+	['terms', '/terms/:currentPolicy']
+], async (ctx) => {
+	
+	let data = {
+		currentPolicy: ctx.params.currentPolicy
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/terms.html', data);
+		ctx.maxAge = 10 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		data.noYield = true;
+		ctx.body = await ctx.render('pages/_index.html', data);
+	}
 });
 
 /**

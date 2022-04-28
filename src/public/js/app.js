@@ -70,7 +70,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	return this;
 };
 
-app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query', 'type' ] });
+app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
@@ -91,6 +91,7 @@ app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
 app.router.addRoute('/terms', cPP);
+app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/history', cHistory);
 app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
