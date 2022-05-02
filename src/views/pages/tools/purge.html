@@ -17,15 +17,14 @@
 					<h1 class="text-title-32">Purge jsDelivr CDN cache</h1>
 				</div>
 				<div class="page-content">
-					<span class="text-content-18">Purge the cache of a @latest or version aliased URL to force your users to get the new</span>
-					<span class="text-content-18">updated version. Otherwise they might wait up to 7 days.</span>
+					<span class="text-content-18">Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</span>
 				</div>
 
 				<div class="purge-form">
-					<textarea
+					<textarea id="purge-urls"
 						class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
 						rows="2"
-						placeholder="You can cache up to 10 URLs, separated by a comma &quot;,&quot;"
+						placeholder="Enter up to 10 URLs - one per line"
 						value="{{urls}}">
 					</textarea>
 
@@ -58,55 +57,45 @@
 				<section class="results">
 					<h2>
 						<span>Results</span>
-						<span on-click="@this.toggle('showDetails')" class="results-toggle{{#if showDetails}} hide-details{{/if}}">
-							<img width="20" height="20"  src="{{@shared.assetsHost}}/img/icons/chevron-down.orange.svg" />
-							{{#if showDetails}}
-								Hide details
-							{{else}}
-								Show details
-							{{/if}}
-						</span>
 					</h2>
 
-					{{#if showDetails}}
-						<div class="results-table">
-							{{#each results: idx}}
-								<div class="results-item {{#if currentActiveResult.newIdx === idx}}results-item-active{{/if}}"
-									on-click="@this.set('currentActiveResult', {newIdx: idx})">
-									<div class="item-descr">
-										<span>{{this.path}}</span>
-										<div
-											class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}"
-											on-click="@this.set('toggleOpenResult', {newIdx: idx})">
-											{{this.status}}
+					<div class="results-table">
+						{{#each results: idx}}
+							<div class="results-item {{#if currentActiveResult.newIdx === idx}}results-item-active{{/if}}"
+								on-click="@this.set('currentActiveResult', {newIdx: idx})">
+								<div class="item-descr">
+									<span>{{this.path}}</span>
+									<div
+										class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}"
+										on-click="@this.set('toggleOpenResult', {newIdx: idx})">
+										{{this.status}}
 
-											{{#if this.throttled}}
-												<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/throttled.svg">
-											{{else}}
-												<img class="item-chevron" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg">
-											{{/if}}
-										</div>
+										{{#if this.throttled}}
+											<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/throttled.svg">
+										{{else}}
+											<img class="item-chevron" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg">
+										{{/if}}
 									</div>
-
-									{{#unless this.throttled}}
-										<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
-											<hr />
-											{{#each this.providers}}
-												<span>
-													{{#if this[1] === true}}
-														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
-													{{else}}
-														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
-													{{/if}}
-													{{this[0]}}
-												</span>
-											{{/each}}
-										</div>
-									{{/unless}}
 								</div>
-							{{/each}}
-						</div>
-					{{/if}}
+
+								{{#unless this.throttled}}
+									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+										<hr />
+										{{#each this.providers}}
+											<span>
+												{{#if this[1] === true}}
+													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+												{{else}}
+													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+												{{/if}}
+												{{this[0]}}
+											</span>
+										{{/each}}
+									</div>
+								{{/unless}}
+							</div>
+						{{/each}}
+					</div>
 				</section>
 			{{/if}}
 		</div>
@@ -120,6 +109,12 @@
 	const _ = require('../../../public/js/_');
 
 	component.exports = {
+		oncomplete () {
+			$('#purge-urls').on("input", function () {
+				this.style.height = "auto";
+				this.style.height = (this.scrollHeight - 12) + "px";
+			});
+		},
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
@@ -166,7 +161,8 @@
 				});
 
 				this.observe('urls', (newValue) => {
-					let paths = newValue.replace(/\s+/g, '');
+					let paths = newValue.replace(/\n/g, ',');
+					console.log('000 paths:   ', paths);
 					let pathsArr = paths.split(',');
 
 					let isPathsValid = pathsArr.reduce((isValid, path) => {
@@ -225,7 +221,7 @@
 			this.set('purgingInProcess', true);
 			this.set('purgeErrorMsg', '');
 
-			let paths = this.get('urls').replace(/\s+/g, '');
+			let paths = this.get('urls').replace(/\n/g, ',');
 
 			if (paths === '') {
 				this.set('purgingInProcess', false);
