@@ -9,14 +9,16 @@
 	<c-header></c-header>
 
 	<div class="p-purge">
-		<c-header-gradient></c-header-gradient>
+		<c-header-gradient showMap="{{true}}"></c-header-gradient>
 
-		<div class="container">
+		<div class="container-fluid">
 			<section class="heading">
-				<h1 class="page-title">Purge jsDelivr CDN cache</h1>
-				<div class="subtitle">
-					<span>Purge the cache of a @latest or version aliased URL to force your users to get the new</span>
-					<span>updated version. Otherwise they might wait up to 7 days.</span>
+				<div class="page-title">
+					<h1 class="text-title-32">Purge jsDelivr CDN cache</h1>
+				</div>
+				<div class="page-content">
+					<span class="text-content-18">Purge the cache of a @latest or version aliased URL to force your users to get the new</span>
+					<span class="text-content-18">updated version. Otherwise they might wait up to 7 days.</span>
 				</div>
 
 				<div class="purge-form">
@@ -88,6 +90,7 @@
 
 									{{#unless this.throttled}}
 										<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+											<hr />
 											{{#each this.providers}}
 												<span>
 													{{#if this[1] === true}}
@@ -164,6 +167,7 @@
 
 				this.observe('urls', (newValue) => {
 					let paths = newValue.replace(/\s+/g, '');
+					console.log('---- ', paths);
 					let pathsArr = paths.split(',');
 
 					let isPathsValid = pathsArr.reduce((isValid, path) => {
