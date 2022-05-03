@@ -23,7 +23,6 @@
 				<div class="purge-form">
 					<textarea id="purge-urls"
 						class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
-						rows="2"
 						placeholder="Enter up to 10 URLs - one per line"
 						value="{{urls}}">
 					</textarea>
@@ -112,7 +111,7 @@
 		oncomplete () {
 			$('#purge-urls').on("input", function () {
 				this.style.height = "auto";
-				this.style.height = (this.scrollHeight - 12) + "px";
+				this.style.height = (this.scrollHeight) + "px";
 			});
 		},
 		data () {
@@ -162,7 +161,6 @@
 
 				this.observe('urls', (newValue) => {
 					let paths = newValue.replace(/\n/g, ',');
-					console.log('000 paths:   ', paths);
 					let pathsArr = paths.split(',');
 
 					let isPathsValid = pathsArr.reduce((isValid, path) => {
