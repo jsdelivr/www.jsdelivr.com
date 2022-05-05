@@ -1,26 +1,345 @@
 <link rel="ractive" href="../r-page.html">
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/footer.html" name="c-footer">
-<link rel="ractive" href="../components/landing-bottom.html" name="c-landing-bottom">
-<link rel="ractive" href="../components/landing-top.html" name="c-landing-top">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
-<link rel="ractive" href="../components/search.html" name="c-search">
 <link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
 	<c-header></c-header>
+	<c-header-gradient showMap="{{true}}"></c-header-gradient>
 
-	<div class="home">
-		<c-header-gradient showMap="{{ true }}"></c-header-gradient>
-		<div class="p-index page">
-			<c-landing-top activeDocs="{{docs}}" ></c-landing-top>
-			<c-search __ready="{{__ready}}" hideLanding="{{hideLanding}}" page="{{page}}" query="{{query}}" caretPosition="{{caretPosition}}"></c-search>
-			{{#unless ~/hideLanding}}
-			<c-landing-bottom></c-landing-bottom>
-			{{/unless}}
+	<div class="p-history">
+		<div class="container">
+			<div class="page-title">
+				<h1 class="text-title-48">jsDelivr over the years </h1>
+				<h1 class="text-content-40">Our History</h1>
+			</div>
+
+			<div class="page-content">
+				{{#each eventsData}}
+				<section>
+					<div class="year">{{year}}</div>
+
+					{{#each events}}
+					<div class="event-block">
+						<div class="event-main {{data.position === 'right' ? 'pos-right' : 'pos-left'}}">
+							{{#if data.type}}
+								<img class="event-type-icon"
+									src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg" />
+							{{/if}}
+							{{#if data.text}}
+								<div class="event-content">
+									<span>{{{data.text}}}</span>
+									{{#if data.img && data.img.ext === ".svg"}}
+										<img class="{{data.img.class}}" width="{{data.img.width}}"
+											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
+									{{elseif data.img && data.img.ext === ".png"}}
+										<img class="{{data.img.class}}" width="{{data.img.width}}"
+											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
+											srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}} 2x" />
+									{{/if}}
+								</div>
+							{{/if}}
+						</div>
+
+						<div class="event-relation {{data.position === 'right' ? 'pos-left' : 'pos-right'}}">
+							{{#if data.img && data.img.ext === ".svg"}}
+								<img class="{{data.img.class}}" width="{{data.img.width}}"
+									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
+							{{elseif data.img && data.img.ext === ".png"}}
+								<img class="{{data.img.class}}" width="{{data.img.width}}"
+									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
+									srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}} 2x" />
+							{{/if}}
+						</div>
+
+						<div class="event-month">
+							<div class="binding"></div>
+							<div class="month">{{month}}</div>
+							<div class="binding"></div>
+						</div>
+
+					</div>
+					{{/each}}
+				</section>
+				{{/each}}
+			</div>
 		</div>
-	
-		<c-footer></c-footer>
 	</div>
+
+	<c-footer></c-footer>
 </r-page>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				title: 'Our history - jsDelivr',
+				description: 'History and milestones - jsDelivr',
+				eventsData: [
+					{
+						year: '2021',
+						events: [
+							{
+								month: 'May',
+								data: {
+									position: 'left',
+									text: 'Rawgit switches to jsDelivr',
+									type: 'deals',
+									img: {
+										name: 'rawgit',
+										width: '68',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'July',
+								data: {
+									position: 'right',
+									text: 'BootstrapCDN joined',
+									type: 'deals',
+									img: {
+										name: 'bootstrap',
+										width: '147',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'December',
+								data: {
+									position: 'left',
+									text: '131 billion monthly requests',
+									type: 'numbers',
+								},
+							},
+						],
+					},
+					{
+						year: '2020',
+						events: [
+							{
+								month: 'June',
+								data: {
+									position: 'right',
+									text: 'Detailed download stats are launched',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'October',
+								data: {
+									position: 'left',
+									text: 'fontfamous joined',
+									type: 'deals',
+									img: {
+										name: 'fontfamous',
+										width: '135',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'November',
+								data: {
+									position: 'right',
+									text: 'ESM Support is released in beta',
+									type: 'updates',
+								},
+							},
+						],
+					},
+					{
+						year: '2019',
+						events: [
+							{
+								month: 'March',
+								data: {
+									position: 'left',
+									text: 'NPM and Github support is launched with old github commits workflow sunset',
+									type: 'updates',
+								},
+							},
+						],
+					},
+					{
+						year: '2018',
+					},
+					{
+						year: '2017',
+						events: [
+							{
+								month: 'January',
+								data: {
+									position: 'right',
+									text: 'Updates are automated using a bot',
+									type: 'updates',
+								},
+							},
+						],
+					},
+					{
+						year: '2016',
+						events: [
+							{
+								month: 'January',
+								data: {
+									position: 'left',
+									text: '50 billion monthly requests',
+									type: 'numbers',
+								},
+							},
+							{
+								month: 'November',
+								data: {
+									position: 'right',
+									text: 'Quantil joins as sponsor',
+									type: 'deals',
+									img: {
+										name: 'quantil',
+										width: '104',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'December',
+								data: {
+									position: 'left',
+									text: 'jsDelivr gets Chinese ICP license',
+									type: 'deals',
+								},
+							},
+						],
+					},
+					{
+						year: '2015',
+						events: [
+							{
+								month: 'October',
+								data: {
+									position: 'right',
+									text: 'Martin Kolarik joins as core developer',
+									type: 'deals',
+									img: {
+										name: 'kolarik',
+										width: '80',
+										ext: '.png',
+										class: 'img-rounded',
+									},
+								},
+							},
+						],
+					},
+					{
+						year: '2014',
+						events: [
+							{
+								month: 'May',
+								data: {
+									position: 'right',
+									text: 'Fastly joins as sponsor',
+									type: 'deals',
+									img: {
+										name: 'fastly',
+										width: '84',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'October',
+								data: {
+									position: 'left',
+									text: 'Combination feature is launched',
+									type: 'updates',
+								},
+							},
+						],
+					},
+					{
+						year: '2013',
+						events: [
+							{
+								month: 'June',
+								data: {
+									position: 'left',
+									text: 'First redesign',
+									type: 'deals',
+								},
+							},
+						],
+					},
+					{
+						year: '2012',
+						events: [
+							{
+								month: 'June',
+								data: {
+									position: 'right',
+									text: 'Dmitriy Akulov founded jsDelivr',
+									type: 'numbers',
+									img: {
+										name: 'akulov',
+										width: '80',
+										ext: '.png',
+										class: 'img-rounded',
+									},
+								},
+							},
+							{
+								month: 'August',
+								data: {
+									position: 'left',
+									text: 'MaxCDN joins as sponsor',
+									type: 'deals',
+									img: {
+										name: 'maxcdn',
+										width: '132',
+										ext: '.svg',
+									},
+								},
+							},
+							{
+								month: 'October',
+								data: {
+									position: 'right',
+									text: 'Cloudflare joins as sponsor',
+									type: 'deals',
+									img: {
+										name: 'cloudflare',
+										width: '118',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'August',
+								data: {
+									position: 'left',
+									text: 'Cedexis joins as sponsorand and makes multi-CDN official',
+									type: 'deals',
+									img: {
+										name: 'cedexis',
+										width: '119',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'December',
+								data: {
+									position: 'right',
+									text: '10 billion monthly requests',
+									type: 'numbers',
+								},
+							},
+						],
+					},
+				],
+			};
+		},
+	};
+</script>
