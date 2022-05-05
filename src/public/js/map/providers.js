@@ -3,5 +3,4 @@ module.exports = [
 	'Cloudflare',
 	'Fastly',
 	'GCore',
-	'QUANTIL',
 ];
