@@ -104,6 +104,9 @@
 				let offsetTop = pageYOffset;
 				this.find('.search-input').focus();
 				window.scrollTo(0, offsetTop);
+				if(this.get("query")) {
+					this.scrollToSearch();
+				}
 
 				if (this.get('caretPosition')) {
 					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
@@ -138,7 +141,7 @@
 								});
 
 								// Scroll to the results.
-								if (!pageYOffset || keypath === 'page') {
+								if (keypath === 'page') {
 									this.scrollToSearch();
 								}
 							}
@@ -188,9 +191,9 @@
 			}
 		},
 		scrollToSearch () {
-			window.scrollTo({
-				top: Math.floor(document.querySelector('.search-input').getBoundingClientRect().top / 100) * 100,
-				behavior: 'smooth',
+			document.querySelector('.search-input').scrollIntoView({
+				behavior: "smooth",
+				block: "center"
 			});
 		},
 		nFormatter (num) {
