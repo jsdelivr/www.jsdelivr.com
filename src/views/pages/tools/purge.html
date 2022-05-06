@@ -62,11 +62,9 @@
 						{{#each results: idx}}
 							<div class="results-item {{#if currentActiveResult.newIdx === idx}}results-item-active{{/if}}"
 								on-click="@this.set('currentActiveResult', {newIdx: idx})">
-								<div class="item-descr">
+								<div class="item-descr" on-click="@this.set('toggleOpenResult', {newIdx: idx})">
 									<span>{{this.path}}</span>
-									<div
-										class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}"
-										on-click="@this.set('toggleOpenResult', {newIdx: idx})">
+									<div class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}">
 										{{this.status}}
 
 										{{#if this.throttled}}
@@ -80,16 +78,18 @@
 								{{#unless this.throttled}}
 									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
 										<hr />
-										{{#each this.providers}}
-											<span>
-												{{#if this[1] === true}}
-													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
-												{{else}}
-													<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
-												{{/if}}
-												{{this[0]}}
-											</span>
-										{{/each}}
+										<div class="item-cdns-items">
+											{{#each this.providers}}
+												<span>
+													{{#if this[1] === true}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+													{{else}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+													{{/if}}
+													{{this[0]}}
+												</span>
+											{{/each}}
+										</div>
 									</div>
 								{{/unless}}
 							</div>
