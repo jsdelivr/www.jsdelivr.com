@@ -191,10 +191,14 @@
 			}
 		},
 		scrollToSearch () {
-			document.querySelector('.search-input').scrollIntoView({
-				behavior: "smooth",
-				block: "center"
-			});
+			if (app.config.animateScrolling) {
+				$('html, body').animate({
+					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
+				});
+			} else {
+				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				app.config.animateScrolling = true;
+			}
 		},
 		nFormatter (num) {
 			let lookup = [
