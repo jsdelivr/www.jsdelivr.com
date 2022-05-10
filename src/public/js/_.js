@@ -1,6 +1,19 @@
 const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+const screenType = {
+	'mobile': 480,
+	'tablet': 768,
+	'mdDesktop': 992,
+	'lgDesktop': 1200,
+	'xlDesktop': 1400
+}
 
 module.exports = {
+	isTabletScreen () {
+		return screen.width > screenType.mobile && screen.width <= screenType.tablet;
+	},
+	isMobileScreen () {
+		return screen.width <= screenType.mobile;
+	},
 	flattenFiles: function flattenFiles (tree, path = '/', files = []) {
 		tree.forEach((item) => {
 			if (item.type === 'file') {
