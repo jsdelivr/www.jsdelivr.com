@@ -1,10 +1,21 @@
-module.exports = (url) => {
-	let pattern = new RegExp('^(https?:\\/\\/)?'// protocol
-		+ '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'// domain name
-		+ '((\\d{1,3}\\.){3}\\d{1,3}))'// OR ip (v4) address
-		+ '(\\:\\d+)?(\\/[-a-z\\d%_.~+@]*)*'// port and path
-		+ '(\\?[;&a-z\\d%_.~+=-]*)?'// query string
-		+ '(\\#[-a-z\\d_]*)?$', 'i');// fragment locator
-
-	return pattern.test(url);
+module.exports = {
+	test: (url) => {
+		let pattern = new RegExp(
+			'(?<=http[s]?:\/\/cdn.jsdelivr.net\/).*'
+			, 'g'
+		);
+		return pattern.test(url);
+	},
+	getPathFromUrl: (url) => {
+		try {
+			let pattern = new RegExp(
+				'(?<=http[s]?:\/\/cdn.jsdelivr.net).*'
+				, 'g'
+			);
+			let res = url.match(pattern);
+			return res[0];
+		} catch (e) {
+			return '/';
+		}
+	},
 };

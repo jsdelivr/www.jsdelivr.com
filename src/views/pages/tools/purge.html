@@ -165,7 +165,7 @@
 					let isPathsValid = pathsArr.reduce((isValid, path) => {
 						if (!path) { return isValid; }
 
-						if (isUrlValid(path)) { return isValid && true; }
+						if (isUrlValid.test(path)) { return isValid && true; }
 
 						return false;
 					}, true);
@@ -226,6 +226,10 @@
 			}
 
 			paths = paths.split(',');
+
+			paths = paths.map((path) => {
+				return isUrlValid.getPathFromUrl(path);
+			});
 
 			if (paths.length > 10) {
 				this.set('purgingInProcess', false);
