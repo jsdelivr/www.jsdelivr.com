@@ -33,6 +33,8 @@ Configuration for IntelliJ based IDEs is also available in this repository. If y
  - CSS code style: `npm run lint:css`
  - Integration tests: `npm run mocha`
  - All combined: `npm test`
+ 
+ Most IDEs have plugins integrating the used linters (eslint, stylelint), including support for automated fixes on save.
 
 ### Contributing
 
