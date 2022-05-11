@@ -266,6 +266,7 @@
 							x: {
 								display: true,
 								ticks: {
+									autoSkip: false,
 									color: '#5C667A',
 									font: {
 										size: 12,
@@ -275,18 +276,24 @@
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-
 										if (chartPeriod === 'year') {
-											if (tickIdx !== 0 && tickIdx % 30 === 0) {
-												return [ labelValue[1] ];
+											if (labelValue[2]) {
+												if(_.isMobileScreen())
+													return [ `${labelValue[2]} ${labelValue[1]}` ]
+												else
+													return [ labelValue[1], labelValue[2] ];
 											}
+											if (labelValue[1] && !_.isMobileScreen())
+												return [ labelValue[1] ];
 
 											return;
 										}
 
-										if (Array.isArray(labelValue)) {
+										if (Array.isArray(labelValue) && labelValue[1]) {
 											return [ day, labelValue[1] ];
 										}
+										if(chartPeriod === 'month' && _.isMobileScreen())
+											return;
 
 										return [ day ];
 									},
@@ -310,7 +317,11 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										let newVal = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										if(_.isMobileScreen())
+											return _.autoConvertBytesToUnits(newVal);
+										else
+											return newVal;
 									},
 								},
 								grid: {
@@ -318,10 +329,9 @@
 									drawBorder: false,
 								},
 								afterFit: (scale) => {
-									if( !(_.isMobileScreen() || _.isTabletScreen()) )
-										scale.width = 114;
+									// 	scale.width = 114;
 								},
-							},
+							}
 						},
 					},
 				};

@@ -8,6 +8,7 @@ const screenType = {
 }
 
 module.exports = {
+	screenType,
 	isTabletScreen () {
 		return screen.width > screenType.mobile && screen.width <= screenType.tablet;
 	},
@@ -124,16 +125,28 @@ module.exports = {
 			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
 		});
 
-		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
-			let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
+		Object.keys(dataPerMonths).forEach((yearMonthKey, index) => {
+			// let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
 
 			dataPerMonths[yearMonthKey].forEach((day, idx) => {
-				// for every case except we set month in the middle of the days
+				// for every case except we set month in the start of the days
 				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
-				if (idx === middleLength - 1 || period === 'year') {
-					chartXData.push([ day, yearMonthKey.split(' ')[1] ]);
+				let year = yearMonthKey.split(' ')[0];
+				let month = yearMonthKey.split(' ')[1];
+				if (period === 'year') {
+					if(idx === 5 && (index === 0 || month === 'Jan') ) {
+						chartXData.push([ day, month, year ]);
+						return;
+					}
+					if(idx === 5)
+						chartXData.push([ day, month ]);
+					else
+						chartXData.push([ day ]);
+				}
+				else if (idx === 0) {
+					chartXData.push([ day, month ]);
 				} else {
-					chartXData.push(day);
+					chartXData.push([ day ]);
 				}
 			});
 		});
