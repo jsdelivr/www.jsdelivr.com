@@ -4,7 +4,7 @@
 	<div class="container">
 		<div class="search-input-wrapper clearfix">
 			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" spellcheck="false">
-			
+
 			<div class="search-by">
 				<span>Real-time search by </span>
 				<a target="_blank" rel="noopener noreferrer" href="https://www.algolia.com">
@@ -101,12 +101,9 @@
 		},
 		onrender () {
 			if (!this.isServer) {
-				let offsetTop = pageYOffset;
+				let offsetTop = scrollY;
 				this.find('.search-input').focus();
-				window.scrollTo(0, offsetTop);
-				if(this.get("query")) {
-					this.scrollToSearch();
-				}
+				window.scrollTo(0, offsetTop); // Restore scroll position after focusing the input.
 
 				if (this.get('caretPosition')) {
 					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
@@ -122,7 +119,7 @@
 							newQuery +=  " type:-none";
 						if(this.get('type') === 'esm' || this.get('type') === 'cjs')
 							newQuery += " type:" + this.get('type');
-						
+
 
 						search(newQuery, this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
@@ -141,7 +138,7 @@
 								});
 
 								// Scroll to the results.
-								if (keypath === 'page') {
+								if (!scrollY || keypath === 'page') {
 									this.scrollToSearch();
 								}
 							}
@@ -176,7 +173,7 @@
 		onFilterItemClick( filterBy ) {
 			let activeType = this.get('type');
 			let activeStyle = this.get('style');
-			
+
 			if(activeType === filterBy)
 				this.set('type', '');
 			else if(activeStyle === filterBy)
