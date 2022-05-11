@@ -37,7 +37,7 @@ const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
 
 const Handlebars = require('handlebars');
-const pathToPackages = require.resolve('all-the-package-repos');
+const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
 const readDirRecursive = require('recursive-readdir');
 const path = require('path');
@@ -225,7 +225,7 @@ koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
 ], async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let packages = Object.keys(JSON.parse(await fs.readFile(pathToPackages, 'utf8')));
+	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
 	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
