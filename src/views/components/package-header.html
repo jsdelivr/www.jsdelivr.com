@@ -66,16 +66,6 @@
 				{{/if}}
 				{{/if}}
 			</div>
-
-			{{#if compactSearch }}
-			<p class="package-description">
-				{{{description}}}
-			</p>
-			{{elseif description}}
-			<p class="package-description">
-				{{{description}}}
-			</p>
-			{{/if}}
 		</div>
 
 		<div class="col-sm-4">
@@ -124,6 +114,16 @@
 		</div>
 	</div>
 
+	{{#if compactSearch }}
+	<p class="package-description">
+		{{{description}}}
+	</p>
+	{{elseif description}}
+	<p class="package-description">
+		{{{description}}}
+	</p>
+	{{/if}}
+
 	{{#if !onlyHeader}}
 	<div class="row package-header-bottom">
 		<div class="horizontal-divider-16"></div>
@@ -148,7 +148,7 @@
 	{{elseif homeSearch && keywords}}
 	<div class="row package-header-bottom">
 		<div class="col-xs-12">
-			{{#each keywords}}
+			{{#each keywords.slice(0, 15)}}
 			<span class="package-label package-label-keyword" title="{{this}}">{{this}}</span>
 			{{/each}}
 		</div>
@@ -198,7 +198,7 @@
 	<div class="stats-keywords-mobile">
 		<div class="stats-keywords-header">Keywords</div>
 		<div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
-			{{#each package.keywords}}
+			{{#each package.keywords.slice(0, 15)}}
 			<div class="keyword-badge">{{this}}</div>
 			{{/each}}
 			{{#if true === 'stats'}}
