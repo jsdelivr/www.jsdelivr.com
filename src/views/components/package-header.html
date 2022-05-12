@@ -1,401 +1,424 @@
 <div class="c-package-header">
 	{{#with package}}
-		<div class="row">
-			<div class="col-sm-8">
-				<div class="package-name-wrapper">
-					{{#if onlyHeader}}
-						<a href="/package/npm/{{name}}" on-click="@this.set('searchOpened', false)" class="package-name">{{name}}</a>
-					{{else}}
-						<h1 class="package-name">{{name}}</h1>
-					{{/if}}
-				</div>
-
-				<div class="package-info">
-					{{#if ~/type === 'gh'}}
-						<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{owner.name}}" class="package-owner">
-							<img width="20" height="20" src="{{owner.avatar}}?s=20">
-							{{owner.name}}
-						</a>
-					{{else}}
-						<a on-click="@this.set('query', `author: ${owner.name}`)" class="package-owner">
-							<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
-							{{owner.name}}
-						</a>
-					{{/if}}
-
-					{{#if popular}}
-						<span class="package-label package-label-primary" title="Popular">popular</span>
-					{{/if}}
-
-					{{#if moduleTypes.indexOf('esm') !== -1}}
-						<span class="package-label package-label-secondary package-label-esm" title="ESM">esm</span>
-					{{/if}}
-
-					{{#if deprecated}}
-						<span class="package-label package-label-danger" title="Deprecated">deprecated</span>
-					{{/if}}
-
-					{{#if ~/packageVersionsNotFound}}
-						<div class="text-center package-no-release">
-							This package doesn't have any release on GitHub.<br>
-							Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order to use jsDelivr CDN.<br>
-
-							{{#if ~/latestCommitSha}}
-								Alternatively, you can use a <a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific git commit hash</a>.
-							{{/if}}
-						</div>
-					{{/if}}
-
-					{{#if homeSearch}}
-						{{#if version}}
-							<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
-						{{/if}}
-
-						{{#if license}}
-							<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
-						{{/if}}
-
-						{{#if ~/vulnerabilities !== undefined}}
-							<span class="package-label package-label-neutral" title="view details at snyk.io">
-								Vulnerabilities <span>{{~/vulnerabilities}}</span>
-							</span>
-						{{/if}}
-					{{/if}}
-				</div>
-
-				{{#if compactSearch }}
-					<p class="package-description">
-						{{{description}}}
-					</p>
-				{{elseif description}}
-					<p class="package-description">
-						{{{description}}}
-					</p>
+	<div class="row">
+		<div class="col-sm-8">
+			<div class="package-name-wrapper">
+				{{#if onlyHeader}}
+				<a href="/package/npm/{{name}}" on-click="@this.set('searchOpened', false)" class="package-name">{{name}}</a>
+				{{else}}
+				<h1 class="package-name">{{name}}</h1>
 				{{/if}}
 			</div>
 
-			<div class="col-sm-4">
-				<div class="package-buttons">
-					{{#if !~/type || ~/type === 'npm'}}
-					<a target="_blank" rel="noopener noreferrer" href="https://openbase.com/js/{{name}}" class="button" title="{{name}} docs & info">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg" alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
-					</a>
-					{{#if homepage}}
-					<a target="_blank" rel="noopener noreferrer nofollow" href="{{homepage}}" class="button" title="Homepage">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg" alt="{{name}} JS library homepage" title="{{name}} homepage">
-					</a>
-					{{/if}}
-					{{#if githubRepo}}
-					<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg" alt="{{name}} JS library on GitHub" title="{{name}} on GitHub">
-					</a>
-					{{/if}}
-					<a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm" title="{{name}} on npm">
-					</a>
-					<a rel="noopener noreferrer" href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button" title="Download">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg" alt="Download {{name}} JS library" title="Download {{name}}">
-					</a>
-					{{else}}
-					<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
-						<i class="fa fa-github" aria-hidden="true"></i>
-					</a>
+			<div class="package-info">
+				{{#if ~/type === 'gh'}}
+				<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{owner.name}}" class="package-owner">
+					<img width="20" height="20" src="{{owner.avatar}}?s=20">
+					{{owner.name}}
+				</a>
+				{{else}}
+				<a on-click="@this.set('query', `author: ${owner.name}`)" class="package-owner">
+					<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
+					{{owner.name}}
+				</a>
+				{{/if}}
+
+				{{#if popular}}
+				<span class="package-label package-label-primary" title="Popular">popular</span>
+				{{/if}}
+
+				{{#if moduleTypes.indexOf('esm') !== -1}}
+				<span class="package-label package-label-secondary package-label-esm" title="ESM">esm</span>
+				{{/if}}
+
+				{{#if deprecated}}
+				<span class="package-label package-label-danger" title="Deprecated">deprecated</span>
+				{{/if}}
+
+				{{#if ~/packageVersionsNotFound}}
+				<div class="text-center package-no-release">
+					This package doesn't have any release on GitHub.<br>
+					Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
+					to use jsDelivr CDN.<br>
+
+					{{#if ~/latestCommitSha}}
+					Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
+						href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific
+						git commit hash</a>.
 					{{/if}}
 				</div>
-				{{#if onlyHeader}}
-					<span class="package-label package-label-neutral package-label-downloads" title="Downloads"><span>{{ jsDelivrHits }}</span> downloads</span>
+				{{/if}}
+
+				{{#if homeSearch}}
+				{{#if version}}
+				<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+				{{/if}}
+
+				{{#if license}}
+				<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License
+					<span>{{_.unescapeHtml(license)}}</span></span>
+				{{/if}}
+
+				{{#if ~/vulnerabilities !== undefined}}
+				<span class="package-label package-label-neutral" title="view details at snyk.io">
+					Vulnerabilities <span>{{~/vulnerabilities}}</span>
+				</span>
+				{{/if}}
+				{{/if}}
+			</div>
+
+			{{#if compactSearch }}
+			<p class="package-description">
+				{{{description}}}
+			</p>
+			{{elseif description}}
+			<p class="package-description">
+				{{{description}}}
+			</p>
+			{{/if}}
+		</div>
+
+		<div class="col-sm-4">
+			<div class="package-buttons">
+				{{#if !~/type || ~/type === 'npm'}}
+				<a target="_blank" rel="noopener noreferrer" href="https://openbase.com/js/{{name}}" class="button"
+					title="{{name}} docs & info">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg"
+						alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
+				</a>
+				{{#if homepage}}
+				<a target="_blank" rel="noopener noreferrer nofollow" href="{{homepage}}" class="button" title="Homepage">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg"
+						alt="{{name}} JS library homepage" title="{{name}} homepage">
+				</a>
+				{{/if}}
+				{{#if githubRepo}}
+				<a target="_blank" rel="noopener noreferrer"
+					href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg"
+						alt="{{name}} JS library on GitHub" title="{{name}} on GitHub">
+				</a>
+				{{/if}}
+				<a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{name}}" class="button"
+					title="npm">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm"
+						title="{{name}} on npm">
+				</a>
+				<a rel="noopener noreferrer"
+					href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button"
+					title="Download">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg"
+						alt="Download {{name}} JS library" title="Download {{name}}">
+				</a>
+				{{else}}
+				<a target="_blank" rel="noopener noreferrer"
+					href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
+					<i class="fa fa-github" aria-hidden="true"></i>
+				</a>
+				{{/if}}
+			</div>
+			{{#if onlyHeader}}
+			<span class="package-label package-label-neutral package-label-downloads" title="Downloads"><span>{{ jsDelivrHits
+					}}</span> downloads</span>
+			{{/if}}
+		</div>
+	</div>
+
+	{{#if !onlyHeader}}
+	<div class="row package-header-bottom">
+		<div class="horizontal-divider-16"></div>
+		<div class="col-xs-12">
+			{{#if version}}
+			<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+			{{/if}}
+
+			{{#if license}}
+			<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License
+				<span>{{_.unescapeHtml(license)}}</span></span>
+			{{/if}}
+
+			{{#if ~/vulnerabilities !== undefined}}
+			<span class="package-label package-label-neutral" title="view details at snyk.io">
+				Vulnerabilities <span>{{~/vulnerabilities}}</span>
+			</span>
+			{{/if}}
+
+		</div>
+	</div>
+	{{elseif homeSearch && keywords}}
+	<div class="row package-header-bottom">
+		<div class="col-xs-12">
+			{{#each keywords}}
+			<span class="package-label package-label-keyword" title="{{this}}">{{this}}</span>
+			{{/each}}
+		</div>
+	</div>
+	{{/if}}
+
+	<div class="package-buttons-mobile">
+		{{#if !~/type || ~/type === 'npm'}}
+		<a target="_blank" rel="noopener noreferrer" href="https://openbase.com/js/{{name}}" class="button"
+			title="{{name}} docs & info">
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg"
+				alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
+		</a>
+		{{#if homepage}}
+		<a target="_blank" rel="noopener noreferrer nofollow" href="{{homepage}}" class="button" title="Homepage">
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg" alt="{{name}} JS library homepage"
+				title="{{name}} homepage">
+		</a>
+		{{/if}}
+		{{#if githubRepo}}
+		<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/"
+			class="button" title="GitHub">
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg" alt="{{name}} JS library on GitHub"
+				title="{{name}} on GitHub">
+		</a>
+		{{/if}}
+		<a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{name}}" class="button"
+			title="npm">
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm"
+				title="{{name}} on npm">
+		</a>
+		<a rel="noopener noreferrer"
+			href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button"
+			title="Download">
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg" alt="Download {{name}} JS library"
+				title="Download {{name}}">
+		</a>
+		{{else}}
+		<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/"
+			class="button" title="GitHub">
+			<i class="fa fa-github" aria-hidden="true"></i>
+		</a>
+		{{/if}}
+	</div>
+
+	{{#if package.keywords}}
+	<div class="stats-keywords-mobile">
+		<div class="stats-keywords-header">Keywords</div>
+		<div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
+			{{#each package.keywords}}
+			<div class="keyword-badge">{{this}}</div>
+			{{/each}}
+			{{#if true === 'stats'}}
+			<div class="badge-cover"></div>
+			{{/if}}
+		</div>
+	</div>
+	{{/if}}
+
+
+	{{#if !onlyHeader}}
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="package-install-wrapper">
+				<div class="install-settings">
+					<div>INSTALL</div>
+
+					<div class="switch-wrapper">
+						<span>Type:</span>
+						<input id="switch-id" type="checkbox" twoway="false"
+							class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+
+						<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
+							<span>ESM</span>
+							<span>Default</span>
+						</label>
+					</div>
+
+					<div class="dropdown-wrapper">
+						<label for="version-select">Version:&nbsp;&nbsp;</label>
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{~/selectedVersion}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/versionsList}}
+								<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
+						<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/settings-white.svg">
+					</button>
+					{{#if mobileSettingsVisible }}
+					<div class="overlay" on-click="@this.set('mobileSettingsVisible', false)"></div>
+					<div class="settings-mobile" slide-in slide-out>
+						<div class="switch-wrapper">
+							<span>Type:</span>
+							<input id="switch-id" type="checkbox" twoway="false"
+								class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+
+							<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
+								<span>ESM</span>
+								<span>Default</span>
+							</label>
+						</div>
+						<div class="dropdown-wrapper dropup">
+							<label for="version-select">Version:&nbsp;&nbsp;</label>
+							<div class="btn-group">
+								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/selectedVersion}}</span>
+									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each ~/versionsList}}
+									<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+
+						<button class="btn-primary" on-click="@this.set('mobileSettingsVisible', false)">Apply</button>
+						<button class="btn-secondary" on-click="@this.set('mobileSettingsVisible', false)">Cancel</button>
+					</div>
+					{{/if}}
+				</div>
+
+				<div class="horizontal-divider-19"></div>
+
+				<div class="install-script">
+					{{#if isDefaultPackage}}
+					{{#if ~/packageJsEntrypoint}}
+					<div class="script-wrapper-default">
+						<span class="script-tag">&#60;script src="</span>
+						<span class="script-text">{{~/installScriptSrc}}</span>
+						<span class="script-tag">"&#62;&#60;/script&#62;</span>
+						<div class="btn-group">
+							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
+							</button>
+
+							<ul class="dropdown-menu">
+								<li>
+									<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installScriptSrc}}">
+										Copy URL
+									</a>
+								</li>
+
+								{{#if ~/packageJsHash}}
+								<li>
+									<a as-clipboard="'Copy SRI to clipboard', 'right'"
+										data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
+										Copy SRI
+									</a>
+								</li>
+								{{/if}}
+
+								{{#if canBuildHtml(~/installScriptSrc)}}
+								<li>
+									<a as-clipboard="'Copy HTML to clipboard', 'right'"
+										data-clipboard-text="{{buildHtml(~/installScriptSrc)}}">
+										Copy HTML
+									</a>
+								</li>
+								{{#if ~/packageJsHash}}
+								<li>
+									<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
+										data-clipboard-text="{{buildHtml(~/installScriptSrc, ~/packageJsHash)}}">
+										Copy HTML + SRI
+									</a>
+								</li>
+								{{/if}}
+								{{/if}}
+							</ul>
+						</div>
+					</div>
+					{{/if}}
+
+					{{#if ~/packageCssEntrypoint}}
+					<div class="script-wrapper-default">
+						<span class="script-tag">&#60;link href="</span>
+						<span class="script-text">{{~/installLinkHref}}</span>
+						<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
+						<div class="btn-group">
+							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
+							</button>
+
+							<ul class="dropdown-menu">
+								<li>
+									<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installLinkHref}}">
+										Copy URL
+									</a>
+								</li>
+								{{#if ~/packageCssHash}}
+								<li>
+									<a as-clipboard="'Copy SRI to clipboard', 'right'"
+										data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
+										Copy SRI
+									</a>
+								</li>
+								{{/if}}
+
+								{{#if canBuildHtml(~/installLinkHref)}}
+								<li>
+									<a as-clipboard="'Copy HTML to clipboard', 'right'"
+										data-clipboard-text="{{buildHtml(~/installLinkHref)}}">
+										Copy HTML
+									</a>
+								</li>
+								{{#if ~/packageCssHash}}
+								<li>
+									<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
+										data-clipboard-text="{{buildHtml(~/installLinkHref, ~/packageCssHash)}}">
+										Copy HTML + SRI
+									</a>
+								</li>
+								{{/if}}
+								{{/if}}
+							</ul>
+						</div>
+					</div>
+					{{/if}}
+					{{else}}
+					<div class="script-wrapper-esm">
+						<span class="script-tag">&#60;script type="module"&#62;</span>
+						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
+						<span class="script-tag">&#60;/script&#62;</span>
+					</div>
+					{{/if}}
+				</div>
+
+				<div class="horizontal-divider-19"></div>
+
+				{{#if isDefaultPackage}}
+				<div class="install-default-warning">
+					URL is guessed and might not be correct.
+					<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM
+						package</a>
+					to find the correct one or use our
+					<a on-click="@this.set('navRoute', 'config')">configurator to combine files and generate SRI</a>
+				</div>
+				{{else}}
+				<div class="install-esm-ctrls">
+					<a href="https://esm.run/{{name}}" class="esm-ctrl" target="_blank" rel="noopener noreferrer">Open in new
+						tab</a>
+
+					<form class="jsfiddle-form" action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
+						<input type="hidden" name="title" value="esm.run {{name}} demo">
+						<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+						<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
+					</form>
+
+					<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="noopener noreferrer">Learn
+						more</a>
+				</div>
 				{{/if}}
 			</div>
 		</div>
-
-		{{#if !onlyHeader}}
-			<div class="row package-header-bottom">
-                                <div class="horizontal-divider-16"></div>
-				<div class="col-xs-12">
-
-
-					{{#if version}}
-						<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
-					{{/if}}
-
-					{{#if license}}
-						<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License <span>{{_.unescapeHtml(license)}}</span></span>
-					{{/if}}
-
-					{{#if ~/vulnerabilities !== undefined}}
-						<span class="package-label package-label-neutral" title="view details at snyk.io">
-							Vulnerabilities <span>{{~/vulnerabilities}}</span>
-						</span>
-					{{/if}}
-					
-				</div>
-			</div>
-
-		{{elseif homeSearch && keywords}}
-
-			<div class="row package-header-bottom">
-				<div class="col-xs-12">
-
-				{{#each keywords}}
-					<span class="package-label package-label-keyword" title="{{this}}">{{this}}</span>
-				{{/each}}
-
-				</div>
-			</div>
-
-		{{/if}}
-
-                <div class="package-buttons-mobile">
-                  {{#if !~/type || ~/type === 'npm'}}
-                  <a target="_blank" rel="noopener noreferrer" href="https://openbase.com/js/{{name}}" class="button" title="{{name}} docs & info">
-                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/openbase.svg" alt="{{name}} JS library on Openbase" title="{{name}} docs & info">
-                  </a>
-                  {{#if homepage}}
-                  <a target="_blank" rel="noopener noreferrer nofollow" href="{{homepage}}" class="button" title="Homepage">
-                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/globe.svg" alt="{{name}} JS library homepage" title="{{name}} homepage">
-                  </a>
-                  {{/if}}
-                  {{#if githubRepo}}
-                  <a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
-                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/github.svg" alt="{{name}} JS library on GitHub" title="{{name}} on GitHub">
-                  </a>
-                  {{/if}}
-                  <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{name}}" class="button" title="npm">
-                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/npm.svg" alt="{{name}} JS library on npm" title="{{name}} on npm">
-                  </a>
-                  <a rel="noopener noreferrer" href="https://registry.npmjs.org/{{name}}/-/{{name.split('/').slice(-1)[0]}}-{{~/version}}.tgz" class="button" title="Download">
-                    <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/download.svg" alt="Download {{name}} JS library" title="Download {{name}}">
-                  </a>
-                  {{else}}
-                  <a target="_blank" rel="noopener noreferrer" href="https://github.com/{{githubRepo.user}}/{{githubRepo.project}}/" class="button" title="GitHub">
-                  <i class="fa fa-github" aria-hidden="true"></i>
-                  </a>
-                  {{/if}}
-                </div>
-
-                {{#if package.keywords}}
-                <div class="stats-keywords-mobile">
-                  <div class="stats-keywords-header">Keywords</div>
-                  <div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
-                    {{#each package.keywords}}
-                    <div class="keyword-badge">{{this}}</div>
-                    {{/each}}
-                    {{#if true === 'stats'}}
-                    <div class="badge-cover"></div>
-                    {{/if}}
-                  </div>
-                </div>
-                {{/if}}
-		
-
-		{{#if !onlyHeader}}
-			<div class="row">
-				<div class="col-xs-12">
-					<div class="package-install-wrapper">
-						<div class="install-settings">
-							<div>INSTALL</div>
-
-							<div class="switch-wrapper">
-								<span>Type:</span>
-								<input id="switch-id"
-									type="checkbox"
-									twoway="false"
-									class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
-
-								<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
-									<span>ESM</span>
-									<span>Default</span>
-								</label>
-							</div>
-
-							<div class="dropdown-wrapper">
-								<label for="version-select">Version:&nbsp;&nbsp;</label>
-								<div class="btn-group">
-									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/selectedVersion}}</span>
-										<i class="fa fa-angle-down" aria-hidden="true"></i>
-									</button>
-
-									<ul class="dropdown-menu">
-										{{#each ~/versionsList}}
-											<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
-										{{/each}}
-									</ul>
-								</div>
-							</div>
-          <button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
-            <img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/settings-white.svg">
-          </button>
-          {{#if mobileSettingsVisible }}
-          <div class="overlay" on-click="@this.set('mobileSettingsVisible', false)"></div>
-          <div class="settings-mobile" slide-in slide-out>
-<div class="switch-wrapper">
-								<span>Type:</span>
-								<input id="switch-id"
-									type="checkbox"
-									twoway="false"
-									class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
-
-								<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
-									<span>ESM</span>
-									<span>Default</span>
-								</label>
-							</div>
-<div class="dropdown-wrapper dropup">
-								<label for="version-select">Version:&nbsp;&nbsp;</label>
-								<div class="btn-group">
-									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/selectedVersion}}</span>
-			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
-									</button>
-
-									<ul class="dropdown-menu">
-										{{#each ~/versionsList}}
-											<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
-										{{/each}}
-									</ul>
-								</div>
-							</div>
-
-				<button class="btn-primary"  on-click="@this.set('mobileSettingsVisible', false)">Apply</button>
-							<button class="btn-secondary" on-click="@this.set('mobileSettingsVisible', false)">Cancel</button>
-          </div>
-          {{/if}}
-						</div>
-
-						<div class="horizontal-divider-19"></div>
-
-						<div class="install-script">
-							{{#if isDefaultPackage}}
-								{{#if ~/packageJsEntrypoint}}
-									<div class="script-wrapper-default">
-										<span class="script-tag">&#60;script src="</span>
-										<span class="script-text">{{~/installScriptSrc}}</span>
-										<span class="script-tag">"&#62;&#60;/script&#62;</span>
-										<div class="btn-group">
-											<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-												<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
-											</button>
-					
-											<ul class="dropdown-menu">
-													<li>
-														<a as-clipboard="'Copy URL to clipboard', 'right'"
-															data-clipboard-text="{{~/installScriptSrc}}">
-															Copy URL
-														</a>
-													</li>
-
-													{{#if ~/packageJsHash}}
-														<li>
-															<a as-clipboard="'Copy SRI to clipboard', 'right'"
-																data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
-																Copy SRI
-															</a>
-														</li>
-													{{/if}}
-
-													{{#if canBuildHtml(~/installScriptSrc)}}
-														<li>
-															<a as-clipboard="'Copy HTML to clipboard', 'right'"
-																data-clipboard-text="{{buildHtml(~/installScriptSrc)}}">
-																Copy HTML
-															</a>
-														</li>
-														{{#if ~/packageJsHash}}
-															<li>
-																<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-																	data-clipboard-text="{{buildHtml(~/installScriptSrc, ~/packageJsHash)}}">
-																	Copy HTML + SRI
-																</a>
-															</li>
-														{{/if}}
-													{{/if}}
-											</ul>
-										</div>
-									</div>
-								{{/if}}
-
-								{{#if ~/packageCssEntrypoint}}
-									<div class="script-wrapper-default">
-										<span class="script-tag">&#60;link href="</span>
-										<span class="script-text">{{~/installLinkHref}}</span>
-										<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
-										<div class="btn-group">
-											<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-												<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
-											</button>
-					
-											<ul class="dropdown-menu">
-													<li>
-														<a as-clipboard="'Copy URL to clipboard', 'right'"
-															data-clipboard-text="{{~/installLinkHref}}">
-															Copy URL
-														</a>
-													</li>
-													{{#if ~/packageCssHash}}
-														<li>
-															<a as-clipboard="'Copy SRI to clipboard', 'right'"
-																data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
-																Copy SRI
-															</a>
-														</li>
-													{{/if}}
-
-													{{#if canBuildHtml(~/installLinkHref)}}
-														<li>
-															<a as-clipboard="'Copy HTML to clipboard', 'right'"
-																data-clipboard-text="{{buildHtml(~/installLinkHref)}}">
-																Copy HTML
-															</a>
-														</li>
-														{{#if ~/packageCssHash}}
-															<li>
-																<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-																	data-clipboard-text="{{buildHtml(~/installLinkHref, ~/packageCssHash)}}">
-																	Copy HTML + SRI
-																</a>
-															</li>
-														{{/if}}
-													{{/if}}
-											</ul>
-										</div>
-									</div>
-								{{/if}}
-							{{else}}
-								<div class="script-wrapper-esm">
-									<span class="script-tag">&#60;script type="module"&#62;</span>
-									<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
-									<span class="script-tag">&#60;/script&#62;</span>
-								</div>
-							{{/if}}
-						</div>
-
-						<div class="horizontal-divider-19"></div>
-
-						{{#if isDefaultPackage}}
-							<div class="install-default-warning">
-								URL is guessed and might not be correct.
-								<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM package</a>
-								to find the correct one or use our
-								<a on-click="@this.set('navRoute', 'config')">configurator to combine files and generate SRI</a>
-							</div>
-						{{else}}
-							<div class="install-esm-ctrls">
-								<a href="https://esm.run/{{name}}" class="esm-ctrl" target="_blank" rel="noopener noreferrer">Open in new tab</a>
-
-								<form class="jsfiddle-form" action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
-									<input type="hidden" name="title" value="esm.run {{name}} demo">
-									<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
-									<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
-								</form>
-
-								<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="noopener noreferrer">Learn more</a>
-							</div>
-						{{/if}}
-					</div>
-				</div>
-			</div>
-		{{/if}}
+	</div>
+	{{/if}}
 	{{/with}}
 </div>
 
@@ -518,14 +541,14 @@
 				}
 			});
 
-        this.observe('mobileSettingsVisible', (newValue) => {
-                const body = document.querySelector('body');
-              if (newValue === true) {
-                body.classList.add('noscroll');
-              } else {
-                body.classList.remove('noscroll');
-              }
-        })
+			this.observe('mobileSettingsVisible', (newValue) => {
+				const body = document.querySelector('body');
+				if (newValue === true) {
+					body.classList.add('noscroll');
+				} else {
+					body.classList.remove('noscroll');
+				}
+			})
 
 
 		},
@@ -543,7 +566,7 @@
 				buildIntegrity,
 				canBuildHtml,
 				buildHtml,
-              mobileSettingsVisible: false
+				mobileSettingsVisible: false
 			};
 		},
 		decorators: {
