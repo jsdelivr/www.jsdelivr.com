@@ -146,7 +146,7 @@ module.exports = {
 				else if (idx === 0) {
 					chartXData.push([ day, month ]);
 				} else {
-					chartXData.push([ day ]);
+					chartXData.push([ day, '' ]);
 				}
 			});
 		});
