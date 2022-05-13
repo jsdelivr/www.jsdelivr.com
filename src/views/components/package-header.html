@@ -4,9 +4,12 @@
 		<div class="col-sm-8">
 			<div class="package-name-wrapper">
 				{{#if onlyHeader}}
-				<a href="/package/npm/{{name}}" on-click="@this.set('searchOpened', false)" class="package-name">{{name}}</a>
+					<a href="/package/npm/{{name}}" on-click="@this.set('searchOpened', false)" class="package-name">{{name}}</a>
 				{{else}}
-				<h1 class="package-name">{{name}}</h1>
+					<h1 class="package-name">{{name}}</h1>
+				{{/if}}
+				{{#if onlyHeader}}
+					<span class="package-label package-label-neutral downloads-mobile" title="Downloads"><span>{{ jsDelivrHits }}</span> downloads</span>
 				{{/if}}
 			</div>
 
@@ -23,48 +26,50 @@
 				</a>
 				{{/if}}
 
-				{{#if popular}}
-				<span class="package-label package-label-primary" title="Popular">popular</span>
-				{{/if}}
+				<div class="sub-info">
+					{{#if popular}}
+					<span class="package-label package-label-primary" title="Popular">popular</span>
+					{{/if}}
 
-				{{#if moduleTypes.indexOf('esm') !== -1}}
-				<span class="package-label package-label-secondary package-label-esm" title="ESM">esm</span>
-				{{/if}}
+					{{#if moduleTypes.indexOf('esm') !== -1}}
+					<span class="package-label package-label-secondary package-label-esm" title="ESM">esm</span>
+					{{/if}}
 
-				{{#if deprecated}}
-				<span class="package-label package-label-danger" title="Deprecated">deprecated</span>
-				{{/if}}
+					{{#if deprecated}}
+					<span class="package-label package-label-danger" title="Deprecated">deprecated</span>
+					{{/if}}
 
-				{{#if ~/packageVersionsNotFound}}
-				<div class="text-center package-no-release">
-					This package doesn't have any release on GitHub.<br>
-					Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
-					to use jsDelivr CDN.<br>
+					{{#if ~/packageVersionsNotFound}}
+					<div class="text-center package-no-release">
+						This package doesn't have any release on GitHub.<br>
+						Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
+						to use jsDelivr CDN.<br>
 
-					{{#if ~/latestCommitSha}}
-					Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
-						href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific
-						git commit hash</a>.
+						{{#if ~/latestCommitSha}}
+						Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
+							href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific
+							git commit hash</a>.
+						{{/if}}
+					</div>
+					{{/if}}
+
+					{{#if homeSearch}}
+						{{#if version}}
+						<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
+						{{/if}}
+
+						{{#if license}}
+						<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License
+							<span>{{_.unescapeHtml(license)}}</span></span>
+						{{/if}}
+
+						{{#if ~/vulnerabilities !== undefined}}
+						<span class="package-label package-label-neutral" title="view details at snyk.io">
+							Vulnerabilities <span>{{~/vulnerabilities}}</span>
+						</span>
+						{{/if}}
 					{{/if}}
 				</div>
-				{{/if}}
-
-				{{#if homeSearch}}
-				{{#if version}}
-				<span class="package-label package-label-neutral" title="{{version}}">Version <span>{{version}}</span></span>
-				{{/if}}
-
-				{{#if license}}
-				<span class="package-label package-label-neutral" title="{{_.unescapeHtml(license)}}">License
-					<span>{{_.unescapeHtml(license)}}</span></span>
-				{{/if}}
-
-				{{#if ~/vulnerabilities !== undefined}}
-				<span class="package-label package-label-neutral" title="view details at snyk.io">
-					Vulnerabilities <span>{{~/vulnerabilities}}</span>
-				</span>
-				{{/if}}
-				{{/if}}
 			</div>
 		</div>
 
@@ -193,21 +198,6 @@
 		</a>
 		{{/if}}
 	</div>
-
-	{{#if package.keywords}}
-	<div class="stats-keywords-mobile">
-		<div class="stats-keywords-header">Keywords</div>
-		<div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
-			{{#each package.keywords.slice(0, 15)}}
-			<div class="keyword-badge">{{this}}</div>
-			{{/each}}
-			{{#if true === 'stats'}}
-			<div class="badge-cover"></div>
-			{{/if}}
-		</div>
-	</div>
-	{{/if}}
-
 
 	{{#if !onlyHeader}}
 	<div class="row">
