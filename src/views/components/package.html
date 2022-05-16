@@ -349,10 +349,11 @@
 				});
 
 				this.observe('package', () => {
+					// package.readme
 					let readme = this.get('package').readme;
 
-					if (!readme) {
-						this.set('navRoute', 'stats');
+					if (!readme || readme === 'ERROR: No README data found!') {
+						this.set('navRoute', 'config');
 					}
 				});
 

@@ -10,114 +10,119 @@
 	<c-header></c-header>
 
 	<div class="p-custom-cdn-oss-project">
-		<c-cdn-oss-head name="{{name}}"
-			link="{{projectLink}}"
-			title="{{projectTitle}}"
-			descr="{{projectDescr}}"
-			imgW="{{projectImgW}}"
-			imgH="{{projectImgH}}">
-			{{#partial title}}
-				{{title}}
-			{{/partial}}
-
-			{{#partial descr}}
-				{{descr}}
-			{{/partial}}
-
-			{{#partial img}}
-				<img width="{{imgW}}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}.svg">
-			{{/partial}}
-		</c-cdn-oss-head>
-
-		<div class="divider"></div>
-
-		<div class="ctrls-block">
-			<div class="ctrls-block-title">Statistics</div>
-			<div class="ctrls-block-ctrls">
-				<div class="chart-type-ctrl">
-					<span>Show numbers of</span>
-
-					<input id="chart-switch"
-						type="checkbox"
-						class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
-						twoway="false">
-
-					<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-						<span>Request</span>
-						<span>GB</span>
-					</label>
-				</div>
-
-				<div class="data-range-ctrl">
-					<span>Data range:</span>
-
-					<div class="btn-group">
-						<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							<span>{{~/statsPeriods[statsPeriod]}}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
-
-						<ul class="dropdown-menu">
-							{{#each ~/statsPeriods}}
-								<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
-							{{/each}}
-						</ul>
+		<div class="container">
+			<c-cdn-oss-head name="{{name}}"
+				link="{{projectLink}}"
+				title="{{projectTitle}}"
+				descr="{{projectDescr}}"
+				imgW="{{projectImgW}}"
+				imgH="{{projectImgH}}">
+				{{#partial title}}
+					{{title}}
+				{{/partial}}
+	
+				{{#partial descr}}
+					{{descr}}
+				{{/partial}}
+	
+				{{#partial img}}
+					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}.svg">
+				{{/partial}}
+			</c-cdn-oss-head>
+	
+			<div class="divider"></div>
+	
+			<div class="ctrls-block">
+				<div class="ctrls-block-title">Statistics</div>
+				<div class="ctrls-block-ctrls">
+					<div class="chart-type-ctrl">
+						<span>Show numbers of</span>
+	
+						<input id="chart-switch"
+							type="checkbox"
+							class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
+							twoway="false">
+	
+						<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
+							<span>Request</span>
+							<span>GB</span>
+							<div class="slide-select">
+								<div class="selected"></div>
+							</div>
+						</label>
+					</div>
+	
+					<div class="data-range-ctrl">
+						<span>Data range:</span>
+	
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/statsPeriods[statsPeriod]}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+	
+							<ul class="dropdown-menu">
+								{{#each ~/statsPeriods}}
+									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
+	
+			<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
+	
+			{{#if noPackageStatsData}}
+				<div class="no-data-wrapper">
+					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+					<span>No statistics yet</span>
+					<span>This is probably not a very popular package :(</span>
+				</div>
+			{{else}}
+				<div class="chart-ctrls">
+					<div class="chart-ctrls-title">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+					<div class="chart-ctrls-group-by">
+						<span>
+							Group by:
+						</span>
+	
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+	
+							<ul class="dropdown-menu">
+								{{#each ~/usageChartGroupByValues}}
+									<li>
+										{{#if this.isDisabled}}
+											<a class="disabled">{{this.value}}</a>
+										{{else}}
+											<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+										{{/if}}
+									</li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+				</div>
+	
+				<div class="chart-wrapper">
+					<canvas id="cdn-stats-chart"></canvas>
+				</div>
+			{{/if}}
+	
+			<c-new-infographic-banner>
+				{{#partial text}}
+					Learn more about<br />
+					the infrastructure that<br />
+					powers <a href="/network/infographic" target="_blank" class="router-ignore">jsDelivr</a>
+				{{/partial}}
+			</c-new-infographic-banner>
+	
+			<c-cdn-oss-hosting-info></c-cdn-oss-hosting-info>
 		</div>
-
-		<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
-
-		{{#if noPackageStatsData}}
-			<div class="no-data-wrapper">
-				<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
-				<span>No statistics yet</span>
-				<span>This is probably not a very popular package :(</span>
-			</div>
-		{{else}}
-			<div class="chart-ctrls">
-				<div class="chart-ctrls-title">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
-				<div class="chart-ctrls-group-by">
-					<span>
-						Group by:
-					</span>
-
-					<div class="btn-group">
-						<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
-
-						<ul class="dropdown-menu">
-							{{#each ~/usageChartGroupByValues}}
-								<li>
-									{{#if this.isDisabled}}
-										<a class="disabled">{{this.value}}</a>
-									{{else}}
-										<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
-									{{/if}}
-								</li>
-							{{/each}}
-						</ul>
-					</div>
-				</div>
-			</div>
-
-			<div class="chart-wrapper">
-				<canvas id="cdn-stats-chart"></canvas>
-			</div>
-		{{/if}}
-
-		<c-new-infographic-banner>
-			{{#partial text}}
-				Learn more about<br />
-				the infrastructure that<br />
-				powers <a href="/network/infographic" target="_blank" class="router-ignore">jsDelivr</a>
-			{{/partial}}
-		</c-new-infographic-banner>
-
-		<c-cdn-oss-hosting-info></c-cdn-oss-hosting-info>
 	</div>
 
 	<c-footer></c-footer>
@@ -251,7 +256,7 @@
 					}],
 				};
 				let chartSettings = {
-					useYAxisBorderPlugin: true,
+					useYAxisBorderPlugin: ( _.isMobileScreen() || _.isTabletScreen() ) ? false: true,
 					useExternalTooltip: true,
 					externalTooltipVerticalOffset: 40,
 				};
@@ -261,6 +266,7 @@
 							x: {
 								display: true,
 								ticks: {
+									autoSkip: false,
 									color: '#5C667A',
 									font: {
 										size: 12,
@@ -270,18 +276,24 @@
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-
 										if (chartPeriod === 'year') {
-											if (tickIdx !== 0 && tickIdx % 30 === 0) {
-												return [ labelValue[1] ];
+											if (labelValue[2]) {
+												if(_.isMobileScreen())
+													return [ `${labelValue[2]} ${labelValue[1]}` ]
+												else
+													return [ labelValue[1], labelValue[2] ];
 											}
+											if (labelValue[1] && !_.isMobileScreen())
+												return [ labelValue[1] ];
 
 											return;
 										}
 
-										if (Array.isArray(labelValue)) {
+										if (Array.isArray(labelValue) && labelValue[1]) {
 											return [ day, labelValue[1] ];
 										}
+										if(chartPeriod === 'month' && _.isMobileScreen())
+											return;
 
 										return [ day ];
 									},
@@ -305,7 +317,11 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										let newVal = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										if(_.isMobileScreen())
+											return _.autoConvertBytesToUnits(newVal);
+										else
+											return newVal;
 									},
 								},
 								grid: {
@@ -313,9 +329,9 @@
 									drawBorder: false,
 								},
 								afterFit: (scale) => {
-									scale.width = 114;
+									// 	scale.width = 114;
 								},
-							},
+							}
 						},
 					},
 				};

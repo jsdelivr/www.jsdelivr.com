@@ -3,5 +3,4 @@ module.exports = [
 	'#f6821f',
 	'#ff282d',
 	'#a234d2',
-	'#aa1a1e',
 ];

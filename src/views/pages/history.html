@@ -15,7 +15,7 @@
 			<a href="/history" class="active">Our History</a>
 		</div>
 
-		<div class="container">
+		<div class="container-fluid">
 			<div class="page-title">
 				<h1 class="text-title-48">jsDelivr over the years </h1>
 				<h1 class="text-content-40">Our History</h1>
@@ -28,7 +28,7 @@
 
 					{{#each events}}
 					<div class="event-block">
-						<div class="event-main {{data.position === 'right' ? 'pos-right' : 'pos-left'}}">
+						<div class="event-main {{@index % 2 ? 'pos-left' : 'pos-right'}}">
 							{{#if data.type}}
 								<img class="event-type-icon"
 									src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg" />
@@ -37,25 +37,25 @@
 								<div class="event-content">
 									<span>{{{data.text}}}</span>
 									{{#if data.img && data.img.ext === ".svg"}}
-										<img class="{{data.img.class}}" width="{{data.img.width}}"
+										<img class="{{data.img.class}}" width="{{data.img.widthSmall}}"
 											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
 									{{elseif data.img && data.img.ext === ".png"}}
-										<img class="{{data.img.class}}" width="{{data.img.width}}"
+										<img class="{{data.img.class}}" width="{{data.img.widthSmall}}"
 											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
-											srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}} 2x" />
+											srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x" />
 									{{/if}}
 								</div>
 							{{/if}}
 						</div>
 
-						<div class="event-relation {{data.position === 'right' ? 'pos-left' : 'pos-right'}}">
+						<div class="event-relation {{@index % 2 ? 'pos-right' : 'pos-left'}}">
 							{{#if data.img && data.img.ext === ".svg"}}
-								<img class="{{data.img.class}}" width="{{data.img.width}}"
+								<img class="{{data.img.class}}" width="{{data.img.widthLarge}}"
 									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
 							{{elseif data.img && data.img.ext === ".png"}}
-								<img class="{{data.img.class}}" width="{{data.img.width}}"
+								<img class="{{data.img.class}}" width="{{data.img.widthLarge}}"
 									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
-									srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}} 2x" />
+									srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x" />
 							{{/if}}
 						</div>
 
@@ -87,37 +87,43 @@
 						year: '2021',
 						events: [
 							{
+								month: 'October',
+								data: {
+									text: 'On-the-fly SVG optimization goes live',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'September',
+								data: {
+									text: 'Served 130B requests, 6 PB of bandwidth per month',
+									type: 'numbers',
+								},
+							},
+							{
 								month: 'May',
 								data: {
-									position: 'left',
-									text: 'Rawgit switches to jsDelivr',
+									text: 'RawGit CDN becomes part of jsDelivr',
 									type: 'deals',
 									img: {
 										name: 'rawgit',
-										width: '68',
+										widthLarge: '68',
+										widthSmall: '52',
 										ext: '.png',
 									},
 								},
 							},
 							{
-								month: 'July',
+								month: 'February',
 								data: {
-									position: 'right',
-									text: 'BootstrapCDN joined',
+									text: 'BunnyCDN joins as a sponsor',
 									type: 'deals',
 									img: {
-										name: 'bootstrap',
-										width: '147',
-										ext: '.png',
+										name: 'bunny',
+										widthLarge: '148',
+										widthSmall: '104',
+										ext: '.svg',
 									},
-								},
-							},
-							{
-								month: 'December',
-								data: {
-									position: 'left',
-									text: '131 billion monthly requests',
-									type: 'numbers',
 								},
 							},
 						],
@@ -126,32 +132,49 @@
 						year: '2020',
 						events: [
 							{
-								month: 'June',
+								month: 'October',
 								data: {
-									position: 'right',
-									text: 'Detailed download stats are launched',
+									text: '<a href="/esm">esm.run</a> launches to make jsDelivr a first choice CDN for ES modules',
 									type: 'updates',
 								},
 							},
 							{
 								month: 'October',
 								data: {
-									position: 'left',
-									text: 'fontfamous joined',
+									text: '<a href="/blog/jsdelivr-welcomes-bootstrapcdn/" class="router-ignore">BootstrapCDN</a> becomes part of jsDelivr',
 									type: 'deals',
 									img: {
-										name: 'fontfamous',
-										width: '135',
+										name: 'bootstrap',
+										widthLarge: '147',
+										widthSmall: '104',
 										ext: '.png',
 									},
 								},
 							},
 							{
-								month: 'November',
+								month: 'October',
 								data: {
-									position: 'right',
-									text: 'ESM Support is released in beta',
-									type: 'updates',
+									text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
+									type: 'deals',
+									img: {
+										name: 'pyodide',
+										widthLarge: '105',
+										widthSmall: '63',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'May',
+								data: {
+									text: 'CocoaPods becomes powered by jsDelivr, speeding up the installation of packages',
+									type: 'deals',
+									img: {
+										name: 'cocoapods',
+										widthLarge: '147',
+										widthSmall: '104',
+										ext: '.png',
+									},
 								},
 							},
 						],
@@ -160,27 +183,81 @@
 						year: '2019',
 						events: [
 							{
-								month: 'March',
+								month: 'October',
 								data: {
-									position: 'left',
-									text: 'NPM and Github support is launched with old github commits workflow sunset',
-									type: 'updates',
+									text: 'Served 60B requests, reaching the 2B / day average',
+									type: 'numbers',
+								},
+							},
+							{
+								month: 'May',
+								data: {
+									text: 'The jsDelivr team builds PerfOps, a commercial service to improve multi-CDN routing',
+									type: 'deals',
+									img: {
+										name: 'perfops',
+										widthLarge: '147',
+										widthSmall: '104',
+										ext: '.svg',
+									},
 								},
 							},
 						],
 					},
 					{
 						year: '2018',
+						events: [
+							{
+								month: 'October',
+								data: {
+									text: 'Plugins for Atom, IntelliJ, and Visual Studio released',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'September',
+								data: {
+									text: 'Served 30 billion requests per month, reaching a daily average of 1B for the first time',
+									type: 'numbers',
+								},
+							},
+						],
 					},
 					{
 						year: '2017',
 						events: [
 							{
-								month: 'January',
+								month: 'August',
 								data: {
-									position: 'right',
-									text: 'Updates are automated using a bot',
+									text: 'Website rebuilt to support the new automated system that works with NPM and GitHub directly.',
 									type: 'updates',
+								},
+							},
+							{
+								month: 'July',
+								data: {
+									text: 'Data API launches, providing detailed download statistics',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'May',
+								data: {
+									text: 'Fully automated npm and GitHub proxies launch',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'April',
+								data: {
+									text: 'Fastly joins as a sponsor',
+									type: 'deals',
+									img: {
+										name: 'fastly',
+										widthLarge: '84',
+										widthSmall: '50',
+										ext: '.svg',
+									},
 								},
 							},
 						],
@@ -189,48 +266,21 @@
 						year: '2016',
 						events: [
 							{
-								month: 'January',
+								month: 'April',
 								data: {
-									position: 'left',
-									text: '50 billion monthly requests',
-									type: 'numbers',
+									text: 'OSSCDN becomes part of jsDelivr',
+									type: 'updates',
 								},
 							},
 							{
-								month: 'November',
+								month: 'February',
 								data: {
-									position: 'right',
-									text: 'Quantil joins as sponsor',
+									text: 'Martin Kolárik joins as core developer',
 									type: 'deals',
 									img: {
-										name: 'quantil',
-										width: '104',
-										ext: '.png',
-									},
-								},
-							},
-							{
-								month: 'December',
-								data: {
-									position: 'left',
-									text: 'jsDelivr gets Chinese ICP license',
-									type: 'deals',
-								},
-							},
-						],
-					},
-					{
-						year: '2015',
-						events: [
-							{
-								month: 'October',
-								data: {
-									position: 'right',
-									text: 'Martin Kolarik joins as core developer',
-									type: 'deals',
-									img: {
-										name: 'kolarik',
-										width: '80',
+										name: 'martin-kolarik',
+										widthLarge: '80',
+										widthSmall: '56',
 										ext: '.png',
 										class: 'img-rounded',
 									},
@@ -239,27 +289,99 @@
 						],
 					},
 					{
-						year: '2014',
+						year: '2015',
 						events: [
 							{
-								month: 'May',
+								month: 'November',
 								data: {
-									position: 'right',
-									text: 'Fastly joins as sponsor',
+									text: 'Served 7 billion requests, 132 TB per month',
+									type: 'numbers',
+								},
+							},
+							{
+								month: 'September',
+								data: {
+									text: 'Quantil joins as a sponsor, adds locations in mainland China',
 									type: 'deals',
 									img: {
-										name: 'fastly',
-										width: '84',
+										name: 'quantil',
+										widthLarge: '105',
+										widthSmall: '53',
 										ext: '.png',
 									},
 								},
 							},
 							{
-								month: 'October',
+								month: 'September',
 								data: {
-									position: 'left',
-									text: 'Combination feature is launched',
+									text: 'Complete redesign of the website',
 									type: 'updates',
+								},
+							},
+						],
+					},
+					{
+						year: '2014',
+						events: [
+							{
+								month: 'December',
+								data: {
+									text: 'NS1 joins as a sponsor',
+									type: 'deals',
+									img: {
+										name: 'ns1',
+										widthLarge: '68',
+										widthSmall: '52',
+										ext: '.svg',
+									},
+								},
+							},
+							{
+								month: 'December',
+								data: {
+									text: 'WordPress plugins proxy launches',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'November',
+								data: {
+									text: 'Purge API launches',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'July',
+								data: {
+									text: 'Serving multiple files in one response possible thanks to /g/',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'June',
+								data: {
+									text: 'Automated project updates via libgrabber',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'April',
+								data: {
+									text: 'jsDelivr becomes the fastest open-source CDN according to CDNPerf',
+									type: 'updates',
+								},
+							},
+							{
+								month: 'March',
+								data: {
+									text: 'Cloudflare joins as a sponsor',
+									type: 'deals',
+									img: {
+										name: 'cloudflare',
+										widthLarge: '118',
+										widthSmall: '90',
+										ext: '.svg',
+									},
 								},
 							},
 						],
@@ -268,11 +390,36 @@
 						year: '2013',
 						events: [
 							{
+								month: 'December',
+								data: {
+									text: 'Public data API launches',
+									type: 'updates',
+								},
+							},
+							{
 								month: 'June',
 								data: {
-									position: 'left',
-									text: 'First redesign',
+									text: 'Cedexis joins as a sponsor, allows multi-CDN routing based on RUM',
 									type: 'deals',
+									img: {
+										name: 'cedexis',
+										widthLarge: '119',
+										widthSmall: '76',
+										ext: '.png',
+									},
+								},
+							},
+							{
+								month: 'May',
+								data: {
+									text: 'CDN.NET joins as a sponsor',
+									type: 'deals',
+									img: {
+										name: 'cdnnet',
+										widthLarge: '118',
+										widthSmall: '90',
+										ext: '.png',
+									},
 								},
 							},
 						],
@@ -283,62 +430,28 @@
 							{
 								month: 'June',
 								data: {
-									position: 'right',
-									text: 'Dmitriy Akulov founded jsDelivr',
-									type: 'numbers',
-									img: {
-										name: 'akulov',
-										width: '80',
-										ext: '.png',
-										class: 'img-rounded',
-									},
-								},
-							},
-							{
-								month: 'August',
-								data: {
-									position: 'left',
-									text: 'MaxCDN joins as sponsor',
+									text: 'MaxCDN joins as a sponsor',
 									type: 'deals',
 									img: {
 										name: 'maxcdn',
-										width: '132',
+										widthLarge: '132',
+										widthSmall: '106',
 										ext: '.svg',
 									},
 								},
 							},
 							{
-								month: 'October',
+								month: 'May',
 								data: {
-									position: 'right',
-									text: 'Cloudflare joins as sponsor',
+									text: 'Dmitriy Akulov founds jsDelivr',
 									type: 'deals',
 									img: {
-										name: 'cloudflare',
-										width: '118',
+										name: 'dmitriy-akulov',
+										widthLarge: '80',
+										widthSmall: '56',
 										ext: '.png',
+										class: 'img-rounded',
 									},
-								},
-							},
-							{
-								month: 'August',
-								data: {
-									position: 'left',
-									text: 'Cedexis joins as sponsorand and makes multi-CDN official',
-									type: 'deals',
-									img: {
-										name: 'cedexis',
-										width: '119',
-										ext: '.png',
-									},
-								},
-							},
-							{
-								month: 'December',
-								data: {
-									position: 'right',
-									text: '10 billion monthly requests',
-									type: 'numbers',
 								},
 							},
 						],

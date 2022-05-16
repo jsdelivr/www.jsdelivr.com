@@ -53,11 +53,11 @@ function createBarChart (
 	let verticalYAxisBorder = {
 		id: 'statsChartYBorder',
 		beforeDraw (chart) {
-			let { ctx } = chart;
+			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(89, 0);
-			ctx.lineTo(89, 290);
+			ctx.moveTo(chartArea.left, 0);
+			ctx.lineTo(chartArea.left, 290);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
@@ -177,7 +177,7 @@ function createBarChart (
 				intersect: true,
 				...chartConfig?.options?.intercation,
 			},
-			onHover: handleChartOnHover,
+			onHover: handleChartOnHover
 		},
 		plugins: getChartPlugins(),
 	};
