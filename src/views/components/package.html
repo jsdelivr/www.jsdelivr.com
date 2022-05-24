@@ -77,13 +77,14 @@
 
 							<div class="btn-group">
 								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<span>{{~/statsPeriods[statsPeriod]}}</span>
+									<span>{{~/statsPeriods[statsPeriodTemp]}}</span>
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
 								<ul class="dropdown-menu">
 									{{#each ~/statsPeriods}}
-										<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+										<!-- <li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li> -->
+										<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
 									{{/each}}
 								</ul>
 							</div>
@@ -92,7 +93,7 @@
 				</div>
 
 				{{#if navRoute === "stats"}}
-					<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
+					<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriodTemp]}}"></c-request-bandwidth-stats>
 				{{/if}}
 
 				{{#if noPackageStatsData && noVersionsData}}
@@ -154,8 +155,8 @@
 					<div class="horizontal-divider mt-40 mb-40"></div>
 
 					<div class="chart-tops">
-						{{#if ~/topFiveVersions}}
-							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+						{{#if ~/topFiveVersionsTemp}}
+							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersionsTemp}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 								{{#partial column1}}
 									<a on-click="@this.set('version', version)">{{version}}</a>
 								{{/partial}}
@@ -248,6 +249,7 @@
 					30: 'month',
 					365: 'year',
 				},
+				statsPeriodTemp: 30,
 				statsPeriod: 30,
 				versions: [],
 				link: location.href,
@@ -293,12 +295,12 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-				this.observe('statsPeriod fileStatsVersion', () => {
-					if (this.get('statsPeriod') && this.get('fileStatsVersion')) {
+				this.observe('statsPeriodTemp fileStatsVersion', () => {
+					if (this.get('statsPeriodTemp') && this.get('fileStatsVersion')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let version = this.get('fileStatsVersion');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
 
 						Pace.restart();
 
@@ -313,6 +315,31 @@
 							});
 
 							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+						});
+					}
+				});
+
+				// Get top 5 versions for table
+				this.observe('statsPeriodTemp versionP navRoute', () => {
+					if (this.get('statsPeriodTemp') && this.get('versionP')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
+
+						http.fetchPackageVersionStats(type, name, period).then((response) => {
+							let array = [];
+
+							Object.keys(response.versions).forEach((key) => {
+								array.push({
+									version: key,
+									hits: response.versions[key].total,
+									dates: response.versions[key].dates,
+								});
+							});
+
+							let topFiveVersionsTemp = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
+
+							this.animate('topFiveVersionsTemp', topFiveVersionsTemp);
 						});
 					}
 				});
@@ -457,8 +484,8 @@
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
 										if (chartPeriod === 'year') {
-											if (tickIdx !== 0 && tickIdx % 30 === 0) {
-												return [ labelValue[1] ];
+											if (labelValue[2]) {
+												return [ labelValue[1], labelValue[2] ];
 											}
 
 											return;
@@ -505,6 +532,9 @@
 					},
 				};
 
+				console.log('chartData', chartData);
+				console.log('chartSettings', chartSettings);
+				console.log('chartConfig', chartConfig);
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
 
@@ -549,6 +579,7 @@
 					'ceil',
 					1
 				);
+				console.log('----------', minRangeValue, maxRangeValue);
 				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
 					let dataset = {
 						label: `v${tfvItem.version}`,
@@ -661,6 +692,15 @@
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
+		},
+		changeStatsPeriod (strKey) {
+			console.log('clicked    changeStatsPeriod', strKey);
+			this.set('statsPeriodTemp', strKey);
+
+			if (strKey > 1) {
+				console.log('changed ----- ', strKey);
+				this.set('statsPeriod', strKey);
+			}
 		},
 	};
 </script>

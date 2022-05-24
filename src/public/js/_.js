@@ -1,11 +1,11 @@
 const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 const screenType = {
-	'mobile': 480,
-	'tablet': 768,
-	'mdDesktop': 992,
-	'lgDesktop': 1200,
-	'xlDesktop': 1400
-}
+	mobile: 480,
+	tablet: 768,
+	mdDesktop: 992,
+	lgDesktop: 1200,
+	xlDesktop: 1400,
+};
 
 module.exports = {
 	screenType,
@@ -112,6 +112,8 @@ module.exports = {
 		let dataPerMonths = [];
 		let chartXData = [];
 
+		console.log('111 periodDates', periodDates);
+
 		periodDates.forEach((date) => {
 			let splittedDate = date.split('-');
 			let dateYear = splittedDate[0];
@@ -125,31 +127,38 @@ module.exports = {
 			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
 		});
 
+		console.log('222 dataPerMonths', dataPerMonths);
+
+		let labelArea = 0;
 		Object.keys(dataPerMonths).forEach((yearMonthKey, index) => {
 			// let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
+			// console.log('-----------', yearMonthKey, ' --//-- ', dataPerMonths[yearMonthKey], ' ++//++ ', index);
 
 			dataPerMonths[yearMonthKey].forEach((day, idx) => {
 				// for every case except we set month in the start of the days
 				// if period is year we should return month for every day since it will be filtered on ticks callback as needed
 				let year = yearMonthKey.split(' ')[0];
 				let month = yearMonthKey.split(' ')[1];
-				if (period === 'year') {
-					if(idx === 5 && (index === 0 || month === 'Jan') ) {
+
+				labelArea++;
+
+				if (period === 'year' && (labelArea > 5 && labelArea < 360)) {
+					if (idx === 0) {
 						chartXData.push([ day, month, year ]);
 						return;
 					}
-					if(idx === 5)
-						chartXData.push([ day, month ]);
-					else
-						chartXData.push([ day ]);
-				}
-				else if (idx === 0) {
+
+					chartXData.push([ '', '', '' ]);
+					// if (idx === 5) { chartXData.push([ day, month ]); } else { chartXData.push([ day, '' ]); }
+				} else if (idx === 0) {
 					chartXData.push([ day, month ]);
 				} else {
 					chartXData.push([ day, '' ]);
 				}
 			});
 		});
+
+		console.log('   ****   chartXData: ', chartXData);
 
 		return chartXData;
 	},

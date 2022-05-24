@@ -165,11 +165,11 @@ function createBarChart (
 			},
 			scales: {
 				x: {
-					display: false,
+					display: true,
 					...chartConfig?.options?.scales?.x,
 				},
 				y: {
-					display: false,
+					display: true,
 					...chartConfig?.options?.scales?.y,
 				},
 			},
@@ -177,7 +177,7 @@ function createBarChart (
 				intersect: true,
 				...chartConfig?.options?.intercation,
 			},
-			onHover: handleChartOnHover
+			onHover: handleChartOnHover,
 		},
 		plugins: getChartPlugins(),
 	};
