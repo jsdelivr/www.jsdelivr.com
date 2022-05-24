@@ -532,6 +532,9 @@
 					},
 				};
 
+				console.log('chartData', chartData);
+				console.log('chartSettings', chartSettings);
+				console.log('chartConfig', chartConfig);
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
 
@@ -576,6 +579,7 @@
 					'ceil',
 					1
 				);
+				console.log('----------', minRangeValue, maxRangeValue);
 				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
 					let dataset = {
 						label: `v${tfvItem.version}`,
@@ -637,8 +641,8 @@
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
 										if (chartPeriod === 'year') {
-											if (tickIdx !== 0 && tickIdx % 30 === 0) {
-												return [ labelValue[1] ];
+											if (labelValue[2]) {
+												return [ labelValue[1], labelValue[2] ];
 											}
 
 											return;
@@ -690,9 +694,11 @@
 			});
 		},
 		changeStatsPeriod (strKey) {
+			console.log('clicked    changeStatsPeriod', strKey);
 			this.set('statsPeriodTemp', strKey);
 
 			if (strKey > 1) {
+				console.log('changed ----- ', strKey);
 				this.set('statsPeriod', strKey);
 			}
 		},

@@ -132,7 +132,6 @@ module.exports = {
 		let labelArea = 0;
 		Object.keys(dataPerMonths).forEach((yearMonthKey, index) => {
 			// let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
-			// console.log('-----------', yearMonthKey, ' --//-- ', dataPerMonths[yearMonthKey], ' ++//++ ', index);
 
 			dataPerMonths[yearMonthKey].forEach((day, idx) => {
 				// for every case except we set month in the start of the days
