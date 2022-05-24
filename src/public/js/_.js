@@ -112,8 +112,6 @@ module.exports = {
 		let dataPerMonths = [];
 		let chartXData = [];
 
-		console.log('111 periodDates', periodDates);
-
 		periodDates.forEach((date) => {
 			let splittedDate = date.split('-');
 			let dateYear = splittedDate[0];
@@ -126,8 +124,6 @@ module.exports = {
 
 			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
 		});
-
-		console.log('222 dataPerMonths', dataPerMonths);
 
 		let labelArea = 0;
 		Object.keys(dataPerMonths).forEach((yearMonthKey, index) => {
@@ -156,8 +152,6 @@ module.exports = {
 				}
 			});
 		});
-
-		console.log('   ****   chartXData: ', chartXData);
 
 		return chartXData;
 	},
