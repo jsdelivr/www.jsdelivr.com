@@ -153,7 +153,11 @@ module.exports = {
 
 					chartXData.push([ '', '', '' ]);
 				} else if (idx === 0) {
-					chartXData.push([ day, month ]);
+					if (periodGroupBy === 'month') {
+						chartXData.push([ '', month ]);
+					} else {
+						chartXData.push([ day, month ]);
+					}
 				} else {
 					chartXData.push([ day, '' ]);
 				}
