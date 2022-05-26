@@ -1,0 +1,198 @@
+<div class="network-provider-stats">
+    <div class="block">
+        <h3>Requests Served</h3>
+        <div class="table">
+            <div class="bandwidth-stats">
+                <div>
+                    <div class="card-icon">
+                        <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+                    </div>
+                    <div class="card-main-stat">
+                        <span>{{requestsAmount}}</span>
+                    </div>
+                    <div class="card-growth">
+                        <span class="growth-positive">{{requestsGrowth}}</span>
+                        <span>{{growthPeriod}} growth</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bandwidth-list">
+                {{#each requestsList}}
+                    <div class="list">
+                        <div class="icon">
+                            <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+                            <span >{{name}}</span>
+                        </div>
+                        <div class="chart">
+                            <div class="value">{{value}}</div>
+                            <div class="percentage-bar">
+                                <div class="barWidth" style="width: {{ interest }}; background: {{ color }}">
+
+                                </div>
+                            </div>
+                            <div class="interest">{{interest}}</div>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="block">
+        <h3>Bandwidth</h3>
+        <div class="table">
+            <div class="bandwidth-stats">
+                <div>
+                    <div class="card-icon">
+                        <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
+                    </div>
+                    <div class="card-main-stat">
+                        <span>{{bandAmount}}</span>
+
+                    </div>
+                    <div class="card-growth">
+                        <span class="growth-negative">{{bandGrowth}}</span>
+                        <span>{{bandPeriod}} growth</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bandwidth-list">
+                {{#each bandwidthList}}
+                    <div class="list">
+                        <div class="icon">
+                            <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+                            <span >{{name}}</span>
+                        </div>
+                        <div class="chart">
+                            <div class="value">{{value}}</div>
+                            <div class="percentage-bar">
+                                <div class="barWidth" style="width: {{ interest }}; background: {{ color }}">
+
+                                </div>
+                            </div>
+                            <div class="interest">{{interest}}</div>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const _ = require('../../public/js/_');
+    const http = require('../../public/js/utils/http');
+
+    component.exports = {
+        data() {
+            return {
+                icons: {
+					Cloudflare: {
+                        imgPath: "/img/statistics/cloudflare.svg",
+                        color: "#F6821F"
+                    },
+					Fastly: {
+                        imgPath: "/img/statistics/fastly.svg",
+                        color: "#FF282D"
+                    },
+					Bunny: {
+                        imgPath: "/img/statistics/bunny.svg",
+                        color: "#3370EB"
+                    },
+					"G-Core": {
+                        imgPath: "/img/statistics/g-core.svg",
+                        color: "#A234D2"
+                    }
+				},
+                requestsAmount: '406 745 962',
+				requestsGrowth: '+34%',
+				growthPeriod: 'monthly',
+				requestsList: [],
+				bandAmount: '648 414 GB',
+				bandGrowth: '-9%',
+				bandPeriod: 'monthly',
+				bandwidthList: [],
+            }
+        },
+        oninit() {
+            if(!Ractive.isServer) {
+                this.observe("statsPeriod", () => {
+                    // http calls to fetch net stats data...
+                    const requestStats = {
+                        "Cloudflare": {
+                            "total": 61691182936,
+                            "prev": {
+                                "total": 55522064642
+                            }
+                        },
+                        "Fastly": {
+                            "total": 41783210048,
+                            "prev": {
+                                "total": 37604889043
+                            }
+                        },
+                        "Bunny": {
+                            "total": 30804375566,
+                            "prev": {
+                                "total": 27723938009
+                            }
+                        },
+                        "G-Core": {
+                            "total": 14326728267,
+                            "prev": {
+                                "total": 12894055440
+                            }
+                        }
+                    };
+                    const bandwidthStats = {
+                        "Cloudflare": {
+                            "total": 624223433989,
+                            "prev": {
+                                "total": 561801090590
+                            }
+                        },
+                        "Fastly": {
+                            "total": 555417656323,
+                            "prev": {
+                                "total": 499875890691
+                            }
+                        },
+                        "Bunny": {
+                            "total": 298657503025,
+                            "prev": {
+                                "total": 268791752723
+                            }
+                        },
+                        "G-Core": {
+                            "total": 181594776671,
+                            "prev": {
+                                "total": 163435299004
+                            }
+                        }
+                    }
+
+                    this.set("requestsList", this.processStats(requestStats));
+                    this.set("bandwidthList", this.processStats(bandwidthStats));
+                })
+            }
+        },
+        onrender() {
+
+        },
+        processStats(stats) {
+            let result = [];
+            Object.keys(stats).map((key, index) => {
+                let icon = this.get("icons")[key];
+                let svg = icon.imgPath;
+                let color = icon.color;
+                let name = key;
+                let value = stats[key].total;
+                let interest = (value - stats[key].prev.total)*100 / stats[key].prev.total;
+                interest = interest.toFixed(1) + "%";
+
+                result.push({svg, name, value, color, interest});
+            });
+
+            return result;
+        }
+    }
+</script>
