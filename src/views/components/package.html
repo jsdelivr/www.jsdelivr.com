@@ -83,7 +83,6 @@
 
 								<ul class="dropdown-menu">
 									{{#each ~/statsPeriods}}
-										<!-- <li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li> -->
 										<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
 									{{/each}}
 								</ul>
@@ -428,7 +427,8 @@
 			let hitsChart;
 
 			// create stats chart
-			this.observe('statsDateData', (statsDateData) => {
+			this.observe('statsDateData usageChartGroupBy', () => {
+				let statsDateData = this.get('statsDateData');
 				let statsChartCanvasEl = this.find('#stats-chart');
 
 				if (!statsDateData || !statsChartCanvasEl) { return; }
@@ -446,19 +446,46 @@
 					statsChart = null;
 				}
 
-				let xAxisDates = array.map(value => value[0]);
-				let data = array.map(value => value[1].total);
+				let usageChartGroupBy = this.get('usageChartGroupBy');
+				let groupBy = { day: 1, week: 7, month: 30, year: 365 };
+				let groupedDayCount = groupBy[usageChartGroupBy];
+
+				let countDay = 0;
+				let xAxisDates = [];
+				array.forEach((value) => {
+					countDay++;
+
+					if (countDay % groupedDayCount === 0) {
+						countDay = 0;
+						xAxisDates.push(value[0]);
+					}
+				});
+
+				let groupData = [];
+				let tempData = 0;
+				countDay = 0;
+
+				Object.keys(statsDateData.dates).forEach((date) => {
+					countDay++;
+					tempData += statsDateData.dates[date].total;
+
+					if (countDay >= groupedDayCount) {
+						groupData.push(Math.round(tempData / countDay));
+						countDay = 0; tempData = 0;
+					}
+				});
+
 				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
-				let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
+				let minRangeValue = _.getValueByMagnitude(Math.min(...groupData), 'floor');
+				let maxRangeValue = _.getValueByMagnitude(Math.max(...groupData), 'ceil', 1);
 
 				let chartData = {
-					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+					labels: _.getChartXAxisData(xAxisDates, chartPeriod, usageChartGroupBy),
 					datasets: [{
-						data,
+						data: groupData,
 						borderWidth: 0,
-						barThickness: chartPeriod === 'year' ? 2 : 10,
+						barThickness: xAxisDates.length < 20 ? 10 : xAxisDates.length < 60 ? 5 : 2,
 						hoverBackgroundColor: '#F65128',
 					}],
 				};
@@ -532,6 +559,9 @@
 					},
 				};
 
+				console.log('chartData', chartData);
+				console.log('chartSettings', chartSettings);
+				console.log('chartConfig', chartConfig);
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});
 

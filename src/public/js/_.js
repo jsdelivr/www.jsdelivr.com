@@ -108,7 +108,7 @@ module.exports = {
 
 		return `${n}th`;
 	},
-	getChartXAxisData (periodDates, period = 'month') {
+	getChartXAxisData (periodDates, period = 'month', periodGroupBy = 'day') {
 		let dataPerMonths = [];
 		let chartXData = [];
 
@@ -137,14 +137,21 @@ module.exports = {
 
 				labelArea++;
 
-				if (period === 'year' && (labelArea > 5 && labelArea < 360)) {
+				if (period === 'year') {
 					if (idx === 0) {
-						chartXData.push([ day, month, year ]);
-						return;
+						if (periodGroupBy === 'day' && (labelArea > 5 && labelArea < 360)) {
+							chartXData.push([ day, month, year ]);
+							return;
+						} else if (periodGroupBy === 'week' && (labelArea > 1 && labelArea < 54)) {
+							chartXData.push([ day, month, year ]);
+							return;
+						} else if (periodGroupBy === 'month') {
+							chartXData.push([ day, month, year ]);
+							return;
+						}
 					}
 
 					chartXData.push([ '', '', '' ]);
-					// if (idx === 5) { chartXData.push([ day, month ]); } else { chartXData.push([ day, '' ]); }
 				} else if (idx === 0) {
 					chartXData.push([ day, month ]);
 				} else {
