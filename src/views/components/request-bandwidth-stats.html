@@ -18,7 +18,7 @@
 			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
 		</div>
 		<div class="card-main-stat">
-			<span>{{_.formatNumber(bandwidthAmount)}}</span>
+			<span>{{_.formatNumber(bandwidthAmount)}} {{bandwidthUnit}}</span>
 			<span>Bandwidth</span>
 		</div>
 		<div class="card-growth">
@@ -54,6 +54,7 @@
 				this.observe('period', (period) => {
 					let type = 'npm';
 					let name = this.get('name');
+					let bandwidthUnit = this.get('bandwidthUnit');
 
 					// TODO: these endpoints are only for packages, the custom-cdn-oss pages (cocoapods, musescore, pyodide) will use another custom ednpoints
 					Promise.all([
@@ -65,7 +66,20 @@
 						}
 
 						if (responses[1].total >= 0) {
-							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total), { duration: 1000 });
+							if (!bandwidthUnit) {
+								if (responses[1].total <= 1e6) {
+									bandwidthUnit = 'kB';
+									this.set('bandwidthUnit', 'kB');
+								} else if (responses[1].total <= 1e9) {
+									bandwidthUnit = 'MB';
+									this.set('bandwidthUnit', 'MB');
+								} else {
+									bandwidthUnit = 'GB';
+									this.set('bandwidthUnit', 'GB');
+								}
+							}
+
+							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total, bandwidthUnit), { duration: 1000 });
 						}
 					});
 
