@@ -344,22 +344,35 @@
 				});
 
 				// get package data (for charts, etc.)
-				this.observe('statsPeriod versionP navRoute', () => {
+				this.observe('statsPeriod showChartBandwidth versionP navRoute', () => {
 					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+						let showChartBandwidth = this.get('showChartBandwidth');
 
 						// get package date stats data
-						http.fetchPackageDateStats(type, name, period).then((response) => {
-							if (!response.total) {
-								this.set('noPackageStatsData', true);
-								return;
-							}
+						if (showChartBandwidth) {
+							http.fetchPackageBandwidthStats(type, name, period).then((response) => {
+								if (!response.total) {
+									this.set('noPackageStatsData', true);
+									return;
+								}
 
-							this.set('noPackageStatsData', false);
-							this.set('statsDateData', response);
-						});
+								this.set('noPackageStatsData', false);
+								this.set('statsDateData', response);
+							});
+						} else {
+							http.fetchPackageDateStats(type, name, period).then((response) => {
+								if (!response.total) {
+									this.set('noPackageStatsData', true);
+									return;
+								}
+
+								this.set('noPackageStatsData', false);
+								this.set('statsDateData', response);
+							});
+						}
 
 						// get package versions data
 						http.fetchPackageVersionStats(type, name, period).then((response) => {
