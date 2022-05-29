@@ -22,7 +22,7 @@
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
 
-			<div class="stats-section mb-24">
+			<div class="stats-section mb-18">
 				<span>Requests Served</span>
 				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(requestsTotal)}}</span>
 			</div>
@@ -37,7 +37,7 @@
 
 			<div class="horizontal-divider mt-24 mb-24"></div>
 
-			<div class="stats-section mb-24">
+			<div class="stats-section mb-18">
 				<span>Bandwidth</span>
 				<span>{{noDataOfBandwidth ? 'No data': _.formatNumber(bandwidthTotal) + ' GB'}}</span>
 			</div>
@@ -246,7 +246,18 @@
 							externalTooltipId: 'packageSidemenuRequestsChartTooltip',
 							externalTooltipVerticalOffset: 40,
 						};
-						let chartConfig = {};
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
 
 						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
@@ -301,7 +312,18 @@
 							externalTooltipId: 'packageSidemenuBandwidthChartTooltip',
 							externalTooltipVerticalOffset: 40,
 						};
-						let chartConfig = {};
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
 
 						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
