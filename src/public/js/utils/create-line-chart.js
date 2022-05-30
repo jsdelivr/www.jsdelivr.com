@@ -95,11 +95,11 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 	let verticalYAxisBorder = {
 		id: 'lineChartYBorder',
 		beforeDraw (chart) {
-			let { ctx } = chart;
+			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(89, 0);
-			ctx.lineTo(89, 297);
+			ctx.moveTo(chartArea.left - 24, 48);
+			ctx.lineTo(chartArea.left - 24, 345);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();

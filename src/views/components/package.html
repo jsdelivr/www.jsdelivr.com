@@ -7,8 +7,8 @@
 <link rel="ractive" href="./request-bandwidth-stats.html" name="c-request-bandwidth-stats">
 
 <div class="c-package">
-	<div class="container">
-		<div class="row">
+	<div class="container-fluid">
+		<div class="content-wrapper">
 			<div class="main-content">
 				<c-package-header
 					package="{{package}}"
@@ -52,154 +52,154 @@
 					package="{{package}}">
 				</c-package-sidemenu>
 			</div>
+		</div>
 
-			<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
-				<c-package-file-browser
-					type="{{type}}"
-					name="{{name}}"
-					github="{{package.githubRepo}}"
-					version="{{versionP}}"
-					versions="{{versions}}"
-					path="{{path}}"
-					collection="{{collection}}"
-					files="{{~/files}}">
-				</c-package-file-browser>
+		<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
+			<c-package-file-browser
+				type="{{type}}"
+				name="{{name}}"
+				github="{{package.githubRepo}}"
+				version="{{versionP}}"
+				versions="{{versions}}"
+				path="{{path}}"
+				collection="{{collection}}"
+				files="{{~/files}}">
+			</c-package-file-browser>
 
-				<c-collection-box collection="{{collection}}"></c-collection-box>
+			<c-collection-box collection="{{collection}}"></c-collection-box>
+		</div>
+
+		<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
+			<div class="header">
+				<div class="header-title">Statistics</div>
+				<div class="header-ctrls">
+					<div class="data-range-ctrl">
+						<span>Data range:</span>
+
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/statsPeriods[statsPeriodTemp]}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/statsPeriods}}
+									<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+				</div>
 			</div>
 
-			<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
-				<div class="header">
-					<div class="header-title">Statistics</div>
-					<div class="header-ctrls">
-						<div class="data-range-ctrl">
-							<span>Data range:</span>
+			{{#if navRoute === "stats"}}
+				<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriodTemp]}}" bandwidthUnit="GB"></c-request-bandwidth-stats>
+			{{/if}}
+
+			{{#if noPackageStatsData && noVersionsData}}
+				<div class="no-data-wrapper">
+					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+					<span>No statistics yet</span>
+					<span>This is probably not a very popular package :(</span>
+				</div>
+			{{else}}
+				<div class="chart-stats-per-period">
+					<div class="package-usage">
+						<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+
+						<div class="chart-type-ctrl">
+							<span>Show numbers of</span>
+
+							<input id="chart-switch"
+								type="checkbox"
+								class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
+								twoway="false">
+
+							<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
+								<span>Request</span>
+								<span>GB</span>
+							</label>
+						</div>
+
+						<div class="group-by-ctrl">
+							<span>
+								Group by:
+							</span>
 
 							<div class="btn-group">
 								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<span>{{~/statsPeriods[statsPeriodTemp]}}</span>
+									<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
 								<ul class="dropdown-menu">
-									{{#each ~/statsPeriods}}
-										<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
+									{{#each ~/usageChartGroupByValues}}
+										<li>
+											{{#if this.isDisabled}}
+												<a class="disabled">{{this.value}}</a>
+											{{else}}
+												<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+											{{/if}}
+										</li>
 									{{/each}}
 								</ul>
 							</div>
 						</div>
 					</div>
+
+					<div class="stats-chart-wrapper">
+						<canvas id="stats-chart"></canvas>
+					</div>
 				</div>
 
-				{{#if navRoute === "stats"}}
-					<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriodTemp]}}" bandwidthUnit="GB"></c-request-bandwidth-stats>
-				{{/if}}
+				<div class="horizontal-divider mt-40 mb-40"></div>
 
-				{{#if noPackageStatsData && noVersionsData}}
-					<div class="no-data-wrapper">
-						<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
-						<span>No statistics yet</span>
-						<span>This is probably not a very popular package :(</span>
+				<div class="chart-tops">
+					{{#if ~/topFiveVersionsTemp}}
+						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersionsTemp}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+							{{#partial column1}}
+								<a on-click="@this.set('version', version)">{{version}}</a>
+							{{/partial}}
+						</c-top-stats-table>
+
+						<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+							type="{{~/type}}"
+							name="{{~/name}}"
+							version="{{~/fileStatsVersion}}"
+							versions="{{~/versions}}">
+							{{#partial header}}
+								Top 5 files in version
+								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
+							{{/partial}}
+
+							{{#partial column1}}
+								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+							{{/partial}}
+						</c-top-stats-table>
+					{{/if}}
+				</div>
+
+				<div class="horizontal-divider mt-40 mb-40"></div>
+
+				<div class="chart-hits-per-period">
+					<div class="package-usage">
+						<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
 					</div>
-				{{else}}
-					<div class="chart-stats-per-period">
-						<div class="package-usage">
-							<div class="small-headline">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
 
-							<div class="chart-type-ctrl">
-								<span>Show numbers of</span>
+					<div class="hits-chart-wrapper">
+						<canvas id="hits-chart"></canvas>
+					</div>
 
-								<input id="chart-switch"
-									type="checkbox"
-									class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
-									twoway="false">
-
-								<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-									<span>Request</span>
-									<span>GB</span>
-								</label>
+					<div class="hits-chart-legend">
+						{{#each topFiveVersions}}
+							<div class="legend-item">
+								<div></div>
+								{{version}}
 							</div>
-
-							<div class="group-by-ctrl">
-								<span>
-									Group by:
-								</span>
-
-								<div class="btn-group">
-									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
-										<i class="fa fa-angle-down" aria-hidden="true"></i>
-									</button>
-
-									<ul class="dropdown-menu">
-										{{#each ~/usageChartGroupByValues}}
-											<li>
-												{{#if this.isDisabled}}
-													<a class="disabled">{{this.value}}</a>
-												{{else}}
-													<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
-												{{/if}}
-											</li>
-										{{/each}}
-									</ul>
-								</div>
-							</div>
-						</div>
-
-						<div class="stats-chart-wrapper">
-							<canvas id="stats-chart"></canvas>
-						</div>
+						{{/each}}
 					</div>
-
-					<div class="horizontal-divider mt-40 mb-40"></div>
-
-					<div class="chart-tops">
-						{{#if ~/topFiveVersionsTemp}}
-							<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersionsTemp}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
-								{{#partial column1}}
-									<a on-click="@this.set('version', version)">{{version}}</a>
-								{{/partial}}
-							</c-top-stats-table>
-
-							<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
-								type="{{~/type}}"
-								name="{{~/name}}"
-								version="{{~/fileStatsVersion}}"
-								versions="{{~/versions}}">
-								{{#partial header}}
-									Top 5 files in version
-									<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
-								{{/partial}}
-
-								{{#partial column1}}
-									<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
-								{{/partial}}
-							</c-top-stats-table>
-						{{/if}}
-					</div>
-
-					<div class="horizontal-divider mt-40 mb-40"></div>
-
-					<div class="chart-hits-per-period">
-						<div class="package-usage">
-							<div class="small-headline">Hits per {{~/statsPeriods[statsPeriod]}} per version</div>
-						</div>
-
-						<div class="hits-chart-wrapper">
-							<canvas id="hits-chart"></canvas>
-						</div>
-
-						<div class="hits-chart-legend">
-							{{#each topFiveVersions}}
-								<div class="legend-item">
-									<div></div>
-									{{version}}
-								</div>
-							{{/each}}
-						</div>
-					</div>
-				{{/if}}
-			</div>
+				</div>
+			{{/if}}
 		</div>
 	</div>
 </div>
@@ -551,6 +551,7 @@
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'near',
+									padding: 32,
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
@@ -565,7 +566,7 @@
 									drawBorder: false,
 								},
 								afterFit: (scale) => {
-									scale.width = 114;
+									scale.width = 98;
 								},
 							},
 						},
@@ -662,6 +663,7 @@
 						scales: {
 							x: {
 								display: true,
+								// offset: true,
 								ticks: {
 									color: '#5C667A',
 									font: {
@@ -704,11 +706,11 @@
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'near',
+									padding: 48,
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 									},
-									align: 'center',
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
 										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
