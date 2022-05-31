@@ -99,7 +99,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 			ctx.save();
 			ctx.beginPath();
 			ctx.moveTo(chartArea.left - 24, 48);
-			ctx.lineTo(chartArea.left - 24, 345);
+			ctx.lineTo(chartArea.left - 24, 320);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
