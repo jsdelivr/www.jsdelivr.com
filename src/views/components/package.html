@@ -477,13 +477,19 @@
 				let groupData = [];
 				let tempData = 0;
 				countDay = 0;
+				let showChartBandwidth = this.get('showChartBandwidth');
+				let tempGB = 1;
+
+				if (showChartBandwidth) {
+					tempGB = 1e9;
+				}
 
 				Object.keys(statsDateData.dates).forEach((date) => {
 					countDay++;
 					tempData += statsDateData.dates[date].total;
 
 					if (countDay >= groupedDayCount) {
-						groupData.push(Math.round(tempData / countDay));
+						groupData.push(Math.round(tempData / tempGB));
 						countDay = 0; tempData = 0;
 					}
 				});
@@ -551,22 +557,19 @@
 									count: yAxisTicksAmount,
 									color: '#5C667A',
 									crossAlign: 'near',
-									padding: 32,
+									padding: 22,
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
 									},
 								},
 								grid: {
 									display: false,
 									drawBorder: false,
-								},
-								afterFit: (scale) => {
-									scale.width = 98;
 								},
 							},
 						},
@@ -713,7 +716,7 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+										return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
 									},
 								},
 								grid: {
@@ -728,6 +731,8 @@
 						},
 					},
 				};
+
+				// console.log('hits chartData : ', chartData);
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 			});

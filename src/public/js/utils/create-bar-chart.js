@@ -56,8 +56,8 @@ function createBarChart (
 			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(chartArea.left - 8, 32);
-			ctx.lineTo(chartArea.left - 8, 322);
+			ctx.moveTo(chartArea.left - 8, 22);
+			ctx.lineTo(chartArea.left - 8, 319);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
