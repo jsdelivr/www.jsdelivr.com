@@ -8,8 +8,8 @@
 			<span>Requests Served</span>
 		</div>
 		<div class="card-growth">
-			<span class="growth-positive">{{requestsGrowth}}</span>
-			<span>{{growthPeriod}} growth</span>
+			<span class="{{#if requestsGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">{{#if requestsGrowthPercent>0}}+{{/if}}{{requestsGrowthPercent}}%</span>
+			<span>{{growthPeriod}} {{#if requestsGrowthPercent>=0}}growth{{else}}decline{{/if}}</span>
 		</div>
 	</div>
 
@@ -22,8 +22,8 @@
 			<span>Bandwidth</span>
 		</div>
 		<div class="card-growth">
-			<span class="growth-negative">{{bandwidthGrowth}}</span>
-			<span>{{growthPeriod}} growth</span>
+			<span class="{{#if bandwidthGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">{{#if bandwidthGrowthPercent>0}}+{{/if}}{{bandwidthGrowthPercent}}%</span>
+			<span>{{growthPeriod}} {{#if bandwidthGrowthPercent>=0}}growth{{else}}decline{{/if}}</span>
 		</div>
 	</div>
 </div>
@@ -38,8 +38,8 @@
 				_,
 				requestsAmount: 0,
 				bandwidthAmount: 0,
-				requestsGrowth: '+34%',
-				bandwidthGrowth: '-9%',
+				requestsGrowthPercent: 34,
+				bandwidthGrowthPercent: -9,
 				growthPeriods: {
 					day: 'daily',
 					week: 'weekly',
