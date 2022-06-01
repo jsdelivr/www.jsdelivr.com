@@ -122,8 +122,11 @@
 	"scripts": {
 		"heroku-postbuild": "echo \"$SOURCE_VERSION\" > sha.txt",
 		"lint": "npm run lint:css && npm run lint:js",
-		"lint:css": "stylelint --fix --config .stylelintrc \"./src/**/*.{css,less}\"",
+		"lint:fix": "npm run lint:css:fix && npm run lint:js:fix",
+		"lint:css": "stylelint --config .stylelintrc \"./src/**/*.{css,less}\"",
+		"lint:css:fix": "stylelint --fix --config .stylelintrc \"./src/**/*.{css,less}\"",
 		"lint:js": "eslint --ext .html,.js bin config src test",
+		"lint:js:fix": "eslint --fix --ext .html,.js bin config src test",
 		"mocha": "mocha --exit test/tests.js",
 		"start": "node src",
 		"test": "npm run lint && npm run mocha"
