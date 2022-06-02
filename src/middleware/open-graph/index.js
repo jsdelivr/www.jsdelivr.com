@@ -8,7 +8,7 @@ const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
 const FontsProcessor = require('./fonts');
-const { npmIndex } = require('../../lib/algolia');
+const algoliaNode = require('../../lib/algolia-node');
 
 const API_HOST = 'https://data.jsdelivr.com';
 const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
@@ -141,7 +141,7 @@ const prepareMetadata = async (pkg) => {
 		return cache.get(cacheKey);
 	}
 
-	let meta = await npmIndex.getObject(pkg, [ 'name', 'description', 'version', 'owner' ]);
+	let meta = await algoliaNode.getObjectWithCache(pkg);
 
 	meta.owner.logo = await fetchLogo(meta.owner.avatar).catch(() => {});
 	meta.description = processDescription(meta.description);

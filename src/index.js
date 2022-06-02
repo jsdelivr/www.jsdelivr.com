@@ -48,7 +48,9 @@ const render = require('./middleware/render');
 const rollup = require('./middleware/rollup');
 const less = require('./middleware/less');
 const ogImage = require('./middleware/open-graph');
+const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
+
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
 let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
@@ -291,6 +293,14 @@ koaElasticUtils.addRoutes(router, [
 		scope: ctx.params.scope,
 		actualPath: ctx.path,
 	};
+
+	try {
+		data.package = await algoliaNode.getObjectWithCache(data.name);
+
+		if (data.package) {
+			data.description = `A free, fast, and reliable CDN for ${data.name}. ${data.package.description}`;
+		}
+	} catch {}
 
 	try {
 		ctx.body = await ctx.render('pages/_package.html', data);
