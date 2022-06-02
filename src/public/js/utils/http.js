@@ -1,5 +1,6 @@
 
 const _ = require('../_');
+const STAGIN_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
 const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
@@ -77,3 +78,35 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 		});
 	});
 };
+module.exports.fetchNetworkProviderStats = (type, period, country = "") => {
+	let body = {
+		type, period
+	};
+	country && ( body.country = country );
+	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/stats/network/providers`, body });
+}
+module.exports.fetchNetworkProviderStatsByCountry = (type, period) => {
+	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/stats/network/countries`, body: {type, period} });
+}
+/***
+ * @param type - platform type  value:  "platforms", "browsers"
+ * @param isVersionGrouped  -  version grouped switchbox value: boolean
+ * @param selectedItem - selected certain platform or browser value:string
+ * @param breakdown - country breakdown, browser breakdown, platform , version berakdown
+ ***/
+module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedItem, breakdown) => {
+	let url = type === "platform"? "/v1/stats/platforms": "/v1/stats/browsers";
+
+	if(!isVersionGrouped) {
+		if(!selectedItem)
+			url += "/versions";  // initial state but <version group> switch box is disabled
+		else					// when a user selected one platform or browser in the list , <version group> is disabled
+			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
+	}
+	else {						// <version group> switchbox is enabled
+		if(selectedItem)		// user selected one platform or browser
+			url += `${selectedItem.name}/${breakdown}`;
+	}
+
+	return _.makeHTTPRequest({ url });
+}

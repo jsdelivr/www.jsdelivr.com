@@ -1,0 +1,889 @@
+<div class="c-top-platform-browser">
+    <div class="info">
+        <h3>Top {{ type }}s</h3>
+        <div class="switch-block">
+            <label class="switch">
+                <input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" checked>
+                <span class="slider round"></span>
+            </label>
+            <span class="name">Group {{ type }} versions</span>
+        </div>
+    </div>
+    <div class="table">
+        <div class="choosen-platform">
+            {{ #if !selectedItem }}
+                <img
+                    width="20"
+                    height="20"
+                    src="{{@shared.assetsHost}}/img/statistics/information.svg"
+                    loading="lazy"
+                />
+                <p>Choose {{ type }} below to check more data</p>
+            {{ else }}
+                <div>
+                    {{ selectedItem }}
+                    <div class="btn-group">
+                        <button
+                            type="button"
+                            class="btn dropdown-toggle"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                        >
+                            <span>{{ breakdownList[breakdown] }}</span>
+                            <i
+                                class="fa fa-angle-down"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+
+                        <ul class="dropdown-menu">
+                            {{#each breakdownList}}
+                            <li>
+                                <a
+                                    on-click="@this.set('breakdown', @key)"
+                                    >{{ . }}</a
+                                >
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+            {{ /if }}
+        </div>
+        <table>
+            <tr>
+              <th>Name</th>
+              <th>Market share</th>
+              <th>
+                <div class="table-header">
+                    Changes
+                    <img
+                        width="16"
+                        height="16"
+                        src="{{@shared.assetsHost}}/img/statistics/information.svg"
+                        loading="lazy"
+                    />
+                    <div class="header-tooltip">
+                        <span>Compared to the previous 30 day period</span>
+                    </div>
+                </div>
+            </th>
+            </tr>
+            {{#each topList}}
+                <tr>
+                    <td>
+                        <span>{{ @index }}</span>
+                        <img
+                            width="24"
+                            height="24"
+                            src="{{@shared.assetsHost}}{{svg}}"
+                            loading="lazy"
+                        />
+                        <span on-click="@this.set('selectedItem', name)">{{ name }}</span>
+                    </td>
+                    <td>{{ share }}%</td>
+                    <td class="{{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</td>
+                </tr>
+            {{/each}}
+        </table>
+        <div class="pagination">
+            <p>Records 1 - 10 of 43</p>
+            <div class="btn-group">
+                <span>Show:</span>
+                <button
+                    type="button"
+                    class="btn dropdown-toggle"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                >
+                    <span>{{pageLimit}}</span>
+                    <i
+                        class="fa fa-angle-down"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+                <ul class="dropdown-menu">
+                    {{#each paginationLimits}}
+                    <li>
+                        <a
+                            on-click="@this.set('pageLimit', @key)"
+                            >{{this}}</a
+                        >
+                    </li>
+                    {{/each}}
+                </ul>
+                <div class="pagination-change-page">
+                    <button>
+                        <img
+                            width="20"
+                            height="24"
+                            src="{{@shared.assetsHost}}/img/statistics/left.svg"
+                            loading="lazy"
+                        />
+                    </button>
+                    <button>
+                        <img
+                            width="24"
+                            height="24"
+                            src="{{@shared.assetsHost}}/img/statistics/right.svg"
+                            loading="lazy"
+                        />
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="pagination-mobile">
+            <p>1-10 of 43</p>
+            <div class="action">
+                <button class="prew">
+                    <img
+                        width="20"
+                        height="24"
+                        src="{{@shared.assetsHost}}/img/statistics/left.svg"
+                        loading="lazy"
+                    />
+                </button>
+                <div class="btn-group">
+                    <button
+                        type="button"
+                        class="btn dropdown-toggle"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+                        <span>Page:</span>
+                        <span>{{pageLimit}}</span>
+                        <i
+                            class="fa fa-angle-down"
+                            aria-hidden="true"
+                        ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        {{#each paginationLimits}}
+                        <li>
+                            <a
+                                on-click="@this.set('pageLimit', @key)"
+                                >{{this}}</a
+                            >
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+                <button class="next">
+                    <img
+                        width="24"
+                        height="24"
+                        src="{{@shared.assetsHost}}/img/statistics/right.svg"
+                        loading="lazy"
+                    />
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const _ = require('../../public/js/_');
+    const http = require('../../public/js/utils/http');
+    const countries = require('../../public/json/countries.json');
+    
+    component.exports = {
+        computed: {
+            breakdownList() {
+                let type = this.get("type");
+
+                let result = [];
+                if(type === "platform")
+                    result = {
+                        countries: "Country breakdown",
+                        browsers: "Browser breakdown",
+                        versions: "Version breakdown"
+                    };
+                else if(type === "browser")
+                    result = {
+                        countries: "Country breakdown",
+                        platforms: "Platform breakdown",
+                        versions: "Version breakdown"
+                    };
+                return result;
+            }
+        },
+        data() {
+            return {
+                topList: [{ id: '1', svg: '/img/statistics/platforms/Windows@2x.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }],
+                isVersionGrouped: true,
+                selectedItem: "",
+                breakdown: "countries",
+                breakdownList: [],
+                page: 1,
+                pageLimit: '10',
+				paginationLimits: [ '10', '20', '30', '40' ],
+                toSignedPercentage: function(num) {
+                    return `${num > 0? "+": ""}${num}%`;
+                }
+            }
+        },
+        oninit() {
+            if(!Ractive.isServer) {
+                this.observe("isVersionGrouped selectedItem breakdown __ready", function() {
+                    if(this.get("__ready")) {
+                        let type = this.get("type");
+                        let isVersionGrouped = this.get("isVersionGrouped");
+                        let selectedItem = this.get("selectedItem");
+                        let breakdown = this.get("breakdown");
+
+                        // please uncomment this line when real api is ready..
+                        //http.fetchTopPlatformBrowserStats(type, isVersionGrouped, selectedItem, breakdown);
+
+                        //please remove below lines when real api is ready..
+                        let fetchedData = [];
+                        if(!isVersionGrouped) {
+                            if(!selectedItem)
+                                fetchedData = [
+                                    {
+                                        "platform": "Android",
+                                        "version": 76,
+                                        "share": 6.5,
+                                        "prev": {
+                                            "share": 8.23
+                                        }
+                                    },
+                                    {
+                                        "platform": "iOS",
+                                        "version": 45,
+                                        "share": 2.99,
+                                        "prev": {
+                                            "share": 4.42
+                                        }
+                                    },
+                                    {
+                                        "platform": "Windows",
+                                        "version": 59,
+                                        "share": 1.69,
+                                        "prev": {
+                                            "share": 7.34
+                                        }
+                                    },
+                                    {
+                                        "platform": "macOS",
+                                        "version": 48,
+                                        "share": 9.9,
+                                        "prev": {
+                                            "share": 4.21
+                                        }
+                                    },
+                                    {
+                                        "platform": "Linux",
+                                        "version": 56,
+                                        "share": 2.89,
+                                        "prev": {
+                                            "share": 6.19
+                                        }
+                                    },
+                                    {
+                                        "platform": "Other",
+                                        "version": 78,
+                                        "share": 2.49,
+                                        "prev": {
+                                            "share": 4.87
+                                        }
+                                    },
+                                    {
+                                        "platform": "Chrome OS",
+                                        "version": 51,
+                                        "share": 1.29,
+                                        "prev": {
+                                            "share": 4.45
+                                        }
+                                    },
+                                    {
+                                        "platform": "Tizen",
+                                        "version": 36,
+                                        "share": 1.01,
+                                        "prev": {
+                                            "share": 2.7
+                                        }
+                                    },
+                                    {
+                                        "platform": "PlayStation 4",
+                                        "version": 28,
+                                        "share": 8.65,
+                                        "prev": {
+                                            "share": 4.68
+                                        }
+                                    },
+                                    {
+                                        "platform": "WebOS",
+                                        "version": 85,
+                                        "share": 4.33,
+                                        "prev": {
+                                            "share": 7.31
+                                        }
+                                    }
+                                ];
+                            else
+                                fetchedData = [
+                                    {
+                                        "country": "AF",
+                                        "share": 8.62,
+                                        "prev": {
+                                            "share": 2.63
+                                        }
+                                    },
+                                    {
+                                        "country": "AX",
+                                        "share": 5.17,
+                                        "prev": {
+                                            "share": 9.69
+                                        }
+                                    },
+                                    {
+                                        "country": "AL",
+                                        "share": 8.81,
+                                        "prev": {
+                                            "share": 9.63
+                                        }
+                                    },
+                                    {
+                                        "country": "DZ",
+                                        "share": 6.81,
+                                        "prev": {
+                                            "share": 2.82
+                                        }
+                                    },
+                                    {
+                                        "country": "AS",
+                                        "share": 7.41,
+                                        "prev": {
+                                            "share": 8.25
+                                        }
+                                    },
+                                    {
+                                        "country": "AD",
+                                        "share": 5.97,
+                                        "prev": {
+                                            "share": 2.77
+                                        }
+                                    },
+                                    {
+                                        "country": "AO",
+                                        "share": 7.68,
+                                        "prev": {
+                                            "share": 2.56
+                                        }
+                                    },
+                                    {
+                                        "country": "AI",
+                                        "share": 2.69,
+                                        "prev": {
+                                            "share": 5.14
+                                        }
+                                    },
+                                    {
+                                        "country": "AQ",
+                                        "share": 9.6,
+                                        "prev": {
+                                            "share": 6.31
+                                        }
+                                    },
+                                    {
+                                        "country": "AG",
+                                        "share": 4.04,
+                                        "prev": {
+                                            "share": 4.41
+                                        }
+                                    }
+                                ];
+                        }
+                        else {
+                            if(selectedItem) {
+                                switch(breakdown) {
+                                    case 'countries':
+                                        fetchedData = [
+                                            {
+                                                "country": "AF",
+                                                "share": 8.89,
+                                                "prev": {
+                                                    "share": 1.62
+                                                }
+                                            },
+                                            {
+                                                "country": "AX",
+                                                "share": 9.66,
+                                                "prev": {
+                                                    "share": 5.19
+                                                }
+                                            },
+                                            {
+                                                "country": "AL",
+                                                "share": 2.18,
+                                                "prev": {
+                                                    "share": 9.12
+                                                }
+                                            },
+                                            {
+                                                "country": "DZ",
+                                                "share": 2.34,
+                                                "prev": {
+                                                    "share": 5.45
+                                                }
+                                            },
+                                            {
+                                                "country": "AS",
+                                                "share": 6.81,
+                                                "prev": {
+                                                    "share": 9.71
+                                                }
+                                            },
+                                            {
+                                                "country": "AD",
+                                                "share": 9.89,
+                                                "prev": {
+                                                    "share": 3.49
+                                                }
+                                            },
+                                            {
+                                                "country": "AO",
+                                                "share": 6.98,
+                                                "prev": {
+                                                    "share": 6.51
+                                                }
+                                            },
+                                            {
+                                                "country": "AI",
+                                                "share": 6.44,
+                                                "prev": {
+                                                    "share": 4.75
+                                                }
+                                            },
+                                            {
+                                                "country": "AQ",
+                                                "share": 7.49,
+                                                "prev": {
+                                                    "share": 2.77
+                                                }
+                                            },
+                                            {
+                                                "country": "AG",
+                                                "share": 3,
+                                                "prev": {
+                                                    "share": 7.68
+                                                }
+                                            }
+                                        ];
+                                        break;
+                                    case 'platforms':
+                                        fetchedData = [
+                                            {
+                                                "name": "Roku",
+                                                "share": 4.82,
+                                                "prev": {
+                                                    "share": 3.55
+                                                }
+                                            },
+                                            {
+                                                "name": "macOS",
+                                                "share": 4.08,
+                                                "prev": {
+                                                    "share": 3.85
+                                                }
+                                            },
+                                            {
+                                                "name": "BlackBerry",
+                                                "share": 7.37,
+                                                "prev": {
+                                                    "share": 7.23
+                                                }
+                                            },
+                                            {
+                                                "name": "Other",
+                                                "share": 2.87,
+                                                "prev": {
+                                                    "share": 1.43
+                                                }
+                                            },
+                                            {
+                                                "name": "Windows",
+                                                "share": 3.97,
+                                                "prev": {
+                                                    "share": 9.89
+                                                }
+                                            },
+                                            {
+                                                "name": "Windows",
+                                                "share": 7.86,
+                                                "prev": {
+                                                    "share": 2.45
+                                                }
+                                            },
+                                            {
+                                                "name": "BlackBerry",
+                                                "share": 9.74,
+                                                "prev": {
+                                                    "share": 8.42
+                                                }
+                                            },
+                                            {
+                                                "name": "Windows",
+                                                "share": 4.25,
+                                                "prev": {
+                                                    "share": 9.23
+                                                }
+                                            },
+                                            {
+                                                "name": "Bada",
+                                                "share": 3.68,
+                                                "prev": {
+                                                    "share": 6.91
+                                                }
+                                            },
+                                            {
+                                                "name": "Linux",
+                                                "share": 4.63,
+                                                "prev": {
+                                                    "share": 8.07
+                                                }
+                                            }
+                                        ];
+                                        break;
+                                    case 'browsers':
+                                        fetchedData = [
+                                            {
+                                                "name": "WordPress",
+                                                "share": 6.7,
+                                                "prev": {
+                                                    "share": 3.03
+                                                }
+                                            },
+                                            {
+                                                "name": "Google Search",
+                                                "share": 6.97,
+                                                "prev": {
+                                                    "share": 4.58
+                                                }
+                                            },
+                                            {
+                                                "name": "Yandex Browser",
+                                                "share": 7.76,
+                                                "prev": {
+                                                    "share": 1.41
+                                                }
+                                            },
+                                            {
+                                                "name": "Internet Explorer",
+                                                "share": 7.76,
+                                                "prev": {
+                                                    "share": 1.64
+                                                }
+                                            },
+                                            {
+                                                "name": "QQ Browser",
+                                                "share": 2.76,
+                                                "prev": {
+                                                    "share": 3.33
+                                                }
+                                            },
+                                            {
+                                                "name": "Google Search",
+                                                "share": 1.95,
+                                                "prev": {
+                                                    "share": 4.7
+                                                }
+                                            },
+                                            {
+                                                "name": "Google Search",
+                                                "share": 8.72,
+                                                "prev": {
+                                                    "share": 8.82
+                                                }
+                                            },
+                                            {
+                                                "name": "UC Browser",
+                                                "share": 1.93,
+                                                "prev": {
+                                                    "share": 4.79
+                                                }
+                                            },
+                                            {
+                                                "name": "PlayStation 4",
+                                                "share": 5.46,
+                                                "prev": {
+                                                    "share": 6.02
+                                                }
+                                            },
+                                            {
+                                                "name": "Tizen",
+                                                "share": 3.99,
+                                                "prev": {
+                                                    "share": 1.03
+                                                }
+                                            }
+                                        ];
+                                        break;
+                                    case 'versions':
+                                        fetchedData = [
+                                            {
+                                                "version": 1,
+                                                "versionName": "Catalina",
+                                                "share": 2.95,
+                                                "prev": {
+                                                    "share": 3.33
+                                                }
+                                            },
+                                            {
+                                                "version": 2,
+                                                "share": 6.87,
+                                                "prev": {
+                                                    "share": 6.85
+                                                }
+                                            },
+                                            {
+                                                "version": 3,
+                                                "share": 8.36,
+                                                "prev": {
+                                                    "share": 2.16
+                                                }
+                                            },
+                                            {
+                                                "version": 4,
+                                                "share": 5.59,
+                                                "prev": {
+                                                    "share": 7.4
+                                                }
+                                            },
+                                            {
+                                                "version": 5,
+                                                "share": 1.07,
+                                                "prev": {
+                                                    "share": 8.61
+                                                }
+                                            },
+                                            {
+                                                "version": 6,
+                                                "versionName": "Catalina",
+                                                "share": 3.71,
+                                                "prev": {
+                                                    "share": 4.4
+                                                }
+                                            },
+                                            {
+                                                "version": 7,
+                                                "share": 6.47,
+                                                "prev": {
+                                                    "share": 8.8
+                                                }
+                                            },
+                                            {
+                                                "version": 8,
+                                                "share": 6.44,
+                                                "prev": {
+                                                    "share": 1.24
+                                                }
+                                            },
+                                            {
+                                                "version": 9,
+                                                "share": 5.7,
+                                                "prev": {
+                                                    "share": 2.11
+                                                }
+                                            },
+                                            {
+                                                "version": 10,
+                                                "share": 4.42,
+                                                "prev": {
+                                                    "share": 6.95
+                                                }
+                                            }
+                                        ];
+                                        break;
+                                }
+                            }
+                            else {
+                                if(type === "platform")
+                                    fetchedData = [
+                                        {
+                                            "platform": "Android",
+                                            "share": 7.73,
+                                            "prev": {
+                                                "share": 5.57
+                                            }
+                                        },
+                                        {
+                                            "platform": "iOS",
+                                            "share": 3.82,
+                                            "prev": {
+                                                "share": 5.97
+                                            }
+                                        },
+                                        {
+                                            "platform": "Windows",
+                                            "share": 6.34,
+                                            "prev": {
+                                                "share": 7.3
+                                            }
+                                        },
+                                        {
+                                            "platform": "macOS",
+                                            "share": 6.98,
+                                            "prev": {
+                                                "share": 8.9
+                                            }
+                                        },
+                                        {
+                                            "platform": "Linux",
+                                            "share": 8.69,
+                                            "prev": {
+                                                "share": 1.8
+                                            }
+                                        },
+                                        {
+                                            "platform": "Other",
+                                            "share": 3.69,
+                                            "prev": {
+                                                "share": 4.4
+                                            }
+                                        },
+                                        {
+                                            "platform": "Chrome OS",
+                                            "share": 9.12,
+                                            "prev": {
+                                                "share": 4.61
+                                            }
+                                        },
+                                        {
+                                            "platform": "Tizen",
+                                            "share": 2.53,
+                                            "prev": {
+                                                "share": 6.16
+                                            }
+                                        },
+                                        {
+                                            "platform": "PlayStation 4",
+                                            "share": 1.4,
+                                            "prev": {
+                                                "share": 6.35
+                                            }
+                                        },
+                                        {
+                                            "platform": "WebOS",
+                                            "share": 2.46,
+                                            "prev": {
+                                                "share": 8.65
+                                            }
+                                        }
+                                    ];
+                                else
+                                    fetchedData = [
+                                        {
+                                            "browser": "Chrome",
+                                            "share": 7.37,
+                                            "prev": {
+                                                "share": 6.76
+                                            }
+                                        },
+                                        {
+                                            "browser": "Safari",
+                                            "share": 2.37,
+                                            "prev": {
+                                                "share": 4.03
+                                            }
+                                        },
+                                        {
+                                            "browser": "Internet Explorer",
+                                            "share": 1.88,
+                                            "prev": {
+                                                "share": 2.59
+                                            }
+                                        },
+                                        {
+                                            "browser": "Firefox",
+                                            "share": 4.17,
+                                            "prev": {
+                                                "share": 6.23
+                                            }
+                                        },
+                                        {
+                                            "browser": "Microsoft Edge",
+                                            "share": 1.08,
+                                            "prev": {
+                                                "share": 5.41
+                                            }
+                                        },
+                                        {
+                                            "browser": "Samsung Internet for Android",
+                                            "share": 8.14,
+                                            "prev": {
+                                                "share": 5.94
+                                            }
+                                        },
+                                        {
+                                            "browser": "Google Search",
+                                            "share": 1.32,
+                                            "prev": {
+                                                "share": 7.21
+                                            }
+                                        },
+                                        {
+                                            "browser": "Android Browser",
+                                            "share": 5.65,
+                                            "prev": {
+                                                "share": 2.81
+                                            }
+                                        },
+                                        {
+                                            "browser": "QQ Browser",
+                                            "share": 8.81,
+                                            "prev": {
+                                                "share": 7.63
+                                            }
+                                        },
+                                        {
+                                            "browser": "Opera",
+                                            "share": 4.41,
+                                            "prev": {
+                                                "share": 1.63
+                                            }
+                                        }
+                                    ];
+                            }
+                        }
+
+                        this.set("topList", this.processFetchedData(fetchedData));
+                    }
+                })
+            }
+        },
+        onrender() {
+
+        },
+        processFetchedData(data) {
+            let iconKeys = ["platform", "name", "country", "browser"];
+            data = data.map((one, index) => {
+                let result = {
+                    name: "",
+                    share: one.share,
+                };
+                Object.keys(one).map(key => {
+                    if(key === "share" || key === "prev")
+                        return;
+
+                    if(iconKeys.indexOf(key) != -1)
+                        result.icon = one[key];
+                    if(key === "country")
+                        result.name += countries[key] + " ";
+                    else if(key === "versionName")
+                        result.name += `(${one[key]}) `;
+                    else
+                        result.name += one[key] + " ";
+                });
+                result.name = result.name.substring(0, result.name.length-1);
+                result.changes = ( (one.share/one.prev.share - 1) * 100 ).toFixed(2);
+
+                return result;
+            })
+            return data;
+        }
+    }
+</script>

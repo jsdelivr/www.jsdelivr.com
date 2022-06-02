@@ -1,4 +1,4 @@
-<div class="network-provider-stats">
+<div class="c-network-provider-stats">
     <div class="block">
         <h3>Requests Served</h3>
         <div class="table">
@@ -8,29 +8,32 @@
                         <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
                     </div>
                     <div class="card-main-stat">
-                        <span>{{requestsAmount}}</span>
+                        <span>{{requestsData.total}}</span>
                     </div>
                     <div class="card-growth">
-                        <span class="{{#if requestsGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">{{#if requestsGrowthPercent>0}}+{{/if}}{{requestsGrowthPercent}}%</span>
-                        <span>{{growthPeriod}} {{#if requestsGrowthPercent>=0}}growth{{else}}decline{{/if}}</span>
+                        <span class="{{ requestsData.growth >= 0? 'growth-positive': 'growth-negative'}}">{{#if requestsData.growth>0}}+{{/if}}{{requestsData.growth}}%</span>
+                        <span>{{period}}ly {{ requestsData.growth >= 0? 'growth': 'decline'}}</span>
                     </div>
                 </div>
             </div>
             <div class="bandwidth-list">
-                {{#each requestsList}}
+                {{#each requestsData.statsList}}
                     <div class="list">
-                        <div class="icon">
-                            <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
-                            <span >{{name}}</span>
+                        <div class="info">
+                            <div class="icon">
+                                <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+                                <span >{{name}}</span>
+                            </div>
+                            <div class="value">{{value}}</div>
                         </div>
                         <div class="chart">
-                            <div class="value">{{value}}</div>
+                            
                             <div class="percentage-bar">
-                                <div class="barWidth" style="width: {{ interest }}; background: {{ color }}">
+                                <div class="barWidth" style="width: {{ @this.calcPercentage(value, requestsData.total) }}; background: {{ color }}">
 
                                 </div>
                             </div>
-                            <div class="interest">{{interest}}</div>
+                            <div class="interest">{{interest}}%</div>
                         </div>
                     </div>
                 {{/each}}
@@ -46,30 +49,32 @@
                         <img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
                     </div>
                     <div class="card-main-stat">
-                        <span>{{bandAmount}}</span>
+                        <span>{{converBytesTo(bandwidthData.total)}}</span>
 
                     </div>
                     <div class="card-growth">
-                        <span class="{{#if bandGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">{{#if bandGrowthPercent>0}}+{{/if}}{{bandGrowthPercent}}%</span>
-                        <span>{{bandPeriod}} {{#if bandGrowthPercent>=0}}growth{{else}}decline{{/if}}</span>
+                        <span class="{{ bandwidthData.growth >= 0? 'growth-positive': 'growth-negative'}}">{{#if bandwidthData.growth>0}}+{{/if}}{{bandwidthData.growth}}%</span>
+                        <span>{{period}}ly {{ bandwidthData.growth >= 0? 'growth': 'decline'}}</span>
                     </div>
                 </div>
             </div>
             <div class="bandwidth-list">
-                {{#each bandwidthList}}
+                {{#each bandwidthData.statsList}}
                     <div class="list">
-                        <div class="icon">
-                            <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
-                            <span >{{name}}</span>
+                        <div class="info">
+                            <div class="icon">
+                                <img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+                                <span >{{name}}</span>
+                            </div>
+                            <div class="value">{{converBytesTo(value)}}</div>
                         </div>
                         <div class="chart">
-                            <div class="value">{{value}}</div>
                             <div class="percentage-bar">
-                                <div class="barWidth" style="width: {{ interest }}; background: {{ color }}">
+                                <div class="barWidth" style="width: {{ @this.calcPercentage(value, bandwidthData.total) }}; background: {{ color }}">
 
                                 </div>
                             </div>
-                            <div class="interest">{{interest}}</div>
+                            <div class="interest">{{interest}}%</div>
                         </div>
                     </div>
                 {{/each}}
@@ -81,97 +86,41 @@
 <script>
     const _ = require('../../public/js/_');
     const http = require('../../public/js/utils/http');
+    const providers = require('../../public/json/net-providers.json');
 
     component.exports = {
         data() {
             return {
-                icons: {
-					Cloudflare: {
-                        imgPath: "/img/statistics/cloudflare.svg",
-                        color: "#F6821F"
-                    },
-					Fastly: {
-                        imgPath: "/img/statistics/fastly.svg",
-                        color: "#FF282D"
-                    },
-					Bunny: {
-                        imgPath: "/img/statistics/bunny.svg",
-                        color: "#3370EB"
-                    },
-					"G-Core": {
-                        imgPath: "/img/statistics/g-core.svg",
-                        color: "#A234D2"
-                    }
-				},
-                requestsAmount: '406 745 962',
-				requestsGrowthPercent: 34,
-				growthPeriod: 'monthly',
-				requestsList: [],
-				bandAmount: '648 414 GB',
-				bandGrowthPercent: -9,
-				bandPeriod: 'monthly',
-				bandwidthList: [],
+				requestsData: {},
+				bandwidthData: {},
+                converBytesTo: function( num ) {
+                    let lookup = [
+                        { value: 1, symbol: '' },
+                        { value: 1e3, symbol: 'KB' },
+                        { value: 1e6, symbol: 'MB' },
+                        { value: 1e9, symbol: 'GB' },
+                        { value: 1e12, symbol: 'TB' },
+                        { value: 1e15, symbol: 'PB' },
+                        { value: 1e18, symbol: 'EB' },
+                    ];
+                    let item = lookup.reverse().find((item) => {
+                        return num >= item.value;
+                    });
+
+                    return item? Math.round(num/item.value) + item.symbol: '0';
+                }
             }
         },
         oninit() {
             if(!Ractive.isServer) {
-                this.observe("statsPeriod", () => {
+                this.observe("period", (period) => {
                     // http calls to fetch net stats data...
-                    const requestStats = {
-                        "Cloudflare": {
-                            "total": 61691182936,
-                            "prev": {
-                                "total": 55522064642
-                            }
-                        },
-                        "Fastly": {
-                            "total": 41783210048,
-                            "prev": {
-                                "total": 37604889043
-                            }
-                        },
-                        "Bunny": {
-                            "total": 30804375566,
-                            "prev": {
-                                "total": 27723938009
-                            }
-                        },
-                        "G-Core": {
-                            "total": 14326728267,
-                            "prev": {
-                                "total": 12894055440
-                            }
-                        }
-                    };
-                    const bandwidthStats = {
-                        "Cloudflare": {
-                            "total": 624223433989,
-                            "prev": {
-                                "total": 561801090590
-                            }
-                        },
-                        "Fastly": {
-                            "total": 555417656323,
-                            "prev": {
-                                "total": 499875890691
-                            }
-                        },
-                        "Bunny": {
-                            "total": 298657503025,
-                            "prev": {
-                                "total": 268791752723
-                            }
-                        },
-                        "G-Core": {
-                            "total": 181594776671,
-                            "prev": {
-                                "total": 163435299004
-                            }
-                        }
-                    }
-
-                    this.set("requestsList", this.processStats(requestStats));
-                    this.set("bandwidthList", this.processStats(bandwidthStats));
+                    http.fetchNetworkProviderStats("hits", period).then(res => {
+                        this.set("requestsData", this.processStats(res));
+                    });
+                    http.fetchNetworkProviderStats("bandwidth", period).then(res => {
+                        this.set("bandwidthData", this.processStats(res));
+                    });
                 })
             }
         },
@@ -179,20 +128,37 @@
 
         },
         processStats(stats) {
-            let result = [];
+            let result = {
+                total: 0,
+                prevTotal: 0,
+                growth: "0%",
+                statsList: []
+            };
             Object.keys(stats).map((key, index) => {
-                let icon = this.get("icons")[key];
-                let svg = icon.imgPath;
-                let color = icon.color;
-                let name = key;
+                let provider = providers[key] ?? {};
+                let svg = provider.imgPath;
+                let color = provider.color;
+                let name = provider.name;
                 let value = stats[key].total;
-                let interest = (value - stats[key].prev.total)*100 / stats[key].prev.total;
-                interest = interest.toFixed(1) + "%";
+                let interest = this.calcGrowth(value, stats[key].prev.total);
 
-                result.push({svg, name, value, color, interest});
+                result.statsList.push({svg, name, value, color, interest});
+                result.total += stats[key].total;
+                result.prevTotal += stats[key].prev.total;
             });
 
+            result.growth = this.calcGrowth(result.total, result.prevTotal);
             return result;
+        },
+        calcGrowth(cur, prev) {
+            let growth = prev? ( (cur - prev)*100 / prev ): 100;
+            
+            return growth.toFixed(1);
+        },
+        calcPercentage(cur, total) {
+            let percentage = (cur * 100 / total).toFixed(1);
+
+            return percentage == 0? "0.5%": percentage + "%";
         }
     }
 </script>

@@ -5,8 +5,9 @@
 <link rel="ractive" href="../components/notification.html" name="c-notification"/>
 <link rel="ractive" href="../components/stats-table.html" name="c-stats-table"/>
 
-<link rel="ractive" href="../components/network-provider-stats.html" name="c-network-provider-stats">
-<link rel="ractive" href="../components/network-request-chart.html" name="c-network-request-chart">
+<link rel="ractive" href="../components/network-provider-stats.html" name="c-network-provider-stats" />
+<link rel="ractive" href="../components/network-request-chart.html" name="c-network-request-chart" />
+<link rel="ractive" href="../components/top-platform-browser.html" name="c-top-platform-browser" />
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -46,7 +47,7 @@
 									aria-haspopup="true"
 									aria-expanded="false"
 								>
-									<span>{{ statsPeriods[globalStatsPeriod] }}</span>
+									<span>{{ globalStatsPeriod }}</span>
 									<i
 										class="fa fa-angle-down"
 										aria-hidden="true"
@@ -58,7 +59,7 @@
 									<li>
 										<a
 											on-click="@this.set('globalStatsPeriod', @key)"
-											>{{this}}</a
+											>{{@key}}</a
 										>
 									</li>
 									{{/each}}
@@ -68,7 +69,7 @@
 					</div>
 				</div>
 				<div class="verticalLine" />
-				<c-network-provider-stats statsPeriod="{{ globalStatsPeriod }}"></c-network-provider-stats>
+				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
 				<div class="hit-rate">
 					<h3>Cache hit rate</h3>
 					<div class="rate-row">
@@ -106,6 +107,7 @@
 						<input class="search" placeholder="Filter for a specific country or a continent..."/>
 						<div class="data-range-ctrl">
 							<div class="btn-group">
+								<div class="eac-item WW" on-click="@this.setCountryAsGlobal()"><img src="/img/statistics/flags/WW.svg"/>Global</div>
 								<span class="label-for-pinned">Data range</span>
 								<button
 									type="button"
@@ -114,7 +116,7 @@
 									aria-haspopup="true"
 									aria-expanded="false"
 								>
-									<span>{{ statsPeriods[networkStatsPeriod] }}</span>
+									<span>{{ networkStatsPeriod }}</span>
 									<i
 										class="fa fa-angle-down"
 										aria-hidden="true"
@@ -126,7 +128,7 @@
 									<li>
 										<a
 											on-click="@this.set('networkStatsPeriod', @key)"
-											>{{this}}</a
+											>{{@key}}</a
 										>
 									</li>
 									{{/each}}
@@ -136,315 +138,11 @@
 					</div>
 				</div>
 				<div class="verticalLine" />
-				<c-network-request-chart period="{{ networkStatsPeriod }}"></c-network-request-chart>
+				<c-network-request-chart __ready="{{ __ready }}" period="{{ networkStatsPeriod }}" country="{{ country }}"></c-network-request-chart>
 				<div class="map"></div>
 				<div class="tops">
-					<div class="top-block">
-						<div class="info">
-							<h3>Top platforms</h3>
-							<div class="switch-block">
-								<label class="switch">
-									<input type="checkbox" checked>
-									<span class="slider round"></span>
-								</label>
-								<span class="name">Group platform versions</span>
-							</div>
-						</div>
-						<div class="table">
-							<div class="choosen-platform">
-								<img
-									width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/statistics/information.svg"
-									loading="lazy"
-								/>
-								<p>Choose platform below to check more data</p>
-							</div>
-							<table>
-								<tr>
-								  <th>Name</th>
-								  <th>Market share</th>
-								  <th>
-									<div id="one">
-										Changes
-										<img
-											width="16"
-											height="16"
-											src="{{@shared.assetsHost}}/img/statistics/information.svg"
-											loading="lazy"
-										/>
-									</div>
-									<div id="two">
-										<p id="one">Compared to the previous 30 day period</p>
-									</div>
-								</th>
-								</tr>
-								{{#each topList}}
-									<tr>
-										<td>
-											<span>{{id}}</span>
-											<img
-												width="24"
-												height="24"
-												src="{{@shared.assetsHost}}{{svg}}"
-												loading="lazy"
-											/>
-											<span>{{name}}</span>
-										</td>
-										<td>{{share}}</td>
-										<td class="green">+{{changes}}</td>
-									</tr>
-								{{/each}}
-							</table>
-							<div class="pagination">
-								<p>Records 1 - 10 of 43</p>
-								<div class="btn-group">
-									<span>Show:</span>
-									<button
-										type="button"
-										class="btn dropdown-toggle"
-										data-toggle="dropdown"
-										aria-haspopup="true"
-										aria-expanded="false"
-									>
-										<span>{{statsPagination}}</span>
-										<i
-											class="fa fa-angle-down"
-											aria-hidden="true"
-										></i>
-									</button>
-									<ul class="dropdown-menu">
-										{{#each statsPaginations}}
-										<li>
-											<a
-												on-click="@this.set('statsPagination', @key)"
-												>{{this}}</a
-											>
-										</li>
-										{{/each}}
-									</ul>
-									<div class="pagination-change-page">
-										<button>
-											<img
-												width="20"
-												height="24"
-												src="{{@shared.assetsHost}}/img/statistics/left.svg"
-												loading="lazy"
-											/>
-										</button>
-										<button>
-											<img
-												width="24"
-												height="24"
-												src="{{@shared.assetsHost}}/img/statistics/right.svg"
-												loading="lazy"
-											/>
-										</button>
-									</div>
-								</div>
-							</div>
-							<div class="pagination-mobile">
-								<p>1-10 of 43</p>
-								<div class="action">
-									<button class="prew">
-										<img
-											width="20"
-											height="24"
-											src="{{@shared.assetsHost}}/img/statistics/left.svg"
-											loading="lazy"
-										/>
-									</button>
-									<div class="btn-group">
-										<button
-											type="button"
-											class="btn dropdown-toggle"
-											data-toggle="dropdown"
-											aria-haspopup="true"
-											aria-expanded="false"
-										>
-											<span>Page:</span>
-											<span>{{statsPagination}}</span>
-											<i
-												class="fa fa-angle-down"
-												aria-hidden="true"
-											></i>
-										</button>
-										<ul class="dropdown-menu">
-											{{#each statsPaginations}}
-											<li>
-												<a
-													on-click="@this.set('statsPagination', @key)"
-													>{{this}}</a
-												>
-											</li>
-											{{/each}}
-										</ul>
-									</div>
-									<button class="next">
-										<img
-											width="24"
-											height="24"
-											src="{{@shared.assetsHost}}/img/statistics/right.svg"
-											loading="lazy"
-										/>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="top-block">
-						<div class="info">
-							<h3>Top browsers</h3>
-							<div class="switch-block">
-								<label class="switch">
-									<input type="checkbox" checked>
-									<span class="slider round"></span>
-								</label>
-								<span class="name">Group browser versions</span>
-							</div>
-						</div>
-						<div class="table">
-							<div class="choosen-platform">
-								<img
-									width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/statistics/information.svg"
-									loading="lazy"
-								/>
-								<p>Choose platform below to check more data</p>
-							</div>
-							<table>
-								<tr>
-								  <th>Name</th>
-								  <th>Market share</th>
-								  <th>
-									  <div id="one">
-										Changes
-										<img
-											width="16"
-											height="16"
-											src="{{@shared.assetsHost}}/img/statistics/information.svg"
-											loading="lazy"
-										/>
-									</div>
-									<div id="two">
-										<p id="one">Compared to the previous 30 day period</p>
-									</div>
-								</th>
-								</tr>
-								{{#each topList}}
-									<tr>
-										<td>
-											<span>{{id}}</span>
-											<img
-												width="24"
-												height="24"
-												src="{{@shared.assetsHost}}{{svg}}"
-												loading="lazy"
-											/>
-											<span>{{name}}</span>
-										</td>
-										<td>{{share}}</td>
-										<td class="red">-{{changes}}</td>
-									</tr>
-								{{/each}}
-							</table>
-							<div class="pagination">
-								<p>Records 1 - 10 of 43</p>
-								<div class="btn-group">
-									<span>Show:</span>
-									<button
-										type="button"
-										class="btn dropdown-toggle"
-										data-toggle="dropdown"
-										aria-haspopup="true"
-										aria-expanded="false"
-									>
-										<span>{{statsPagination}}</span>
-										<i
-											class="fa fa-angle-down"
-											aria-hidden="true"
-										></i>
-									</button>
-									<ul class="dropdown-menu">
-										{{#each statsPaginations}}
-										<li>
-											<a
-												on-click="@this.set('statsPagination', @key)"
-												>{{this}}</a
-											>
-										</li>
-										{{/each}}
-									</ul>
-									<div class="pagination-change-page">
-										<button>
-											<img
-												width="20"
-												height="24"
-												src="{{@shared.assetsHost}}/img/statistics/left.svg"
-												loading="lazy"
-											/>
-										</button>
-										<button>
-											<img
-												width="24"
-												height="24"
-												src="{{@shared.assetsHost}}/img/statistics/right.svg"
-												loading="lazy"
-											/>
-										</button>
-									</div>
-								</div>
-							</div>
-							<div class="pagination-mobile">
-								<p>1-10 of 43</p>
-								<div class="action">
-									<button class="prew">
-										<img
-											width="20"
-											height="24"
-											src="{{@shared.assetsHost}}/img/statistics/left.svg"
-											loading="lazy"
-										/>
-									</button>
-									<div class="btn-group">
-										<button
-											type="button"
-											class="btn dropdown-toggle"
-											data-toggle="dropdown"
-											aria-haspopup="true"
-											aria-expanded="false"
-										>
-											<span>Page:</span>
-											<span>{{statsPagination}}</span>
-											<i
-												class="fa fa-angle-down"
-												aria-hidden="true"
-											></i>
-										</button>
-										<ul class="dropdown-menu">
-											{{#each statsPaginations}}
-											<li>
-												<a
-													on-click="@this.set('statsPagination', @key)"
-													>{{this}}</a
-												>
-											</li>
-											{{/each}}
-										</ul>
-									</div>
-									<button class="next">
-										<img
-											width="24"
-											height="24"
-											src="{{@shared.assetsHost}}/img/statistics/right.svg"
-											loading="lazy"
-										/>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
+					<c-top-platform-browser __ready="{{ __ready }}" type="platform"></c-top-platform-browser>
+					<c-top-platform-browser __ready="{{ __ready }}" type="browser"></c-top-platform-browser>
 				</div>
 			</div>
 		</div>
@@ -468,7 +166,7 @@
 							aria-haspopup="true"
 							aria-expanded="false"
 						>
-							<span>{{ statsPeriods[projectStatsPeriod] }}</span>
+							<span>{{ projectStatsPeriod }}</span>
 							<i
 								class="fa fa-angle-down"
 								aria-hidden="true"
@@ -480,7 +178,7 @@
 							<li>
 								<a
 									on-click="@this.set('projectStatsPeriod', @key)"
-									>{{this}}</a
+									>{{@key}}</a
 								>
 							</li>
 							{{/each}}
@@ -908,6 +606,8 @@
 <script>
 	const _ = require('../../public/js/_');
 	const tooltip = require('../../public/js/decorators/tooltip');
+	const countries = require('../../public/json/countries.json');
+
 	component.exports = {
 		data () {
 			return {
@@ -915,15 +615,14 @@
 				desc: true,
 				title: 'Usage statistics - jsDelivr',
 				name: 'd3',
+				description: 'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
 				statsPeriods: {
-					1: 'day',
-					7: 'week',
-					30: 'month',
-					365: 'year',
+					day: 1,
+					week: 7,
+					month: 30,
+					year: 365,
 				},
-				globalStatsPeriod: 30,
-				description:
-					'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
+				globalStatsPeriod: "month",
 				rateList: [
 					{ 
 						svg: '/img/statistics/cloudflare.svg',
@@ -934,33 +633,75 @@
 						svg: '/img/statistics/fastly.svg', 
 						name: 'Fastly', 
 						interest: '99.98%' 
-					}, 
-					{ 
-						svg: '/img/statistics/bunny.svg', 
-						name: 'Bunny', 
-						interest: '99.97%' 
-					}, 
+					},
 					{ 
 						svg: '/img/statistics/g-core.svg', 
 						name: 'G-Core', 
 						interest: '99.81%' 
 					}
 				],
-				networkStatsPeriod: 30,
-				topList: [{ id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }],
+				country: "",
+				networkStatsPeriod: "month",
 				statsPagination: '10',
 				statsPaginations: [ '20', '30', '40' ],
-				projectStatsPeriod: 30,
+				projectStatsPeriod: "month",
 				statsPopular: 'All types',
 				statsPopulars: [ 'All types', 'All types', 'All types' ],
 				popularProjects: [{ id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }, { id: '1', package: 'gh', name: 'prebid-universal-creative', request: '185 849 174', bandwidth: '183 849 GB', increased: '+24.45%' }],
 			};
 		},
-		decorators: {
-			tooltip,
-		},
+		// decorators: {
+		// 	tooltip,
+		// },
 		onrender () {
-			
+			let $this = this;
+			let flagIconPath = "/img/statistics/flags";
+			let options = {
+				data: countries,
+				getValue: "name",
+				list: {
+					match: {
+						enabled: true
+					},
+					maxNumberOfElements: 15,
+					onClickEvent: function() {
+						let code = $(".search").getSelectedItemData().code;
+						
+						$this.set("country", code);
+					},
+					onShowListEvent: function() {
+						$(".search").removeAttr('style');
+
+						$(".eac-item.WW").show();
+					},
+					onHideListEvent: function() {
+						let selectedCode = $this.get("country");
+						if(selectedCode) {
+							$(".search").css({
+								"background-image": `url('${flagIconPath}/${selectedCode}.svg')`,
+								"background-size": "17px"
+							})
+						}
+
+						$(".eac-item.WW").hide();
+					},
+					onMouseOutEvent: function() {
+						$(".easy-autocomplete-container li.selected").removeClass("selected");
+					}
+				},
+				template: {
+					type: "custom",
+					method: function(value, item) {
+						return `<img src="${flagIconPath}/${item.code}.svg"/>` + value;
+					}
+				},
+				theme: "round"
+			};
+
+			$(".search").easyAutocomplete(options);
+
+			// move rendered Global autocomplete item into autocomplete container after building autocomplete...
+			$(".eac-item.WW").detach().prependTo(".easy-autocomplete-container");
 		},
 		oncomplete() {
 			let el = this.find(".global_data");
@@ -973,6 +714,10 @@
   				{ threshold: [1] }
 			);
 			observer.observe(el);
+		},
+		setCountryAsGlobal() {				// set country as <Global>
+			$('.search').val('Global');
+			this.set('country', 'WW');
 		}
 	};
 </script>
