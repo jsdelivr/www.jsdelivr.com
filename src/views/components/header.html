@@ -107,8 +107,12 @@
 				],
 			};
 		},
-		onrender () {
-			this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
+		oninit () {
+			if (Ractive.isServer) {
+				this.set('actualPath', this.root.get('actualPath'));
+			} else {
+				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
+			}
 		},
 	};
 </script>

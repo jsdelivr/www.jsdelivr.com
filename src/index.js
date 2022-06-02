@@ -289,6 +289,7 @@ koaElasticUtils.addRoutes(router, [
 		repo: ctx.params.repo,
 		path: ctx.query.path,
 		scope: ctx.params.scope,
+		actualPath: ctx.path,
 	};
 
 	try {
