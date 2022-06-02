@@ -251,7 +251,7 @@
 				statsPeriodTemp: 30,
 				statsPeriod: 30,
 				versions: [],
-				link: location.href,
+				link: location?.href,
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
@@ -436,306 +436,308 @@
 			}
 		},
 		onrender () {
-			let statsChart;
-			let hitsChart;
+			if (!Ractive.isServer) {
+				let statsChart;
+				let hitsChart;
 
-			// create stats chart
-			this.observe('statsDateData usageChartGroupBy', () => {
-				let statsDateData = this.get('statsDateData');
-				let statsChartCanvasEl = this.find('#stats-chart');
+				// create stats chart
+				this.observe('statsDateData usageChartGroupBy', () => {
+					let statsDateData = this.get('statsDateData');
+					let statsChartCanvasEl = this.find('#stats-chart');
 
-				if (!statsDateData || !statsChartCanvasEl) { return; }
+					if (!statsDateData || !statsChartCanvasEl) { return; }
 
-				let array = [];
+					let array = [];
 
-				Object.keys(statsDateData.dates).forEach((date) => {
-					array.push([ date, statsDateData.dates[date] ]);
-				});
+					Object.keys(statsDateData.dates).forEach((date) => {
+						array.push([ date, statsDateData.dates[date] ]);
+					});
 
-				array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
 
-				if (statsChart) {
-					statsChart.destroy();
-					statsChart = null;
-				}
-
-				let usageChartGroupBy = this.get('usageChartGroupBy');
-				let groupBy = { day: 1, week: 7, month: 30, year: 365 };
-				let groupedDayCount = groupBy[usageChartGroupBy];
-
-				let countDay = 0;
-				let xAxisDates = [];
-				array.forEach((value) => {
-					countDay++;
-
-					if (countDay % groupedDayCount === 0) {
-						countDay = 0;
-						xAxisDates.push(value[0]);
+					if (statsChart) {
+						statsChart.destroy();
+						statsChart = null;
 					}
-				});
 
-				let groupData = [];
-				let tempData = 0;
-				countDay = 0;
-				let showChartBandwidth = this.get('showChartBandwidth');
-				let tempGB = 1;
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
+					let groupedDayCount = groupBy[usageChartGroupBy];
 
-				if (showChartBandwidth) {
-					tempGB = 1e9;
-				}
+					let countDay = 0;
+					let xAxisDates = [];
+					array.forEach((value) => {
+						countDay++;
 
-				Object.keys(statsDateData.dates).forEach((date) => {
-					countDay++;
-					tempData += statsDateData.dates[date].total;
+						if (countDay % groupedDayCount === 0) {
+							countDay = 0;
+							xAxisDates.push(value[0]);
+						}
+					});
 
-					if (countDay >= groupedDayCount) {
-						groupData.push(Math.round(tempData / tempGB));
-						countDay = 0; tempData = 0;
+					let groupData = [];
+					let tempData = 0;
+					countDay = 0;
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let tempGB = 1;
+
+					if (showChartBandwidth) {
+						tempGB = 1e9;
 					}
-				});
 
-				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(Math.min(...groupData), 'floor');
-				let maxRangeValue = _.getValueByMagnitude(Math.max(...groupData), 'ceil', 1);
+					Object.keys(statsDateData.dates).forEach((date) => {
+						countDay++;
+						tempData += statsDateData.dates[date].total;
 
-				let chartData = {
-					labels: _.getChartXAxisData(xAxisDates, chartPeriod, usageChartGroupBy),
-					datasets: [{
-						data: groupData,
-						borderWidth: 0,
-						barThickness: xAxisDates.length < 20 ? 10 : xAxisDates.length < 60 ? 5 : 2,
-						hoverBackgroundColor: '#F65128',
-					}],
-				};
-				let chartSettings = {
-					useYAxisBorderPlugin: true,
-					useExternalTooltip: true,
-					externalTooltipVerticalOffset: 40,
-				};
-				let chartConfig = {
-					options: {
-						scales: {
-							x: {
-								display: true,
-								ticks: {
-									color: '#5C667A',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-										lineHeight: 2,
-									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+						if (countDay >= groupedDayCount) {
+							groupData.push(Math.round(tempData / tempGB));
+							countDay = 0; tempData = 0;
+						}
+					});
 
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												return [ labelValue[1], labelValue[2] ];
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let yAxisTicksAmount = 8;
+					let minRangeValue = _.getValueByMagnitude(Math.min(...groupData), 'floor');
+					let maxRangeValue = _.getValueByMagnitude(Math.max(...groupData), 'ceil', 1);
+
+					let chartData = {
+						labels: _.getChartXAxisData(xAxisDates, chartPeriod, usageChartGroupBy),
+						datasets: [{
+							data: groupData,
+							borderWidth: 0,
+							barThickness: xAxisDates.length < 20 ? 10 : xAxisDates.length < 60 ? 5 : 2,
+							hoverBackgroundColor: '#F65128',
+						}],
+					};
+					let chartSettings = {
+						useYAxisBorderPlugin: true,
+						useExternalTooltip: true,
+						externalTooltipVerticalOffset: 40,
+					};
+					let chartConfig = {
+						options: {
+							scales: {
+								x: {
+									display: true,
+									ticks: {
+										color: '#5C667A',
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+											lineHeight: 2,
+										},
+										callback (tickIdx) {
+											let labelValue = this.getLabelForValue(tickIdx);
+											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+											if (chartPeriod === 'year') {
+												if (labelValue[2]) {
+													return [ labelValue[1], labelValue[2] ];
+												}
+
+												return;
 											}
 
-											return;
-										}
+											if (Array.isArray(labelValue)) {
+												return [ day, labelValue[1] ];
+											}
 
-										if (Array.isArray(labelValue)) {
-											return [ day, labelValue[1] ];
-										}
-
-										return [ day ];
+											return [ day ];
+										},
+									},
+									grid: {
+										display: false,
+										drawBorder: false,
 									},
 								},
-								grid: {
-									display: false,
-									drawBorder: false,
-								},
-							},
-							y: {
-								display: true,
-								min: minRangeValue,
-								max: maxRangeValue,
-								ticks: {
-									count: yAxisTicksAmount,
-									color: '#5C667A',
-									crossAlign: 'near',
-									padding: 22,
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
+								y: {
+									display: true,
+									min: minRangeValue,
+									max: maxRangeValue,
+									ticks: {
+										count: yAxisTicksAmount,
+										color: '#5C667A',
+										crossAlign: 'near',
+										padding: 22,
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+										},
+										callback (tickIdx) {
+											let labelValue = this.getLabelForValue(tickIdx);
+											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
+										},
 									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
+									grid: {
+										display: false,
+										drawBorder: false,
 									},
-								},
-								grid: {
-									display: false,
-									drawBorder: false,
 								},
 							},
 						},
-					},
-				};
-
-				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
-
-			// create hits chart
-			this.observe('hitsData', (hitsData) => {
-				let hitsChartCanvasEl = this.find('#hits-chart');
-
-				if (!hitsData || !hitsChartCanvasEl) { return; }
-
-				let array = [];
-
-				Object.keys(hitsData.versions).forEach((key) => {
-					array.push({
-						version: key,
-						hits: hitsData.versions[key].total,
-						dates: hitsData.versions[key].dates,
-					});
-				});
-
-				let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-				this.animate('versionsHitsTotal', hitsData.total);
-				this.animate('topFiveVersions', topFiveVersions);
-
-				// Maybe we have no stats yet.
-				if (array[0]) {
-					this.set('fileStatsVersion', array[0].version);
-				}
-
-				if (hitsChart) {
-					hitsChart.destroy();
-					hitsChart = null;
-				}
-
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(
-					Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates).filter(v => v !== 0)))),
-					'floor'
-				);
-				let maxRangeValue = _.getValueByMagnitude(
-					Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
-					'ceil',
-					1
-				);
-				let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
-					let dataset = {
-						label: `v${tfvItem.version}`,
-						data: Object.values(tfvItem.dates),
 					};
 
-					switch (idx) {
-						case 0:
-							dataset.borderColor = '#5C667A';
-							dataset.backgroundColor = '#5C667A';
-							break;
-						case 1:
-							dataset.borderColor = '#BC5090';
-							dataset.backgroundColor = '#BC5090';
-							break;
-						case 2:
-							dataset.borderColor = '#FFA600';
-							dataset.backgroundColor = '#FFA600';
-							break;
-						case 3:
-							dataset.borderColor = '#FF6361';
-							dataset.backgroundColor = '#FF6361';
-							break;
-						case 4:
-							dataset.borderColor = '#69C4F7';
-							dataset.backgroundColor = '#69C4F7';
-							break;
+					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+				});
+
+				// create hits chart
+				this.observe('hitsData', (hitsData) => {
+					let hitsChartCanvasEl = this.find('#hits-chart');
+
+					if (!hitsData || !hitsChartCanvasEl) { return; }
+
+					let array = [];
+
+					Object.keys(hitsData.versions).forEach((key) => {
+						array.push({
+							version: key,
+							hits: hitsData.versions[key].total,
+							dates: hitsData.versions[key].dates,
+						});
+					});
+
+					let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
+
+					this.animate('versionsHitsTotal', hitsData.total);
+					this.animate('topFiveVersions', topFiveVersions);
+
+					// Maybe we have no stats yet.
+					if (array[0]) {
+						this.set('fileStatsVersion', array[0].version);
 					}
 
-					datasets.push(dataset);
+					if (hitsChart) {
+						hitsChart.destroy();
+						hitsChart = null;
+					}
 
-					return datasets;
-				}, []);
-				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-				let chartData = {
-					labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
-					datasets,
-				};
-				let chartSettings = {
-					useExternalTooltip: true,
-				};
-				let chartConfig = {
-					options: {
-						scales: {
-							x: {
-								display: true,
-								// offset: true,
-								ticks: {
-									color: '#5C667A',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-										lineHeight: 2,
-									},
-									// whole callback needed to prepare dates for displaying on the x-axis
-									// since we need only the day and not full date (which we must to pass here for the tooltip title)
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										// check if it is not contains only a date but also a month
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+					let yAxisTicksAmount = 8;
+					let minRangeValue = _.getValueByMagnitude(
+						Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates).filter(v => v !== 0)))),
+						'floor'
+					);
+					let maxRangeValue = _.getValueByMagnitude(
+						Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
+						'ceil',
+						1
+					);
+					let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+						let dataset = {
+							label: `v${tfvItem.version}`,
+							data: Object.values(tfvItem.dates),
+						};
 
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												return [ labelValue[1], labelValue[2] ];
+						switch (idx) {
+							case 0:
+								dataset.borderColor = '#5C667A';
+								dataset.backgroundColor = '#5C667A';
+								break;
+							case 1:
+								dataset.borderColor = '#BC5090';
+								dataset.backgroundColor = '#BC5090';
+								break;
+							case 2:
+								dataset.borderColor = '#FFA600';
+								dataset.backgroundColor = '#FFA600';
+								break;
+							case 3:
+								dataset.borderColor = '#FF6361';
+								dataset.backgroundColor = '#FF6361';
+								break;
+							case 4:
+								dataset.borderColor = '#69C4F7';
+								dataset.backgroundColor = '#69C4F7';
+								break;
+						}
+
+						datasets.push(dataset);
+
+						return datasets;
+					}, []);
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let chartData = {
+						labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
+						datasets,
+					};
+					let chartSettings = {
+						useExternalTooltip: true,
+					};
+					let chartConfig = {
+						options: {
+							scales: {
+								x: {
+									display: true,
+									// offset: true,
+									ticks: {
+										color: '#5C667A',
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+											lineHeight: 2,
+										},
+										// whole callback needed to prepare dates for displaying on the x-axis
+										// since we need only the day and not full date (which we must to pass here for the tooltip title)
+										callback (tickIdx) {
+											let labelValue = this.getLabelForValue(tickIdx);
+											// check if it is not contains only a date but also a month
+											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+											if (chartPeriod === 'year') {
+												if (labelValue[2]) {
+													return [ labelValue[1], labelValue[2] ];
+												}
+
+												return;
 											}
 
-											return;
-										}
+											if (Array.isArray(labelValue)) {
+												return [ day, labelValue[1] ];
+											}
 
-										if (Array.isArray(labelValue)) {
-											return [ day, labelValue[1] ];
-										}
-
-										return [ day ];
+											return [ day ];
+										},
+									},
+									grid: {
+										display: false,
+										drawBorder: false,
 									},
 								},
-								grid: {
-									display: false,
-									drawBorder: false,
-								},
-							},
-							y: {
-								display: true,
-								min: minRangeValue,
-								max: maxRangeValue,
-								ticks: {
-									count: yAxisTicksAmount,
-									color: '#5C667A',
-									crossAlign: 'near',
-									padding: 48,
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
+								y: {
+									display: true,
+									min: minRangeValue,
+									max: maxRangeValue,
+									ticks: {
+										count: yAxisTicksAmount,
+										color: '#5C667A',
+										crossAlign: 'near',
+										padding: 48,
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+										},
+										callback (tickIdx) {
+											let labelValue = this.getLabelForValue(tickIdx);
+											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
+										},
 									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
+									grid: {
+										drawBorder: false,
+										color: '#CFD6DD',
+										tickLength: 0,
 									},
-								},
-								grid: {
-									drawBorder: false,
-									color: '#CFD6DD',
-									tickLength: 0,
-								},
-								afterFit: (scale) => {
-									scale.width = 114;
+									afterFit: (scale) => {
+										scale.width = 114;
+									},
 								},
 							},
 						},
-					},
-				};
+					};
 
-				// console.log('hits chartData : ', chartData);
+					// console.log('hits chartData : ', chartData);
 
-				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
+					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+				});
+			}
 		},
 		changeStatsPeriod (strKey) {
 			this.set('statsPeriodTemp', strKey);

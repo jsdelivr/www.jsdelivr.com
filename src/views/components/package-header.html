@@ -461,104 +461,108 @@
 			},
 		},
 		oninit () {
-			if (this.get('type') === 'npm' && !this.get('onlyHeader')) {
-				this.observe('version', (newValue) => {
+			if (!Ractive.isServer) {
+				if (this.get('type') === 'npm' && !this.get('onlyHeader')) {
+					this.observe('version', (newValue) => {
+						if (newValue) {
+							http.fetchPackageVulnerabilities(this.get('name'), newValue).then((data) => {
+								this.set('vulnerabilities', data.vulns);
+								this.set('vulnerabilitiesUrl', data.url);
+							}).catch((error) => {
+								this.set('vulnerabilities', undefined);
+								console.error('Failed to fetch vulnerability info', error);
+							});
+						}
+					});
+				}
+
+				this.observe('packageVersionsNotFound', (newValue) => {
 					if (newValue) {
-						http.fetchPackageVulnerabilities(this.get('name'), newValue).then((data) => {
-							this.set('vulnerabilities', data.vulns);
-							this.set('vulnerabilitiesUrl', data.url);
-						}).catch((error) => {
-							this.set('vulnerabilities', undefined);
-							console.error('Failed to fetch vulnerability info', error);
+						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
+							this.set('latestCommitSha', data[0] && data[0].sha);
 						});
 					}
 				});
-			}
 
-			this.observe('packageVersionsNotFound', (newValue) => {
-				if (newValue) {
-					http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-						this.set('latestCommitSha', data[0] && data[0].sha);
-					});
-				}
-			});
-
-			this.observe('selectedVersion', () => {
-				if (this.get('onlyHeader')) {
-					return;
-				}
-
-				let installPackageVersion = '';
-				let selectedVersion = this.get('selectedVersion');
-				let packageName = this.get('name');
-				let packageVersion = this.get('version');
-				let packageType = this.get('type');
-
-				if (selectedVersion === 'Static') {
-					installPackageVersion = packageVersion;
-				} else if (selectedVersion === 'Major') {
-					installPackageVersion = packageVersion.split('.')[0];
-				} else if (selectedVersion === 'Minor') {
-					installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
-				} else {
-					installPackageVersion = 'latest';
-				}
-
-				http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
-					let packageJsEntrypoint = '';
-					let packageCssEntrypoint = '';
-
-					if (data.js) {
-						packageJsEntrypoint = data.js.file;
-						this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
-						this.set('packageJsEntrypoint', packageJsEntrypoint);
+				this.observe('selectedVersion', () => {
+					if (this.get('onlyHeader')) {
+						return;
 					}
 
-					if (data.css) {
-						packageCssEntrypoint = data.css.file;
-						this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
-						this.set('packageCssEntrypoint', packageCssEntrypoint);
+					let installPackageVersion = '';
+					let selectedVersion = this.get('selectedVersion');
+					let packageName = this.get('name');
+					let packageVersion = this.get('version');
+					let packageType = this.get('type');
+
+					if (selectedVersion === 'Static') {
+						installPackageVersion = packageVersion;
+					} else if (selectedVersion === 'Major') {
+						installPackageVersion = packageVersion.split('.')[0];
+					} else if (selectedVersion === 'Minor') {
+						installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
+					} else {
+						installPackageVersion = 'latest';
 					}
 
-					this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
+					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
+						let packageJsEntrypoint = '';
+						let packageCssEntrypoint = '';
 
-					http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
-						if (packageJsEntrypoint) {
-							data.files.forEach((file) => {
-								if (file.name === this.get('packageJsEntrypoint')) {
-									this.set('packageJsHash', file.hash);
-								}
-							});
+						if (data.js) {
+							packageJsEntrypoint = data.js.file;
+							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
+							this.set('packageJsEntrypoint', packageJsEntrypoint);
 						}
 
-						if (packageCssEntrypoint) {
-							data.files.forEach((file) => {
-								if (file.name === this.get('packageCssEntrypoint')) {
-									this.set('packageCssHash', file.hash);
-								}
-							});
+						if (data.css) {
+							packageCssEntrypoint = data.css.file;
+							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
+							this.set('packageCssEntrypoint', packageCssEntrypoint);
 						}
+
+						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
+
+						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
+							if (packageJsEntrypoint) {
+								data.files.forEach((file) => {
+									if (file.name === this.get('packageJsEntrypoint')) {
+										this.set('packageJsHash', file.hash);
+									}
+								});
+							}
+
+							if (packageCssEntrypoint) {
+								data.files.forEach((file) => {
+									if (file.name === this.get('packageCssEntrypoint')) {
+										this.set('packageCssHash', file.hash);
+									}
+								});
+							}
+						});
 					});
 				});
-			});
 
-			this.observe('package.moduleTypes', (value) => {
-				if (
-					this.get('onlyHeader') !== true
-					&& (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1)
-				) {
-					this.set('isDefaultPackage', false);
-				}
-			});
+				this.observe('package.moduleTypes', (value) => {
+					if (
+						this.get('onlyHeader') !== true
+						&& (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1)
+					) {
+						this.set('isDefaultPackage', false);
+					}
+				});
 
-			this.observe('mobileSettingsVisible', (newValue) => {
-				const body = document.querySelector('body');
-				if (newValue === true) {
-					body.classList.add('noscroll');
-				} else {
-					body.classList.remove('noscroll');
-				}
-			})
+				this.observe('mobileSettingsVisible', (newValue) => {
+					const body = document.querySelector('body');
+					if (newValue === true) {
+						body.classList.add('noscroll');
+					} else {
+						body.classList.remove('noscroll');
+					}
+				})
+
+			}
+
 
 
 		},
