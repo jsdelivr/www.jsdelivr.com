@@ -299,6 +299,7 @@ koaElasticUtils.addRoutes(router, [
 
 		if (data.package) {
 			data.description = `A free, fast, and reliable CDN for ${data.name}. ${data.package.description}`;
+			data.package.readme = data.package.readme || ' ';
 		}
 	} catch {}
 
