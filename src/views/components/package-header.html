@@ -265,9 +265,9 @@
 						<div class="switch-wrapper">
 							<span>Type:</span>
 							<input id="switch-id" type="checkbox" twoway="false"
-								class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+								class="switch-input {{#if isDefaultPackageTmp}}checked{{/if}}">
 
-							<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
+							<label for="switch-id" on-click="@this.set('isDefaultPackageTmp', !isDefaultPackageTmp)">
 								<span>ESM</span>
 								<span>Default</span>
 							</label>
@@ -277,20 +277,20 @@
 							<div class="btn-group">
 								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
 									aria-expanded="false">
-									<span>{{~/selectedVersion}}</span>
+									<span>{{~/selectedVersionTmp}}</span>
 									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 								</button>
 
 								<ul class="dropdown-menu">
 									{{#each ~/versionsList}}
-									<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+									<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
 									{{/each}}
 								</ul>
 							</div>
 						</div>
 
-						<button class="btn-primary" on-click="@this.set('mobileSettingsVisible', false)">Apply</button>
-						<button class="btn-secondary" on-click="@this.set('mobileSettingsVisible', false)">Cancel</button>
+						<button class="btn-primary" on-click="@this.onClickMobileApply()">Apply</button>
+						<button class="btn-secondary" on-click="@this.onClickMobileCancel()">Cancel</button>
 					</div>
 					{{/if}}
 				</div>
@@ -559,13 +559,21 @@
 					} else {
 						body.classList.remove('noscroll');
 					}
-				})
-
+				});
 			}
-
-
-
 		},
+
+		onClickMobileApply () {
+			this.set('isDefaultPackage', this.get('isDefaultPackageTmp'));
+			this.set('selectedVersion', this.get('selectedVersionTmp'));
+			this.set('mobileSettingsVisible', false);
+		},
+		onClickMobileCancel () {
+			this.set('isDefaultPackageTmp', this.get('isDefaultPackage'));
+			this.set('selectedVersionTmp', this.get('selectedVersion'));
+			this.set('mobileSettingsVisible', false);
+		},
+
 		data () {
 			return {
 				_,
@@ -577,10 +585,12 @@
 				],
 				isDefaultPackage: true,
 				selectedVersion: 'Static',
+				isDefaultPackageTmp: true,
+				selectedVersionTmp: 'Static',
 				buildIntegrity,
 				canBuildHtml,
 				buildHtml,
-				mobileSettingsVisible: false
+				mobileSettingsVisible: false,
 			};
 		},
 		decorators: {
