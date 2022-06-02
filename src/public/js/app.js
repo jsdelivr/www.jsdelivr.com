@@ -98,6 +98,7 @@ app.router.addRoute('/custom-cdn-oss/:name', cCustomCdnOssProject);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 _.onDocumentReady(() => {
+	let state = {};
 	let ractive = new Ractive();
 	ractive.set('@shared.app', app);
 
@@ -118,8 +119,12 @@ _.onDocumentReady(() => {
 		}
 	} catch (e) {}
 
+	try {
+		state = JSON.parse(unescape(document.querySelector('#ractive-data').innerHTML.trim()));
+	} catch (e) {}
+
 	app.router
-		.init({ noScroll: true })
+		.init({ noScroll: true, state })
 		.watchLinks()
 		.watchState();
 });
