@@ -251,7 +251,6 @@
 				statsPeriodTemp: 30,
 				statsPeriod: 30,
 				versions: [],
-				link: location?.href,
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
@@ -271,6 +270,8 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.set('link', this.get('@global.location.href'));
+
 				// Load package versions.
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('versions', data.versions);
