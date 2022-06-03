@@ -139,14 +139,34 @@
 				this.observe('inputFocused', (value) => {
 					if (value) {
 						this.set('searchOpened', true);
-					} else if (!this.find('.search-input').value) {
-						this.set('query', this.get('initialValue'));
+					} else {
+						$('.c-package-header-wrapper.selected').removeClass('selected');
+
+						if (!this.find('.search-input').value) {
+							this.set('query', this.get('initialValue'));
+						}
 					}
 				});
 			}
 		},
 		onKeyDown (e) {
-			if (e.key === 'Enter') {
+			let $list = this.find('.c-search-compact-wrapper');
+			let $selected = $list.find('.c-package-header-wrapper.selected');
+
+			if (e.key === 'ArrowDown') {
+				if (!$selected.length || !$selected.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					$list.find('.c-package-header-wrapper').first().addClass('selected');
+				}
+			} else if (e.key === 'ArrowUp') {
+				if (!$selected.length || !$selected.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					$list.find('.c-package-header-wrapper').last().addClass('selected');
+				}
+			} else if (e.key === 'Enter') {
+				if ($selected.length) {
+					app.router.dispatch(`/package/npm/${$selected.find('.package-name').text()}`);
+					return;
+				}
+
 				this.goTo(this.get('query'));
 			}
 		},
