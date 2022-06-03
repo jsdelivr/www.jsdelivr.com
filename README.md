@@ -6,7 +6,7 @@ Related projects:
 
 ## Web performance
 
-We use [SpeedCurve](https://www.speedcurve.com/) to track the performance of our website. All data and dashboards are public. 
+We use [SpeedCurve](https://www.speedcurve.com/) to track the performance of our website. All data and dashboards are public.
 We invite everyone to analyze it and send us PRs to help us improve the performance of our website.
 
 We track 2 of our web pages, the homepage and a package page and benchmark them 3 times per day. You begin be checking the following dashboards:
@@ -22,7 +22,7 @@ The website uses [Ractive.js](https://ractive.js.org/), [ractive-route](https://
 
 ```
 $ npm install
-$ node src
+$ npm run start
 ```
 
 Configuration for IntelliJ based IDEs is also available in this repository. If you use one, it is a good idea to add https://github.com/MartinKolarik/idea-config as a [read-only settings repository](https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#share-more-settings-through-read-only-repo). It contains code style and inspection profiles used by this project.
@@ -33,7 +33,7 @@ Configuration for IntelliJ based IDEs is also available in this repository. If y
  - CSS code style: `npm run lint:css`
  - Integration tests: `npm run mocha`
  - All combined: `npm test`
- 
+
  Most IDEs have plugins integrating the used linters (eslint, stylelint), including support for automated fixes on save.
 
 ### Contributing
