@@ -289,9 +289,9 @@ koaElasticUtils.addRoutes(router, [
 		name: ctx.params.name,
 		user: ctx.params.user,
 		repo: ctx.params.repo,
-		path: ctx.query.path,
 		scope: ctx.params.scope,
 		actualPath: ctx.path,
+		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'nav' ]),
 	};
 
 	try {
@@ -348,7 +348,7 @@ koaElasticUtils.addRoutes(router, [
 	[ '/(.*)', '/(.*)' ],
 ], async (ctx) => {
 	let data = {
-		docs: ctx.query.docs,
+		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style' ]),
 	};
 
 	try {

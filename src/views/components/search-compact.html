@@ -3,7 +3,7 @@
 <div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" on-keydown="@this.onKeyDown(@event)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 	</div>
 
 	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
@@ -144,6 +144,15 @@
 					}
 				});
 			}
+		},
+		onKeyDown (e) {
+			if (e.key === 'Enter') {
+				this.goTo(this.get('query'));
+			}
+		},
+		goTo (query) {
+			app.router.dispatch(`/?query=${encodeURIComponent(query)}`, { state: { caretPosition: this.find('.search-input').selectionStart } });
+			scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
 		},
 		scrollToSearch () {
 			scrollTo({

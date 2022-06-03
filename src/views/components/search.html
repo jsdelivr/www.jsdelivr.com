@@ -15,13 +15,13 @@
 				<div class="filter-by">
 					<span>Filter for: </span>
 					<button class="btn-esm {{ #if type === 'esm' }}active{{ /if }}"
-							on-click="@this.onFilterItemClick('esm')">ESM</button>
+							on-click="@this.setTypeFilter('esm')">ESM</button>
 					<button class="btn-cjs {{ #if type === 'cjs' }}active{{ /if }}"
-							on-click="@this.onFilterItemClick('cjs')">CJS</button>
+							on-click="@this.setTypeFilter('cjs')">CJS</button>
 					<button class="btn-js {{ #if type === 'js' }}active{{ /if }}"
-							on-click="@this.onFilterItemClick('js')">JS</button>
+							on-click="@this.setTypeFilter('js')">JS</button>
 					<button class="btn-styles {{ #if style === 'styles' }}active{{ /if }}"
-							on-click="@this.onFilterItemClick('styles')">Styles</button>
+							on-click="@this.setStyleFilter('styles')">Styles</button>
 				</div>
 			{{ /if }}
 		</div>
@@ -168,21 +168,18 @@
 				});
 			}
 		},
-		onFilterItemClick( filterBy ) {
-			let activeType = this.get('type');
-			let activeStyle = this.get('style');
-
-			if(activeType === filterBy)
+		setTypeFilter (filterBy) {
+			if (filterBy === this.get('type')) {
 				this.set('type', '');
-			else if(activeStyle === filterBy)
-				this.set('style', '');
-			else if(filterBy === 'styles') {
-				this.set('type', '');
-				this.set('style', 'styles');
-			}
-			else {
+			} else {
 				this.set('type', filterBy);
+			}
+		},
+		setStyleFilter (filterBy) {
+			if (filterBy === this.get('style')) {
 				this.set('style', '');
+			} else {
+				this.set('style', filterBy);
 			}
 		},
 		scrollToSearch () {

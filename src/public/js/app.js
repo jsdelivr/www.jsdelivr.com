@@ -67,7 +67,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	return this;
 };
 
-app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query', 'type', 'style' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
 app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
@@ -80,8 +80,8 @@ app.router.addRoute('/become-a-sponsor', cBecomeASponsor);
 app.router.addRoute('/network', cNetwork);
 app.router.addRoute('/network/infographic', cNetworkInfographic);
 app.router.addRoute('/new-jsdelivr', cNewJsdelivr);
-app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version' ] });
-app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
 app.router.addRoute('/sponsors', cSponsors);
 app.router.addRoute('/statistics', cStatistics);
 app.router.addRoute('/tools/debug', cDebug);

@@ -37,7 +37,7 @@
 					There might be a problem with your internet connection. Try refreshing the page a few times.<br>
 				</div>
 				{{elseif package}}
-				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{packageName}}" packageNotFound="{{packageNotFound}}"></c-package>
+				<c-package type="{{type}}" name="{{name}}" path="{{pathA}}" package="{{package}}" versionP="{{versionP}}" collection="{{collection}}" query="{{packageName}}" packageNotFound="{{packageNotFound}}" navRoute="{{navRoute}}"></c-package>
 				{{/if}}
 			</c-slide>
 
@@ -57,6 +57,14 @@
 
 	component.exports = {
 		computed: {
+			nav: {
+				get () {
+					return this.get('navRoute') !== 'readme' ? this.get('navRoute') : '';
+				},
+				set (value = 'readme') {
+					this.set('navRoute', value);
+				},
+			},
 			path: {
 				get () {
 					return this.get('pathA').join('/');
