@@ -302,7 +302,7 @@
 					{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
 						<span class="script-tag">&#60;script src="</span>
-						<span class="script-text">{{~/installScriptSrc}}</span>
+						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installScriptSrc}}</span>
 						<span class="script-tag">"&#62;&#60;/script&#62;</span>
 						<div class="btn-group">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -316,7 +316,6 @@
 										Copy URL
 									</a>
 								</li>
-
 								{{#if ~/packageJsHash}}
 								<li>
 									<a as-clipboard="'Copy SRI to clipboard', 'right'"
@@ -350,7 +349,7 @@
 					{{#if ~/packageCssEntrypoint}}
 					<div class="script-wrapper-default">
 						<span class="script-tag">&#60;link href="</span>
-						<span class="script-text">{{~/installLinkHref}}</span>
+						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installLinkHref}}</span>
 						<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
 						<div class="btn-group">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -398,13 +397,35 @@
 						<span class="script-tag">&#60;script type="module"&#62;</span>
 						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
 						<span class="script-tag">&#60;/script&#62;</span>
+						<div class="btn-group">
+							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
+							</button>
+
+							<ul class="dropdown-menu">
+								<li>
+									<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installEsmSrc}}">
+										Copy URL
+									</a>
+								</li>
+								{{#if canBuildHtml(~/installEsmSrc)}}
+								<li>
+									<a as-clipboard="'Copy HTML to clipboard', 'right'"
+										data-clipboard-text="{{buildHtml(~/installEsmSrc, '', name)}}">
+										Copy HTML
+									</a>
+								</li>
+								{{/if}}
+							</ul>
+						</div>
 					</div>
 					{{/if}}
 				</div>
 
 				<div class="horizontal-divider-19"></div>
 
-				{{#if isDefaultPackage}}
+				{{#if isGuessedFile}}
 				<div class="install-default-warning">
 					URL is guessed and might not be correct.
 					<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM
@@ -508,19 +529,29 @@
 					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
 						let packageJsEntrypoint = '';
 						let packageCssEntrypoint = '';
+						let isGuessedFile = false;
 
 						if (data.js) {
+							if (data.js.guessed) {
+								isGuessedFile = true;
+							}
+
 							packageJsEntrypoint = data.js.file;
 							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
 							this.set('packageJsEntrypoint', packageJsEntrypoint);
 						}
 
 						if (data.css) {
+							if (data.css.guessed) {
+								isGuessedFile = true;
+							}
+
 							packageCssEntrypoint = data.css.file;
 							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
 							this.set('packageCssEntrypoint', packageCssEntrypoint);
 						}
 
+						this.set('isGuessedFile', isGuessedFile);
 						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
 
 						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
@@ -553,7 +584,8 @@
 				});
 
 				this.observe('mobileSettingsVisible', (newValue) => {
-					const body = document.querySelector('body');
+					let body = document.querySelector('body');
+
 					if (newValue === true) {
 						body.classList.add('noscroll');
 					} else {
@@ -587,6 +619,7 @@
 				selectedVersion: 'Static',
 				isDefaultPackageTmp: true,
 				selectedVersionTmp: 'Static',
+				isGuessedFile: false,
 				buildIntegrity,
 				canBuildHtml,
 				buildHtml,
