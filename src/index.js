@@ -27,6 +27,7 @@ const express = require('express');
 const Koa = require('koa');
 const koaStatic = require('koa-static');
 const koaFavicon = require('koa-favicon');
+const koaLivereload = require('koa-livereload');
 const koaResponseTime = require('koa-response-time');
 const koaConditionalGet = require('koa-conditional-get');
 const koaCompress = require('koa-compress');
@@ -45,8 +46,6 @@ const path = require('path');
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
-const rollup = require('./middleware/rollup');
-const less = require('./middleware/less');
 const ogImage = require('./middleware/open-graph');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
@@ -109,31 +108,33 @@ app.use(async (ctx, next) => {
 });
 
 /**
- * On-demand less compilation.
+ * Livereload support during development.
  */
-app.use(less('/css', {
-	files: __dirname + '/public/less/',
-	cache: app.env !== 'development',
-	minify: app.env !== 'development',
-	assetsVersion,
-}));
-
-/**
- * On-demand js compilation.
- */
-app.use(rollup('/js', {
-	files: __dirname + '/public/js/',
-	cache: app.env !== 'development',
-	minify: app.env !== 'development',
-	assetsVersion,
-}));
+if (app.env === 'development') {
+	app.use(koaLivereload());
+}
 
 /**
  * Static files.
  */
-app.use(koaStatic(__dirname + '/public', {
-	maxage: 365 * 24 * 60 * 60 * 1000,
+app.use(async (ctx, next) => {
+	if (app.env !== 'development' && ctx.query.v === assetsVersion) {
+		ctx.res.allowCaching = true;
+	}
+
+	return next();
+});
+
+app.use(koaStatic(__dirname + '/../dist', {
 	index: false,
+	maxage: 365 * 24 * 60 * 60 * 1000,
+	setHeaders (res) {
+		if (res.allowCaching) {
+			res.set('Cache-Control', 'public, max-age=31536000');
+		} else {
+			res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+		}
+	},
 }));
 
 /**
@@ -231,11 +232,10 @@ koaElasticUtils.addRoutes(router, [
  * terms pages
  */
 koaElasticUtils.addRoutes(router, [
-	['terms', '/terms/:currentPolicy']
+	[ 'terms', '/terms/:currentPolicy' ],
 ], async (ctx) => {
-	
 	let data = {
-		currentPolicy: ctx.params.currentPolicy
+		currentPolicy: ctx.params.currentPolicy,
 	};
 
 	try {
