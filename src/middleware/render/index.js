@@ -29,7 +29,7 @@ module.exports = (options) => {
 			component.set('@shared.assetsVersion', options.assetsVersion);
 			component.set('@shared.options', ctx.options);
 			component.set('@shared.router', ctx.router);
-			let html = component.toHtml().replace('<<RACTIVE_SERIALIZED_DATA>>', escape(JSON.stringify(data)));
+			let html = component.toHtml().replace('<<RACTIVE_SERIALIZED_DATA>>', () => escape(JSON.stringify(data)));
 
 			component.teardown();
 
