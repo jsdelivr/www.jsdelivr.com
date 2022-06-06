@@ -81,8 +81,6 @@
 				let offsetTop = pageYOffset;
 				scrollTo(0, offsetTop);
 
-				this.set('initialValue', this.get('query'));
-
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page'), 5).then((result) => {
@@ -138,13 +136,9 @@
 
 				this.observe('inputFocused', (value) => {
 					if (value) {
-						this.set('searchOpened', true);
+						this.set('searchOpened', !!this.get('query'));
 					} else {
 						$('.c-package-header-wrapper.selected').removeClass('selected');
-
-						if (!this.find('.search-input').value) {
-							this.set('query', this.get('initialValue'));
-						}
 					}
 				});
 			}
