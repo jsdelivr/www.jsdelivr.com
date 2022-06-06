@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="table">
-        <div class="choosen-platform">
+        <div class="chosen-platform">
             {{ #if !selectedItem }}
                 <img
                     width="20"
@@ -20,8 +20,25 @@
                 />
                 <p>Choose {{ type }} below to check more data</p>
             {{ else }}
-                <div>
-                    {{ selectedItem }}
+                <div class="selected">
+                    <div class="chosen-name">
+                        <img
+                            class="chevron-left-btn"
+                            src="{{@shared.assetsHost}}/img/statistics/left.svg"
+                            loading="lazy"
+                            on-click="@this.set('selectedItem', '')"
+                        />
+                        {{ #if selectedItem.icon }}
+                            <img
+                                class="icon"
+                                width="24"
+                                height="24"
+                                src="{{@shared.assetsHost}}/img/statistics{{selectedItem.icon}}"
+                                loading="lazy"
+                            />
+                        {{ /if }}
+                        {{ selectedItem.name }} ({{ selectedItem.share }}% global shares)
+                    </div>
                     <div class="btn-group">
                         <button
                             type="button"
@@ -53,42 +70,52 @@
         </div>
         <table>
             <tr>
-              <th>Name</th>
-              <th>Market share</th>
-              <th>
-                <div class="table-header">
-                    Changes
-                    <img
-                        width="16"
-                        height="16"
-                        src="{{@shared.assetsHost}}/img/statistics/information.svg"
-                        loading="lazy"
-                    />
-                    <div class="header-tooltip">
-                        <span>Compared to the previous 30 day period</span>
-                    </div>
-                </div>
-            </th>
-            </tr>
-            {{#each topList}}
-                <tr>
-                    <td>
-                        <span>{{ @index }}</span>
+                <th>Name</th>
+                <th>Market share</th>
+                <th>
+                    <div class="table-header">
+                        Changes
                         <img
-                            width="24"
-                            height="24"
-                            src="{{@shared.assetsHost}}{{svg}}"
+                            width="16"
+                            height="16"
+                            src="{{@shared.assetsHost}}/img/statistics/information.svg"
                             loading="lazy"
                         />
-                        <span on-click="@this.set('selectedItem', name)">{{ name }}</span>
-                    </td>
-                    <td>{{ share }}%</td>
-                    <td class="{{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</td>
-                </tr>
-            {{/each}}
+                        <div class="header-tooltip">
+                            <span>Compared to the previous 30 day period</span>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <div class="scrollable">
+                        <table class="content">
+                            {{#each topListByPage as one}}
+                                <tr>
+                                    <td>
+                                        <span>{{ index+1 }}</span>
+                                        {{ #if icon }}
+                                            <img
+                                                width="24"
+                                                height="24"
+                                                src="{{@shared.assetsHost}}/img/statistics{{icon}}"
+                                                loading="lazy"
+                                            />
+                                        {{ /if }}
+                                        <span on-click="@this.set('selectedItem', one)">{{ name }}</span>
+                                    </td>
+                                    <td>{{ share }}%</td>
+                                    <td class="{{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</td>
+                                </tr>
+                            {{/each}}
+                        </table>
+                    </div>
+                </td>
+            </tr>
         </table>
         <div class="pagination">
-            <p>Records 1 - 10 of 43</p>
+            <p>{{ pageRange }}</p>
             <div class="btn-group">
                 <span>Show:</span>
                 <button
@@ -108,14 +135,14 @@
                     {{#each paginationLimits}}
                     <li>
                         <a
-                            on-click="@this.set('pageLimit', @key)"
+                            on-click="@this.set('pageLimit', this)"
                             >{{this}}</a
                         >
                     </li>
                     {{/each}}
                 </ul>
                 <div class="pagination-change-page">
-                    <button>
+                    <button on-click="@this.prevPage()">
                         <img
                             width="20"
                             height="24"
@@ -123,7 +150,7 @@
                             loading="lazy"
                         />
                     </button>
-                    <button>
+                    <button on-click="@this.nextPage()">
                         <img
                             width="24"
                             height="24"
@@ -132,53 +159,6 @@
                         />
                     </button>
                 </div>
-            </div>
-        </div>
-        <div class="pagination-mobile">
-            <p>1-10 of 43</p>
-            <div class="action">
-                <button class="prew">
-                    <img
-                        width="20"
-                        height="24"
-                        src="{{@shared.assetsHost}}/img/statistics/left.svg"
-                        loading="lazy"
-                    />
-                </button>
-                <div class="btn-group">
-                    <button
-                        type="button"
-                        class="btn dropdown-toggle"
-                        data-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                    >
-                        <span>Page:</span>
-                        <span>{{pageLimit}}</span>
-                        <i
-                            class="fa fa-angle-down"
-                            aria-hidden="true"
-                        ></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        {{#each paginationLimits}}
-                        <li>
-                            <a
-                                on-click="@this.set('pageLimit', @key)"
-                                >{{this}}</a
-                            >
-                        </li>
-                        {{/each}}
-                    </ul>
-                </div>
-                <button class="next">
-                    <img
-                        width="24"
-                        height="24"
-                        src="{{@shared.assetsHost}}/img/statistics/right.svg"
-                        loading="lazy"
-                    />
-                </button>
             </div>
         </div>
     </div>
@@ -208,11 +188,34 @@
                         versions: "Version breakdown"
                     };
                 return result;
-            }
+            },
+            pageRange() {
+                let page = this.get("page");
+                let pageLimit = parseInt(this.get("pageLimit"));
+                let total = this.get("topList").length;
+
+                let start = (page - 1) * pageLimit + 1;
+                let end = start + pageLimit - 1;
+                end = total > end? end: total;
+
+                return `Records ${start} - ${end} of ${total}`;
+            },
+            topListByPage() {
+                let page = this.get("page");
+                let pageLimit = parseInt(this.get("pageLimit"));
+                let topList = this.get("topList");
+                let total = topList.length;
+
+                let start = (page - 1) * pageLimit + 1;
+                let end = start + pageLimit - 1;
+                end = total > end? end: total;
+
+                return topList.slice(start-1, end);
+            }  
         },
         data() {
             return {
-                topList: [{ id: '1', svg: '/img/statistics/platforms/Windows@2x.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }, { id: '1', svg: '/img/statistics/windows.png', name: 'Windows', share: '45.2%', changes: '24.45%' }],
+                topList: [],
                 isVersionGrouped: true,
                 selectedItem: "",
                 breakdown: "countries",
@@ -772,6 +775,20 @@
                                             "prev": {
                                                 "share": 8.65
                                             }
+                                        },
+                                        {
+                                            "platform": "PlayStation 4",
+                                            "share": 1.4,
+                                            "prev": {
+                                                "share": 6.35
+                                            }
+                                        },
+                                        {
+                                            "platform": "WebOS",
+                                            "share": 2.46,
+                                            "prev": {
+                                                "share": 8.65
+                                            }
                                         }
                                     ];
                                 else
@@ -859,9 +876,9 @@
 
         },
         processFetchedData(data) {
-            let iconKeys = ["platform", "name", "country", "browser"];
             data = data.map((one, index) => {
                 let result = {
+                    index,
                     name: "",
                     share: one.share,
                 };
@@ -869,14 +886,24 @@
                     if(key === "share" || key === "prev")
                         return;
 
-                    if(iconKeys.indexOf(key) != -1)
-                        result.icon = one[key];
-                    if(key === "country")
-                        result.name += countries[key] + " ";
+                    if(key === "country") {
+                        let country = countries.find(country => country.code === one[key]);
+                        result.name += country?.name + " ";
+                    }
                     else if(key === "versionName")
                         result.name += `(${one[key]}) `;
                     else
                         result.name += one[key] + " ";
+                    
+                    // set icon 
+                    if(key === "platform")
+                        result.icon = `/platforms/${one[key]}@2x.png`;
+                    else if(key === "browser")
+                        result.icon = `/browsers/${one[key]}@2x.png`;
+                    else if(key === "country")
+                        result.icon = `/flags/${one[key]}.svg`;
+                    else if(key === "name")
+                        result.icon = this.get("type") === "platform"? `/browsers/${one[key]}@2x.png`: `/platforms/${one[key]}@2x.png`;
                 });
                 result.name = result.name.substring(0, result.name.length-1);
                 result.changes = ( (one.share/one.prev.share - 1) * 100 ).toFixed(2);
@@ -884,6 +911,18 @@
                 return result;
             })
             return data;
+        },
+        prevPage() {
+            let page = this.get("page");
+
+            this.set("page", page > 1? page - 1: page);
+        },
+        nextPage() {
+            let page = this.get("page");
+            let pageLimit = parseInt(this.get("pageLimit"));
+            let total = this.get("topList").length;
+
+            this.set("page", page * pageLimit + 1 > total? page: page + 1);
         }
     }
 </script>
