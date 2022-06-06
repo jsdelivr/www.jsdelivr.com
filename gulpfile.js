@@ -93,7 +93,7 @@ gulp.task('js:prod', () => {
 		.pipe(source(`app.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(terser())
+		.pipe(terser({ sourceMap: { includeSources: true } }))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(`${dstDir}/js`));
 });
