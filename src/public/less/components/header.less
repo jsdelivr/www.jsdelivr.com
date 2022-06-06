@@ -9,6 +9,7 @@
 	z-index: 3;
 
 	.navbar-default {
+		position: relative;
 		box-shadow: 0 2px 2px -2px rgba(23, 35, 59, .04), 0 2px 8px rgba(23, 35, 59, .04);
 		border: none;
 		border-bottom: 1px solid #dfe3e7;
@@ -34,12 +35,28 @@
 			padding: 0 15px;
 		}
 
-		.collapse.navbar-collapse {
+		.navbar-collapse {
+			position: absolute;
+			left: 0;
+			right: 0;
 			padding: 0px;
 			margin: 0px;
 			
 			@media (min-width: @screen-md-min) {
+				position: unset;
 				margin-left: auto;
+			}
+
+			&.collapsing {
+				position: absolute;
+				padding: 0;
+			}
+
+			.container-fluid {
+				@media (min-width: @screen-sm-max) {
+					width: unset;
+					padding: 0;
+				}
 			}
 		}
 	}
