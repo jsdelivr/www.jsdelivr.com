@@ -32,19 +32,19 @@
 					{{/if}}
 
 					{{#if moduleTypes.indexOf('esm') !== -1}}
-					<span class="btn-package-label btn-package-label-secondary btn-package-label-esm" title="ESM">esm</span>
+					<button class="btn-package-label btn-package-label-secondary btn-package-label-esm" on-click="@this.setTypeFilter('esm')" title="ESM">esm</button>
 					{{/if}}
 
 					{{#if moduleTypes.indexOf('cjs') !== -1}}
-					<span class="btn-package-label btn-package-label-cjs" title="CJS">cjs</span>
+					<button class="btn-package-label btn-package-label-cjs" on-click="@this.setTypeFilter('cjs')" title="CJS">cjs</button>
 					{{/if}}
 
 					{{#if moduleTypes.indexOf('unknown') !== -1}}
-					<span class="btn-package-label btn-package-label-js" title="JS">js</span>
+					<button class="btn-package-label btn-package-label-js" on-click="@this.setTypeFilter('js')" title="JS">js</button>
 					{{/if}}
 
 					{{#if styleTypes.indexOf('none') === -1}}
-					<span class="btn-package-label btn-package-label-styles" title="Styles">Styles</span>
+					<button class="btn-package-label btn-package-label-styles" on-click="@this.setStyleFilter('styles')" title="Styles">Styles</button>
 					{{/if}}
 
 					{{#if deprecated}}
@@ -629,5 +629,33 @@
 		decorators: {
 			clipboard,
 		},
+
+		setTypeFilter (filterBy) {
+			if (filterBy === this.get('filterType')) {
+				this.set('filterType', '');
+			} else {
+				this.set('filterType', filterBy);
+			}
+		},
+		setStyleFilter (filterBy) {
+			if (filterBy === this.get('filterStyle')) {
+				this.set('filterStyle', '');
+			} else {
+				this.set('filterStyle', filterBy);
+			}
+
+			console.log(this.get('filterStyle'));
+		},
+		// setTypeFilter (filterBy) {
+		// 	console.log('filterBy: ', filterBy);
+		// 	console.log(' - type: ', this.get('filterType'));
+		// 	this.set('filterType', 'esm');
+
+		// 	if (filterBy === this.get('type')) {
+		// 		this.set('type', '');
+		// 	} else {
+		// 		this.set('type', filterBy);
+		// 	}
+		// },
 	};
 </script>

@@ -14,13 +14,13 @@
 			{{ #if hideLanding }}
 				<div class="filter-by">
 					<span>Filter for: </span>
-					<button class="btn-package-label btn-esm {{ #if type === 'esm' }}active{{ /if }}"
+					<button class="btn-package-label btn-esm {{ #if filterType === 'esm' }}active{{ /if }}"
 							on-click="@this.setTypeFilter('esm')">ESM</button>
-					<button class="btn-package-label btn-cjs {{ #if type === 'cjs' }}active{{ /if }}"
+					<button class="btn-package-label btn-cjs {{ #if filterType === 'cjs' }}active{{ /if }}"
 							on-click="@this.setTypeFilter('cjs')">CJS</button>
-					<button class="btn-package-label btn-js {{ #if type === 'js' }}active{{ /if }}"
+					<button class="btn-package-label btn-js {{ #if filterType === 'js' }}active{{ /if }}"
 							on-click="@this.setTypeFilter('js')">JS</button>
-					<button class="btn-package-label btn-styles {{ #if style === 'styles' }}active{{ /if }}"
+					<button class="btn-package-label btn-styles {{ #if filterStyle === 'styles' }}active{{ /if }}"
 							on-click="@this.setStyleFilter('styles')">Styles</button>
 				</div>
 			{{ /if }}
@@ -28,7 +28,7 @@
 
 		<div class="search-results">
 			{{#each packages}}
-				<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}"></c-package-header>
+				<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}" filterType="{{filterType}}" filterStyle="{{filterStyle}}"></c-package-header>
 			{{elseif query && nbHits === 0}}
                 <div class="no-results">
 					<img
@@ -77,8 +77,8 @@
 				page: 0,
 				query: '',
 				packages: [],
-				type: '',
-				style: '',
+				filterType: '',
+				filterStyle: '',
 				pagination (page, nbPages) {
 					let start = Math.max(page - 2, 0);
 					let pages = [];
@@ -111,12 +111,17 @@
 					if (this.get('query')) {
 						let newQuery = this.get('query');
 
-						if(this.get('style') === 'styles')
-							newQuery +=  " style:-none";
-						if(this.get('type') === 'js')
-							newQuery +=  " type:-none";
-						if(this.get('type') === 'esm' || this.get('type') === 'cjs')
-							newQuery += " type:" + this.get('type');
+						if (this.get('filterStyle') === 'styles') {
+							newQuery += ' style:-none';
+						}
+
+						if (this.get('filterType') === 'js') {
+							newQuery += ' type:-none';
+						}
+
+						if (this.get('filterType') === 'esm' || this.get('filterType') === 'cjs') {
+							newQuery += ' type:' + this.get('filterType');
+						}
 
 
 						search(newQuery, this.get('page'), 10).then((result) => {
@@ -152,7 +157,7 @@
 				});
 
 				// Update results on input.
-				this.observe('page query type style __ready', (newValue, oldValue, keypath) => {
+				this.observe('page query filterType filterStyle __ready', (newValue, oldValue, keypath) => {
 					// Don't send requests before have all the data.
 					if (this.get('__ready')) {
 						// Reset page on query change.
@@ -169,18 +174,20 @@
 			}
 		},
 		setTypeFilter (filterBy) {
-			if (filterBy === this.get('type')) {
-				this.set('type', '');
+			if (filterBy === this.get('filterType')) {
+				this.set('filterType', '');
 			} else {
-				this.set('type', filterBy);
+				this.set('filterType', filterBy);
 			}
 		},
 		setStyleFilter (filterBy) {
-			if (filterBy === this.get('style')) {
-				this.set('style', '');
+			if (filterBy === this.get('filterStyle')) {
+				this.set('filterStyle', '');
 			} else {
-				this.set('style', filterBy);
+				this.set('filterStyle', filterBy);
 			}
+
+			console.log(this.get('filterStyle'));
 		},
 		scrollToSearch () {
 			if (app.config.animateScrolling) {
