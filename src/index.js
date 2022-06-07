@@ -66,6 +66,14 @@ app.silent = app.env === 'production';
 app.proxy = true;
 
 /**
+ * Set default headers.
+ */
+app.use(async (ctx, next) => {
+	ctx.set(serverConfig.headers);
+	return next();
+});
+
+/**
  * Handle favicon requests before anything else.
  */
 app.use(koaFavicon(__dirname + '/public/favicon.ico'));
@@ -174,14 +182,6 @@ app.use(render({
 		: '',
 	assetsVersion,
 }, app));
-
-/**
- * Set default headers.
- */
-app.use(async (ctx, next) => {
-	ctx.set(serverConfig.headers);
-	return next();
-});
 
 /**
  * Redirect old URLs #1.
@@ -322,7 +322,9 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/custom-cdn-oss/:name', '/custom-cdn-oss/:name' ],
 ], async (ctx) => {
-	let data = {};
+	let data = {
+		actualPath: ctx.path,
+	};
 
 	try {
 		ctx.body = await ctx.render('pages/custom-cdn-oss-project.html', data);
@@ -349,6 +351,7 @@ koaElasticUtils.addRoutes(router, [
 ], async (ctx) => {
 	let data = {
 		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style' ]),
+		actualPath: ctx.path,
 	};
 
 	try {
