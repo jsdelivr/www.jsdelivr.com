@@ -56,14 +56,14 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period', (period) => {
-					let type = 'npm';
 					let name = this.get('name');
 					let bandwidthUnit = this.get('bandwidthUnit');
+					this.set('growthPeriod', this.get('growthPeriods')[period]);
 
-					// TODO: these endpoints are only for packages, the custom-cdn-oss pages (cocoapods, musescore, pyodide) will use another custom ednpoints
+
 					Promise.all([
-						http.fetchPackageDateStats(type, name, period),
-						http.fetchPackageBandwidthStats(type, name, period),
+						http.fetchCdnOssStats('hits', name, period),
+						http.fetchCdnOssStats('bandwidth', name, period),
 					]).then((responses) => {
 						if (responses[0].total >= 0) {
 							this.animate('requestsAmount', responses[0].total, { duration: 1000 });
@@ -71,23 +71,13 @@
 
 						if (responses[1].total >= 0) {
 							if (!bandwidthUnit) {
-								if (responses[1].total <= 1e6) {
-									bandwidthUnit = 'kB';
-									this.set('bandwidthUnit', 'kB');
-								} else if (responses[1].total <= 1e9) {
-									bandwidthUnit = 'MB';
-									this.set('bandwidthUnit', 'MB');
-								} else {
-									bandwidthUnit = 'GB';
-									this.set('bandwidthUnit', 'GB');
-								}
+								bandwidthUnit = _.findUnitFromNumber(responses[1].total);
+								this.set('bandwidthUnit', bandwidthUnit);
 							}
 
 							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total, bandwidthUnit), { duration: 1000 });
 						}
 					});
-
-					this.set('growthPeriod', this.get('growthPeriods')[period]);
 				});
 			}
 		},

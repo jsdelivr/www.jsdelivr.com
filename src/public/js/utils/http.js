@@ -78,6 +78,11 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 		});
 	});
 };
+
+module.exports.fetchCdnOssStats = (type, name, period = 'month') => {
+	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/proxy/${name}/stats`, body: { type, period } });
+};
+
 module.exports.fetchNetworkProviderStats = (type, period, country = "") => {
 	let body = {
 		type, period

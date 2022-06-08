@@ -193,6 +193,7 @@ module.exports = {
 				return Math.floor(value / Math.pow(10, magnitude)) * Math.pow(10, magnitude);
 		}
 	},
+
 	convertBytesToUnits (bytesAmount, units = 'GB') {
 		let unitsBase = null;
 
@@ -221,6 +222,27 @@ module.exports = {
 
 		return Math.round(bytesAmount / unitsBase);
 	},
+
+	findUnitFromNumber (num) {
+		let lookup = [
+			{ value: 1e4, symbol: 'kB' },
+			{ value: 1e7, symbol: 'MB' },
+			{ value: 1e10, symbol: 'GB' },
+			{ value: 1e13, symbol: 'TB' },
+			{ value: 1e16, symbol: 'PB' },
+			{ value: 1e19, symbol: 'EB' },
+		];
+		let unit = lookup.slice().reverse().find((item) => {
+			return num >= item.value;
+		});
+
+		if (!unit) {
+			return '';
+		}
+
+		return unit.symbol;
+	},
+
 	autoConvertBytesToUnits (num) {
 		let lookup = [
 			{ value: 1, symbol: '' },
