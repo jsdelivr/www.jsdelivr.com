@@ -188,14 +188,13 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('statsPeriod', () => {
+				this.observe('statsPeriod showChartBandwidth', () => {
 					if (this.get('statsPeriod')) {
-						let type = 'npm';
 						let name = this.get('name');
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+						let type = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 
-						// TODO: this endpoint used here temporary and will be replaced with the new custom endpoint for the custom-cdn-oss pages
-						http.fetchPackageDateStats(type, name, period).then((response) => {
+						http.fetchCdnOssStats(type, name, period).then((response) => {
 							if (!response.total) {
 								this.set('noPackageStatsData', true);
 								return;
@@ -239,8 +238,15 @@
 					statsChart = null;
 				}
 
+				let showChartBandwidth = this.get('showChartBandwidth');
+				let tempGB = 1;
+
+				if (showChartBandwidth) {
+					tempGB = 1e9;
+				}
+
 				let xAxisDates = array.map(value => value[0]);
-				let data = array.map(value => value[1].total);
+				let data = array.map(value => Math.round(value[1] / tempGB));
 				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 				let yAxisTicksAmount = 8;
 				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
@@ -256,7 +262,7 @@
 					}],
 				};
 				let chartSettings = {
-					useYAxisBorderPlugin: ( _.isMobileScreen() || _.isTabletScreen() ) ? false: true,
+					useYAxisBorderPlugin: !(_.isMobileScreen() || _.isTabletScreen()),
 					useExternalTooltip: true,
 					externalTooltipVerticalOffset: 40,
 				};
@@ -276,15 +282,15 @@
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
 										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
 										if (chartPeriod === 'year') {
 											if (labelValue[2]) {
-												if(_.isMobileScreen())
-													return [ `${labelValue[2]} ${labelValue[1]}` ]
-												else
-													return [ labelValue[1], labelValue[2] ];
+												if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
+
+												return [ labelValue[1], labelValue[2] ];
 											}
-											if (labelValue[1] && !_.isMobileScreen())
-												return [ labelValue[1] ];
+
+											if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
 
 											return;
 										}
@@ -292,8 +298,8 @@
 										if (Array.isArray(labelValue) && labelValue[1]) {
 											return [ day, labelValue[1] ];
 										}
-										if(chartPeriod === 'month' && _.isMobileScreen())
-											return;
+
+										if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
 
 										return [ day ];
 									},
@@ -317,11 +323,13 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										let newVal = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
-										if(_.isMobileScreen())
-											return _.autoConvertBytesToUnits(newVal);
-										else
-											return newVal;
+										let newVal = _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false)) + (showChartBandwidth ? ' GB' : '');
+
+										if (_.isMobileScreen()) { return _.autoConvertBytesToUnits(newVal); }
+
+										return newVal;
+
+									// return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
 									},
 								},
 								grid: {
@@ -331,7 +339,7 @@
 								afterFit: (scale) => {
 									// 	scale.width = 114;
 								},
-							}
+							},
 						},
 					},
 				};
