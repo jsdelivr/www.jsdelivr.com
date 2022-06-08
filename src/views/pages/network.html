@@ -167,7 +167,7 @@
 		initMap () {
 			infoWindows.splice(0);
 			markers.splice(0);
-            const mq = window.matchMedia( "(min-width: 768px)" );
+			let mq = window.matchMedia('(min-width: 768px)');
 			let CENTER = { lat: 48, lng: 16 };
 			map = new google.maps.Map(this.find('.network-map'), {
 				styles,
@@ -181,10 +181,11 @@
 				fullscreenControl: false,
 				gestureHandling: 'none',
 			});
-            if (mq.matches) {
-            			CENTER = { lat: 30, lng: 18 };
-            map.setZoom(2.14)
-            }
+
+			if (mq.matches) {
+				CENTER = { lat: 30, lng: 18 };
+				map.setZoom(2.14);
+			}
 
 			this.observe('enabled', () => {
 				this.updateMarkers();

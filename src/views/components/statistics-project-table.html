@@ -151,95 +151,93 @@
     const http = require('../../public/js/utils/http');
 
     component.exports = {
-        computed: {
-            pageRange() {
-                let page = this.get("page");
-                let pageLimit = parseInt(this.get("pageLimit"));
-                let total = this.get("projectList").length;
+    	computed: {
+    		pageRange () {
+    			let page = this.get('page');
+    			let pageLimit = parseInt(this.get('pageLimit'));
+    			let total = this.get('projectList').length;
 
-                let start = (page - 1) * pageLimit + 1;
-                let end = start + pageLimit - 1;
-                end = total > end? end: total;
+    			let start = (page - 1) * pageLimit + 1;
+    			let end = start + pageLimit - 1;
+    			end = total > end ? end : total;
 
-                return `Records ${start} - ${end} of ${total}`;
-            },
-            showablePages() {
-                let page = this.get("page");
-                let pageLimit = parseInt(this.get("pageLimit"));
-                let totalRows = this.get("projectList").length;
+    			return `Records ${start} - ${end} of ${total}`;
+    		},
+    		showablePages () {
+    			let page = this.get('page');
+    			let pageLimit = parseInt(this.get('pageLimit'));
+    			let totalRows = this.get('projectList').length;
 
-                let totalPages = Math.ceil(totalRows / pageLimit) || 1;
+    			let totalPages = Math.ceil(totalRows / pageLimit) || 1;
 
-                let start = (page - 2) < 1? 1: page - 2;
-                let end = (start + 4) > totalPages? totalPages: start + 4;
+    			let start = (page - 2) < 1 ? 1 : page - 2;
+    			let end = (start + 4) > totalPages ? totalPages : start + 4;
 
-                return {
-                    start,
-                    pageCount: new Array(end - start + 1)
-                };
-            },
-            projectListByPage() {
-                let page = this.get("page");
-                let pageLimit = parseInt(this.get("pageLimit"));
-                let projectList = this.get("projectList");
-                let total = projectList.length;
+    			return {
+    				start,
+    				pageCount: new Array(end - start + 1),
+    			};
+    		},
+    		projectListByPage () {
+    			let page = this.get('page');
+    			let pageLimit = parseInt(this.get('pageLimit'));
+    			let projectList = this.get('projectList');
+    			let total = projectList.length;
 
-                let start = (page - 1) * pageLimit + 1;
-                let end = start + pageLimit - 1;
-                end = total > end? end: total;
+    			let start = (page - 1) * pageLimit + 1;
+    			let end = start + pageLimit - 1;
+    			end = total > end ? end : total;
 
-                return projectList.slice(start-1, end);
-            }
-        },
-        data() {
-            return {
-                statsType: 'all',
-				statsTypeList: {
-                    all: "All types",
-                    npm: "npm",
-                    gh: "Github"
-                },
-                page: 1,
-                pageLimit: '10',
-				paginationLimits: [ '10', '20', '30', '40' ],
-				projectList: [],
-                toSignedPercentage: function(num) {
-                    return `${num > 0? "+": ""}${num}%`;
-                }
-            }
-        },
-        oninit() {
-            if(!Ractive.isServer) {
-                this.observe("period statsType __ready", function() {
-                    if(this.get("__ready")) {
-                        let type = this.get("type");
-                        let period = this.get("period");
-                        let statsType = this.get("statsType");
-                        let page = this.get("page");
-                        let pageLimit = this.get("pageLimit");
-                        // fetch projectList using http api calls 
-                        http.fetchProjectStats(type, statsType, period).then(res => {
-                            this.set("projectList", this.processProjectStats(res));
-                        });
-                    }
-                })
-            }
-        },
-        processProjectStats(projectList) {
-            let hitsMax = Math.max( ...projectList.map( ( {hits} ) => hits ) );
-            let bandwidthMax = Math.max( ...projectList.map( ( {bandwidth} ) => bandwidth ) );
+    			return projectList.slice(start - 1, end);
+    		},
+	},
+    	data () {
+    		return {
+    			statsType: 'all',
+			statsTypeList: {
+    				all: 'All types',
+    				npm: 'npm',
+    				gh: 'Github',
+			},
+    			page: 1,
+    			pageLimit: '10',
+			paginationLimits: [ '10', '20', '30', '40' ],
+			projectList: [],
+    			toSignedPercentage (num) {
+				return `${num > 0 ? '+' : ''}${num}%`;
+			},
+		};
+    	},
+    	oninit () {
+    		if (!Ractive.isServer) {
+    			this.observe('period statsType __ready', function () {
+    				if (this.get('__ready')) {
+    					let type = this.get('type');
+    					let period = this.get('period');
+    					let statsType = this.get('statsType');
+    					// fetch projectList using http api calls
+    					http.fetchProjectStats(type, statsType, period).then((res) => {
+    						this.set('projectList', this.processProjectStats(res));
+    					});
+    				}
+    			});
+    		}
+    	},
+    	processProjectStats (projectList) {
+    		let hitsMax = Math.max(...projectList.map(({ hits }) => hits));
+    		let bandwidthMax = Math.max(...projectList.map(({ bandwidth }) => bandwidth));
 
-            return projectList.map((one, index) => {
-                let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
-                interest = interest.toFixed(2);
-                let barWidth = {
-                    hits: (one.hits*100 / hitsMax) + "%",
-                    bandwidth: (one.bandwidth*100 / bandwidthMax) + "%"
-                }
-                one.bandwidth = _.convertBytesToUnits(one.bandwidth) + " GB";
+    		return projectList.map((one, index) => {
+    			let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
+    			interest = interest.toFixed(2);
+    			let barWidth = {
+    				hits: (one.hits * 100 / hitsMax) + '%',
+    				bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
+			};
+    			one.bandwidth = _.convertBytesToUnits(one.bandwidth) + ' GB';
 
-                return {...one, interest, barWidth, id: index + 1};
-            });
-        }
-    }
+    			return { ...one, interest, barWidth, id: index + 1 };
+    		});
+    	},
+};
 </script>

@@ -85,81 +85,81 @@
 </div>
 
 <script>
-    const _ = require('../../public/js/_');
     const http = require('../../public/js/utils/http');
     const providers = require('../../public/json/net-providers.json');
 
     component.exports = {
-        data() {
-            return {
-				requestsData: {},
-				bandwidthData: {},
-                converBytesTo: function( num ) {
-                    let lookup = [
-                        { value: 1, symbol: '' },
-                        { value: 1e3, symbol: 'KB' },
-                        { value: 1e6, symbol: 'MB' },
-                        { value: 1e9, symbol: 'GB' },
-                        { value: 1e12, symbol: 'TB' },
-                        { value: 1e15, symbol: 'PB' },
-                        { value: 1e18, symbol: 'EB' },
-                    ];
-                    let item = lookup.reverse().find((item) => {
-                        return num >= item.value;
-                    });
+    	data () {
+    		return {
+			requestsData: {},
+			bandwidthData: {},
+    			converBytesTo (num) {
+				let lookup = [
+					{ value: 1, symbol: '' },
+					{ value: 1e3, symbol: 'KB' },
+					{ value: 1e6, symbol: 'MB' },
+					{ value: 1e9, symbol: 'GB' },
+					{ value: 1e12, symbol: 'TB' },
+					{ value: 1e15, symbol: 'PB' },
+					{ value: 1e18, symbol: 'EB' },
+				];
+				let item = lookup.reverse().find((item) => {
+					return num >= item.value;
+				});
 
-                    return item? Math.round(num/item.value) + item.symbol: '0';
-                }
-            }
-        },
-        oninit() {
-            if(!Ractive.isServer) {
-                this.observe("period", (period) => {
-                    // http calls to fetch net stats data...
-                    http.fetchNetworkProviderStats("hits", period).then(res => {
-                        this.set("requestsData", this.processStats(res));
-                    });
-                    http.fetchNetworkProviderStats("bandwidth", period).then(res => {
-                        this.set("bandwidthData", this.processStats(res));
-                    });
-                })
-            }
-        },
-        onrender() {
+				return item ? Math.round(num / item.value) + item.symbol : '0';
+			},
+		};
+    	},
+    	oninit () {
+    		if (!Ractive.isServer) {
+    			this.observe('period', (period) => {
+    				// http calls to fetch net stats data...
+    				http.fetchNetworkProviderStats('hits', period).then((res) => {
+    					this.set('requestsData', this.processStats(res));
+    				});
 
-        },
-        processStats(stats) {
-            let result = {
-                total: 0,
-                prevTotal: 0,
-                growth: "0%",
-                statsList: []
-            };
-            Object.keys(stats).map((key, index) => {
-                let provider = providers[key] ?? {};
-                let svg = provider.imgPath;
-                let color = provider.color;
-                let name = provider.name;
-                let value = stats[key].total;
-                let interest = this.calcGrowth(value, stats[key].prev.total);
+    				http.fetchNetworkProviderStats('bandwidth', period).then((res) => {
+    					this.set('bandwidthData', this.processStats(res));
+    				});
+    			});
+    		}
+    	},
+    	onrender () {
 
-                result.statsList.push({svg, name, value, color, interest});
-                result.total += stats[key].total;
-                result.prevTotal += stats[key].prev.total;
-            });
+    	},
+    	processStats (stats) {
+    		let result = {
+    			total: 0,
+    			prevTotal: 0,
+    			growth: '0%',
+    			statsList: [],
+    		};
+    		Object.keys(stats).forEach((key) => {
+    			let provider = providers[key] ?? {};
+    			let svg = provider.imgPath;
+    			let color = provider.color;
+    			let name = provider.name;
+    			let value = stats[key].total;
+    			let interest = this.calcGrowth(value, stats[key].prev.total);
 
-            result.growth = this.calcGrowth(result.total, result.prevTotal);
-            return result;
-        },
-        calcGrowth(cur, prev) {
-            let growth = prev? ( (cur - prev)*100 / prev ): 100;
-            
-            return growth.toFixed(1);
-        },
-        calcPercentage(cur, total) {
-            let percentage = (cur * 100 / total).toFixed(1);
+    			result.statsList.push({ svg, name, value, color, interest });
+    			result.total += stats[key].total;
+    			result.prevTotal += stats[key].prev.total;
+    		});
 
-            return percentage == 0? "0.5%": percentage + "%";
-        }
-    }
+    		result.growth = this.calcGrowth(result.total, result.prevTotal);
+    		return result;
+    	},
+    	calcGrowth (cur, prev) {
+    		let growth = prev ? (cur - prev) * 100 / prev : 100;
+    
+    		return growth.toFixed(1);
+    	},
+    	calcPercentage (cur, total) {
+    		let percentage = (cur * 100 / total).toFixed(1);
+
+    		return percentage === 0 ? '0.5%' : percentage + '%';
+    	},
+};
 </script>

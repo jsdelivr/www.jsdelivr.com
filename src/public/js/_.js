@@ -127,7 +127,7 @@ module.exports = {
 		});
 
 		let labelArea = 0;
-		Object.keys(dataPerMonths).forEach((yearMonthKey, index) => {
+		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
 			// let middleLength = Math.round(dataPerMonths[yearMonthKey].length / 2);
 
 			dataPerMonths[yearMonthKey].forEach((day, idx) => {

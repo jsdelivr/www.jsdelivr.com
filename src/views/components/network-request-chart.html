@@ -31,169 +31,169 @@
     const providers = require('../../public/json/net-providers.json');
 
     component.exports = {
-        data() {
-            return {
-                type: 'hits',
-                switchList: [],
-                hitsData: ""
-            }
-        },
-        oninit() {
-            if(!Ractive.isServer) {
-                this.observe("period country type __ready", function() {
-                    if(this.get("__ready")) {
-                        let type = this.get("type");
-                        let period = this.get("period");
-                        let country = this.get("country") || "";
-						if(country === "WW")
-							country = "";
+    	data () {
+    		return {
+    			type: 'hits',
+    			switchList: [],
+    			hitsData: '',
+		};
+    	},
+    	oninit () {
+    		if (!Ractive.isServer) {
+    			this.observe('period country type __ready', function () {
+    				if (this.get('__ready')) {
+    					let type = this.get('type');
+    					let period = this.get('period');
+    					let country = this.get('country') || '';
 
-                        http.fetchNetworkProviderStats(type, period, country)
-							.then(res => {
-								let oldSwitchList = this.get("switchList");
-								let newSwitchList = Object.keys(res)
-														.map(key => {
-															let oldOne = oldSwitchList.filter(one => one.name === providers[key].name)
-															
-															return oldOne.length? oldOne[0]: {name: providers[key].name, active: true};
-														});
-								this.set("switchList", newSwitchList);
-								this.set("hitsData", res);
+					if (country === 'WW') { country = ''; }
+
+    					http.fetchNetworkProviderStats(type, period, country)
+						.then((res) => {
+							let oldSwitchList = this.get('switchList');
+							let newSwitchList = Object.keys(res)
+								.map((key) => {
+									let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
+
+									return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
+								});
+							this.set('switchList', newSwitchList);
+							this.set('hitsData', res);
 						});
-                    }
-                })
-            }
-        },
-        onrender() {
-            let hitsChart;
+    				}
+    			});
+    		}
+    	},
+    	onrender () {
+    		let hitsChart;
 
-			// create hits chart
-			this.observe('hitsData switchList', () => {
-				let switchList = this.get("switchList");
-				let hitsData = this.get("hitsData");
-				let hitsChartCanvasEl = this.find('#hits-chart');
+		// create hits chart
+		this.observe('hitsData switchList', () => {
+			let switchList = this.get('switchList');
+			let hitsData = this.get('hitsData');
+			let hitsChartCanvasEl = this.find('#hits-chart');
 
-				if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
+			if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
 
-				let array = [];
-				Object.keys(hitsData).forEach((key) => {
-					let provider = switchList.filter(one => one.name === providers[key].name);
-					if(!provider[0]?.active)
-						return;
-					
-					array.push({
-						label: key,
-                        data: Object.values(hitsData[key].dates),
-						dates: Object.keys(hitsData[key].dates),
-                        borderColor: providers[key].color,
-                        backgroundColor: providers[key].color
-					});
+			let array = [];
+			Object.keys(hitsData).forEach((key) => {
+				let provider = switchList.filter(one => one.name === providers[key].name);
+
+				if (!provider[0]?.active) { return; }
+
+				array.push({
+					label: key,
+    					data: Object.values(hitsData[key].dates),
+					dates: Object.keys(hitsData[key].dates),
+    					borderColor: providers[key].color,
+    					backgroundColor: providers[key].color,
 				});
-				
-				if (hitsChart) {
-					hitsChart.destroy();
-					hitsChart = null;
-				}
-				if(!array.length)
-					return;
+			});
 
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(
-					Math.min( ...array.map(one => Math.min(...one.data.filter(v => v !== 0))) ),
-					'floor'
-				);
-				let maxRangeValue = _.getValueByMagnitude(
-					Math.max( ...array.map(one => Math.max(...one.data)) ),
-					'ceil',
-					1
-				);
-				
-				let chartPeriod = this.get('period');
-				console.log(chartPeriod);
-				let chartData = {
-					labels: _.getChartXAxisData(array[0].dates, chartPeriod),
-					datasets: array,
-				};
-				let chartSettings = {
-					useExternalTooltip: true,
-				};
-				let chartConfig = {
-					options: {
-						scales: {
-							x: {
-								display: true,
-								ticks: {
-									color: '#5C667A',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-										lineHeight: 2,
-									},
-									// whole callback needed to prepare dates for displaying on the x-axis
-									// since we need only the day and not full date (which we must to pass here for the tooltip title)
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												if(_.isMobileScreen())
-													return [ `${labelValue[2]} ${labelValue[1]}` ]
-												else
-													return [ labelValue[1], labelValue[2] ];
-											}
-											if (labelValue[1] && !_.isMobileScreen())
-												return [ labelValue[1] ];
+			if (hitsChart) {
+				hitsChart.destroy();
+				hitsChart = null;
+			}
 
-											return;
-										}
+			if (!array.length) { return; }
 
-										if (Array.isArray(labelValue) && labelValue[1]) {
-											return [ day, labelValue[1] ];
-										}
-										if(chartPeriod === 'month' && _.isMobileScreen())
-											return;
+			let yAxisTicksAmount = 8;
+			let minRangeValue = _.getValueByMagnitude(
+				Math.min(...array.map(one => Math.min(...one.data.filter(v => v !== 0)))),
+				'floor'
+			);
+			let maxRangeValue = _.getValueByMagnitude(
+				Math.max(...array.map(one => Math.max(...one.data))),
+				'ceil',
+				1
+			);
 
-										return [ day ];
-									},
+			let chartPeriod = this.get('period');
+			console.log(chartPeriod);
+			let chartData = {
+				labels: _.getChartXAxisData(array[0].dates, chartPeriod),
+				datasets: array,
+			};
+			let chartSettings = {
+				useExternalTooltip: true,
+			};
+			let chartConfig = {
+				options: {
+					scales: {
+						x: {
+							display: true,
+							ticks: {
+								color: '#5C667A',
+								font: {
+									size: 12,
+									family: 'Lexend, sans-serif',
+									lineHeight: 2,
 								},
-								grid: {
-									display: false,
-									drawBorder: false,
+								// whole callback needed to prepare dates for displaying on the x-axis
+								// since we need only the day and not full date (which we must to pass here for the tooltip title)
+								callback (tickIdx) {
+									let labelValue = this.getLabelForValue(tickIdx);
+									let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+
+									if (chartPeriod === 'year') {
+										if (labelValue[2]) {
+											if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
+
+											return [ labelValue[1], labelValue[2] ];
+										}
+
+										if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
+
+										return;
+									}
+
+									if (Array.isArray(labelValue) && labelValue[1]) {
+										return [ day, labelValue[1] ];
+									}
+
+									if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
+
+									return [ day ];
 								},
 							},
-							y: {
-								display: true,
-								min: minRangeValue,
-								max: maxRangeValue,
-								ticks: {
-									count: yAxisTicksAmount,
-									color: '#5C667A',
-									crossAlign: 'far',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
-									},
+							grid: {
+								display: false,
+								drawBorder: false,
+							},
+						},
+						y: {
+							display: true,
+							min: minRangeValue,
+							max: maxRangeValue,
+							ticks: {
+								count: yAxisTicksAmount,
+								color: '#5C667A',
+								crossAlign: 'far',
+								font: {
+									size: 12,
+									family: 'Lexend, sans-serif',
 								},
-								grid: {
-									drawBorder: false,
-									color: '#CFD6DD',
-									tickLength: 0,
+								callback (tickIdx) {
+									let labelValue = this.getLabelForValue(tickIdx);
+									return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 								},
-								afterFit: (scale) => {
-									scale.width = 114;
-									scale.border = 'none';
-								},
+							},
+							grid: {
+								drawBorder: false,
+								color: '#CFD6DD',
+								tickLength: 0,
+							},
+							afterFit: (scale) => {
+								scale.width = 114;
+								scale.border = 'none';
 							},
 						},
 					},
-				};
+				},
+			};
 
-				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
-        }
-    }
+			hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+		});
+    	},
+};
 </script>

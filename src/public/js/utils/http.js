@@ -80,49 +80,52 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 };
 
 module.exports.fetchCdnOssStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/proxy/${name}/stats`, body: { type, period } });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/proxy/${name}/stats`, body: { type, period } });
 };
 
-module.exports.fetchNetworkProviderStats = (type, period, country = "") => {
+module.exports.fetchNetworkProviderStats = (type, period, country = '') => {
 	let body = {
-		type, period
+		type, period,
 	};
-	country && ( body.country = country );
+	country && (body.country = country);
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/providers`, body });
-}
+};
+
 module.exports.fetchNetworkProviderStatsByCountry = (type, period) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: {type, period} });
-}
-/***
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { type, period } });
+};
+
+/** *
  * @param type - platform type  value:  "platforms", "browsers"
  * @param isVersionGrouped  -  version grouped switchbox value: boolean
  * @param selectedItem - selected certain platform or browser value:string
  * @param breakdown - country breakdown, browser breakdown, platform , version berakdown
  ***/
 module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedItem, breakdown) => {
-	let url = type === "platform"? "/v1/stats/platforms": "/v1/stats/browsers";
+	let url = type === 'platform' ? '/v1/stats/platforms' : '/v1/stats/browsers';
 
-	if(!isVersionGrouped) {
-		if(!selectedItem)
-			url += "/versions";  // initial state but <version group> switch box is disabled
-		else					// when a user selected one platform or browser in the list , <version group> is disabled
+	if (!isVersionGrouped) {
+		if (!selectedItem) {
+			url += '/versions'; // initial state but <version group> switch box is disabled
+		} else { 					// when a user selected one platform or browser in the list , <version group> is disabled
 			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
-	}
-	else {						// <version group> switchbox is enabled
-		if(selectedItem)		// user selected one platform or browser
+		}
+	} else {						// <version group> switchbox is enabled
+		if (selectedItem) { 		// user selected one platform or browser
 			url += `${selectedItem.name}/${breakdown}`;
+		}
 	}
 
 	return _.makeHTTPRequest({ url });
-}
+};
 
 module.exports.fetchProjectStats = (type, statsType, period) => {
-	statsType = statsType === "all"? "": `/${statsType}`;
+	statsType = statsType === 'all' ? '' : `/${statsType}`;
 
 	return _.makeHTTPRequest({
-		url: type === "popular"? `${STAGING_API_HOST}/v1/stats/packages${statsType}`: `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
+		url: type === 'popular' ? `${STAGING_API_HOST}/v1/stats/packages${statsType}` : `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
 		body: {
-			period
-		}
+			period,
+		},
 	});
-}
+};

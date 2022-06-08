@@ -256,38 +256,43 @@
 			return {
 				title: 'Become a sponsor - jsDelivr',
 				description: 'Become a sponsor and help us make jsDelivr better!',
-              activePlan: ''
+				activePlan: '',
 			};
 		},
-          oninit () {
-
+		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('activePlan', (newValue) => {
-                const plans = document.querySelector('.plans');
-                if (newValue === '') {
-                plans.scrollLeft = 0
-                }
-                if (newValue === 'gold') {
-                plans.scrollLeft = 300
-                }
-                if (newValue === 'bronze') {
-                plans.scrollLeft = 600
-                }
-				});
-          }
+					let plans = document.querySelector('.plans');
 
-            this.on('selectPlan', () => {
-			const scrollPosition = this.event.original.target.scrollLeft;
-              if (scrollPosition < 300) {
-                this.set('activePlan', '')
-              }
-              if (scrollPosition > 300 && scrollPosition < 600) {
-                this.set('activePlan', 'gold')
-              }
-              if (scrollPosition > 600) {
-                this.set('activePlan', 'bronze')
-              }
-		})
-      }
+					if (newValue === '') {
+						plans.scrollLeft = 0;
+					}
+
+					if (newValue === 'gold') {
+						plans.scrollLeft = 300;
+					}
+
+					if (newValue === 'bronze') {
+						plans.scrollLeft = 600;
+					}
+				});
+			}
+
+			this.on('selectPlan', () => {
+				let scrollPosition = this.event.original.target.scrollLeft;
+
+				if (scrollPosition < 300) {
+					this.set('activePlan', '');
+				}
+
+				if (scrollPosition > 300 && scrollPosition < 600) {
+					this.set('activePlan', 'gold');
+				}
+
+				if (scrollPosition > 600) {
+					this.set('activePlan', 'bronze');
+				}
+			});
+		},
 	};
 </script>

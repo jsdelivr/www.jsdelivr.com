@@ -213,76 +213,76 @@
 					month: 30,
 					year: 365,
 				},
-				globalStatsPeriod: "month",
+				globalStatsPeriod: 'month',
 				rateList: [
-					{ 
+					{
 						svg: '/img/statistics/cloudflare.svg',
-						name: 'Cloudflare', 
-						interest: '99.99%' 
-					}, 
-					{ 
-						svg: '/img/statistics/fastly.svg', 
-						name: 'Fastly', 
-						interest: '99.98%' 
+						name: 'Cloudflare',
+						interest: '99.99%',
 					},
-					{ 
-						svg: '/img/statistics/g-core.svg', 
-						name: 'G-Core', 
-						interest: '99.81%' 
-					}
+					{
+						svg: '/img/statistics/fastly.svg',
+						name: 'Fastly',
+						interest: '99.98%',
+					},
+					{
+						svg: '/img/statistics/g-core.svg',
+						name: 'G-Core',
+						interest: '99.81%',
+					},
 				],
-				country: "",
-				networkStatsPeriod: "month",
-				projectStatsPeriod: "month"
+				country: '',
+				networkStatsPeriod: 'month',
+				projectStatsPeriod: 'month',
 			};
 		},
 		decorators: {
 			tooltip,
 		},
 		onrender () {
-			let $this = this;
-			let flagIconPath = "https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2";
+			let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
 
-			$(".search").autocomplete({hint: false}, [
+			$('.search').autocomplete({ hint: false }, [
 				{
 					source: (query, cb) => {
-						let result = countries.filter(one => {
+						let result = countries.filter((one) => {
 							query = query.toLowerCase();
 
-							return one.name.toLowerCase().search(query) === -1? false: true;
+							return one.name.toLowerCase().search(query) !== -1;
 						});
-						result = [{ code: "WW", name: "Global" }, ...result];
+						result = [{ code: 'WW', name: 'Global' }, ...result ];
 						cb(result);
 					},
-					displayKey: "name",
+					displayKey: 'name',
 					templates: {
 						suggestion: (item) => {
 							return `<img width="21px" height="15px" src="${flagIconPath}/${item.code}.svg"/>` + item.name;
-						}
-					}
-				}
-			]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion, dataset) => {
-				this.set("country", suggestion.code);
+						},
+					},
+				},
+			]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion) => {
+				this.set('country', suggestion.code);
 
-				$(".search").css({
-					"background-image": `url('${flagIconPath}/${suggestion.code}.svg')`,
-					"background-size": "17px"
-				})
+				$('.search').css({
+					'background-image': `url('${flagIconPath}/${suggestion.code}.svg')`,
+					'background-size': '17px',
+				});
 			}).on('autocomplete:opened', () => {
-				$(".search").removeAttr('style');
+				$('.search').removeAttr('style');
 			});
 		},
-		oncomplete() {
-			let el = this.find(".global_data");
+		oncomplete () {
+			let el = this.find('.global_data');
 			this.stickyObserve(el);
-			el = this.find(".network-data");
+			el = this.find('.network-data');
 			this.stickyObserve(el);
 		},
-		stickyObserve(el) {
-			let observer = new IntersectionObserver( ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
-  				{ threshold: [1] }
+		stickyObserve (el) {
+			let observer = new IntersectionObserver(
+				([ e ]) => e.target.classList.toggle('is-pinned', e.intersectionRatio < 1),
+				{ threshold: [ 1 ] }
 			);
 			observer.observe(el);
-		}
-	};
+		},
+};
 </script>
