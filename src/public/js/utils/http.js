@@ -1,6 +1,6 @@
 
 const _ = require('../_');
-const STAGIN_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
+const STAGING_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
 const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
@@ -88,10 +88,10 @@ module.exports.fetchNetworkProviderStats = (type, period, country = "") => {
 		type, period
 	};
 	country && ( body.country = country );
-	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/stats/network/providers`, body });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/providers`, body });
 }
 module.exports.fetchNetworkProviderStatsByCountry = (type, period) => {
-	return _.makeHTTPRequest({ url: `${STAGIN_API_HOST}/v1/stats/network/countries`, body: {type, period} });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: {type, period} });
 }
 /***
  * @param type - platform type  value:  "platforms", "browsers"
@@ -114,4 +114,15 @@ module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedI
 	}
 
 	return _.makeHTTPRequest({ url });
+}
+
+module.exports.fetchProjectStats = (type, statsType, period) => {
+	statsType = statsType === "all"? "": `/${statsType}`;
+
+	return _.makeHTTPRequest({
+		url: type === "popular"? `${STAGING_API_HOST}/v1/stats/packages${statsType}`: `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
+		body: {
+			period
+		}
+	});
 }

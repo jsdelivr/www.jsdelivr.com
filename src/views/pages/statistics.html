@@ -108,7 +108,6 @@
 						<input class="search" placeholder="Filter for a specific country or a continent..."/>
 						<div class="data-range-ctrl">
 							<div class="btn-group">
-								<div class="eac-item WW" on-click="@this.setCountryAsGlobal()"><img src="/img/statistics/flags/WW.svg"/>Global</div>
 								<span class="label-for-pinned">Data range</span>
 								<button
 									type="button"
@@ -242,53 +241,36 @@
 		},
 		onrender () {
 			let $this = this;
-			let flagIconPath = "/img/statistics/flags";
-			let options = {
-				data: countries,
-				getValue: "name",
-				list: {
-					match: {
-						enabled: true
-					},
-					maxNumberOfElements: 15,
-					onClickEvent: function() {
-						let code = $(".search").getSelectedItemData().code;
-						
-						$this.set("country", code);
-					},
-					onShowListEvent: function() {
-						$(".search").removeAttr('style');
+			let flagIconPath = "https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2";
 
-						$(".eac-item.WW").show();
+			$(".search").autocomplete({hint: false}, [
+				{
+					source: (query, cb) => {
+						let result = countries.filter(one => {
+							query = query.toLowerCase();
+
+							return one.name.toLowerCase().search(query) === -1? false: true;
+						});
+						result = [{ code: "WW", name: "Global" }, ...result];
+						cb(result);
 					},
-					onHideListEvent: function() {
-						let selectedCode = $this.get("country");
-						if(selectedCode) {
-							$(".search").css({
-								"background-image": `url('${flagIconPath}/${selectedCode}.svg')`,
-								"background-size": "17px"
-							})
+					displayKey: "name",
+					templates: {
+						suggestion: (item) => {
+							return `<img width="21px" height="15px" src="${flagIconPath}/${item.code}.svg"/>` + item.name;
 						}
-
-						$(".eac-item.WW").hide();
-					},
-					onMouseOutEvent: function() {
-						$(".easy-autocomplete-container li.selected").removeClass("selected");
 					}
-				},
-				template: {
-					type: "custom",
-					method: function(value, item) {
-						return `<img src="${flagIconPath}/${item.code}.svg"/>` + value;
-					}
-				},
-				theme: "round"
-			};
+				}
+			]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion, dataset) => {
+				this.set("country", suggestion.code);
 
-			$(".search").easyAutocomplete(options);
-
-			// move rendered Global autocomplete item into autocomplete container after building autocomplete...
-			$(".eac-item.WW").detach().prependTo(".easy-autocomplete-container");
+				$(".search").css({
+					"background-image": `url('${flagIconPath}/${suggestion.code}.svg')`,
+					"background-size": "17px"
+				})
+			}).on('autocomplete:opened', () => {
+				$(".search").removeAttr('style');
+			});
 		},
 		oncomplete() {
 			let el = this.find(".global_data");
@@ -301,10 +283,6 @@
   				{ threshold: [1] }
 			);
 			observer.observe(el);
-		},
-		setCountryAsGlobal() {				// set country as <Global>
-			$('.search').val('Global');
-			this.set('country', 'WW');
 		}
 	};
 </script>
