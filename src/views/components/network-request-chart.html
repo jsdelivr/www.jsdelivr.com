@@ -1,54 +1,54 @@
 <div class="c-network-request-chart">
-    <div class="chart-header">
-        <h3>Requests served over time</h3>
-        <div>
-            <button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
-            <button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
-        </div>
-    </div>
-    <div class="hits-chart-wrapper">
-        <div class="switch-block">
-            {{#each switchList}}
-                <div class="switch-item">
-                    <label class="switch">
-                        <input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
-                        <span class="slider round"></span>
-                      </label>
-                      <span class="name">{{name}}</span>
-                </div>
-            {{/each}}
-        </div>
-        <div class="hits-chart-block">
-            <canvas id="hits-chart"></canvas>
-        </div>
-    </div>
+	<div class="chart-header">
+		<h3>Requests served over time</h3>
+		<div>
+			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
+			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+		</div>
+	</div>
+	<div class="hits-chart-wrapper">
+		<div class="switch-block">
+			{{#each switchList}}
+				<div class="switch-item">
+					<label class="switch">
+						<input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
+						<span class="slider round"></span>
+						</label>
+						<span class="name">{{name}}</span>
+				</div>
+			{{/each}}
+		</div>
+		<div class="hits-chart-block">
+			<canvas id="hits-chart"></canvas>
+		</div>
+	</div>
 </div>
 
 <script>
-    const _ = require('../../public/js/_');
-    const http = require('../../public/js/utils/http');
-    const createLineChart = require('../../public/js/utils/create-line-chart');
-    const providers = require('../../public/json/net-providers.json');
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const createLineChart = require('../../public/js/utils/create-line-chart');
+	const providers = require('../../public/json/net-providers.json');
 
-    component.exports = {
-    	data () {
-    		return {
-    			type: 'hits',
-    			switchList: [],
-    			hitsData: '',
+	component.exports = {
+		data () {
+			return {
+				type: 'hits',
+				switchList: [],
+				hitsData: '',
 		};
-    	},
-    	oninit () {
-    		if (!Ractive.isServer) {
-    			this.observe('period country type __ready', function () {
-    				if (this.get('__ready')) {
-    					let type = this.get('type');
-    					let period = this.get('period');
-    					let country = this.get('country') || '';
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('period country type __ready', function () {
+					if (this.get('__ready')) {
+						let type = this.get('type');
+						let period = this.get('period');
+						let country = this.get('country') || '';
 
 					if (country === 'WW') { country = ''; }
 
-    					http.fetchNetworkProviderStats(type, period, country)
+						http.fetchNetworkProviderStats(type, period, country)
 						.then((res) => {
 							let oldSwitchList = this.get('switchList');
 							let newSwitchList = Object.keys(res)
@@ -60,12 +60,12 @@
 							this.set('switchList', newSwitchList);
 							this.set('hitsData', res);
 						});
-    				}
-    			});
-    		}
-    	},
-    	onrender () {
-    		let hitsChart;
+					}
+				});
+			}
+		},
+		onrender () {
+			let hitsChart;
 
 		// create hits chart
 		this.observe('hitsData switchList', () => {
@@ -83,10 +83,10 @@
 
 				array.push({
 					label: key,
-    					data: Object.values(hitsData[key].dates),
+						data: Object.values(hitsData[key].dates),
 					dates: Object.keys(hitsData[key].dates),
-    					borderColor: providers[key].color,
-    					backgroundColor: providers[key].color,
+						borderColor: providers[key].color,
+						backgroundColor: providers[key].color,
 				});
 			});
 
@@ -194,6 +194,6 @@
 
 			hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 		});
-    	},
+		},
 };
 </script>

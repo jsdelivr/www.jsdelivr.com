@@ -1,243 +1,243 @@
 <div class="c-statistics-project-table">
-    <div class="projects-info">
-        <h3>{{ title }}</h3>
-        <div class="btn-group">
-            <span>Type:</span>
-            <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span>{{statsTypeList[statsType]}}</span>
-                <i class="fa fa-angle-down" aria-hidden="true"></i>
-            </button>
+	<div class="projects-info">
+		<h3>{{ title }}</h3>
+		<div class="btn-group">
+			<span>Type:</span>
+			<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span>{{statsTypeList[statsType]}}</span>
+				<i class="fa fa-angle-down" aria-hidden="true"></i>
+			</button>
 
-            <ul class="dropdown-menu">
-                {{#each statsTypeList}}
-                <li>
-                    <a on-click="@this.set('statsType', @key)">{{this}}</a>
-                </li>
-                {{/each}}
-            </ul>
-        </div>
-    </div>
-    <div class="projects-data-table">
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Requests</th>
-                <th>Bandwidth</th>
-                {{ #if type === "trending" }}
-                    <th>Increased</th>
-                {{ /if }}
-            </tr>
-            <tr>
-                <td colspan="{{ #if type === 'trending' }}4{{ else }}3{{ /if }}">
-                    <div class="scrollable">
-                        <table class="content">
-                            {{#each projectListByPage}}
-                                <tr>
-                                    <td>
-                                        <span class="id">{{id}}</span>
-                                        <div><span>{{package}}<span>/<p>{{name}}</p>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="percentage-bar-container">
-                                            <div class="text">{{hits}}</div>
-                                            <div class="percentage-bar">
-                                                <div class="barWidth" style="width: {{ barWidth.hits }}">
-    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="percentage-bar-container">
-                                            <div class="text">{{bandwidth}}</div>
-                                            <div class="percentage-bar">
-                                                <div class="barWidth" style="width: {{ barWidth.bandwidth }}">
-    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    {{ #if ~/type === "trending" }}
-                                        <td class="{{ interest >= 0? 'positive': 'negative'}}">
-                                            {{ toSignedPercentage(interest) }}
-                                        </td>
-                                    {{ /if }}
-                                </tr>
-                            {{/each}}
-                        </table>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        <div class="projects-data-table-mobile">
-            {{#each projectListByPage}}
-                <div class="table-item">
-                    <div class="name">
-                        <span class="id">{{id}}</span>
-                        <span class="prefix">{{package}}/</span>
-                        <p>{{name}}</p>
-                    </div>
-                    <h5 class="item-name">Requests</h5>
-                    <div class="requests">
-                        {{hits}}
-                        <div class="percentage-bar">
-                            <div class="barWidth" style="width: {{ barWidth.hits }}">
+			<ul class="dropdown-menu">
+				{{#each statsTypeList}}
+				<li>
+					<a on-click="@this.set('statsType', @key)">{{this}}</a>
+				</li>
+				{{/each}}
+			</ul>
+		</div>
+	</div>
+	<div class="projects-data-table">
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Requests</th>
+				<th>Bandwidth</th>
+				{{ #if type === "trending" }}
+					<th>Increased</th>
+				{{ /if }}
+			</tr>
+			<tr>
+				<td colspan="{{ #if type === 'trending' }}4{{ else }}3{{ /if }}">
+					<div class="scrollable">
+						<table class="content">
+							{{#each projectListByPage}}
+								<tr>
+									<td>
+										<span class="id">{{id}}</span>
+										<div><span>{{package}}<span>/<p>{{name}}</p>
+										</div>
+									</td>
+									<td>
+										<div class="percentage-bar-container">
+											<div class="text">{{hits}}</div>
+											<div class="percentage-bar">
+												<div class="barWidth" style="width: {{ barWidth.hits }}">
 
-                            </div>
-                        </div>
-                    </div>
-                    <h5 class="item-name">Bandwidth</h5>
-                    <div class="requests">
-                        {{bandwidth}}
-                        <div class="percentage-bar">
-                            <div class="barWidth" style="width: {{ barWidth.bandwidth }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {{/each}}
-        </div>
-        <div class="pagination">
-            <p>{{ pageRange }}</p>
-            <div class="pagination-change-page">
-                <button>
-                    <img 
-                        width="20" 
-                        height="24" 
-                        src="{{@shared.assetsHost}}/img/statistics/left.svg" 
-                        loading="lazy" 
-                    />
-                </button>
-                {{ #each showablePages.pageCount }}
-                    <button 
-                        class="{{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
-                        on-click="@this.set('page', ~/showablePages.start + @key)"
-                    >
-                        {{ ~/showablePages.start + @key }}
-                    </button>
-                {{ /each }}
-                <button>
-                    <img 
-                        width="24" 
-                        height="24" 
-                        src="{{@shared.assetsHost}}/img/statistics/right.svg" 
-                        loading="lazy" 
-                    />
-                </button>
-            </div>
-            <div class="btn-group">
-                <span>Show:</span>
-                <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-                    aria-expanded="false">
-                    <span>{{pageLimit}}</span>
-                    <i class="fa fa-angle-down" aria-hidden="true"></i>
-                </button>
-                <ul class="dropdown-menu">
-                    {{#each paginationLimits}}
-                    <li>
-                        <a on-click="@this.set('pageLimit', this)">{{this}}</a>
-                    </li>
-                    {{/each}}
-                </ul>
-                <span>per page</span>
-            </div>
-        </div>
-    </div>
+												</div>
+											</div>
+										</div>
+									</td>
+									<td>
+										<div class="percentage-bar-container">
+											<div class="text">{{bandwidth}}</div>
+											<div class="percentage-bar">
+												<div class="barWidth" style="width: {{ barWidth.bandwidth }}">
+
+												</div>
+											</div>
+										</div>
+									</td>
+									{{ #if ~/type === "trending" }}
+										<td class="{{ interest >= 0? 'positive': 'negative'}}">
+											{{ toSignedPercentage(interest) }}
+										</td>
+									{{ /if }}
+								</tr>
+							{{/each}}
+						</table>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div class="projects-data-table-mobile">
+			{{#each projectListByPage}}
+				<div class="table-item">
+					<div class="name">
+						<span class="id">{{id}}</span>
+						<span class="prefix">{{package}}/</span>
+						<p>{{name}}</p>
+					</div>
+					<h5 class="item-name">Requests</h5>
+					<div class="requests">
+						{{hits}}
+						<div class="percentage-bar">
+							<div class="barWidth" style="width: {{ barWidth.hits }}">
+
+							</div>
+						</div>
+					</div>
+					<h5 class="item-name">Bandwidth</h5>
+					<div class="requests">
+						{{bandwidth}}
+						<div class="percentage-bar">
+							<div class="barWidth" style="width: {{ barWidth.bandwidth }}">
+							</div>
+						</div>
+					</div>
+				</div>
+			{{/each}}
+		</div>
+		<div class="pagination">
+			<p>{{ pageRange }}</p>
+			<div class="pagination-change-page">
+				<button>
+					<img
+						width="20"
+						height="24"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy"
+					/>
+				</button>
+				{{ #each showablePages.pageCount }}
+					<button
+						class="{{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
+						on-click="@this.set('page', ~/showablePages.start + @key)"
+					>
+						{{ ~/showablePages.start + @key }}
+					</button>
+				{{ /each }}
+				<button>
+					<img
+						width="24"
+						height="24"
+						src="{{@shared.assetsHost}}/img/statistics/right.svg"
+						loading="lazy"
+					/>
+				</button>
+			</div>
+			<div class="btn-group">
+				<span>Show:</span>
+				<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false">
+					<span>{{pageLimit}}</span>
+					<i class="fa fa-angle-down" aria-hidden="true"></i>
+				</button>
+				<ul class="dropdown-menu">
+					{{#each paginationLimits}}
+					<li>
+						<a on-click="@this.set('pageLimit', this)">{{this}}</a>
+					</li>
+					{{/each}}
+				</ul>
+				<span>per page</span>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script>
-    const _ = require('../../public/js/_');
-    const http = require('../../public/js/utils/http');
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
 
-    component.exports = {
-    	computed: {
-    		pageRange () {
-    			let page = this.get('page');
-    			let pageLimit = parseInt(this.get('pageLimit'));
-    			let total = this.get('projectList').length;
+	component.exports = {
+		computed: {
+			pageRange () {
+				let page = this.get('page');
+				let pageLimit = parseInt(this.get('pageLimit'));
+				let total = this.get('projectList').length;
 
-    			let start = (page - 1) * pageLimit + 1;
-    			let end = start + pageLimit - 1;
-    			end = total > end ? end : total;
+				let start = (page - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+				end = total > end ? end : total;
 
-    			return `Records ${start} - ${end} of ${total}`;
-    		},
-    		showablePages () {
-    			let page = this.get('page');
-    			let pageLimit = parseInt(this.get('pageLimit'));
-    			let totalRows = this.get('projectList').length;
-
-    			let totalPages = Math.ceil(totalRows / pageLimit) || 1;
-
-    			let start = (page - 2) < 1 ? 1 : page - 2;
-    			let end = (start + 4) > totalPages ? totalPages : start + 4;
-
-    			return {
-    				start,
-    				pageCount: new Array(end - start + 1),
-    			};
-    		},
-    		projectListByPage () {
-    			let page = this.get('page');
-    			let pageLimit = parseInt(this.get('pageLimit'));
-    			let projectList = this.get('projectList');
-    			let total = projectList.length;
-
-    			let start = (page - 1) * pageLimit + 1;
-    			let end = start + pageLimit - 1;
-    			end = total > end ? end : total;
-
-    			return projectList.slice(start - 1, end);
-    		},
-	},
-    	data () {
-    		return {
-    			statsType: 'all',
-			statsTypeList: {
-    				all: 'All types',
-    				npm: 'npm',
-    				gh: 'Github',
+				return `Records ${start} - ${end} of ${total}`;
 			},
-    			page: 1,
-    			pageLimit: '10',
+			showablePages () {
+				let page = this.get('page');
+				let pageLimit = parseInt(this.get('pageLimit'));
+				let totalRows = this.get('projectList').length;
+
+				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
+
+				let start = (page - 2) < 1 ? 1 : page - 2;
+				let end = (start + 4) > totalPages ? totalPages : start + 4;
+
+				return {
+					start,
+					pageCount: new Array(end - start + 1),
+				};
+			},
+			projectListByPage () {
+				let page = this.get('page');
+				let pageLimit = parseInt(this.get('pageLimit'));
+				let projectList = this.get('projectList');
+				let total = projectList.length;
+
+				let start = (page - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+				end = total > end ? end : total;
+
+				return projectList.slice(start - 1, end);
+			},
+	},
+		data () {
+			return {
+				statsType: 'all',
+			statsTypeList: {
+					all: 'All types',
+					npm: 'npm',
+					gh: 'Github',
+			},
+				page: 1,
+				pageLimit: '10',
 			paginationLimits: [ '10', '20', '30', '40' ],
 			projectList: [],
-    			toSignedPercentage (num) {
+				toSignedPercentage (num) {
 				return `${num > 0 ? '+' : ''}${num}%`;
 			},
 		};
-    	},
-    	oninit () {
-    		if (!Ractive.isServer) {
-    			this.observe('period statsType __ready', function () {
-    				if (this.get('__ready')) {
-    					let type = this.get('type');
-    					let period = this.get('period');
-    					let statsType = this.get('statsType');
-    					// fetch projectList using http api calls
-    					http.fetchProjectStats(type, statsType, period).then((res) => {
-    						this.set('projectList', this.processProjectStats(res));
-    					});
-    				}
-    			});
-    		}
-    	},
-    	processProjectStats (projectList) {
-    		let hitsMax = Math.max(...projectList.map(({ hits }) => hits));
-    		let bandwidthMax = Math.max(...projectList.map(({ bandwidth }) => bandwidth));
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('period statsType __ready', function () {
+					if (this.get('__ready')) {
+						let type = this.get('type');
+						let period = this.get('period');
+						let statsType = this.get('statsType');
+						// fetch projectList using http api calls
+						http.fetchProjectStats(type, statsType, period).then((res) => {
+							this.set('projectList', this.processProjectStats(res));
+						});
+					}
+				});
+			}
+		},
+		processProjectStats (projectList) {
+			let hitsMax = Math.max(...projectList.map(({ hits }) => hits));
+			let bandwidthMax = Math.max(...projectList.map(({ bandwidth }) => bandwidth));
 
-    		return projectList.map((one, index) => {
-    			let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
-    			interest = interest.toFixed(2);
-    			let barWidth = {
-    				hits: (one.hits * 100 / hitsMax) + '%',
-    				bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
-			};
-    			one.bandwidth = _.convertBytesToUnits(one.bandwidth) + ' GB';
+			return projectList.map((one, index) => {
+				let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
+				interest = interest.toFixed(2);
+				let barWidth = {
+					hits: (one.hits * 100 / hitsMax) + '%',
+					bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
+				};
+				one.bandwidth = _.convertBytesToUnits(one.bandwidth) + ' GB';
 
-    			return { ...one, interest, barWidth, id: index + 1 };
-    		});
-    	},
+				return { ...one, interest, barWidth, id: index + 1 };
+			});
+		},
 };
 </script>

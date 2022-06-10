@@ -20,29 +20,29 @@
 				{{#partial title}}
 					{{title}}
 				{{/partial}}
-	
+
 				{{#partial descr}}
 					{{descr}}
 				{{/partial}}
-	
+
 				{{#partial img}}
 					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}.svg">
 				{{/partial}}
 			</c-cdn-oss-head>
-	
+
 			<div class="divider"></div>
-	
+
 			<div class="ctrls-block">
 				<div class="ctrls-block-title">Statistics</div>
 				<div class="ctrls-block-ctrls">
 					<div class="chart-type-ctrl">
 						<span>Show numbers of</span>
-	
+
 						<input id="chart-switch"
 							type="checkbox"
 							class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
 							twoway="false">
-	
+
 						<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
 							<span>Request</span>
 							<span>GB</span>
@@ -51,16 +51,16 @@
 							</div>
 						</label>
 					</div>
-	
+
 					<div class="data-range-ctrl">
 						<span>Data range:</span>
-	
+
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								<span>{{~/statsPeriods[statsPeriod]}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
-	
+
 							<ul class="dropdown-menu">
 								{{#each ~/statsPeriods}}
 									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
@@ -70,9 +70,9 @@
 					</div>
 				</div>
 			</div>
-	
+
 			<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
-	
+
 			{{#if noPackageStatsData}}
 				<div class="no-data-wrapper">
 					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
@@ -86,13 +86,13 @@
 						<span>
 							Group by:
 						</span>
-	
+
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
-	
+
 							<ul class="dropdown-menu">
 								{{#each ~/usageChartGroupByValues}}
 									<li>
@@ -107,12 +107,12 @@
 						</div>
 					</div>
 				</div>
-	
+
 				<div class="chart-wrapper">
 					<canvas id="cdn-stats-chart"></canvas>
 				</div>
 			{{/if}}
-	
+
 			<c-new-infographic-banner>
 				{{#partial text}}
 					Learn more about<br />
@@ -120,7 +120,7 @@
 					powers <a href="/network/infographic" target="_blank" class="router-ignore">jsDelivr</a>
 				{{/partial}}
 			</c-new-infographic-banner>
-	
+
 			<c-cdn-oss-hosting-info></c-cdn-oss-hosting-info>
 		</div>
 	</div>
