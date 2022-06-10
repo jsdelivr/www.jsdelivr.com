@@ -31,6 +31,7 @@
 		"harmon": "git+https://github.com/MartinKolarik/harmon.git",
 		"http-link-header": "^1.0.3",
 		"http-proxy": "^1.18.1",
+		"husky": "^8.0.1",
 		"is-safe-path": "^1.0.0",
 		"koa": "^2.13.4",
 		"koa-compress": "^5.1.0",
@@ -123,6 +124,7 @@
 		"gulp-sourcemaps": "^3.0.0",
 		"gulp-terser": "^2.1.0",
 		"koa-livereload": "^0.2.0",
+		"lint-staged": "^13.0.0",
 		"selenium-webdriver": "^4.1.1",
 		"stylelint": "^13.13.1",
 		"stylelint-no-unsupported-browser-features": "^5.0.3",
@@ -136,11 +138,16 @@
 		"lint:fix": "npm run lint:css:fix && npm run lint:js:fix",
 		"lint:css": "stylelint --config .stylelintrc \"./src/**/*.{css,less}\"",
 		"lint:css:fix": "stylelint --fix --config .stylelintrc \"./src/**/*.{css,less}\"",
-		"lint:js": "eslint --ext .html,.js bin config src test",
-		"lint:js:fix": "eslint --fix --ext .html,.js bin config src test",
+		"lint:js": "eslint --cache --ext .html,.js bin config src test",
+		"lint:js:fix": "eslint --cache --fix --ext .html,.js bin config src test",
 		"mocha": "mocha --exit test/tests.js",
+		"prepare": "husky install",
 		"start": "cross-env NODE_ENV=development gulp",
 		"test": "npm run lint && npm run mocha"
+	},
+	"lint-staged": {
+		"*.js": "eslint --cache --fix",
+		"*.{css,less}": "stylelint --fix"
 	},
 	"repository": {
 		"type": "git",
