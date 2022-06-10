@@ -36,7 +36,7 @@
 				type: 'hits',
 				switchList: [],
 				hitsData: '',
-		};
+			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
@@ -46,20 +46,20 @@
 						let period = this.get('period');
 						let country = this.get('country') || '';
 
-					if (country === 'WW') { country = ''; }
+						if (country === 'WW') { country = ''; }
 
 						http.fetchNetworkProviderStats(type, period, country)
-						.then((res) => {
-							let oldSwitchList = this.get('switchList');
-							let newSwitchList = Object.keys(res)
-								.map((key) => {
-									let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
+							.then((res) => {
+								let oldSwitchList = this.get('switchList');
+								let newSwitchList = Object.keys(res)
+									.map((key) => {
+										let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
 
-									return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
-								});
-							this.set('switchList', newSwitchList);
-							this.set('hitsData', res);
-						});
+										return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
+									});
+								this.set('switchList', newSwitchList);
+								this.set('hitsData', res);
+							});
 					}
 				});
 			}
@@ -67,133 +67,133 @@
 		onrender () {
 			let hitsChart;
 
-		// create hits chart
-		this.observe('hitsData switchList', () => {
-			let switchList = this.get('switchList');
-			let hitsData = this.get('hitsData');
-			let hitsChartCanvasEl = this.find('#hits-chart');
+			// create hits chart
+			this.observe('hitsData switchList', () => {
+				let switchList = this.get('switchList');
+				let hitsData = this.get('hitsData');
+				let hitsChartCanvasEl = this.find('#hits-chart');
 
-			if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
+				if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
 
-			let array = [];
-			Object.keys(hitsData).forEach((key) => {
-				let provider = switchList.filter(one => one.name === providers[key].name);
+				let array = [];
+				Object.keys(hitsData).forEach((key) => {
+					let provider = switchList.filter(one => one.name === providers[key].name);
 
-				if (!provider[0]?.active) { return; }
+					if (!provider[0]?.active) { return; }
 
-				array.push({
-					label: key,
+					array.push({
+						label: key,
 						data: Object.values(hitsData[key].dates),
-					dates: Object.keys(hitsData[key].dates),
+						dates: Object.keys(hitsData[key].dates),
 						borderColor: providers[key].color,
 						backgroundColor: providers[key].color,
+					});
 				});
-			});
 
-			if (hitsChart) {
-				hitsChart.destroy();
-				hitsChart = null;
-			}
+				if (hitsChart) {
+					hitsChart.destroy();
+					hitsChart = null;
+				}
 
-			if (!array.length) { return; }
+				if (!array.length) { return; }
 
-			let yAxisTicksAmount = 8;
-			let minRangeValue = _.getValueByMagnitude(
-				Math.min(...array.map(one => Math.min(...one.data.filter(v => v !== 0)))),
-				'floor'
-			);
-			let maxRangeValue = _.getValueByMagnitude(
-				Math.max(...array.map(one => Math.max(...one.data))),
-				'ceil',
-				1
-			);
+				let yAxisTicksAmount = 8;
+				let minRangeValue = _.getValueByMagnitude(
+					Math.min(...array.map(one => Math.min(...one.data.filter(v => v !== 0)))),
+					'floor'
+				);
+				let maxRangeValue = _.getValueByMagnitude(
+					Math.max(...array.map(one => Math.max(...one.data))),
+					'ceil',
+					1
+				);
 
-			let chartPeriod = this.get('period');
-			console.log(chartPeriod);
-			let chartData = {
-				labels: _.getChartXAxisData(array[0].dates, chartPeriod),
-				datasets: array,
-			};
-			let chartSettings = {
-				useExternalTooltip: true,
-			};
-			let chartConfig = {
-				options: {
-					scales: {
-						x: {
-							display: true,
-							ticks: {
-								color: '#5C667A',
-								font: {
-									size: 12,
-									family: 'Lexend, sans-serif',
-									lineHeight: 2,
-								},
-								// whole callback needed to prepare dates for displaying on the x-axis
-								// since we need only the day and not full date (which we must to pass here for the tooltip title)
-								callback (tickIdx) {
-									let labelValue = this.getLabelForValue(tickIdx);
-									let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+				let chartPeriod = this.get('period');
+				console.log(chartPeriod);
+				let chartData = {
+					labels: _.getChartXAxisData(array[0].dates, chartPeriod),
+					datasets: array,
+				};
+				let chartSettings = {
+					useExternalTooltip: true,
+				};
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									// whole callback needed to prepare dates for displaying on the x-axis
+									// since we need only the day and not full date (which we must to pass here for the tooltip title)
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-									if (chartPeriod === 'year') {
-										if (labelValue[2]) {
-											if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
+										if (chartPeriod === 'year') {
+											if (labelValue[2]) {
+												if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
 
-											return [ labelValue[1], labelValue[2] ];
+												return [ labelValue[1], labelValue[2] ];
+											}
+
+											if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
+
+											return;
 										}
 
-										if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
+										if (Array.isArray(labelValue) && labelValue[1]) {
+											return [ day, labelValue[1] ];
+										}
 
-										return;
-									}
+										if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
 
-									if (Array.isArray(labelValue) && labelValue[1]) {
-										return [ day, labelValue[1] ];
-									}
-
-									if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
-
-									return [ day ];
+										return [ day ];
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
 								},
 							},
-							grid: {
-								display: false,
-								drawBorder: false,
-							},
-						},
-						y: {
-							display: true,
-							min: minRangeValue,
-							max: maxRangeValue,
-							ticks: {
-								count: yAxisTicksAmount,
-								color: '#5C667A',
-								crossAlign: 'far',
-								font: {
-									size: 12,
-									family: 'Lexend, sans-serif',
+							y: {
+								display: true,
+								min: minRangeValue,
+								max: maxRangeValue,
+								ticks: {
+									count: yAxisTicksAmount,
+									color: '#5C667A',
+									crossAlign: 'far',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+									callback (tickIdx) {
+										let labelValue = this.getLabelForValue(tickIdx);
+										return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+									},
 								},
-								callback (tickIdx) {
-									let labelValue = this.getLabelForValue(tickIdx);
-									return _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+								grid: {
+									drawBorder: false,
+									color: '#CFD6DD',
+									tickLength: 0,
 								},
-							},
-							grid: {
-								drawBorder: false,
-								color: '#CFD6DD',
-								tickLength: 0,
-							},
-							afterFit: (scale) => {
-								scale.width = 114;
-								scale.border = 'none';
+								afterFit: (scale) => {
+									scale.width = 114;
+									scale.border = 'none';
+								},
 							},
 						},
 					},
-				},
-			};
+				};
 
-			hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-		});
+				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+			});
 		},
 };
 </script>
