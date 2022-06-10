@@ -12,7 +12,7 @@ describe('other', () => {
 
 	it('stats page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/statistics`);
-		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Detailed package usage and network statistics are coming soon');
+		await expect(browser.findElement({ css: '.head-text' }).getText()).to.eventually.contain('Global internet insights');
 	});
 
 	it('sponsors page loads', async () => {

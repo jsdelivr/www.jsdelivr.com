@@ -22,9 +22,9 @@ describe('search', () => {
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.package-owner' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(1) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(2) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(3) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(1) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(2) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(3) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
 	});
 
 	it('pagination works (click)', async () => {
