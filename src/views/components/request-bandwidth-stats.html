@@ -60,22 +60,18 @@
 					let bandwidthUnit = this.get('bandwidthUnit');
 					this.set('growthPeriod', this.get('growthPeriods')[period]);
 
-
-					Promise.all([
-						http.fetchCdnOssStats('hits', name, period),
-						http.fetchCdnOssStats('bandwidth', name, period),
-					]).then((responses) => {
-						if (responses[0].total >= 0) {
-							this.animate('requestsAmount', responses[0].total, { duration: 1000 });
+					http.fetchCdnOssStats(name, period).then(({ hits, bandwidth }) => {
+						if (hits.total >= 0) {
+							this.animate('requestsAmount', hits.total, { duration: 1000 });
 						}
 
-						if (responses[1].total >= 0) {
+						if (bandwidth.total >= 0) {
 							if (!bandwidthUnit) {
-								bandwidthUnit = _.findUnitFromNumber(responses[1].total);
+								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
 								this.set('bandwidthUnit', bandwidthUnit);
 							}
 
-							this.animate('bandwidthAmount', _.convertBytesToUnits(responses[1].total, bandwidthUnit), { duration: 1000 });
+							this.animate('bandwidthAmount', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
 						}
 					});
 				});

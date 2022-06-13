@@ -194,7 +194,7 @@
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 						let type = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 
-						http.fetchCdnOssStats(type, name, period).then((response) => {
+						http.fetchCdnOssStats(name, period).then(({ [type]: response }) => {
 							if (!response.total) {
 								this.set('noPackageStatsData', true);
 								return;

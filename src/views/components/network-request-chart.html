@@ -40,25 +40,24 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period country type __ready', function () {
+				this.observe('period country __ready', function () {
 					if (this.get('__ready')) {
-						let type = this.get('type');
 						let period = this.get('period');
 						let country = this.get('country') || '';
 
 						if (country === 'WW') { country = ''; }
 
-						http.fetchNetworkProviderStats(type, period, country)
+						http.fetchNetworkProviderStats(period, country)
 							.then((res) => {
 								let oldSwitchList = this.get('switchList');
-								let newSwitchList = Object.keys(res)
+								let newSwitchList = Object.keys(res.providers)
 									.map((key) => {
 										let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
 
 										return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
 									});
 								this.set('switchList', newSwitchList);
-								this.set('hitsData', res);
+								this.set('hitsData', res.providers);
 							});
 					}
 				});
@@ -68,9 +67,10 @@
 			let hitsChart;
 
 			// create hits chart
-			this.observe('hitsData switchList', () => {
+			this.observe('hitsData switchList type', () => {
 				let switchList = this.get('switchList');
 				let hitsData = this.get('hitsData');
+				let type = this.get('type');
 				let hitsChartCanvasEl = this.find('#hits-chart');
 
 				if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
@@ -83,8 +83,8 @@
 
 					array.push({
 						label: key,
-						data: Object.values(hitsData[key].dates),
-						dates: Object.keys(hitsData[key].dates),
+						data: Object.values(hitsData[key][type].dates),
+						dates: Object.keys(hitsData[key][type].dates),
 						borderColor: providers[key].color,
 						backgroundColor: providers[key].color,
 					});

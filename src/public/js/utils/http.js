@@ -79,20 +79,20 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 	});
 };
 
-module.exports.fetchCdnOssStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/proxy/${name}/stats`, body: { type, period } });
+module.exports.fetchCdnOssStats = (name, period = 'month') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/proxy/${name}/stats`, body: { period } });
 };
 
-module.exports.fetchNetworkProviderStats = (type, period, country = '') => {
+module.exports.fetchNetworkProviderStats = (period, country = '') => {
 	let body = {
-		type, period,
+		period,
 	};
 	country && (body.country = country);
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/providers`, body });
 };
 
-module.exports.fetchNetworkProviderStatsByCountry = (type, period) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { type, period } });
+module.exports.fetchNetworkProviderStatsByCountry = (period) => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { period } });
 };
 
 /** *

@@ -114,13 +114,9 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period', (period) => {
-					// http calls to fetch net stats data...
-					http.fetchNetworkProviderStats('hits', period).then((res) => {
-						this.set('requestsData', this.processStats(res));
-					});
-
-					http.fetchNetworkProviderStats('bandwidth', period).then((res) => {
-						this.set('bandwidthData', this.processStats(res));
+					http.fetchNetworkProviderStats(period).then((res) => {
+						this.set('requestsData', this.processStats(res.providers, 'hits'));
+						this.set('bandwidthData', this.processStats(res.providers, 'bandwidth'));
 					});
 				});
 			}
@@ -128,7 +124,7 @@
 		onrender () {
 
 		},
-		processStats (stats) {
+		processStats (stats, type) {
 			let result = {
 				total: 0,
 				prevTotal: 0,
@@ -140,12 +136,12 @@
 				let svg = provider.imgPath;
 				let color = provider.color;
 				let name = provider.name;
-				let value = stats[key].total;
-				let interest = this.calcGrowth(value, stats[key].prev.total);
+				let value = stats[key][type].total;
+				let interest = this.calcGrowth(value, stats[key][type].prev.total);
 
 				result.statsList.push({ svg, name, value, color, interest });
-				result.total += stats[key].total;
-				result.prevTotal += stats[key].prev.total;
+				result.total += stats[key][type].total;
+				result.prevTotal += stats[key][type].prev.total;
 			});
 
 			result.growth = this.calcGrowth(result.total, result.prevTotal);
