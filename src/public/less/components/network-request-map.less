@@ -1,8 +1,13 @@
-.c-network-request-chart {
-	.chart-header {
+.c-network-request-map {
+	.map-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+
+		@media (max-width: @screen-sm-min) {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 
 		h3 {
 			font-family: Lexend, sans-serif;
@@ -12,6 +17,10 @@
 			line-height: 36px;
 			letter-spacing: .2px;
 			color: #17233b;
+
+			@media (max-width: @screen-sm-min) {
+				font-size: 18px;
+			}
 		}
 
 		.button {
@@ -25,6 +34,13 @@
 			border: none;
 			background: none;
 			color: #5c667a;
+
+			@media (max-width: @screen-sm-min) {
+				margin: 0;
+				font-size: 16px;
+				width: 50%;
+				height: 40px;
+			}
 		}
 
 		.selected {
@@ -33,7 +49,7 @@
 		}
 	}
 
-	.hits-chart-wrapper {
+	.map-wrapper {
 		margin-top: 30px;
 		background: #fff;
 		border: 1px solid #dfe3e7;
@@ -157,57 +173,55 @@
 			}
 		}
 
-		.hits-chart-block {
+		.hits-map-block {
 			position: relative;
-			height: 337px;
+			height: 687px;
 			padding: 20px 22px;
-		}
 
-		.verticalLine {
-			position: relative;
-			width: 100%;
-			height: 1px;
-			background: #edf0f2;
-			margin: 0;
-		}
-	}
-}
-
-@media (max-width: @screen-sm-min) {
-	.c-network-request-chart {
-		.chart-header {
-			flex-direction: column;
-			align-items: flex-start;
-
-			h3 {
-				font-size: 18px;
+			@media (max-width: @screen-sm-min) {
+				height: 438px;
 			}
 
-			div {
-				display: flex;
+			#hits-map {
 				width: 100%;
-
-				.button {
-					margin: 0;
-					font-size: 16px;
-					width: 50%;
-					height: 40px;
-				}
+				height: 100%;
 			}
-		}
 
-		.hits-chart-wrapper {
-			border: none;
-			border-top: 1px solid #dfe3e7;
-			box-sizing: border-box;
-			box-shadow: none;
+			#tooltip {
+				display: none;
+				position: absolute;
+				width: 220px;
+				padding: 18px;
+				background: #fff;
+				border-radius: 6px;
+				transition: .3s;
 
-			.switch-block {
-				flex-wrap: wrap;
-				justify-content: space-between;
+				.title {
+					color: #17233b;
+				}
 
-				.switch-item {
-					margin-bottom: 20px;
+				.stats {
+					margin-top: 18px;
+					color: #5c667a;
+
+					&:before {
+						padding: 0 9px;
+						border-radius: 3px;
+						margin: 0 8px 0 0;
+						content: " ";
+					}
+
+					&.Cloudflare:before {
+						background: #f6821f;
+					}
+
+					&.Fastly:before {
+						background: #ff282d;
+					}
+
+					&.G-Core:before {
+						background: #a234d2;
+					}
 				}
 			}
 		}

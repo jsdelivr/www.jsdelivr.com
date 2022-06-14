@@ -49,15 +49,17 @@
 
 						http.fetchNetworkProviderStats(period, country)
 							.then((res) => {
+								res = res.providers;
+
 								let oldSwitchList = this.get('switchList');
-								let newSwitchList = Object.keys(res.providers)
+								let newSwitchList = Object.keys(res)
 									.map((key) => {
 										let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
 
 										return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
 									});
 								this.set('switchList', newSwitchList);
-								this.set('hitsData', res.providers);
+								this.set('hitsData', res);
 							});
 					}
 				});

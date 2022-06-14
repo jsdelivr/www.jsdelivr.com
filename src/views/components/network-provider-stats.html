@@ -136,12 +136,14 @@
 				let svg = provider.imgPath;
 				let color = provider.color;
 				let name = provider.name;
-				let value = stats[key][type].total;
-				let interest = this.calcGrowth(value, stats[key][type].prev.total);
+
+				let stat = stats[key][type];
+				let value = stat.total;
+				let interest = this.calcGrowth(value, stat.prev.total);
 
 				result.statsList.push({ svg, name, value, color, interest });
-				result.total += stats[key][type].total;
-				result.prevTotal += stats[key][type].prev.total;
+				result.total += stat.total;
+				result.prevTotal += stat.prev.total;
 			});
 
 			result.growth = this.calcGrowth(result.total, result.prevTotal);

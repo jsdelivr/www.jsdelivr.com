@@ -1,0 +1,207 @@
+<div class="c-network-request-map">
+	<div class="map-header">
+		<h3>Requests served by country</h3>
+		<div>
+			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
+			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+		</div>
+	</div>
+	<div class="map-wrapper">
+		<div class="switch-block">
+			{{#each switchList}}
+				<div class="switch-item">
+					<label class="switch">
+						<input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
+						<span class="slider round"></span>
+                    </label>
+                    <span class="name">{{name}}</span>
+				</div>
+			{{/each}}
+		</div>
+		<div class="hits-map-block">
+            <svg id="hits-map"></svg>
+            <div id="tooltip"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+    const http = require('../../public/js/utils/http.js');
+    const _ = require('../../public/js/_.js');
+    const geoData = require('../../public/json/geodata.json');
+
+    component.exports = {
+    	data () {
+    		return {
+    			type: 'hits',
+    			switchList: [
+    				{
+    					name: 'Cloudflare',
+    					active: true,
+    				},
+    				{
+    					name: 'Fastly',
+    					active: true,
+    				},
+    				{
+    					name: 'G-Core',
+    					active: true,
+    				},
+			],
+    			hitsData: [],
+    		};
+    	},
+    	oninit () {
+    		if (!Ractive.isServer) {
+			this.observe('period __ready', function () {
+				if (this.get('__ready')) {
+					let period = this.get('period');
+
+					http.fetchNetworkProviderStatsByCountry(period)
+						.then((res) => {
+							this.set('hitsData', res.countries);
+						});
+				}
+			});
+		}
+    	},
+    	onrender () {
+    		this.observe('hitsData type', function () {
+    			let svg = d3.select('svg');
+
+    			if (!svg || !this.get('__ready')) { return; }
+
+    			svg.selectAll('*').remove();
+    			let width = parseInt(svg.style('width').replace('px', ''));
+    			let height = parseInt(svg.style('height').replace('px', ''));
+
+    			let hitsData = this.get('hitsData') ?? {};
+    			let switchList = this.get('switchList');
+    			let type = this.get('type');
+    			let data = {};
+
+    			Object.keys(hitsData).forEach((key) => {
+    				data[key] = hitsData[key][type];
+    			});
+
+
+    			let min = _.getValueByMagnitude(
+    				Math.min(...Object.keys(data).map(key => data[key].total)),
+    				'floor'
+    			);
+    			let max = _.getValueByMagnitude(
+    				Math.max(...Object.keys(data).map(key => data[key].total)),
+    				'ceil',
+    				1
+    			);
+    
+    			let legendColorRange = [ '#A2ECF6', '#65D69E', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
+    			let domainValues = d3.range(legendColorRange.length - 1)
+    				.map((index) => {
+    					return min + index * Math.ceil((max - min) / legendColorRange.length);
+    				});
+    			domainValues = [ ...domainValues, max ];
+
+    			let colorScale = d3.scaleLinear()
+    				.domain(domainValues)
+    				.range(legendColorRange)
+    				.clamp(true)
+    				.unknown('#ccc');
+    			let defs = svg.append('defs');
+    			let linearGradient = defs.append('linearGradient')
+    				.attr('id', 'linear-gradient');
+    			linearGradient.selectAll('stop')
+    				.data(colorScale.range())
+    				.enter().append('stop')
+    				.attr('offset', (d, i) => { return i / (colorScale.range().length - 1); })
+    				.attr('stop-color', (d) => { return d; });
+    
+    			let legendPosition = {
+    				x: width - 130,
+    				y: (height + 420) / 2,
+    			};
+    			svg.append('rect')
+    				.attr('transform', `rotate(-90, ${legendPosition.x}, ${legendPosition.y})`)
+    				.attr('x', legendPosition.x)
+    				.attr('y', legendPosition.y)
+    				.attr('width', 420)
+    				.attr('height', 16)
+    				.attr('rx', 6)
+    				.attr('ry', 6)
+    				.style('fill', 'url(#linear-gradient)');
+
+    			svg.append('g')
+    				.attr('class', 'legend-text')
+    				.selectAll('text')
+    				.data(colorScale.range())
+    				.enter()
+    				.append('text')
+    				.attr('x', legendPosition.x + 30)
+    				.attr('y', (d, index) => { // equivalent  with legendPosition.y - index  * (420 / (legendColorRange - 1));
+    					return legendPosition.y - index * 420 / (legendColorRange.length - 1);
+    				})
+    				.style('fill', 'black')
+    				.text((d, index) => {
+    					let value = min + index * (max - min) / (legendColorRange.length - 1);
+    					return value > 1e9 ? _.convertBytesToUnits(value, 'GB') + 'G' : value;
+    				});
+
+    			// Map and projection
+    			// let path = d3.geoPath();
+    			let projection = d3.geoMercator()
+    				.scale(width / 2.5 / Math.PI)
+    				.center([ 0, 20 ])
+    				.translate([ width / 2 - 100, height / 2 + 50 ]);
+    
+
+    			// Draw the map
+    			svg.append('g')
+    				.selectAll('path')
+    				.data(geoData.features)
+    				.join('path')
+    			// draw each country
+    				.attr('d', d3.geoPath().projection(projection))
+    			// set the color of each country
+    				.attr('fill', (d) => {
+    					let countryCode = d.id;
+
+    					if (!data[countryCode]) {
+    						console.log('geo country');
+    						console.log(d);
+    					}
+
+    					return colorScale(data[countryCode] ? data[countryCode].total : null);
+    				})
+    				.attr('stroke', 'white')
+    				.attr('stroke-width', '1px')
+    				.on('mouseover mousemove', (event, d) => {
+    					d3.select('#tooltip')
+    						.selectAll('*')
+    						.remove();
+
+    					d3.select('#tooltip')
+    						.style('left', `${event.layerX + 10}px`)
+    						.style('top', `${event.layerY + 10}px`)
+    						.style('display', 'block')
+    						.append('div')
+    						.attr('class', 'title')
+    						.text(d.properties.name);
+    
+    					switchList.forEach((one) => {
+    						if (!one.active) { return; }
+
+    						let statsInfo = data[d.id] ? data[d.id].total : 0;
+    						d3.select('#tooltip')
+    							.append('div')
+    							.attr('class', `stats ${one.name}`)
+    							.text(`${one.name} - ${statsInfo}`);
+    					});
+    				})
+    				.on('mouseout', () => {
+    					d3.select('#tooltip')
+    						.style('display', 'none');
+    				});
+    		});
+    	},
+};
+</script>
