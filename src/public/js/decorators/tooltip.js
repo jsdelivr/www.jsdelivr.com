@@ -85,7 +85,7 @@ let tooltipDecorator = (
 	};
 
 	for (eventName in handlers) {
-		if (Object.prototype.hasOwnProperty.call(handlers, eventName)) {
+		if (Object.hasOwn(handlers, eventName)) {
 			node.addEventListener(eventName, handlers[eventName], false);
 		}
 	}
@@ -93,7 +93,7 @@ let tooltipDecorator = (
 	return {
 		teardown () {
 			for (eventName in handlers) {
-				if (Object.prototype.hasOwnProperty.call(handlers, eventName)) {
+				if (Object.hasOwn(handlers, eventName)) {
 					node.removeEventListener(eventName, handlers[eventName], false);
 				}
 			}

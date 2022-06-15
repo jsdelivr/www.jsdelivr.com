@@ -294,7 +294,7 @@ module.exports = {
 			if (!obj) { continue; }
 
 			for (let key in obj) {
-				if (Object.prototype.hasOwnProperty.call(obj, key)) {
+				if (Object.hasOwn(obj, key)) {
 					if (typeof obj[key] === 'object' && obj[key] !== null) {
 						if (obj[key] instanceof Array) {
 							out[key] = obj[key].slice(0);

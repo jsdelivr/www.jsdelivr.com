@@ -193,7 +193,7 @@ app.use(async (ctx, next) => {
 
 	let name = ctx.query._escaped_fragment_.trim();
 
-	if ({}.hasOwnProperty.call(legacyMapping, name)) {
+	if (Object.hasOwn(legacyMapping, name)) {
 		ctx.status = 301;
 		return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
 	}
@@ -210,7 +210,7 @@ router.use(koaElasticUtils.middleware(global.apmClient));
 koaElasticUtils.addRoutes(router, [
 	[ '/projects/:name', '/projects/:name' ],
 ], async (ctx) => {
-	if ({}.hasOwnProperty.call(legacyMapping, ctx.params.name)) {
+	if (Object.hasOwn(legacyMapping, ctx.params.name)) {
 		ctx.status = 301;
 		return ctx.redirect(`/package/${legacyMapping[ctx.params.name].type}/${legacyMapping[ctx.params.name].name}`);
 	}
@@ -413,7 +413,7 @@ server.use((req, res, next) => {
  * Redirect old blog posts.
  */
 server.use('/blog', (req, res, next) => {
-	if ({}.hasOwnProperty.call(serverConfig.blogRewrite, req.path)) {
+	if (Object.hasOwn(serverConfig.blogRewrite, req.path)) {
 		return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
 	} else if (req.hostname === 'blog.jsdelivr.com') {
 		return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
