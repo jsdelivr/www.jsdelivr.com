@@ -29,6 +29,7 @@
 	const http = require('../../public/js/utils/http.js');
 	const _ = require('../../public/js/_.js');
 	const geoData = require('../../public/json/geodata.json');
+	const netProviders = require('../../public/json/net-providers.json');
 
 	component.exports = {
 		data () {
@@ -66,7 +67,7 @@
 			}
 		},
 		onrender () {
-			this.observe('hitsData type', function () {
+			this.observe('hitsData type switchList', function () {
 				let svg = d3.select('svg');
 
 				if (!svg || !this.get('__ready')) { return; }
@@ -81,7 +82,33 @@
 				let data = {};
 
 				Object.keys(hitsData).forEach((key) => {
-					data[key] = hitsData[key][type];
+					let countryStat = hitsData[key];
+
+					let ratioList = {};
+					let hitsTotal = 0;
+					let bandwidthTotal = 0;
+					Object.keys(countryStat.hits.providers).forEach((providerCode) => {
+						let provider = netProviders[providerCode];
+						let switchOne = switchList.find(one => one.name === provider.name);
+
+						if (!switchOne.active) { return; }
+
+						ratioList[provider.name] = this.calcRatio(countryStat.hits.providers[providerCode], countryStat.bandwidth.providers[providerCode]);
+						hitsTotal += countryStat.hits.providers[providerCode];
+					});
+
+					Object.keys(countryStat.bandwidth.providers).forEach((providerCode) => {
+						let provider = netProviders[providerCode];
+						let switchOne = switchList.find(one => one.name === provider.name);
+
+						if (!switchOne.active) { return; }
+
+						bandwidthTotal += countryStat.bandwidth.providers[providerCode];
+					});
+
+					data[key] = countryStat[type];
+					data[key].total = type === 'hits' ? hitsTotal : bandwidthTotal;
+					data[key].ratio = ratioList;
 				});
 
 
@@ -191,10 +218,30 @@
 							if (!one.active) { return; }
 
 							let statsInfo = data[d.id] ? data[d.id].total : 0;
-							d3.select('#tooltip')
+							let ratio = data[d.id] ? data[d.id].ratio[one.name] : 0;
+
+							let statsDiv = d3.select('#tooltip')
 								.append('div')
-								.attr('class', `stats ${one.name}`)
-								.text(`${one.name} - ${statsInfo}`);
+								.attr('class', `stats ${one.name}`);
+
+							let textContainer = statsDiv.append('div')
+								.attr('class', 'text-container');
+							let textDiv = textContainer.append('div')
+								.attr('class', 'text');
+							textDiv.append('span')
+								.text(one.name);
+
+							textDiv.append('span')
+								.text(statsInfo);
+
+							textDiv = textContainer.append('div')
+								.attr('class', 'text');
+
+							textDiv.append('span')
+								.text('Average file size');
+
+							textDiv.append('span')
+								.text(ratio);
 						});
 					})
 					.on('mouseout', () => {
@@ -203,5 +250,8 @@
 					});
 			});
 		},
-	};
+		calcRatio (hits, bandwidth) {
+			return hits ? _.autoConvertBytesToUnits(bandwidth / hits) : 0;
+		},
+};
 </script>

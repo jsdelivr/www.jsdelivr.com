@@ -66,8 +66,18 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 				});
 
 				innerHtml += '</div>';
+
+				let provider = line.split(' ')[0].replace(':', '');
+				let providerData = tooltipModel.dataPoints.find((one) => {
+					return one.dataset.label === provider;
+				});
+				innerHtml += `<div class='ratio-text'>
+					<span>Average file size</span>
+					<span>${providerData.dataset.ratio[providerData.label.replace(',', '')]}</span>
+				</div>`;
 			});
 
+			innerHtml += `</div>`;
 			let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}
@@ -106,6 +116,13 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 			ctx.restore();
 		},
 	};
+
+	let plugins = {
+		verticalYAxisBorder,
+	};
+	Object.keys(chartSettings.plugins).forEach((key) => {
+		if (!chartSettings.plugins[key]) { delete plugins[key]; }
+	});
 
 	// chart configuration
 	let defaultConfig = {
@@ -148,7 +165,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 				intersect: false,
 			},
 		},
-		plugins: [ verticalYAxisBorder ],
+		plugins: [ Object.values(plugins) ],
 	};
 
 	// create chart instance

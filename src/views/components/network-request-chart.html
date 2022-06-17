@@ -83,10 +83,19 @@
 
 					if (!provider[0]?.active) { return; }
 
+					let ratioList = {};
+					Object.keys(hitsData[key][type].dates).forEach((date) => {
+						let hits = hitsData[key].hits.dates[date];
+						let bandwidth = hitsData[key].bandwidth.dates[date];
+
+						ratioList[date] = hits ? _.autoConvertBytesToUnits(bandwidth / hits) : 0;
+					});
+
 					array.push({
 						label: key,
 						data: Object.values(hitsData[key][type].dates),
 						dates: Object.keys(hitsData[key][type].dates),
+						ratio: ratioList,
 						borderColor: providers[key].color,
 						backgroundColor: providers[key].color,
 					});
@@ -118,6 +127,9 @@
 				};
 				let chartSettings = {
 					useExternalTooltip: true,
+					plugins: {
+						verticalYAxisBorder: false,
+					},
 				};
 				let chartConfig = {
 					options: {
@@ -184,10 +196,6 @@
 									drawBorder: false,
 									color: '#CFD6DD',
 									tickLength: 0,
-								},
-								afterFit: (scale) => {
-									scale.width = 114;
-									scale.border = 'none';
 								},
 							},
 						},
