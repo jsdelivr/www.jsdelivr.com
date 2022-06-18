@@ -1,24 +1,40 @@
 .c-network-provider-stats {
-	display: flex;
-	justify-content: space-between;
+	display: block;
 	margin: 0;
 
+	@media (min-width: @screen-md-min) {
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
 	.block {
-		width: 570px;
+		width: 100%;
+		margin-top: 40px;
+
+		@media (min-width: @screen-md-min) {
+			max-width: 588px;
+			width: 50%;
+			margin: 0;
+		}
 
 		h3 {
 			margin: 0;
 			font-family: Lexend, sans-serif;
 			font-style: normal;
 			font-weight: 600;
-			font-size: 24px;
+			font-size: 18px;
 			line-height: 36px;
 			letter-spacing: .2px;
 			color: #17233b;
+
+			@media (min-width: @screen-sm-min) {
+				font-size: 24px;
+			}
 		}
 
 		.table {
-			margin-top: 24px;
+			margin-top: 16px;
 			margin-bottom: 0;
 			background: #fff;
 			border: 1px solid #dfe3e7;
@@ -26,33 +42,37 @@
 			box-shadow: 0 4px 2px -2px rgba(23, 35, 59, .06), 0 2px 8px rgba(23, 35, 59, .04);
 			border-radius: 6px;
 
+			@media (min-width: @screen-sm-min) {
+				margin-top: 24px;
+			}
+
 			.bandwidth-stats {
+				height: 72px;
 				display: flex;
 				flex-direction: column;
 
 				@media (min-width: @screen-sm-min) {
 					flex-direction: row;
+					height: auto;
 				}
 				align-items: center;
 
 				>div {
 					display: flex;
 					width: 100%;
-					flex-direction: column;
-					padding: 16px 0;
+					padding: 16px 12px;
 					height: auto;
 					align-items: center;
 					text-align: center;
+					border-bottom: 1px solid #dfe3e7;
+					box-sizing: border-box;
 
 					@media (min-width: @screen-sm-min) {
 						flex-direction: row;
 						text-align: left;
 						height: 96px;
-						width: 600px;
 						padding: 0 20px;
 					}
-					border-bottom: 1px solid #dfe3e7;
-					box-sizing: border-box;
 
 					.card-icon {
 						display: flex;
@@ -60,20 +80,20 @@
 						justify-content: center;
 						width: 32px;
 						height: 32px;
+						border-radius: 6px;
+						background: #f3f5f7;
 
 						@media (min-width: @screen-sm-min) {
 							width: 48px;
 							height: 48px;
-							background: #f3f5f7;
 							margin-right: 20px;
 						}
-						border-radius: 6px;
 					}
 
 					.card-main-stat {
 						display: flex;
 						flex-direction: column;
-						margin-top: 16px;
+						margin-left: 8px;
 						font-weight: 600;
 						font-size: 18px;
 						line-height: 26px;
@@ -88,24 +108,21 @@
 					}
 
 					.card-growth {
-						display: flex;
-						margin-left: 0;
-						align-items: center;
-						margin-top: 16px;
+						margin-left: auto;
 
 						@media (min-width: @screen-sm-min) {
-							margin-left: auto;
+							display: flex;
 							flex-direction: column;
 							align-items: stretch;
-							margin-top: 0;
+							margin-top: 16px;
 						}
 
 						>div:nth-child(1) {
 							display: flex;
+							justify-content: flex-end;
 							margin-right: 4px;
 
 							@media (min-width: @screen-sm-min) {
-								justify-content: flex-end;
 								margin-right: 0;
 							}
 						}
@@ -123,9 +140,12 @@
 
 						.growth-positive, .growth-negative {
 							font-weight: 600;
-							font-size: 16px;
-							line-height: 24px;
+							font-size: 14px;
 							letter-spacing: .2px;
+
+							@media (min-width: @screen-sm-min) {
+								font-size: 16px;
+							}
 						}
 
 						.growth-positive {
@@ -134,6 +154,12 @@
 
 						.growth-negative {
 							color: #eb3333;
+						}
+
+						span:last-child {
+							@media (max-width: @screen-sm-min) {
+								font-size: 12px;
+							}
 						}
 					}
 				}
@@ -153,6 +179,13 @@
 					line-height: 20px;
 					color: #111a2c;
 
+					@media (max-width: @screen-sm-min) {
+						flex-direction: column;
+						align-items: flex-start;
+						justify-content: center;
+						height: 76px;
+					}
+
 					.info {
 						width: 60%;
 						display: flex;
@@ -163,22 +196,57 @@
 							display: flex;
 							align-items: center;
 
+							@media (min-width: @screen-sm-min) {
+								margin-bottom: 8px;
+							}
+
 							img {
-								margin-left: 20px;
+								margin-left: 12px;
 								margin-right: 8px;
+
+								@media (min-width: @screen-sm-min) {
+									margin-left: 20px;
+								}
+							}
+						}
+
+						.text-table-number {
+							@media (max-width: @screen-sm-min) {
+								display: none;
 							}
 						}
 					}
 
 					.chart {
-						width: 40%;
-						margin-right: 18px;
 						display: flex;
 						justify-content: space-between;
 						align-items: center;
+						width: 100%;
+						margin: 8px 0 0;
+						padding: 0 12px;
+
+						@media (min-width: @screen-sm-min) {
+							width: 40%;
+							margin: 0 18px 0 0;
+							padding: 0 16px 0 12px;
+						}
+
+						.text-table-number-for-mobile {
+							display: block;
+							width: 45%;
+
+							@media (min-width: @screen-sm-min) {
+								display: none;
+							}
+						}
 
 						.percentage-bar {
 							width: 144px;
+
+							@media (max-width: @screen-sm-min) {
+								max-width: 128px;
+								padding: 0 5px;
+							}
 
 							.barWidth {
 								height: 4px;
@@ -194,84 +262,6 @@
 
 				.list:last-child {
 					box-shadow: none;
-				}
-			}
-		}
-	}
-}
-
-@media (max-width: @screen-sm-min) {
-	.c-network-provider-stats {
-		display: block;
-
-		.block {
-			width: 100%;
-			margin-top: 40px;
-
-			h3 {
-				font-size: 18px;
-			}
-
-			.table {
-				.bandwidth-stats {
-					height: 72px;
-
-					div {
-						padding: 0;
-						display: flex;
-						flex-direction: row;
-						justify-content: flex-start;
-
-						.card-main-stat {
-							margin: 0;
-							font-size: 18px;
-						}
-
-						.card-growth {
-							margin: 0;
-							margin-left: 39px;
-							display: flex;
-							flex-direction: column;
-							align-items: flex-end;
-
-							.growth-positive {
-								text-align: right;
-								font-size: 14px;
-							}
-
-							span:last-child {
-								font-size: 12px !important;
-							}
-						}
-					}
-
-					.card-icon {
-						margin: 20px 8px 20px 16px;
-						background: #f3f5f7;
-						border-radius: 6px;
-					}
-				}
-
-				.bandwidth-list {
-					.list {
-						flex-direction: column;
-						align-items: flex-start;
-						justify-content: center;
-						height: 76px;
-
-						.icon {
-							margin-bottom: 8px;
-						}
-
-						.chart {
-							margin: 0;
-							padding: 0 16px 0 12px;
-
-							.percentage-bar {
-								width: 128px;
-							}
-						}
-					}
 				}
 			}
 		}

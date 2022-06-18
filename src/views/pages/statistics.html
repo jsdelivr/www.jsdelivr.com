@@ -37,8 +37,13 @@
 							loading="lazy"
 						/>
 						<h2 class="title">Global data</h2>
+						<img
+							class="setting-ico {{ #if globalDataSetting }}active{{ /if }}"
+							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
+							on-click="@this.set('globalDataSetting', !globalDataSetting)"
+						/>
 					</div>
-					<div class="header-ctrls">
+					<div class="header-ctrls {{ #if globalDataSetting }}show{{ /if }}">
 						<div class="data-range-ctrl">
 							<div class="btn-group">
 								<span class="label-for-pinned">Data range</span>
@@ -104,8 +109,13 @@
 							loading="lazy"
 						/>
 						<h2 class="title">Network data</h2>
+						<img
+							class="setting-ico {{ #if networkDataSetting }}active{{ /if }}"
+							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
+							on-click="@this.set('networkDataSetting', !networkDataSetting)"
+						/>
 					</div>
-					<div class="network-data-action">
+					<div class="network-data-action {{ #if networkDataSetting }}show{{ /if }}">
 						<input class="search" placeholder="Filter for a specific country or a continent..."/>
 						<div class="data-range-ctrl">
 							<div class="btn-group">
@@ -215,6 +225,7 @@
 					year: 365,
 				},
 				globalStatsPeriod: 'month',
+				globalDataSetting: false,
 				rateList: [
 					{
 						svg: '/img/statistics/cloudflare.svg',
@@ -233,6 +244,7 @@
 					},
 				],
 				country: '',
+				networkDataSetting: false,
 				networkStatsPeriod: 'month',
 				projectStatsPeriod: 'month',
 			};
