@@ -69,6 +69,7 @@
 		@media (max-width: @screen-sm-min) {
 			margin-top: 16px;
 			border: none;
+			box-shadow: none;
 		}
 
 		.switch-block {
@@ -85,7 +86,14 @@
 				display: flex;
 				align-items: center;
 				height: 20px;
-				margin-right: 24px;
+
+				& + .switch-item {
+					margin-left: 24px;
+
+					@media (max-width: @screen-sm-min) {
+						margin-left: 20px;
+					}
+				}
 
 				.name {
 					font-family: Lexend, sans-serif;
@@ -198,9 +206,8 @@
 
 			@media (max-width: @screen-sm-min) {
 				height: auto;
-				padding: 0 0 20px;
+				padding: 0;
 				margin-top: 16px;
-				border: 1px solid #cfd6dd;
 				border-radius: 8px;
 			}
 
@@ -210,6 +217,19 @@
 
 				@media (max-width: @screen-sm-min) {
 					height: 380px;
+					border: 1px solid #cfd6dd;
+					border-radius: 8px;
+				}
+			}
+
+			#map-legend {
+				display: none;
+
+				@media (max-width: @screen-sm-min) {
+					display: block;
+					width: 100%;
+					height: 35px;
+					margin-top: 24px;
 				}
 			}
 
@@ -221,9 +241,21 @@
 				background: #fff;
 				border-radius: 6px;
 				transition: .3s;
+				z-index: 2;
+
+				@media (max-width: @screen-sm-min) {
+					top: unset !important;
+					left: 10vw !important;
+					bottom: 75px !important;
+				}
 
 				.title {
 					color: #17233b;
+
+					img {
+						float: right;
+						cursor: pointer;
+					}
 				}
 
 				.stats {
@@ -269,6 +301,20 @@
 							}
 						}
 					}
+				}
+			}
+
+			.map-overlay {
+				display: none;
+
+				@media (max-width: @screen-sm-min) {
+					position: absolute;
+					left: 0;
+					top: 0;
+					background: #111a2c;
+					opacity: .6;
+					border-radius: 8px;
+					z-index: 1;
 				}
 			}
 		}

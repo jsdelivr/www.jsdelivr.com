@@ -19,8 +19,10 @@
 			{{/each}}
 		</div>
 		<div class="hits-map-block">
-			<svg id="hits-map"></svg>
+			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
+			<svg id="map-legend"></svg>
 			<div id="tooltip"></div>
+			<div class="map-overlay"></div>
 		</div>
 	</div>
 </div>
@@ -68,11 +70,14 @@
 		},
 		onrender () {
 			this.observe('hitsData type switchList', function () {
-				let svg = d3.select('svg');
+				let $this = this;
+				let svg = d3.select('#hits-map');
+				let legendSvg = d3.select('#map-legend');
 
 				if (!svg || !this.get('__ready')) { return; }
 
 				svg.selectAll('*').remove();
+				legendSvg.selectAll('*').remove();
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
 
@@ -134,7 +139,15 @@
 					.range(legendColorRange)
 					.clamp(true)
 					.unknown('#ccc');
-				let defs = svg.append('defs');
+
+				let defs = '';
+
+				if (_.isMobileScreen() || _.isTabletScreen()) {
+					defs = legendSvg.append('defs');
+				} else {
+					defs = svg.append('defs');
+				}
+
 				let linearGradient = defs.append('linearGradient')
 					.attr('id', 'linear-gradient');
 				linearGradient.selectAll('stop')
@@ -147,42 +160,73 @@
 					x: width - 130,
 					y: (height + 420) / 2,
 				};
-				svg.append('rect')
-					.attr('transform', `rotate(-90, ${legendPosition.x}, ${legendPosition.y})`)
-					.attr('x', legendPosition.x)
-					.attr('y', legendPosition.y)
-					.attr('width', 420)
-					.attr('height', 16)
-					.attr('rx', 6)
-					.attr('ry', 6)
-					.style('fill', 'url(#linear-gradient)');
 
-				svg.append('g')
-					.attr('class', 'legend-text')
-					.selectAll('text')
-					.data(colorScale.range())
-					.enter()
-					.append('text')
-					.attr('x', legendPosition.x + 30)
-					.attr('y', (d, index) => { // equivalent  with legendPosition.y - index  * (420 / (legendColorRange - 1));
-						return legendPosition.y - index * 420 / (legendColorRange.length - 1);
-					})
-					.style('fill', 'black')
-					.text((d, index) => {
-						let value = min + index * (max - min) / (legendColorRange.length - 1);
-						return value > 1e9 ? _.convertBytesToUnits(value, 'GB') + 'G' : value;
-					});
+				if (_.isMobileScreen() || _.isTabletScreen()) {
+					let legendSvgWidth = parseInt(legendSvg.style('width').replace('px', ''));
+					legendSvg.append('rect')
+						.attr('transform', `rotate(-180, ${legendSvgWidth / 2}, 5)`)
+						.attr('x', 0)
+						.attr('y', 0)
+						.attr('width', legendSvgWidth)
+						.attr('height', 10)
+						.attr('rx', 6)
+						.attr('ry', 6)
+						.style('fill', 'url(#linear-gradient)');
+
+					legendSvg.append('g')
+						.attr('class', 'legend-text')
+						.selectAll('text')
+						.data(colorScale.range())
+						.enter()
+						.append('text')
+						.attr('x', (d, index) => {
+							return (legendSvgWidth - 20) - index * (legendSvgWidth - 20) / (legendColorRange.length - 1);
+						})
+						.attr('y', 30)
+						.style('fill', 'black')
+						.style('font-size', '12px')
+						.text((d, index) => {
+							let value = min + index * (max - min) / (legendColorRange.length - 1);
+							return _.autoConvertBytesToUnits(value);
+						});
+				} else {
+					svg.append('rect')
+						.attr('transform', `rotate(-90, ${legendPosition.x}, ${legendPosition.y})`)
+						.attr('x', legendPosition.x)
+						.attr('y', legendPosition.y)
+						.attr('width', 420)
+						.attr('height', 16)
+						.attr('rx', 6)
+						.attr('ry', 6)
+						.style('fill', 'url(#linear-gradient)');
+
+					svg.append('g')
+						.attr('class', 'legend-text')
+						.selectAll('text')
+						.data(colorScale.range())
+						.enter()
+						.append('text')
+						.attr('x', legendPosition.x + 30)
+						.attr('y', (d, index) => {
+							return legendPosition.y - index * 420 / (legendColorRange.length - 1);
+						})
+						.style('fill', 'black')
+						.text((d, index) => {
+							let value = min + index * (max - min) / (legendColorRange.length - 1);
+							return value > 1e9 ? _.convertBytesToUnits(value, 'GB') + 'G' : value;
+						});
+				}
 
 				// Map and projection
 				// let path = d3.geoPath();
 				let projection = d3.geoMercator()
 					.scale(width / 2.5 / Math.PI)
 					.center([ 0, 20 ])
-					.translate([ width / 2 - 100, height / 2 + 50 ]);
+					.translate(_.isMobileScreen() || _.isTabletScreen() ? [ width / 2, height / 2 ] : [ width / 2 - 100, height / 2 + 50 ]);
 
 
 				// Draw the map
-				svg.append('g')
+				let mapContainer = svg.append('g')
 					.selectAll('path')
 					.data(geoData.features)
 					.join('path')
@@ -206,13 +250,25 @@
 							.selectAll('*')
 							.remove();
 
+						/** *map overlay for mobile***/
+						d3.select('.map-overlay')
+							.style('width', `${width}px`)
+							.style('height', `${height}px`)
+							.style('display', 'block');
+
+						/** *tooltip for map***/
 						d3.select('#tooltip')
 							.style('left', `${event.layerX + 10}px`)
 							.style('top', `${event.layerY + 10}px`)
 							.style('display', 'block')
 							.append('div')
 							.attr('class', 'title')
-							.text(d.properties.name);
+							.text(d.properties.name)
+							.append('img')
+							.attr('src', '/img/statistics/close.svg')
+							.on('click', () => {
+								$this.hideTooltip();
+							});
 
 						switchList.forEach((one) => {
 							if (!one.active) { return; }
@@ -243,15 +299,67 @@
 							textDiv.append('span')
 								.text(ratio);
 						});
-					})
-					.on('mouseout', () => {
-						d3.select('#tooltip')
-							.style('display', 'none');
 					});
+
+
+				if (!_.isMobileScreen() && !_.isTabletScreen()) {
+					mapContainer.on('mouseout', () => {
+						this.hideTooltip();
+					});
+				} else {
+					let zoom = d3.zoom()
+						.scaleExtent([ 1, 8 ])
+						.on('zoom', (event) => {
+							svg.selectAll('g')
+								.attr('transform', event.transform);
+						});
+					svg.append('rect')
+						.attr('x', width - 45)
+						.attr('y', height - 80)
+						.attr('width', 32)
+						.attr('height', 32)
+						.attr('fill', '#fff')
+						.attr('rx', 6)
+						.attr('ry', 6);
+
+					svg.append('image')
+						.attr('href', '/img/statistics/plus.svg')
+						.attr('x', width - 37)
+						.attr('y', height - 74)
+						.on('click', () => {
+							zoom.scaleBy(svg.transition().duration(750), 1.4);
+						});
+
+					svg.append('rect')
+						.attr('x', width - 45)
+						.attr('y', height - 55)
+						.attr('width', 32)
+						.attr('height', 32)
+						.attr('fill', '#fff')
+						.attr('rx', 6)
+						.attr('ry', 6);
+
+					svg.append('image')
+						.attr('href', '/img/statistics/minus.svg')
+						.attr('x', width - 37)
+						.attr('y', height - 46)
+						.on('click', () => {
+							zoom.scaleBy(svg.transition().duration(750), 0.6);
+						});
+
+					svg.call(zoom);
+				}
 			});
 		},
 		calcRatio (hits, bandwidth) {
 			return hits ? _.autoConvertBytesToUnits(bandwidth / hits) : 0;
+		},
+		hideTooltip () {
+			d3.select('.map-overlay')
+				.style('display', 'none');
+
+			d3.select('#tooltip')
+				.style('display', 'none');
 		},
 };
 </script>

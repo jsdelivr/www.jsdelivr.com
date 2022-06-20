@@ -109,14 +109,30 @@
 						loading="lazy"
 					/>
 				</button>
+
 				{{ #each showablePages.pageCount }}
 					<button
-						class="{{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
+						class="page-num {{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
 						on-click="@this.set('page', ~/showablePages.start + @key)"
 					>
 						{{ ~/showablePages.start + @key }}
 					</button>
 				{{ /each }}
+				<div class="btn-group for-mobile">
+					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+						aria-expanded="false">
+						<span>page:&nbsp;&nbsp;{{page}}</span>
+						<i class="fa fa-angle-down" aria-hidden="true"></i>
+					</button>
+					<ul class="dropdown-menu">
+						{{#each Array(totalPageCount) }}
+						<li>
+							<a on-click="@this.set('page', @key + 1)">{{@key + 1}}</a>
+						</li>
+						{{/each}}
+					</ul>
+				</div>
+
 				<button>
 					<img
 						width="24"
@@ -189,6 +205,12 @@
 				end = total > end ? end : total;
 
 				return projectList.slice(start - 1, end);
+			},
+			totalPageCount () {
+				let pageLimit = parseInt(this.get('pageLimit'));
+				let totalRows = this.get('projectList').length;
+
+				return Math.ceil(totalRows / pageLimit) || 1;
 			},
 		},
 		data () {
