@@ -42,6 +42,27 @@ module.exports = {
 	formatNumber (number) {
 		return Math.floor(number).toString().replace(/\d(?=(?:\d{3})+$)/g, '$& ');
 	},
+	formatNumberWithSpace (val) {
+		// remove sign if negative
+		let sign = 1;
+
+		if (val < 0) {
+			sign = -1;
+			val = -val;
+		}
+
+		let num = val.toString().includes('.') ? val.toString().split('.')[0] : val.toString();
+
+		while (/(\d+)(\d{3})/.test(num.toString())) {
+			num = num.toString().replace(/(\d+)(\d{3})/, '$1 $2');
+		}
+
+		if (val.toString().includes('.')) {
+			num = num + '.' + val.toString().split('.')[1];
+		}
+
+		return sign < 0 ? '-' + num : num;
+	},
 	getMinifiedName (name) {
 		return name.replace(/\.(js|css)$/i, '.min.$1');
 	},

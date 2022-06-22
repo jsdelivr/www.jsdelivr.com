@@ -40,7 +40,7 @@
 									</td>
 									<td>
 										<div class="percentage-bar-container">
-											<div class="text">{{hits}}</div>
+											<div class="text">{{ formatNumberWithSpace(hits) }}</div>
 											<div class="percentage-bar">
 												<div class="barWidth" style="width: {{ barWidth.hits }}">
 
@@ -80,7 +80,7 @@
 					</div>
 					<h5 class="item-name">Requests</h5>
 					<div class="requests">
-						{{hits}}
+						{{ formatNumberWithSpace(hits) }}
 						<div class="percentage-bar">
 							<div class="barWidth" style="width: {{ barWidth.hits }}">
 
@@ -228,6 +228,7 @@
 				toSignedPercentage (num) {
 					return `${num > 0 ? '+' : ''}${num}%`;
 				},
+				formatNumberWithSpace: _.formatNumberWithSpace,
 			};
 		},
 		oninit () {
@@ -256,7 +257,7 @@
 					hits: (one.hits * 100 / hitsMax) + '%',
 					bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
 				};
-				one.bandwidth = _.convertBytesToUnits(one.bandwidth) + ' GB';
+				one.bandwidth = _.formatNumberWithSpace(_.convertBytesToUnits(one.bandwidth)) + ' GB';
 
 				return { ...one, interest, barWidth, id: index + 1 };
 			});
