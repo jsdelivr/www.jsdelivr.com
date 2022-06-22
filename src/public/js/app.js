@@ -25,6 +25,7 @@ const cSkypack = require('../../views/pages/skypack.html');
 const cEsmsh = require('../../views/pages/esmsh.html');
 const cCustomCdnOss = require('../../views/pages/custom-cdn-oss.html');
 const cCustomCdnOssProject = require('../../views/pages/custom-cdn-oss-project.html');
+const cDocumentation = require('../../views/pages/documentation.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -93,6 +94,7 @@ app.router.addRoute('/skypack', cSkypack);
 app.router.addRoute('/esmsh', cEsmsh);
 app.router.addRoute('/custom-cdn-oss', cCustomCdnOss);
 app.router.addRoute('/custom-cdn-oss/:name', cCustomCdnOssProject);
+app.router.addRoute('/documentation', cDocumentation);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 _.onDocumentReady(() => {
