@@ -17,7 +17,6 @@ const cSponsors = require('../../views/pages/sponsors.html');
 const cStatistics = require('../../views/pages/statistics.html');
 const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
 const cPP = require('../../views/pages/terms.html');
-const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
 const cEsm = require('../../views/pages/esm.html');
 const cHistory = require('../../views/pages/history.html');
@@ -84,7 +83,6 @@ app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path
 app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
 app.router.addRoute('/sponsors', cSponsors);
 app.router.addRoute('/statistics', cStatistics);
-app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
 app.router.addRoute('/terms', cPP);
