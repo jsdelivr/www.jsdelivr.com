@@ -1,0 +1,20 @@
+<script>
+	const _ = require('../../public/js/_');
+
+	component.exports = {
+		data () {
+			return {};
+		},
+		oninit () {
+			if (!Ractive.isServer && !this.get('@shared.readmeText')) {
+				this.set('@shared.readmeText', 'Please wait while the document loads.');
+
+				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
+					this.set('@shared.readmeText', response);
+				}).catch(() => {
+					this.set('@shared.readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
+				});
+			}
+		},
+	};
+</script>
