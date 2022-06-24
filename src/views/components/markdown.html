@@ -8,8 +8,8 @@
 			if (!Ractive.isServer) {
 				marked.setOptions({
 					langPrefix: 'hljs language-',
-					highlight (code) {
-						return hljs.highlightAuto(code, [ 'html', 'javascript' ]).value;
+					highlight (code, language) {
+						return hljs.getLanguage(language) ? hljs.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
 					},
 				});
 
