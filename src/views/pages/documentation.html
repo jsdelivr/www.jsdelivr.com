@@ -50,147 +50,43 @@
 
 		<div class="container">
 			<div class="side-menu">
-				<div class="menu-section">
-					<strong class="section-title">Why jsDelivr</strong>
+				{{#if sideMenuLinksData.whyJsDelivr}}
+					<div class="menu-section">
+						<strong class="section-title">Why jsDelivr</strong>
 
-					<div class="section-list">
-						<div>
-							<a href="#ready-for-production"
-								class="router-ignore{{#if currentAnchor === 'ready-for-production'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'ready-for-production')">
-								Ready for production
-							</a>
-						</div>
-
-						<div>
-							<a href="#multi-cdn"
-								class="router-ignore{{#if currentAnchor === 'multi-cdn'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'multi-cdn')">
-								Multi-CDN
-							</a>
-						</div>
-
-						<div>
-							<a href="#smart-load-balancing"
-								class="router-ignore{{#if currentAnchor === 'smart-load-balancing'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'smart-load-balancing')">
-								Smart Load Balancing
-							</a>
-						</div>
-
-						<div>
-							<a href="#failover"
-								class="router-ignore{{#if currentAnchor === 'failover'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'failover')">
-								Failover
-							</a>
-						</div>
-
-						<div>
-							<a href="#china"
-								class="router-ignore{{#if currentAnchor === 'china'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'china')">
-								China
-							</a>
+						<div class="section-list">
+							{{#each sideMenuLinksData.whyJsDelivr}}
+								<div>
+									<a href="#{{id}}"
+										class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.set('currentAnchor', id)">
+										{{text}}
+									</a>
+								</div>
+							{{/each}}
 						</div>
 					</div>
-				</div>
+				{{/if}}
 
 				<div class="horizontal-divider"></div>
 
-				<div class="menu-section">
-					<strong class="section-title">Usage Documentation</strong>
+				{{#if sideMenuLinksData.usageDocs}}
+					<div class="menu-section">
+						<strong class="section-title">Usage Documentation</strong>
 
-					<div class="section-list">
-						<div>
-							<a href="#npm"
-								class="router-ignore{{#if currentAnchor === 'npm'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'npm')">
-								npm
-							</a>
-						</div>
-
-						<div>
-							<a href="#github"
-								class="router-ignore{{#if currentAnchor === 'github'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'github')">
-								GitHub
-							</a>
-						</div>
-
-						<div>
-							<a href="#combine-multiple-files"
-								class="router-ignore{{#if currentAnchor === 'combine-multiple-files'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'combine-multiple-files')">
-								Combine multiple files
-							</a>
-						</div>
-
-						<div>
-							<a href="#publishing-packages"
-								class="router-ignore{{#if currentAnchor === 'publishing-packages'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'publishing-packages')">
-								Publishing packages
-							</a>
-						</div>
-
-						<div>
-							<a href="#configuring-a-default-file-in-packagejson"
-								class="router-ignore{{#if currentAnchor === 'configuring-a-default-file-in-packagejson'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'configuring-a-default-file-in-packagejson')">
-								Configuring a default file in package.json
-							</a>
-						</div>
-
-						<div>
-							<a href="#restrictions"
-								class="router-ignore{{#if currentAnchor === 'restrictions'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'restrictions')">
-								Restrictions
-							</a>
-						</div>
-
-						<div>
-							<a href="#wordpress"
-								class="router-ignore{{#if currentAnchor === 'wordpress'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'wordpress')">
-								WordPress
-							</a>
-						</div>
-
-						<div>
-							<a href="#caching"
-								class="router-ignore{{#if currentAnchor === 'caching'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'caching')">
-								Caching
-							</a>
-						</div>
-
-						<div>
-							<a href="#purge-cache"
-								class="router-ignore{{#if currentAnchor === 'purge-cache'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'purge-cache')">
-								Purge cache
-							</a>
-						</div>
-
-						<div>
-							<a href="#custom-cdn-hosting"
-								class="router-ignore{{#if currentAnchor === 'custom-cdn-hosting'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'custom-cdn-hosting')">
-								Custom CDN Hosting
-							</a>
-						</div>
-
-						<div>
-							<a href="#privacy-policy"
-								class="router-ignore{{#if currentAnchor === 'privacy-policy'}} active{{/if}}"
-								on-click="@this.set('currentAnchor', 'privacy-policy')">
-								Privacy Policy
-							</a>
+						<div class="section-list">
+							{{#each sideMenuLinksData.usageDocs}}
+								<div>
+									<a href="#{{id}}"
+										class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.set('currentAnchor', id)">
+										{{text}}
+									</a>
+								</div>
+							{{/each}}
 						</div>
 					</div>
-				</div>
+				{{/if}}
 			</div>
 
 			<div class="main-content">
@@ -208,6 +104,76 @@
 			return {
 				title: 'Documentation - jsDelivr',
 				currentAnchor: '',
+				sideMenuLinksData: {
+					whyJsDelivr: [
+						{
+							id: "ready-for-production",
+							text: "Ready for production",
+						},
+						{
+							id: "multi-cdn",
+							text: "Multi-CDN",
+						},
+						{
+							id: "smart-load-balancing",
+							text: "Smart Load Balancing",
+						},
+						{
+							id: "failover",
+							text: "Failover",
+						},
+						{
+							id: "china",
+							text: "China",
+						},
+					],
+					usageDocs: [
+						{
+							id: "npm",
+							text: "npm",
+						},
+						{
+							id: "github",
+							text: "GitHub",
+						},
+						{
+							id: "combine-multiple-files",
+							text: "Combine multiple files",
+						},
+						{
+							id: "publishing-packages",
+							text: "Publishing packages",
+						},
+						{
+							id: "configuring-a-default-file-in-packagejson",
+							text: "Configuring a default file in package.json",
+						},
+						{
+							id: "restrictions",
+							text: "Restrictions",
+						},
+						{
+							id: "wordpress",
+							text: "WordPress",
+						},
+						{
+							id: "caching",
+							text: "Caching",
+						},
+						{
+							id: "purge-cache",
+							text: "Purge cache",
+						},
+						{
+							id: "custom-cdn-hosting",
+							text: "Custom CDN Hosting",
+						},
+						{
+							id: "privacy-policy",
+							text: "Privacy Policy",
+						},
+					],
+				},
 			};
 		},
 	};
