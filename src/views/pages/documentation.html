@@ -57,9 +57,8 @@
 						<div class="section-list">
 							{{#each sideMenuLinksData.whyJsDelivr}}
 								<div>
-									<a href="#{{id}}"
-										class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
-										on-click="@this.set('currentAnchor', id)">
+									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.handleSideMenuLinkClick(id)">
 										{{text}}
 									</a>
 								</div>
@@ -77,9 +76,8 @@
 						<div class="section-list">
 							{{#each sideMenuLinksData.usageDocs}}
 								<div>
-									<a href="#{{id}}"
-										class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
-										on-click="@this.set('currentAnchor', id)">
+									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.handleSideMenuLinkClick(id)">
 										{{text}}
 									</a>
 								</div>
@@ -176,5 +174,11 @@
 				},
 			};
 		},
+		handleSideMenuLinkClick (id) {
+			this.set('currentAnchor', id);
+			document.getElementById(id).scrollIntoView({
+				behavior: 'smooth',
+			});
+		}
 	};
 </script>
