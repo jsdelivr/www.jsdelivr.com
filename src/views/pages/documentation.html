@@ -49,6 +49,7 @@
 		</div>
 
 		<div class="container">
+			<div class="filling"></div>
 			<div class="side-menu">
 				{{#if sideMenuLinksData.whyJsDelivr}}
 					<div class="menu-section">
@@ -180,6 +181,27 @@
 			document.getElementById(id).scrollIntoView({
 				behavior: 'smooth',
 			});
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				window.addEventListener('load', () => {
+					let sidebar = document.querySelector('.side-menu');
+
+					if (sidebar) {
+						let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+
+						window.addEventListener('scroll', () => {
+							let y = document.scrollingElement.scrollTop;
+
+							if (y > top) {
+								sidebar.setAttribute('style', 'position: sticky; top: 20px');
+							} else {
+								sidebar.removeAttribute('style');
+							}
+						});
+					}
+				});
+			}
 		},
 	};
 </script>
