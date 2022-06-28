@@ -2,11 +2,11 @@
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
-<link rel="ractive" href="../components/github-md-readme-prefetch.html" name="c-github-md-readme-prefetch">
+<!-- <link rel="ractive" href="../components/github-md-readme-prefetch.html" name="c-github-md-readme-prefetch"> -->
 <link rel="ractive" href="../components/markdown.html" name="c-markdown">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
-	<c-github-md-readme-prefetch></c-github-md-readme-prefetch>
+	<!-- <c-github-md-readme-prefetch></c-github-md-readme-prefetch> -->
 	<c-notification></c-notification>
 	<c-header></c-header>
 
@@ -89,7 +89,8 @@
 			</div>
 
 			<div class="main-content">
-				<c-markdown text="{{@shared.readmeText}}"></c-markdown>
+				<!-- <c-markdown text="{{@shared.readmeText}}"></c-markdown> -->
+				<c-markdown text="{{readmeText}}"></c-markdown>
 			</div>
 		</div>
 	</div>
@@ -98,11 +99,14 @@
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
+
 	component.exports = {
 		data () {
 			return {
 				title: 'Documentation - jsDelivr',
 				currentAnchor: '',
+				readmeText: 'Please wait while the document loads.',
 				sideMenuLinksData: {
 					whyJsDelivr: [
 						{
@@ -178,12 +182,30 @@
 		handleSideMenuLinkClick (id) {
 			this.set('currentAnchor', id);
 
-			document.getElementById(id).scrollIntoView({
+			document.getElementById('id-' + id).scrollIntoView({
 				behavior: 'smooth',
 			});
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				if (this.get('readmeText') === 'Please wait while the document loads.') {
+					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
+						this.set('readmeText', response).then(() => {
+							let headers = document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]');
+
+							window.addEventListener('scroll', () => {
+								headers.forEach((header) => {
+									if (header.getBoundingClientRect().top < 100) {
+										this.set('currentAnchor', header.id.split('id-')[1]);
+									}
+								});
+							});
+						});
+					}).catch(() => {
+						this.set('readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
+					});
+				}
+
 				window.addEventListener('load', () => {
 					let sidebar = document.querySelector('.side-menu');
 
