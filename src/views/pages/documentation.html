@@ -86,7 +86,6 @@
 			</div>
 
 			<div class="main-content">
-				<!-- <c-markdown text="{{@shared.readmeText}}"></c-markdown> -->
 				<c-markdown text="{{readmeText}}"></c-markdown>
 			</div>
 		</div>
@@ -185,6 +184,8 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				// fetch README.md from jsDelivr's github
+				// handle detecting which header is in the user view
 				if (this.get('readmeText') === 'Please wait while the document loads.') {
 					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
 						this.set('readmeText', response).then(() => {
@@ -203,6 +204,7 @@
 					});
 				}
 
+				// handle sticky side menu
 				window.addEventListener('load', () => {
 					let sidebar = document.querySelector('.side-menu');
 
