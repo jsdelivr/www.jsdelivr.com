@@ -3,13 +3,15 @@
 </div>
 
 <script>
+	const ID_PREFIX = 'id-';
+
 	component.exports = {
 		data () {
 			if (!Ractive.isServer) {
 				marked.setOptions({
 					langPrefix: 'hljs language-',
 					headerIds: true,
-					headerPrefix: 'id-',
+					headerPrefix: ID_PREFIX,
 					highlight (code, language) {
 						return hljs.getLanguage(language) ? hljs.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
 					},

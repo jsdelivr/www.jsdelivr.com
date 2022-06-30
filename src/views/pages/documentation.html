@@ -104,6 +104,7 @@
 
 <script>
 	const _ = require('../../public/js/_');
+	const ID_PREFIX = 'id-';
 
 	component.exports = {
 		data () {
@@ -196,7 +197,7 @@
 			};
 		},
 		handleSideMenuLinkClick (id) {
-			document.getElementById('id-' + id).scrollIntoView({
+			document.getElementById(ID_PREFIX + id).scrollIntoView({
 				behavior: 'smooth',
 			});
 		},
@@ -205,16 +206,16 @@
 				// fetch README.md from jsDelivr's github
 				// handle detecting which header is in the user view
 				if (this.get('readmeText') === '') {
-					let sideMenuIds = this.get('sideMenuLinksData').map(link => `id-${link.id}`);
+					let sideMenuIds = this.get('sideMenuLinksData').map(link => ID_PREFIX + link.id);
 
 					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
 						this.set('readmeText', response).then(() => {
-							let headers = Array.from(document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]')).filter(node => sideMenuIds.includes(node.id));
+							let headers = Array.from(document.querySelectorAll(`h2[id*=${ID_PREFIX}], h3[id*=${ID_PREFIX}]`)).filter(node => sideMenuIds.includes(node.id));
 
 							window.addEventListener('scroll', () => {
 								headers.forEach((header) => {
 									if (header.getBoundingClientRect().top < 100) {
-										this.set('currentAnchor', header.id.replace('id-', ''));
+										this.set('currentAnchor', header.id.replace(ID_PREFIX, ''));
 									}
 								});
 							});
