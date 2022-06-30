@@ -60,6 +60,8 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 
 					if (partIdx === 0) {
 						prepPart = prepPart.replace(':', '');
+					} else {
+						prepPart = prepPart.replaceAll(',', ' ');
 					}
 
 					innerHtml += `<span>${prepPart}</span>`;

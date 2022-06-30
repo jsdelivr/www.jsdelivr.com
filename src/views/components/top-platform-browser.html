@@ -23,7 +23,7 @@
 					<img class="icon" width="24" height="24"
 						src="{{@shared.assetsHost}}/img/statistics{{selectedItem.icon}}" loading="lazy" />
 					{{ /if }}
-					{{ selectedItem.name }} ({{ selectedItem.share }}% global shares)
+					{{ selectedItem.name }} ({{ selectedItem.share }}%<span> global shares</span>)
 				</div>
 				<div class="btn-group">
 					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
@@ -35,7 +35,7 @@
 					<ul class="dropdown-menu">
 						{{#each breakdownList}}
 						<li>
-							<a on-click="@this.set('breakdown', @key)">{{ . }}</a>
+							<a on-click="@this.set('breakdown', @key)">{{ . }}<span> breakdown</span></a>
 						</li>
 						{{/each}}
 					</ul>
@@ -71,7 +71,11 @@
 										<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}"
 											loading="lazy" />
 										{{ /if }}
+										{{ #if !selectedItem }}
 										<span on-click="@this.set('selectedItem', one)">{{ name }}</span>
+										{{ else }}
+										<span>{{ name }}</span>
+										{{ /if }}
 									</div>
 								</td>
 								<td class="text-table-number">{{ share }}%</td>
@@ -130,15 +134,15 @@
 
 				if (type === 'platform') {
 					result = {
-						countries: 'Country breakdown',
-						browsers: 'Browser breakdown',
-						versions: 'Version breakdown',
+						countries: 'Country',
+						browsers: 'Browser',
+						versions: 'Version',
 					};
 				} else if (type === 'browser') {
 					result = {
-						countries: 'Country breakdown',
-						platforms: 'Platform breakdown',
-						versions: 'Version breakdown',
+						countries: 'Country',
+						platforms: 'Platform',
+						versions: 'Version',
 					};
 				}
 

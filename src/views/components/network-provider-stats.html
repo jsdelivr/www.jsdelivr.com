@@ -8,7 +8,7 @@
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
 					</div>
 					<div class="card-main-stat">
-						<span class="text-table-number">{{requestsData.total}}</span>
+						<span class="text-table-number">{{ formatNumberWithSpace(requestsData.total) }}</span>
 					</div>
 					<div class="card-growth">
 						<div class="{{ requestsData.growth >= 0? 'growth-positive': 'growth-negative'}}">
@@ -26,10 +26,10 @@
 								<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
 								<span >{{name}}</span>
 							</div>
-							<div class="value text-table-number">{{value}}</div>
+							<div class="value text-table-number">{{ formatNumberWithSpace(value) }}</div>
 						</div>
 						<div class="chart">
-							<div class="value text-table-number-for-mobile">{{value}}</div>
+							<div class="value text-table-number-for-mobile">{{ formatNumberWithSpace(value) }}</div>
 							<div class="percentage-bar">
 								<div class="barWidth" style="width: {{ @this.calcPercentage(value, requestsData.total) }}; background: {{ color }}">
 								</div>
@@ -87,6 +87,7 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const providers = require('../../public/json/net-providers.json');
 
@@ -111,6 +112,7 @@
 
 					return item ? Math.round(num / item.value) + item.symbol : '0';
 				},
+				formatNumberWithSpace: _.formatNumberWithSpace,
 			};
 		},
 		oninit () {

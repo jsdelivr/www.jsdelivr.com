@@ -78,6 +78,7 @@
 
 				svg.selectAll('*').remove();
 				legendSvg.selectAll('*').remove();
+
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
 
@@ -273,7 +274,7 @@
 						switchList.forEach((one) => {
 							if (!one.active) { return; }
 
-							let statsInfo = data[d.id] ? data[d.id].total : 0;
+							let statsInfo = data[d.id] ? _.formatNumberWithSpace(data[d.id].total) : 0;
 							let ratio = data[d.id] ? data[d.id].ratio[one.name] : 0;
 
 							let statsDiv = d3.select('#tooltip')
