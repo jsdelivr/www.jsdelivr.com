@@ -90,7 +90,11 @@
 			</div>
 
 			<div class="main-content">
-				<c-markdown text="{{readmeText}}"></c-markdown>
+				{{#if readmeText}}
+					<c-markdown text="{{readmeText}}"></c-markdown>
+				{{else}}
+					<div class="please-wait-sign">Please wait while the document loads.</div>
+				{{/if}}
 			</div>
 		</div>
 	</div>
@@ -189,8 +193,6 @@
 				// fetch README.md from jsDelivr's github
 				// handle detecting which header is in the user view
 				if (this.get('readmeText') === '') {
-					this.set('readmeText', 'Please wait while the document loads.');
-
 					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
 						this.set('readmeText', response).then(() => {
 							let headers = document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]');
