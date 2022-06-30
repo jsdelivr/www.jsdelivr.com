@@ -106,7 +106,7 @@
 			return {
 				title: 'Documentation - jsDelivr',
 				currentAnchor: '',
-				readmeText: 'Please wait while the document loads.',
+				readmeText: '',
 				sideMenuLinksData: {
 					whyJsDelivr: [
 						{
@@ -188,7 +188,9 @@
 			if (!Ractive.isServer) {
 				// fetch README.md from jsDelivr's github
 				// handle detecting which header is in the user view
-				if (this.get('readmeText') === 'Please wait while the document loads.') {
+				if (this.get('readmeText') === '') {
+					this.set('readmeText', 'Please wait while the document loads.');
+
 					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
 						this.set('readmeText', response).then(() => {
 							let headers = document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]');
@@ -205,23 +207,22 @@
 						this.set('readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
 					});
 				}
+			}
+		},
+		onrender () {
+			// handle sticky side menu
+			let sidebar = document.querySelector('.side-menu');
 
-				// handle sticky side menu
-				window.addEventListener('load', () => {
-					let sidebar = document.querySelector('.side-menu');
+			if (sidebar) {
+				let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
 
-					if (sidebar) {
-						let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+				window.addEventListener('scroll', () => {
+					let y = document.scrollingElement.scrollTop;
 
-						window.addEventListener('scroll', () => {
-							let y = document.scrollingElement.scrollTop;
-
-							if (y > top) {
-								sidebar.setAttribute('style', 'position: sticky; top: 20px');
-							} else {
-								sidebar.removeAttribute('style');
-							}
-						});
+					if (y > top) {
+						sidebar.setAttribute('style', 'position: sticky; top: 20px');
+					} else {
+						sidebar.removeAttribute('style');
 					}
 				});
 			}
