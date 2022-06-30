@@ -212,12 +212,32 @@
 						this.set('readmeText', response).then(() => {
 							let headers = Array.from(document.querySelectorAll(`h2[id*=${ID_PREFIX}], h3[id*=${ID_PREFIX}]`)).filter(node => sideMenuIds.includes(node.id));
 
+							let prevPageY = 0;
+							let currentPageY = 0;
+
 							window.addEventListener('scroll', () => {
-								headers.forEach((header) => {
-									if (header.getBoundingClientRect().top < 100) {
+								currentPageY = window.pageYOffset;
+
+								if (prevPageY > currentPageY) {
+									// when scroll goes up to not highlight top side menu link
+									headers.forEach((header, idx) => {
+										if (idx === 1 && header.getBoundingClientRect().top > 600) {
+											this.set('currentAnchor', '');
+										}
+									});
+								}
+
+								// check what side menu link should be highlited on scroll
+								headers.forEach((header, idx) => {
+									if (
+										(idx !== headers.length - 1 && header.getBoundingClientRect().top < 150)
+										|| (idx === headers.length - 1 && header.getBoundingClientRect().top < 250)
+									) {
 										this.set('currentAnchor', header.id.replace(ID_PREFIX, ''));
 									}
 								});
+
+								prevPageY = currentPageY;
 							});
 						});
 					}).catch(() => {
