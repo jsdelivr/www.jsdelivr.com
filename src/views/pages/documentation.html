@@ -205,9 +205,11 @@
 				// fetch README.md from jsDelivr's github
 				// handle detecting which header is in the user view
 				if (this.get('readmeText') === '') {
+					let sideMenuIds = this.get('sideMenuLinksData').map(link => `id-${link.id}`);
+
 					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
 						this.set('readmeText', response).then(() => {
-							let headers = document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]');
+							let headers = Array.from(document.querySelectorAll('h2[id*="id-"], h3[id*="id-"]')).filter(node => sideMenuIds.includes(node.id));
 
 							window.addEventListener('scroll', () => {
 								headers.forEach((header) => {
