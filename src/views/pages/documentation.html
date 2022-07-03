@@ -249,22 +249,24 @@
 			}
 		},
 		onrender () {
-			// handle sticky side menu
-			let sidebar = document.querySelector('.side-menu');
+			if (!Ractive.isServer) {
+				// handle sticky side menu
+				let sidebar = document.querySelector('.side-menu');
 
-			if (sidebar) {
-				let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+				if (sidebar) {
+					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
 
-				window.addEventListener('scroll', () => {
-					let y = document.scrollingElement.scrollTop;
-					let currentSidebarTop = sidebar.getBoundingClientRect().top;
+					window.addEventListener('scroll', () => {
+						let y = document.scrollingElement.scrollTop;
+						let currentSidebarTop = sidebar.getBoundingClientRect().top;
 
-					if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
-						sidebar.setAttribute('style', 'position: sticky; top: 20px');
-					} else {
-						sidebar.removeAttribute('style');
-					}
-				});
+						if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
+							sidebar.setAttribute('style', 'position: sticky; top: 20px');
+						} else {
+							sidebar.removeAttribute('style');
+						}
+					});
+				}
 			}
 		},
 	};
