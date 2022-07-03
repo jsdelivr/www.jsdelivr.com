@@ -17,11 +17,6 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 		}
 
 		return npmIndex.search(parsed.query, options).then((response) => {
-			// An exact match should always come first.
-			response.hits.sort((a, b) => {
-				return a.name === parsed.query ? -1 : b.name === parsed.query;
-			});
-
 			return {
 				response: _.deepExtend({}, response),
 				query: queryString,
