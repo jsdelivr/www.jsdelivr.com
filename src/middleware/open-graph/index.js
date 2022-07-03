@@ -144,7 +144,7 @@ const prepareMetadata = async (pkg) => {
 	let meta = await algoliaNode.getObjectWithCache(pkg);
 
 	meta.owner.logo = await fetchLogo(meta.owner.avatar).catch(() => {});
-	meta.description = processDescription(meta.description);
+	meta.description = processDescription(meta.description || '');
 
 	cache.set(cacheKey, meta);
 
