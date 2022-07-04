@@ -69,7 +69,6 @@ gulp.task('less', () => {
 
 gulp.task('less:prod', () => {
 	return gulp.src([ `${srcAssetsDir}/less/app.less` ])
-		.pipe(plumber())
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
 		.pipe(autoprefixer())
@@ -80,6 +79,7 @@ gulp.task('less:prod', () => {
 
 gulp.task('js', () => {
 	return getRollupStream()
+		.pipe(plumber())
 		.pipe(source(`app.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))

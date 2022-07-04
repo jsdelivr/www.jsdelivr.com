@@ -20,11 +20,6 @@ describe('other', () => {
 		await expect(browser.findElement({ css: '.head-title' }).getText()).to.eventually.contain('Our Sponsors');
 	});
 
-	it('debug tool page loads', async () => {
-		await browser.navigate().to(`${BASE_URL}/tools/debug`);
-		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('A debug tool is coming soon');
-	});
-
 	it('cache purge tool page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/tools/purge`);
 		await expect(browser.findElement({ css: '.page-title' }).getText()).to.eventually.contain('Purge jsDelivr CDN cache');

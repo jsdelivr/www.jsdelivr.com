@@ -1,0 +1,273 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/markdown.html" name="c-markdown">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-notification></c-notification>
+	<c-header></c-header>
+
+	<div class="p-documentation">
+		<div class="dropdown">
+			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span>Navigation</span>
+				<div class="toggle-icon">
+					<div class="toggle-bar"></div>
+					<div class="toggle-bar"></div>
+				</div>
+			</div>
+			<ul class="dropdown-menu">
+				<li>
+					<div class="dropdown-subtitle">Why jsDelivr</div>
+				</li>
+
+				{{#each sideMenuLinksData}}
+					{{#if section === "whyJsDelivr"}}
+						<li>
+							<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
+								on-click="@this.handleSideMenuLinkClick(id)">
+								{{text}}
+							</a>
+						</li>
+					{{/if}}
+				{{/each}}
+
+				<li>
+					<div class="dropdown-subtitle">Why jsDelivr</div>
+				</li>
+
+				{{#each sideMenuLinksData}}
+					{{#if section === "usageDocs"}}
+						<li>
+							<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
+								on-click="@this.handleSideMenuLinkClick(id)">
+								{{text}}
+							</a>
+						</li>
+					{{/if}}
+				{{/each}}
+			</ul>
+		</div>
+
+		<div class="docs-container">
+			<div class="side-menu">
+				<div class="menu-section">
+					<strong class="section-title">Why jsDelivr</strong>
+
+					<div class="section-list">
+						{{#each sideMenuLinksData}}
+							{{#if section === "whyJsDelivr"}}
+								<div>
+									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.handleSideMenuLinkClick(id)">
+										{{text}}
+									</a>
+								</div>
+							{{/if}}
+						{{/each}}
+					</div>
+				</div>
+
+				<div class="horizontal-divider"></div>
+
+				<div class="menu-section">
+					<strong class="section-title">Usage Documentation</strong>
+
+					<div class="section-list">
+						{{#each sideMenuLinksData}}
+							{{#if section === "usageDocs"}}
+								<div>
+									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+										on-click="@this.handleSideMenuLinkClick(id)">
+										{{text}}
+									</a>
+								</div>
+							{{/if}}
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="main-content">
+				{{#if readmeText}}
+					<c-markdown text="{{readmeText}}"></c-markdown>
+				{{else}}
+					<div class="please-wait-sign">Please wait while the document loads.</div>
+				{{/if}}
+			</div>
+		</div>
+	</div>
+
+	<c-footer></c-footer>
+</r-page>
+
+<script>
+	const _ = require('../../public/js/_');
+	const ID_PREFIX = 'id-';
+
+	component.exports = {
+		data () {
+			return {
+				title: 'Documentation - jsDelivr',
+				currentAnchor: '',
+				readmeText: '',
+				sideMenuLinksData: [
+					{
+						id: 'ready-for-production',
+						text: 'Ready for production',
+						section: 'whyJsDelivr',
+					},
+					{
+						id: 'multi-cdn',
+						text: 'Multi-CDN',
+						section: 'whyJsDelivr',
+					},
+					{
+						id: 'smart-load-balancing',
+						text: 'Smart Load Balancing',
+						section: 'whyJsDelivr',
+					},
+					{
+						id: 'failover',
+						text: 'Failover',
+						section: 'whyJsDelivr',
+					},
+					{
+						id: 'china',
+						text: 'China',
+						section: 'whyJsDelivr',
+					},
+					{
+						id: 'npm',
+						text: 'npm',
+						section: 'usageDocs',
+					},
+					{
+						id: 'github',
+						text: 'GitHub',
+						section: 'usageDocs',
+					},
+					{
+						id: 'combine-multiple-files',
+						text: 'Combine multiple files',
+						section: 'usageDocs',
+					},
+					{
+						id: 'publishing-packages',
+						text: 'Publishing packages',
+						section: 'usageDocs',
+					},
+					{
+						id: 'configuring-a-default-file-in-packagejson',
+						text: 'Configuring a default file in package.json',
+						section: 'usageDocs',
+					},
+					{
+						id: 'restrictions',
+						text: 'Restrictions',
+						section: 'usageDocs',
+					},
+					{
+						id: 'wordpress',
+						text: 'WordPress',
+						section: 'usageDocs',
+					},
+					{
+						id: 'caching',
+						text: 'Caching',
+						section: 'usageDocs',
+					},
+					{
+						id: 'purge-cache',
+						text: 'Purge cache',
+						section: 'usageDocs',
+					},
+					{
+						id: 'custom-cdn-hosting',
+						text: 'Custom CDN Hosting',
+						section: 'usageDocs',
+					},
+					{
+						id: 'privacy-policy',
+						text: 'Privacy Policy',
+						section: 'usageDocs',
+					},
+				],
+			};
+		},
+		handleSideMenuLinkClick (id) {
+			document.getElementById(ID_PREFIX + id).scrollIntoView({
+				behavior: 'smooth',
+			});
+
+			app.router.dispatch(`${location.pathname}#id-${id}`, { noHistory: true, noScroll: true });
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				// fetch README.md from jsDelivr's github
+				// handle detecting which header is in the user view
+				if (this.get('readmeText') === '') {
+					let sideMenuIds = this.get('sideMenuLinksData').map(link => ID_PREFIX + link.id);
+
+					_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md', rawResponse: true }).then((response) => {
+						this.set('readmeText', response).then(() => {
+							let headers = Array.from(document.querySelectorAll(`h2[id*=${ID_PREFIX}], h3[id*=${ID_PREFIX}]`)).filter(node => sideMenuIds.includes(node.id));
+
+							let prevPageY = 0;
+							let currentPageY = 0;
+
+							window.addEventListener('scroll', () => {
+								currentPageY = window.pageYOffset;
+
+								if (prevPageY > currentPageY) {
+									// when scroll goes up to not highlight top side menu link
+									headers.forEach((header, idx) => {
+										if (idx === 1 && header.getBoundingClientRect().top > 600) {
+											this.set('currentAnchor', '');
+										}
+									});
+								}
+
+								// check what side menu link should be highlited on scroll
+								headers.forEach((header, idx) => {
+									if (
+										(idx !== headers.length - 1 && header.getBoundingClientRect().top < 150)
+										|| (idx === headers.length - 1 && header.getBoundingClientRect().top < 250)
+									) {
+										this.set('currentAnchor', header.id.replace(ID_PREFIX, ''));
+									}
+								});
+
+								prevPageY = currentPageY;
+							});
+						});
+					}).catch(() => {
+						this.set('readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
+					});
+				}
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// handle sticky side menu
+				let sidebar = document.querySelector('.side-menu');
+
+				if (sidebar) {
+					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+
+					window.addEventListener('scroll', () => {
+						let y = document.scrollingElement.scrollTop;
+						let currentSidebarTop = sidebar.getBoundingClientRect().top;
+
+						if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
+							sidebar.setAttribute('style', 'position: sticky; top: 20px');
+						} else {
+							sidebar.removeAttribute('style');
+						}
+					});
+				}
+			}
+		},
+	};
+</script>
