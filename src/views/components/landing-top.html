@@ -78,93 +78,29 @@
 			<div class="docs-code">
 				<div class="docs-wrapper">
 					<c-slider active="{{activeSlide}}" direction="horizontal" distance="500">
-						<c-slide>
-							<div class="docs-code-slide" id="slide1">
-								{{#each slidesData.slide1:idx}}
-									{{#each this.comments}}
-										<p class="docs-comment">{{this}}</p>
+						{{#each slidesData:slideIdx}}
+							<c-slide>
+								<div class="docs-code-slide" id="{{'slide' + (slideIdx + 1) }}">
+									{{#each this:idx}}
+										{{#each this.comments}}
+											<p class="docs-comment">{{this}}</p>
+										{{/each}}
+
+										{{#each this.links}}
+											<p class="docs-link">
+												<a target="_blank" rel="noopener noreferrer" href="{{this}}">
+													{{this}}
+												</a>
+											</p>
+										{{/each}}
+
+										{{#unless idx === slidesData[slideIdx].length -1}}
+											<br>
+										{{/unless}}
 									{{/each}}
-
-									{{#each this.links}}
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="{{this}}">
-												{{this}}
-											</a>
-										</p>
-									{{/each}}
-
-									{{#unless idx === slidesData.slide1.length -1}}
-										<br>
-									{{/unless}}
-								{{/each}}
-							</div>
-						</c-slide>
-
-						<c-slide>
-							<div class="docs-code-slide slide2">
-								{{#each slidesData.slide2:idx}}
-									{{#each this.comments}}
-										<p class="docs-comment">{{this}}</p>
-									{{/each}}
-
-									{{#each this.links}}
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="{{this}}">
-												{{this}}
-											</a>
-										</p>
-									{{/each}}
-
-									{{#unless idx === slidesData.slide2.length -1}}
-										<br>
-									{{/unless}}
-								{{/each}}
-							</div>
-						</c-slide>
-
-						<c-slide>
-							<div class="docs-code-slide slide3">
-								{{#each slidesData.slide3:idx}}
-									{{#each this.comments}}
-										<p class="docs-comment">{{this}}</p>
-									{{/each}}
-
-									{{#each this.links}}
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="{{this}}">
-												{{this}}
-											</a>
-										</p>
-									{{/each}}
-
-									{{#unless idx === slidesData.slide3.length -1}}
-										<br>
-									{{/unless}}
-								{{/each}}
-							</div>
-						</c-slide>
-
-						<c-slide>
-							<div class="docs-code-slide slide4">
-								{{#each slidesData.slide4:idx}}
-									{{#each this.comments}}
-										<p class="docs-comment">{{this}}</p>
-									{{/each}}
-
-									{{#each this.links}}
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="{{this}}">
-												{{this}}
-											</a>
-										</p>
-									{{/each}}
-
-									{{#unless idx === slidesData.slide4.length -1}}
-										<br>
-									{{/unless}}
-								{{/each}}
-							</div>
-						</c-slide>
+								</div>
+							</c-slide>
+						{{/each}}
 					</c-slider>
 				</div>
 				<a class="btn-docview btn-grey btn-sm" href="https://github.com/jsdelivr/jsdelivr#usage-documentation" target="_blank">
