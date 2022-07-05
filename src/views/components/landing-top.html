@@ -25,7 +25,7 @@
 
 		<section class="docs">
 			<div class="docs-tabs">
-				<div class="docs-wrapper flex">
+				<div class="docs-wrapper">
 					<div class="docs-tab {{#unless activeDocs}}active-docs-tab{{/unless}}">
 						<a on-click="@this.set('activeDocs', '')" class="{{#unless activeDocs}}active{{/unless}}">
 							<img src="{{@shared.assetsHost}}/img/landing/new/docs-code/npm.svg">
@@ -51,14 +51,16 @@
 					</div>
 
 					<div class="active-tab-line" style="left: {{activeDocsLineLeft}}%"></div>
-						<div class="dropdown">
-							<button class="dropdown-toggle" type="button" id="cdn-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+
+					<div class="dropdown">
+						<button class="dropdown-toggle" type="button" id="cdn-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 							<div class="selected">
 								<img src="{{ @shared.assetsHost }}/img/landing/new/docs-code/{{ cdnsList[activeDocsIndex].image }}">
 							</div>
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg" loading="lazy"/>
-							</button>
-							<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="cdn-dropdown">
+						</button>
+
+						<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="cdn-dropdown">
 							{{#each ~/cdnsList}}
 								{{ #if activeDocs !== .slug }}
 									<li>
@@ -68,28 +70,34 @@
 									</li>
 								{{ /if }}
 							{{/each}}
-							</ul>
+						</ul>
 					</div>
 				</div>
 			</div>
-
 
 			<div class="docs-code">
 				<div class="docs-wrapper">
 					<c-slider active="{{activeSlide}}" direction="horizontal" distance="500">
 						<c-slide>
 							<div class="docs-code-slide" id="slide1">
-
 								<p class="docs-comment">// load any project hosted on npm</p>
-								<p class="docs-link">https://cdn.jsdelivr.net/npm/package@version/file</p>
+								<p class="docs-link">
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/package@version/file">
+										https://cdn.jsdelivr.net/npm/package@version/file
+									</a>
+								</p>
+
 								<br>
+
 								<p class="docs-comment">// load jQuery v3.2.1</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js">
 										https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// use a version range instead of a specific version</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js">
@@ -101,7 +109,9 @@
 										https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// omit the version completely to get the latest one</p>
 								<p class="docs-comment">// you should NOT use this in production</p>
 								<p class="docs-link">
@@ -109,7 +119,9 @@
 										https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
 								<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
 								<p class="docs-link">
@@ -117,17 +129,23 @@
 										https://cdn.jsdelivr.net/npm/jquery@3.2.1/src/core.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// omit the file path to get the default file</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery@3.2">
 										https://cdn.jsdelivr.net/npm/jquery@3.2
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add / at the end to get a directory listing</p>
 								<p class="docs-link">
-									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/">https://cdn.jsdelivr.net/npm/jquery/</a>
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/jquery/">
+										https://cdn.jsdelivr.net/npm/jquery/
+									</a>
 								</p>
 							</div>
 						</c-slide>
@@ -136,15 +154,23 @@
 							<div class="docs-code-slide slide2">
 								<p class="docs-comment">// load any GitHub release, commit, or branch</p>
 								<p class="docs-comment">// note: we recommend using npm for projects that support it</p>
-								<p class="docs-link">https://cdn.jsdelivr.net/gh/user/repo@version/file</p>
+								<p class="docs-link">
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/user/repo@version/file">
+										https://cdn.jsdelivr.net/gh/user/repo@version/file
+									</a>
+								</p>
+
 								<br>
+
 								<p class="docs-comment">// load jQuery v3.2.1</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// use a version range instead of a specific version</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">
@@ -156,7 +182,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// omit the version completely to get the latest one</p>
 								<p class="docs-comment">// you should NOT use this in production</p>
 								<p class="docs-link">
@@ -164,7 +192,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
 								<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
 								<p class="docs-link">
@@ -172,7 +202,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add / at the end to get a directory listing</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/">
@@ -186,15 +218,23 @@
 							<div class="docs-code-slide slide3">
 								<p class="docs-comment">// load any GitHub release, commit, or branch</p>
 								<p class="docs-comment">// note: we recommend using npm for projects that support it</p>
-								<p class="docs-link">https://cdn.jsdelivr.net/gh/user/repo@version/file</p>
+								<p class="docs-link">
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
+										https://cdn.jsdelivr.net/gh/user/repo@version/file
+									</a>
+								</p>
+
 								<br>
+
 								<p class="docs-comment">// load jQuery v3.2.1</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js">
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// use a version range instead of a specific version</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js">
@@ -206,7 +246,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// omit the version completely to get the latest one</p>
 								<p class="docs-comment">// you should NOT use this in production</p>
 								<p class="docs-link">
@@ -214,7 +256,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
 								<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
 								<p class="docs-link">
@@ -222,7 +266,9 @@
 										https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add / at the end to get a directory listing</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/gh/jquery/jquery/">
@@ -235,15 +281,23 @@
 						<c-slide>
 							<div class="docs-code-slide slide4 docs-code-slide-wp">
 								<p class="docs-comment">// load any plugin from the WordPress.org plugins SVN repo</p>
-								<p class="docs-link">https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file</p>
+								<p class="docs-link">
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file">
+										https://cdn.jsdelivr.net/wp/plugins/project/tags/version/file
+									</a>
+								</p>
+
 								<br>
+
 								<p class="docs-comment">// load an exact version</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js">
 										https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/tags/4.6.5/wp-slimstat.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// load the latest version</p>
 								<p class="docs-comment">// you should NOT use this in production</p>
 								<p class="docs-link">
@@ -251,17 +305,27 @@
 										https://cdn.jsdelivr.net/wp/plugins/wp-slimstat/trunk/wp-slimstat.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// load any theme from the WordPress.org themes SVN repo</p>
-								<p class="docs-link">https://cdn.jsdelivr.net/wp/themes/project/version/file</p>
+								<p class="docs-link">
+									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/themes/project/version/file">
+										https://cdn.jsdelivr.net/wp/themes/project/version/file
+									</a>
+								</p>
+
 								<br>
+
 								<p class="docs-comment">// load an exact version</p>
 								<p class="docs-link">
 									<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js">
 										https://cdn.jsdelivr.net/wp/themes/twenty-eightteen/1.7/assets/js/html5.js
 									</a>
 								</p>
+
 								<br>
+
 								<p class="docs-comment">// add ".min" to any JS/CSS file to get a minified version</p>
 								<p class="docs-comment">// if one doesn't exist, we'll generate it for you</p>
 							</div>
@@ -277,27 +341,43 @@
 		<section class="sponsors">
 			<span>jsDelivr operates thanks to our main sponsors:</span>
 
-			<div class="flex">
+			<div>
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com"><img width="149" height="50" src="{{@shared.assetsHost}}/img/landing/cloudflare.png" srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x" title="Sponsored by Cloudflare"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com">
+						<img width="149" height="50" src="{{@shared.assetsHost}}/img/landing/cloudflare.png" srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x" title="Sponsored by Cloudflare">
+					</a>
 				</div>
+
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com"><img width="116" height="50" src="{{@shared.assetsHost}}/img/landing/fastly.png" srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x" title="Sponsored by Fastly"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com">
+						<img width="116" height="50" src="{{@shared.assetsHost}}/img/landing/fastly.png" srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x" title="Sponsored by Fastly">
+					</a>
 				</div>
+
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://ns1.com"><img width="94" height="50" src="{{@shared.assetsHost}}/img/landing/ns1.png" srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x" title="Sponsored by NS1"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://ns1.com">
+						<img width="94" height="50" src="{{@shared.assetsHost}}/img/landing/ns1.png" srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x" title="Sponsored by NS1">
+					</a>
 				</div>
+
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://gcorelabs.com/"><img width="191" height="40" src="{{@shared.assetsHost}}/img/landing/new/gcorelabs.svg" title="Sponsored by G-Core Labs"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://gcorelabs.com/">
+						<img width="191" height="40" src="{{@shared.assetsHost}}/img/landing/new/gcorelabs.svg" title="Sponsored by G-Core Labs">
+					</a>
 				</div>
+
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://bunny.net"><img width="172" height="50" src="{{@shared.assetsHost}}/img/landing/bunny.png" srcset="{{@shared.assetsHost}}/img/landing/bunny@2x.png 2x" title="Sponsored by bunny.net"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://bunny.net">
+						<img width="172" height="50" src="{{@shared.assetsHost}}/img/landing/bunny.png" srcset="{{@shared.assetsHost}}/img/landing/bunny@2x.png 2x" title="Sponsored by bunny.net">
+					</a>
 				</div>
+
 				<div class="sponsor-item">
-					<a target="_blank" rel="noopener noreferrer" href="https://render.com/"><img width="186" height="50" src="{{@shared.assetsHost}}/img/landing/render.png" srcset="{{@shared.assetsHost}}/img/landing/render@2x.png 2x" title="Sponsored by render.com"></a>
+					<a target="_blank" rel="noopener noreferrer" href="https://render.com/">
+						<img width="186" height="50" src="{{@shared.assetsHost}}/img/landing/render.png" srcset="{{@shared.assetsHost}}/img/landing/render@2x.png 2x" title="Sponsored by render.com">
+					</a>
 				</div>
 			</div>
-
 		</section>
 	</div>
 </div>
