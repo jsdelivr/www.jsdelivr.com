@@ -28,7 +28,14 @@
 
 		<div class="search-results">
 			{{#each packages}}
-				<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}" filterType="{{filterType}}" filterStyle="{{filterStyle}}"></c-package-header>
+				<c-package-header package="{{this}}"
+					version="{{version}}"
+					onlyHeader="true"
+					homeSearch="true"
+					query="{{query}}"
+					filterType="{{filterType}}"
+					filterStyle="{{filterStyle}}">
+				</c-package-header>
 			{{elseif query && nbHits === 0}}
 				<div class="no-results">
 					<img
@@ -51,7 +58,7 @@
 					</li>
 
 					{{#each pagination(page, nbPages)}}
-					<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
 					{{/each}}
 
 					<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
