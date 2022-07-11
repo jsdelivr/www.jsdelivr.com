@@ -50,7 +50,25 @@
 
 		{{#if hideLanding}}
 			<nav class="search-pagination" aria-label="Search results pagination">
-				<ul class="pagination">
+				<div class="pagination-alt">
+					<div class="pagination-btn pagination-btn_prev {{#unless page}}pagination-btn_hidden{{/unless}}"
+						on-click="page > 0 && @this.subtract('page')">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+					</div>
+
+					{{#each pagination(page, nbPages)}}
+						<div class="page-num {{#if page === this}}active{{/if}}" on-click="@this.set('page', this)">
+							{{this + 1}}
+						</div>
+					{{/each}}
+
+					<div class="pagination-btn pagination-btn_next {{#unless page + 1 < nbPages}}pagination-btn_hidden{{/unless}}"
+						on-click="page + 1 < nbPages && @this.add('page')" >
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+					</div>
+				</div>
+
+				<!-- <ul class="pagination">
 					<li style="{{#unless page}}visibility: hidden;{{/unless}}">
 						<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
 							<span aria-hidden="true">&laquo;</span>
@@ -58,7 +76,9 @@
 					</li>
 
 					{{#each pagination(page, nbPages)}}
-						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+						<li class="{{#if page === this}}active{{/if}}">
+							<a on-click="@this.set('page', this)">{{this + 1}}</a>
+						</li>
 					{{/each}}
 
 					<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
@@ -66,7 +86,7 @@
 							<span aria-hidden="true">&raquo;</span>
 						</a>
 					</li>
-				</ul>
+				</ul> -->
 			</nav>
 		{{/if}}
 	</div>
