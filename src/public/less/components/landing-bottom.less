@@ -12,9 +12,8 @@
 	}
 
 	.wrapper-lg {
-		max-width: 1254px;
+		max-width: 1224px;
 		width: 100%;
-		padding: 0 15px;
 	}
 
 	h2 {
@@ -82,6 +81,135 @@
 					line-height: 24px;
 					letter-spacing: .2px;
 					color: #17233b;
+				}
+			}
+		}
+	}
+
+	.network-data {
+		margin-top: 40px;
+		position: relative;
+
+		> * {
+			position: relative;
+			z-index: 2;
+		}
+
+		@media (min-width: @screen-sm-min) {
+			margin-top: 64px;
+		}
+
+		&_stats {
+			display: flex;
+			flex-flow: row wrap;
+			gap: 24px;
+			padding: 40px 0 0;
+
+			&_item {
+				display: flex;
+				align-items: center;
+				flex-direction: row;
+				flex-grow: 1;
+				flex-basis: 312px;
+				gap: 24px;
+
+				>img {
+					width: 56px;
+					height: 56px;
+				}
+
+				&_green, &_regular {
+					display: flex;
+					flex-direction: column;
+
+					>span {
+						&:nth-child(1) {
+							font-weight: 600;
+							font-size: 24px;
+							line-height: 36px;
+							letter-spacing: .2px;
+						}
+
+						&:nth-child(2) {
+							font-weight: 400;
+							font-size: 14px;
+							line-height: 20px;
+						}
+					}
+				}
+
+				&_green {
+					>span:nth-child(1) {
+						color: #0b8e5f;
+					}
+
+					>span:nth-child(2) {
+						color: #17233b;
+					}
+				}
+
+				&_regular {
+					>span:nth-child(1) {
+						color: #17233b;
+					}
+
+					>span:nth-child(2) {
+						color: #79849a;
+					}
+				}
+			}
+		}
+
+		&_map {
+			position: absolute;
+			width: 100%;
+			max-width: 910px;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 1;
+
+			&_wrapper {
+				position: relative;
+				padding-bottom: 47.13%;
+				overflow: hidden;
+			}
+
+			img,
+			svg {
+				position: absolute;
+				top: 0;
+				left: 0;
+				object-fit: contain;
+			}
+
+			g {
+				&:nth-child(4n) circle {
+					animation-delay: .8s;
+				}
+
+				&:nth-child(4n - 1) circle {
+					animation-delay: 1.6s;
+				}
+
+				&:nth-child(4n - 2) circle {
+					animation-delay: 2.4s;
+				}
+
+				&:nth-child(4n - 3) circle {
+					animation-delay: 3.2s;
+				}
+			}
+
+			circle {
+				&:first-child {
+					fill: #fa8f76;
+					animation: pulse1 3s ease-in-out infinite;
+				}
+
+				&:last-child {
+					fill: rgba(#fa8f76, .5);
+					animation: pulse2 3s ease-in-out infinite;
 				}
 			}
 		}
@@ -366,132 +494,6 @@
 
 		&-number {
 			color: #549711;
-		}
-	}
-
-	.network-data {
-		margin-left: -24px;
-		margin-right: -24px;
-		margin-top: 40px;
-		padding: 40px 12px;
-
-		@media (min-width: @screen-sm-min) {
-			text-align: center;
-			padding: 95px 0;
-			margin-top: 64px;
-			max-width: 1224px;
-			margin-left: auto;
-			margin-right: auto;
-			background-repeat: no-repeat;
-			background-position: center;
-		}
-		position: relative;
-
-		> * {
-			position: relative;
-			z-index: 2;
-		}
-
-		&-grid {
-			display: flex;
-			flex-direction: column;
-			gap: 15px;
-
-			@media (min-width: @screen-sm-min) {
-				display: grid;
-				grid-template-columns: repeat(4, 1fr);
-				gap: 30px;
-			}
-
-			div {
-				display: grid;
-				grid-template-rows: repeat(2, 1fr);
-				grid-template-columns: 80px auto;
-				grid-column-gap: 12px;
-
-				img {
-					width: 80px;
-					height: 74px;
-
-					@media (min-width: @screen-sm-min) {
-						width: 104px;
-						height: 98px;
-						margin-bottom: 16px;
-					}
-					grid-row: 1/3;
-				}
-
-				@media (min-width: @screen-sm-min) {
-					display: block;
-				}
-			}
-			margin-bottom: 15px;
-
-			@media (min-width: @screen-sm-min) {
-				margin-bottom: 40px;
-			}
-
-			.green {
-				color: #0b8e5f;
-			}
-
-			p {
-				color: #17233b;
-			}
-		}
-
-		&-map {
-			position: absolute;
-			width: 100%;
-			max-width: 910px;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			z-index: 1;
-
-			&-wrap {
-				position: relative;
-				padding-bottom: 47.13%;
-				overflow: hidden;
-			}
-
-			img,
-			svg {
-				position: absolute;
-				top: 0;
-				left: 0;
-				object-fit: contain;
-			}
-
-			g {
-				&:nth-child(4n) circle {
-					animation-delay: .8s;
-				}
-
-				&:nth-child(4n - 1) circle {
-					animation-delay: 1.6s;
-				}
-
-				&:nth-child(4n - 2) circle {
-					animation-delay: 2.4s;
-				}
-
-				&:nth-child(4n - 3) circle {
-					animation-delay: 3.2s;
-				}
-			}
-
-			circle {
-				&:first-child {
-					fill: #fa8f76;
-					animation: pulse1 3s ease-in-out infinite;
-				}
-
-				&:last-child {
-					fill: rgba(#fa8f76, .5);
-					animation: pulse2 3s ease-in-out infinite;
-				}
-			}
 		}
 	}
 
