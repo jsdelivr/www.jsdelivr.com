@@ -171,10 +171,62 @@
 		.search-pagination {
 			display: flex;
 			align-items: center;
-			justify-content: center;
+			justify-content: flex-end;
 			margin: 24px 0 0;
 
-			.pagination-btn, .page-num {
+			@media (min-width: @screen-sm-min) {
+				justify-content: center;
+				margin: 12px 0 0;
+			}
+
+			.pages-counter {
+				font-weight: 400;
+				font-size: 14px;
+				line-height: 20px;
+				color: #5c667a;
+				margin-right: auto;
+
+				@media (min-width: @screen-sm-min) {
+					display: none;
+				}
+			}
+
+			.page-num {
+				display: none;
+
+				@media (min-width: @screen-sm-min) {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					width: 40px;
+					height: 40px;
+					font-weight: 400;
+					font-size: 14px;
+					line-height: 20px;
+					color: #17233b;
+					background: #fff;
+					cursor: pointer;
+					user-select: none;
+					border-top: 1px solid #cfd6dd;
+					border-bottom: 1px solid #cfd6dd;
+
+					&:not(:nth-last-child(2)) {
+						border-right: 1px solid #cfd6dd;
+					}
+
+					&.active {
+						background: #fcf0ed;
+						border: 1px solid #f65128;
+						font-weight: 600;
+						font-size: 14px;
+						line-height: 20px;
+						letter-spacing: .2px;
+						color: #f65128;
+					}
+				}
+			}
+
+			.pagination-btn {
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -187,10 +239,17 @@
 				background: #fff;
 				cursor: pointer;
 				user-select: none;
-			}
-
-			.pagination-btn {
 				border: 1px solid #cfd6dd;
+
+				&:nth-child(2) {
+					border-right: 0;
+				}
+
+				@media (min-width: @screen-sm-min) {
+					&:nth-child(2) {
+						border-right: 1px solid #cfd6dd;
+					}
+				}
 
 				&_prev {
 					border-top-left-radius: 6px;
@@ -210,27 +269,12 @@
 					}
 				}
 
-				&_hidden {
-					visibility: hidden;
-				}
-			}
+				&_disabled {
+					opacity: .5;
 
-			.page-num {
-				border-top: 1px solid #cfd6dd;
-				border-bottom: 1px solid #cfd6dd;
-
-				&:not(:nth-last-child(2)) {
-					border-right: 1px solid #cfd6dd;
-				}
-
-				&.active {
-					background: #fcf0ed;
-					border: 1px solid #f65128;
-					font-weight: 600;
-					font-size: 14px;
-					line-height: 20px;
-					letter-spacing: .2px;
-					color: #f65128;
+					@media (min-width: @screen-sm-min) {
+						visibility: hidden;
+					}
 				}
 			}
 		}

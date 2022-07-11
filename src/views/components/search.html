@@ -50,7 +50,11 @@
 
 		{{#if hideLanding}}
 			<nav class="search-pagination" aria-label="Search results pagination">
-				<div class="pagination-btn pagination-btn_prev {{#unless page}}pagination-btn_hidden{{/unless}}"
+				<div class="pages-counter">
+					Page {{page +1}} of {{nbPages}}
+				</div>
+
+				<div class="pagination-btn pagination-btn_prev {{#unless page}}pagination-btn_disabled{{/unless}}"
 					on-click="page > 0 && @this.subtract('page')">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 				</div>
@@ -61,7 +65,7 @@
 					</div>
 				{{/each}}
 
-				<div class="pagination-btn pagination-btn_next {{#unless page + 1 < nbPages}}pagination-btn_hidden{{/unless}}"
+				<div class="pagination-btn pagination-btn_next {{#unless page + 1 < nbPages}}pagination-btn_disabled{{/unless}}"
 					on-click="page + 1 < nbPages && @this.add('page')" >
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
 				</div>
