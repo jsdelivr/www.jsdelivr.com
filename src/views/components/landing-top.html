@@ -79,7 +79,7 @@
 				<c-slider active="{{activeSlide}}" direction="horizontal" distance="500">
 					{{#each slidesData:slideIdx}}
 						<c-slide>
-							<div class="docs-code-slide" id="{{slideIdx}}">
+							<div class="docs_code_slide" id="{{slideIdx}}">
 								{{#each this:idx}}
 									{{#each this.comments}}
 										<p class="docs-comment">{{this}}</p>
@@ -439,15 +439,15 @@
 				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
 
-				// 	// Resize docs-code's height on switching.
-				// 	if ($(window).width() < 580) {
-				// 		let originHeight = $('.docs-code').height();
-				// 		setTimeout(() => {
-				// 			if (originHeight < $('.docs-code-slide').height() + 55) {
-				// 				$('.docs-code').height($('.docs-code-slide').height() + 55);
-				// 			}
-				// 		}, 320);
-				// 	}
+					// Resize docs_code's height on switching.
+					if ($(window).width() < 580) {
+						let originHeight = $('.docs_code').height();
+						setTimeout(() => {
+							if (originHeight < $('.docs_code-slide').height() + 55) {
+								$('.docs_code').height($('.docs_code_slide').height() + 55);
+							}
+						}, 320);
+					}
 				}, { init: false });
 
 				// Load network stats.
@@ -456,17 +456,17 @@
 				});
 			}
 		},
-		// oncomplete () {
-		// 	// Resize docs-code's height on loading and resizing.
-		// 	$('.docs-code').height($('.docs-code-slide').height() + 55);
+		oncomplete () {
+			// Resize docs_code's height on loading and resizing.
+			$('.docs_code').height($('.docs_code_slide').height() + 55);
 
-		// 	$(window).resize(() => {
-		// 		if ($(window).width() < 580) {
-		// 			$('.docs-code').height($('.docs-code-slide').height() + 55);
-		// 		} else {
-		// 			$('.docs-code').height('');
-		// 		}
-		// 	});
-		// },
+			$(window).resize(() => {
+				if ($(window).width() < 580) {
+					$('.docs_code').height($('.docs_code_slide').height() + 55);
+				} else {
+					$('.docs_code').height('');
+				}
+			});
+		},
 	};
 </script>
