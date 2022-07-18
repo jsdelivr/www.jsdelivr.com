@@ -210,21 +210,16 @@
 				width: 100%;
 				height: 100%;
 				z-index: 2;
+				border-bottom: 2px solid #394356;
 
 				@media (min-width: @screen-sm-min) {
 					display: none;
 				}
 
 				&.open {
-					border-left: 2px solid #fff;
-					border-right: 2px solid #fff;
-					border-top: 2px solid #fff;
-					border-radius: 0;
 					border-top-left-radius: 8px;
 					border-top-right-radius: 8px;
-					width: calc(100% + 4px);
-					margin: -4px -2px;
-					height: 62px;
+					box-shadow: 0 -2px 0 3px #fff;
 				}
 
 				&-toggle {
@@ -248,24 +243,46 @@
 				}
 
 				ul.dropdown-menu {
-					border-left: 2px solid #fff;
-					border-right: 2px solid #fff;
-					border-bottom: 2px solid #fff;
-					border-radius: 0;
 					border-bottom-left-radius: 8px;
 					border-bottom-right-radius: 8px;
-					width: calc(100% + 4px);
-					margin: 0 -2px;
-					box-shadow: none;
-					border-top: 0;
+					box-shadow: 0 3px 0 2px #fff;
+					background: #17233b;
+					box-sizing: border-box;
+					padding: 0;
+					width: 100%;
 
-					li {
-						border: 0;
-						border-top: 2px solid #394356;
-						height: 60px;
-						padding-left: 24px;
+					> li > a {
 						display: flex;
 						align-items: center;
+						justify-content: flex-start;
+						width: 100%;
+						height: 100%;
+						padding: 0 0 0 24px;
+
+						&:hover {
+							background: #394356;
+						}
+					}
+
+					> li > a.disabled {
+						color: #b2bdc7;
+
+						&:hover {
+							cursor: default;
+							background: transparent;
+							color: #b2bdc7;
+						}
+					}
+
+					li + li {
+						border-top: 2px solid #394356;
+					}
+
+					li {
+						display: flex;
+						align-items: center;
+						border: 0;
+						height: 60px;
 					}
 
 					li:nth-last-child(1) {
@@ -323,45 +340,6 @@
 		.docs-link a {
 			color: #f88d75;
 			margin: 0;
-		}
-
-		.dropdown-menu {
-			background: #17233b;
-			border-bottom: 2px solid #dfe3e7;
-			box-sizing: border-box;
-			box-shadow:
-				0 4px 4px rgba(23, 35, 59, .06),
-				0 0 1px 1px rgba(23, 35, 59, .11),
-				0 10px 22px -2px rgba(23, 35, 59, .08);
-			border-radius: 6px;
-			padding: 0;
-			width: 100%;
-
-			> li > a {
-				display: flex;
-				align-items: center;
-				justify-content: flex-start;
-				height: 40px;
-				font-size: 14px;
-				line-height: 20px;
-				color: #fff;
-				padding: 0;
-
-				&:hover {
-					background: #f3f5f7;
-					border-radius: 4px;
-				}
-			}
-
-			> li > a.disabled {
-				color: #b2bdc7;
-
-				&:hover {
-					cursor: default;
-					background: transparent;
-					color: #b2bdc7;
-				}
-			}
 		}
 
 		.overlay {
