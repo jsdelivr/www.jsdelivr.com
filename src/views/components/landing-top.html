@@ -76,7 +76,7 @@
 			</div>
 
 			<div class="docs_code">
-				<c-slider active="{{activeSlide}}" direction="horizontal" distance="500">
+				<c-slider active="{{activeSlide}}" direction="horizontal" distance="400" duration="400">
 					{{#each slidesData:slideIdx}}
 						<c-slide>
 							<div class="docs_code_slide" id="{{slideIdx}}">
@@ -429,6 +429,7 @@
 						},
 					],
 				},
+				docsSlideTopHeight: 0,
 			};
 		},
 		oninit () {
@@ -439,15 +440,22 @@
 				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
 
-					// Resize docs_code's height on switching.
-					if ($(window).width() < 580) {
-						let originHeight = $('.docs_code').height();
-						setTimeout(() => {
-							if (originHeight < $('.docs_code-slide').height() + 55) {
-								$('.docs_code').height($('.docs_code_slide').height() + 55);
-							}
-						}, 320);
+					let currDocsSlideHeight = document.querySelector('.docs_code_slide').offsetHeight;
+
+					if (this.get('docsSlideTopHeight') < currDocsSlideHeight) {
+						this.set('docsSlideTopHeight', currDocsSlideHeight);
 					}
+
+					setTimeout(() => {
+						let newDocsCodeSlideHeight = document.querySelector('.docs_code_slide').offsetHeight;
+
+						if (newDocsCodeSlideHeight > this.get('docsSlideTopHeight')) {
+							let newHeightValue = `${newDocsCodeSlideHeight + 48}px`;
+
+							document.querySelector('.docs_code').style.maxHeight = newHeightValue;
+							document.querySelector('.docs_code').style.height = newHeightValue;
+						}
+					}, 500);
 				}, { init: false });
 
 				// Load network stats.
@@ -457,16 +465,10 @@
 			}
 		},
 		oncomplete () {
-			// Resize docs_code's height on loading and resizing.
-			$('.docs_code').height($('.docs_code_slide').height() + 55);
+			let docsCodeSlideHeight = `${document.querySelector('.docs_code_slide').offsetHeight + 48}px`;
 
-			$(window).resize(() => {
-				if ($(window).width() < 580) {
-					$('.docs_code').height($('.docs_code_slide').height() + 55);
-				} else {
-					$('.docs_code').height('');
-				}
-			});
+			document.querySelector('.docs_code').style.maxHeight = docsCodeSlideHeight;
+			document.querySelector('.docs_code').style.height = docsCodeSlideHeight;
 		},
 	};
 </script>
