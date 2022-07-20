@@ -282,7 +282,7 @@
 			<div class="code-slider">
 				<c-slider active="{{activeSlide}}" direction="horizontal" distance="500" duration="0">
 					<c-slide>
-						<div class="code-slide">
+						<div class="code-slide entrypoints">
 							<div class="code-lines-counter"></div>
 
 							<div class="code-wrapper">
@@ -371,7 +371,7 @@
 					</c-slide>
 
 					<c-slide>
-						<div class="code-slide">
+						<div class="code-slide versions">
 							<div class="code-lines-counter"></div>
 
 							<div class="code-wrapper">
@@ -452,7 +452,7 @@
 					</c-slide>
 
 					<c-slide>
-						<div class="code-slide">
+						<div class="code-slide files">
 							<div class="code-lines-counter"></div>
 
 							<div class="code-wrapper">
@@ -990,6 +990,20 @@
 	const http = require('../../public/js/utils/http');
 	const codeTabs = [ 'entrypoints', 'versions', 'files' ];
 
+	function createLineNums (heightSelector, lineHeightSelector, targetSelector) {
+		let preOffsetHeight = document.querySelector(heightSelector).offsetHeight;
+		let lineHeightEl = document.querySelector(lineHeightSelector);
+		let lineHeight = Number(document.defaultView.getComputedStyle(lineHeightEl, null).getPropertyValue('line-height').replace('px', ''));
+		let countedLines = Math.ceil(preOffsetHeight / lineHeight);
+		let countersBlock = document.querySelector(targetSelector);
+
+		for (let i = 1; i <= countedLines; i++) {
+			let span = document.createElement('span');
+			span.textContent = i;
+			countersBlock.append(span);
+		}
+	}
+
 	component.exports = {
 		data () {
 			return {
@@ -1035,18 +1049,17 @@
 					(newValue) => {
 						document.querySelector('.code-slider .c-slider').scrollTop = 0;
 
-						this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1
-							? codeTabs.indexOf(newValue)
-							: 0);
+						this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
 
-						let activeTabLink
-						= document.querySelectorAll('.code-tabs a')[
-							this.get('activeSlide') || 0
-						];
+						let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
 						this.set('activeTabLineData', [
 							activeTabLink.offsetLeft,
 							activeTabLink.clientWidth,
 						]);
+
+						setTimeout(() => {
+							createLineNums(`.api_code .${newValue} .code-wrapper`, `.api_code .${newValue} .code-wrapper div`, `.api_code .${newValue} .code-lines-counter`);
+						}, 100);
 					},
 					{ init: false }
 				);
@@ -1092,17 +1105,8 @@
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
-				let preOffsetHeight = document.querySelector('.js-modules_code pre').offsetHeight;
-				let spanEl = document.querySelector('.js-modules_code pre span');
-				let lineHeight = Number(document.defaultView.getComputedStyle(spanEl, null).getPropertyValue('line-height').replace('px', ''));
-				let countedLines = Math.ceil(preOffsetHeight / lineHeight);
-				let countersBlock = document.querySelector('.js-modules_code_wrapper_counters');
-
-				for (let i = 1; i <= countedLines; i++) {
-					let span = document.createElement('span');
-					span.textContent = i;
-					countersBlock.append(span);
-				}
+				createLineNums('.js-modules_code pre', '.js-modules_code pre span', '.js-modules_code_wrapper_counters');
+				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
 			}
 		},
 		getRandom (min, max) {
