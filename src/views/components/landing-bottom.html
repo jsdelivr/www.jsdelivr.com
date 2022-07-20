@@ -573,20 +573,23 @@
 				<span></span>
 			</div>
 
-			<pre>
-				<span>import _ from 'https://esm.run/lodash-es'</span>
-				<span>import * as d3 from 'https://esm.run/d3';</span>
-				<span>import colors from 'https://esm.run/nice-color-palettes';</span>
+			<div class="js-modules_code_wrapper">
+				<div class="js-modules_code_wrapper_counters"></div>
 
-				<span>const message = 'jsDelivr is Awesome!';</span>
-
-				<span>for (let char of message.split(' ')) {</span>
-				<span>	d3.select('#msg')</span>
-				<span>	  .append('span')</span>
-				<span>	  .text(char + ' ')</span>
-				<span>	  .style('color', colors[_.random(0, 99)][_.random(0, 4)]);</span>
-				<span>}</span>
-			</pre>
+				<pre>
+					<span>import _ from 'https://esm.run/lodash-es'</span>
+					<span>import * as d3 from 'https://esm.run/d3';</span>
+					<span>import colors from 'https://esm.run/nice-color-palettes';</span>
+					<span>const message = 'jsDelivr is Awesome!';</span>
+					<span>for (let char of message.split(' ')) {
+						&nbsp;&nbsp;d3.select('#msg')
+						&nbsp;&nbsp;&nbsp;&nbsp;.append('span')
+						&nbsp;&nbsp;&nbsp;&nbsp;.text(char + ' ')
+						&nbsp;&nbsp;&nbsp;&nbsp;.style('color', colors[_.random(0, 99)][_.random(0, 4)]);
+						}
+					</span>
+					</pre>
+			</div>
 
 			<div class="code-footer">
 				<span>230 ms loaded from CDN</span>
@@ -919,6 +922,21 @@
 
 					this.animate('bandwidth', bandwidth, animationConfig);
 				}, 800);
+			}
+		},
+		oncomplete() {
+			if (!Ractive.isServer) {
+				let preOffsetHeight = document.querySelector('.js-modules_code pre').offsetHeight;
+				let spanEl = document.querySelector('.js-modules_code pre span');
+				let lineHeight = Number(document.defaultView.getComputedStyle(spanEl,null).getPropertyValue('line-height').replace('px', ''));
+				let countedLines = Math.ceil(preOffsetHeight / lineHeight);
+				let countersBlock = document.querySelector('.js-modules_code_wrapper_counters');
+
+				for (let i = 1; i <= countedLines; i++) {
+					let span = document.createElement('span');
+					span.textContent = i;
+					countersBlock.append(span);
+				}
 			}
 		},
 		getRandom (min, max) {
