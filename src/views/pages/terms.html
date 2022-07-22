@@ -11,94 +11,94 @@
 	<c-header></c-header>
 
 	<div class="p-privacy-policy">
-		{{#if !@shared.auNetText && !@shared.ppNetText && !@shared.ppComText}}
-			<div class="please-wait-sign">Please wait while the document loads.</div>
-		{{else}}
-			<div class="dropdown">
-				<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<span>Navigation</span>
-					<div class="toggle-icon">
-						<div class="toggle-bar"></div>
-						<div class="toggle-bar"></div>
-					</div>
+		<div class="please-wait-sign {{#if @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/if}}">
+			Please wait while the document loads.
+		</div>
+
+		<div class="dropdown {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
+			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span>Navigation</span>
+				<div class="toggle-icon">
+					<div class="toggle-bar"></div>
+					<div class="toggle-bar"></div>
 				</div>
-				<ul class="dropdown-menu">
-					<li>
-						<div class="dropdown-subtitle">CDN - cdn.jsdelivr.net</div>
-					</li>
-					<li>
-						<a href="/terms/acceptable-use-policy-jsdelivr-net"
-							class="dropdown-item {{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
-							Acceptable Use Policy
-						</a>
-					</li>
-					<li>
-						<a href="/terms/privacy-policy-jsdelivr-net"
-							class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
-							Privacy Policy
-						</a>
-					</li>
-					<li>
-						<div class="dropdown-subtitle">Website - jsdelivr.com</div>
-					</li>
-					<li>
-						<a href="/terms/privacy-policy-jsdelivr-com"
-							class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
-							Privacy Policy
-						</a>
-					</li>
-				</ul>
 			</div>
+			<ul class="dropdown-menu">
+				<li>
+					<div class="dropdown-subtitle">CDN - cdn.jsdelivr.net</div>
+				</li>
+				<li>
+					<a href="/terms/acceptable-use-policy-jsdelivr-net"
+						class="dropdown-item {{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
+						Acceptable Use Policy
+					</a>
+				</li>
+				<li>
+					<a href="/terms/privacy-policy-jsdelivr-net"
+						class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
+						Privacy Policy
+					</a>
+				</li>
+				<li>
+					<div class="dropdown-subtitle">Website - jsdelivr.com</div>
+				</li>
+				<li>
+					<a href="/terms/privacy-policy-jsdelivr-com"
+						class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
+						Privacy Policy
+					</a>
+				</li>
+			</ul>
+		</div>
 
-			<div class="page-content">
-				<div class="page-content_side-menu">
-					<div class="menu-section">
-						<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
+		<div class="page-content {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
+			<div class="page-content_side-menu">
+				<div class="menu-section">
+					<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
 
-						<div class="section-list">
-							<div>
-								<a href="/terms/acceptable-use-policy-jsdelivr-net"
-									class="{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
-										Acceptable Use Policy
-								</a>
-							</div>
-
-							<div>
-								<a href="/terms/privacy-policy-jsdelivr-net"
-									class="{{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
-										Privacy Policy
-								</a>
-							</div>
+					<div class="section-list">
+						<div>
+							<a href="/terms/acceptable-use-policy-jsdelivr-net"
+								class="{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
+									Acceptable Use Policy
+							</a>
 						</div>
-					</div>
 
-					<div class="horizontal-divider"></div>
-
-					<div class="menu-section">
-						<strong class="section-title">Website - jsdelivr.com</strong>
-
-						<div class="section-list">
-							<a href="/terms/privacy-policy-jsdelivr-com"
-								class="{{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
+						<div>
+							<a href="/terms/privacy-policy-jsdelivr-net"
+								class="{{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
 									Privacy Policy
 							</a>
 						</div>
 					</div>
 				</div>
 
-				<div class="page-content_main">
-					<h1 class="page-content_main_title">Terms &amp; Policies</h1>
+				<div class="horizontal-divider"></div>
 
-					{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}
-						<c-markdown text="{{@shared.auNetText}}"></c-markdown>
-					{{elseif currentPolicy === 'privacy-policy-jsdelivr-net'}}
-						<c-markdown text="{{@shared.ppNetText}}"></c-markdown>
-					{{else}}
-						<c-markdown text="{{@shared.ppComText}}"></c-markdown>
-					{{/if}}
+				<div class="menu-section">
+					<strong class="section-title">Website - jsdelivr.com</strong>
+
+					<div class="section-list">
+						<a href="/terms/privacy-policy-jsdelivr-com"
+							class="{{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
+								Privacy Policy
+						</a>
+					</div>
 				</div>
 			</div>
-		{{/if}}
+
+			<div class="page-content_main">
+				<h1 class="page-content_main_title">Terms &amp; Policies</h1>
+
+				{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}
+					<c-markdown text="{{@shared.auNetText}}"></c-markdown>
+				{{elseif currentPolicy === 'privacy-policy-jsdelivr-net'}}
+					<c-markdown text="{{@shared.ppNetText}}"></c-markdown>
+				{{else}}
+					<c-markdown text="{{@shared.ppComText}}"></c-markdown>
+				{{/if}}
+			</div>
+		</div>
 	</div>
 
 	<c-footer></c-footer>
