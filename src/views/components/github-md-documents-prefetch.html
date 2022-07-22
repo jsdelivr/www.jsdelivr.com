@@ -7,10 +7,6 @@
 		},
 		oninit () {
 			if (!Ractive.isServer && !this.get('@shared.ppComText')) {
-				this.set('@shared.ppComText', 'Please wait while the document loads.');
-				this.set('@shared.ppNetText', 'Please wait while the document loads.');
-				this.set('@shared.auNetText', 'Please wait while the document loads.');
-
 				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Privacy%20Policy%20-%20jsdelivr.com.md', rawResponse: true }).then((response) => {
 					this.set('@shared.ppComText', response);
 				}).catch(() => {

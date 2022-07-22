@@ -9,94 +9,94 @@
 	<c-header></c-header>
 
 	<div class="p-documentation">
-		<div class="dropdown">
-			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<span>Navigation</span>
-				<div class="toggle-icon">
-					<div class="toggle-bar"></div>
-					<div class="toggle-bar"></div>
+		{{#if !readmeText}}
+			<div class="please-wait-sign">Please wait while the document loads.</div>
+		{{else}}
+			<div class="dropdown">
+				<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span>Navigation</span>
+					<div class="toggle-icon">
+						<div class="toggle-bar"></div>
+						<div class="toggle-bar"></div>
+					</div>
 				</div>
+				<ul class="dropdown-menu">
+					<li>
+						<div class="dropdown-subtitle">Why jsDelivr</div>
+					</li>
+
+					{{#each sideMenuLinksData}}
+						{{#if section === "whyJsDelivr"}}
+							<li>
+								<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
+									on-click="@this.handleSideMenuLinkClick(id)">
+									{{text}}
+								</a>
+							</li>
+						{{/if}}
+					{{/each}}
+
+					<li>
+						<div class="dropdown-subtitle">Why jsDelivr</div>
+					</li>
+
+					{{#each sideMenuLinksData}}
+						{{#if section === "usageDocs"}}
+							<li>
+								<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
+									on-click="@this.handleSideMenuLinkClick(id)">
+									{{text}}
+								</a>
+							</li>
+						{{/if}}
+					{{/each}}
+				</ul>
 			</div>
-			<ul class="dropdown-menu">
-				<li>
-					<div class="dropdown-subtitle">Why jsDelivr</div>
-				</li>
 
-				{{#each sideMenuLinksData}}
-					{{#if section === "whyJsDelivr"}}
-						<li>
-							<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
-								on-click="@this.handleSideMenuLinkClick(id)">
-								{{text}}
-							</a>
-						</li>
-					{{/if}}
-				{{/each}}
+			<div class="page-content">
+				<div class="page-content_side-menu">
+					<div class="menu-section">
+						<strong class="section-title">Why jsDelivr</strong>
 
-				<li>
-					<div class="dropdown-subtitle">Why jsDelivr</div>
-				</li>
+						<div class="section-list">
+							{{#each sideMenuLinksData}}
+								{{#if section === "whyJsDelivr"}}
+									<div>
+										<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+											on-click="@this.handleSideMenuLinkClick(id)">
+											{{text}}
+										</a>
+									</div>
+								{{/if}}
+							{{/each}}
+						</div>
+					</div>
 
-				{{#each sideMenuLinksData}}
-					{{#if section === "usageDocs"}}
-						<li>
-							<a class="dropdown-item router-ignore{{#if currentAnchor === id}} active{{/if}}"
-								on-click="@this.handleSideMenuLinkClick(id)">
-								{{text}}
-							</a>
-						</li>
-					{{/if}}
-				{{/each}}
-			</ul>
-		</div>
+					<div class="horizontal-divider"></div>
 
-		<div class="page-content">
-			<div class="page-content_side-menu">
-				<div class="menu-section">
-					<strong class="section-title">Why jsDelivr</strong>
+					<div class="menu-section">
+						<strong class="section-title">Usage Documentation</strong>
 
-					<div class="section-list">
-						{{#each sideMenuLinksData}}
-							{{#if section === "whyJsDelivr"}}
-								<div>
-									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
-										on-click="@this.handleSideMenuLinkClick(id)">
-										{{text}}
-									</a>
-								</div>
-							{{/if}}
-						{{/each}}
+						<div class="section-list">
+							{{#each sideMenuLinksData}}
+								{{#if section === "usageDocs"}}
+									<div>
+										<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
+											on-click="@this.handleSideMenuLinkClick(id)">
+											{{text}}
+										</a>
+									</div>
+								{{/if}}
+							{{/each}}
+						</div>
 					</div>
 				</div>
 
-				<div class="horizontal-divider"></div>
-
-				<div class="menu-section">
-					<strong class="section-title">Usage Documentation</strong>
-
-					<div class="section-list">
-						{{#each sideMenuLinksData}}
-							{{#if section === "usageDocs"}}
-								<div>
-									<a class="router-ignore{{#if currentAnchor === id}} active{{/if}}"
-										on-click="@this.handleSideMenuLinkClick(id)">
-										{{text}}
-									</a>
-								</div>
-							{{/if}}
-						{{/each}}
-					</div>
+				<div class="page-content_main">
+						<c-markdown text="{{readmeText}}"></c-markdown>
 				</div>
 			</div>
-
-			<div class="page-content_main">
-				{{#if readmeText}}
-					<c-markdown text="{{readmeText}}"></c-markdown>
-				{{else}}
-					<div class="please-wait-sign">Please wait while the document loads.</div>
-				{{/if}}
-			</div>
-		</div>
+		{{/if}}
 	</div>
 
 	<c-footer></c-footer>
