@@ -47,8 +47,7 @@
 			</ul>
 		</div>
 
-		<h1 class="page-title">Terms &amp; Policies</h1>
-		<div class="container">
+		<div class="terms-container">
 			<div class="side-menu">
 				<div class="menu-section">
 					<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
@@ -85,6 +84,8 @@
 			</div>
 
 			<div class="main-content">
+				<h1 class="page-title">Terms &amp; Policies</h1>
+				<!-- add else if when no policy to show - <div class="please-wait-sign">Please wait while the document loads.</div> -->
 				{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}
 					<c-markdown text="{{@shared.auNetText}}"></c-markdown>
 				{{elseif currentPolicy === 'privacy-policy-jsdelivr-net'}}
@@ -106,6 +107,27 @@
 				title: 'Terms & Policies - jsDelivr',
 				currentPolicy: 'acceptable-use-policy-jsdelivr-net',
 			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// handle sticky side menu
+				let sidebar = document.querySelector('.side-menu');
+
+				if (sidebar) {
+					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+
+					window.addEventListener('scroll', () => {
+						let y = document.scrollingElement.scrollTop;
+						let currentSidebarTop = sidebar.getBoundingClientRect().top;
+
+						if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
+							sidebar.setAttribute('style', 'position: sticky; top: 20px');
+						} else {
+							sidebar.removeAttribute('style');
+						}
+					});
+				}
+			}
 		},
 	};
 </script>
