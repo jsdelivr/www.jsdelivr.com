@@ -60,10 +60,20 @@
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+
+	@media (min-width: @screen-sm-min) {
+		flex-direction: row;
+		justify-content: center;
+	}
 
 	.dropdown {
 		width: 100%;
+
+		@media (min-width: @screen-xs-max) {
+			display: none;
+		}
 
 		.dropdown-toggle {
 			width: 100%;
@@ -147,15 +157,24 @@
 	.page-content {
 		display: flex;
 		justify-content: space-between;
-		padding: 0 15px 80px;
-		width: 1254px;
 		height: 100%;
 		column-gap: 24px;
+		width: 100%;
+		padding: 0 24px 40px;
+
+		@media (min-width: @screen-sm-min) {
+			padding: 0 15px 80px;
+			width: 1254px;
+		}
 
 		&_side-menu {
 			display: none;
 			width: 224px;
 			margin-top: 228px;
+
+			@media (min-width: @screen-xs-max) {
+				display: block;
+			}
 
 			.menu-section {
 				display: flex;
@@ -212,8 +231,11 @@
 		}
 
 		&_main {
-			max-width: 912px;
 			width: 100%;
+
+			@media (min-width: @screen-sm-min) {
+				max-width: 912px;
+			}
 
 			&_title {
 				font-weight: 600;
@@ -256,19 +278,35 @@
 				}
 
 				>h2, >h3 {
-					margin: 32px auto 8px;
-					font-size: 24px;
-					line-height: 36px;
+					margin: 24px auto 8px;
+					font-size: 20px;
+					line-height: 32px;
+
+					@media (min-width: @screen-sm-min) {
+						margin: 32px auto 8px;
+						font-size: 24px;
+						line-height: 36px;
+					}
 				}
 
 				>h4 {
-					font-size: 18px;
-					line-height: 26px;
+					font-size: 16px;
+					line-height: 24px;
+
+					@media (min-width: @screen-sm-min) {
+						font-size: 18px;
+						line-height: 26px;
+					}
 				}
 
 				>h5, >h5 > a {
-					font-size: 16px;
-					line-height: 24px;
+					font-size: 14px;
+					line-height: 22px;
+
+					@media (min-width: @screen-sm-min) {
+						font-size: 16px;
+						line-height: 24px;
+					}
 				}
 
 				>p, em {
@@ -284,8 +322,12 @@
 				}
 
 				ul, ol {
-					padding-left: 24px;
+					padding-left: 1.5em;
 					margin: 8px auto;
+
+					@media (min-width: @screen-sm-min) {
+						padding-left: 24px;
+					}
 
 					li, li > strong {
 						font-size: 14px;
@@ -298,7 +340,11 @@
 				hr {
 					height: 1px;
 					background: #dfe3e7;
-					margin: 24px 0;
+					margin: 18px 0;
+
+					@media (min-width: @screen-sm-min) {
+						margin: 24px 0;
+					}
 				}
 
 				a {
@@ -331,62 +377,6 @@
 						color: #5c667a;
 					}
 				}
-			}
-		}
-	}
-}
-
-@media (max-width: @screen-xs-max) {
-	.p-privacy-policy, .p-documentation {
-		flex-direction: column;
-		align-items: center;
-
-		.page-content {
-			width: 100%;
-			padding: 0 24px 40px;
-
-			&_main {
-				max-width: none;
-
-				.c-markdown {
-					>h2, >h3 {
-						margin: 24px auto 8px;
-						font-size: 20px;
-						line-height: 32px;
-					}
-
-					>h4 {
-						font-size: 16px;
-						line-height: 24px;
-					}
-
-					>h5, >h5 > a {
-						font-size: 14px;
-						line-height: 22px;
-					}
-
-					hr {
-						margin: 18px 0;
-					}
-
-					ul, ol {
-						padding-left: 1.5em;
-					}
-				}
-			}
-		}
-	}
-}
-
-@media (min-width: @screen-xs-max) {
-	.p-privacy-policy, .p-documentation {
-		.dropdown {
-			display: none;
-		}
-
-		.page-content {
-			&_side-menu {
-				display: block;
 			}
 		}
 	}
