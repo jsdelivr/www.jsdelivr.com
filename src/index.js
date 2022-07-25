@@ -218,6 +218,11 @@ koaElasticUtils.addRoutes(router, [
 	return ctx.redirect(`/terms${ctx.path}`);
 });
 
+koaElasticUtils.addRoutes(router, [ [ '/discord', '/discord' ] ], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect('https://discord.gg/by8AcrjvRB');
+});
+
 /**
  * Sitemap
  */
