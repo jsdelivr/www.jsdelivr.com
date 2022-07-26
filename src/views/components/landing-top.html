@@ -439,23 +439,6 @@
 			if (!Ractive.isServer) {
 				this.observe('activeDocs', (newValue) => {
 					this.findComponent('c-slider').show(docs.indexOf(newValue) !== -1 ? docs.indexOf(newValue) : 0);
-
-					let currDocsSlideHeight = document.querySelector('.docs_code_slide').offsetHeight;
-
-					if (this.get('docsSlideTopHeight') < currDocsSlideHeight) {
-						this.set('docsSlideTopHeight', currDocsSlideHeight);
-					}
-
-					setTimeout(() => {
-						let newDocsCodeSlideHeight = document.querySelector('.docs_code_slide').offsetHeight;
-
-						if (newDocsCodeSlideHeight > this.get('docsSlideTopHeight')) {
-							let newHeightValue = `${newDocsCodeSlideHeight + 48}px`;
-
-							document.querySelector('.docs_code').style.maxHeight = newHeightValue;
-							document.querySelector('.docs_code').style.height = newHeightValue;
-						}
-					}, 500);
 				}, { init: false });
 
 				// Load network stats.
@@ -463,12 +446,6 @@
 					this.animate('networkStats', data);
 				});
 			}
-		},
-		oncomplete () {
-			let docsCodeSlideHeight = `${document.querySelector('.docs_code_slide').offsetHeight + 48}px`;
-
-			document.querySelector('.docs_code').style.maxHeight = docsCodeSlideHeight;
-			document.querySelector('.docs_code').style.height = docsCodeSlideHeight;
 		},
 	};
 </script>
