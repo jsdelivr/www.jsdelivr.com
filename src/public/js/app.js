@@ -92,7 +92,6 @@ app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/privacy-policy-jsdelivr-com', cPPCom);
 app.router.addRoute('/terms/privacy-policy-jsdelivr-net', cPPNet);
 app.router.addRoute('/terms/acceptable-use-policy-jsdelivr-net', cAUNet);
-app.router.addRoute('/discord', () => { location.href = 'https://discord.gg/by8AcrjvRB'; });
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
 $(() => {
