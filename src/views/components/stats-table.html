@@ -3,19 +3,23 @@
 <div class="c-stats-table">
   <div class="flex stats-table-table">
     {{#if title}}
-    <div class="item state-title">{{title}}</div>
+      <div class="item state-title">{{title}}</div>
     {{/if}}
+
     {{#each ~/data: i}}
-    <div class="item">
-      {{#if rowIndexes}}
-      <span class="index">{{i+1}}</span>
-      {{/if}}
-      {{>column1}}
-      <span class="hits text-table-number">{{formatValue(this[valueKey])}}</span>
-       <div class="table-chart-lg">
-        <div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
+      <div class="item">
+        {{#if rowIndexes}}
+          <span class="index">{{i+1}}</span>
+        {{/if}}
+
+        {{>column1}}
+
+        <span class="hits text-table-number">{{formatValue(this[valueKey])}}</span>
+
+        <div class="table-chart-lg">
+          <div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
+        </div>
       </div>
-    </div>
     {{/each}}
   </div>
 </div>

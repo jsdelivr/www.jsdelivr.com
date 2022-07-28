@@ -30,30 +30,30 @@ describe('search', () => {
 	it('pagination works (click)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (url)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=2`);
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (prev)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=2`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(1) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(2)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(3)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (next)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=1`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(7) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(8)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 });

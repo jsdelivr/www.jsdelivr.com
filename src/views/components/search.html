@@ -1,9 +1,9 @@
 <link rel="ractive" href="./package-header.html" name="c-package-header">
 
 <div class="c-search">
-	<div class="container">
-		<div class="search-input-wrapper clearfix">
-			<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+	<div class="c-search_container">
+		<div class="search-input-wrapper">
+			<input class="search-input" type="text" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 
 			<div class="search-by">
 				<span>Real-time search by </span>
@@ -11,7 +11,7 @@
 					<img src="{{@shared.assetsHost}}/img/algolia_grey.svg" title="Algolia">
 				</a>
 			</div>
-			{{ #if hideLanding }}
+			{{#if hideLanding}}
 				<div class="filter-by">
 					<span>Filter for: </span>
 					<button class="btn-package-label btn-esm {{ #if filterType === 'esm' }}active{{ /if }}"
@@ -23,12 +23,19 @@
 					<button class="btn-package-label btn-styles {{ #if filterStyle === 'styles' }}active{{ /if }}"
 							on-click="@this.setStyleFilter('styles')">Styles</button>
 				</div>
-			{{ /if }}
+			{{/if}}
 		</div>
 
 		<div class="search-results">
 			{{#each packages}}
-				<c-package-header package="{{this}}" version="{{version}}" onlyHeader="true" homeSearch="true" query="{{query}}" filterType="{{filterType}}" filterStyle="{{filterStyle}}"></c-package-header>
+				<c-package-header package="{{this}}"
+					version="{{version}}"
+					onlyHeader="true"
+					homeSearch="true"
+					query="{{query}}"
+					filterType="{{filterType}}"
+					filterStyle="{{filterStyle}}">
+				</c-package-header>
 			{{elseif query && nbHits === 0}}
 				<div class="no-results">
 					<img
@@ -36,30 +43,32 @@
 						height="148"
 						src="{{@shared.assetsHost}}/img/landing/new/no-results.svg"
 					/>
-					<p class="c-search-empty">No results found</p>
+					<p class="no-results_title">No results found</p>
 				</div>
 			{{/each}}
 		</div>
 
 		{{#if hideLanding}}
 			<nav class="search-pagination" aria-label="Search results pagination">
-				<ul class="pagination">
-					<li style="{{#unless page}}visibility: hidden;{{/unless}}">
-						<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
-							<span aria-hidden="true">&laquo;</span>
-						</a>
-					</li>
+				<div class="pages-counter">
+					Page {{page +1}} of {{nbPages}}
+				</div>
 
-					{{#each pagination(page, nbPages)}}
-					<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
-					{{/each}}
+				<div class="pagination-btn pagination-btn_prev {{#unless page}}pagination-btn_disabled{{/unless}}"
+					on-click="page > 0 && @this.subtract('page')">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+				</div>
 
-					<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
-						<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
-							<span aria-hidden="true">&raquo;</span>
-						</a>
-					</li>
-				</ul>
+				{{#each pagination(page, nbPages)}}
+					<div class="page-num {{#if page === this}}active{{/if}}" on-click="@this.set('page', this)">
+						{{this + 1}}
+					</div>
+				{{/each}}
+
+				<div class="pagination-btn pagination-btn_next {{#unless page + 1 < nbPages}}pagination-btn_disabled{{/unless}}"
+					on-click="page + 1 < nbPages && @this.add('page')" >
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+				</div>
 			</nav>
 		{{/if}}
 	</div>
