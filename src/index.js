@@ -49,6 +49,7 @@ const render = require('./middleware/render');
 const ogImage = require('./middleware/open-graph');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
+const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
 
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
@@ -126,7 +127,7 @@ if (app.env === 'development') {
  * Static files.
  */
 app.use(async (ctx, next) => {
-	if (app.env !== 'development' && ctx.query.v === assetsVersion) {
+	if (app.env === 'production' && (isRenderPreview || ctx.query.v === assetsVersion)) {
 		ctx.res.allowCaching = true;
 	}
 
@@ -171,12 +172,12 @@ app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
 	serverHost: app.env === 'production'
-		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
+		? isRenderPreview
 			? process.env.RENDER_EXTERNAL_URL
 			: serverConfig.host
 		: '',
 	assetsHost: app.env === 'production'
-		? process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL
+		? isRenderPreview
 			? process.env.RENDER_EXTERNAL_URL
 			: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`
 		: '',
