@@ -217,8 +217,14 @@
 
 									<div class="block">
 										{{#if this}}
-											<span class="ex_url">
-												{{@this.createUrl(this, showESMFiles)}}
+											<span class="ex-url">
+												{{#each @this.createUrl(this, showESMFiles).split('/'):idx}}
+													{{#if idx === @this.createUrl(this, showESMFiles).split('/').length - 1}}
+														<span class="ex-url_part">{{this}}</span>
+													{{else}}
+														<span class="ex-url_part">{{this + '/'}}</span>
+													{{/if}}
+												{{/each}}
 											</span>
 
 											<a as-clipboard="'Copy URL to clipboard', 'right'"
@@ -231,7 +237,7 @@
 							{{/each}}
 						</div>
 
-						<button class="btn-more btn-grey" on-click="@this.set('showMoreExLogo', !showMoreExLogo)">
+						<button class="btn-more" on-click="@this.set('showMoreExLogo', !showMoreExLogo)">
 							{{ #if !showMoreExLogo }}
 								Show more CDN
 							{{ else }}
