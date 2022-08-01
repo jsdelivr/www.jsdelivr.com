@@ -193,7 +193,13 @@
 									</div>
 
 									<span class="block-core_url">
-										{{@this.createUrl(coreFile, showESMFiles, true)}}
+										{{#each @this.createUrl(coreFile, showESMFiles, true).split('/'):idx}}
+											{{#if idx === @this.createUrl(coreFile, showESMFiles, true).split('/').length - 1}}
+												<span class="block-core_url_part">{{this}}</span>
+											{{else}}
+												<span class="block-core_url_part">{{this + '/'}}</span>
+											{{/if}}
+										{{/each}}
 									</span>
 
 									<a as-clipboard="'Copy URL to clipboard', 'right'"
