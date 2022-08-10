@@ -25,6 +25,7 @@
 
 	&_container {
 		width: 100%;
+		max-width: 1224px;
 		padding: 0 24px;
 		margin: 0 auto;
 
@@ -102,6 +103,8 @@
 				@media (min-width: @screen-sm-min) {
 					font-size: 48px;
 					line-height: 68px;
+					justify-content: center;
+					margin: 0;
 				}
 			}
 
@@ -111,15 +114,28 @@
 				justify-content: flex-start;
 				width: 100%;
 
-				.pos-first {
+				@media (min-width: @screen-sm-min) {
+					display: grid;
+					grid-template-columns: 1fr 172px 1fr;
+				}
+
+				.pos-right {
 					.event-block_main_type-icon {
-						margin-right: 16px;
+						margin: 0 16px 0 0;
+
+						@media (min-width: @screen-sm-min) {
+							margin: 0 24px 0 0;
+						}
 					}
 				}
 
-				.pos-second {
+				.pos-left {
 					.event-block_main_type-icon {
-						margin-right: 16px;
+						margin: 0 16px 0 0;
+
+						@media (min-width: @screen-sm-min) {
+							margin: 0 0 0 24px;
+						}
 					}
 				}
 
@@ -131,6 +147,7 @@
 
 					@media (min-width: @screen-sm-min) {
 						margin: 0 30px;
+						order: 2;
 					}
 
 					.binding {
@@ -167,6 +184,24 @@
 				&_main {
 					display: flex;
 					align-items: center;
+					order: 2;
+
+					&.pos-right {
+						@media (min-width: @screen-sm-min) {
+							order: 3;
+						}
+					}
+
+					&.pos-left {
+						@media (min-width: @screen-sm-min) {
+							order: 1;
+							flex-direction: row-reverse;
+
+							.event-block_main_content > span {
+								text-align: right;
+							}
+						}
+					}
 
 					&_content {
 						display: flex;
@@ -208,6 +243,20 @@
 
 				&_relation {
 					display: none;
+					order: 3;
+
+					&.pos-right {
+						@media (min-width: @screen-sm-min) {
+							order: 3;
+						}
+					}
+
+					&.pos-left {
+						@media (min-width: @screen-sm-min) {
+							order: 1;
+							justify-content: flex-end;
+						}
+					}
 
 					@media (min-width: @screen-sm-min) {
 						display: flex;
