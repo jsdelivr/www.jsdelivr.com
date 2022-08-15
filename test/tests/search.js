@@ -10,11 +10,21 @@ describe('search', () => {
 		await browser.sleep(4000);
 		await browser.findElement({ css: '.search-input' }).sendKeys('jsdelivr');
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.package-name' }).getText()).to.eventually.contain('jsdelivr');
-		await expect(browser.findElement({ css: '.package-name' }).getAttribute('href')).to.eventually.contain('/package/npm/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(2)' }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(3)' }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(4)' }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+		let elements = await browser.findElements({ css: '.package-name' });
+
+		for (let key in elements) {
+			if (Object.hasOwn(elements, key)) {
+				let elText = await elements[key].getText();
+
+				if (elText === 'jsdelivr') {
+					await expect(elements[key].getText()).to.eventually.contain('jsdelivr');
+					await expect(elements[key].getAttribute('href')).to.eventually.match(/.*(package\/npm\/jsdelivr)$/);
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(2)` }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(3)` }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(4)` }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+				}
+			}
+		}
 	});
 
 	it('by author works', async () => {
