@@ -6,7 +6,7 @@
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
-	<c-header></c-header>
+	<c-header additionalClasses="with-white-icon-bars"></c-header>
 
 	<div class="p-history">
 		<c-header-gradient showMap="{{true}}"></c-header-gradient>
@@ -15,59 +15,63 @@
 			<a href="/history" class="active">Our History</a>
 		</div>
 
-		<div class="container-fluid">
-			<div class="page-title">
-				<h1 class="text-title-48">jsDelivr over the years </h1>
-				<h1 class="text-content-40">Our History</h1>
+		<div class="p-history_container">
+			<div class="p-history_container_title">
+				<span>jsDelivr over the years </span>
+				<span>Our History</span>
 			</div>
 
-			<div class="page-content">
+			<div class="p-history_container_content">
 				{{#each eventsData}}
-				<section>
-					<div class="year">{{year}}</div>
+					<section>
+						<div class="year">{{year}}</div>
 
-					{{#each events}}
-					<div class="event-block">
-						<div class="event-main {{@index % 2 ? 'pos-left' : 'pos-right'}}">
-							{{#if data.type}}
-								<img class="event-type-icon"
-									src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg" />
-							{{/if}}
-							{{#if data.text}}
-								<div class="event-content">
-									<span>{{{data.text}}}</span>
-									{{#if data.img && data.img.ext === ".svg"}}
-										<img class="{{data.img.class}}" width="{{data.img.widthSmall}}"
-											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
-									{{elseif data.img && data.img.ext === ".png"}}
-										<img class="{{data.img.class}}" width="{{data.img.widthSmall}}"
-											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
-											srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x" />
+						{{#each events}}
+							<div class="event-block">
+								<div class="event-block_month">
+									<div class="binding"></div>
+									<div class="month">{{month}}</div>
+									<div class="binding"></div>
+								</div>
+
+								<div class="event-block_main {{@index % 2 ? 'pos-right' : 'pos-left'}}">
+									{{#if data.type}}
+										<img class="event-block_main_type-icon" src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg">
+									{{/if}}
+
+									{{#if data.text}}
+										<div class="event-block_main_content">
+											<span>{{{data.text}}}</span>
+
+											{{#if data.img && data.img.ext === ".svg"}}
+												<img class="{{data.img.class}}"
+													width="{{data.img.widthSmall}}"
+													src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}">
+											{{elseif data.img && data.img.ext === ".png"}}
+												<img class="{{data.img.class}}"
+													width="{{data.img.widthSmall}}"
+													src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
+													srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x">
+											{{/if}}
+										</div>
 									{{/if}}
 								</div>
-							{{/if}}
-						</div>
 
-						<div class="event-relation {{@index % 2 ? 'pos-right' : 'pos-left'}}">
-							{{#if data.img && data.img.ext === ".svg"}}
-								<img class="{{data.img.class}}" width="{{data.img.widthLarge}}"
-									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}" />
-							{{elseif data.img && data.img.ext === ".png"}}
-								<img class="{{data.img.class}}" width="{{data.img.widthLarge}}"
-									src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
-									srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x" />
-							{{/if}}
-						</div>
-
-						<div class="event-month">
-							<div class="binding"></div>
-							<div class="month">{{month}}</div>
-							<div class="binding"></div>
-						</div>
-
-					</div>
-					{{/each}}
-				</section>
+								<div class="event-block_relation {{@index % 2 ? 'pos-left' : 'pos-right'}}">
+									{{#if data.img && data.img.ext === ".svg"}}
+										<img class="{{data.img.class}}"
+											width="{{data.img.widthLarge}}"
+											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}">
+									{{elseif data.img && data.img.ext === ".png"}}
+										<img class="{{data.img.class}}"
+											width="{{data.img.widthLarge}}"
+											src="{{@shared.assetsHost}}/img/history/{{data.img.name}}{{data.img.ext}}"
+											srcset="{{@shared.assetsHost}}/img/history/{{data.img.name}}@2x{{data.img.ext}} 2x">
+									{{/if}}
+								</div>
+							</div>
+						{{/each}}
+					</section>
 				{{/each}}
 			</div>
 		</div>
