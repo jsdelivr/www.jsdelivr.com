@@ -11,7 +11,11 @@
 	<c-header></c-header>
 
 	<div class="p-privacy-policy">
-		<div class="dropdown">
+		<div class="please-wait-sign {{#if @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/if}}">
+			Please wait while the document loads.
+		</div>
+
+		<div class="dropdown {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
 			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span>Navigation</span>
 				<div class="toggle-icon">
@@ -47,9 +51,8 @@
 			</ul>
 		</div>
 
-		<h1 class="page-title">Terms &amp; Policies</h1>
-		<div class="container">
-			<div class="side-menu">
+		<div class="page-content {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
+			<div class="page-content_side-menu">
 				<div class="menu-section">
 					<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
 
@@ -84,7 +87,9 @@
 				</div>
 			</div>
 
-			<div class="main-content">
+			<div class="page-content_main">
+				<h1 class="page-content_main_title">Terms &amp; Policies</h1>
+
 				{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}
 					<c-markdown text="{{@shared.auNetText}}"></c-markdown>
 				{{elseif currentPolicy === 'privacy-policy-jsdelivr-net'}}
@@ -106,6 +111,27 @@
 				title: 'Terms & Policies - jsDelivr',
 				currentPolicy: 'acceptable-use-policy-jsdelivr-net',
 			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// handle sticky side menu
+				let sidebar = document.querySelector('.page-content_side-menu');
+
+				if (sidebar) {
+					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+
+					window.addEventListener('scroll', () => {
+						let y = document.scrollingElement.scrollTop;
+						let currentSidebarTop = sidebar.getBoundingClientRect().top;
+
+						if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
+							sidebar.setAttribute('style', 'position: sticky; top: 20px');
+						} else {
+							sidebar.removeAttribute('style');
+						}
+					});
+				}
+			}
 		},
 	};
 </script>

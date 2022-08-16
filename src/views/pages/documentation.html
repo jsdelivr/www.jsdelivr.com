@@ -9,7 +9,9 @@
 	<c-header></c-header>
 
 	<div class="p-documentation">
-		<div class="dropdown">
+		<div class="please-wait-sign {{#if readmeText}} not-displayed{{/if}}">Please wait while the document loads.</div>
+
+		<div class="dropdown {{#unless readmeText}} not-displayed{{/unless}}">
 			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span>Navigation</span>
 				<div class="toggle-icon">
@@ -50,8 +52,8 @@
 			</ul>
 		</div>
 
-		<div class="docs-container">
-			<div class="side-menu">
+		<div class="page-content {{#unless readmeText}} not-displayed{{/unless}}">
+			<div class="page-content_side-menu">
 				<div class="menu-section">
 					<strong class="section-title">Why jsDelivr</strong>
 
@@ -89,12 +91,8 @@
 				</div>
 			</div>
 
-			<div class="main-content">
-				{{#if readmeText}}
+			<div class="page-content_main">
 					<c-markdown text="{{readmeText}}"></c-markdown>
-				{{else}}
-					<div class="please-wait-sign">Please wait while the document loads.</div>
-				{{/if}}
 			</div>
 		</div>
 	</div>
@@ -251,7 +249,7 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				// handle sticky side menu
-				let sidebar = document.querySelector('.side-menu');
+				let sidebar = document.querySelector('.page-content_side-menu');
 
 				if (sidebar) {
 					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;

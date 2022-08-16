@@ -1,11 +1,93 @@
+.p-documentation {
+	.page-content {
+		&_side-menu {
+			height: 700px;
+		}
+
+		&_main {
+			.c-markdown {
+				h1 {
+					&:first-of-type {
+						margin-top: 40px;
+						font-size: 32px;
+						line-height: 44px;
+
+						@media (min-width: @screen-sm-min) {
+							margin-top: 80px;
+							font-size: 48px;
+							line-height: 68px;
+						}
+					}
+					font-size: 24px;
+					line-height: 36px;
+					margin-top: 40px;
+					margin-bottom: 24px;
+
+					@media (min-width: @screen-sm-min) {
+						font-size: 32px;
+						line-height: 44px;
+					}
+				}
+			}
+		}
+	}
+}
+
 .p-privacy-policy {
+	.page-content {
+		&_side-menu {
+			height: 200px;
+		}
+
+		&_main {
+			.c-markdown {
+				h1:first-of-type {
+					margin: 40px 0 24px;
+					font-weight: 600;
+					font-size: 24px;
+					line-height: 36px;
+					letter-spacing: .2px;
+					color: #17233b;
+				}
+			}
+		}
+	}
+}
+
+.p-privacy-policy, .p-documentation {
 	font-family: Lexend, sans-serif;
 	font-style: normal;
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	@media (min-width: @screen-sm-min) {
+		flex-direction: row;
+		justify-content: center;
+	}
+
+	.not-displayed {
+		display: none !important;
+	}
+
+	.please-wait-sign {
+		margin-top: 40px;
+		text-align: center;
+		font-size: 14px;
+		line-height: 24px;
+		color: #79849a;
+
+		@media (min-width: @screen-sm-min) {
+			margin-top: 180px;
+		}
+	}
 
 	.dropdown {
-		@media (min-width: @screen-sm-min) {
+		width: 100%;
+
+		@media (min-width: @screen-xs-max) {
 			display: none;
 		}
 
@@ -15,12 +97,11 @@
 			align-items: center;
 			padding: 16px 24px;
 			background: #fff;
-			font-family: Lexend, sans-serif;
 			font-weight: 600;
 			font-size: 14px;
 			letter-spacing: .2px;
-			color: #17233b;
 			cursor: pointer;
+			color: #17233b;
 			box-shadow: inset 0 -1px 0 #dfe3e7;
 
 			.toggle-icon {
@@ -89,42 +170,25 @@
 		}
 	}
 
-	.page-title {
+	.page-content {
 		display: flex;
-		justify-content: center;
-		font-weight: 600;
-		font-size: 32px;
-		line-height: 68px;
-		letter-spacing: .2px;
-		color: #17233b;
-		margin: 40px auto;
+		justify-content: space-between;
+		height: 100%;
+		column-gap: 24px;
 		width: 100%;
+		padding: 0 24px 40px;
 
 		@media (min-width: @screen-sm-min) {
-			font-size: 48px;
-			margin: 80px auto;
-		}
-	}
-
-	.container {
-		justify-content: center;
-		padding: 0 24px 32px;
-
-		@media (min-width: @screen-sm-min) {
-			display: flex;
-			padding: 0;
+			padding: 0 15px 80px;
+			width: 1254px;
 		}
 
-		@media (min-width: @screen-lg-min) {
-			width: 1224px;
-		}
-
-		.side-menu {
-			margin-right: 88px;
+		&_side-menu {
 			display: none;
-			min-width: 224px;
+			width: 224px;
+			margin-top: 228px;
 
-			@media (min-width: @screen-sm-min) {
+			@media (min-width: @screen-xs-max) {
 				display: block;
 			}
 
@@ -138,6 +202,7 @@
 					color: #79849a;
 					font-weight: 400;
 					margin-bottom: 16px;
+					user-select: none;
 				}
 
 				.section-list {
@@ -152,6 +217,7 @@
 						line-height: 20px;
 						color: #17233b;
 						text-decoration: none;
+						user-select: none;
 						cursor: pointer;
 
 						&:hover {
@@ -180,74 +246,96 @@
 			}
 		}
 
-		.main-content {
-			// width: 912px;
+		&_main {
+			width: 100%;
+
+			@media (min-width: @screen-sm-min) {
+				max-width: 912px;
+			}
+
+			&_title {
+				font-weight: 600;
+				font-size: 32px;
+				line-height: 44px;
+				text-align: center;
+				letter-spacing: .2px;
+				color: #17233b;
+				margin: 40px 0;
+
+				@media (min-width: @screen-sm-min) {
+					font-size: 48px;
+					line-height: 68px;
+					margin: 80px 0;
+				}
+			}
 
 			.c-markdown {
 				text-align: left;
 
-				@media (min-width: @screen-sm-min) {
-					text-align: justify;
-				}
-
-				h1, h2, h3, h4 {
-					font-weight: 600;
-					letter-spacing: .2px;
+				h1, h2, h4, h5 {
 					color: #17233b;
 				}
 
-				h2, h3, h4 {
-					margin-top: 24px;
-					margin-bottom: 8px;
-
-					@media (min-width: @screen-sm-min) {
-						margin-top: 32px;
-					}
+				h1, h2, h4, h5, >h5 > a {
+					font-weight: 600;
+					letter-spacing: .2px;
 				}
 
 				h1 {
-					font-size: 24px;
-					line-height: 36px;
-					margin: 0 0 24px;
+					margin: 32px auto;
+				}
+
+				>h2, >h3 {
+					margin: 24px auto 8px;
+					font-size: 20px;
+					line-height: 32px;
 
 					@media (min-width: @screen-sm-min) {
-						margin: 0 0 32px;
+						margin: 32px auto 8px;
+						font-size: 24px;
+						line-height: 36px;
 					}
 				}
 
-				h2 {
-					font-size: 24px;
-					line-height: 36px;
-
-					& ~ p {
-						margin-bottom: 8px;
-					}
-				}
-
-				h3 {
-					font-size: 18px;
-					line-height: 26px;
-				}
-
-				h4 {
+				>h4 {
 					font-size: 16px;
 					line-height: 24px;
+
+					@media (min-width: @screen-sm-min) {
+						font-size: 18px;
+						line-height: 26px;
+					}
 				}
 
-				>p, > p > em {
+				>h5, >h5 > a {
+					font-size: 14px;
+					line-height: 22px;
+
+					@media (min-width: @screen-sm-min) {
+						font-size: 16px;
+						line-height: 24px;
+					}
+				}
+
+				>p, em {
+					font-weight: 400;
 					font-size: 14px;
 					line-height: 24px;
 					color: #5c667a;
 					font-style: normal;
 				}
 
-				>p {
-					margin-bottom: 16px;
+				ul {
+					list-style-type: disc;
 				}
 
 				ul, ol {
-					padding-left: 20px;
-					margin-bottom: 8px;
+					padding-left: 1.5em;
+					margin: 8px auto;
+
+					@media (min-width: @screen-sm-min) {
+						padding-left: 24px;
+					}
 
 					li, li > strong {
 						font-size: 14px;
@@ -255,28 +343,23 @@
 						color: #5c667a;
 						font-weight: 400;
 					}
-
-					li > p {
-						margin-bottom: 8px;
-					}
-
-					p + ul {
-						margin-bottom: 8px;
-					}
 				}
 
-				ul ul li, ul ol li, ol ol li, ol ul li {
-					list-style-type: disc;
-				}
+				hr {
+					height: 1px;
+					background: #dfe3e7;
+					margin: 18px 0;
 
-				ol > li > ul {
-					margin-top: 8px;
+					@media (min-width: @screen-sm-min) {
+						margin: 24px 0;
+					}
 				}
 
 				a {
 					font-size: 14px;
 					line-height: 24px;
 					color: #f65128;
+					font-weight: 400;
 
 					&:hover {
 						color: #e13509;
@@ -284,6 +367,22 @@
 
 					&:active, &:focus {
 						color: #b02907;
+					}
+				}
+
+				pre {
+					padding: 20px;
+					background: #f3f5f7;
+					border-radius: 4px;
+					border: none;
+
+					code {
+						font-family: "Source Code Pro", monospace;
+						font-style: normal;
+						font-weight: 500;
+						font-size: 14px;
+						line-height: 20px;
+						color: #5c667a;
 					}
 				}
 			}
