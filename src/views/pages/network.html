@@ -53,19 +53,9 @@
 			<h1 class="page-title">Network</h1>
 
 			<div class="network-controls">
-				<!-- TODO: currently this logic will throw away the last item if the amount of items of array is odd -->
 				{{#each providers:idx}}
-					{{#if idx % 2 !== 0}}
+					{{#if idx % 2 === 0}}
 						<div class="network-controls_switchers_pair">
-							<div class="network-controls_switchers_pair_switcher">
-								<input class="switch-inline {{providers[idx - 1]}}"
-									type="checkbox"
-									id="provider-{{providers[idx - 1]}}"
-									checked="{{enabled[idx - 1]}}"
-									twoway="false">
-								<label for="provider-{{providers[idx - 1]}}" on-click="@this.toggleMap(idx - 1)"></label>{{providers[idx - 1]}}
-							</div>
-
 							<div class="network-controls_switchers_pair_switcher">
 								<input class="switch-inline {{providers[idx]}}"
 									type="checkbox"
@@ -74,6 +64,17 @@
 									twoway="false">
 								<label for="provider-{{providers[idx]}}" on-click="@this.toggleMap(idx)"></label>{{providers[idx]}}
 							</div>
+
+							{{#if providers[idx + 1]}}
+								<div class="network-controls_switchers_pair_switcher">
+									<input class="switch-inline {{providers[idx + 1]}}"
+										type="checkbox"
+										id="provider-{{providers[idx + 1]}}"
+										checked="{{enabled[idx + 1]}}"
+										twoway="false">
+									<label for="provider-{{providers[idx + 1]}}" on-click="@this.toggleMap(idx + 1)"></label>{{providers[idx + 1]}}
+								</div>
+							{{/if}}
 						</div>
 					{{/if}}
 				{{/each}}
