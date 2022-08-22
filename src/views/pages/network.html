@@ -52,31 +52,16 @@
 		<div id="map" class="map-wrapper">
 			<h1 class="page-title">Network</h1>
 
-			<div class="network-controls">
+			<div class="network-controls network-controls_type-{{providers.length}}">
 				{{#each providers:idx}}
-					{{#if idx % 2 === 0}}
-						<div class="network-controls_switchers_pair">
-							<div class="network-controls_switchers_pair_switcher">
-								<input class="switch-inline {{providers[idx]}}"
-									type="checkbox"
-									id="provider-{{providers[idx]}}"
-									checked="{{enabled[idx]}}"
-									twoway="false">
-								<label for="provider-{{providers[idx]}}" on-click="@this.toggleMap(idx)"></label>{{providers[idx]}}
-							</div>
-
-							{{#if providers[idx + 1]}}
-								<div class="network-controls_switchers_pair_switcher">
-									<input class="switch-inline {{providers[idx + 1]}}"
-										type="checkbox"
-										id="provider-{{providers[idx + 1]}}"
-										checked="{{enabled[idx + 1]}}"
-										twoway="false">
-									<label for="provider-{{providers[idx + 1]}}" on-click="@this.toggleMap(idx + 1)"></label>{{providers[idx + 1]}}
-								</div>
-							{{/if}}
-						</div>
-					{{/if}}
+					<div class="network-controls_switcher {{#if providers.length - 1 == idx && providers.length % 2 != 0 }}unpaired{{/if}}">
+						<input class="switch-inline {{this}}"
+							type="checkbox"
+							id="provider-{{this}}"
+							checked="{{enabled[idx]}}"
+							twoway="false">
+						<label for="provider-{{this}}" on-click="@this.toggleMap(idx)"></label>{{this}}
+					</div>
 				{{/each}}
 			</div>
 
