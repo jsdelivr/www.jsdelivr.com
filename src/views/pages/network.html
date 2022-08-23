@@ -52,15 +52,15 @@
 		<div id="map" class="map-wrapper">
 			<h1 class="page-title">Network</h1>
 
-			<div class="network-controls">
-				{{#each providers}}
-					<div class="network-control">
+			<div class="network-controls network-controls_type-{{providers.length}}">
+				{{#each providers:idx}}
+					<div class="network-controls_switcher {{#if providers.length - 1 == idx && providers.length % 2 != 0 }}unpaired{{/if}}">
 						<input class="switch-inline {{this}}"
 							type="checkbox"
 							id="provider-{{this}}"
-							checked="{{enabled[@key]}}"
+							checked="{{enabled[idx]}}"
 							twoway="false">
-							<label for="provider-{{this}}" on-click="@this.toggleMap(@key)"></label>{{this}}
+						<label for="provider-{{this}}" on-click="@this.toggleMap(idx)"></label>{{this}}
 					</div>
 				{{/each}}
 			</div>
@@ -68,13 +68,15 @@
 			<div class="network-map"></div>
 		</div>
 
-		<div class="container-fluid">
-			<section class="max-808">
+		<div class="content-wrapper">
+			<section class="content-wrapper_section">
 				<h2>Production ready</h2>
 				<p>
 					Unlike the competition, jsDelivr uses a unique Multi-CDN infrastructure built on top of CDN networks provided by Cloudflare, Fastly, Bunny, and Quantil.
 					Additionally, we use custom servers in locations where CDNs have little or no presence.
 				</p>
+
+				<br />
 
 				<p>
 					Our smart load balancing system ensures the best possible uptime and the best possible performance.
@@ -83,21 +85,18 @@
 					All that happens within a few milliseconds.
 				</p>
 
+				<br />
+
 				<p>
 					This algorithm also immediately responds to performance degradation. For example, if a CDN provider gets DDoSed in Europe
 					and their response times increase, jsDelivr will notice the change and simply stop using this provider in Europe
 					but still consider it for users in other locations.
 				</p>
-
-				<!--<p>
-					Jealous? We can build a similar system for you. We offer CDN and web peformance consultation services.
-				</p>-->
-
 			</section>
 
 			<c-new-infographic-banner></c-new-infographic-banner>
 
-			<section id="failover" class="max-808">
+			<section id="failover" class="content-wrapper_section">
 				<h2>Failover on every layer</h2>
 
 				<p>
@@ -105,22 +104,28 @@
 					Both of our DNS providers monitor our load-balanced endpoint and if they detect problems they automatically switch all traffic to a single CDN provider.
 				</p>
 
+				<br />
+
 				<p>
 					Our load-balancer monitors the uptime of all CDN providers using both RUM and synthetic data.
 					If any of those detect downtime or performance degradation, the affected CDN provider is removed immediately.
 				</p>
+
+				<br />
 
 				<p>
 					Our origin servers are located in several data-centers in different states.
 					If a server goes down, the CDNs automatically switch to the remaining healthy servers.
 				</p>
 
+				<br />
+
 				<p>
 					In total, we have one of the most resilient systems out there, ready to be used in production by even the largest websites.
 				</p>
 			</section>
 
-			<section id="china" class="max-808">
+			<section id="china" class="content-wrapper_section">
 				<h2>Low latency "Near China" network</h2>
 				<p>jsDelivr has multiple locations close Chinese urban centers to ensure low latency and high performance for all Chinese users.</p>
 
