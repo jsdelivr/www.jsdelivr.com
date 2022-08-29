@@ -81,39 +81,36 @@
 
 			<section class="content_performance">
 				<h2>Performance comparison</h2>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6">
-						<c-stats-table title="{{statsName}} - load time"
-							data="{{sortedStats.duration}}"
-							columns="{{statsColumns}}"
-							formatValue="{{formatMs}}"
-							valueKey="duration"
-							desc="false">
-							{{#partial column1}}
-								{{#if error}}
-									<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
-								{{else}}
-									{{name}}
-								{{/if}}
-							{{/partial}}
-						</c-stats-table>
-					</div>
 
-					<div class="col-xs-12 col-sm-6">
-						<c-stats-table title="{{statsName}} - number of requests"
-							data="{{sortedStats.requests}}"
-							columns="{{statsColumns}}"
-							valueKey="requests"
-							desc="false">
-							{{#partial column1}}
-								{{#if error}}
-									<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
-								{{else}}
-									{{name}}
-								{{/if}}
-							{{/partial}}
-						</c-stats-table>
-					</div>
+				<div class="content_performance_row">
+					<c-stats-table title="{{statsName}} - load time"
+						data="{{sortedStats.duration}}"
+						columns="{{statsColumns}}"
+						formatValue="{{formatMs}}"
+						valueKey="duration"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								{{name}}
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
+
+					<c-stats-table title="{{statsName}} - number of requests"
+						data="{{sortedStats.requests}}"
+						columns="{{statsColumns}}"
+						valueKey="requests"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								{{name}}
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
 				</div>
 
 				<div class="benchmark-text">
