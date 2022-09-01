@@ -13,41 +13,39 @@
 
 		<div class="content">
 			<section class="heading">
-				<div class="heading_title">
-					<h1>Purge jsDelivr CDN cache</h1>
-					<h2>Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</h2>
-				</div>
+				<h1>Purge jsDelivr CDN cache</h1>
+				<h2>Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</h2>
+			</section>
 
-				<div class="purge-form">
-					<textarea id="purge-urls"
-						class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
-						placeholder="Enter up to 10 URLs - one per line"
-						value="{{urls}}">
-					</textarea>
+			<section class="purge-form">
+				<textarea id="purge-urls"
+					class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
+					placeholder="Enter up to 10 URLs - one per line"
+					value="{{urls}}">
+				</textarea>
 
-					{{#if purgingInProcess}}
-						<a class="animated">
-							<div class="animation"></div>
-						</a>
-					{{else}}
-						<a
-							class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
-							on-click="@this.checkPurgeBtnStatus()">
-							Purge now
-						</a>
-					{{/if}}
+				{{#if purgingInProcess}}
+					<a class="animated">
+						<div class="animation"></div>
+					</a>
+				{{else}}
+					<a
+						class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
+						on-click="@this.checkPurgeBtnStatus()">
+						Purge now
+					</a>
+				{{/if}}
 
-					{{#if purgeErrorMsg}}
-						<label class="error">{{purgeErrorMsg}}</label>
-					{{/if}}
+				{{#if purgeErrorMsg}}
+					<label class="error">{{purgeErrorMsg}}</label>
+				{{/if}}
 
-					{{#if proceedToCaptcha}}
-						<div class="recaptcha-wrapper">
-							<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
-						</div>
-						<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
-					{{/if}}
-				</div>
+				{{#if proceedToCaptcha}}
+					<div class="recaptcha-wrapper">
+						<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					</div>
+					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+				{{/if}}
 			</section>
 
 			{{#if results.length}}
