@@ -52,9 +52,9 @@
 				<section class="content_purge-results">
 					<h2>
 						<span>Results</span>
-						<span on-click="@this.toggle('showDetails')" class="results-toggle{{#if showDetails}} hide-details{{/if}}">
+						<span on-click="@this.toggle('detailsDisplaying')" class="results-toggle{{#if detailsDisplaying}} hide-details{{/if}}">
 							<img width="20" height="20"  src="{{@shared.assetsHost}}/img/icons/chevron-down.orange.svg" />
-								{{#if showDetails}}
+								{{#if detailsDisplaying}}
 									Hide details
 								{{else}}
 									Show details
@@ -124,7 +124,7 @@
 				results: [],
 				captchaToken: '',
 				proceedToCaptcha: false,
-				showDetails: false,
+				detailsDisplaying: false,
 				openedResultsList: [],
 				purgeBtnDisabled: true,
 			};
@@ -155,6 +155,12 @@
 						openedResultsList.push(data.newIdx);
 					} else {
 						openedResultsList.splice(indexOfResult, 1);
+					}
+
+					if (!openedResultsList.length) {
+						this.set('detailsDisplaying', false);
+					} else {
+						this.set('detailsDisplaying', true);
 					}
 
 					this.set('openedResultsList', openedResultsList);
@@ -192,7 +198,7 @@
 					}
 				});
 
-				this.observe('showDetails', (value) => {
+				this.observe('detailsDisplaying', (value) => {
 					let resultsIdxs = [];
 
 					if (value) {
@@ -300,7 +306,7 @@
 							this.set('results', results);
 							this.set('purgingInProcess', false);
 							this.set('proceedToCaptcha', false);
-							this.set('showDetails', false);
+							this.set('detailsDisplaying', false);
 							this.set('openedResultsList', []);
 						}
 					});
@@ -309,7 +315,7 @@
 				this.set('purgeErrorMsg', 'An error occurred while purging!');
 				this.set('purgingInProcess', false);
 				this.set('proceedToCaptcha', false);
-				this.set('showDetails', false);
+				this.set('detailsDisplaying', false);
 				this.set('openedResultsList', []);
 			});
 		},
