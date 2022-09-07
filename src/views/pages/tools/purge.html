@@ -170,24 +170,29 @@
 					let paths = newValue.replace(/\n/g, ',');
 					let pathsArr = paths.split(',');
 
-					let isPathsValid = pathsArr.reduce((isValid, path) => {
-						if (!path) { return isValid; }
-
-						if (isUrlValid.test(path)) { return isValid && true; }
-
-						return false;
-					}, true);
-
-					if (isPathsValid) {
-						this.set('purgeErrorMsg', '');
-					} else {
-						this.set('purgeErrorMsg', 'Invalid URLs!');
-					}
-
-					if (paths.length > 0 && isPathsValid) {
-						this.set('purgeBtnDisabled', false);
-					} else {
+					if (pathsArr.length >= 10) {
+						this.set('purgeErrorMsg', 'Allowed up to 10 URLs - one per line');
 						this.set('purgeBtnDisabled', true);
+					} else {
+						let isPathsValid = pathsArr.reduce((isValid, path) => {
+							if (!path) { return isValid; }
+
+							if (isUrlValid.test(path)) { return isValid && true; }
+
+							return false;
+						}, true);
+
+						if (isPathsValid) {
+							this.set('purgeErrorMsg', '');
+						} else {
+							this.set('purgeErrorMsg', 'Invalid URLs!');
+						}
+
+						if (paths.length > 0 && isPathsValid) {
+							this.set('purgeBtnDisabled', false);
+						} else {
+							this.set('purgeBtnDisabled', true);
+						}
 					}
 				});
 
