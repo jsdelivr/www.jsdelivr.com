@@ -11,8 +11,9 @@
 
 	<div class="p-esm">
 		<c-header-gradient showMap="{{true}}"></c-header-gradient>
-		<div class="container-fluid">
-			<section class="title">
+
+		<div class="content">
+			<section class="content_title">
 				<h1>A New-Age CDN for JavaScript modules</h1>
 
 				<h2>
@@ -21,36 +22,38 @@
 				</h2>
 			</section>
 
-			<section class="main-box">
-				<div class="box">
-					<div class="code">
-						import
-						<input value="{{name}}" placeholder="name" class="base-code-input package-name-input" as-autogrow="'name'" tabindex="1">
-						<span class="code-from">
-							from 'https://esm.run/<span class="base-code-input" as-autogrow="'name'" tabindex="-1" value="{{name || 'name'}}">{{name || 'name'}}</span>';
-						</span>
+			<section class="content_main-box">
+				<div class="code">
+					<div class="code_import">
+						<span>import</span>
+						<input class="package-name-input" value="{{name}}" placeholder="name" as-autogrow="'name'" tabindex="1">
 					</div>
 
-					<div class="buttons">
-						<form action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
-							<input type="hidden" name="title" value="esm.run {{name}} demo">
-							<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
-							<button type="submit" class="btn-primary" tabindex="2">Open in JSFiddle</button>
-							<span class="buttons-or">or</span>
-							<a class="btn-secondary" target="_blank" rel="noopener noreferrer" href="https://esm.run/{{name}}" tabindex="3">Open in a new tab</a>
-						</form>
+					<div class="code_from">
+						<span>from 'https://esm.run/</span>
+						<span tabindex="-1" value="{{name || 'name'}}">{{(name || 'name') + "';"}}</span>
 					</div>
+				</div>
 
-					<div class="notice">
-						<span>You can use esm.run links for quick demos or prototyping.</span>
-						<span>In production (once this feature is out of beta), always use our main domain.</span>
-					</div>
+				<div class="buttons">
+					<form action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
+						<input type="hidden" name="title" value="esm.run {{name}} demo">
+						<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+						<button type="submit" class="btn-primary" tabindex="2">Open in JSFiddle</button>
+						<span class="buttons-or">or</span>
+						<a class="btn-secondary" target="_blank" rel="noopener noreferrer" href="https://esm.run/{{name}}" tabindex="3">Open in a new tab</a>
+					</form>
+				</div>
+
+				<div class="notice">
+					<span>You can use esm.run links for quick demos or prototyping.</span>
+					<span>In production (once this feature is out of beta), always use our main domain.</span>
 				</div>
 			</section>
 
-			<section class="features">
-				<div class="row">
-					<div class="col-xs-12 col-sm-4">
+			<section class="content_features">
+				<div class="content_features_row">
+					<div>
 						<img width="48" height="48" src="/img/esm/global-multi-cdn.png" alt="">
 						<h4 class="feature-title">Global Multi-CDN powered by jsDelivr</h4>
 						<div class="feature-content">
@@ -58,7 +61,7 @@
 							This guarantees the best performance and uptime globally, including mainland China.
 						</div>
 					</div>
-					<div class="col-xs-12 col-sm-4">
+					<div>
 						<img width="48" height="48" src="/img/esm/permanent-storage.png" alt="">
 						<h4 class="feature-title">On-demand builds with permanent storage</h4>
 						<div class="feature-content">
@@ -67,7 +70,7 @@
 							always fast, even for files not yet cached at the CDN edge.
 						</div>
 					</div>
-					<div class="col-xs-12 col-sm-4">
+					<div>
 						<img width="48" height="48" src="/img/esm/optimized-delivery.png" alt="">
 						<h4 class="feature-title">State-of-the-art delivery</h4>
 						<div class="feature-content">
@@ -80,42 +83,38 @@
 				<a href="/?query=*%20type%3A%20esm" class="btn-primary">Browse available packages</a>
 			</section>
 
-
-			<section class="performance">
+			<section class="content_performance">
 				<h2>Performance comparison</h2>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6">
-						<c-stats-table title="{{statsName}} - load time"
-							data="{{sortedStats.duration}}"
-							columns="{{statsColumns}}"
-							formatValue="{{formatMs}}"
-							valueKey="duration"
-							desc="false">
-							{{#partial column1}}
-								{{#if error}}
-									<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
-								{{else}}
-									{{name}}
-								{{/if}}
-							{{/partial}}
-						</c-stats-table>
-					</div>
 
-					<div class="col-xs-12 col-sm-6">
-						<c-stats-table title="{{statsName}} - number of requests"
-							data="{{sortedStats.requests}}"
-							columns="{{statsColumns}}"
-							valueKey="requests"
-							desc="false">
-							{{#partial column1}}
-								{{#if error}}
-									<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
-								{{else}}
-									{{name}}
-								{{/if}}
-							{{/partial}}
-						</c-stats-table>
-					</div>
+				<div class="content_performance_row">
+					<c-stats-table title="{{statsName}} - load time"
+						data="{{sortedStats.duration}}"
+						columns="{{statsColumns}}"
+						formatValue="{{formatMs}}"
+						valueKey="duration"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								<span>{{name}}</span>
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
+
+					<c-stats-table title="{{statsName}} - number of requests"
+						data="{{sortedStats.requests}}"
+						columns="{{statsColumns}}"
+						valueKey="requests"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								<span>{{name}}</span>
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
 				</div>
 
 				<div class="benchmark-text">
@@ -150,9 +149,9 @@
 
 				<div class="benchmark-buttons">
 					{{#if ~/showInstructions}}
-						<a class="btn-primary" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
+						<a class="btn-primary i-read-instr" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
 					{{else}}
-						<a class="btn-primary" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
+						<a class="btn-primary {{#if loading}}loading{{/if}}" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
 					{{/if}}
 				</div>
 			</section>
