@@ -170,9 +170,11 @@
 					let paths = newValue.replace(/\n/g, ',');
 					let pathsArr = paths.split(',');
 
-					if (pathsArr.length >= 10) {
+					if (pathsArr.length > 10) {
 						this.set('purgeErrorMsg', 'Allowed up to 10 URLs - one per line');
 						this.set('purgeBtnDisabled', true);
+						this.set('proceedToCaptcha', false);
+						this.set('captchaToken', '');
 					} else {
 						let isPathsValid = pathsArr.reduce((isValid, path) => {
 							if (!path) { return isValid; }
@@ -192,6 +194,7 @@
 							this.set('purgeBtnDisabled', false);
 						} else {
 							this.set('purgeBtnDisabled', true);
+							this.set('proceedToCaptcha', false);
 						}
 					}
 				});
