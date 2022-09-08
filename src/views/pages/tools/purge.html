@@ -11,57 +11,60 @@
 	<div class="p-purge">
 		<c-header-gradient showMap="{{true}}"></c-header-gradient>
 
-		<div class="container-fluid">
-			<section class="heading">
-				<div class="page-title">
-					<h1 class="text-title-32">Purge jsDelivr CDN cache</h1>
-				</div>
-				<div class="page-content">
-					<span class="text-content-18">Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</span>
-				</div>
+		<div class="content">
+			<section class="content_heading">
+				<h1>Purge jsDelivr CDN cache</h1>
+				<h2>Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</h2>
+			</section>
 
-				<div class="purge-form">
-					<textarea id="purge-urls"
-						class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
-						placeholder="Enter up to 10 URLs - one per line"
-						value="{{urls}}">
-					</textarea>
+			<section class="content_purge-form">
+				<textarea id="purge-urls"
+					class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
+					placeholder="Enter up to 10 URLs - one per line"
+					value="{{urls}}">
+				</textarea>
 
-					{{#if purgingInProcess}}
-						<a class="animated">
-							<div class="animation"></div>
-						</a>
-					{{else}}
-						<a
-							class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
-							on-click="@this.checkPurgeBtnStatus()">
-							Purge now
-						</a>
-					{{/if}}
+				{{#if purgingInProcess}}
+					<a class="animated">
+						<div class="animation"></div>
+					</a>
+				{{else}}
+					<a
+						class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
+						on-click="@this.checkPurgeBtnStatus()">
+						Purge now
+					</a>
+				{{/if}}
 
-					{{#if purgeErrorMsg}}
-						<label class="error">{{purgeErrorMsg}}</label>
-					{{/if}}
+				{{#if purgeErrorMsg}}
+					<label class="error">{{purgeErrorMsg}}</label>
+				{{/if}}
 
-					{{#if proceedToCaptcha}}
-						<div class="recaptcha-wrapper">
-							<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
-						</div>
-						<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
-					{{/if}}
-				</div>
+				{{#if proceedToCaptcha}}
+					<div class="recaptcha-wrapper">
+						<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					</div>
+					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+				{{/if}}
 			</section>
 
 			{{#if results.length}}
-				<section class="results">
+				<section class="content_purge-results">
 					<h2>
 						<span>Results</span>
+						<span on-click="@this.toggle('detailsDisplaying')" class="results-toggle{{#if detailsDisplaying}} hide-details{{/if}}">
+							<img width="20" height="20"  src="{{@shared.assetsHost}}/img/icons/chevron-down.orange.svg" />
+								{{#if detailsDisplaying}}
+									Hide details
+								{{else}}
+									Show details
+								{{/if}}
+						</span>
 					</h2>
 
 					<div class="results-table">
 						{{#each results: idx}}
-							<div class="results-item {{#if currentActiveResult.newIdx === idx}}results-item-active{{/if}}"
-								on-click="@this.set('currentActiveResult', {newIdx: idx})">
+							<div class="results-item">
 								<div class="item-descr" on-click="@this.set('toggleOpenResult', {newIdx: idx})">
 									<span>{{this.path}}</span>
 									<div class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}">
@@ -86,7 +89,7 @@
 													{{else}}
 														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
 													{{/if}}
-													{{this[0]}}
+													<span>{{this[0]}}</span>
 												</span>
 											{{/each}}
 										</div>
@@ -121,9 +124,8 @@
 				results: [],
 				captchaToken: '',
 				proceedToCaptcha: false,
-				showDetails: false,
+				detailsDisplaying: false,
 				openedResultsList: [],
-				currentActiveResult: {},
 				purgeBtnDisabled: true,
 			};
 		},
@@ -155,6 +157,12 @@
 						openedResultsList.splice(indexOfResult, 1);
 					}
 
+					if (!openedResultsList.length) {
+						this.set('detailsDisplaying', false);
+					} else {
+						this.set('detailsDisplaying', true);
+					}
+
 					this.set('openedResultsList', openedResultsList);
 				});
 
@@ -162,24 +170,32 @@
 					let paths = newValue.replace(/\n/g, ',');
 					let pathsArr = paths.split(',');
 
-					let isPathsValid = pathsArr.reduce((isValid, path) => {
-						if (!path) { return isValid; }
-
-						if (isUrlValid.test(path)) { return isValid && true; }
-
-						return false;
-					}, true);
-
-					if (isPathsValid) {
-						this.set('purgeErrorMsg', '');
-					} else {
-						this.set('purgeErrorMsg', 'Invalid URLs!');
-					}
-
-					if (paths.length > 0 && isPathsValid) {
-						this.set('purgeBtnDisabled', false);
-					} else {
+					if (pathsArr.length > 10) {
+						this.set('purgeErrorMsg', 'Allowed up to 10 URLs - one per line');
 						this.set('purgeBtnDisabled', true);
+						this.set('proceedToCaptcha', false);
+						this.set('captchaToken', '');
+					} else {
+						let isPathsValid = pathsArr.reduce((isValid, path) => {
+							if (!path) { return isValid; }
+
+							if (isUrlValid.test(path)) { return isValid && true; }
+
+							return false;
+						}, true);
+
+						if (isPathsValid) {
+							this.set('purgeErrorMsg', '');
+						} else {
+							this.set('purgeErrorMsg', 'Invalid URLs!');
+						}
+
+						if (paths.length > 0 && isPathsValid) {
+							this.set('purgeBtnDisabled', false);
+						} else {
+							this.set('purgeBtnDisabled', true);
+							this.set('proceedToCaptcha', false);
+						}
 					}
 				});
 
@@ -190,14 +206,14 @@
 					}
 				});
 
-				this.observe('currentActiveResult', (data, prevData) => {
-					if (typeof prevData === 'undefined' || prevData === null) { return; }
+				this.observe('detailsDisplaying', (value) => {
+					let resultsIdxs = [];
 
-					if (prevData.newIdx === data.newIdx) {
-						this.set('currentActiveResult', null);
-					} else {
-						this.set('currentActiveResult', data);
+					if (value) {
+						resultsIdxs = this.get('results').map((_, idx) => idx);
 					}
+
+					this.set('openedResultsList', resultsIdxs);
 				});
 			}
 		},
@@ -298,7 +314,7 @@
 							this.set('results', results);
 							this.set('purgingInProcess', false);
 							this.set('proceedToCaptcha', false);
-							this.set('showDetails', false);
+							this.set('detailsDisplaying', false);
 							this.set('openedResultsList', []);
 						}
 					});
@@ -307,7 +323,7 @@
 				this.set('purgeErrorMsg', 'An error occurred while purging!');
 				this.set('purgingInProcess', false);
 				this.set('proceedToCaptcha', false);
-				this.set('showDetails', false);
+				this.set('detailsDisplaying', false);
 				this.set('openedResultsList', []);
 			});
 		},
