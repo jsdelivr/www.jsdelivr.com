@@ -237,8 +237,8 @@
 		&_wrapper {
 			display: flex;
 			width: 100vw;
+			margin: 32px -24px 0;
 			overflow-x: hidden;
-			margin: 0 -24px;
 
 			@media (min-width: @screen-sm-min) {
 				margin: 0;
@@ -256,19 +256,11 @@
 			}
 
 			&_plans-list {
-				scroll-behavior: smooth;
 				display: flex;
-				align-items: flex-start;
-				width: 100%;
-				overflow-x: scroll;
-				gap: 8px;
-				padding: 32px 24px 24px;
-				scrollbar-color: #16223a #dfe3e7;
-				background: #fff;
-
-				@supports (scroll-snap-align: center) {
-					scroll-snap-type: x mandatory;
-				}
+				position: relative;
+				top: 0;
+				left: 0;
+				width: auto;
 
 				@media (min-width: @screen-sm-min) {
 					display: grid;
@@ -286,6 +278,10 @@
 					padding: 0;
 				}
 
+				&.shifting {
+					transition: left .2s ease-out;
+				}
+
 				&_plan {
 					display: flex;
 					flex-direction: column;
@@ -297,6 +293,8 @@
 					border-radius: 6px;
 					overflow: hidden;
 					scroll-snap-align: center;
+					transition: all 1s;
+					position: relative;
 
 					@media (min-width: @screen-sm-min) {
 						width: auto;

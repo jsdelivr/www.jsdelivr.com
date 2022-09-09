@@ -46,6 +46,7 @@
 			</div>
 
 			<h3 class="main-title">For corporate Sponsors</h3>
+
 			<div class="plans_tabs">
 				<a class="plans_tabs_tab {{#unless activePlan}}active{{/unless}}" on-click="@this.set('activePlan', '')">Platinum</a>
 				<a class="plans_tabs_tab {{#if activePlan === 'gold'}}active{{/if}}" on-click="@this.set('activePlan', 'gold')">Gold</a>
@@ -53,7 +54,7 @@
 			</div>
 
 			<div class="plans_wrapper">
-				<div class="plans_wrapper_plans-list" on-scroll="selectPlan">
+				<div class="plans_wrapper_plans-list">
 					<div class="plans_wrapper_plans-list_plan platinum">
 						<div class="sp-topline">&nbsp;</div>
 						<div class="sp-top">
@@ -262,35 +263,112 @@
 				activePlan: '',
 			};
 		},
-		oninit () {
+		handleSlider (wrapper, items) {
+			let posX1 = 0,
+				posX2 = 0,
+				posInitial,
+				posFinal,
+				threshold = 100,
+				slides = items.getElementsByClassName('plans_wrapper_plans-list_plan'),
+				slidesLength = slides.length,
+				slideSize = items.getElementsByClassName('plans_wrapper_plans-list_plan')[0].offsetWidth,
+				index = 0,
+				allowShift = true;
+
+			wrapper.classList.add('loaded');
+
+			items.onmousedown = handleDragStart;
+
+			items.addEventListener('touchstart', handleDragStart);
+			items.addEventListener('touchend', handleDragEnd);
+			items.addEventListener('touchmove', handleDragAction);
+			items.addEventListener('transitionend', checkIndex);
+
+			function handleDragStart (e) {
+				e = e || window.event;
+				e.preventDefault();
+				posInitial = items.offsetLeft;
+
+				if (e.type === 'touchstart') {
+					posX1 = e.touches[0].clientX;
+				} else {
+					posX1 = e.clientX;
+					document.onmouseup = handleDragEnd;
+					document.onmousemove = handleDragAction;
+				}
+			}
+
+			function handleDragAction (e) {
+				e = e || window.event;
+
+				if (e.type === 'touchmove') {
+					posX2 = posX1 - e.touches[0].clientX;
+					posX1 = e.touches[0].clientX;
+				} else {
+					posX2 = posX1 - e.clientX;
+					posX1 = e.clientX;
+				}
+
+				items.style.left = (items.offsetLeft - posX2) + 'px';
+			}
+
+			function handleDragEnd () {
+				posFinal = items.offsetLeft;
+
+				if (posFinal - posInitial < -threshold) {
+					handleShiftSlide(1, 'drag');
+				} else if (posFinal - posInitial > threshold) {
+					handleShiftSlide(-1, 'drag');
+				} else {
+					items.style.left = posInitial + 'px';
+				}
+
+				document.onmouseup = null;
+				document.onmousemove = null;
+			}
+
+			function handleShiftSlide (dir, action) {
+				items.classList.add('shifting');
+
+				if (allowShift) {
+					if (!action) {
+						posInitial = items.offsetLeft;
+					}
+
+					if (dir === 1) {
+						items.style.left = `${posInitial - slideSize}px`;
+						index++;
+					} else if (dir === -1) {
+						items.style.left = `${posInitial + slideSize}px`;
+						index--;
+					}
+				}
+
+				allowShift = false;
+			}
+
+			function checkIndex () {
+				items.classList.remove('shifting');
+
+				if (index === -1) {
+					items.style.left = `-${slidesLength * slideSize}px`;
+					index = slidesLength - 1;
+				}
+
+				if (index === slidesLength) {
+					items.style.left = `-${Number(slideSize)}px`;
+					index = 0;
+				}
+
+				allowShift = true;
+			}
+		},
+		onrender () {
 			if (!Ractive.isServer) {
-				this.observe('activePlan', (newValue) => {
-					let plans = document.querySelector('.plans_wrapper_plans-list');
+				let plansListWrapper = document.querySelector('.plans_wrapper');
+				let plansList = document.querySelector('.plans_wrapper_plans-list');
 
-					if (newValue === '') {
-						plans.scrollLeft = 0;
-					}
-
-					if (newValue === 'gold') {
-						plans.scrollLeft = 300;
-					}
-
-					if (newValue === 'bronze') {
-						plans.scrollLeft = 600;
-					}
-				});
-
-				this.on('selectPlan', () => {
-					let scrollPosition = this.event.original.target.scrollLeft;
-
-					if (scrollPosition < 300) {
-						this.set('activePlan', '');
-					} else if (scrollPosition > 300 && scrollPosition < 600) {
-						this.set('activePlan', 'gold');
-					} else if (scrollPosition > 600) {
-						this.set('activePlan', 'bronze');
-					}
-				});
+				this.handleSlider(plansListWrapper, plansList);
 			}
 		},
 	};
