@@ -14,6 +14,30 @@
 	description="{{description}}"
 	openGraphImage="{{#if type === 'npm'}}{{@shared.serverHost}}/open-graph/image/npm/{{name}}{{/if}}"
 >
+	{{#partial seo}}
+		<script type="application/ld+json">
+			{
+			"@context": "https://schema.org",
+			"@type": "WebPage",
+			"mainEntity": {
+				"@context":"http://schema.org",
+				"@type":"SoftwareSourceCode",
+				"name":"{{name}}",
+				{{#if versionP}}"version":"{{versionP}}",{{/if}}
+				"description":"{{description}}",
+				"url":"https://www.jsdelivr.com/package/npm/{{name}}",
+				{{#if package.repository.url}}"codeRepository":"{{package.repository.url}}",{{/if}}
+				"dateCreated":"{{Object.values(package.versions)[0]}}",
+				"dateModified":"{{Object.values(package.versions).pop()}}",
+				"programmingLanguage":"JavaScript",
+				{{#if package.license}}"license":"{{_.unescapeHtml(package.license)}}",{{/if}}
+				"maintainer":{"@type":"Person", "name": "{{package.owner.name}}"},
+				"image":"{{package.owner.avatar}}"
+			}
+		}
+		</script>
+
+	{{/partial}}
 	{{#partial css}}
 	<link rel="preconnect" href="https://ofcncog2cu-dsn.algolia.net/" crossorigin="anonymous">
 	<link rel="preconnect" href="https://data.jsdelivr.com/" crossorigin="anonymous">
@@ -51,6 +75,7 @@
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
 	const has = require('../../public/js/utils/has');
 	const search = require('../../public/js/utils/search');
 	const http = require('../../public/js/utils/http');
@@ -87,6 +112,7 @@
 		},
 		data () {
 			return {
+				_,
 				collection: [],
 				package: {},
 				pathA: [],
