@@ -263,7 +263,7 @@
 				activePlan: '',
 			};
 		},
-		handleSlider (wrapper, items) {
+		handleSlider (ractiveThis, wrapper, items) {
 			let posX1 = 0,
 				posX2 = 0,
 				posInitial,
@@ -284,6 +284,36 @@
 			items.addEventListener('touchend', handleDragEnd);
 			items.addEventListener('touchmove', handleDragAction);
 			items.addEventListener('transitionend', handleEndOfTransition);
+
+			ractiveThis.observe('activePlan', (value) => {
+				console.log("++++ value", value);
+				console.log("+__________________");
+				handlePlanChange(value);
+			});
+
+			function handlePlanChange (activePlan) {
+				let index = 0;
+				switch (activePlan) {
+					case '':
+						index = 0;
+						break;
+					case 'gold':
+						index = 1;
+						break;
+					case 'bronze':
+						index = 2;
+						break;
+					default:
+						index = 0;
+				}
+
+				console.log("++++ activePlan", activePlan);
+				console.log("++++ posInitial", posInitial);
+				console.log("++++ slideWidth", slideWidth);
+				console.log("++++ index", index);
+				console.log("++______________________");
+				items.style.left = `-${index * slideWidth}px`;
+			}
 
 			function handleDragStart (e) {
 				e.preventDefault();
@@ -345,6 +375,23 @@
 					}
 				}
 
+				let plan = '';
+
+				switch (index) {
+					case 0:
+						plan = '';
+						break;
+					case 1:
+						plan = 'gold';
+						break;
+					case 2:
+						plan = 'bronze';
+						break;
+					default:
+						plan = '';
+				}
+
+				ractiveThis.set('activePlan', plan);
 				allowShift = false;
 			}
 
@@ -359,7 +406,7 @@
 				let plansListWrapper = document.querySelector('.plans_wrapper');
 				let plansList = document.querySelector('.plans_wrapper_plans-list');
 
-				this.handleSlider(plansListWrapper, plansList);
+				this.handleSlider(this, plansListWrapper, plansList);
 			}
 		},
 	};
