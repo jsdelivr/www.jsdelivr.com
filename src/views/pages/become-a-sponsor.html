@@ -269,9 +269,10 @@
 				posInitial,
 				posFinal,
 				threshold = 100,
-				slides = items.getElementsByClassName('plans_wrapper_plans-list_plan'),
-				slidesLength = slides.length,
-				slideSize = items.getElementsByClassName('plans_wrapper_plans-list_plan')[0].offsetWidth,
+				slides = items.querySelectorAll('.plans_wrapper_plans-list_plan'),
+				// one slide is Custom plan which is hidden for slider, ergo -1
+				slidesLength = slides.length - 1,
+				slideWidth = items.querySelector('.plans_wrapper_plans-list_plan').offsetWidth,
 				index = 0,
 				allowShift = true;
 
@@ -285,7 +286,6 @@
 			items.addEventListener('transitionend', checkIndex);
 
 			function handleDragStart (e) {
-				e = e || window.event;
 				e.preventDefault();
 				posInitial = items.offsetLeft;
 
@@ -299,8 +299,6 @@
 			}
 
 			function handleDragAction (e) {
-				e = e || window.event;
-
 				if (e.type === 'touchmove') {
 					posX2 = posX1 - e.touches[0].clientX;
 					posX1 = e.touches[0].clientX;
@@ -309,16 +307,23 @@
 					posX1 = e.clientX;
 				}
 
-				items.style.left = (items.offsetLeft - posX2) + 'px';
+				if (
+					(items.offsetLeft === 0 && (items.offsetLeft - posX2) > 0)
+					|| (items.offsetLeft === -(slideWidth * (slidesLength - 1)) && (items.offsetLeft - posX2) < -(slideWidth * (slidesLength - 1)))
+				) {
+					items.style.left = items.offsetLeft;
+				} else {
+					items.style.left = `${items.offsetLeft - posX2}px`;
+				}
 			}
 
 			function handleDragEnd () {
 				posFinal = items.offsetLeft;
 
 				if (posFinal - posInitial < -threshold) {
-					handleShiftSlide(1, 'drag');
+					handleShiftSlide(1);
 				} else if (posFinal - posInitial > threshold) {
-					handleShiftSlide(-1, 'drag');
+					handleShiftSlide(-1);
 				} else {
 					items.style.left = posInitial + 'px';
 				}
@@ -327,19 +332,15 @@
 				document.onmousemove = null;
 			}
 
-			function handleShiftSlide (dir, action) {
+			function handleShiftSlide (dir) {
 				items.classList.add('shifting');
 
 				if (allowShift) {
-					if (!action) {
-						posInitial = items.offsetLeft;
-					}
-
 					if (dir === 1) {
-						items.style.left = `${posInitial - slideSize}px`;
+						items.style.left = `${posInitial - slideWidth}px`;
 						index++;
 					} else if (dir === -1) {
-						items.style.left = `${posInitial + slideSize}px`;
+						items.style.left = `${posInitial + slideWidth}px`;
 						index--;
 					}
 				}
@@ -351,12 +352,12 @@
 				items.classList.remove('shifting');
 
 				if (index === -1) {
-					items.style.left = `-${slidesLength * slideSize}px`;
+					items.style.left = `-${slidesLength * slideWidth}px`;
 					index = slidesLength - 1;
 				}
 
 				if (index === slidesLength) {
-					items.style.left = `-${Number(slideSize)}px`;
+					items.style.left = `-${Number(slideWidth)}px`;
 					index = 0;
 				}
 
