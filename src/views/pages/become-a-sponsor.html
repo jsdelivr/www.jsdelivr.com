@@ -283,7 +283,7 @@
 			items.addEventListener('touchstart', handleDragStart);
 			items.addEventListener('touchend', handleDragEnd);
 			items.addEventListener('touchmove', handleDragAction);
-			items.addEventListener('transitionend', checkIndex);
+			items.addEventListener('transitionend', handleEndOfTransition);
 
 			function handleDragStart (e) {
 				e.preventDefault();
@@ -348,18 +348,8 @@
 				allowShift = false;
 			}
 
-			function checkIndex () {
+			function handleEndOfTransition () {
 				items.classList.remove('shifting');
-
-				if (index === -1) {
-					items.style.left = `-${slidesLength * slideWidth}px`;
-					index = slidesLength - 1;
-				}
-
-				if (index === slidesLength) {
-					items.style.left = `-${Number(slideWidth)}px`;
-					index = 0;
-				}
 
 				allowShift = true;
 			}
