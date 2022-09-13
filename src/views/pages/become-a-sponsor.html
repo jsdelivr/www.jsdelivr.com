@@ -48,9 +48,9 @@
 			<h3 class="main-title">For corporate Sponsors</h3>
 
 			<div class="plans_tabs">
-				<a class="plans_tabs_tab {{#unless activePlan}}active{{/unless}}" on-click="@this.set('activePlan', '')">Platinum</a>
-				<a class="plans_tabs_tab {{#if activePlan === 'gold'}}active{{/if}}" on-click="@this.set('activePlan', 'gold')">Gold</a>
-				<a class="plans_tabs_tab {{#if activePlan === 'bronze'}}active{{/if}}" on-click="@this.set('activePlan', 'bronze')">Bronze</a>
+				<a class="plans_tabs_tab {{#unless activePlan}}active{{/unless}}">Platinum</a>
+				<a class="plans_tabs_tab {{#if activePlan === 'gold'}}active{{/if}}">Gold</a>
+				<a class="plans_tabs_tab {{#if activePlan === 'bronze'}}active{{/if}}">Bronze</a>
 			</div>
 
 			<div class="plans_wrapper">
@@ -266,15 +266,16 @@
 		handleSlider (ractiveThis, wrapper, plansList, tabsWrapper) {
 			let posX1 = 0,
 				posX2 = 0,
-				posInitial,
+				posInitial = 0,
 				posFinal,
 				threshold = 100,
 				slides = plansList.querySelectorAll('.plans_wrapper_plans-list_plan'),
 				// one slide is Custom plan which is hidden for slider, ergo -1
 				slidesLength = slides.length - 1,
 				slideWidth = plansList.querySelector('.plans_wrapper_plans-list_plan').offsetWidth,
-				index = 0,
-				allowShift = true;
+				currentActiveTabIndex = 0,
+				allowShift = true,
+				tabs = tabsWrapper.querySelectorAll('.plans_tabs_tab');
 
 			wrapper.classList.add('loaded');
 
@@ -285,15 +286,15 @@
 			plansList.addEventListener('touchmove', handleDragAction);
 			plansList.addEventListener('transitionend', handleEndOfTransition);
 
-			function getIndexBasedOnPlan (planName) {
-				switch (planName) {
-					case 'gold':
-						return 1;
-					case 'bronze':
-						return 2;
-					default:
-						return 0;
-				}
+			tabs.forEach((tab, tabIdx) => {
+				tab.addEventListener('click', () => handleTabClick(tab, tabIdx));
+			});
+
+			function handleTabClick (tab, tabIdx) {
+				let shiftSize = tabIdx - currentActiveTabIndex;
+				let shiftDir = shiftSize > 0 ? 1 : -1;
+
+				handleShiftSlide(shiftDir, Math.abs(shiftSize));
 			}
 
 			function getPlanNameBasedOnIndex (planIndex) {
@@ -354,20 +355,22 @@
 				document.onmousemove = null;
 			}
 
-			function handleShiftSlide (dir) {
+			function handleShiftSlide (shiftDir, shiftSize = 1) {
 				plansList.classList.add('shifting');
 
 				if (allowShift) {
-					if (dir === 1) {
-						plansList.style.left = `${posInitial - slideWidth}px`;
-						index++;
-					} else if (dir === -1) {
-						plansList.style.left = `${posInitial + slideWidth}px`;
-						index--;
+					if (shiftDir === 1) {
+						posInitial -= slideWidth * shiftSize;
+						plansList.style.left = `${posInitial}px`;
+						currentActiveTabIndex += shiftSize;
+					} else if (shiftDir === -1) {
+						posInitial += slideWidth * shiftSize;
+						plansList.style.left = `${posInitial}px`;
+						currentActiveTabIndex -= shiftSize;
 					}
 				}
 
-				ractiveThis.set('activePlan', getPlanNameBasedOnIndex(index));
+				ractiveThis.set('activePlan', getPlanNameBasedOnIndex(currentActiveTabIndex));
 				allowShift = false;
 			}
 
