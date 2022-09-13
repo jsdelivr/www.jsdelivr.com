@@ -285,34 +285,49 @@
 			items.addEventListener('touchmove', handleDragAction);
 			items.addEventListener('transitionend', handleEndOfTransition);
 
-			ractiveThis.observe('activePlan', (value) => {
-				console.log("++++ value", value);
-				console.log("+__________________");
-				handlePlanChange(value);
+			ractiveThis.observe('activePlan', (value, prevValue) => {
+				handlePlanChange(value, prevValue);
 			});
 
-			function handlePlanChange (activePlan) {
-				let index = 0;
-				switch (activePlan) {
-					case '':
-						index = 0;
-						break;
+			function getIndexBasedOnPlan (planName) {
+				switch (planName) {
 					case 'gold':
-						index = 1;
-						break;
+						return 1;
 					case 'bronze':
-						index = 2;
-						break;
+						return 2;
 					default:
-						index = 0;
+						return 0;
 				}
+			}
 
-				console.log("++++ activePlan", activePlan);
-				console.log("++++ posInitial", posInitial);
-				console.log("++++ slideWidth", slideWidth);
-				console.log("++++ index", index);
-				console.log("++______________________");
-				items.style.left = `-${index * slideWidth}px`;
+			function getPlanNameBasedOnIndex (planIndex) {
+				switch (planIndex) {
+					case 1:
+						return 'gold';
+					case 2:
+						return 'bronze';
+					default:
+						return '';
+				}
+			}
+
+			function handlePlanChange (activePlan, prevActivePlan) {
+				let index = 0;
+
+				console.log('++++ activePlan', activePlan);
+				console.log('++++ activePlan index', getIndexBasedOnPlan(activePlan));
+				console.log('++++ prevActivePlan', prevActivePlan);
+				console.log('++++ prevActivePlan index', getIndexBasedOnPlan(prevActivePlan));
+				console.log('++++ posInitial', posInitial);
+				console.log('++++ slideWidth', slideWidth);
+				console.log('++++ index', index);
+				console.log('++______________________');
+				// handleShiftSlide();
+
+				if (allowShift) {
+					console.log('+++++ CALLED');
+				// 	items.style.left = `-${index * slideWidth}px`;
+				}
 			}
 
 			function handleDragStart (e) {
@@ -375,23 +390,7 @@
 					}
 				}
 
-				let plan = '';
-
-				switch (index) {
-					case 0:
-						plan = '';
-						break;
-					case 1:
-						plan = 'gold';
-						break;
-					case 2:
-						plan = 'bronze';
-						break;
-					default:
-						plan = '';
-				}
-
-				ractiveThis.set('activePlan', plan);
+				ractiveThis.set('activePlan', getPlanNameBasedOnIndex(index));
 				allowShift = false;
 			}
 
