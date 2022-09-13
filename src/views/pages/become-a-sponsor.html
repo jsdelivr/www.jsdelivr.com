@@ -384,11 +384,14 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				let plansListWrapper = document.querySelector('.plans_wrapper');
-				let plansList = document.querySelector('.plans_wrapper_plans-list');
-				let tabsWrapper = document.querySelector('.plans_tabs');
+				// init slider only when screen width is larger than 768px
+				if (window.screen.width < 768) {
+					let plansListWrapper = document.querySelector('.plans_wrapper');
+					let plansList = document.querySelector('.plans_wrapper_plans-list');
+					let tabsWrapper = document.querySelector('.plans_tabs');
 
-				this.handleSlider(this, plansListWrapper, plansList, tabsWrapper);
+					this.handleSlider(this, plansListWrapper, plansList, tabsWrapper);
+				}
 			}
 		},
 	};
