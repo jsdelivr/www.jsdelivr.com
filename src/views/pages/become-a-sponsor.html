@@ -269,7 +269,9 @@
 				activePlan: '',
 			};
 		},
-		handleSlider (ractiveThis, wrapper, plansList, tabsWrapper) {
+		handleSlider (ractiveThis, wrapper, plansList, tabsWrapper, columnGap) {
+			plansList.style.columnGap = `${columnGap}px`;
+
 			let posX1 = 0,
 				posX2 = 0,
 				posInitial = 0,
@@ -368,11 +370,11 @@
 
 				if (allowShift) {
 					if (shiftDir === 1) {
-						posInitial -= slideWidth * shiftSize;
+						posInitial -= slideWidth * shiftSize + columnGap * shiftSize;
 						plansList.style.left = `${posInitial}px`;
 						currentActiveTabIndex += shiftSize;
 					} else if (shiftDir === -1) {
-						posInitial += slideWidth * shiftSize;
+						posInitial += slideWidth * shiftSize + columnGap * shiftSize;
 						plansList.style.left = `${posInitial}px`;
 						currentActiveTabIndex -= shiftSize;
 					}
@@ -396,7 +398,7 @@
 					let plansList = document.querySelector('.plans_wrapper_plans-list');
 					let tabsWrapper = document.querySelector('.plans_tabs');
 
-					this.handleSlider(this, plansListWrapper, plansList, tabsWrapper);
+					this.handleSlider(this, plansListWrapper, plansList, tabsWrapper, 8);
 				}
 			}
 		},
