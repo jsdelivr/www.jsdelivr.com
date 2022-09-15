@@ -80,7 +80,7 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 };
 
 module.exports.fetchCdnOssStats = (name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/proxy/${name}/stats`, body: { period } });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/proxies/${name}`, body: { period } });
 };
 
 module.exports.fetchNetworkProviderStats = (period, country = '') => {
