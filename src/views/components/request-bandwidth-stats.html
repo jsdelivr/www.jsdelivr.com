@@ -9,7 +9,7 @@
 		</div>
 		<div class="card-growth">
 			<div class="{{#if requestsGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">
-				<span class="text-table-number">{{#if requestsGrowthPercent>0}}+{{/if}}{{Math.round(requestsGrowthPercent)}}%</span>
+				<span class="text-table-number">{{#if requestsGrowthPercent>0}}+{{/if}}{{requestsGrowthPercent}}%</span>
 			</div>
 			<div><span>{{growthPeriod}} {{#if requestsGrowthPercent>=0}}growth{{else}}decline{{/if}}</span></div>
 		</div>
@@ -25,7 +25,7 @@
 		</div>
 		<div class="card-growth">
 			<div class="{{#if bandwidthGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">
-				<span class="text-table-number">{{#if bandwidthGrowthPercent>0}}+{{/if}}{{Math.round(bandwidthGrowthPercent)}}%</span>
+				<span class="text-table-number">{{#if bandwidthGrowthPercent>0}}+{{/if}}{{bandwidthGrowthPercent}}%</span>
 			</div>
 			<div><span>{{growthPeriod}} {{#if bandwidthGrowthPercent>=0}}growth{{else}}decline{{/if}}</span></div>
 		</div>
@@ -54,7 +54,7 @@
 			};
 		},
 		calculateGrowth (curr, prev) {
-			return (curr / prev) * 100 - 100;
+			return Math.round((curr / prev) * 100 - 100);
 		},
 		oninit () {
 			if (!Ractive.isServer) {
