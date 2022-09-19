@@ -323,13 +323,13 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										let newVal = _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false)) + (showChartBandwidth ? ' GB' : '');
+										let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
-										if (_.isMobileScreen()) { return _.autoConvertBytesToUnits(newVal); }
+										if (_.isMobileScreen()) {
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.autoConvertBytesToUnits(valueByMagnitude);
+										}
 
-										return newVal;
-
-									// return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
+										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.formatNumber(valueByMagnitude);
 									},
 								},
 								grid: {
