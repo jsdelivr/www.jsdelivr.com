@@ -184,28 +184,12 @@
 				projectDescr: '',
 				projectImgW: '',
 				projectImgH: '',
+				rawStatsData: {},
+				preparedStatsData: {},
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('statsPeriod showChartBandwidth', () => {
-					if (this.get('statsPeriod')) {
-						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
-						let type = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
-
-						http.fetchCdnOssStats(name, period).then(({ [type]: response }) => {
-							if (!response.total) {
-								this.set('noPackageStatsData', true);
-								return;
-							}
-
-							this.set('noPackageStatsData', false);
-							this.set('statsDateData', response);
-						});
-					}
-				});
-
 				this.observe('name', (name) => {
 					let projectsData = this.get('projectsData');
 
@@ -215,45 +199,79 @@
 					this.set('projectImgH', projectsData[name].imgH);
 					this.set('projectLink', projectsData[name].link);
 				});
+
+				this.observe('statsPeriod', () => {
+					let name = this.get('name');
+					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+
+					http.fetchCdnOssStats(name, period).then((response) => {
+						if (!response.hits.total || !response.bandwidth.total) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						this.set('rawStatsData', response);
+					});
+				});
+
+				// handle raw data and prepare it for chart
+				this.observe('rawStatsData showChartBandwidth', () => {
+					let rawStatsData = this.get('rawStatsData');
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let type = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					let array = [];
+
+					Object.keys(rawStatsData[type].dates).forEach((date) => {
+						array.push([ date, rawStatsData[type].dates[date] ]);
+					});
+
+					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+					let tempGB = 1;
+
+					if (showChartBandwidth) {
+						tempGB = 1e9;
+					}
+
+					let data = array.map(value => Math.round(value[1] / tempGB));
+					let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
+					let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
+					let xAxisDates = array.map(value => value[0]);
+					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
+
+					// set prepared data for chart
+					this.set('preparedStatsData', {
+						labels,
+						xAxisDates,
+						minRangeValue,
+						maxRangeValue,
+						data,
+						showChartBandwidth,
+						chartPeriod,
+					});
+				}, { init: false });
 			}
 		},
 		onrender () {
 			let statsChart;
 
-			this.observe('statsDateData', (statsDateData) => {
+			// draw a chart when data is ready
+			this.observe('preparedStatsData', (preparedStatsData) => {
+				let { labels, xAxisDates, minRangeValue, maxRangeValue, data, showChartBandwidth, chartPeriod } = preparedStatsData;
 				let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
-				if (!statsDateData || !statsChartCanvasEl) { return; }
-
-				let array = [];
-
-				Object.keys(statsDateData.dates).forEach((date) => {
-					array.push([ date, statsDateData.dates[date] ]);
-				});
-
-				array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+				if (!preparedStatsData || !statsChartCanvasEl) { return; }
 
 				if (statsChart) {
 					statsChart.destroy();
 					statsChart = null;
 				}
 
-				let showChartBandwidth = this.get('showChartBandwidth');
-				let tempGB = 1;
-
-				if (showChartBandwidth) {
-					tempGB = 1e9;
-				}
-
-				let xAxisDates = array.map(value => value[0]);
-				let data = array.map(value => Math.round(value[1] / tempGB));
-				let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
-				let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
-
 				let chartData = {
-					labels: _.getChartXAxisData(xAxisDates, chartPeriod),
+					labels,
 					datasets: [{
 						data,
 						borderWidth: 0,
@@ -314,7 +332,7 @@
 								min: minRangeValue,
 								max: maxRangeValue,
 								ticks: {
-									count: yAxisTicksAmount,
+									count: 8,
 									color: '#5C667A',
 									crossAlign: 'far',
 									font: {
@@ -342,7 +360,7 @@
 				};
 
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
+			}, { init : false });
 		},
 	};
 </script>
