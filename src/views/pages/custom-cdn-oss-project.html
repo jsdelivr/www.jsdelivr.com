@@ -216,32 +216,62 @@
 				});
 
 				// handle raw data and prepare it for chart
-				this.observe('rawStatsData showChartBandwidth', () => {
+				this.observe('rawStatsData showChartBandwidth usageChartGroupBy', () => {
 					let rawStatsData = this.get('rawStatsData');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
-					let type = showChartBandwidth ? 'bandwidth' : 'hits';
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let convertionFactor = 1;
+					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
+					let groupedDayCount = groupBy[this.get('usageChartGroupBy')];
 					let valuesByDateArr = [];
+					let dataGroupedByPeriod = [];
+					let xAxisDates = [];
+
+					let countDay = 0;
+					let tempData = 0;
 
 					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
 						convertionFactor = 1e9;
 					}
 
-					Object.keys(rawStatsData[type].dates).forEach((date) => {
-						valuesByDateArr.push([ date, rawStatsData[type].dates[date] ]);
+					// group data by value per date
+					Object.keys(rawStatsData[dataType].dates).forEach((date) => {
+						valuesByDateArr.push([ date, rawStatsData[dataType].dates[date] ]);
 					});
 
-					let data = valuesByDateArr.map(value => Math.round(value[1] / convertionFactor));
-					let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
-					let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
-					let xAxisDates = valuesByDateArr.map(value => value[0]);
+					// collect X-Axis dates relatively to groupBy period
+					valuesByDateArr.forEach((value) => {
+						countDay++;
+
+						if (countDay % groupedDayCount === 0) {
+							countDay = 0;
+							xAxisDates.push(value[0]);
+						}
+					});
+
+					countDay = 0;
+
+					//group data by groupBy period
+					Object.keys(rawStatsData[dataType].dates).forEach((date) => {
+						countDay++;
+						tempData += rawStatsData[dataType].dates[date];
+
+						if (countDay >= groupedDayCount) {
+							dataGroupedByPeriod.push(Math.round(tempData / convertionFactor));
+							countDay = 0;
+							tempData = 0;
+						}
+					});
+
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
+					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
+					let maxRangeValue = _.getValueByMagnitude(Math.max(...dataGroupedByPeriod), 'ceil', 1);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
-						data,
+						data: dataGroupedByPeriod,
 						labels,
 						xAxisDates,
 						minRangeValue,
