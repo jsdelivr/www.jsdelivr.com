@@ -199,12 +199,10 @@
 					this.set('projectLink', projectsData[name].link);
 				});
 
+				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('statsPeriod', (newStatsPeriod, prevStatsPeriod) => {
 					let period = this.get('statsPeriods')[newStatsPeriod];
 					let name = this.get('name');
-
-					// once chart period is changed - set groupBy to default value
-					this.set('usageChartGroupBy', 'day');
 
 					// once chart period is changed - update groupBy options respectively to period
 					switch (period) {
@@ -241,6 +239,8 @@
 						}
 
 						this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
 						this.set('rawStatsData', response);
 					});
 				});
