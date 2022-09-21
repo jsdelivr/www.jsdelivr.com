@@ -221,34 +221,31 @@
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let type = showChartBandwidth ? 'bandwidth' : 'hits';
+					let convertionFactor = 1;
+					let valuesByDateArr = [];
 
-					let array = [];
-
-					Object.keys(rawStatsData[type].dates).forEach((date) => {
-						array.push([ date, rawStatsData[type].dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-
-					let tempGB = 1;
-
+					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
-						tempGB = 1e9;
+						convertionFactor = 1e9;
 					}
 
-					let data = array.map(value => Math.round(value[1] / tempGB));
+					Object.keys(rawStatsData[type].dates).forEach((date) => {
+						valuesByDateArr.push([ date, rawStatsData[type].dates[date] ]);
+					});
+
+					let data = valuesByDateArr.map(value => Math.round(value[1] / convertionFactor));
 					let minRangeValue = _.getValueByMagnitude(Math.min(...data), 'floor');
 					let maxRangeValue = _.getValueByMagnitude(Math.max(...data), 'ceil', 1);
-					let xAxisDates = array.map(value => value[0]);
+					let xAxisDates = valuesByDateArr.map(value => value[0]);
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
+						data,
 						labels,
 						xAxisDates,
 						minRangeValue,
 						maxRangeValue,
-						data,
 						showChartBandwidth,
 						chartPeriod,
 					});
