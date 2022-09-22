@@ -254,46 +254,42 @@
 					let convertionFactor = 1;
 					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
 					let groupedDayCount = groupBy[this.get('usageChartGroupBy')];
-					let valuesByDateArr = [];
-					let dataGroupedByPeriod = [];
-					let xAxisDates = [];
-
-					let countDay = 0;
-					let tempData = 0;
 
 					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
 						convertionFactor = 1e9;
 					}
 
-					// group data by value per date
-					Object.keys(rawStatsData[dataType].dates).forEach((date) => {
-						valuesByDateArr.push([ date, rawStatsData[dataType].dates[date] ]);
-					});
+					let initialReduceValue = {
+						dataGroupedByPeriod: [],
+						xAxisDates: [],
+						dataGroupCnt: 0,
+						tempData: 0,
+						xAxisCnt: 0,
+					};
 
-					// collect X-Axis dates relatively to groupBy period
-					valuesByDateArr.forEach((value) => {
-						countDay++;
+					// collect X-Axis dates, group data by period, get
+					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
+						//group data by groupBy period
+						prevData.dataGroupCnt++;
+						prevData.tempData += rawStatsData[dataType].dates[date];
 
-						if (countDay % groupedDayCount === 0) {
-							countDay = 0;
-							xAxisDates.push(value[0]);
+						if (prevData.dataGroupCnt >= groupedDayCount) {
+							prevData.dataGroupedByPeriod.push(Math.round(prevData.tempData / convertionFactor));
+							prevData.dataGroupCnt = 0;
+							prevData.tempData = 0;
 						}
-					});
 
-					countDay = 0;
+						// collect X-Axis dates relatively to groupBy period
+						prevData.xAxisCnt++;
 
-					//group data by groupBy period
-					Object.keys(rawStatsData[dataType].dates).forEach((date) => {
-						countDay++;
-						tempData += rawStatsData[dataType].dates[date];
-
-						if (countDay >= groupedDayCount) {
-							dataGroupedByPeriod.push(Math.round(tempData / convertionFactor));
-							countDay = 0;
-							tempData = 0;
+						if (prevData.xAxisCnt % groupedDayCount === 0) {
+							prevData.xAxisCnt = 0;
+							prevData.xAxisDates.push(date);
 						}
-					});
+
+						return prevData;
+					}, initialReduceValue);
 
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
 					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
