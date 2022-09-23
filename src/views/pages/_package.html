@@ -14,6 +14,11 @@
 	description="{{description}}"
 	openGraphImage="{{#if type === 'npm'}}{{@shared.serverHost}}/open-graph/image/npm/{{name}}{{/if}}"
 >
+	{{#partial seo}}
+		<script type="application/ld+json">
+			{{{JSON.stringify(microdata)}}}
+		</script>
+	{{/partial}}
 	{{#partial css}}
 	<link rel="preconnect" href="https://ofcncog2cu-dsn.algolia.net/" crossorigin="anonymous">
 	<link rel="preconnect" href="https://data.jsdelivr.com/" crossorigin="anonymous">
@@ -51,6 +56,7 @@
 </r-page>
 
 <script>
+
 	const has = require('../../public/js/utils/has');
 	const search = require('../../public/js/utils/search');
 	const http = require('../../public/js/utils/http');
@@ -82,6 +88,27 @@
 				},
 				set (value) {
 					this.set({ versionS: true, versionP: value });
+				},
+			},
+			microdata: {
+				get () {
+					return {
+						'@context': 'https://schema.org',
+						'@type': 'SoftwareSourceCode',
+						'name': this.get('name'),
+						'version': this.get('versionP'),
+						'description': this.get('description'),
+						'url': `https://www.jsdelivr.com/package/npm/${this.get('name')}`,
+						'codeRepository': this.get('package.repository.url'),
+						'dateCreated': Object.values(this.get('package.versions')).at(0),
+						'dateModified': Object.values(this.get('package.versions')).at(-1),
+						'programmingLanguage': 'JavaScript',
+						'maintainer': {
+							'@type': 'Person',
+							'name': this.get('package.owner.name'),
+						},
+						'image': this.get('package.owner.avatar'),
+					};
 				},
 			},
 		},
