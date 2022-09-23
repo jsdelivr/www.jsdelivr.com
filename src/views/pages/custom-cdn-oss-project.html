@@ -260,14 +260,6 @@
 						convertionFactor = 1e9;
 					}
 
-					let initialReduceValue = {
-						dataGroupedByPeriod: [],
-						xAxisDates: [],
-						dataGroupCnt: 0,
-						tempData: 0,
-						xAxisCnt: 0,
-					};
-
 					// collect X-Axis dates, group data by period, get
 					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
 						//group data by groupBy period
@@ -289,7 +281,13 @@
 						}
 
 						return prevData;
-					}, initialReduceValue);
+					}, {
+						dataGroupedByPeriod: [],
+						xAxisDates: [],
+						dataGroupCnt: 0,
+						tempData: 0,
+						xAxisCnt: 0,
+					});
 
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
 					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
