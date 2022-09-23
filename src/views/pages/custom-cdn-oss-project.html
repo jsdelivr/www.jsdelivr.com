@@ -252,8 +252,8 @@
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let convertionFactor = 1;
-					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
-					let groupedDayCount = groupBy[this.get('usageChartGroupBy')];
+					let groupByMap = { day: 1, week: 7, month: 30, year: 365 };
+					let groupedByAmountOfDays = groupByMap[this.get('usageChartGroupBy')];
 
 					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
@@ -266,7 +266,7 @@
 						prevData.dataGroupCnt++;
 						prevData.tempData += rawStatsData[dataType].dates[date];
 
-						if (prevData.dataGroupCnt >= groupedDayCount) {
+						if (prevData.dataGroupCnt >= groupedByAmountOfDays) {
 							prevData.dataGroupedByPeriod.push(Math.round(prevData.tempData / convertionFactor));
 							prevData.dataGroupCnt = 0;
 							prevData.tempData = 0;
@@ -275,7 +275,7 @@
 						// collect X-Axis dates relatively to groupBy period
 						prevData.xAxisCnt++;
 
-						if (prevData.xAxisCnt % groupedDayCount === 0) {
+						if (prevData.xAxisCnt % groupedByAmountOfDays === 0) {
 							prevData.xAxisCnt = 0;
 							prevData.xAxisDates.push(date);
 						}
