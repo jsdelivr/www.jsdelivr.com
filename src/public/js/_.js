@@ -131,10 +131,8 @@ module.exports = {
 	},
 
 	getChartXAxisData (periodDates, period = 'month', periodGroupBy = 'day') {
-		let dataPerMonths = [];
 		let chartXData = [];
-
-		periodDates.forEach((date) => {
+		let dataPerMonths = periodDates.reduce((dataPerMonths, date) => {
 			let splittedDate = date.split('-');
 			let dateYear = splittedDate[0];
 			let dateMonth = splittedDate.slice(0, 2).join('-');
@@ -145,7 +143,9 @@ module.exports = {
 			}
 
 			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
-		});
+
+			return dataPerMonths;
+		}, []);
 
 		let labelArea = 0;
 		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
