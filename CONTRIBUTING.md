@@ -8,10 +8,9 @@ The website uses [Ractive.js](https://ractive.js.org/), [ractive-route](https://
 
 ### Guidelines
 
- - Bug fixes and changes discussed in the existing issues are always welcome.
- - For new ideas, please open an issue to discuss them before sending a PR.
- - Make sure your PR passes `npm test` and has [appropriate commit messages](https://github.com/jsdelivr/www.jsdelivr.com/commits/master).
- - A Heroku preview is built automatically for every PR and will be reviewed before merging.
+-   Bug fixes and changes discussed in the existing issues are always welcome.
+-   For new ideas, please open an issue to discuss them before sending a PR.
+-   Make sure your PR passes `npm test` and has [appropriate commit messages](https://github.com/jsdelivr/www.jsdelivr.com/commits/master).
 
 ## Repo Setup
 
@@ -26,22 +25,21 @@ Configuration for IntelliJ based IDEs is also available in this repository. If y
 
 ## Testing
 
- - JS code style: `npm run lint:js`
- - CSS code style: `npm run lint:css`
- - Integration tests: `npm run mocha`
- - All combined: `npm test`
+-   JS code style: `npm run lint:js`
+-   CSS code style: `npm run lint:css`
+-   Integration tests: `npm run mocha`
+-   All combined: `npm test`
 
- Most IDEs have plugins integrating the used linters (eslint, stylelint), including support for automated fixes on save.
-
+Most IDEs have plugins integrating the used linters (eslint, stylelint), including support for automated fixes on save.
 
 ## Production config
 
 ```js
 module.exports = {
-    server: {
-        port: 'SERVER_PORT', // defaults to 4400
-    },
-}
+	server: {
+		port: "SERVER_PORT", // defaults to 4400
+	},
+};
 ```
 
 Additionally, `ELASTIC_APM_SERVER_URL`, `ELASTIC_APM_SECRET_TOKEN`, `ELASTIC_SEARCH_URL` (including user + pass), and `NODE_ENV=production` should be set.
