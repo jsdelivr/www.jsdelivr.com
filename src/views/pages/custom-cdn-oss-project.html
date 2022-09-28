@@ -260,12 +260,7 @@
 						convertionFactor = 1e9;
 					}
 
-					// console.log("++++ rawStatsData[dataType]", rawStatsData[dataType]);
-					// console.log("++++ chartPeriod", chartPeriod);
-					// console.log("++++ usageChartGroupBy", this.get('usageChartGroupBy'));
-					// console.log("++__________________________");
-
-					let resultTest = Object.keys(rawStatsData[dataType].dates).reduce((resData, date) => {
+					let { dataGroupedByPeriod: ALTdataGroupedByPeriod } = Object.keys(rawStatsData[dataType].dates).reduce((resData, date) => {
 						let splittedDate = date.split('-');
 						let dateYear = splittedDate[0];
 						let dateMonth = splittedDate[1];
@@ -277,19 +272,19 @@
 
 						switch (this.get('usageChartGroupBy')) {
 							case 'month':
-								if (!resData.months[dateMonth]) {
-									resData.months[dateMonth] = {};
-									resData.months[dateMonth].value = rawStatsData[dataType].dates[date];
-									resData.months[dateMonth].name = periodMonthFormatted;
-									resData.months[dateMonth].startsOn = date;
-									resData.months[dateMonth].isFull = false;
+								if (!resData.dataGroupedByPeriod[dateMonth]) {
+									resData.dataGroupedByPeriod[dateMonth] = {};
+									resData.dataGroupedByPeriod[dateMonth].value = rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[dateMonth].name = periodMonthFormatted;
+									resData.dataGroupedByPeriod[dateMonth].startsOn = date;
+									resData.dataGroupedByPeriod[dateMonth].isFull = false;
 								} else {
 									let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
 
-									resData.months[dateMonth].value += rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[dateMonth].value += rawStatsData[dataType].dates[date];
 
-									if (dateDay === lastDayNum && resData.months[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
-										resData.months[dateMonth].isFull = true;
+									if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
+										resData.dataGroupedByPeriod[dateMonth].isFull = true;
 									}
 								}
 
@@ -298,24 +293,20 @@
 							case 'week':
 								let dayCnt = dayNameNumberMap[dateDayName];
 
-								if (!resData.weeks) {
-									resData.weeks = {};
-								}
-
-								if (!resData.weeks[resData.weekNumber]) {
-									resData.weeks[resData.weekNumber] = {};
-									resData.weeks[resData.weekNumber].isFull = false;
-									resData.weeks[resData.weekNumber].value = rawStatsData[dataType].dates[date];
-									resData.weeks[resData.weekNumber].dates = [date];
-									resData.weeks[resData.weekNumber].startsOn = date;
+								if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
+									resData.dataGroupedByPeriod[resData.weekNumber] = {};
+									resData.dataGroupedByPeriod[resData.weekNumber].isFull = false;
+									resData.dataGroupedByPeriod[resData.weekNumber].value = rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[resData.weekNumber].dates = [date];
+									resData.dataGroupedByPeriod[resData.weekNumber].startsOn = date;
 									resData.weekDayCnt = 1;
 								} else {
-									resData.weeks[resData.weekNumber].value += rawStatsData[dataType].dates[date];
-									resData.weeks[resData.weekNumber].dates.push(date);
+									resData.dataGroupedByPeriod[resData.weekNumber].value += rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
 									resData.weekDayCnt++;
 
 									if (resData.weekDayCnt === 7) {
-										resData.weeks[resData.weekNumber].isFull = true;
+										resData.dataGroupedByPeriod[resData.weekNumber].isFull = true;
 									}
 								}
 
@@ -326,7 +317,7 @@
 								return resData;
 
 							case 'day':
-								resData.days[date] = rawStatsData[dataType].dates[date];
+								resData.dataGroupedByPeriod[date] = rawStatsData[dataType].dates[date];
 
 								return resData;
 						}
@@ -335,12 +326,10 @@
 					}, {
 						weekNumber: 0,
 						weekDayCnt: 0,
-						months: {},
-						weeks: {},
-						days: {},
+						dataGroupedByPeriod: {},
 					});
 
-					console.log("++++ resultTest", resultTest);
+					console.log("++++ ALTdataGroupedByPeriod", ALTdataGroupedByPeriod);
 					console.log("++_____________________");
 
 					// collect X-Axis dates, group data by period, get
@@ -373,8 +362,8 @@
 					});
 
 					// console.log("++++ xAxisDates", xAxisDates);
-					// console.log("++++ labels", _.getChartXAxisData(xAxisDates, chartPeriod));
 					// console.log("++++ dataGroupedByPeriod", dataGroupedByPeriod);
+					// console.log("++++ labels", _.getChartXAxisData(xAxisDates, chartPeriod));
 					// console.log("++_____________________");
 
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
