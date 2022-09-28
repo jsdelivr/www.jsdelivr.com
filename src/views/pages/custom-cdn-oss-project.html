@@ -297,7 +297,7 @@
 
 									resData.months[dateMonth].value += rawStatsData[dataType].dates[date];
 
-									if (dateDay === lastDayNum && resData.months[dateMonth].startOn === `${dateYear}-${dateMonth}-01`) {
+									if (dateDay === lastDayNum && resData.months[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
 										resData.months[dateMonth].isFull = true;
 									}
 								}
@@ -307,32 +307,24 @@
 							case 'week':
 								let dayCnt = dayNameNumberMap[dateDayName];
 
-								if (!resData[dateYear]) {
-									resData[dateYear] = {};
+								if (!resData.weeks) {
+									resData.weeks = {};
 								}
 
-								if (!resData[dateYear][dateMonth]) {
-									resData[dateYear][dateMonth] = {};
-									resData[dateYear][dateMonth].weeks = {};
-									resData[dateYear][dateMonth].value = rawStatsData[dataType].dates[date];
-									resData.weekNumber = 0;
-								} else {
-									resData[dateYear][dateMonth].value += rawStatsData[dataType].dates[date];
-								}
-
-								if (!resData[dateYear][dateMonth].weeks[resData.weekNumber]) {
-									resData[dateYear][dateMonth].weeks[resData.weekNumber] = {};
-									resData[dateYear][dateMonth].weeks[resData.weekNumber].isFull = false;
-									resData[dateYear][dateMonth].weeks[resData.weekNumber].value = rawStatsData[dataType].dates[date];
-									resData[dateYear][dateMonth].weeks[resData.weekNumber].dates = [date];
+								if (!resData.weeks[resData.weekNumber]) {
+									resData.weeks[resData.weekNumber] = {};
+									resData.weeks[resData.weekNumber].isFull = false;
+									resData.weeks[resData.weekNumber].value = rawStatsData[dataType].dates[date];
+									resData.weeks[resData.weekNumber].dates = [date];
+									resData.weeks[resData.weekNumber].startsOn = date;
 									resData.weekDayCnt = 1;
 								} else {
-									resData[dateYear][dateMonth].weeks[resData.weekNumber].value += rawStatsData[dataType].dates[date];
-									resData[dateYear][dateMonth].weeks[resData.weekNumber].dates.push(date);
+									resData.weeks[resData.weekNumber].value += rawStatsData[dataType].dates[date];
+									resData.weeks[resData.weekNumber].dates.push(date);
 									resData.weekDayCnt++;
 
 									if (resData.weekDayCnt === 7) {
-										resData[dateYear][dateMonth].weeks[resData.weekNumber].isFull = true;
+										resData.weeks[resData.weekNumber].isFull = true;
 									}
 								}
 
