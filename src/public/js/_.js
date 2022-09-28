@@ -362,6 +362,11 @@ module.exports = {
 	},
 
 	getAmountOfDaysByMonth (month, year) {
+		const FULL_OF_DAYS = '31';
+		const SHORT_OF_DAYS = '30';
+		const FEB_DAYS = '28';
+		const LEAP_FEB_DAYS = '29';
+
 		switch (month) {
 			case '01':
 			case '03':
@@ -370,14 +375,14 @@ module.exports = {
 			case '08':
 			case '10':
 			case '12':
-				return 31;
+				return FULL_OF_DAYS;
 			case '04':
 			case '06':
 			case '09':
 			case '11':
-				return 30;
+				return SHORT_OF_DAYS;
 			case '02':
-				return this.checkIfYearIsLeap(year) ? 29 : 28;
+				return this.checkIfYearIsLeap(year) ? LEAP_FEB_DAYS : FEB_DAYS;
 		}
 	}
 };
