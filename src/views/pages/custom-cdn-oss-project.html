@@ -273,11 +273,12 @@
 						switch (this.get('usageChartGroupBy')) {
 							case 'month':
 								if (!resData.dataGroupedByPeriod[dateMonth]) {
-									resData.dataGroupedByPeriod[dateMonth] = {};
-									resData.dataGroupedByPeriod[dateMonth].value = rawStatsData[dataType].dates[date];
-									resData.dataGroupedByPeriod[dateMonth].name = periodMonthFormatted;
-									resData.dataGroupedByPeriod[dateMonth].startsOn = date;
-									resData.dataGroupedByPeriod[dateMonth].isFull = false;
+									resData.dataGroupedByPeriod[dateMonth] = {
+										value: rawStatsData[dataType].dates[date],
+										name: periodMonthFormatted,
+										startsOn: date,
+										isFull: false,
+									};
 								} else {
 									let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
 
@@ -294,11 +295,12 @@
 								let dayCnt = dayNameNumberMap[dateDayName];
 
 								if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
-									resData.dataGroupedByPeriod[resData.weekNumber] = {};
-									resData.dataGroupedByPeriod[resData.weekNumber].isFull = false;
-									resData.dataGroupedByPeriod[resData.weekNumber].value = rawStatsData[dataType].dates[date];
-									resData.dataGroupedByPeriod[resData.weekNumber].dates = [date];
-									resData.dataGroupedByPeriod[resData.weekNumber].startsOn = date;
+									resData.dataGroupedByPeriod[resData.weekNumber] = {
+										isFull: false,
+										value: rawStatsData[dataType].dates[date],
+										dates: [date],
+										startsOn: date,
+									};
 									resData.weekDayCnt = 1;
 								} else {
 									resData.dataGroupedByPeriod[resData.weekNumber].value += rawStatsData[dataType].dates[date];
