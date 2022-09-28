@@ -274,7 +274,7 @@
 							case 'month':
 								if (!resData.dataGroupedByPeriod[dateMonth]) {
 									resData.dataGroupedByPeriod[dateMonth] = {
-										value: rawStatsData[dataType].dates[date],
+										value: rawStatsData[dataType].dates[date] / convertionFactor,
 										name: periodMonthFormatted,
 										startsOn: date,
 										isFull: false,
@@ -282,7 +282,7 @@
 								} else {
 									let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
 
-									resData.dataGroupedByPeriod[dateMonth].value += rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[dateMonth].value += rawStatsData[dataType].dates[date] / convertionFactor;
 
 									if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
 										resData.dataGroupedByPeriod[dateMonth].isFull = true;
@@ -297,13 +297,13 @@
 								if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
 									resData.dataGroupedByPeriod[resData.weekNumber] = {
 										isFull: false,
-										value: rawStatsData[dataType].dates[date],
+										value: rawStatsData[dataType].dates[date] / convertionFactor,
 										dates: [date],
 										startsOn: date,
 									};
 									resData.weekDayCnt = 1;
 								} else {
-									resData.dataGroupedByPeriod[resData.weekNumber].value += rawStatsData[dataType].dates[date];
+									resData.dataGroupedByPeriod[resData.weekNumber].value += rawStatsData[dataType].dates[date] / convertionFactor;
 									resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
 									resData.weekDayCnt++;
 
@@ -319,7 +319,7 @@
 								return resData;
 
 							case 'day':
-								resData.dataGroupedByPeriod[date] = rawStatsData[dataType].dates[date];
+								resData.dataGroupedByPeriod[date] = rawStatsData[dataType].dates[date] / convertionFactor;
 
 								return resData;
 						}
@@ -330,9 +330,6 @@
 						weekDayCnt: 0,
 						dataGroupedByPeriod: {},
 					});
-
-					console.log("++++ ALTdataGroupedByPeriod", ALTdataGroupedByPeriod);
-					console.log("++_____________________");
 
 					// collect X-Axis dates, group data by period, get
 					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
@@ -362,11 +359,6 @@
 						tempData: 0,
 						xAxisCnt: 0,
 					});
-
-					// console.log("++++ xAxisDates", xAxisDates);
-					// console.log("++++ dataGroupedByPeriod", dataGroupedByPeriod);
-					// console.log("++++ labels", _.getChartXAxisData(xAxisDates, chartPeriod));
-					// console.log("++_____________________");
 
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
 					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
