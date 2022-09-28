@@ -338,4 +338,26 @@ module.exports = {
 			document.addEventListener('DOMContentLoaded', fn);
 		}
 	},
+
+	checkIfYearIsLeap(year) {
+		if (isNaN(Number(year)) || String(year).length !== 4) {
+			console.warn('Func isLeapYear expected a year as a String or a Number with 4 signs');
+
+			return false;
+		}
+
+		if (year % 4 === 0) {
+			if (year % 100 === 0) {
+				if (year % 400 === 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
 };
