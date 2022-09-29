@@ -430,6 +430,8 @@ module.exports = {
 							value: valueByDateConverted,
 							dates: [date],
 							startsOn: date,
+							month: periodMonthFormatted,
+							year: dateYear,
 						};
 						resData.weekDayCnt = 1;
 					} else {
@@ -471,7 +473,7 @@ module.exports = {
 		});
 	},
 
-	getDataForChart (rawData, groupBy, convertionFactor) {
+	getDataForChart (rawData, groupBy, convertionFactor, onlyFullPeriods = true) {
 		let { preparedData } = this.prepareDataForChartByPeriod(rawData, groupBy, convertionFactor);
 		let dataForChartInitial = {
 			dates: [],
@@ -492,7 +494,15 @@ module.exports = {
 		}
 
 		if (groupBy === 'week') {
+			return Object.values(preparedData).reduce((res, week) => {
+				if (onlyFullPeriods && week.isFull === false) { return res; }
 
+				res.dates.push(week.startsOn);
+				res.values.push(week.value);
+				res.labels.push([week.startsOn, week.month, week.year]);
+
+				return res;
+			}, dataForChartInitial);
 		}
 
 		return dataForChartInitial;
