@@ -1,5 +1,9 @@
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
-const DAY_NAME_NUMBER_MAP = { 'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6 };
+const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+const MONTH_FULL_OF_DAYS = '31';
+const MONTH_SHORT_OF_DAYS = '30';
+const MONTH_FEB_DAYS = '28';
+const MONTH_LEAP_FEB_DAYS = '29';
 const screenType = {
 	mobile: 480,
 	tablet: 768,
@@ -340,7 +344,7 @@ module.exports = {
 		}
 	},
 
-	checkIfYearIsLeap(year) {
+	checkIfYearIsLeap (year) {
 		if (isNaN(Number(year)) || String(year).length !== 4) {
 			console.warn('Func isLeapYear expected a year as a String or a Number with 4 signs');
 
@@ -351,23 +355,18 @@ module.exports = {
 			if (year % 100 === 0) {
 				if (year % 400 === 0) {
 					return true;
-				} else {
-					return false;
 				}
-			} else {
-				return true;
+
+				return false;
 			}
-		} else {
-			return false;
+
+			return true;
 		}
+
+		return false;
 	},
 
 	getAmountOfDaysByMonth (month, year) {
-		const FULL_OF_DAYS = '31';
-		const SHORT_OF_DAYS = '30';
-		const FEB_DAYS = '28';
-		const LEAP_FEB_DAYS = '29';
-
 		switch (month) {
 			case '01':
 			case '03':
@@ -376,14 +375,14 @@ module.exports = {
 			case '08':
 			case '10':
 			case '12':
-				return FULL_OF_DAYS;
+				return MONTH_FULL_OF_DAYS;
 			case '04':
 			case '06':
 			case '09':
 			case '11':
-				return SHORT_OF_DAYS;
+				return MONTH_SHORT_OF_DAYS;
 			case '02':
-				return this.checkIfYearIsLeap(year) ? LEAP_FEB_DAYS : FEB_DAYS;
+				return this.checkIfYearIsLeap(year) ? MONTH_LEAP_FEB_DAYS : MONTH_FEB_DAYS;
 		}
 	},
 
@@ -396,7 +395,7 @@ module.exports = {
 			let dateYear = splittedDate[0];
 			let dateMonth = splittedDate[1];
 			let dateDay = splittedDate[2];
-			let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', {weekday: 'short'});
+			let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', { weekday: 'short' });
 			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
 			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
 
@@ -423,17 +422,16 @@ module.exports = {
 					return resData;
 
 				case 'week':
-					let dayCnt = DAY_NAME_NUMBER_MAP[dateDayName];
-
 					if (!resData.preparedData[resData.weekNumber]) {
 						resData.preparedData[resData.weekNumber] = {
 							isFull: false,
 							value: valueByDateConverted,
-							dates: [date],
+							dates: [ date ],
 							startsOn: date,
 							month: periodMonthFormatted,
 							year: dateYear,
 						};
+
 						resData.weekDayCnt = 1;
 					} else {
 						resData.preparedData[resData.weekNumber].value += valueByDateConverted;
@@ -445,7 +443,7 @@ module.exports = {
 						}
 					}
 
-					if (dayCnt === 6) {
+					if (DAY_NAME_NUMBER_MAP[dateDayName] === 6) {
 						resData.weekNumber++;
 					}
 
@@ -482,14 +480,14 @@ module.exports = {
 			labels: [],
 			minRangeValue: 0,
 			maxRangeValue: 0,
-		}
+		};
 		let results = dataForChartInitial;
 
 		if (groupBy === 'day') {
 			results = preparedData.days.reduce((res, day) => {
 				res.dates.push(day.date);
 				res.values.push(day.value);
-				res.labels.push([day.date, day.month, day.year]);
+				res.labels.push([ day.date, day.month, day.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -501,7 +499,7 @@ module.exports = {
 
 				res.dates.push(week.startsOn);
 				res.values.push(week.value);
-				res.labels.push([week.startsOn, week.month, week.year]);
+				res.labels.push([ week.startsOn, week.month, week.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -513,7 +511,7 @@ module.exports = {
 
 				res.dates.push(month.startsOn);
 				res.values.push(month.value);
-				res.labels.push([month.startsOn, month.month, month.year]);
+				res.labels.push([ month.startsOn, month.month, month.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -523,5 +521,5 @@ module.exports = {
 		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
 
 		return results;
-	}
+	},
 };

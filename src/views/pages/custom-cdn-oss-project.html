@@ -200,7 +200,7 @@
 				});
 
 				// handle chart period changes by updating groupBy options and chart data fetching
-				this.observe('statsPeriod', (newStatsPeriod, prevStatsPeriod) => {
+				this.observe('statsPeriod', (newStatsPeriod) => {
 					let period = this.get('statsPeriods')[newStatsPeriod];
 					let name = this.get('name');
 
@@ -212,25 +212,30 @@
 								week: { value: 'week', isAvailable: true },
 								month: { value: 'month', isAvailable: true },
 							});
+
 							break;
+
 						case 'month':
 							this.set('usageChartGroupByValues', {
 								day: { value: 'day', isAvailable: true },
 								week: { value: 'week', isAvailable: true },
 								month: { value: 'month', isAvailable: false },
 							});
+
 							break;
+
 						case 'week':
 							this.set('usageChartGroupByValues', {
 								day: { value: 'day', isAvailable: true },
 								week: { value: 'week', isAvailable: false },
 								month: { value: 'month', isAvailable: false },
 							});
+
 							break;
 					}
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
-					if (period === 'day') { return }
+					if (period === 'day') { return; }
 
 					http.fetchCdnOssStats(name, period).then((response) => {
 						if (!response.hits.total || !response.bandwidth.total) {
@@ -260,7 +265,7 @@
 					}
 
 					// collect X-Axis dates, group data by period, get
-					let { values, dates, labels, minRangeValue, maxRangeValue } = _.getDataForChart(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
+					let { values, labels, minRangeValue, maxRangeValue } = _.getDataForChart(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
@@ -379,7 +384,7 @@
 				};
 
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-			}, { init : false });
+			}, { init: false });
 		},
 	};
 </script>
