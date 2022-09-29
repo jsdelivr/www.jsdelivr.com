@@ -321,30 +321,6 @@
 										family: 'Lexend, sans-serif',
 										lineHeight: 2,
 									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
-
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
-
-												return [ labelValue[1], labelValue[2] ];
-											}
-
-											if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
-
-											return;
-										}
-
-										if (Array.isArray(labelValue) && labelValue[1]) {
-											return [ day, labelValue[1] ];
-										}
-
-										if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
-
-										return [ day ];
-									},
 								},
 								grid: {
 									display: false,
