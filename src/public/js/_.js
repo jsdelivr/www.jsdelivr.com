@@ -402,8 +402,8 @@ module.exports = {
 
 			switch (groupBy) {
 				case 'month':
-					if (!resData.dataGroupedByPeriod[dateMonth]) {
-						resData.dataGroupedByPeriod[dateMonth] = {
+					if (!resData.preparedData[dateMonth]) {
+						resData.preparedData[dateMonth] = {
 							value: valueByDateConverted,
 							name: periodMonthFormatted,
 							startsOn: date,
@@ -412,10 +412,10 @@ module.exports = {
 					} else {
 						let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
 
-						resData.dataGroupedByPeriod[dateMonth].value += valueByDateConverted;
+						resData.preparedData[dateMonth].value += valueByDateConverted;
 
-						if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
-							resData.dataGroupedByPeriod[dateMonth].isFull = true;
+						if (dateDay === lastDayNum && resData.preparedData[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
+							resData.preparedData[dateMonth].isFull = true;
 						}
 					}
 
@@ -424,8 +424,8 @@ module.exports = {
 				case 'week':
 					let dayCnt = DAY_NAME_NUMBER_MAP[dateDayName];
 
-					if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
-						resData.dataGroupedByPeriod[resData.weekNumber] = {
+					if (!resData.preparedData[resData.weekNumber]) {
+						resData.preparedData[resData.weekNumber] = {
 							isFull: false,
 							value: valueByDateConverted,
 							dates: [date],
@@ -433,12 +433,12 @@ module.exports = {
 						};
 						resData.weekDayCnt = 1;
 					} else {
-						resData.dataGroupedByPeriod[resData.weekNumber].value += valueByDateConverted;
-						resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
+						resData.preparedData[resData.weekNumber].value += valueByDateConverted;
+						resData.preparedData[resData.weekNumber].dates.push(date);
 						resData.weekDayCnt++;
 
 						if (resData.weekDayCnt === 7) {
-							resData.dataGroupedByPeriod[resData.weekNumber].isFull = true;
+							resData.preparedData[resData.weekNumber].isFull = true;
 						}
 					}
 
@@ -449,7 +449,7 @@ module.exports = {
 					return resData;
 
 				case 'day':
-					resData.dataGroupedByPeriod[date] = valueByDateConverted;
+					resData.preparedData[date] = valueByDateConverted;
 
 					return resData;
 			}
@@ -458,7 +458,7 @@ module.exports = {
 		}, {
 			weekNumber: 0,
 			weekDayCnt: 0,
-			dataGroupedByPeriod: {},
+			preparedData: {},
 		});
 	}
 };
