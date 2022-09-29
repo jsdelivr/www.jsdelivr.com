@@ -261,7 +261,9 @@
 						convertionFactor = 1e9;
 					}
 
-					let { dataGroupedByPeriod: ALTdataGroupedByPeriod } = _.prepareDataForChartByPeriod(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
+					// new alt logic
+					// let { preparedData: ALTdataGroupedByPeriod } = _.prepareDataForChartByPeriod(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
+					let { values, dates, labels: labelsALT } = _.getDataForChart(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
 
 					// collect X-Axis dates, group data by period, get
 					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
@@ -296,7 +298,10 @@
 					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
 					let maxRangeValue = _.getValueByMagnitude(Math.max(...dataGroupedByPeriod), 'ceil', 1);
 
-					console.log("++++ ALTdataGroupedByPeriod", ALTdataGroupedByPeriod);
+					console.log("++++ values", values);
+					console.log("++++ dates", dates);
+					console.log("++++ labelsALT", labelsALT);
+					console.log("+++++++++++++++++++++++++");
 					console.log("++++ dataGroupedByPeriod", dataGroupedByPeriod);
 					console.log("++++ xAxisDates", xAxisDates);
 					console.log("++++ labels", labels);

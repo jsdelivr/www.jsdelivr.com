@@ -449,7 +449,17 @@ module.exports = {
 					return resData;
 
 				case 'day':
-					resData.preparedData[date] = valueByDateConverted;
+
+
+					if (!resData.preparedData.days) {
+						resData.preparedData.days = [];
+					}
+					resData.preparedData.days.push({
+						date,
+						value: valueByDateConverted,
+						month: periodMonthFormatted,
+						year: dateYear,
+					});
 
 					return resData;
 			}
@@ -460,5 +470,28 @@ module.exports = {
 			weekDayCnt: 0,
 			preparedData: {},
 		});
+	},
+
+	getDataForChart (rawData, groupBy, convertionFactor) {
+		let { preparedData } = this.prepareDataForChartByPeriod(rawData, groupBy, convertionFactor);
+		let dataForChartInitial = {
+			dates: [],
+			values: [],
+			labels: [],
+		}
+		console.log("++++ preparedData", preparedData);
+		console.log("+______________________________");
+
+		if (groupBy === 'day') {
+			return preparedData.days.reduce((res, day) => {
+				res.dates.push(day.date);
+				res.values.push(day.value);
+				res.labels.push([day.date, day.month, day.year]);
+
+				return res;
+			}, dataForChartInitial);
+		}
+
+		return dataForChartInitial;
 	}
 };
