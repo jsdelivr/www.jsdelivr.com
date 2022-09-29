@@ -386,7 +386,7 @@ module.exports = {
 		}
 	},
 
-	prepareDataForChartByPeriod (rawData, groupBy, convertionFactor) {
+	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
 
@@ -472,8 +472,8 @@ module.exports = {
 		});
 	},
 
-	getDataForChart (rawData, groupBy, convertionFactor, onlyFullPeriods = true) {
-		let { preparedData } = this.prepareDataForChartByPeriod(rawData, groupBy, convertionFactor);
+	getPreparedDataForChart (rawData, groupBy, convertionFactor, onlyFullPeriods = true) {
+		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
 		let dataForChartInitial = {
 			dates: [],
 			values: [],
