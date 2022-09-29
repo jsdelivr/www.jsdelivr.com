@@ -449,11 +449,10 @@ module.exports = {
 					return resData;
 
 				case 'day':
-
-
 					if (!resData.preparedData.days) {
 						resData.preparedData.days = [];
 					}
+
 					resData.preparedData.days.push({
 						date,
 						value: valueByDateConverted,
@@ -490,6 +489,10 @@ module.exports = {
 
 				return res;
 			}, dataForChartInitial);
+		}
+
+		if (groupBy === 'week') {
+
 		}
 
 		return dataForChartInitial;
