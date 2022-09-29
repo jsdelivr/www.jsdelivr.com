@@ -480,10 +480,13 @@ module.exports = {
 			dates: [],
 			values: [],
 			labels: [],
+			minRangeValue: 0,
+			maxRangeValue: 0,
 		}
+		let results = dataForChartInitial;
 
 		if (groupBy === 'day') {
-			return preparedData.days.reduce((res, day) => {
+			results = preparedData.days.reduce((res, day) => {
 				res.dates.push(day.date);
 				res.values.push(day.value);
 				res.labels.push([day.date, day.month, day.year]);
@@ -493,7 +496,7 @@ module.exports = {
 		}
 
 		if (groupBy === 'week') {
-			return Object.values(preparedData).reduce((res, week) => {
+			results = Object.values(preparedData).reduce((res, week) => {
 				if (onlyFullPeriods && week.isFull === false) { return res; }
 
 				res.dates.push(week.startsOn);
@@ -505,7 +508,7 @@ module.exports = {
 		}
 
 		if (groupBy === 'month') {
-			return Object.values(preparedData).reduce((res, month) => {
+			results = Object.values(preparedData).reduce((res, month) => {
 				if (onlyFullPeriods && month.isFull === false) { return res; }
 
 				res.dates.push(month.startsOn);
@@ -516,6 +519,9 @@ module.exports = {
 			}, dataForChartInitial);
 		}
 
-		return dataForChartInitial;
+		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
+		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
+
+		return results;
 	}
 };
