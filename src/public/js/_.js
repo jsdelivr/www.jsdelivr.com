@@ -406,6 +406,7 @@ module.exports = {
 							isFull: false,
 							value: valueByDateConverted,
 							startsOn: date,
+							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
 						};
@@ -428,6 +429,7 @@ module.exports = {
 							value: valueByDateConverted,
 							dates: [ date ],
 							startsOn: date,
+							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
 						};
@@ -457,6 +459,7 @@ module.exports = {
 					resData.preparedData.days.push({
 						date,
 						value: valueByDateConverted,
+						day: dateDay,
 						month: periodMonthFormatted,
 						year: dateYear,
 					});
@@ -470,6 +473,13 @@ module.exports = {
 			weekDayCnt: 0,
 			preparedData: {},
 		});
+	},
+
+	formatChartLabels (labels) {
+		let formattedLabels = [ ...labels ];
+
+
+		return formattedLabels;
 	},
 
 	getPreparedDataForChart (rawData, groupBy, convertionFactor, onlyFullPeriods = true) {
@@ -487,7 +497,7 @@ module.exports = {
 			results = preparedData.days.reduce((res, day) => {
 				res.dates.push(day.date);
 				res.values.push(day.value);
-				res.labels.push([ day.date, day.month, day.year ]);
+				res.labels.push([ day.day, day.month, day.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -499,7 +509,7 @@ module.exports = {
 
 				res.dates.push(week.startsOn);
 				res.values.push(week.value);
-				res.labels.push([ week.startsOn, week.month, week.year ]);
+				res.labels.push([ week.day, week.month, week.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -511,7 +521,7 @@ module.exports = {
 
 				res.dates.push(month.startsOn);
 				res.values.push(month.value);
-				res.labels.push([ month.startsOn, month.month, month.year ]);
+				res.labels.push([ month.day, month.month, month.year ]);
 
 				return res;
 			}, dataForChartInitial);
@@ -519,6 +529,7 @@ module.exports = {
 
 		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
 		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
+		results.labels = this.formatChartLabels(results.labels);
 
 		return results;
 	},
