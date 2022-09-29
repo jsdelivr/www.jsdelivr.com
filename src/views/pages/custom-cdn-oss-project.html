@@ -253,63 +253,20 @@
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let convertionFactor = 1;
-					let groupByMap = { day: 1, week: 7, month: 30, year: 365 };
-					let groupedByAmountOfDays = groupByMap[usageChartGroupBy];
 
 					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
 						convertionFactor = 1e9;
 					}
 
-					// new alt logic
-					// let { preparedData: ALTdataGroupedByPeriod } = _.prepareDataForChartByPeriod(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
-					let { values, dates, labels: labelsALT } = _.getDataForChart(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
-
 					// collect X-Axis dates, group data by period, get
-					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
-						//group data by groupBy period
-						prevData.dataGroupCnt++;
-						prevData.tempData += rawStatsData[dataType].dates[date];
-
-						if (prevData.dataGroupCnt >= groupedByAmountOfDays) {
-							prevData.dataGroupedByPeriod.push(Math.round(prevData.tempData / convertionFactor));
-							prevData.dataGroupCnt = 0;
-							prevData.tempData = 0;
-						}
-
-						// collect X-Axis dates relatively to groupBy period
-						prevData.xAxisCnt++;
-
-						if (prevData.xAxisCnt % groupedByAmountOfDays === 0) {
-							prevData.xAxisCnt = 0;
-							prevData.xAxisDates.push(date);
-						}
-
-						return prevData;
-					}, {
-						dataGroupedByPeriod: [],
-						xAxisDates: [],
-						dataGroupCnt: 0,
-						tempData: 0,
-						xAxisCnt: 0,
-					});
-
-					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
-					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
-					let maxRangeValue = _.getValueByMagnitude(Math.max(...dataGroupedByPeriod), 'ceil', 1);
-
-					console.log("++++ values", values);
-					console.log("++++ dates", dates);
-					console.log("++++ labelsALT", labelsALT);
-					console.log("+++++++++++++++++++++++++");
-					console.log("++++ dataGroupedByPeriod", dataGroupedByPeriod);
-					console.log("++++ xAxisDates", xAxisDates);
-					console.log("++++ labels", labels);
-					console.log("++_____________________");
+					let { values, dates, labels } = _.getDataForChart(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
+					let minRangeValue = _.getValueByMagnitude(Math.min(...values), 'floor');
+					let maxRangeValue = _.getValueByMagnitude(Math.max(...values), 'ceil', 1);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
-						data: dataGroupedByPeriod,
+						data: values,
 						labels,
 						minRangeValue,
 						maxRangeValue,
