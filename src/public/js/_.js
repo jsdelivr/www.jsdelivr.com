@@ -1,4 +1,5 @@
-const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+const DAY_NAME_NUMBER_MAP = { 'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6 };
 const screenType = {
 	mobile: 480,
 	tablet: 768,
@@ -27,7 +28,7 @@ module.exports = {
 		return files;
 	},
 	formatDate (date) {
-		return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
+		return `${MONTHS_SHORT_NAMES_LIST[date.getUTCMonth()]} ${date.getUTCDate()}`;
 	},
 	formatHits (hits) {
 		if (hits < 1e9) {
@@ -136,7 +137,7 @@ module.exports = {
 			let splittedDate = date.split('-');
 			let dateYear = splittedDate[0];
 			let dateMonth = splittedDate.slice(0, 2).join('-');
-			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
+			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(dateMonth).getUTCMonth()];
 
 			if (!dataPerMonths[`${dateYear} ${periodMonthFormatted}`]) {
 				dataPerMonths[`${dateYear} ${periodMonthFormatted}`] = [];
@@ -384,5 +385,79 @@ module.exports = {
 			case '02':
 				return this.checkIfYearIsLeap(year) ? LEAP_FEB_DAYS : FEB_DAYS;
 		}
+	},
+
+	prepareDataForChartByPeriod (rawData, groupBy, convertionFactor) {
+		let rawDataDatesKeys = Object.keys(rawData.dates);
+		let rawDataDatesData = rawData.dates;
+
+		return rawDataDatesKeys.reduce((resData, date) => {
+			let splittedDate = date.split('-');
+			let dateYear = splittedDate[0];
+			let dateMonth = splittedDate[1];
+			let dateDay = splittedDate[2];
+			let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', {weekday: 'short'});
+			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+
+			switch (groupBy) {
+				case 'month':
+					if (!resData.dataGroupedByPeriod[dateMonth]) {
+						resData.dataGroupedByPeriod[dateMonth] = {
+							value: rawDataDatesData[date] / convertionFactor,
+							name: periodMonthFormatted,
+							startsOn: date,
+							isFull: false,
+						};
+					} else {
+						let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
+
+						resData.dataGroupedByPeriod[dateMonth].value += rawDataDatesData[date] / convertionFactor;
+
+						if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
+							resData.dataGroupedByPeriod[dateMonth].isFull = true;
+						}
+					}
+
+					return resData;
+
+				case 'week':
+					let dayCnt = DAY_NAME_NUMBER_MAP[dateDayName];
+
+					if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
+						resData.dataGroupedByPeriod[resData.weekNumber] = {
+							isFull: false,
+							value: rawDataDatesData[date] / convertionFactor,
+							dates: [date],
+							startsOn: date,
+						};
+						resData.weekDayCnt = 1;
+					} else {
+						resData.dataGroupedByPeriod[resData.weekNumber].value += rawDataDatesData[date] / convertionFactor;
+						resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
+						resData.weekDayCnt++;
+
+						if (resData.weekDayCnt === 7) {
+							resData.dataGroupedByPeriod[resData.weekNumber].isFull = true;
+						}
+					}
+
+					if (dayCnt === 6) {
+						resData.weekNumber++;
+					}
+
+					return resData;
+
+				case 'day':
+					resData.dataGroupedByPeriod[date] = rawDataDatesData[date] / convertionFactor;
+
+					return resData;
+			}
+
+			return resData;
+		}, {
+			weekNumber: 0,
+			weekDayCnt: 0,
+			dataGroupedByPeriod: {},
+		});
 	}
 };

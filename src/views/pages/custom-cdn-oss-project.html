@@ -250,86 +250,18 @@
 					let rawStatsData = this.get('rawStatsData');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let convertionFactor = 1;
 					let groupByMap = { day: 1, week: 7, month: 30, year: 365 };
-					let groupedByAmountOfDays = groupByMap[this.get('usageChartGroupBy')];
+					let groupedByAmountOfDays = groupByMap[usageChartGroupBy];
 
 					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
 					if (showChartBandwidth) {
 						convertionFactor = 1e9;
 					}
 
-					let { dataGroupedByPeriod: ALTdataGroupedByPeriod } = Object.keys(rawStatsData[dataType].dates).reduce((resData, date) => {
-						let splittedDate = date.split('-');
-						let dateYear = splittedDate[0];
-						let dateMonth = splittedDate[1];
-						let dateDay = splittedDate[2];
-						let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', {weekday: 'short'});
-						let dayNameNumberMap = { 'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6 };
-						let months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
-						let periodMonthFormatted = months[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
-
-						switch (this.get('usageChartGroupBy')) {
-							case 'month':
-								if (!resData.dataGroupedByPeriod[dateMonth]) {
-									resData.dataGroupedByPeriod[dateMonth] = {
-										value: rawStatsData[dataType].dates[date] / convertionFactor,
-										name: periodMonthFormatted,
-										startsOn: date,
-										isFull: false,
-									};
-								} else {
-									let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
-
-									resData.dataGroupedByPeriod[dateMonth].value += rawStatsData[dataType].dates[date] / convertionFactor;
-
-									if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
-										resData.dataGroupedByPeriod[dateMonth].isFull = true;
-									}
-								}
-
-								return resData;
-
-							case 'week':
-								let dayCnt = dayNameNumberMap[dateDayName];
-
-								if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
-									resData.dataGroupedByPeriod[resData.weekNumber] = {
-										isFull: false,
-										value: rawStatsData[dataType].dates[date] / convertionFactor,
-										dates: [date],
-										startsOn: date,
-									};
-									resData.weekDayCnt = 1;
-								} else {
-									resData.dataGroupedByPeriod[resData.weekNumber].value += rawStatsData[dataType].dates[date] / convertionFactor;
-									resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
-									resData.weekDayCnt++;
-
-									if (resData.weekDayCnt === 7) {
-										resData.dataGroupedByPeriod[resData.weekNumber].isFull = true;
-									}
-								}
-
-								if (dayCnt === 6) {
-									resData.weekNumber++;
-								}
-
-								return resData;
-
-							case 'day':
-								resData.dataGroupedByPeriod[date] = rawStatsData[dataType].dates[date] / convertionFactor;
-
-								return resData;
-						}
-
-						return resData;
-					}, {
-						weekNumber: 0,
-						weekDayCnt: 0,
-						dataGroupedByPeriod: {},
-					});
+					let { dataGroupedByPeriod: ALTdataGroupedByPeriod } = _.prepareDataForChartByPeriod(rawStatsData[dataType], usageChartGroupBy, convertionFactor);
 
 					// collect X-Axis dates, group data by period, get
 					let  { dataGroupedByPeriod, xAxisDates } = Object.keys(rawStatsData[dataType].dates).reduce((prevData, date) => {
@@ -363,6 +295,12 @@
 					let labels = _.getChartXAxisData(xAxisDates, chartPeriod);
 					let minRangeValue = _.getValueByMagnitude(Math.min(...dataGroupedByPeriod), 'floor');
 					let maxRangeValue = _.getValueByMagnitude(Math.max(...dataGroupedByPeriod), 'ceil', 1);
+
+					console.log("++++ ALTdataGroupedByPeriod", ALTdataGroupedByPeriod);
+					console.log("++++ dataGroupedByPeriod", dataGroupedByPeriod);
+					console.log("++++ xAxisDates", xAxisDates);
+					console.log("++++ labels", labels);
+					console.log("++_____________________");
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
