@@ -404,13 +404,14 @@ module.exports = {
 				case 'month':
 					if (!resData.preparedData[dateMonth]) {
 						resData.preparedData[dateMonth] = {
-							value: valueByDateConverted,
-							name: periodMonthFormatted,
-							startsOn: date,
 							isFull: false,
+							value: valueByDateConverted,
+							startsOn: date,
+							month: periodMonthFormatted,
+							year: dateYear,
 						};
 					} else {
-						let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
+						let lastDayNum = this.getAmountOfDaysByMonth(dateMonth, dateYear);
 
 						resData.preparedData[dateMonth].value += valueByDateConverted;
 
@@ -480,8 +481,6 @@ module.exports = {
 			values: [],
 			labels: [],
 		}
-		console.log("++++ preparedData", preparedData);
-		console.log("+______________________________");
 
 		if (groupBy === 'day') {
 			return preparedData.days.reduce((res, day) => {
@@ -500,6 +499,18 @@ module.exports = {
 				res.dates.push(week.startsOn);
 				res.values.push(week.value);
 				res.labels.push([week.startsOn, week.month, week.year]);
+
+				return res;
+			}, dataForChartInitial);
+		}
+
+		if (groupBy === 'month') {
+			return Object.values(preparedData).reduce((res, month) => {
+				if (onlyFullPeriods && month.isFull === false) { return res; }
+
+				res.dates.push(month.startsOn);
+				res.values.push(month.value);
+				res.labels.push([month.startsOn, month.month, month.year]);
 
 				return res;
 			}, dataForChartInitial);
