@@ -398,12 +398,13 @@ module.exports = {
 			let dateDay = splittedDate[2];
 			let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', {weekday: 'short'});
 			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
 
 			switch (groupBy) {
 				case 'month':
 					if (!resData.dataGroupedByPeriod[dateMonth]) {
 						resData.dataGroupedByPeriod[dateMonth] = {
-							value: rawDataDatesData[date] / convertionFactor,
+							value: valueByDateConverted,
 							name: periodMonthFormatted,
 							startsOn: date,
 							isFull: false,
@@ -411,7 +412,7 @@ module.exports = {
 					} else {
 						let lastDayNum = _.getAmountOfDaysByMonth(dateMonth, dateYear);
 
-						resData.dataGroupedByPeriod[dateMonth].value += rawDataDatesData[date] / convertionFactor;
+						resData.dataGroupedByPeriod[dateMonth].value += valueByDateConverted;
 
 						if (dateDay === lastDayNum && resData.dataGroupedByPeriod[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
 							resData.dataGroupedByPeriod[dateMonth].isFull = true;
@@ -426,13 +427,13 @@ module.exports = {
 					if (!resData.dataGroupedByPeriod[resData.weekNumber]) {
 						resData.dataGroupedByPeriod[resData.weekNumber] = {
 							isFull: false,
-							value: rawDataDatesData[date] / convertionFactor,
+							value: valueByDateConverted,
 							dates: [date],
 							startsOn: date,
 						};
 						resData.weekDayCnt = 1;
 					} else {
-						resData.dataGroupedByPeriod[resData.weekNumber].value += rawDataDatesData[date] / convertionFactor;
+						resData.dataGroupedByPeriod[resData.weekNumber].value += valueByDateConverted;
 						resData.dataGroupedByPeriod[resData.weekNumber].dates.push(date);
 						resData.weekDayCnt++;
 
@@ -448,7 +449,7 @@ module.exports = {
 					return resData;
 
 				case 'day':
-					resData.dataGroupedByPeriod[date] = rawDataDatesData[date] / convertionFactor;
+					resData.dataGroupedByPeriod[date] = valueByDateConverted;
 
 					return resData;
 			}
