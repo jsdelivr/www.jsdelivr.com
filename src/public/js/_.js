@@ -539,7 +539,6 @@ module.exports = {
 
 					case idx === 0 || idx === labels.length - 1:
 						return label.slice(1, 3);
-
 				}
 
 				return [];
@@ -564,7 +563,6 @@ module.exports = {
 
 					case idx === 0 || idx === labels.length - 1:
 						return label.slice(1, 3);
-
 				}
 
 				return [];
