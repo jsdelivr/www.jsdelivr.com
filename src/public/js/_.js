@@ -476,21 +476,14 @@ module.exports = {
 		});
 	},
 
-
-	// i dont like current isMobile or isDesktop func - they have no sense, we should stick to every step of resolution
-	// step by step (360, 576, 768, 992, 1200, 1400+) - coz the x-axis could be different depending on it
-	formatWeekChartLabels (labels) {
-		let formattedLabels = [];
-
-		// for both Mobile and Desktop we will show Day and Month
-		formattedLabels = labels.map((label) => {
+	createWeekPeriodChartLabels (labels) {
+		// for both Mobile and Desktop we will show Day and Month per each tick no matter what resolution are
+		return labels.map((label) => {
 			return label.slice(0, 2);
 		});
-
-		return formattedLabels;
 	},
 
-	formatMonthChartLabels (labels, groupBy) {
+	createMonthPeriodChartLabels (labels, groupBy) {
 		let formattedLabels = [];
 
 		console.log('++++ labels', labels);
@@ -520,8 +513,8 @@ module.exports = {
 		return formattedLabels;
 	},
 
-	// formatYearChartLabels (labels, groupBy) {
-	formatYearChartLabels (labels) {
+	// createYearPeriodChartLabels (labels, groupBy) {
+	createYearPeriodChartLabels (labels) {
 		let formattedLabels = [ ...labels ];
 
 		return formattedLabels;
@@ -587,13 +580,13 @@ module.exports = {
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
 			case 'week':
-				results.labels = this.formatWeekChartLabels(results.labels);
+				results.labels = this.createWeekPeriodChartLabels(results.labels);
 				break;
 			case 'month':
-				results.labels = this.formatMonthChartLabels(results.labels, groupBy);
+				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
 				break;
 			case 'year':
-				results.labels = this.formatYearChartLabels(results.labels, groupBy);
+				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
 				break;
 		}
 
