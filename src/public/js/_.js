@@ -486,20 +486,34 @@ module.exports = {
 	createMonthPeriodChartLabels (labels, groupBy) {
 		let formattedLabels = [];
 
-		console.log('++++ labels', labels);
-		console.log('++++ groupBy', groupBy);
-		console.log('+____________________________');
+		if (groupBy === 'day') {
+			formattedLabels = labels.map((label, idx) => {
+				switch (true) {
+					// show day and month for first-last ticks
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(0, 2);
+
+					default:
+						return [];
+				}
+			});
+		}
+
+		if (groupBy === 'week') {
+			formattedLabels = labels;
+		}
+
+		return formattedLabels;
+	},
+
+	// createYearPeriodChartLabels (labels, groupBy) {
+	createYearPeriodChartLabels (labels, groupBy) {
+		let formattedLabels = [ ...labels ];
 
 		if (groupBy === 'day') {
-			console.log('+++++ PERIOD: MONTH, GROUP BY: DAY');
-
 			formattedLabels = labels.map((label, idx) => {
-				if (screen.width >= 768) {
-					return idx % 2 ? label.slice(0, 1) : label.slice(0, 2);
-				}
-
 				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(0, 3);
+					return label.slice(1,3);
 				}
 
 				return [];
@@ -507,15 +521,24 @@ module.exports = {
 		}
 
 		if (groupBy === 'week') {
-			console.log('+++++ PERIOD: MONTH, GROUP BY: WEEK');
+			formattedLabels = labels.map((label, idx) => {
+				if (idx === 0 || idx === labels.length - 1) {
+					return label.slice(1,3);
+				}
+
+				return [];
+			});
 		}
 
-		return formattedLabels;
-	},
+		if (groupBy === 'month') {
+			formattedLabels = labels.map((label, idx) => {
+				if (idx === 0 || idx === labels.length - 1) {
+					return label.slice(1,3);
+				}
 
-	// createYearPeriodChartLabels (labels, groupBy) {
-	createYearPeriodChartLabels (labels) {
-		let formattedLabels = [ ...labels ];
+				return label.slice(1,2);
+			});
+		}
 
 		return formattedLabels;
 	},
