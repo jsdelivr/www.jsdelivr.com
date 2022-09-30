@@ -513,7 +513,7 @@ module.exports = {
 		if (groupBy === 'day') {
 			formattedLabels = labels.map((label, idx) => {
 				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(1,3);
+					return label.slice(1, 3);
 				}
 
 				return [];
@@ -523,7 +523,7 @@ module.exports = {
 		if (groupBy === 'week') {
 			formattedLabels = labels.map((label, idx) => {
 				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(1,3);
+					return label.slice(1, 3);
 				}
 
 				return [];
@@ -533,10 +533,10 @@ module.exports = {
 		if (groupBy === 'month') {
 			formattedLabels = labels.map((label, idx) => {
 				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(1,3);
+					return label.slice(1, 3);
 				}
 
-				return label.slice(1,2);
+				return label.slice(1, 2);
 			});
 		}
 
