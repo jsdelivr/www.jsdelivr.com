@@ -386,6 +386,7 @@ module.exports = {
 		}
 	},
 
+	// TODO: update func - get rid of unused props, rework day case to make it universal with month, year, get rid of switch
 	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
@@ -475,14 +476,56 @@ module.exports = {
 		});
 	},
 
-	formatChartLabels (labels) {
-		let formattedLabels = [ ...labels ];
 
+	// i dont like current isMobile or isDesktop func - they have no sense, we should stick to every step of resolution
+	// step by step (360, 576, 768, 992, 1200, 1400+) - coz the x-axis could be different depending on it
+	formatWeekChartLabels (labels, groupBy) {
+		let formattedLabels = [];
+
+		// for both Mobile and Desktop we will show Day and Month
+		formattedLabels = labels.map((label) => {
+			return label.slice(0, 2);
+		});
 
 		return formattedLabels;
 	},
 
-	getPreparedDataForChart (rawData, groupBy, convertionFactor, onlyFullPeriods = true) {
+	formatMonthChartLabels (labels, groupBy) {
+		let formattedLabels = [];
+
+		console.log("++++ labels", labels);
+		console.log("++++ groupBy", groupBy);
+		console.log("+____________________________");
+
+		if (groupBy === 'day') {
+			console.log("+++++ PERIOD: MONTH, GROUP BY: DAY");
+
+			formattedLabels = labels.map((label, idx) => {
+				if (screen.width >= 768) {
+					return idx % 2 ? label.slice(0, 1) : label.slice(0, 2);
+				}
+
+				if (idx === 0 || idx === labels.length - 1) {
+					return label.slice(0, 3);
+				}
+
+				return [];
+			});
+		}
+
+		if (groupBy === 'week') {
+			console.log("+++++ PERIOD: MONTH, GROUP BY: WEEK");
+		}
+	},
+
+	formatYearChartLabels (labels, groupBy) {
+		let formattedLabels = [ ...labels ];
+
+		return formattedLabels;
+	},
+
+	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
+	getPreparedDataForChart (rawData, groupBy, chartPeriod, convertionFactor, onlyFullPeriods = true) {
 		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
 		let dataForChartInitial = {
 			dates: [],
@@ -493,43 +536,60 @@ module.exports = {
 		};
 		let results = dataForChartInitial;
 
-		if (groupBy === 'day') {
-			results = preparedData.days.reduce((res, day) => {
-				res.dates.push(day.date);
-				res.values.push(day.value);
-				res.labels.push([ day.day, day.month, day.year ]);
+		// collect data for chart depending on groupBy
+		// TODO: improve this, we could avoid using switch and replace it with single universal solution
+		switch (groupBy) {
+			case 'day':
+				results = preparedData.days.reduce((res, day) => {
+					res.dates.push(day.date);
+					res.values.push(day.value);
+					res.labels.push([ day.day, day.month, day.year ]);
 
-				return res;
-			}, dataForChartInitial);
+					return res;
+				}, dataForChartInitial);
+			break;
+
+			case 'week':
+				results = Object.values(preparedData).reduce((res, week) => {
+					if (onlyFullPeriods && week.isFull === false) { return res; }
+
+					res.dates.push(week.startsOn);
+					res.values.push(week.value);
+					res.labels.push([ week.day, week.month, week.year ]);
+
+					return res;
+				}, dataForChartInitial);
+			break;
+
+			case 'month':
+				results = Object.values(preparedData).reduce((res, month) => {
+					if (onlyFullPeriods && month.isFull === false) { return res; }
+
+					res.dates.push(month.startsOn);
+					res.values.push(month.value);
+					res.labels.push([ month.day, month.month, month.year ]);
+
+					return res;
+				}, dataForChartInitial);
+			break;
 		}
 
-		if (groupBy === 'week') {
-			results = Object.values(preparedData).reduce((res, week) => {
-				if (onlyFullPeriods && week.isFull === false) { return res; }
-
-				res.dates.push(week.startsOn);
-				res.values.push(week.value);
-				res.labels.push([ week.day, week.month, week.year ]);
-
-				return res;
-			}, dataForChartInitial);
-		}
-
-		if (groupBy === 'month') {
-			results = Object.values(preparedData).reduce((res, month) => {
-				if (onlyFullPeriods && month.isFull === false) { return res; }
-
-				res.dates.push(month.startsOn);
-				res.values.push(month.value);
-				res.labels.push([ month.day, month.month, month.year ]);
-
-				return res;
-			}, dataForChartInitial);
-		}
-
+		// get min/max magnitude for y-axis
 		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
 		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
-		results.labels = this.formatChartLabels(results.labels);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				results.labels = this.formatWeekChartLabels(results.labels, groupBy);
+				break;
+			case 'month':
+				results.labels = this.formatMonthChartLabels(results.labels, groupBy);
+				break;
+			case 'year':
+				results.labels = this.formatYearChartLabels(results.labels, groupBy);
+				break;
+		}
 
 		return results;
 	},
