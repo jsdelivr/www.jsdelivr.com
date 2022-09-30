@@ -229,6 +229,16 @@ koaElasticUtils.addRoutes(router, [
 	return ctx.redirect(`/terms${ctx.path}`);
 });
 
+koaElasticUtils.addRoutes(router, [ [ '/discord', '/discord' ] ], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect('https://discord.gg/by8AcrjvRB');
+});
+
+koaElasticUtils.addRoutes(router, [ [ '/globalping/install/discord', '/globalping/install/discord' ] ], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect('https://discord.com/api/oauth2/authorize?client_id=1005192010283630649&permissions=380104617024&scope=applications.commands%20bot');
+});
+
 /**
  * terms pages
  */
