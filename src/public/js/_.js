@@ -479,7 +479,7 @@ module.exports = {
 
 	// i dont like current isMobile or isDesktop func - they have no sense, we should stick to every step of resolution
 	// step by step (360, 576, 768, 992, 1200, 1400+) - coz the x-axis could be different depending on it
-	formatWeekChartLabels (labels, groupBy) {
+	formatWeekChartLabels (labels) {
 		let formattedLabels = [];
 
 		// for both Mobile and Desktop we will show Day and Month
@@ -493,12 +493,12 @@ module.exports = {
 	formatMonthChartLabels (labels, groupBy) {
 		let formattedLabels = [];
 
-		console.log("++++ labels", labels);
-		console.log("++++ groupBy", groupBy);
-		console.log("+____________________________");
+		console.log('++++ labels', labels);
+		console.log('++++ groupBy', groupBy);
+		console.log('+____________________________');
 
 		if (groupBy === 'day') {
-			console.log("+++++ PERIOD: MONTH, GROUP BY: DAY");
+			console.log('+++++ PERIOD: MONTH, GROUP BY: DAY');
 
 			formattedLabels = labels.map((label, idx) => {
 				if (screen.width >= 768) {
@@ -514,11 +514,14 @@ module.exports = {
 		}
 
 		if (groupBy === 'week') {
-			console.log("+++++ PERIOD: MONTH, GROUP BY: WEEK");
+			console.log('+++++ PERIOD: MONTH, GROUP BY: WEEK');
 		}
+
+		return formattedLabels;
 	},
 
-	formatYearChartLabels (labels, groupBy) {
+	// formatYearChartLabels (labels, groupBy) {
+	formatYearChartLabels (labels) {
 		let formattedLabels = [ ...labels ];
 
 		return formattedLabels;
@@ -547,7 +550,8 @@ module.exports = {
 
 					return res;
 				}, dataForChartInitial);
-			break;
+
+				break;
 
 			case 'week':
 				results = Object.values(preparedData).reduce((res, week) => {
@@ -559,7 +563,8 @@ module.exports = {
 
 					return res;
 				}, dataForChartInitial);
-			break;
+
+				break;
 
 			case 'month':
 				results = Object.values(preparedData).reduce((res, month) => {
@@ -571,7 +576,8 @@ module.exports = {
 
 					return res;
 				}, dataForChartInitial);
-			break;
+
+				break;
 		}
 
 		// get min/max magnitude for y-axis
@@ -581,7 +587,7 @@ module.exports = {
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
 			case 'week':
-				results.labels = this.formatWeekChartLabels(results.labels, groupBy);
+				results.labels = this.formatWeekChartLabels(results.labels);
 				break;
 			case 'month':
 				results.labels = this.formatMonthChartLabels(results.labels, groupBy);
