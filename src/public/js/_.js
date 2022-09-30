@@ -516,14 +516,30 @@ module.exports = {
 		return formattedLabels;
 	},
 
-	// createYearPeriodChartLabels (labels, groupBy) {
 	createYearPeriodChartLabels (labels, groupBy) {
 		let formattedLabels = [ ...labels ];
 
 		if (groupBy === 'day') {
+			let tempCurrMonth = labels[0][1];
+
 			formattedLabels = labels.map((label, idx) => {
-				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(1, 3);
+				switch (true) {
+					// TODO: needs improvement when at the start of the period or at the end
+					// TODO: there are month with a few days left (e.g. Sep 30 and then Oct 1 - they will overlay each other on the chart)
+					case screen.width >= 992:
+						if (idx === 0 || idx === labels.length - 1) {
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth) {
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 2);
+						}
+
+						return [];
+
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(1, 3);
+
 				}
 
 				return [];
@@ -531,9 +547,24 @@ module.exports = {
 		}
 
 		if (groupBy === 'week') {
+			let tempCurrMonth = labels[0][1];
+
 			formattedLabels = labels.map((label, idx) => {
-				if (idx === 0 || idx === labels.length - 1) {
-					return label.slice(1, 3);
+				switch (true) {
+					case screen.width >= 768:
+						if (idx === 0 || idx === labels.length - 1) {
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth) {
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 2);
+						}
+
+						return [];
+
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(1, 3);
+
 				}
 
 				return [];
