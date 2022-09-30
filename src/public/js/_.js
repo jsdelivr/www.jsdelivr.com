@@ -477,7 +477,8 @@ module.exports = {
 	},
 
 	createWeekPeriodChartLabels (labels) {
-		// for both Mobile and Desktop we will show Day and Month per each tick no matter what resolution are
+		// for both Mobile and Desktop we will show Day and Month per each tick
+		// no matter what resolution is
 		return labels.map((label) => {
 			return label.slice(0, 2);
 		});
@@ -489,6 +490,15 @@ module.exports = {
 		if (groupBy === 'day') {
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
+					case screen.width >= 576:
+						if (idx === 0 || label[0] === '01') {
+							return label.slice(0, 2);
+						} else if (idx > 0 && idx % 2 === 0) {
+							return label.slice(0, 1);
+						}
+
+						return [];
+
 					// show day and month for first-last ticks
 					case idx === 0 || idx === labels.length - 1:
 						return label.slice(0, 2);
