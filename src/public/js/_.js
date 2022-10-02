@@ -672,20 +672,34 @@ module.exports = {
 			case 'month':
 				switch (usageChartGroupBy) {
 					case 'day':
+						if (sreenWidth >= 576) { return schema.wideBar; }
+
 						return schema.regularBar;
+
 					case 'week':
 						return schema.wideBar;
 				}
+
+				break;
 
 			case 'year':
 				switch (usageChartGroupBy) {
 					case 'day':
 						return schema.thinnestBar;
+
 					case 'week':
+						if (sreenWidth >= 768) { return schema.regularBar; }
+
 						return schema.thinBar;
+
 					case 'month':
 						return schema.wideBar;
 				}
+
+				break;
+
+			default:
+				return schema.regularBar;
 		}
 	},
 };
