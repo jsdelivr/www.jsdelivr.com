@@ -266,6 +266,8 @@
 
 					// collect X-Axis dates, group data by period, get
 					let { values, labels, minRangeValue, maxRangeValue } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, convertionFactor);
+					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
+					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
@@ -275,6 +277,7 @@
 						maxRangeValue,
 						showChartBandwidth,
 						chartPeriod,
+						barThickness: chartBarThickness,
 					});
 				}, { init: false });
 			}
@@ -284,7 +287,7 @@
 
 			// draw a chart when data is ready
 			this.observe('preparedStatsData', (preparedStatsData) => {
-				let { labels, minRangeValue, maxRangeValue, data, showChartBandwidth, chartPeriod } = preparedStatsData;
+				let { labels, minRangeValue, maxRangeValue, data, showChartBandwidth, barThickness } = preparedStatsData;
 				let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
 				if (!preparedStatsData || !statsChartCanvasEl) { return; }
@@ -299,7 +302,7 @@
 					datasets: [{
 						data,
 						borderWidth: 0,
-						barThickness: chartPeriod === 'year' ? 2 : 10, // TODO: should be based on screen res + chart period + group by
+						barThickness,
 						hoverBackgroundColor: '#F65128',
 					}],
 				};
