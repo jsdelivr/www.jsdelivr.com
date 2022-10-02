@@ -585,55 +585,23 @@ module.exports = {
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
 	getPreparedDataForChart (rawData, groupBy, chartPeriod, convertionFactor, onlyFullPeriods = true) {
 		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
-		let dataForChartInitial = {
-			dates: [],
+		let results = {
 			values: [],
 			labels: [],
 			minRangeValue: 0,
 			maxRangeValue: 0,
 		};
-		let results = dataForChartInitial;
+		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
 		// collect data for chart depending on groupBy
-		// TODO: improve this, we could avoid using switch and replace it with single universal solution
-		switch (groupBy) {
-			case 'day':
-				results = preparedData.days.reduce((res, day) => {
-					res.dates.push(day.date);
-					res.values.push(day.value);
-					res.labels.push([ day.day, day.month, day.year ]);
+		results = dataToIteract.reduce((res, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return res; }
 
-					return res;
-				}, dataForChartInitial);
+			res.values.push(period.value);
+			res.labels.push([ period.day, period.month, period.year ]);
 
-				break;
-
-			case 'week':
-				results = Object.values(preparedData).reduce((res, week) => {
-					if (onlyFullPeriods && week.isFull === false) { return res; }
-
-					res.dates.push(week.startsOn);
-					res.values.push(week.value);
-					res.labels.push([ week.day, week.month, week.year ]);
-
-					return res;
-				}, dataForChartInitial);
-
-				break;
-
-			case 'month':
-				results = Object.values(preparedData).reduce((res, month) => {
-					if (onlyFullPeriods && month.isFull === false) { return res; }
-
-					res.dates.push(month.startsOn);
-					res.values.push(month.value);
-					res.labels.push([ month.day, month.month, month.year ]);
-
-					return res;
-				}, dataForChartInitial);
-
-				break;
-		}
+			return res;
+		}, results);
 
 		// get min/max magnitude for y-axis
 		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
