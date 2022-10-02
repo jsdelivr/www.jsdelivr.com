@@ -521,15 +521,14 @@ module.exports = {
 
 		if (groupBy === 'day') {
 			let tempCurrMonth = labels[0][1];
+			let lastPeriodMonth = labels[labels.length - 1][1];
 
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
-					// TODO: needs improvement when at the start of the period or at the end
-					// TODO: there are month with a few days left (e.g. Sep 30 and then Oct 1 - they will overlay each other on the chart)
 					case screen.width >= 992:
 						if (idx === 0 || idx === labels.length - 1) {
 							return label.slice(1, 3);
-						} else if (label[1] !== tempCurrMonth) {
+						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
 							tempCurrMonth = label[1];
 
 							return label.slice(1, 2);
