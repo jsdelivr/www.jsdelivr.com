@@ -491,7 +491,7 @@ module.exports = {
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
 					case screen.width >= 576:
-						if (idx === 0 || label[0] === '01') {
+						if (idx === 0 || label[0] === '01' || idx === labels.length - 1) {
 							return label.slice(0, 2);
 						} else if (idx > 0 && idx % 2 === 0) {
 							return label.slice(0, 1);
