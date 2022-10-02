@@ -655,4 +655,37 @@ module.exports = {
 
 		return results;
 	},
+
+	calcChartBarThicknessByResolution (chartPeriod = 'month', usageChartGroupBy = 'day') {
+		let sreenWidth = screen.width;
+		let schema = {
+			thinnestBar: 1,
+			thinBar: 2,
+			regularBar: 4,
+			wideBar: 10,
+		};
+
+		switch (chartPeriod) {
+			case 'week':
+				return schema.wideBar;
+
+			case 'month':
+				switch (usageChartGroupBy) {
+					case 'day':
+						return schema.regularBar;
+					case 'week':
+						return schema.wideBar;
+				}
+
+			case 'year':
+				switch (usageChartGroupBy) {
+					case 'day':
+						return schema.thinnestBar;
+					case 'week':
+						return schema.thinBar;
+					case 'month':
+						return schema.wideBar;
+				}
+		}
+	},
 };
