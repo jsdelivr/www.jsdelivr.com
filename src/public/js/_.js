@@ -487,9 +487,9 @@ module.exports = {
 					case screen.width >= 992:
 						if (idx === 0 || idx === labels.length - 1 || label[0] === '01') {
 							return label.slice(0, 2);
-						} else {
-							return label.slice(0, 1);
 						}
+
+						return label.slice(0, 1);
 
 					case idx === Math.round(labels.length / 2):
 					case idx === 0 || idx === labels.length - 1 || label[0] === '01':
