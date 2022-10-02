@@ -386,7 +386,6 @@ module.exports = {
 		}
 	},
 
-	// TODO: update func - get rid of unused props, rework day case to make it universal with month, year, get rid of switch
 	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
@@ -406,7 +405,6 @@ module.exports = {
 						resData.preparedData[dateMonth] = {
 							isFull: false,
 							value: valueByDateConverted,
-							startsOn: date,
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
@@ -416,7 +414,7 @@ module.exports = {
 
 						resData.preparedData[dateMonth].value += valueByDateConverted;
 
-						if (dateDay === lastDayNum && resData.preparedData[dateMonth].startsOn === `${dateYear}-${dateMonth}-01`) {
+						if (dateDay === lastDayNum && resData.preparedData[dateMonth].day === `01`) {
 							resData.preparedData[dateMonth].isFull = true;
 						}
 					}
@@ -428,8 +426,6 @@ module.exports = {
 						resData.preparedData[resData.weekNumber] = {
 							isFull: false,
 							value: valueByDateConverted,
-							dates: [ date ],
-							startsOn: date,
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
@@ -438,7 +434,6 @@ module.exports = {
 						resData.weekDayCnt = 1;
 					} else {
 						resData.preparedData[resData.weekNumber].value += valueByDateConverted;
-						resData.preparedData[resData.weekNumber].dates.push(date);
 						resData.weekDayCnt++;
 
 						if (resData.weekDayCnt === 7) {
@@ -458,7 +453,6 @@ module.exports = {
 					}
 
 					resData.preparedData.days.push({
-						date,
 						value: valueByDateConverted,
 						day: dateDay,
 						month: periodMonthFormatted,
