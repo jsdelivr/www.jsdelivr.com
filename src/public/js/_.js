@@ -562,11 +562,11 @@ module.exports = {
 		}
 
 		if (groupBy === 'month') {
-			let firstAxisYear = labels[0][1];
+			let currAxisYear = labels[0][2];
 
 			formattedLabels = labels.map((label, idx) => {
-				if (idx === 0 || idx === labels.length - 1 || label[2] !== firstAxisYear) {
-					firstAxisYear = label[2];
+				if (idx === 0 || idx === labels.length - 1 || label[2] !== currAxisYear) {
+					currAxisYear = label[2];
 
 					return label.slice(1, 3);
 				}
