@@ -56,8 +56,8 @@ function createBarChart (
 			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(chartArea.left - 8, 22);
-			ctx.lineTo(chartArea.left - 8, 319);
+			ctx.moveTo(chartArea.left - 20, 22);
+			ctx.lineTo(chartArea.left - 20, 319);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
@@ -156,8 +156,7 @@ function createBarChart (
 						footer: () => {},
 						label: (ctx) => {
 							let { formattedValue } = ctx;
-							// TODO: for future use, to return measurement units e.g.
-							// return `${formattedValue} GB`;
+
 							return _.formatNumber(formattedValue.replace(/\D/g, ''));
 						},
 					},

@@ -278,6 +278,8 @@
 						showChartBandwidth,
 						chartPeriod,
 						barThickness: chartBarThickness,
+						useYAxisBorderPlugin: screen.width >= 768,
+						yAxisPadding: screen.width >= 768 ? 20 : 8,
 					});
 				}, { init: false });
 			}
@@ -287,7 +289,16 @@
 
 			// draw a chart when data is ready
 			this.observe('preparedStatsData', (preparedStatsData) => {
-				let { labels, minRangeValue, maxRangeValue, data, showChartBandwidth, barThickness } = preparedStatsData;
+				let {
+					labels,
+					minRangeValue,
+					maxRangeValue,
+					data,
+					showChartBandwidth,
+					barThickness,
+					useYAxisBorderPlugin,
+					yAxisPadding,
+				} = preparedStatsData;
 				let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
 				if (!preparedStatsData || !statsChartCanvasEl) { return; }
@@ -307,7 +318,7 @@
 					}],
 				};
 				let chartSettings = {
-					useYAxisBorderPlugin: !(_.isMobileScreen() || _.isTabletScreen()),
+					useYAxisBorderPlugin,
 					useExternalTooltip: true,
 					externalTooltipVerticalOffset: 40,
 				};
@@ -344,6 +355,7 @@
 								min: minRangeValue,
 								max: maxRangeValue,
 								ticks: {
+									padding: yAxisPadding,
 									count: 8,
 									color: '#5C667A',
 									crossAlign: 'far',
