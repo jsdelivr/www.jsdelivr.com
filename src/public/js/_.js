@@ -408,7 +408,7 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
-							periodStart: dateDay,
+							periodStart: date,
 							periodEnd: null,
 						};
 					} else {
@@ -435,7 +435,7 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
-							periodStart: dateDay,
+							periodStart: date,
 							periodEnd: null,
 						};
 
