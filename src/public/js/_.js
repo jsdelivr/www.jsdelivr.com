@@ -408,14 +408,20 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
+							periodStart: dateDay,
+							periodEnd: null,
 						};
 					} else {
 						let lastDayNum = this.getAmountOfDaysByMonth(dateMonth, dateYear);
 
 						resData.preparedData[dateMonth].value += valueByDateConverted;
 
-						if (dateDay === lastDayNum && resData.preparedData[dateMonth].day === `01`) {
-							resData.preparedData[dateMonth].isFull = true;
+						if (dateDay === lastDayNum) {
+							resData.preparedData[dateMonth].periodEnd = date;
+
+							if (resData.preparedData[dateMonth].day === `01`) {
+								resData.preparedData[dateMonth].isFull = true;
+							}
 						}
 					}
 
@@ -429,6 +435,8 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
+							periodStart: dateDay,
+							periodEnd: null,
 						};
 
 						resData.weekDayCnt = 1;
@@ -438,6 +446,7 @@ module.exports = {
 
 						if (resData.weekDayCnt === 7) {
 							resData.preparedData[resData.weekNumber].isFull = true;
+							resData.preparedData[resData.weekNumber].periodEnd = date;
 						}
 					}
 
@@ -457,6 +466,8 @@ module.exports = {
 						day: dateDay,
 						month: periodMonthFormatted,
 						year: dateYear,
+						periodStart: date,
+						periodEnd: date,
 					});
 
 					return resData;
@@ -592,6 +603,7 @@ module.exports = {
 		let results = {
 			values: [],
 			labels: [],
+			labelsStartEndPeriods: [],
 			minRangeValue: 0,
 			maxRangeValue: 0,
 		};
@@ -603,6 +615,7 @@ module.exports = {
 
 			res.values.push(period.value);
 			res.labels.push([ period.day, period.month, period.year ]);
+			res.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
 
 			return res;
 		}, results);

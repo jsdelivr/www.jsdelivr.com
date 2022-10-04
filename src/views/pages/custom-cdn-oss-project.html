@@ -272,7 +272,7 @@
 					}
 
 					// collect X-Axis dates, group data by period, get
-					let { values, labels, minRangeValue, maxRangeValue } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, convertionFactor);
+					let { values, labels, labelsStartEndPeriods, minRangeValue, maxRangeValue } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, convertionFactor);
 					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
 					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
 
@@ -280,6 +280,7 @@
 					this.set('preparedStatsData', {
 						data: values,
 						labels,
+						labelsStartEndPeriods,
 						minRangeValue,
 						maxRangeValue,
 						showChartBandwidth,
@@ -305,6 +306,7 @@
 					barThickness,
 					useYAxisBorderPlugin,
 					yAxisPadding,
+					labelsStartEndPeriods,
 				} = preparedStatsData;
 				let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
@@ -323,6 +325,7 @@
 						barThickness,
 						hoverBackgroundColor: '#F65128',
 					}],
+					labelsStartEndPeriods,
 				};
 				let chartSettings = {
 					useYAxisBorderPlugin,
