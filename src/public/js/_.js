@@ -492,7 +492,7 @@ module.exports = {
 						return label.slice(0, 1);
 
 					case idx === Math.round(labels.length / 2):
-					case idx === 0 || idx === labels.length - 1 || label[0] === '01':
+					case idx === 0 || idx === labels.length - 1:
 						return label.slice(0, 2);
 
 					default:
