@@ -90,10 +90,10 @@ function createBarChart (
 		if (tooltipModel.body) {
 			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
 
-			let tooltipDate = periodStart === periodEnd ? `${periodStart}:` : `${periodStart} - ${periodEnd}:`;
+			let tooltipDate = periodStart === periodEnd ? `${periodStart}:` : `${periodStart} to ${periodEnd}:`;
 
 			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
-			let innerHtml = `<span>${tooltipDate} ${bodyValue}</span>`;
+			let innerHtml = `<span>${tooltipDate}</span><span>${bodyValue}</span>`;
 			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}
