@@ -386,17 +386,29 @@ module.exports = {
 		}
 	},
 
+	getDateFormats (date) {
+		let splittedDate = date.split('-');
+		let dateYear = splittedDate[0];
+		let dateMonth = splittedDate[1];
+		let dateDay = splittedDate[2];
+		let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', { weekday: 'short' });
+		let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+
+		return {
+			dateYear,
+			dateMonth,
+			dateDay,
+			dateDayName,
+			periodMonthFormatted,
+		}
+	},
+
 	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
 
 		return rawDataDatesKeys.reduce((resData, date) => {
-			let splittedDate = date.split('-');
-			let dateYear = splittedDate[0];
-			let dateMonth = splittedDate[1];
-			let dateDay = splittedDate[2];
-			let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', { weekday: 'short' });
-			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthFormatted } = this.getDateFormats(date);
 			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
 
 			switch (groupBy) {
@@ -408,7 +420,7 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
-							periodStart: date,
+							periodStart: `${periodMonthFormatted} ${dateDay}, ${dateYear}`,
 							periodEnd: null,
 						};
 					} else {
@@ -417,7 +429,7 @@ module.exports = {
 						resData.preparedData[dateMonth].value += valueByDateConverted;
 
 						if (dateDay === lastDayNum) {
-							resData.preparedData[dateMonth].periodEnd = date;
+							resData.preparedData[dateMonth].periodEnd = `${periodMonthFormatted} ${dateDay}, ${dateYear}`;
 
 							if (resData.preparedData[dateMonth].day === `01`) {
 								resData.preparedData[dateMonth].isFull = true;
@@ -435,7 +447,7 @@ module.exports = {
 							day: dateDay,
 							month: periodMonthFormatted,
 							year: dateYear,
-							periodStart: date,
+							periodStart: `${periodMonthFormatted} ${dateDay}, ${dateYear}`,
 							periodEnd: null,
 						};
 
@@ -446,7 +458,7 @@ module.exports = {
 
 						if (resData.weekDayCnt === 7) {
 							resData.preparedData[resData.weekNumber].isFull = true;
-							resData.preparedData[resData.weekNumber].periodEnd = date;
+							resData.preparedData[resData.weekNumber].periodEnd = `${periodMonthFormatted} ${dateDay}, ${dateYear}`;
 						}
 					}
 
@@ -466,8 +478,8 @@ module.exports = {
 						day: dateDay,
 						month: periodMonthFormatted,
 						year: dateYear,
-						periodStart: date,
-						periodEnd: date,
+						periodStart: `${periodMonthFormatted} ${dateDay}, ${dateYear}`,
+						periodEnd: `${periodMonthFormatted} ${dateDay}, ${dateYear}`,
 					});
 
 					return resData;
