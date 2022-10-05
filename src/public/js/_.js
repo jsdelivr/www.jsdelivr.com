@@ -405,7 +405,7 @@ module.exports = {
 			periodMonthShort,
 			periodMonthFull,
 			parsedDateDay,
-		}
+		};
 	},
 
 	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
