@@ -99,8 +99,8 @@ function createBarChart (
 		}
 
 		tooltipInstance.style.opacity = 1;
-		tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
-		tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX - tooltipModel.width + 'px';
+		tooltipInstance.style.left = chart.canvas.clientWidth / 2 + 'px';
+		tooltipInstance.style.top = '0px';
 	};
 
 	// get chart plugins
