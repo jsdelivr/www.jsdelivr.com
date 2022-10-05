@@ -177,7 +177,9 @@ function createBarChart (
 				},
 			},
 			interaction: {
-				intersect: true,
+				intersect: false,
+				mode: 'nearest',
+				axis: 'x',
 				...chartConfig?.options?.intercation,
 			},
 			onHover: handleChartOnHover,
