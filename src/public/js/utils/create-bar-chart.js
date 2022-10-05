@@ -76,7 +76,7 @@ function createBarChart (
 			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('barTooltipWrapper' , 'barTooltipWrapper-improved');
+			wrapper.classList.add('barTooltipWrapper', 'barTooltipWrapper-improved');
 			tooltipInstance.appendChild(wrapper);
 			chart.canvas.parentNode.appendChild(tooltipInstance);
 		}
@@ -171,7 +171,7 @@ function createBarChart (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: !chartSettings.useExternalTooltip ? null: chartSettings.useImprovedTooltip ? externalTooltipImproved : externalTooltipSimple,
+					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltipImproved : externalTooltipSimple,
 					bodyColor: '#fff',
 					backgroundColor: 'rgba(17, 26, 44, .9)',
 					cornerRadius: 4,
