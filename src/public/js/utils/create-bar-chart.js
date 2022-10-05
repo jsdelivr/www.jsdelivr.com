@@ -100,7 +100,7 @@ function createBarChart (
 
 		tooltipInstance.style.opacity = 1;
 		tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
-		tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX + 'px';
+		tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX - tooltipModel.width + 'px';
 	};
 
 	// get chart plugins
