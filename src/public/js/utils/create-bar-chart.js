@@ -65,8 +65,8 @@ function createBarChart (
 		},
 	};
 
-	// create external tooltip
-	let externalTooltip = (ctx) => {
+	// create external tooltip with Dates/Periods and value displaying
+	let externalTooltipImproved = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
 
@@ -103,6 +103,40 @@ function createBarChart (
 		tooltipInstance.style.top = '0px';
 	};
 
+	// create external tooltip with only value displaying
+	let externalTooltipSimple = (ctx) => {
+		let { chart, tooltip: tooltipModel } = ctx;
+		let tooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
+
+		// Create element on first render
+		if (!tooltipInstance) {
+			tooltipInstance = document.createElement('div');
+			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
+			tooltipInstance.classList.add('tooltipEl');
+			let wrapper = document.createElement('div');
+			wrapper.classList.add('barTooltipWrapper');
+			tooltipInstance.appendChild(wrapper);
+			chart.canvas.parentNode.appendChild(tooltipInstance);
+		}
+
+		// Hide if no tooltip
+		if (tooltipModel.opacity === 0) {
+			tooltipInstance.style.opacity = 0;
+			return;
+		}
+
+		if (tooltipModel.body) {
+			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
+			let innerHtml = `<span>${bodyValue}</span>`;
+			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
+			tooltipWrapper.innerHTML = innerHtml;
+		}
+
+		tooltipInstance.style.opacity = 1;
+		tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
+		tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX + 'px';
+	};
+
 	// get chart plugins
 	let getChartPlugins = () => {
 		let { useYAxisBorderPlugin } = chartSettings;
@@ -137,7 +171,7 @@ function createBarChart (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: chartSettings.useExternalTooltip ? externalTooltip : null,
+					external: !chartSettings.useExternalTooltip ? null: chartSettings.useImprovedTooltip ? externalTooltipImproved : externalTooltipSimple,
 					bodyColor: '#fff',
 					backgroundColor: 'rgba(17, 26, 44, .9)',
 					cornerRadius: 4,
