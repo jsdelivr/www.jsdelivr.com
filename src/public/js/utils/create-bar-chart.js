@@ -76,7 +76,7 @@ function createBarChart (
 			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('barTooltipWrapper');
+			wrapper.classList.add('barTooltipWrapper' , 'barTooltipWrapper-improved');
 			tooltipInstance.appendChild(wrapper);
 			chart.canvas.parentNode.appendChild(tooltipInstance);
 		}
@@ -114,7 +114,7 @@ function createBarChart (
 			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('barTooltipWrapper');
+			wrapper.classList.add('barTooltipWrapper', 'barTooltipWrapper-simple');
 			tooltipInstance.appendChild(wrapper);
 			chart.canvas.parentNode.appendChild(tooltipInstance);
 		}
