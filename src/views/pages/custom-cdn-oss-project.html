@@ -331,6 +331,7 @@
 					useImprovedTooltip: true,
 					externalTooltipVerticalOffset: 40,
 				};
+				let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 				let chartConfig = {
 					options: {
 						scales: {
@@ -362,10 +363,10 @@
 							y: {
 								display: true,
 								min: 0,
-								max: maxRangeValue,
+								suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 								ticks: {
 									padding: yAxisPadding,
-									count: 8,
+									count: 9,
 									color: '#5C667A',
 									crossAlign: 'near',
 									font: {
