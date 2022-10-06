@@ -99,8 +99,19 @@ function createBarChart (
 		}
 
 		tooltipInstance.style.opacity = 1;
-		tooltipInstance.style.left = chart.canvas.clientWidth / 2 + 'px';
-		tooltipInstance.style.top = '0px';
+
+		if (screen.width >= 768) {
+			tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
+
+			if (tooltipModel.caretX + tooltipInstance.offsetWidth > chart.canvas.clientWidth) {
+				tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			} else {
+				tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
+		} else {
+			tooltipInstance.style.left = chart.canvas.clientWidth / 2 + 'px';
+			tooltipInstance.style.top = '0px';
+		}
 	};
 
 	// create external tooltip with only value displaying
