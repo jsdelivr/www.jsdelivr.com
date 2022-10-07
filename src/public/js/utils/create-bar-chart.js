@@ -93,7 +93,7 @@ function createBarChart (
 			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
 
 			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
-			let innerHtml = `<div>${tooltipDate}</div><div><span class='color-square'></span><span>${bodyValue}</span></div>`;
+			let innerHtml = `<div>${tooltipDate}</div><div><span class='color-square'></span><span>${bodyValue}${chartData.valueUnits}</span></div>`;
 			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}

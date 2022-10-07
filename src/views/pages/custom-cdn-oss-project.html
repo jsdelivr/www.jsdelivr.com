@@ -264,15 +264,9 @@
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let convertionFactor = 1;
-
-					// if we are showing bandwidth instead of requests we should change convertionFactor for conversion to GB's
-					if (showChartBandwidth) {
-						convertionFactor = 1e9;
-					}
 
 					// collect X-Axis dates, group data by period, get
-					let { values, labels, labelsStartEndPeriods, maxRangeValue } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, convertionFactor);
+					let { values, labels, labelsStartEndPeriods, maxRangeValue, valueUnits } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
 					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
 					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
 
@@ -287,6 +281,7 @@
 						barThickness: chartBarThickness,
 						useYAxisBorderPlugin: screen.width >= 768,
 						yAxisPadding: screen.width >= 768 ? 20 : 8,
+						valueUnits,
 					});
 				}, { init: false });
 			}
@@ -305,6 +300,7 @@
 					useYAxisBorderPlugin,
 					yAxisPadding,
 					labelsStartEndPeriods,
+					valueUnits,
 				} = preparedStatsData;
 				let statsChartCanvasEl = this.find('#cdn-stats-chart');
 
@@ -324,6 +320,7 @@
 						hoverBackgroundColor: '#F65128',
 					}],
 					labelsStartEndPeriods,
+					valueUnits,
 				};
 				let chartSettings = {
 					useYAxisBorderPlugin,

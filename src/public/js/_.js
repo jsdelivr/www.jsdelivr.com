@@ -615,7 +615,10 @@ module.exports = {
 	},
 
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
-	getPreparedDataForChart (rawData, groupBy, chartPeriod, convertionFactor, onlyFullPeriods = true) {
+	getPreparedDataForChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
+		let convertionFactor = showChartBandwidth ? 1e9 : 1;
+		let valueUnits = showChartBandwidth ? ' GB' : '';
 		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
 		let results = {
 			values: [],
@@ -623,6 +626,7 @@ module.exports = {
 			labelsStartEndPeriods: [],
 			minRangeValue: 0,
 			maxRangeValue: 0,
+			valueUnits,
 		};
 		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
