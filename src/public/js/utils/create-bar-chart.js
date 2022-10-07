@@ -15,6 +15,13 @@ function createBarChart (
 	chartSettings = {},
 	chartConfig = {}
 ) {
+	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
+	let prevTooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
+
+	if (prevTooltipInstance) {
+		prevTooltipInstance.remove();
+	}
+
 	if (!chartEl) { return; }
 
 	// create bar with background with gradient
