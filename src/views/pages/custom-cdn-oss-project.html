@@ -137,6 +137,8 @@
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 
 	component.exports = {
 		computed: {
@@ -258,7 +260,8 @@
 				});
 
 				// handle raw data and prepare it for chart
-				this.observe('rawStatsData showChartBandwidth usageChartGroupBy', () => {
+				// screenWidth to observe when screen width is resized to recreate chart
+				this.observe('rawStatsData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsData = this.get('rawStatsData');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
@@ -392,6 +395,13 @@
 
 				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 			}, { init: false });
+
+			// detect window resize
+			window.addEventListener('resize', () => {
+				debounce(() => {
+					this.set('screenWidth', screen.width);
+				}, 200)();
+			});
 		},
 	};
 </script>
