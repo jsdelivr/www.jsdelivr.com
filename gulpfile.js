@@ -38,6 +38,7 @@ const getRollupStream = () => rollupStream({
 	output: {
 		name: 'app',
 		format: 'umd',
+		sourcemap: true,
 		globals: {
 			algoliasearch: 'algoliasearch',
 			ractive: 'Ractive',
