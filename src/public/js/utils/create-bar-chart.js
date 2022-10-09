@@ -15,6 +15,13 @@ function createBarChart (
 	chartSettings = {},
 	chartConfig = {}
 ) {
+	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
+	let prevTooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
+
+	if (prevTooltipInstance) {
+		prevTooltipInstance.remove();
+	}
+
 	if (!chartEl) { return; }
 
 	// create bar with background with gradient
@@ -56,8 +63,8 @@ function createBarChart (
 			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(chartArea.left - 8, 22);
-			ctx.lineTo(chartArea.left - 8, 319);
+			ctx.moveTo(chartArea.left - 20, 22);
+			ctx.lineTo(chartArea.left - 20, 319);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
@@ -65,8 +72,8 @@ function createBarChart (
 		},
 	};
 
-	// create external tooltip
-	let externalTooltip = (ctx) => {
+	// create external tooltip with Dates/Periods and value displaying
+	let externalTooltipImproved = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
 
@@ -76,7 +83,56 @@ function createBarChart (
 			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('barTooltipWrapper');
+			wrapper.classList.add('barTooltipWrapper', 'barTooltipWrapper-improved');
+			tooltipInstance.appendChild(wrapper);
+			chart.canvas.parentNode.appendChild(tooltipInstance);
+		}
+
+		// Hide if no tooltip
+		if (tooltipModel.opacity === 0) {
+			tooltipInstance.style.opacity = 0;
+			return;
+		}
+
+		if (tooltipModel.body) {
+			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
+
+			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+
+			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
+			let innerHtml = `<div>${tooltipDate}</div><div><span class='color-square'></span><span>${bodyValue}${chartData.valueUnits}</span></div>`;
+			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
+			tooltipWrapper.innerHTML = innerHtml;
+		}
+
+		tooltipInstance.style.opacity = 1;
+
+		if (screen.width >= 768) {
+			tooltipInstance.style.top = tooltipModel.caretY - (chartSettings.externalTooltipVerticalOffset || 0) + 'px';
+
+			if (tooltipModel.caretX + tooltipInstance.offsetWidth > chart.canvas.clientWidth) {
+				tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			} else {
+				tooltipInstance.style.left = chart.canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
+		} else {
+			tooltipInstance.style.left = chart.canvas.clientWidth / 2 + 'px';
+			tooltipInstance.style.top = '0px';
+		}
+	};
+
+	// create external tooltip with only value displaying
+	let externalTooltipSimple = (ctx) => {
+		let { chart, tooltip: tooltipModel } = ctx;
+		let tooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
+
+		// Create element on first render
+		if (!tooltipInstance) {
+			tooltipInstance = document.createElement('div');
+			tooltipInstance.id = chartSettings.externalTooltipId || 'barChart-tooltip';
+			tooltipInstance.classList.add('tooltipEl');
+			let wrapper = document.createElement('div');
+			wrapper.classList.add('barTooltipWrapper', 'barTooltipWrapper-simple');
 			tooltipInstance.appendChild(wrapper);
 			chart.canvas.parentNode.appendChild(tooltipInstance);
 		}
@@ -133,7 +189,7 @@ function createBarChart (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: chartSettings.useExternalTooltip ? externalTooltip : null,
+					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltipImproved : externalTooltipSimple,
 					bodyColor: '#fff',
 					backgroundColor: 'rgba(17, 26, 44, .9)',
 					cornerRadius: 4,
@@ -156,8 +212,7 @@ function createBarChart (
 						footer: () => {},
 						label: (ctx) => {
 							let { formattedValue } = ctx;
-							// TODO: for future use, to return measurement units e.g.
-							// return `${formattedValue} GB`;
+
 							return _.formatNumber(formattedValue.replace(/\D/g, ''));
 						},
 					},
@@ -174,7 +229,9 @@ function createBarChart (
 				},
 			},
 			interaction: {
-				intersect: true,
+				intersect: false,
+				mode: 'nearest',
+				axis: 'x',
 				...chartConfig?.options?.intercation,
 			},
 			onHover: handleChartOnHover,

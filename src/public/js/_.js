@@ -1,4 +1,10 @@
-const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemper', 'October', 'November', 'December' ];
+const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+const MONTH_FULL_OF_DAYS = '31';
+const MONTH_SHORT_OF_DAYS = '30';
+const MONTH_FEB_DAYS = '28';
+const MONTH_LEAP_FEB_DAYS = '29';
 const screenType = {
 	mobile: 480,
 	tablet: 768,
@@ -27,7 +33,7 @@ module.exports = {
 		return files;
 	},
 	formatDate (date) {
-		return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
+		return `${MONTHS_SHORT_NAMES_LIST[date.getUTCMonth()]} ${date.getUTCDate()}`;
 	},
 	formatHits (hits) {
 		if (hits < 1e9) {
@@ -131,21 +137,21 @@ module.exports = {
 	},
 
 	getChartXAxisData (periodDates, period = 'month', periodGroupBy = 'day') {
-		let dataPerMonths = [];
 		let chartXData = [];
-
-		periodDates.forEach((date) => {
+		let dataPerMonths = periodDates.reduce((dataPerMonths, date) => {
 			let splittedDate = date.split('-');
 			let dateYear = splittedDate[0];
 			let dateMonth = splittedDate.slice(0, 2).join('-');
-			let periodMonthFormatted = months[new Date(dateMonth).getUTCMonth()];
+			let periodMonthFormatted = MONTHS_SHORT_NAMES_LIST[new Date(dateMonth).getUTCMonth()];
 
 			if (!dataPerMonths[`${dateYear} ${periodMonthFormatted}`]) {
 				dataPerMonths[`${dateYear} ${periodMonthFormatted}`] = [];
 			}
 
 			dataPerMonths[`${dateYear} ${periodMonthFormatted}`].push(date);
-		});
+
+			return dataPerMonths;
+		}, []);
 
 		let labelArea = 0;
 		Object.keys(dataPerMonths).forEach((yearMonthKey) => {
@@ -264,7 +270,7 @@ module.exports = {
 		return unit.symbol;
 	},
 
-	autoConvertBytesToUnits (num) {
+	autoConvertBytesToUnits (num, numSymbolSeparator = ' ') {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -280,7 +286,7 @@ module.exports = {
 			return num >= item.value;
 		});
 
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
 	},
 	makeHTTPRequest (obj) {
 		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
@@ -336,6 +342,369 @@ module.exports = {
 			fn();
 		} else {
 			document.addEventListener('DOMContentLoaded', fn);
+		}
+	},
+
+	checkIfYearIsLeap (year) {
+		if (isNaN(Number(year)) || String(year).length !== 4) {
+			console.warn('Func isLeapYear expected a year as a String or a Number with 4 signs');
+
+			return false;
+		}
+
+		if (year % 4 === 0) {
+			if (year % 100 === 0) {
+				if (year % 400 === 0) {
+					return true;
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
+		return false;
+	},
+
+	getAmountOfDaysByMonth (month, year) {
+		switch (month) {
+			case '01':
+			case '03':
+			case '05':
+			case '07':
+			case '08':
+			case '10':
+			case '12':
+				return MONTH_FULL_OF_DAYS;
+			case '04':
+			case '06':
+			case '09':
+			case '11':
+				return MONTH_SHORT_OF_DAYS;
+			case '02':
+				return this.checkIfYearIsLeap(year) ? MONTH_LEAP_FEB_DAYS : MONTH_FEB_DAYS;
+		}
+	},
+
+	getDateFormats (date) {
+		let splittedDate = date.split('-');
+		let dateYear = splittedDate[0];
+		let dateMonth = splittedDate[1];
+		let dateDay = splittedDate[2];
+		let parsedDateDay = parseInt(splittedDate[2]);
+		let dateDayName = new Date(Date.UTC(Number(dateYear), Number(dateMonth) - 1, Number(dateDay))).toLocaleDateString('en-US', { weekday: 'short' });
+		let periodMonthShort = MONTHS_SHORT_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+		let periodMonthFull = MONTHS_FULL_NAMES_LIST[new Date(`${dateYear}-${dateMonth}`).getUTCMonth()];
+
+		return {
+			dateYear,
+			dateMonth,
+			dateDay,
+			dateDayName,
+			periodMonthShort,
+			periodMonthFull,
+			parsedDateDay,
+		};
+	},
+
+	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
+		let rawDataDatesKeys = Object.keys(rawData.dates);
+		let rawDataDatesData = rawData.dates;
+
+		return rawDataDatesKeys.reduce((resData, date) => {
+			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
+			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
+
+			switch (groupBy) {
+				case 'month':
+					if (!resData.preparedData[dateMonth]) {
+						resData.preparedData[dateMonth] = {
+							isFull: false,
+							value: valueByDateConverted,
+							day: dateDay,
+							month: periodMonthShort,
+							year: dateYear,
+							periodStart: `${periodMonthFull} ${parsedDateDay}, ${dateYear}`,
+							periodEnd: null,
+						};
+					} else {
+						let lastDayNum = this.getAmountOfDaysByMonth(dateMonth, dateYear);
+
+						resData.preparedData[dateMonth].value += valueByDateConverted;
+
+						if (dateDay === lastDayNum) {
+							resData.preparedData[dateMonth].periodEnd = `${periodMonthFull} ${parsedDateDay}, ${dateYear}`;
+
+							if (resData.preparedData[dateMonth].day === `01`) {
+								resData.preparedData[dateMonth].isFull = true;
+							}
+						}
+					}
+
+					return resData;
+
+				case 'week':
+					if (!resData.preparedData[resData.weekNumber]) {
+						resData.preparedData[resData.weekNumber] = {
+							isFull: false,
+							value: valueByDateConverted,
+							day: dateDay,
+							month: periodMonthShort,
+							year: dateYear,
+							periodStart: `${periodMonthFull} ${parsedDateDay}, ${dateYear}`,
+							periodEnd: null,
+						};
+
+						resData.weekDayCnt = 1;
+					} else {
+						resData.preparedData[resData.weekNumber].value += valueByDateConverted;
+						resData.weekDayCnt++;
+
+						if (resData.weekDayCnt === 7) {
+							resData.preparedData[resData.weekNumber].isFull = true;
+							resData.preparedData[resData.weekNumber].periodEnd = `${periodMonthFull} ${parsedDateDay}, ${dateYear}`;
+						}
+					}
+
+					if (DAY_NAME_NUMBER_MAP[dateDayName] === 6) {
+						resData.weekNumber++;
+					}
+
+					return resData;
+
+				case 'day':
+					if (!resData.preparedData.days) {
+						resData.preparedData.days = [];
+					}
+
+					resData.preparedData.days.push({
+						value: valueByDateConverted,
+						day: dateDay,
+						month: periodMonthShort,
+						year: dateYear,
+						periodStart: `${periodMonthFull} ${parsedDateDay}, ${dateYear}`,
+						periodEnd: `${periodMonthFull} ${parsedDateDay}, ${dateYear}`,
+					});
+
+					return resData;
+			}
+
+			return resData;
+		}, {
+			weekNumber: 0,
+			weekDayCnt: 0,
+			preparedData: {},
+		});
+	},
+
+	createWeekPeriodChartLabels (labels) {
+		// for both Mobile and Desktop we will show Day and Month per each tick
+		// no matter what resolution is
+		return labels.map((label) => {
+			return label.slice(0, 2);
+		});
+	},
+
+	createMonthPeriodChartLabels (labels, groupBy) {
+		let formattedLabels = [];
+
+		if (groupBy === 'day') {
+			formattedLabels = labels.map((label, idx) => {
+				switch (true) {
+					case screen.width >= 992:
+						if (idx === 0 || idx === labels.length - 1 || label[0] === '01') {
+							return label.slice(0, 2);
+						}
+
+						return label.slice(0, 1);
+
+					case idx === Math.round(labels.length / 2):
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(0, 2);
+
+					default:
+						return [];
+				}
+			});
+		}
+
+		if (groupBy === 'week') {
+			formattedLabels = labels;
+		}
+
+		return formattedLabels;
+	},
+
+	createYearPeriodChartLabels (labels, groupBy) {
+		let formattedLabels = [ ...labels ];
+
+		if (groupBy === 'day') {
+			let tempCurrMonth = labels[0][1];
+			let lastPeriodMonth = labels[labels.length - 1][1];
+
+			formattedLabels = labels.map((label, idx) => {
+				switch (true) {
+					case screen.width >= 992:
+						if (idx === 0 || idx === labels.length - 1) {
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 2);
+						}
+
+						return [];
+
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(1, 3);
+				}
+
+				return [];
+			});
+		}
+
+		if (groupBy === 'week') {
+			let tempCurrMonth = labels[0][1];
+			let lastPeriodMonth = labels[labels.length - 1][1];
+			let currAxisYear = labels[0][2];
+
+			formattedLabels = labels.map((label, idx) => {
+				switch (true) {
+					case screen.width >= 768:
+						if (idx === 0 || idx === labels.length - 1 || label[2] !== currAxisYear) {
+							currAxisYear = label[2];
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 2);
+						}
+
+						return [];
+
+					case idx === 0 || idx === labels.length - 1:
+						return label.slice(1, 3);
+				}
+
+				return [];
+			});
+		}
+
+		if (groupBy === 'month') {
+			let currAxisYear = labels[0][2];
+
+			formattedLabels = labels.map((label, idx) => {
+				if (idx === 0 || idx === labels.length - 1 || label[2] !== currAxisYear) {
+					currAxisYear = label[2];
+
+					return label.slice(1, 3);
+				}
+
+				if (screen.width < 768) {
+					return [];
+				}
+
+				return label.slice(1, 2);
+			});
+		}
+
+		return formattedLabels;
+	},
+
+	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
+	getPreparedDataForChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
+		let convertionFactor = showChartBandwidth ? 1e9 : 1;
+		let valueUnits = showChartBandwidth ? ' GB' : '';
+		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
+		let results = {
+			values: [],
+			labels: [],
+			labelsStartEndPeriods: [],
+			minRangeValue: 0,
+			maxRangeValue: 0,
+			valueUnits,
+		};
+		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+		// collect data for chart depending on groupBy
+		results = dataToIteract.reduce((res, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return res; }
+
+			res.values.push(period.value);
+			res.labels.push([ period.day, period.month, period.year ]);
+			res.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+
+			return res;
+		}, results);
+
+		// get min/max magnitude for y-axis
+		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
+		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				results.labels = this.createWeekPeriodChartLabels(results.labels);
+				break;
+			case 'month':
+				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
+				break;
+			case 'year':
+				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
+				break;
+		}
+
+		return results;
+	},
+
+	calcChartBarThicknessByResolution (chartPeriod = 'month', usageChartGroupBy = 'day') {
+		let sreenWidth = screen.width;
+		let schema = {
+			thinnestBar: 1,
+			thinBar: 2,
+			regularBar: 4,
+			wideBar: 10,
+		};
+
+		switch (chartPeriod) {
+			case 'week':
+				return schema.wideBar;
+
+			case 'month':
+				switch (usageChartGroupBy) {
+					case 'day':
+						if (sreenWidth >= 576) { return schema.wideBar; }
+
+						return schema.regularBar;
+
+					case 'week':
+						return schema.wideBar;
+				}
+
+				break;
+
+			case 'year':
+				switch (usageChartGroupBy) {
+					case 'day':
+						return schema.thinnestBar;
+
+					case 'week':
+						if (sreenWidth >= 768) { return schema.regularBar; }
+
+						return schema.thinBar;
+
+					case 'month':
+						return schema.wideBar;
+				}
+
+				break;
+
+			default:
+				return schema.regularBar;
 		}
 	},
 };
