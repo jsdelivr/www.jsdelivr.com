@@ -449,7 +449,9 @@ server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `ht
 		});
 
 		server.use('/globalping', vite.middlewares, async (req, res, next) => {
-			let url = req.originalUrl;
+			if (req.url === '/' && !req.originalUrl.endsWith('/')) {
+				return res.redirect(`${req.originalUrl}/`);
+			}
 
 			try {
 				let template = fs.readFileSync(
@@ -457,7 +459,7 @@ server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `ht
 					'utf-8'
 				);
 
-				template = await vite.transformIndexHtml(url, template);
+				template = await vite.transformIndexHtml(req.originalUrl, template);
 				res.status(200).send(template);
 			} catch (e) {
 				vite.ssrFixStacktrace(e);
