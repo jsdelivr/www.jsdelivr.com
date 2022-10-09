@@ -43,6 +43,8 @@ const assetsVersion = require('./lib/assets').version;
 const readDirRecursive = require('recursive-readdir');
 const path = require('path');
 
+const { createServer: createViteServer } = require('vite');
+
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
@@ -135,7 +137,6 @@ app.use(async (ctx, next) => {
 });
 
 app.use(koaStatic(__dirname + '/../dist', {
-	index: false,
 	maxage: 365 * 24 * 60 * 60 * 1000,
 	setHeaders (res) {
 		if (res.allowCaching) {
@@ -438,17 +439,45 @@ server.use('/blog', (req, res, next) => {
  */
 server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
 
-/**
- * Forward everything else to Koa (main website).
- */
-server.use(app.callback());
+(async () => {
+	// Mount vite dev server under /globalping
+	if (app.env === 'development') {
+		let vite = await createViteServer({
+			configFile: './vite.config.js',
+			server: { middlewareMode: true },
+			appType: 'custom',
+		});
 
-/**
- * Start listening on the configured port.
- */
-server.listen(process.env.PORT || serverConfig.port, function () {
-	log.info(`Web server started at http://localhost:${this.address().port}, NODE_ENV=${process.env.NODE_ENV}.`);
-});
+		server.use('/globalping', vite.middlewares, async (req, res, next) => {
+			let url = req.originalUrl;
+
+			try {
+				let template = fs.readFileSync(
+					path.resolve('./src/globalping', 'index.html'),
+					'utf-8'
+				);
+
+				template = await vite.transformIndexHtml(url, template);
+				res.status(200).send(template);
+			} catch (e) {
+				vite.ssrFixStacktrace(e);
+				next(e);
+			}
+		});
+	}
+
+	/**
+	 * Forward everything else to Koa (main website).
+	 */
+	server.use(app.callback());
+
+	/**
+	 * Start listening on the configured port.
+	 */
+	server.listen(process.env.PORT || serverConfig.port, function () {
+		log.info(`Web server started at http://localhost:${this.address().port}, NODE_ENV=${process.env.NODE_ENV}.`);
+	});
+})().catch(console.error);
 
 /**
  * Always log before exit.

@@ -50,6 +50,7 @@
 		"node-geocoder": "^3.28.0",
 		"opentype.js": "^1.3.4",
 		"p-min-delay": "^3.2.0",
+		"pinia": "^2.0.22",
 		"postcss": "8.3",
 		"ractive": "^1.4.0",
 		"rcu": "^0.11.0",
@@ -63,7 +64,9 @@
 		"signal-exit": "^3.0.6",
 		"srcset": "^4.0.0",
 		"tough-cookie": "^4.0.0",
-		"uglify-js": "^3.14.3"
+		"uglify-js": "^3.14.3",
+		"vue": "^3.2.40",
+		"vue-router": "^4.1.5"
 	},
 	"devDependencies": {
 		"@html-eslint/parser": "^0.13.2",
@@ -103,6 +106,7 @@
 		"@types/signal-exit": "^3.0.1",
 		"@types/tough-cookie": "^4.0.1",
 		"@types/uglify-js": "^3.13.1",
+		"@vitejs/plugin-vue": "^3.1.2",
 		"chromium-binary": "git+https://github.com/MartinKolarik/node-chromium.git",
 		"cross-env": "^7.0.3",
 		"csv-parse": "^4.16.3",
@@ -116,6 +120,7 @@
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-prefer-let": "^3.0.1",
 		"eslint-plugin-promise": "^6.0.0",
+		"eslint-plugin-vue": "^9.6.0",
 		"filenamify": "^4.3.0",
 		"gulp": "^4.0.2",
 		"gulp-autoprefixer": "^8.0.0",
@@ -131,10 +136,11 @@
 		"stylelint": "^13.13.1",
 		"stylelint-no-unsupported-browser-features": "^5.0.3",
 		"vinyl-buffer": "^1.0.1",
-		"vinyl-source-stream": "^2.0.0"
+		"vinyl-source-stream": "^2.0.0",
+		"vite": "^3.1.6"
 	},
 	"scripts": {
-		"build": "gulp build",
+		"build": "gulp build && vite build",
 		"heroku-postbuild": "echo \"$SOURCE_VERSION\" > sha.txt",
 		"lint": "npm run lint:css && npm run lint:html && npm run lint:js",
 		"lint:fix": "npm run lint:css:fix && npm run lint:html:fix && npm run lint:js:fix",
@@ -142,8 +148,8 @@
 		"lint:css:fix": "stylelint --fix --config .stylelintrc \"./src/**/*.{css,less}\"",
 		"lint:html": "eslint --no-eslintrc --config .eslintrc-html --cache-location .eslintcache-html --cache --ext .html src",
 		"lint:html:fix": "eslint --no-eslintrc --config .eslintrc-html --cache-location .eslintcache-html --cache --fix --ext .html src",
-		"lint:js": "eslint --cache --ext .html,.js,.json bin config src test",
-		"lint:js:fix": "eslint --cache --fix --ext .html,.js,.json bin config src test *.js",
+		"lint:js": "eslint --cache --ext .html,.js,.json,.vue bin config src test",
+		"lint:js:fix": "eslint --cache --fix --ext .html,.js,.json,.vue bin config src test *.js",
 		"mocha": "mocha --exit test/tests.js",
 		"prepare": "husky install",
 		"start": "cross-env NODE_ENV=development gulp",
@@ -151,7 +157,7 @@
 	},
 	"lint-staged": {
 		"*.{css,less}": "stylelint --fix",
-		"*.{html,js}": "eslint --cache --fix",
+		"*.{html,js,vue}": "eslint --cache --fix",
 		"*.html": "eslint --no-eslintrc --config .eslintrc-html --cache-location .eslintcache-html --cache --fix --ext .html"
 	},
 	"repository": {
