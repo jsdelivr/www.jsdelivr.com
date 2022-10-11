@@ -159,13 +159,6 @@
 						</a>
 					{{/if}}
 				</div>
-
-				{{#if onlyHeader}}
-					<span class="btn-package-label btn-package-label-neutral btn-package-label-downloads" title="Downloads">
-						<span>{{jsDelivrHits}}</span>
-						downloads
-					</span>
-				{{/if}}
 			</div>
 		</div>
 
@@ -175,35 +168,36 @@
 			</p>
 		{{/if}}
 
-		{{#if !onlyHeader}}
-			<div class="row package-header-bottom">
-				<div class="horizontal-divider-16"></div>
-				<div class="col-xs-12">
-					{{#if version}}
-						<span class="btn-package-label btn-package-label-neutral" title="{{version}}">
-							Version
-							<span>{{version}}</span>
-						</span>
-					{{/if}}
 
-					{{#if license}}
-						<span class="btn-package-label btn-package-label-neutral" title="{{_.unescapeHtml(license)}}">
-							License
-							<span>{{_.unescapeHtml(license)}}</span>
-						</span>
-					{{/if}}
+		<div class="row package-header-bottom">
+			<div class="horizontal-divider-16"></div>
+			<div class="col-xs-12">
+				{{#if version}}
+					<span class="btn-package-label btn-package-label-neutral" title="{{version}}">
+						Version
+						<span>{{version}}</span>
+					</span>
+				{{/if}}
 
-					{{#if ~/vulnerabilities !== undefined}}
-						<span class="btn-package-label btn-package-label-neutral" title="view details at snyk.io">
-							<a rel="nofollow noopener" href="{{~/vulnerabilitiesUrl}}" target="_blank">
-								Vulnerabilities <span>{{~/vulnerabilities}}</span>
-							</a>
-						</span>
-					{{/if}}
+				{{#if license}}
+					<span class="btn-package-label btn-package-label-neutral" title="{{_.unescapeHtml(license)}}">
+						License
+						<span>{{_.unescapeHtml(license)}}</span>
+					</span>
+				{{/if}}
 
-				</div>
+				{{#if ~/vulnerabilities !== undefined}}
+					<span class="btn-package-label btn-package-label-neutral" title="view details at snyk.io">
+						<a rel="nofollow noopener" href="{{~/vulnerabilitiesUrl}}" target="_blank">
+							Vulnerabilities <span>{{~/vulnerabilities}}</span>
+						</a>
+					</span>
+				{{/if}}
+
 			</div>
-		{{elseif homeSearch && keywords}}
+			</div>
+
+		{{#if homeSearch && keywords}}
 			<div class="package-keywords">
 				{{#each keywords.slice(0, 15)}}
 					<span class="package-keywords_item" title="{{this}}">{{this}}</span>
@@ -307,249 +301,12 @@
 				</a>
 			{{/if}}
 		</div>
-
-		<!-- TODO: consider to move out this install block to separate file -->
-		{{#if !onlyHeader}}
-			<div class="package-install-wrapper">
-				<div class="install-settings">
-					<div>INSTALL</div>
-
-					<div class="switch-wrapper">
-						<span>Type:</span>
-						<input id="switch-id" type="checkbox" twoway="false"
-							class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
-
-						<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
-							<span>ESM</span>
-							<span>Default</span>
-						</label>
-					</div>
-
-					<div class="dropdown-wrapper">
-						<label for="version-select">Version:&nbsp;&nbsp;</label>
-						<div class="btn-group">
-							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{~/selectedVersion}}</span>
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
-
-							<ul class="dropdown-menu">
-								{{#each ~/versionsList}}
-									<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
-								{{/each}}
-							</ul>
-						</div>
-					</div>
-
-					<button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
-						<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/settings-white.svg">
-					</button>
-
-					{{#if mobileSettingsVisible}}
-						<div class="overlay" on-click="@this.set('mobileSettingsVisible', false)"></div>
-
-						<div class="settings-mobile" slide-in slide-out>
-							<div class="switch-wrapper">
-								<span>Type:</span>
-								<input id="switch-id" type="checkbox" twoway="false"
-									class="switch-input {{#if isDefaultPackageTmp}}checked{{/if}}">
-
-								<label for="switch-id" on-click="@this.set('isDefaultPackageTmp', !isDefaultPackageTmp)">
-									<span>ESM</span>
-									<span>Default</span>
-								</label>
-							</div>
-
-							<div class="dropdown-wrapper dropup">
-								<label for="version-select">Version:&nbsp;&nbsp;</label>
-								<div class="btn-group">
-									<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-										aria-expanded="false">
-										<span>{{~/selectedVersionTmp}}</span>
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
-									</button>
-
-									<ul class="dropdown-menu">
-										{{#each ~/versionsList}}
-											<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
-										{{/each}}
-									</ul>
-								</div>
-							</div>
-
-							<button class="btn-primary" on-click="@this.onClickMobileApply()">Apply</button>
-							<button class="btn-secondary" on-click="@this.onClickMobileCancel()">Cancel</button>
-						</div>
-					{{/if}}
-				</div>
-
-				<div class="horizontal-divider-19"></div>
-
-				<div class="install-script">
-					{{#if isDefaultPackage}}
-						{{#if ~/packageJsEntrypoint}}
-							<div class="script-wrapper-default">
-								<span class="script-tag">&#60;script src="</span>
-								<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installScriptSrc}}</span>
-								<span class="script-tag">"&#62;&#60;/script&#62;</span>
-								<div class="btn-group">
-									<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
-										aria-haspopup="true" aria-expanded="false">
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
-									</button>
-
-									<ul class="dropdown-menu">
-										<li>
-											<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installScriptSrc}}">
-												Copy URL
-											</a>
-										</li>
-										{{#if ~/packageJsHash}}
-											<li>
-												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="{{buildIntegrity(~/packageJsHash)}}">
-													Copy SRI
-												</a>
-											</li>
-										{{/if}}
-
-										{{#if canBuildHtml(~/installScriptSrc)}}
-											<li>
-												<a as-clipboard="'Copy HTML to clipboard', 'right'"
-													data-clipboard-text="{{buildHtml(~/installScriptSrc)}}">
-													Copy HTML
-												</a>
-											</li>
-											{{#if ~/packageJsHash}}
-												<li>
-													<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-														data-clipboard-text="{{buildHtml(~/installScriptSrc, ~/packageJsHash)}}">
-														Copy HTML + SRI
-													</a>
-												</li>
-											{{/if}}
-										{{/if}}
-									</ul>
-								</div>
-							</div>
-						{{/if}}
-
-						{{#if ~/packageCssEntrypoint}}
-							<div class="script-wrapper-default">
-								<span class="script-tag">&#60;link href="</span>
-								<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installLinkHref}}</span>
-								<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
-								<div class="btn-group">
-									<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
-										aria-haspopup="true" aria-expanded="false">
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
-									</button>
-
-									<ul class="dropdown-menu">
-										<li>
-											<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installLinkHref}}">
-												Copy URL
-											</a>
-										</li>
-										{{#if ~/packageCssHash}}
-											<li>
-												<a as-clipboard="'Copy SRI to clipboard', 'right'"
-													data-clipboard-text="{{buildIntegrity(~/packageCssHash)}}">
-													Copy SRI
-												</a>
-											</li>
-										{{/if}}
-
-										{{#if canBuildHtml(~/installLinkHref)}}
-											<li>
-												<a as-clipboard="'Copy HTML to clipboard', 'right'"
-													data-clipboard-text="{{buildHtml(~/installLinkHref)}}">
-													Copy HTML
-												</a>
-											</li>
-											{{#if ~/packageCssHash}}
-												<li>
-													<a as-clipboard="'Copy HTML + SRI to clipboard', 'right'"
-														data-clipboard-text="{{buildHtml(~/installLinkHref, ~/packageCssHash)}}">
-														Copy HTML + SRI
-													</a>
-												</li>
-											{{/if}}
-										{{/if}}
-									</ul>
-								</div>
-							</div>
-						{{/if}}
-					{{else}}
-						<div class="script-wrapper-esm">
-							<span class="script-tag">&#60;script type="module"&#62;</span>
-							<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
-							<span class="script-tag">&#60;/script&#62;</span>
-							<div class="btn-group">
-								<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
-									aria-haspopup="true" aria-expanded="false">
-									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn.svg">
-								</button>
-
-								<ul class="dropdown-menu">
-									<li>
-										<a as-clipboard="'Copy URL to clipboard', 'right'" data-clipboard-text="{{~/installEsmSrc}}">
-											Copy URL
-										</a>
-									</li>
-									{{#if canBuildHtml(~/installEsmSrc)}}
-										<li>
-											<a as-clipboard="'Copy HTML to clipboard', 'right'"
-												data-clipboard-text="{{buildHtml(~/installEsmSrc, '', name)}}">
-												Copy HTML
-											</a>
-										</li>
-									{{/if}}
-								</ul>
-							</div>
-						</div>
-					{{/if}}
-				</div>
-
-				<div class="horizontal-divider-19"></div>
-
-				{{#if isGuessedFile}}
-					<div class="install-default-warning">
-						URL is guessed and might not be correct.
-						<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM
-							package
-						</a>
-						to find the correct one or use our
-						<a on-click="@this.set('navRoute', 'config')">configurator to combine files and generate SRI</a>
-					</div>
-				{{else}}
-					<div class="install-esm-ctrls">
-						<a href="https://esm.run/{{name}}" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
-							Open in new tab
-						</a>
-
-						<form class="jsfiddle-form" action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
-							<input type="hidden" name="title" value="esm.run {{name}} demo">
-							<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
-							<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
-						</form>
-
-						<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
-							Learn more
-						</a>
-					</div>
-				{{/if}}
-			</div>
-		{{/if}}
 	{{/with}}
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
-	const { buildIntegrity, canBuildHtml, buildHtml } = require('../../public/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -558,24 +315,10 @@
 					+ `?title=No package release on GitHub`
 					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
 			},
-			importName () {
-				let name = this.get('name').split(/[ ._-]/g).reduce((acc, value) => {
-					return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
-				}).replace(/[^a-zA-Z0-9_$]/g, '');
-
-				if (/^\d/.test(name)) {
-					return `_${name}`;
-				}
-
-				return name || 'm';
-			},
-			jsFiddleJsCode () {
-				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
-			},
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				if (this.get('type') === 'npm' && !this.get('onlyHeader')) {
+				if (this.get('type') === 'npm') {
 					this.observe('version', (newValue) => {
 						if (newValue) {
 							http.fetchPackageVulnerabilities(this.get('name'), newValue).then((data) => {
@@ -596,132 +339,8 @@
 						});
 					}
 				});
-
-				this.observe('selectedVersion', () => {
-					if (this.get('onlyHeader')) {
-						return;
-					}
-
-					let installPackageVersion = '';
-					let selectedVersion = this.get('selectedVersion');
-					let packageName = this.get('name');
-					let packageVersion = this.get('version');
-					let packageType = this.get('type');
-
-					if (selectedVersion === 'Static') {
-						installPackageVersion = packageVersion;
-					} else if (selectedVersion === 'Major') {
-						installPackageVersion = packageVersion.split('.')[0];
-					} else if (selectedVersion === 'Minor') {
-						installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
-					} else {
-						installPackageVersion = 'latest';
-					}
-
-					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
-						let packageJsEntrypoint = '';
-						let packageCssEntrypoint = '';
-						let isGuessedFile = false;
-
-						if (data.js) {
-							if (data.js.guessed) {
-								isGuessedFile = true;
-							}
-
-							packageJsEntrypoint = data.js.file;
-							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
-							this.set('packageJsEntrypoint', packageJsEntrypoint);
-						}
-
-						if (data.css) {
-							if (data.css.guessed) {
-								isGuessedFile = true;
-							}
-
-							packageCssEntrypoint = data.css.file;
-							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
-							this.set('packageCssEntrypoint', packageCssEntrypoint);
-						}
-
-						this.set('isGuessedFile', isGuessedFile);
-						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
-
-						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
-							if (packageJsEntrypoint) {
-								data.files.forEach((file) => {
-									if (file.name === this.get('packageJsEntrypoint')) {
-										this.set('packageJsHash', file.hash);
-									}
-								});
-							}
-
-							if (packageCssEntrypoint) {
-								data.files.forEach((file) => {
-									if (file.name === this.get('packageCssEntrypoint')) {
-										this.set('packageCssHash', file.hash);
-									}
-								});
-							}
-						});
-					});
-				});
-
-				this.observe('package.moduleTypes', (value) => {
-					if (
-						this.get('onlyHeader') !== true
-						&& (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1)
-					) {
-						this.set('isDefaultPackage', false);
-					}
-				});
-
-				this.observe('mobileSettingsVisible', (newValue) => {
-					let body = document.querySelector('body');
-
-					if (newValue === true) {
-						body.classList.add('noscroll');
-					} else {
-						body.classList.remove('noscroll');
-					}
-				});
 			}
 		},
-
-		onClickMobileApply () {
-			this.set('isDefaultPackage', this.get('isDefaultPackageTmp'));
-			this.set('selectedVersion', this.get('selectedVersionTmp'));
-			this.set('mobileSettingsVisible', false);
-		},
-		onClickMobileCancel () {
-			this.set('isDefaultPackageTmp', this.get('isDefaultPackage'));
-			this.set('selectedVersionTmp', this.get('selectedVersion'));
-			this.set('mobileSettingsVisible', false);
-		},
-
-		data () {
-			return {
-				_,
-				versionsList: [
-					'Static',
-					'Minor',
-					'Major',
-					'Latest',
-				],
-				isDefaultPackage: true,
-				selectedVersion: 'Static',
-				isDefaultPackageTmp: true,
-				selectedVersionTmp: 'Static',
-				isGuessedFile: false,
-				buildIntegrity,
-				canBuildHtml,
-				buildHtml,
-				mobileSettingsVisible: false,
-			};
-		},
-		decorators: {
-			clipboard,
-		},
-
 		setTypeFilter (filterBy) {
 			if (filterBy === this.get('filterType')) {
 				this.set('filterType', '');
@@ -735,8 +354,6 @@
 			} else {
 				this.set('filterStyle', filterBy);
 			}
-
-			console.log(this.get('filterStyle'));
 		},
 	};
 </script>
