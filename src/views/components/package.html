@@ -29,17 +29,17 @@
 				<div class="package-nav">
 					{{#if package.readme}}
 						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav_route {{navRoute === 'readme' ? 'package-nav_route_active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
 					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav_route {{navRoute === 'config' ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>{{navMenuTitles.configTabTitle}}</span>
 					</a>
 					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav_route {{navRoute === 'stats' ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
 					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
-						<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+						<span>{{navMenuTitles.browseCdnTitle}}</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
@@ -213,6 +213,8 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
@@ -439,6 +441,29 @@
 
 					this.set('usageChartGroupBy', usageChartGroupBy);
 					this.set('usageChartGroupByValues', usageChartGroupByValues);
+				});
+
+				// change nav menu titles depending on the screen size (also on the resize of the page)
+				this.observe('screenWidth', (newScreenWidth) => {
+					let shortTitles = {
+						readmeTabTitle: 'Readme',
+						configTabTitle: 'Show Files',
+						statsTabTitle: 'Statistics',
+						browseCdnTitle: 'CDN',
+					};
+					let fullTitles = {
+						readmeTabTitle: 'Readme',
+						configTabTitle: 'Show/Configure Files',
+						statsTabTitle: 'Statistics',
+						browseCdnTitle: 'Browse CDN Files',
+					};
+					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
+
+					if (actualScreenWidth >= 992 && actualScreenWidth < 1200) {
+						this.set('navMenuTitles', shortTitles);
+					} else {
+						this.set('navMenuTitles', fullTitles);
+					}
 				});
 			}
 		},
@@ -744,6 +769,9 @@
 
 					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 				});
+
+				// detect window resize
+				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', screen.width), 200)));
 			}
 		},
 		changeStatsPeriod (strKey) {
