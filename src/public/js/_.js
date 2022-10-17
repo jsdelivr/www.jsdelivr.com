@@ -18,9 +18,11 @@ module.exports = {
 	isTabletScreen () {
 		return screen.width > screenType.mobile && screen.width <= screenType.tablet;
 	},
+
 	isMobileScreen () {
 		return screen.width <= screenType.mobile;
 	},
+
 	flattenFiles: function flattenFiles (tree, path = '/', files = []) {
 		tree.forEach((item) => {
 			if (item.type === 'file') {
@@ -32,9 +34,11 @@ module.exports = {
 
 		return files;
 	},
+
 	formatDate (date) {
 		return `${MONTHS_SHORT_NAMES_LIST[date.getUTCMonth()]} ${date.getUTCDate()}`;
 	},
+
 	formatHits (hits) {
 		if (hits < 1e9) {
 			return 1;
@@ -42,12 +46,15 @@ module.exports = {
 
 		return Math.round(hits / 1e9);
 	},
+
 	formatMiB2TiB (mb) {
 		return Math.floor(mb / 1024 / 1024 / 10) * 10;
 	},
+
 	formatNumber (number) {
 		return Math.floor(number).toString().replace(/\d(?=(?:\d{3})+$)/g, '$& ');
 	},
+
 	formatNumberWithSpace (val) {
 		// remove sign if negative
 		let sign = 1;
@@ -69,12 +76,15 @@ module.exports = {
 
 		return sign < 0 ? '-' + num : num;
 	},
+
 	getMinifiedName (name) {
 		return name.replace(/\.(js|css)$/i, '.min.$1');
 	},
+
 	getNonMinifiedName (name) {
 		return name.replace(/\.min\.(js|css)$/i, '.$1');
 	},
+
 	listFiles: function listFiles (files = [], path) {
 		if (!path.length) {
 			return files;
@@ -86,6 +96,7 @@ module.exports = {
 
 		return d && d.files ? listFiles(d.files, p) : null;
 	},
+
 	linRange (max, number) {
 		let array = [];
 
@@ -95,6 +106,7 @@ module.exports = {
 
 		return array;
 	},
+
 	logRange (min, max) {
 		let array = [];
 
@@ -104,6 +116,7 @@ module.exports = {
 
 		return array;
 	},
+
 	multiplyDeep: function multiplyDeep (data, n) {
 		if (typeof data !== 'object') {
 			return data;
@@ -119,6 +132,7 @@ module.exports = {
 
 		return data;
 	},
+
 	nth (n) {
 		n = Math.floor(n);
 		let m = n % 10;
@@ -196,6 +210,7 @@ module.exports = {
 
 		return chartXData;
 	},
+
 	// escaping code: https://github.com/component/escape-html/blob/master/index.js
 	unescapeHtml (text) {
 		return text
@@ -205,6 +220,7 @@ module.exports = {
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
 	},
+
 	// ignoreExtremlySmallValue: true when you need to find min value for the axis min e.g.
 	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0, ignoreExtremlySmallValue = true) {
 		let magnitude = Math.floor(Math.log10(value) === -Infinity ? 0 : Math.log10(value)) - magnitudeCorrection;
@@ -288,6 +304,25 @@ module.exports = {
 
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
 	},
+
+	formatToNumberWithUnits (num) {
+		let lookup = [
+			{ value: 1, symbol: '' },
+			{ value: 1e3, symbol: 'K' },
+			{ value: 1e6, symbol: 'M' },
+			{ value: 1e9, symbol: 'B' },
+			{ value: 1e12, symbol: 'T' },
+			{ value: 1e15, symbol: 'P' },
+			{ value: 1e18, symbol: 'E' },
+		];
+		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+		let item = lookup.slice().reverse().find((item) => {
+			return num >= item.value;
+		});
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+	},
+
 	makeHTTPRequest (obj) {
 		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
 
@@ -311,9 +346,11 @@ module.exports = {
 			xhr.send(body);
 		});
 	},
+
 	createQueryString (params) {
 		return '?' + Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
 	},
+
 	deepExtend (out = {}, ...rest) {
 		for (let i = 0; i < rest.length; i++) {
 			let obj = rest[i];
@@ -337,6 +374,7 @@ module.exports = {
 
 		return out;
 	},
+
 	onDocumentReady (fn) {
 		if (document.readyState !== 'loading') {
 			fn();
