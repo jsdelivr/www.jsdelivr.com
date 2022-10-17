@@ -137,7 +137,7 @@
 
 						search(newQuery, this.get('page'), 10).then((result) => {
 							result.response.hits.forEach((hit) => {
-								hit.jsDelivrHits = this.nFormatter(hit.jsDelivrHits);
+								hit.jsDelivrHits = _.formatToNumberWithUnits(hit.jsDelivrHits);
 							});
 
 							// The query might have changed since we sent the request.
@@ -209,23 +209,6 @@
 				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
 				app.config.animateScrolling = true;
 			}
-		},
-		nFormatter (num) {
-			let lookup = [
-				{ value: 1, symbol: '' },
-				{ value: 1e3, symbol: 'K' },
-				{ value: 1e6, symbol: 'M' },
-				{ value: 1e9, symbol: 'B' },
-				{ value: 1e12, symbol: 'T' },
-				{ value: 1e15, symbol: 'P' },
-				{ value: 1e18, symbol: 'E' },
-			];
-			let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-
-			let item = lookup.slice().reverse().find((item) => {
-				return num >= item.value;
-			});
-			return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 		},
 	};
 </script>
