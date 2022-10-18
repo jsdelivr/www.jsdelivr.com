@@ -329,8 +329,6 @@
 				});
 
 
-				// //////////////////// NOT REVIEWED CODE
-
 				// Get top 5 versions for table
 				this.observe('statsPeriodTemp versionP navRoute', () => {
 					if (this.get('statsPeriodTemp') && this.get('versionP')) {
@@ -339,22 +337,18 @@
 						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
 
 						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							let array = [];
-
-							Object.keys(response.versions).forEach((key) => {
-								array.push({
-									version: key,
-									hits: response.versions[key].total,
-									dates: response.versions[key].dates,
-								});
-							});
-
-							let topFiveVersionsTemp = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
+							let topFiveVersionsTemp = Object.keys(response.versions).map(key => ({
+								version: key,
+								hits: response.versions[key].total,
+								dates: response.versions[key].dates,
+							})).sort((a, b) => b.hits - a.hits).slice(0, 5);
 
 							this.animate('topFiveVersionsTemp', topFiveVersionsTemp);
 						});
 					}
 				});
+
+				// //////////////////// NOT REVIEWED CODE
 
 				// get package data (for charts, etc.)
 				this.observe('statsPeriod showChartBandwidth versionP navRoute', () => {
