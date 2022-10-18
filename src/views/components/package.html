@@ -371,6 +371,17 @@
 					}
 				});
 
+				// check if Package has readme (if algolia has no Readme, we try to fetch it from https://raw.githubusercontent.com, getGHUserContentPackageReadme)
+				// if readme still absent we show ConfigTab as default
+				this.observe('package', () => {
+					// package.readme
+					let readme = this.get('package').readme;
+
+					if (!readme || readme === 'ERROR: No README data found!') {
+						this.set('navRoute', 'config');
+					}
+				});
+
 
 				// //////////////////// NOT REVIEWED CODE
 
@@ -415,16 +426,6 @@
 							this.set('noVersionsData', false);
 							this.set('hitsData', response);
 						});
-					}
-				});
-
-				// check if Package has readme, if not - show config tab as default
-				this.observe('package', () => {
-					// package.readme
-					let readme = this.get('package').readme;
-
-					if (!readme || readme === 'ERROR: No README data found!') {
-						this.set('navRoute', 'config');
 					}
 				});
 
