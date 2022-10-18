@@ -281,14 +281,12 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				////////////////////// REVIEWED CODE
-				// http.fetchPackageVersions (Load package versions)
-				// http.fetchPackageFileStats (fetch Package file stats for c-top-stats-table)
+				// //////////////////// REVIEWED CODE
 				// http.fetchPackageVersionStats (Get top 5 versions for table, get package versions data)
 				// http.fetchPackageDateStats (get package date stats data)
 				// http.fetchPackageBandwidthStats (get package date stats data)
 
-				// Load package versions list (Show Files tab, Top 5 files in version dropdown menu)
+				// Load Package Versions list (ShowFilesTab, Top-5-files-per-version dropdown-menu)
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('packageVersionsList', data.versions);
 
@@ -311,10 +309,7 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-
-				////////////////////// NOT REVIEWED CODE
-
-				// fetch Package file stats for c-top-stats-table
+				// fetch PackageVersion file stats for Top-5-file-per-package-version
 				this.observe('statsPeriodTemp fileStatsVersion', () => {
 					if (this.get('statsPeriodTemp') && this.get('fileStatsVersion')) {
 						let type = this.get('type');
@@ -322,22 +317,19 @@
 						let version = this.get('fileStatsVersion');
 						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
 
-						Pace.restart();
-
 						http.fetchPackageFileStats(type, name, version, period).then((data) => {
-							let array = [];
+							let fileStats = Object.keys(data.files).map(key => ({
+								file: key,
+								hits: data.files[key].total,
+							})).sort((a, b) => b.hits - a.hits);
 
-							Object.keys(data.files).forEach((key) => {
-								array.push({
-									file: key,
-									hits: data.files[key].total,
-								});
-							});
-
-							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
+							this.animate('fileStats', fileStats);
 						});
 					}
 				});
+
+
+				// //////////////////// NOT REVIEWED CODE
 
 				// Get top 5 versions for table
 				this.observe('statsPeriodTemp versionP navRoute', () => {
