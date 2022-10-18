@@ -84,13 +84,13 @@
 
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/statsPeriods[statsPeriodTemp]}}</span>
+								<span>{{~/statsPeriods[statsPeriod]}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each ~/statsPeriods}}
-									<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
+									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -101,7 +101,7 @@
 			<c-package-request-bandwidth-stats
 				name="{{name}}"
 				type="{{type}}"
-				period="{{statsPeriods[statsPeriodTemp]}}"
+				period="{{statsPeriods[statsPeriod]}}"
 				bandwidthUnit="GB">
 			</c-package-request-bandwidth-stats>
 
@@ -259,7 +259,6 @@
 					30: 'month',
 					365: 'year',
 				},
-				statsPeriodTemp: 30,
 				statsPeriod: 30,
 				packageVersionsList: [],
 				navRoute: 'readme',
@@ -310,12 +309,12 @@
 				});
 
 				// fetch Package Version File Stats for Top-5-file-per-package-version
-				this.observe('statsPeriodTemp fileStatsVersion', () => {
-					if (this.get('statsPeriodTemp') && this.get('fileStatsVersion')) {
+				this.observe('statsPeriod fileStatsVersion', () => {
+					if (this.get('statsPeriod') && this.get('fileStatsVersion')) {
 						let type = this.get('type');
 						let name = this.get('name');
 						let version = this.get('fileStatsVersion');
-						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
 						http.fetchPackageFileStats(type, name, version, period).then((data) => {
 							let fileStats = Object.keys(data.files).map(key => ({
@@ -330,11 +329,11 @@
 
 
 				// get Package Version Stats for Top-5-package-versions
-				this.observe('statsPeriodTemp versionP navRoute', () => {
-					if (this.get('statsPeriodTemp') && this.get('versionP')) {
+				this.observe('statsPeriod versionP navRoute', () => {
+					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
 						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
+						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
 						http.fetchPackageVersionStats(type, name, period).then((response) => {
 							let topFiveVersionsTemp = Object.keys(response.versions).map(key => ({
@@ -773,13 +772,6 @@
 
 				// detect window resize
 				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', screen.width), 200)));
-			}
-		},
-		changeStatsPeriod (strKey) {
-			this.set('statsPeriodTemp', strKey);
-
-			if (strKey > 1) {
-				this.set('statsPeriod', strKey);
 			}
 		},
 	};
