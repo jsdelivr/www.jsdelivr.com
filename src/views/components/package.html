@@ -348,6 +348,30 @@
 					}
 				});
 
+				// change Nav Menu titles depending on the screen size (also on the resize of the page)
+				this.observe('screenWidth', (newScreenWidth) => {
+					let shortTitles = {
+						readmeTabTitle: 'Readme',
+						configTabTitle: 'Show Files',
+						statsTabTitle: 'Statistics',
+						browseCdnTitle: 'CDN',
+					};
+					let fullTitles = {
+						readmeTabTitle: 'Readme',
+						configTabTitle: 'Show/Configure Files',
+						statsTabTitle: 'Statistics',
+						browseCdnTitle: 'Browse CDN Files',
+					};
+					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
+
+					if (actualScreenWidth >= 992 && actualScreenWidth < 1200) {
+						this.set('navMenuTitles', shortTitles);
+					} else {
+						this.set('navMenuTitles', fullTitles);
+					}
+				});
+
+
 				// //////////////////// NOT REVIEWED CODE
 
 				// get package data (for charts, etc.)
@@ -440,29 +464,6 @@
 
 					this.set('usageChartGroupBy', usageChartGroupBy);
 					this.set('usageChartGroupByValues', usageChartGroupByValues);
-				});
-
-				// change nav menu titles depending on the screen size (also on the resize of the page)
-				this.observe('screenWidth', (newScreenWidth) => {
-					let shortTitles = {
-						readmeTabTitle: 'Readme',
-						configTabTitle: 'Show Files',
-						statsTabTitle: 'Statistics',
-						browseCdnTitle: 'CDN',
-					};
-					let fullTitles = {
-						readmeTabTitle: 'Readme',
-						configTabTitle: 'Show/Configure Files',
-						statsTabTitle: 'Statistics',
-						browseCdnTitle: 'Browse CDN Files',
-					};
-					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
-
-					if (actualScreenWidth >= 992 && actualScreenWidth < 1200) {
-						this.set('navMenuTitles', shortTitles);
-					} else {
-						this.set('navMenuTitles', fullTitles);
-					}
 				});
 			}
 		},
