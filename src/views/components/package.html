@@ -164,8 +164,8 @@
 				<div class="horizontal-divider"></div>
 
 				<div class="chart-tops">
-					{{#if ~/topFiveVersionsTemp}}
-						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersionsTemp}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+					{{#if ~/topFiveVersions}}
+						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -271,7 +271,6 @@
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				noVersionsData: false,
-				versionsHitsTotal: 0,
 			};
 		},
 		decorators: {
@@ -327,8 +326,7 @@
 					}
 				});
 
-
-				// get Package Version Stats for Top-5-package-versions
+				// get Package Version Stats for Top-5-package-versions and for Hits Chart (line chart)
 				this.observe('statsPeriod versionP navRoute', () => {
 					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
@@ -336,13 +334,25 @@
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
 						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							let topFiveVersionsTemp = Object.keys(response.versions).map(key => ({
+							if (!response.total) {
+								this.set('noVersionsData', true);
+								return;
+							}
+
+							let topFiveVersions = Object.keys(response.versions).map(key => ({
 								version: key,
 								hits: response.versions[key].total,
 								dates: response.versions[key].dates,
 							})).sort((a, b) => b.hits - a.hits).slice(0, 5);
 
-							this.animate('topFiveVersionsTemp', topFiveVersionsTemp);
+							// TODO: wth is this?
+							// Maybe we have no stats yet.
+							if (topFiveVersions[0]) {
+								this.set('fileStatsVersion', topFiveVersions[0].version);
+							}
+
+							this.set('noVersionsData', false);
+							this.animate('topFiveVersions', topFiveVersions);
 						});
 					}
 				});
@@ -418,17 +428,6 @@
 								this.set('statsDateData', response);
 							});
 						}
-
-						// get package versions data
-						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							if (!response.total) {
-								this.set('noVersionsData', true);
-								return;
-							}
-
-							this.set('noVersionsData', false);
-							this.set('hitsData', response);
-						});
 					}
 				});
 
@@ -613,30 +612,10 @@
 				});
 
 				// create hits chart
-				this.observe('hitsData', (hitsData) => {
+				this.observe('topFiveVersions', (topFiveVersions) => {
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
-					if (!hitsData || !hitsChartCanvasEl) { return; }
-
-					let array = [];
-
-					Object.keys(hitsData.versions).forEach((key) => {
-						array.push({
-							version: key,
-							hits: hitsData.versions[key].total,
-							dates: hitsData.versions[key].dates,
-						});
-					});
-
-					let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-					this.animate('versionsHitsTotal', hitsData.total);
-					this.animate('topFiveVersions', topFiveVersions);
-
-					// Maybe we have no stats yet.
-					if (array[0]) {
-						this.set('fileStatsVersion', array[0].version);
-					}
+					if (!topFiveVersions || !hitsChartCanvasEl) { return; }
 
 					if (hitsChart) {
 						hitsChart.destroy();
@@ -764,8 +743,6 @@
 							},
 						},
 					};
-
-					// console.log('hits chartData : ', chartData);
 
 					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
 				});
