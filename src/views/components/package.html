@@ -66,7 +66,7 @@
 				name="{{name}}"
 				github="{{package.githubRepo}}"
 				version="{{versionP}}"
-				versions="{{versions}}"
+				versions="{{packageVersionsList}}"
 				path="{{path}}"
 				collection="{{collection}}"
 				files="{{~/files}}">
@@ -98,14 +98,12 @@
 				</div>
 			</div>
 
-			{{#if navRoute === "stats"}}
-				<c-package-request-bandwidth-stats
-					name="{{name}}"
-					type="{{type}}"
-					period="{{statsPeriods[statsPeriodTemp]}}"
-					bandwidthUnit="GB">
-				</c-package-request-bandwidth-stats>
-			{{/if}}
+			<c-package-request-bandwidth-stats
+				name="{{name}}"
+				type="{{type}}"
+				period="{{statsPeriods[statsPeriodTemp]}}"
+				bandwidthUnit="GB">
+			</c-package-request-bandwidth-stats>
 
 			{{#if noPackageStatsData && noVersionsData}}
 				<div class="no-data-wrapper">
@@ -177,7 +175,7 @@
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
-							versions="{{~/versions}}">
+							versions="{{~/packageVersionsList}}">
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -263,7 +261,7 @@
 				},
 				statsPeriodTemp: 30,
 				statsPeriod: 30,
-				versions: [],
+				packageVersionsList: [],
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
@@ -283,11 +281,16 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.set('link', this.get('@global.location.href'));
+				////////////////////// REVIEWED CODE
+				// http.fetchPackageVersions (Load package versions)
+				// http.fetchPackageFileStats (fetch Package file stats for c-top-stats-table)
+				// http.fetchPackageVersionStats (Get top 5 versions for table, get package versions data)
+				// http.fetchPackageDateStats (get package date stats data)
+				// http.fetchPackageBandwidthStats (get package date stats data)
 
-				// Load package versions.
+				// Load package versions list (Show Files tab, Top 5 files in version dropdown menu)
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
-					this.set('versions', data.versions);
+					this.set('packageVersionsList', data.versions);
 
 					// This can only happen for GitHub packages.
 					if (data.versions.length === 0) {
@@ -307,6 +310,9 @@
 					this.set({ packageNotFound: true });
 					console.error(`Package versions not found.`, error);
 				});
+
+
+				////////////////////// NOT REVIEWED CODE
 
 				// fetch Package file stats for c-top-stats-table
 				this.observe('statsPeriodTemp fileStatsVersion', () => {
