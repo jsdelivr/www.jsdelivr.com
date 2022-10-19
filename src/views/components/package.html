@@ -144,9 +144,7 @@
 								<ul class="dropdown-menu">
 									{{#each ~/usageChartGroupByValues}}
 										<li>
-											{{#if this.isDisabled}}
-												<a class="disabled">{{this.value}}</a>
-											{{else}}
+											{{#if this.isAvailable}}
 												<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
 											{{/if}}
 										</li>
@@ -276,9 +274,10 @@
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
-					day: { value: 'day', isDisabled: false },
-					week: { value: 'week', isDisabled: false },
-					month: { value: 'month', isDisabled: false },
+					day: { value: 'day', isAvailable: true },
+					week: { value: 'week', isAvailable: true },
+					// since default statsPeriod is 30 (month) - group by month not available initially
+					month: { value: 'month', isAvailable: false },
 				},
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
@@ -292,11 +291,6 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// //////////////////// REVIEWED CODE
-				// http.fetchPackageVersionStats (Get top 5 versions for table, get package versions data)
-				// http.fetchPackageDateStats (get package date stats data)
-				// http.fetchPackageBandwidthStats (get package date stats data)
-
 				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
 					this.set('packageVersionsList', data.versions);
@@ -405,74 +399,95 @@
 					this.set('versionP', this.get('package.version'));
 				}
 
-				// //////////////////// NOT REVIEWED CODE
+				// handle period changes by updating groupBy options and stats-chart data fetching
+				this.observe('statsPeriod', () => {
+					let statsPeriod = this.get('statsPeriod');
+					let period = this.get('statsPeriods')[statsPeriod];
+					let type = this.get('type');
+					let name = this.get('name');
 
-				// get package data (for charts, etc.)
-				this.observe('statsPeriod showChartBandwidth versionP navRoute', () => {
-					if (this.get('statsPeriod') && this.get('versionP')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
-						let showChartBandwidth = this.get('showChartBandwidth');
-
-						// get package date stats data
-						if (showChartBandwidth) {
-							http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-								if (!response.total) {
-									this.set('noPackageStatsData', true);
-									return;
-								}
-
-								this.set('noPackageStatsData', false);
-								this.set('statsDateData', response);
+					// once chart period is changed - update groupBy options respectively to period
+					switch (period) {
+						case 'year':
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: true },
+								month: { value: 'month', isAvailable: true },
 							});
-						} else {
-							http.fetchPackageDateStats(type, name, period).then((response) => {
-								if (!response.total) {
-									this.set('noPackageStatsData', true);
-									return;
-								}
 
-								this.set('noPackageStatsData', false);
-								this.set('statsDateData', response);
+							break;
+
+						case 'month':
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: true },
+								month: { value: 'month', isAvailable: false },
 							});
-						}
-					}
-				});
 
-				// control the value of the DateRange and change the value of the GroupBy respectively
-				this.observe('statsPeriod', (statsPeriod) => {
-					let statsPeriods = this.get('statsPeriods');
-					let usageChartGroupByValues = this.get('usageChartGroupByValues');
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-
-					switch (statsPeriods[statsPeriod]) {
-						case 'day':
-							usageChartGroupBy = 'day';
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = true;
-							usageChartGroupByValues.month.isDisabled = true;
 							break;
 
 						case 'week':
-							if (usageChartGroupBy === 'month') {
-								usageChartGroupBy = 'week';
-							}
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: false },
+								month: { value: 'month', isAvailable: false },
+							});
 
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = false;
-							usageChartGroupByValues.month.isDisabled = true;
 							break;
-
-						default:
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = false;
-							usageChartGroupByValues.month.isDisabled = false;
 					}
 
-					this.set('usageChartGroupBy', usageChartGroupBy);
-					this.set('usageChartGroupByValues', usageChartGroupByValues);
+					// prevent chart data fetching from the back when period is DAY, left it as it was prev
+					if (period === 'day') { return; }
+
+					http.fetchPackageHitsBandwidthStats(name, type, period).then((response) => {
+						if (!response.hits.total || !response.bandwidth.total) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
+						this.set('rawStatsDateData', response);
+					});
 				});
+
+				// handle raw StatsChart data and prepare it for StatsChart
+				// screenWidth to observe when screen width is resized to recreate stats chart
+				this.observe('rawStatsDateData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawStatsDateData = this.get('rawStatsDateData');
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let screenWidth = this.get('screenWidth');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						valueUnits,
+					} = _.getPreparedDataForChart(rawStatsDateData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
+					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
+
+					// set prepared data for chart
+					this.set('preparedStatsDateData', {
+						data: values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						chartPeriod,
+						barThickness: chartBarThickness,
+						useYAxisBorderPlugin: screenWidth >= 768,
+						yAxisPadding: screenWidth >= 768 ? 20 : 8,
+						valueUnits,
+					});
+				}, { init: false });
 			}
 		},
 		onrender () {
@@ -480,109 +495,67 @@
 				let statsChart;
 				let hitsChart;
 
-				// create stats chart
-				this.observe('statsDateData usageChartGroupBy', () => {
-					let statsDateData = this.get('statsDateData');
+				// create Stats chart
+				this.observe('preparedStatsDateData', (preparedStatsDateData) => {
+					let {
+						labels,
+						maxRangeValue,
+						data,
+						showChartBandwidth,
+						barThickness,
+						useYAxisBorderPlugin,
+						yAxisPadding,
+						labelsStartEndPeriods,
+						valueUnits,
+					} = preparedStatsDateData;
 					let statsChartCanvasEl = this.find('#stats-chart');
 
-					if (!statsDateData || !statsChartCanvasEl) { return; }
-
-					let array = [];
-
-					Object.keys(statsDateData.dates).forEach((date) => {
-						array.push([ date, statsDateData.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					if (!preparedStatsDateData || !statsChartCanvasEl) { return; }
 
 					if (statsChart) {
 						statsChart.destroy();
 						statsChart = null;
 					}
 
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
-					let groupedDayCount = groupBy[usageChartGroupBy];
-
-					let countDay = 0;
-					let xAxisDates = [];
-					array.forEach((value) => {
-						countDay++;
-
-						if (countDay % groupedDayCount === 0) {
-							countDay = 0;
-							xAxisDates.push(value[0]);
-						}
-					});
-
-					let groupData = [];
-					let tempData = 0;
-					countDay = 0;
-					let showChartBandwidth = this.get('showChartBandwidth');
-					let tempGB = 1;
-
-					if (showChartBandwidth) {
-						tempGB = 1e9;
-					}
-
-					Object.keys(statsDateData.dates).forEach((date) => {
-						countDay++;
-						tempData += statsDateData.dates[date].total;
-
-						if (countDay >= groupedDayCount) {
-							groupData.push(Math.round(tempData / tempGB));
-							countDay = 0; tempData = 0;
-						}
-					});
-
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-					let yAxisTicksAmount = 8;
-					let minRangeValue = _.getValueByMagnitude(Math.min(...groupData), 'floor');
-					let maxRangeValue = _.getValueByMagnitude(Math.max(...groupData), 'ceil', 1);
-
 					let chartData = {
-						labels: _.getChartXAxisData(xAxisDates, chartPeriod, usageChartGroupBy),
+						labels,
 						datasets: [{
-							data: groupData,
+							data,
 							borderWidth: 0,
-							barThickness: xAxisDates.length < 20 ? 10 : xAxisDates.length < 60 ? 5 : 2,
+							barThickness,
 							hoverBackgroundColor: '#F65128',
 						}],
+						labelsStartEndPeriods,
+						valueUnits,
 					};
 					let chartSettings = {
-						useYAxisBorderPlugin: true,
+						useYAxisBorderPlugin,
 						useExternalTooltip: true,
+						useImprovedTooltip: true,
 						externalTooltipVerticalOffset: 40,
 					};
+					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 					let chartConfig = {
 						options: {
 							scales: {
 								x: {
 									display: true,
 									ticks: {
+										autoSkip: false,
 										color: '#5C667A',
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 											lineHeight: 2,
 										},
+										// return nothing when labelValue array is empty
+										// this way we will not get italicized text when all ticks can't be displayed at once normally
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-											if (chartPeriod === 'year') {
-												if (labelValue[2]) {
-													return [ labelValue[1], labelValue[2] ];
-												}
-
-												return;
+											if (labelValue.length) {
+												return labelValue;
 											}
-
-											if (Array.isArray(labelValue)) {
-												return [ day, labelValue[1] ];
-											}
-
-											return [ day ];
 										},
 									},
 									grid: {
@@ -592,20 +565,26 @@
 								},
 								y: {
 									display: true,
-									min: minRangeValue,
-									max: maxRangeValue,
+									min: 0,
+									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
-										count: yAxisTicksAmount,
+										padding: yAxisPadding,
+										count: 9,
 										color: '#5C667A',
 										crossAlign: 'near',
-										padding: 22,
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 										},
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
+											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+
+											if (_.isMobileScreen()) {
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.autoConvertBytesToUnits(valueByMagnitude);
+											}
+
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.formatNumber(valueByMagnitude);
 										},
 									},
 									grid: {
@@ -618,7 +597,7 @@
 					};
 
 					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-				});
+				}, { init: false });
 
 				// create hits chart
 				this.observe('topFiveVersions', (topFiveVersions) => {
