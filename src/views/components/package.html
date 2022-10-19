@@ -222,6 +222,18 @@
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
 	const createLineChart = require('../../public/js/utils/create-line-chart');
+	const NAV_MENU_SHORT_TITLES = {
+		readmeTabTitle: 'Readme',
+		configTabTitle: 'Show Files',
+		statsTabTitle: 'Statistics',
+		browseCdnTitle: 'CDN',
+	};
+	const NAV_MENU_FULL_TITLES = {
+		readmeTabTitle: 'Readme',
+		configTabTitle: 'Show/Configure Files',
+		statsTabTitle: 'Statistics',
+		browseCdnTitle: 'Browse CDN Files',
+	};
 
 	component.exports = {
 		computed: {
@@ -271,6 +283,7 @@
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				noVersionsData: false,
+				navMenuTitles: NAV_MENU_SHORT_TITLES,
 			};
 		},
 		decorators: {
@@ -358,27 +371,15 @@
 				});
 
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
-				// switch tab after resizing
+				// switch tab to readme after resizing
 				this.observe('screenWidth', (newScreenWidth) => {
-					let shortTitles = {
-						readmeTabTitle: 'Readme',
-						configTabTitle: 'Show Files',
-						statsTabTitle: 'Statistics',
-						browseCdnTitle: 'CDN',
-					};
-					let fullTitles = {
-						readmeTabTitle: 'Readme',
-						configTabTitle: 'Show/Configure Files',
-						statsTabTitle: 'Statistics',
-						browseCdnTitle: 'Browse CDN Files',
-					};
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
 
 					// set tab titles after resizing
 					if (actualScreenWidth >= 768 && actualScreenWidth < 1200) {
-						this.set('navMenuTitles', shortTitles);
+						this.set('navMenuTitles', NAV_MENU_SHORT_TITLES);
 					} else {
-						this.set('navMenuTitles', fullTitles);
+						this.set('navMenuTitles', NAV_MENU_FULL_TITLES);
 					}
 
 					// switch tab to Readme after resizing
