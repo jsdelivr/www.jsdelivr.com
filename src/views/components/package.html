@@ -358,6 +358,7 @@
 				});
 
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
+				// switch tab after resizing
 				this.observe('screenWidth', (newScreenWidth) => {
 					let shortTitles = {
 						readmeTabTitle: 'Readme',
@@ -373,10 +374,16 @@
 					};
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
 
+					// set tab titles after resizing
 					if (actualScreenWidth >= 768 && actualScreenWidth < 1200) {
 						this.set('navMenuTitles', shortTitles);
 					} else {
 						this.set('navMenuTitles', fullTitles);
+					}
+
+					// switch tab to Readme after resizing
+					if (actualScreenWidth < 768) {
+						this.set('navRoute', 'readme');
 					}
 				});
 
