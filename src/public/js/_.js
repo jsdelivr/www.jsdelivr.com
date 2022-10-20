@@ -653,7 +653,7 @@ module.exports = {
 	},
 
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
-	getPreparedDataForChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+	getPreparedDataForBarChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
 		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
 		let convertionFactor = showChartBandwidth ? 1e9 : 1;
 		let valueUnits = showChartBandwidth ? ' GB' : '';
