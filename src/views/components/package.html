@@ -488,6 +488,61 @@
 						valueUnits,
 					});
 				}, { init: false });
+
+
+				// handle raw HitsChart data and prepare it for HitsChart
+				this.observe('topFiveVersions', () => {
+					let topFiveVersions = this.get('topFiveVersions');
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+
+					let maxRangeValue = _.getValueByMagnitude(
+						Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
+						'ceil',
+						1
+					);
+					let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+						let dataset = {
+							label: `v${tfvItem.version}`,
+							data: Object.values(tfvItem.dates),
+						};
+
+						switch (idx) {
+							case 0:
+								dataset.borderColor = '#5C667A';
+								dataset.backgroundColor = '#5C667A';
+								break;
+							case 1:
+								dataset.borderColor = '#BC5090';
+								dataset.backgroundColor = '#BC5090';
+								break;
+							case 2:
+								dataset.borderColor = '#FFA600';
+								dataset.backgroundColor = '#FFA600';
+								break;
+							case 3:
+								dataset.borderColor = '#FF6361';
+								dataset.backgroundColor = '#FF6361';
+								break;
+							case 4:
+								dataset.borderColor = '#69C4F7';
+								dataset.backgroundColor = '#69C4F7';
+								break;
+						}
+
+						datasets.push(dataset);
+
+						return datasets;
+					}, []);
+
+					let labels = _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod);
+
+					this.set('preparedHitsChartData', {
+						datasets,
+						labels,
+						maxRangeValue,
+						chartPeriod,
+					});
+				}, { init: false });
 			}
 		},
 		onrender () {
@@ -600,73 +655,38 @@
 				}, { init: false });
 
 				// create hits chart
-				this.observe('topFiveVersions', (topFiveVersions) => {
+				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+					let {
+						datasets,
+						labels,
+						maxRangeValue,
+						chartPeriod,
+					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
-					if (!topFiveVersions || !hitsChartCanvasEl) { return; }
+					if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
 
 					if (hitsChart) {
 						hitsChart.destroy();
 						hitsChart = null;
 					}
 
-					let yAxisTicksAmount = 8;
-					let minRangeValue = _.getValueByMagnitude(
-						Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates).filter(v => v !== 0)))),
-						'floor'
-					);
-					let maxRangeValue = _.getValueByMagnitude(
-						Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
-						'ceil',
-						1
-					);
-					let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
-						let dataset = {
-							label: `v${tfvItem.version}`,
-							data: Object.values(tfvItem.dates),
-						};
-
-						switch (idx) {
-							case 0:
-								dataset.borderColor = '#5C667A';
-								dataset.backgroundColor = '#5C667A';
-								break;
-							case 1:
-								dataset.borderColor = '#BC5090';
-								dataset.backgroundColor = '#BC5090';
-								break;
-							case 2:
-								dataset.borderColor = '#FFA600';
-								dataset.backgroundColor = '#FFA600';
-								break;
-							case 3:
-								dataset.borderColor = '#FF6361';
-								dataset.backgroundColor = '#FF6361';
-								break;
-							case 4:
-								dataset.borderColor = '#69C4F7';
-								dataset.backgroundColor = '#69C4F7';
-								break;
-						}
-
-						datasets.push(dataset);
-
-						return datasets;
-					}, []);
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let chartData = {
-						labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
+						labels,
 						datasets,
 					};
 					let chartSettings = {
 						useExternalTooltip: true,
+						plugins:{
+							useExternalTooltip: true,
+						},
 					};
+					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 					let chartConfig = {
 						options: {
 							scales: {
 								x: {
 									display: true,
-									// offset: true,
 									ticks: {
 										color: '#5C667A',
 										font: {
@@ -703,10 +723,10 @@
 								},
 								y: {
 									display: true,
-									min: minRangeValue,
-									max: maxRangeValue,
+									min: 0,
+									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
-										count: yAxisTicksAmount,
+										count: 8,
 										color: '#5C667A',
 										crossAlign: 'near',
 										padding: 48,
@@ -733,7 +753,7 @@
 					};
 
 					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-				});
+				}, { init: false });
 
 				// detect window resize
 				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', screen.width), 200)));
