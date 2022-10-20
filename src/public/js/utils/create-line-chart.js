@@ -110,8 +110,10 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(chartArea.left - 24, 48);
-			ctx.lineTo(chartArea.left - 24, 320);
+			ctx.moveTo(chartArea.left - 20, 22);
+			ctx.lineTo(chartArea.left - 20, 319);
+			// ctx.moveTo(chartArea.left - 24, 48);
+			// ctx.lineTo(chartArea.left - 24, 320);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
@@ -119,12 +121,17 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 		},
 	};
 
-	let plugins = {
-		verticalYAxisBorder,
+	// get chart plugins
+	let getChartPlugins = () => {
+		let { useYAxisBorderPlugin } = chartSettings;
+		let plugins = [];
+
+		if (useYAxisBorderPlugin) {
+			plugins.push(verticalYAxisBorder);
+		}
+
+		return plugins;
 	};
-	Object.keys(chartSettings.plugins).forEach((key) => {
-		if (!chartSettings.plugins[key]) { delete plugins[key]; }
-	});
 
 	// chart configuration
 	let defaultConfig = {
@@ -167,7 +174,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 				intersect: false,
 			},
 		},
-		plugins: [ Object.values(plugins) ],
+		plugins: getChartPlugins(),
 	};
 
 	// create chart instance

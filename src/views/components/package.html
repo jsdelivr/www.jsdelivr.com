@@ -489,9 +489,9 @@
 					});
 				}, { init: false });
 
-
 				// handle raw HitsChart data and prepare it for HitsChart
 				this.observe('topFiveVersions', () => {
+					let screenWidth = this.get('screenWidth');
 					let topFiveVersions = this.get('topFiveVersions');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 
@@ -541,6 +541,7 @@
 						labels,
 						maxRangeValue,
 						chartPeriod,
+						useYAxisBorderPlugin: screenWidth >= 768,
 					});
 				}, { init: false });
 			}
@@ -661,6 +662,7 @@
 						labels,
 						maxRangeValue,
 						chartPeriod,
+						useYAxisBorderPlugin,
 					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
@@ -676,6 +678,7 @@
 						datasets,
 					};
 					let chartSettings = {
+						useYAxisBorderPlugin,
 						useExternalTooltip: true,
 						plugins: {
 							useExternalTooltip: true,
