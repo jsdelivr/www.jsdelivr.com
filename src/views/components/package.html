@@ -335,7 +335,7 @@
 					}
 				});
 
-				// get Package Version Stats for Top-5-package-versions and for Hits Chart (line chart)
+				// get Package Version Stats for Top-5-package-versions
 				this.observe('statsPeriod versionP navRoute', () => {
 					if (this.get('statsPeriod') && this.get('versionP')) {
 						let type = this.get('type');
@@ -343,11 +343,6 @@
 						let period = this.get('statsPeriods')[this.get('statsPeriod')];
 
 						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							if (!response.total) {
-								this.set('noVersionsData', true);
-								return;
-							}
-
 							let topFiveVersions = Object.keys(response.versions).map(key => ({
 								version: key,
 								hits: response.versions[key].total,
@@ -360,7 +355,6 @@
 								this.set('fileStatsVersion', topFiveVersions[0].version);
 							}
 
-							this.set('noVersionsData', false);
 							this.animate('topFiveVersions', topFiveVersions);
 						});
 					}
@@ -401,7 +395,7 @@
 					this.set('versionP', this.get('package.version'));
 				}
 
-				// handle period changes by updating groupBy options and stats-chart data fetching
+				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
 				this.observe('statsPeriod', () => {
 					let statsPeriod = this.get('statsPeriod');
 					let period = this.get('statsPeriods')[statsPeriod];
@@ -452,6 +446,18 @@
 						this.set('usageChartGroupBy', 'day');
 						this.set('rawStatsDateData', response);
 					});
+
+					http.fetchPackageVersionsHitsBandwidthStats(name, type, period).then((response) => {
+						// if (!response.hits.total || !response.bandwidth.total) {
+						// 	this.set('noPackageStatsData', true);
+						// 	return;
+						// }
+
+						// this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
+						this.set('rawHitsChartData', response);
+					});
 				});
 
 				// handle raw StatsChart data and prepare it for StatsChart
@@ -492,20 +498,28 @@
 				}, { init: false });
 
 				// handle raw HitsChart data and prepare it for HitsChart
-				this.observe('topFiveVersions', () => {
-					let screenWidth = this.get('screenWidth');
-					let topFiveVersions = this.get('topFiveVersions');
+				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawHitsChartData = this.get('rawHitsChartData');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+					let vesrionsForChart = rawHitsChartData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, 5);
 
-					let maxRangeValue = _.getValueByMagnitude(
-						Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
-						'ceil',
-						1
-					);
-					let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
+					// collect X-Axis dates, group data by period, get
+					let {
+						// values, // TODO: we do not need it
+						labels,
+						// labelsStartEndPeriods, // TODO: check do we need it
+						maxRangeValue,
+						// valueUnits, // TODO: check do we neet it
+					} = _.getPreparedDataForBarChart(vesrionsForChart[0][dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					let datasets = vesrionsForChart.reduce((datasets, versionData, idx) => {
 						let dataset = {
-							label: `v${tfvItem.version}`,
-							data: Object.values(tfvItem.dates),
+							label: `v${versionData.version}`,
+							data: Object.values(versionData[dataType].dates),
 						};
 
 						switch (idx) {
@@ -536,14 +550,13 @@
 						return datasets;
 					}, []);
 
-					let labels = _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod);
-
 					this.set('preparedHitsChartData', {
 						datasets,
 						labels,
 						maxRangeValue,
 						chartPeriod,
 						useYAxisBorderPlugin: screenWidth >= 768,
+						showChartBandwidth,
 					});
 				}, { init: false });
 			}
@@ -553,7 +566,7 @@
 				let statsChart;
 				let hitsChart;
 
-				// create Stats chart
+				// create statsChart
 				this.observe('preparedStatsDateData', (preparedStatsDateData) => {
 					let {
 						labels,
@@ -657,14 +670,14 @@
 					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 				}, { init: false });
 
-				// create hits chart
+				// create hitsChart
 				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
 					let {
 						datasets,
 						labels,
 						maxRangeValue,
-						chartPeriod,
 						useYAxisBorderPlugin,
+						showChartBandwidth,
 					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
@@ -699,26 +712,12 @@
 											family: 'Lexend, sans-serif',
 											lineHeight: 2,
 										},
-										// whole callback needed to prepare dates for displaying on the x-axis
-										// since we need only the day and not full date (which we must to pass here for the tooltip title)
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											// check if it is not contains only a date but also a month
-											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-											if (chartPeriod === 'year') {
-												if (labelValue[2]) {
-													return [ labelValue[1], labelValue[2] ];
-												}
-
-												return;
+											if (labelValue.length) {
+												return labelValue;
 											}
-
-											if (Array.isArray(labelValue)) {
-												return [ day, labelValue[1] ];
-											}
-
-											return [ day ];
 										},
 									},
 									grid: {
@@ -731,17 +730,23 @@
 									min: 0,
 									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
-										count: 8,
+										count: 9,
 										color: '#5C667A',
 										crossAlign: 'near',
-										padding: 48,
+										// padding: 48,
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 										},
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
+											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+
+											if (_.isMobileScreen()) {
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.autoConvertBytesToUnits(valueByMagnitude);
+											}
+
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.formatNumber(valueByMagnitude);
 										},
 									},
 									grid: {
@@ -749,9 +754,9 @@
 										color: '#CFD6DD',
 										tickLength: 0,
 									},
-									afterFit: (scale) => {
-										scale.width = 114;
-									},
+									// afterFit: (scale) => {
+									// 	scale.width = 114;
+									// },
 								},
 							},
 						},
