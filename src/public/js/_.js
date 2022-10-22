@@ -796,7 +796,7 @@ module.exports = {
 		let datasets = rawDataFiltered.reduce((datasets, versionData, idx) => {
 			let dataset = {
 				label: `v${versionData.version}`,
-				data: Object.values(versionData[dataType].dates),
+				data: Object.values(versionData[dataType].dates).map(value => value / convertionFactor),
 			};
 
 			switch (idx) {
