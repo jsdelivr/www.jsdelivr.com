@@ -4,7 +4,12 @@
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
-function createLineChart (chartEl, chartData = {}, chartSettings = { useExternalTooltip: false }, chartConfig = {}) {
+function createLineChart (
+	chartEl,
+	chartData = {},
+	chartSettings = { useExternalTooltip: false },
+	chartConfig = {}
+) {
 	if (!chartEl) { return; }
 
 	// create external tooltip
