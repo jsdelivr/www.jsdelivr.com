@@ -745,4 +745,91 @@ module.exports = {
 				return schema.regularBar;
 		}
 	},
+
+	// prepare data for LineChart
+	getPreparedDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, numberOfDatasets = 5, onlyFullPeriods = true) {
+		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+		let rawDataFiltered = rawData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, numberOfDatasets);
+
+		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
+		let convertionFactor = showChartBandwidth ? 1e9 : 1;
+		let valueUnits = showChartBandwidth ? ' GB' : '';
+		// get top by stats version of package to get from it values for y-axis, and labels to x-axis
+		let topVersionData = rawDataFiltered[0][dataType];
+		let { preparedData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy, convertionFactor);
+		let results = {
+			values: [],
+			labels: [],
+			labelsStartEndPeriods: [],
+			maxRangeValue: 0,
+			valueUnits,
+		};
+		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+		// collect data for chart depending on groupBy
+		results = dataToIteract.reduce((res, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return res; }
+
+			res.values.push(period.value);
+			res.labels.push([ period.day, period.month, period.year ]);
+			res.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+
+			return res;
+		}, results);
+
+		// get min/max magnitude for y-axis
+		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				results.labels = this.createWeekPeriodChartLabels(results.labels);
+				break;
+			case 'month':
+				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
+				break;
+			case 'year':
+				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
+				break;
+		}
+
+		let datasets = rawDataFiltered.reduce((datasets, versionData, idx) => {
+			let dataset = {
+				label: `v${versionData.version}`,
+				data: Object.values(versionData[dataType].dates),
+			};
+
+			switch (idx) {
+				case 0:
+					dataset.borderColor = '#5C667A';
+					dataset.backgroundColor = '#5C667A';
+					break;
+				case 1:
+					dataset.borderColor = '#BC5090';
+					dataset.backgroundColor = '#BC5090';
+					break;
+				case 2:
+					dataset.borderColor = '#FFA600';
+					dataset.backgroundColor = '#FFA600';
+					break;
+				case 3:
+					dataset.borderColor = '#FF6361';
+					dataset.backgroundColor = '#FF6361';
+					break;
+				case 4:
+					dataset.borderColor = '#69C4F7';
+					dataset.backgroundColor = '#69C4F7';
+					break;
+			}
+
+			datasets.push(dataset);
+
+			return datasets;
+		}, []);
+
+		return {
+			...results,
+			datasets,
+		};
+	},
 };
