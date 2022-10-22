@@ -444,7 +444,7 @@
 						this.set('noPackageStatsData', false);
 						// once new data fetched we should set groupBy to default value before raw data set
 						this.set('usageChartGroupBy', 'day');
-						this.set('rawStatsDateData', response);
+						this.set('rawStatsChartData', response);
 					});
 
 					http.fetchPackageVersionsHitsBandwidthStats(name, type, period).then((response) => {
@@ -462,8 +462,8 @@
 
 				// handle raw StatsChart data and prepare it for StatsChart
 				// screenWidth to observe when screen width is resized to recreate stats chart
-				this.observe('rawStatsDateData showChartBandwidth usageChartGroupBy screenWidth', () => {
-					let rawStatsDateData = this.get('rawStatsDateData');
+				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawStatsChartData = this.get('rawStatsChartData');
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
@@ -477,13 +477,13 @@
 						labelsStartEndPeriods,
 						maxRangeValue,
 						valueUnits,
-					} = _.getPreparedDataForBarChart(rawStatsDateData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+					} = _.getPreparedDataForBarChart(rawStatsChartData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
 
 					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
 					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
 
 					// set prepared data for chart
-					this.set('preparedStatsDateData', {
+					this.set('preparedStatsChartData', {
 						data: values,
 						labels,
 						labelsStartEndPeriods,
@@ -567,7 +567,7 @@
 				let hitsChart;
 
 				// create statsChart
-				this.observe('preparedStatsDateData', (preparedStatsDateData) => {
+				this.observe('preparedStatsChartData', (preparedStatsChartData) => {
 					let {
 						labels,
 						maxRangeValue,
@@ -578,10 +578,10 @@
 						yAxisPadding,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = preparedStatsDateData;
+					} = preparedStatsChartData;
 					let statsChartCanvasEl = this.find('#stats-chart');
 
-					if (!preparedStatsDateData || !statsChartCanvasEl) { return; }
+					if (!preparedStatsChartData || !statsChartCanvasEl) { return; }
 
 					if (statsChart) {
 						statsChart.destroy();
