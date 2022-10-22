@@ -141,3 +141,8 @@ module.exports.fetchProjectStats = (type, statsType, period) => {
 module.exports.fetchPackageHitsBandwidthStats = (name, type, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${PREVIEW_API_HOST}/v1/stats/packages/${type}/${name}?period=${period}` });
 };
+
+// TODO: replace PREVIEW_API_HOST with API_HOST once it is ready
+module.exports.fetchPackageVersionsHitsBandwidthStats = (name, type, period = 'month') => {
+	return _.makeHTTPRequest({ url: `${PREVIEW_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}` });
+};
