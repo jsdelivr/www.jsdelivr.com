@@ -305,7 +305,7 @@ module.exports = {
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
 	},
 
-	formatToNumberWithUnits (num) {
+	formatToNumberWithUnits (num, numSymbolSeparator = '') {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -320,7 +320,7 @@ module.exports = {
 		let item = lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
 	},
 
 	makeHTTPRequest (obj) {
