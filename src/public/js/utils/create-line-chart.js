@@ -74,17 +74,21 @@ function createLineChart (
 
 				innerHtml += '</div>';
 
-				let provider = line.split(' ')[0].replace(':', '');
-				let providerData = tooltipModel.dataPoints.find((one) => {
-					return one.dataset.label === provider;
-				});
-				innerHtml += `<div class='ratio-text'>
-					<span>Average file size</span>
-					<span>${providerData.dataset.ratio[providerData.label.replace(',', '')]}</span>
-				</div>`;
+				// TODO: related to Statistics page chart (broke other lineCharts)
+				// TODO: check for what is this needed
+				// let provider = line.split(' ')[0].replace(':', '');
+				// let providerData = tooltipModel.dataPoints.find((one) => {
+				// 	return one.dataset.label === provider;
+				// });
+				// innerHtml += `<div class='ratio-text'>
+				// 	<span>Average file size</span>
+				// 	<span>${providerData.dataset.ratio[providerData.label.replace(',', '')]}</span>
+				// </div>`;
 			});
 
-			innerHtml += `</div>`;
+			// TODO: related to Statistics page chart (broke other lineCharts)
+			// TODO: check for what is this needed
+			// innerHtml += `</div>`;
 			let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}
