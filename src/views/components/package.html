@@ -98,14 +98,14 @@
 				</div>
 			</div>
 
-			{{#if navRoute === 'stats'}}
+			<!-- {{#if navRoute === 'stats'}}
 				<c-package-request-bandwidth-stats
 					name="{{name}}"
 					type="{{type}}"
 					period="{{statsPeriods[statsPeriod]}}"
 					bandwidthUnit="GB">
 				</c-package-request-bandwidth-stats>
-			{{/if}}
+			{{/if}} -->
 
 			{{#if noPackageStatsData && noVersionsData}}
 				<div class="no-data-wrapper">
@@ -156,14 +156,14 @@
 						</div>
 					</div>
 
-					<div class="stats-chart-wrapper">
+					<!-- <div class="stats-chart-wrapper">
 						<canvas id="stats-chart"></canvas>
-					</div>
+					</div> -->
 				</div>
 
 				<div class="horizontal-divider"></div>
 
-				<div class="chart-tops">
+				<!-- <div class="chart-tops">
 					{{#if ~/topFiveVersions}}
 						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
 							{{#partial column1}}
@@ -186,7 +186,7 @@
 							{{/partial}}
 						</c-top-stats-table>
 					{{/if}}
-				</div>
+				</div> -->
 
 				<div class="horizontal-divider"></div>
 
@@ -504,51 +504,15 @@
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
-					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let vesrionsForChart = rawHitsChartData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, 5);
 
 					// collect X-Axis dates, group data by period, get
 					let {
-						// values, // TODO: we do not need it
 						labels,
-						// labelsStartEndPeriods, // TODO: check do we need it
 						maxRangeValue,
+						datasets,
+						// labelsStartEndPeriods, // TODO: check do we need it
 						// valueUnits, // TODO: check do we neet it
-					} = _.getPreparedDataForBarChart(vesrionsForChart[0][dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
-
-					let datasets = vesrionsForChart.reduce((datasets, versionData, idx) => {
-						let dataset = {
-							label: `v${versionData.version}`,
-							data: Object.values(versionData[dataType].dates),
-						};
-
-						switch (idx) {
-							case 0:
-								dataset.borderColor = '#5C667A';
-								dataset.backgroundColor = '#5C667A';
-								break;
-							case 1:
-								dataset.borderColor = '#BC5090';
-								dataset.backgroundColor = '#BC5090';
-								break;
-							case 2:
-								dataset.borderColor = '#FFA600';
-								dataset.backgroundColor = '#FFA600';
-								break;
-							case 3:
-								dataset.borderColor = '#FF6361';
-								dataset.backgroundColor = '#FF6361';
-								break;
-							case 4:
-								dataset.borderColor = '#69C4F7';
-								dataset.backgroundColor = '#69C4F7';
-								break;
-						}
-
-						datasets.push(dataset);
-
-						return datasets;
-					}, []);
+					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
 
 					this.set('preparedHitsChartData', {
 						datasets,
@@ -557,6 +521,7 @@
 						chartPeriod,
 						useYAxisBorderPlugin: screenWidth >= 768,
 						showChartBandwidth,
+						yAxisPadding: screenWidth >= 768 ? 20 : 8,
 					});
 				}, { init: false });
 			}
@@ -678,6 +643,7 @@
 						maxRangeValue,
 						useYAxisBorderPlugin,
 						showChartBandwidth,
+						yAxisPadding,
 					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
@@ -730,10 +696,10 @@
 									min: 0,
 									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
+										padding: yAxisPadding,
 										count: 9,
 										color: '#5C667A',
 										crossAlign: 'near',
-										// padding: 48,
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
@@ -754,9 +720,6 @@
 										color: '#CFD6DD',
 										tickLength: 0,
 									},
-									// afterFit: (scale) => {
-									// 	scale.width = 114;
-									// },
 								},
 							},
 						},
