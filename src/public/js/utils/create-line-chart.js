@@ -209,8 +209,6 @@ function createLineChart (
 			ctx.beginPath();
 			ctx.moveTo(chartArea.left - 20, 22);
 			ctx.lineTo(chartArea.left - 20, 319);
-			// ctx.moveTo(chartArea.left - 24, 48);
-			// ctx.lineTo(chartArea.left - 24, 320);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
