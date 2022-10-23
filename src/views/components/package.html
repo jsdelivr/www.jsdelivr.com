@@ -510,18 +510,20 @@
 						labels,
 						maxRangeValue,
 						datasets,
-						// labelsStartEndPeriods, // TODO: check do we need it
-						// valueUnits, // TODO: check do we neet it
+						labelsStartEndPeriods,
+						valueUnits,
 					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
 
 					this.set('preparedHitsChartData', {
 						datasets,
 						labels,
+						labelsStartEndPeriods,
 						maxRangeValue,
+						showChartBandwidth,
 						chartPeriod,
 						useYAxisBorderPlugin: screenWidth >= 768,
-						showChartBandwidth,
 						yAxisPadding: screenWidth >= 768 ? 20 : 8,
+						valueUnits,
 					});
 				}, { init: false });
 			}
@@ -644,6 +646,8 @@
 						useYAxisBorderPlugin,
 						showChartBandwidth,
 						yAxisPadding,
+						labelsStartEndPeriods,
+						valueUnits,
 					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
@@ -657,6 +661,8 @@
 					let chartData = {
 						labels,
 						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
 					};
 					let chartSettings = {
 						useYAxisBorderPlugin,
