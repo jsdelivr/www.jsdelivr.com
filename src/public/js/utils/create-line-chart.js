@@ -12,8 +12,9 @@ function createLineChart (
 ) {
 	if (!chartEl) { return; }
 
-	// create external tooltip
-	let externalTooltip = (ctx) => {
+	// TODO: Statistics page only, should be rechecked and fix if needed
+	// create external tooltip (prev version)
+	let externalTooltipOldVersion = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
@@ -74,21 +75,103 @@ function createLineChart (
 
 				innerHtml += '</div>';
 
-				// TODO: related to Statistics page chart (broke other lineCharts)
-				// TODO: check for what is this needed
-				// let provider = line.split(' ')[0].replace(':', '');
-				// let providerData = tooltipModel.dataPoints.find((one) => {
-				// 	return one.dataset.label === provider;
-				// });
-				// innerHtml += `<div class='ratio-text'>
-				// 	<span>Average file size</span>
-				// 	<span>${providerData.dataset.ratio[providerData.label.replace(',', '')]}</span>
-				// </div>`;
+				let provider = line.split(' ')[0].replace(':', '');
+				let providerData = tooltipModel.dataPoints.find((one) => {
+					return one.dataset.label === provider;
+				});
+				innerHtml += `<div class='ratio-text'>
+					<span>Average file size</span>
+					<span>${providerData.dataset.ratio[providerData.label.replace(',', '')]}</span>
+				</div>`;
 			});
 
-			// TODO: related to Statistics page chart (broke other lineCharts)
-			// TODO: check for what is this needed
-			// innerHtml += `</div>`;
+			innerHtml += `</div>`;
+			let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
+			tooltipWrapper.innerHTML = innerHtml;
+		}
+
+		tooltipInstance.style.opacity = 1;
+		let { canvas: { offsetLeft }, chartArea } = chart;
+
+		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
+
+		// caretX min 0 max 1110
+		// 120px based on the half width of the tooltip + vertical line and gap
+		if (tooltipModel.caretX > 882) {
+			tooltipVerticalLine.style.left = '230px';
+			tooltipInstance.style.left = -120 + offsetLeft + tooltipModel.caretX + 'px';
+		} else {
+			tooltipVerticalLine.style.left = '-10px';
+			tooltipInstance.style.left = 120 + offsetLeft + tooltipModel.caretX + 'px';
+		}
+
+		tooltipVerticalLine.style.height = chartArea.height + 'px';
+		tooltipInstance.style.top = chartArea.top + 'px';
+	};
+
+	// create external tooltip (new version)
+	let externalTooltip = (ctx) => {
+		let { chart, tooltip: tooltipModel } = ctx;
+
+		let tooltipInstance = document.getElementById('lineChart-tooltip');
+
+		// Create element on first render
+		if (!tooltipInstance) {
+			tooltipInstance = document.createElement('div');
+			tooltipInstance.id = 'lineChart-tooltip';
+			tooltipInstance.classList.add('tooltipEl');
+			let wrapper = document.createElement('div');
+			wrapper.classList.add('tooltipWrapper');
+			tooltipInstance.appendChild(wrapper);
+			let verticalLine = document.createElement('div');
+			verticalLine.classList.add('tooltipVerticalLine');
+			tooltipInstance.appendChild(verticalLine);
+			chart.canvas.parentNode.appendChild(tooltipInstance);
+		}
+
+		// Hide if no tooltip
+		if (tooltipModel.opacity === 0) {
+			tooltipInstance.style.opacity = 0;
+			return;
+		}
+
+		if (tooltipModel.body) {
+			// get title text and body lines
+			let titleText = new Date(tooltipModel.title[0].split(',')[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+			// prepare body lines and color map for lines-backgrounds
+			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
+				res.lines.push(item.lines[0]);
+				res.linesMap[item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+				return res;
+			}, { lines: [], linesMap: {} });
+
+			// sort body lines from max to min
+			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
+
+			// create title element
+			let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
+
+			// create body lines
+			sortedBodyLines.forEach((line) => {
+				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
+				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
+
+				line.split(' ').forEach((part, partIdx) => {
+					let prepPart = part;
+
+					if (partIdx === 0) {
+						prepPart = prepPart.replace(':', '');
+					} else {
+						prepPart = prepPart.replaceAll(',', ' ');
+					}
+
+					innerHtml += `<span>${prepPart}</span>`;
+				});
+
+				innerHtml += '</div>';
+			});
+
 			let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}
@@ -164,7 +247,7 @@ function createLineChart (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: chartSettings.useExternalTooltip ? externalTooltip : null,
+					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltip : externalTooltipOldVersion,
 				},
 			},
 			scales: {
