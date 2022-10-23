@@ -182,7 +182,7 @@ function createLineChart (
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 
 			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
-				tooltipVerticalLine.style.left = '230px';
+				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
 			} else {
 				tooltipVerticalLine.style.left = '-10px';
