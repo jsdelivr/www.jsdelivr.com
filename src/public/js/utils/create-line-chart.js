@@ -136,8 +136,9 @@ function createLineChart (
 		}
 
 		if (tooltipModel.body) {
-			// get title text and body lines
-			let titleText = new Date(tooltipModel.title[0].split(',')[0]).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
+
+			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
 
 			// prepare body lines and color map for lines-backgrounds
 			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
@@ -150,7 +151,7 @@ function createLineChart (
 			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
 
 			// create title element
-			let innerHtml = `<div class='tooltipTitle'>${titleText}</div><div class='tooltipBody'>`;
+			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'>`;
 
 			// create body lines
 			sortedBodyLines.forEach((line) => {
