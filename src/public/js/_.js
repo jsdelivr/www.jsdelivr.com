@@ -452,7 +452,7 @@ module.exports = {
 
 		return rawDataDatesKeys.reduce((resData, date) => {
 			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
-			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
+			let valueByDateConverted = Math.round(rawDataDatesData[date] / convertionFactor);
 
 			switch (groupBy) {
 				case 'month':
