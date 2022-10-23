@@ -10,6 +10,13 @@ function createLineChart (
 	chartSettings = { useExternalTooltip: false },
 	chartConfig = {}
 ) {
+	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
+	let prevTooltipInstance = document.getElementById('lineChart-tooltip');
+
+	if (prevTooltipInstance) {
+		prevTooltipInstance.remove();
+	}
+
 	if (!chartEl) { return; }
 
 	// TODO: Statistics page only, should be rechecked and fix if needed
