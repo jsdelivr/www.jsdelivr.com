@@ -163,8 +163,6 @@ function createLineChart (
 
 					if (partIdx === 0) {
 						prepPart = prepPart.replace(':', '');
-					} else {
-						prepPart = prepPart.replaceAll(',', ' ');
 					}
 
 					innerHtml += `<span>${prepPart}</span>`;
@@ -178,22 +176,32 @@ function createLineChart (
 		}
 
 		tooltipInstance.style.opacity = 1;
-		let { canvas: { offsetLeft }, chartArea } = chart;
+		let { canvas, chartArea } = chart;
 
 		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
+		let tooltipWrapperEl = tooltipInstance.querySelector('div.tooltipWrapper');
 
-		// caretX min 0 max 1110
-		// 120px based on the half width of the tooltip + vertical line and gap
-		if (tooltipModel.caretX > 882) {
-			tooltipVerticalLine.style.left = '230px';
-			tooltipInstance.style.left = -120 + offsetLeft + tooltipModel.caretX + 'px';
+		if (screen.width >= 768) {
+			tooltipInstance.style.top = chartArea.top + 'px';
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+
+			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
+				tooltipVerticalLine.style.left = '230px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			} else {
+				tooltipVerticalLine.style.left = '-10px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
 		} else {
-			tooltipVerticalLine.style.left = '-10px';
-			tooltipInstance.style.left = 120 + offsetLeft + tooltipModel.caretX + 'px';
+			tooltipInstance.style.top = chartArea.top + 'px';
+			// tooltip data wrapper should be stick to the center
+			tooltipWrapperEl.style.position = 'absolute';
+			tooltipWrapperEl.style.left = canvas.clientWidth / 2 - tooltipWrapperEl.offsetWidth / 2 + 'px';
+			tooltipWrapperEl.style.top = -tooltipWrapperEl.offsetHeight + 'px';
+			// only vertical line is moving around the chart
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+			tooltipVerticalLine.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetLeft + 'px';
 		}
-
-		tooltipVerticalLine.style.height = chartArea.height + 'px';
-		tooltipInstance.style.top = chartArea.top + 'px';
 	};
 
 	// create vertical y-axis border line
