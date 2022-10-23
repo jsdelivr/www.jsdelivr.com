@@ -1,5 +1,5 @@
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
-const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemper', 'October', 'November', 'December' ];
+const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
 const MONTH_FULL_OF_DAYS = '31';
 const MONTH_SHORT_OF_DAYS = '30';
