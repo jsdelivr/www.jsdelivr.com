@@ -112,7 +112,6 @@ function createLineChart (
 	// create external tooltip (new version)
 	let externalTooltip = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
-
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
 		// Create element on first render
@@ -137,7 +136,6 @@ function createLineChart (
 
 		if (tooltipModel.body) {
 			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
-
 			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
 
 			// prepare body lines and color map for lines-backgrounds
@@ -156,18 +154,9 @@ function createLineChart (
 			// create body lines
 			sortedBodyLines.forEach((line) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
+				let [ iVersion, iAmount ] = line.split(':');
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
-
-				line.split(' ').forEach((part, partIdx) => {
-					let prepPart = part;
-
-					if (partIdx === 0) {
-						prepPart = prepPart.replace(':', '');
-					}
-
-					innerHtml += `<span>${prepPart}</span>`;
-				});
-
+				innerHtml += `<span>${iVersion}</span><span>${iAmount + chartData.valueUnits}</span>`;
 				innerHtml += '</div>';
 			});
 
