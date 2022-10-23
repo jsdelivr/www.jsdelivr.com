@@ -127,7 +127,7 @@ function createLineChart (
 			tooltipInstance.id = 'lineChart-tooltip';
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
-			wrapper.classList.add('tooltipWrapper');
+			wrapper.classList.add('tooltipWrapper', 'tooltipWrapper-improved');
 			tooltipInstance.appendChild(wrapper);
 			let verticalLine = document.createElement('div');
 			verticalLine.classList.add('tooltipVerticalLine');
