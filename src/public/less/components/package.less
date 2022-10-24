@@ -293,35 +293,6 @@
 						white-space: normal;
 					}
 				}
-
-				.btn.dropdown-toggle {
-					background: #fff;
-					border: 1px solid #cfd6dd;
-					box-sizing: border-box;
-					border-radius: 6px;
-					height: 40px;
-					padding: 0 14px 0 16px;
-				}
-
-				.btn-group {
-					width: 100%;
-
-					@media (min-width: @screen-sm-min) {
-						width: auto;
-					}
-
-					.dropdown-toggle {
-						width: 100%;
-						display: flex;
-						align-items: center;
-						justify-content: space-between;
-
-						@media (min-width: @screen-sm-min) {
-							width: auto;
-							display: inline;
-						}
-					}
-				}
 			}
 
 			.chart-tops {
@@ -605,37 +576,6 @@
 						margin-right: 16px;
 						color: #5c667a;
 					}
-
-					.btn-group {
-						margin-top: 12px;
-						width: 100%;
-
-						@media (min-width: @screen-sm-min) {
-							margin-top: 0;
-							width: auto;
-						}
-
-						> button {
-							width: 100%;
-							display: flex;
-							align-items: center;
-							justify-content: space-between;
-
-							@media (min-width: @screen-sm-min) {
-								width: auto;
-								display: inline;
-							}
-						}
-					}
-
-					.btn.dropdown-toggle {
-						background: #fff;
-						border: 1px solid #cfd6dd;
-						box-sizing: border-box;
-						border-radius: 6px;
-						height: 40px;
-						padding: 0 14px 0 16px;
-					}
 				}
 
 				.total-headline {
@@ -652,74 +592,6 @@
 
 					.dropdown-menu {
 						max-height: 228px;
-					}
-				}
-			}
-
-			.btn-group {
-				.btn {
-					font-size: 14px;
-					font-weight: 400;
-					line-height: 20px;
-					color: #111a2c;
-					border: none;
-					background-color: #fff;
-					box-shadow: none;
-					padding: 0 7px 0 0;
-
-					>span {
-						margin-right: 11px;
-					}
-				}
-
-				&.open {
-					.btn {
-						&, &:hover, &:focus, &:active {
-							color: #f65128;
-						}
-					}
-
-					.dropdown-menu {
-						right: 0;
-						left: auto;
-						background: #fff;
-						border: 1px solid #dfe3e7;
-						box-sizing: border-box;
-						box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
-						border-radius: 6px;
-						padding: 8px;
-						max-width: 320px;
-						margin-top: 9px;
-
-						@media (max-width: @screen-xs) {
-							width: 100%;
-						}
-
-						> li > a {
-							display: flex;
-							align-items: center;
-							justify-content: flex-start;
-							height: 40px;
-							font-size: 14px;
-							line-height: 20px;
-							color: #111a2c;
-							padding: 0 10px;
-
-							&:hover {
-								background: #f3f5f7;
-								border-radius: 4px;
-							}
-						}
-
-						> li > a.disabled {
-							color: #b2bdc7;
-
-							&:hover {
-								cursor: default;
-								background: transparent;
-								color: #b2bdc7;
-							}
-						}
 					}
 				}
 			}
@@ -740,6 +612,122 @@
 				@media (min-width: @screen-sm-min) {
 					display: block;
 				}
+			}
+		}
+
+		// rules for all dropdown btn/menus around the Package page
+		.btn-group {
+			.btn.dropdown-toggle {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				column-gap: 4px;
+				width: 100%;
+				background: transparent;
+				padding: 0;
+				box-shadow: none;
+				border: none;
+				border-radius: 6px;
+
+				>span {
+					font-weight: 400;
+					font-size: 14px;
+					line-height: 20px;
+				}
+
+				>i {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					width: 20px;
+					height: 20px;
+				}
+			}
+
+			&.open {
+				.btn.dropdown-toggle > span, .btn.dropdown-toggle > i {
+					color: #f65128;
+				}
+
+				.dropdown-menu {
+					left: auto;
+					right: 0;
+					margin-top: 9px;
+					padding: 8px;
+					background: #fff;
+					border: 1px solid #dfe3e7;
+					box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
+					border-radius: 6px;
+					width: 100%;
+
+					@media (min-width: @screen-xs) {
+						max-width: 320px;
+					}
+
+					li {
+						>a {
+							display: flex;
+							align-items: center;
+							justify-content: flex-start;
+							height: 40px;
+							width: 100%;
+							padding: 10px;
+							font-weight: 400;
+							font-size: 14px;
+							line-height: 20px;
+							color: #111a2c;
+
+							&:hover {
+								background: #f3f5f7;
+								border-radius: 4px;
+							}
+
+							&.disabled {
+								color: #b2bdc7;
+
+								&:hover {
+									cursor: default;
+									background: transparent;
+									color: #b2bdc7;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		.install-settings .btn-group .btn.dropdown-toggle {
+			>span, >i {
+				color: #fff;
+			}
+		}
+
+		.data-range-ctrl, .group-by-ctrl {
+			.btn-group {
+				width: 100%;
+
+				@media (min-width: @screen-sm-min) {
+					width: auto;
+				}
+
+				.btn.dropdown-toggle {
+					border: 1px solid #cfd6dd;
+					height: 40px;
+					padding: 0 14px 0 16px;
+
+					>span, >i {
+						color: #17233c;
+					}
+				}
+			}
+		}
+
+		.group-by-ctrl .btn-group {
+			margin-top: 12px;
+
+			@media (min-width: @screen-sm-min) {
+				margin-top: 0;
 			}
 		}
 	}
