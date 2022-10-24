@@ -756,47 +756,51 @@ module.exports = {
 		let valueUnits = showChartBandwidth ? ' GB' : '';
 		// get top by stats version of package to get from it values for y-axis, and labels to x-axis
 		let topVersionData = rawDataFiltered[0][dataType];
-		let { preparedData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy, convertionFactor);
-		let results = {
-			values: [],
+		let { preparedData: topVersionPrepData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy, convertionFactor);
+		let labelsData = {
 			labels: [],
 			labelsStartEndPeriods: [],
-			maxRangeValue: 0,
-			valueUnits,
 		};
-		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+		let dataToIteract = groupBy === 'day' ? topVersionPrepData.days : Object.values(topVersionPrepData);
 
-		// collect data for chart depending on groupBy
-		results = dataToIteract.reduce((res, period) => {
-			if (onlyFullPeriods && period.isFull === false) { return res; }
+		// collect labels, period starts/ends adta for chart
+		labelsData = dataToIteract.reduce((labelsData, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
 
-			res.values.push(period.value);
-			res.labels.push([ period.day, period.month, period.year ]);
-			res.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+			labelsData.labels.push([ period.day, period.month, period.year ]);
+			labelsData.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
 
-			return res;
-		}, results);
-
-		// get min/max magnitude for y-axis
-		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
+			return labelsData;
+		}, labelsData);
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
 			case 'week':
-				results.labels = this.createWeekPeriodChartLabels(results.labels);
+				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
 				break;
 			case 'month':
-				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
+				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 			case 'year':
-				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
+				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}
 
-		let datasets = rawDataFiltered.reduce((datasets, versionData, idx) => {
+		let { allGroupedByValues, datasets } = rawDataFiltered.reduce((res, versionData, idx) => {
+			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy, convertionFactor);
+			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+			let groupedByValues = dataToIteract.reduce((values, period) => {
+				if (onlyFullPeriods && period.isFull === false) { return values; }
+
+				values.push(period.value);
+
+				return values;
+			}, []);
+
 			let dataset = {
 				label: `v${versionData.version}`,
-				data: Object.values(versionData[dataType].dates).map(value => Math.round(value / convertionFactor)),
+				data: groupedByValues,
 			};
 
 			switch (idx) {
@@ -822,13 +826,19 @@ module.exports = {
 					break;
 			}
 
-			datasets.push(dataset);
+			res.datasets.push(dataset);
+			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
 
-			return datasets;
-		}, []);
+			return res;
+		}, { allGroupedByValues: [], datasets: [] });
+
+		// get min/max magnitude for y-axis
+		let maxRangeValue = this.getValueByMagnitude(Math.max(...allGroupedByValues), 'ceil', 1);
 
 		return {
-			...results,
+			...labelsData,
+			maxRangeValue,
+			valueUnits,
 			datasets,
 		};
 	},
