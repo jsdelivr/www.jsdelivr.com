@@ -14,14 +14,17 @@ module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
 };
 
+// TODO: deprecated endpoint
 module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/date/${period}` });
 };
 
+// TODO: deprecated endpoint
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/stats/${period}` });
 };
 
+// TODO: deprecated endpoint
 module.exports.fetchPackageVersionStats = (type, name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/${period}` });
 };
@@ -55,6 +58,7 @@ module.exports.fetchPackageEntrypoints = (type, name, version) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
 };
 
+// TODO: deprecated endpoint
 module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}` });
 };
