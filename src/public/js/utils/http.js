@@ -6,9 +6,6 @@ const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
-// TODO: delete it, replace with API_HOST once it is moved to such host
-const PREVIEW_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
-
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/content/${period}` });
 };
@@ -137,12 +134,10 @@ module.exports.fetchProjectStats = (type, statsType, period) => {
 	});
 };
 
-// TODO: replace PREVIEW_API_HOST with API_HOST once it is ready
 module.exports.fetchPackageHitsBandwidthStats = (name, type, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${PREVIEW_API_HOST}/v1/stats/packages/${type}/${name}?period=${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}?period=${period}` });
 };
 
-// TODO: replace PREVIEW_API_HOST with API_HOST once it is ready
 module.exports.fetchPackageVersionsHitsBandwidthStats = (name, type, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${PREVIEW_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}` });
 };
