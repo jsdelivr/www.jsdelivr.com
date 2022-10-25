@@ -146,7 +146,7 @@ function createLineChart (
 
 		if (tooltipModel.body) {
 			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
-			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+			let tooltipDate = _.createImprovedExternalTooltipTitle(periodStart, periodEnd, chartData.usageChartGroupBy);
 
 			// prepare body lines and color map for lines-backgrounds
 			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {

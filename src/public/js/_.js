@@ -842,4 +842,15 @@ module.exports = {
 			datasets,
 		};
 	},
+
+	// create barChart, lineChart improved tooltip title
+	createImprovedExternalTooltipTitle (periodStart, periodEnd, groupedBy) {
+		if (groupedBy === 'month') {
+			let [ monthName, _, year ] = periodStart.split(' ');
+
+			return `${monthName}, ${year}`;
+		}
+
+		return periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+	}
 };

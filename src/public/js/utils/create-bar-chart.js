@@ -96,8 +96,7 @@ function createBarChart (
 
 		if (tooltipModel.body) {
 			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
-
-			let tooltipDate = periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+			let tooltipDate = _.createImprovedExternalTooltipTitle(periodStart, periodEnd, chartData.usageChartGroupBy);
 
 			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
 			let innerHtml = `<div>${tooltipDate}</div><div><span class='color-square'></span><span>${bodyValue}${chartData.valueUnits}</span></div>`;
