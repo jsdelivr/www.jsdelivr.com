@@ -1,6 +1,9 @@
+const _ = require('../_');
+
 // chartEl - canvas element
 // chartData (labels, datasets) - data to render within the chart
 // chartSettings - additional params for the chart
+//	chartSettings.useYAxisBorderPlugin - use plugin to render vertical y-axis border
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
@@ -162,8 +165,10 @@ function createLineChart (
 			sortedBodyLines.forEach((line) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
 				let [ iVersion, iAmount ] = line.split(':');
+				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
+
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
-				innerHtml += `<span>${iVersion}</span><span>${iAmount + chartData.valueUnits}</span>`;
+				innerHtml += `<span>${iVersion}</span><span>${formattedAmount + chartData.valueUnits}</span>`;
 				innerHtml += '</div>';
 			});
 
