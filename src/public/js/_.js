@@ -47,8 +47,8 @@ module.exports = {
 		return Math.round(hits / 1e9);
 	},
 
-	formatMiB2TiB (mb) {
-		return Math.floor(mb / 1024 / 1024 / 10) * 10;
+	formatBytes2TiB (bytes) {
+		return Math.round(bytes / 1.1e+12);
 	},
 
 	formatNumber (number) {

@@ -7,7 +7,7 @@ const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/content/${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/content?period=${period}` });
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
