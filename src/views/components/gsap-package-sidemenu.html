@@ -104,37 +104,36 @@
 						let periodKey = this.get('periodKey');
 						let period = periodsList[periodKey];
 
-						// get package version stats
-						http.fetchPackageVersionStatsDEPRECATED(type, name, period).then((data) => {
-							let versionsStatsArr = [];
+						// get overall GSAP stats
+						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+							this.animate('packageTotal', response.hits.total, { duration: 1000 });
+						});
 
-							Object.keys(data.versions).forEach((key) => {
-								versionsStatsArr.push({
-									version: key,
-									hits: data.versions[key].total,
-								});
-							});
+						// get GSAP top version stats
+						http.fetchPackageVersionsStats(type, name, period, 'hits', 1).then((response) => {
+							this.animate('topVersion', response[0].version, { duration: 1000 });
+							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
+						});
 
-							let topVersionData = versionsStatsArr.sort((a, b) => b.hits - a.hits)[0];
+						// get GSAP bandwidth stats
+						http.fetchPackageVersionsStats(type, name, period, 'bandwidth', 1).then((response) => {
+							this.animate('bandwidthTotal', _.convertBytesToUnits(response[0].bandwidth.total), { duration: 1000 });
+						});
 
-							this.animate('topVersion', topVersionData.version, { duration: 1000 });
-							this.animate('topVersionHits', topVersionData.hits, { duration: 1000 });
-							this.animate('packageTotal', data.total, { duration: 1000 });
-							this.animate('packageRank', data.rank + 1, { duration: 1000 });
+						// get package bandwidth stats
+						// TODO: recheck endpoint
+						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
+							if (response.total) {
+								this.set('packageBandwidthStats', response);
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
+							}
 						});
 
 						// get package date stats
 						http.fetchPackageDateStats(type, name, period).then((response) => {
 							if (response.total) {
 								this.set('packageDateStats', response);
-							}
-						});
-
-						// get package bandwidth stats
-						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-							if (response.total) {
-								this.set('packageBandwidthStats', response);
-								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
 							}
 						});
 					}
