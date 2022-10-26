@@ -140,6 +140,3 @@ module.exports.fetchProjectStats = (type, statsType, period) => {
 	});
 };
 
-module.exports.fetchPackageVersionsHitsBandwidthStats = (name, type, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}` });
-};
