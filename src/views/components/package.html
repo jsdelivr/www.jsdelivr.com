@@ -338,12 +338,10 @@
 					let name = this.get('name');
 
 					http.fetchPackageFileStats(type, name, version, period, dataType).then((response) => {
-						let filesStats = response.map((statsPerFile) => {
-							return {
-								file: statsPerFile.name,
-								hits: statsPerFile[dataType].total,
-							};
-						});
+						let filesStats = response.map(statsPerFile => ({
+							file: statsPerFile.name,
+							hits: statsPerFile[dataType].total,
+						}));
 
 						this.animate('filesStats', filesStats.slice(0, 5));
 					});
@@ -360,12 +358,10 @@
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					http.fetchPackageVersionStats(type, name, period, dataType).then((response) => {
-						let versionsStats = response.map((statsPerVersion) => {
-							return {
-								version: statsPerVersion.version,
-								hits: statsPerVersion[dataType].total,
-							}
-						});
+						let versionsStats = response.map(statsPerVersion => ({
+							version: statsPerVersion.version,
+							hits: statsPerVersion[dataType].total,
+						}));
 
 						if (versionsStats[0]) {
 							this.set('fileStatsVersion', versionsStats[0].version);
