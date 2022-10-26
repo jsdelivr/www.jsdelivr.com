@@ -55,7 +55,7 @@
 
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
-			<span>Top version - {{noDataOfVersions ? package.version : versionStats[0].version}}</span>
+			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
 			<span>{{noDataOfVersions ? 'No data' : _.formatNumber(topVersionHits)}}</span>
 		</div>
 
@@ -155,26 +155,19 @@
 						let statsPeriod = this.get('statsPeriod');
 						let period = statsPeriodValues[statsPeriod];
 
-						// get package version stats
-						http.fetchPackageVersionStatsDEPRECATED(type, name, period).then((data) => {
-							if (data.total) {
-								let versionsStatsArr = [];
+						// get overall package stats (Rank specifically)
+						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+						});
 
-								Object.keys(data.versions).forEach((key) => {
-									versionsStatsArr.push({
-										version: key,
-										hits: data.versions[key].total,
-									});
-								});
-
-								let versionStats = versionsStatsArr.sort((a, b) => b.hits - a.hits);
-
-								this.animate('versionStats', versionStats, { duration: 1000 });
-								this.animate('packageRank', data.rank + 1, { duration: 1000 });
-								this.animate('topVersionHits', versionStats[0].hits, { duration: 1000 });
-							} else {
+						// get package top version stats
+						http.fetchPackageVersionsStats(type, name, period, 'hits', 1).then((response) => {
+							if (!response.length) {
 								this.set('noDataOfVersions', true);
 							}
+
+							this.set('topVersion', response[0].version);
+							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
 						});
 
 						// get package date stats
