@@ -211,6 +211,7 @@
 					</div>
 
 					<div class="hits-chart-legend">
+						<!-- TODO: we should get legend versions from this call fetchPackageVersionsStats -->
 						{{#each topFiveVersions}}
 							<div class="legend-item">
 								<div></div>
@@ -450,6 +451,7 @@
 					if (period === 'day') { return; }
 
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
+						// TODO: noPackageStatsData - should be combined with fetchPackageVersionsStats case
 						if (!response.hits.total || !response.bandwidth.total) {
 							this.set('noPackageStatsData', true);
 							return;
@@ -461,7 +463,8 @@
 						this.set('rawStatsChartData', response);
 					});
 
-					http.fetchPackageVersionsHitsBandwidthStats(name, type, period).then((response) => {
+					// TODO: packages versions should be called on request-bandwidth switch (because of sorting on the server)
+					http.fetchPackageVersionsStats(type, name, period).then((response) => {
 						// if (!response.hits.total || !response.bandwidth.total) {
 						// 	this.set('noPackageStatsData', true);
 						// 	return;
