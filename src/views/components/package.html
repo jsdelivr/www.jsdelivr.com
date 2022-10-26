@@ -165,7 +165,12 @@
 
 				<div class="chart-tops">
 					{{#if ~/topFiveVersions}}
-						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersions}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+						<c-top-stats-table
+							title="Top 5 versions"
+							data="{{~/topFiveVersions}}"
+							type="{{~/type}}"
+							name="{{~/name}}"
+							version="{{~/fileStatsVersion}}">
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -345,28 +350,29 @@
 				});
 
 				// get Package Version Stats for Top-5-package-versions
-				this.observe('statsPeriod versionP navRoute', () => {
-					if (this.get('statsPeriod') && this.get('versionP')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
+				this.observe('statsPeriod versionP showChartBandwidth', () => {
+					if (!this.get('statsPeriod') || !this.get('versionP')) { return; }
 
-						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							let topFiveVersions = Object.keys(response.versions).map(key => ({
-								version: key,
-								hits: response.versions[key].total,
-								dates: response.versions[key].dates,
-							})).sort((a, b) => b.hits - a.hits).slice(0, 5);
+					let type = this.get('type');
+					let name = this.get('name');
+					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
-							// TODO: wth is this?
-							// Maybe we have no stats yet.
-							if (topFiveVersions[0]) {
-								this.set('fileStatsVersion', topFiveVersions[0].version);
+					http.fetchPackageVersionStats(type, name, period, dataType).then((response) => {
+						let versionsStats = response.map((statsPerVersion) => {
+							return {
+								version: statsPerVersion.version,
+								hits: statsPerVersion[dataType].total,
 							}
-
-							this.animate('topFiveVersions', topFiveVersions);
 						});
-					}
+
+						if (versionsStats[0]) {
+							this.set('fileStatsVersion', versionsStats[0].version);
+						}
+
+						this.animate('topFiveVersions', versionsStats.slice(0, 5));
+					});
 				});
 
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
