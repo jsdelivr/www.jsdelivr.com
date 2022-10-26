@@ -360,7 +360,7 @@
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
-					http.fetchPackageVersionStats(type, name, period, dataType).then((response) => {
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						let versionsStats = response.map(statsPerVersion => ({
 							version: statsPerVersion.version,
 							hits: statsPerVersion[dataType].total,
@@ -370,7 +370,7 @@
 							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
-						this.animate('topFiveVersions', versionsStats.slice(0, 5));
+						this.animate('topFiveVersions', versionsStats);
 					});
 				});
 
