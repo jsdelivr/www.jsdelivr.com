@@ -171,7 +171,8 @@
 							{{/partial}}
 						</c-top-stats-table>
 
-						<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+						<c-top-stats-table
+							data="{{~/filesStats}}"
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
@@ -182,7 +183,9 @@
 							{{/partial}}
 
 							{{#partial column1}}
-								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">
+									{{file}}
+								</a>
 							{{/partial}}
 						</c-top-stats-table>
 					{{/if}}
@@ -317,22 +320,28 @@
 				});
 
 				// fetch Package Version File Stats for Top-5-file-per-package-version
-				this.observe('statsPeriod fileStatsVersion', () => {
-					if (this.get('statsPeriod') && this.get('fileStatsVersion')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let version = this.get('fileStatsVersion');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
-
-						http.fetchPackageFileStats(type, name, version, period).then((data) => {
-							let fileStats = Object.keys(data.files).map(key => ({
-								file: key,
-								hits: data.files[key].total,
-							})).sort((a, b) => b.hits - a.hits);
-
-							this.animate('fileStats', fileStats);
-						});
+				this.observe('statsPeriod fileStatsVersion showChartBandwidth', () => {
+					if (!this.get('statsPeriod') || !this.get('fileStatsVersion')) {
+						return;
 					}
+
+					let version = this.get('fileStatsVersion');
+					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+					let type = this.get('type');
+					let name = this.get('name');
+
+					http.fetchPackageFileStats(type, name, version, period, dataType).then((response) => {
+						let filesStats = response.map((statsPerFile) => {
+							return {
+								file: statsPerFile.name,
+								hits: statsPerFile[dataType].total,
+							};
+						});
+
+						this.animate('filesStats', filesStats.slice(0, 5));
+					});
 				});
 
 				// get Package Version Stats for Top-5-package-versions
