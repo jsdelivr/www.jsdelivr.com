@@ -23,13 +23,12 @@ module.exports.fetchPackageFileStats = (type, name, version, period = 'month', s
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files?period=${period}&by=${sortBy}` });
 };
 
-// TODO: deprecated endpoint, replace fetchPackageVersionStatsDEPRECATED with fetchPackageVersionStats
-module.exports.fetchPackageVersionStatsDEPRECATED = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/${period}` });
+module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}?period=${period}` });
 };
 
-module.exports.fetchPackageVersionStats = (type, name, period = 'month', sortBy = 'hits') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}&by=${sortBy}` });
+module.exports.fetchPackageVersionsStats = (type, name, period = 'month', sortBy = 'hits', limit = '5') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}&by=${sortBy}&limit=${limit}` });
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
