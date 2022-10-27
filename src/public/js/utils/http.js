@@ -14,16 +14,16 @@ module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
 };
 
-module.exports.fetchPackageFileStats = (type, name, version, period = 'month', sortBy = 'hits') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files?period=${period}&by=${sortBy}` });
+module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by } });
 };
 
 module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}?period=${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}`, body: { period } });
 };
 
-module.exports.fetchPackageVersionsStats = (type, name, period = 'month', sortBy = 'hits', limit = '5') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions?period=${period}&by=${sortBy}&limit=${limit}` });
+module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = 'hits', limit = '5') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions`, body: { period, by, limit } });
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
