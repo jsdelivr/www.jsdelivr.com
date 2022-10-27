@@ -79,10 +79,6 @@ module.exports.fetchCdnOssStats = (name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/proxies/${name}`, body: { period } });
 };
 
-module.exports.fetchPackageRequestBandwidthStats = (name, type, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}`, body: { period } });
-};
-
 module.exports.fetchNetworkProviderStats = (period, country = '') => {
 	let body = {
 		period,
