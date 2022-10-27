@@ -211,8 +211,7 @@
 					</div>
 
 					<div class="hits-chart-legend">
-						<!-- TODO: we should get legend versions from this call fetchPackageVersionsStats -->
-						{{#each topFiveVersions}}
+						{{#each hitsChartLegendVersions}}
 							<div class="legend-item">
 								<div></div>
 								{{version}}
@@ -541,6 +540,9 @@
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
 
+					// collect versions for hitsChart Legend element
+					let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
+
 					// collect X-Axis dates, group data by period, get
 					let {
 						labels,
@@ -561,6 +563,8 @@
 						valueUnits,
 						usageChartGroupBy,
 					});
+
+					this.set('hitsChartLegendVersions', hitsChartLegendVersions);
 				}, { init: false });
 			}
 		},
