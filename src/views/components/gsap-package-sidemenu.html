@@ -104,37 +104,21 @@
 						let periodKey = this.get('periodKey');
 						let period = periodsList[periodKey];
 
-						// get overall GSAP stats
+						// get overall GSAP stats (data for charts, rank)
 						http.fetchPackageSummaryStats(type, name, period).then((response) => {
 							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+
+							this.set('packageDateStats', response.hits);
 							this.animate('packageTotal', response.hits.total, { duration: 1000 });
+
+							this.set('packageBandwidthStats', response.bandwidth);
+							this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total), { duration: 1000 });
 						});
 
 						// get GSAP top version stats
 						http.fetchPackageVersionsStats(type, name, period, 'hits', 1).then((response) => {
 							this.animate('topVersion', response[0].version, { duration: 1000 });
 							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
-						});
-
-						// get GSAP bandwidth stats
-						http.fetchPackageVersionsStats(type, name, period, 'bandwidth', 1).then((response) => {
-							this.animate('bandwidthTotal', _.convertBytesToUnits(response[0].bandwidth.total), { duration: 1000 });
-						});
-
-						// get package bandwidth stats
-						// TODO: recheck endpoint
-						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-							if (response.total) {
-								this.set('packageBandwidthStats', response);
-								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
-							}
-						});
-
-						// get package date stats
-						http.fetchPackageDateStats(type, name, period).then((response) => {
-							if (response.total) {
-								this.set('packageDateStats', response);
-							}
 						});
 					}
 				});
@@ -147,13 +131,7 @@
 						return null;
 					}
 
-					let array = [];
-
-					Object.keys(packageDateStats.dates).forEach((date) => {
-						array.push([ date, packageDateStats.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					let array = Object.entries(packageDateStats.dates);
 
 					if (requestsChart) {
 						requestsChart.destroy();
@@ -161,8 +139,8 @@
 						this.set('requestsChart', null);
 					}
 
-					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					let data = array.map(value => value[1].total);
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => item[1]);
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
@@ -216,13 +194,7 @@
 						return null;
 					}
 
-					let array = [];
-
-					Object.keys(packageBandwidthStats.dates).forEach((date) => {
-						array.push([ date, packageBandwidthStats.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					let array = Object.entries(packageBandwidthStats.dates);
 
 					if (bandwidthChart) {
 						bandwidthChart.destroy();
@@ -230,8 +202,8 @@
 						this.set('bandwidthChart', null);
 					}
 
-					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					let data = array.map(value => _.convertBytesToUnits(value[1].total));
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => _.convertBytesToUnits(item[1]));
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
