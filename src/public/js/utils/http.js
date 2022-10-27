@@ -14,11 +14,6 @@ module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
 };
 
-// TODO: deprecated endpoint
-module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/date/${period}` });
-};
-
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month', sortBy = 'hits') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files?period=${period}&by=${sortBy}` });
 };
@@ -58,11 +53,6 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 
 module.exports.fetchPackageEntrypoints = (type, name, version) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
-};
-
-// TODO: deprecated endpoint
-module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}` });
 };
 
 module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
