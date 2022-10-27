@@ -405,7 +405,6 @@
 					}
 				});
 
-				// TODO: recheck this, do we still need it?
 				if (!this.get('versionP')) {
 					this.set('versionP', this.get('package.version'));
 				}
@@ -416,6 +415,7 @@
 					let period = this.get('statsPeriods')[statsPeriod];
 					let type = this.get('type');
 					let name = this.get('name');
+					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 
 					// once chart period is changed - update groupBy options respectively to period
 					switch (period) {
@@ -450,8 +450,8 @@
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
 					if (period === 'day') { return; }
 
+					// get data for barChart
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
-						// TODO: noPackageStatsData - should be combined with fetchPackageVersionsStats case
 						if (!response.hits.total || !response.bandwidth.total) {
 							this.set('noPackageStatsData', true);
 							return;
@@ -463,19 +463,38 @@
 						this.set('rawStatsChartData', response);
 					});
 
-					// TODO: packages versions should be called on request-bandwidth switch (because of sorting on the server)
-					http.fetchPackageVersionsStats(type, name, period).then((response) => {
-						// if (!response.hits.total || !response.bandwidth.total) {
-						// 	this.set('noPackageStatsData', true);
-						// 	return;
-						// }
+					// get data for lineChart
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						if (!response.length) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
 
-						// this.set('noPackageStatsData', false);
+						this.set('noPackageStatsData', false);
 						// once new data fetched we should set groupBy to default value before raw data set
 						this.set('usageChartGroupBy', 'day');
 						this.set('rawHitsChartData', response);
 					});
 				});
+
+				// get data for lineChart when Request/Bandwidth switch clicked (since it is sorting on the server)
+				this.observe('showChartBandwidth', (showChartBandwidth) => {
+					let statsPeriod = this.get('statsPeriod');
+					let period = this.get('statsPeriods')[statsPeriod];
+					let type = this.get('type');
+					let name = this.get('name');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						if (!response.length) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						this.set('rawHitsChartData', response);
+					});
+				}, { init: false });
 
 				// handle raw StatsChart data and prepare it for StatsChart
 				// screenWidth to observe when screen width is resized to recreate stats chart
@@ -550,7 +569,7 @@
 				let statsChart;
 				let hitsChart;
 
-				// create statsChart
+				// create barChart
 				this.observe('preparedStatsChartData', (preparedStatsChartData) => {
 					let {
 						labels,
@@ -655,7 +674,7 @@
 					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
 				}, { init: false });
 
-				// create hitsChart
+				// create lineChart
 				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
 					let {
 						datasets,
