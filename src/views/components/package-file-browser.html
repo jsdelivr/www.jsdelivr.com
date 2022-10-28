@@ -223,8 +223,7 @@
 					// fetch package File stats to get downloads amount per file
 					http.fetchPackageFileStats(packageType, packageName, version).then((response) => {
 						let downloadsPerFile = response.reduce((downloadsPerFile, fileStats) => {
-							let fileStatsPathsArr = fileStats.name.split('/');
-							let fileName = fileStatsPathsArr[fileStatsPathsArr.length - 1];
+							let fileName = fileStats.name.substr(fileStats.name.lastIndexOf('/') + 1);
 
 							if (!fileName) { return downloadsPerFile; }
 
