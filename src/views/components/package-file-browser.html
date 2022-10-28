@@ -43,6 +43,13 @@
 					</a>
 
 					<div class="file-default-ctrls">
+						{{#if ~/downloadsPerFile[default.substr(default.lastIndexOf('/') + 1)]}}
+							<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
+								<span>{{~/downloadsPerFile[default.substr(default.lastIndexOf('/') + 1)]}}</span>
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+							</div>
+						{{/if}}
+
 						<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 
 						<input type="checkbox"
