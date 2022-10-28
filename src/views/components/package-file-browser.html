@@ -82,10 +82,12 @@
 							</a>
 
 							<div>
-								<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-									<span>TODO: add real num</span>
-									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
-								</div>
+								{{#if ~/downloadsPerFile[name]}}
+									<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
+										<span>{{~/downloadsPerFile[name]}}</span>
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+									</div>
+								{{/if}}
 
 								<c-copy-dropdown
 									url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
@@ -183,7 +185,7 @@
 				});
 
 				this.observe('version', (version) => {
-					if (!version) { return };
+					if (!version) { return; }
 
 					this.set('files', []);
 					this.set('filesLoadingMessage', '');
@@ -216,6 +218,25 @@
 						} else {
 							this.set('filesLoadingMessage', defaultError);
 						}
+					});
+
+					// fetch package File stats to get downloads amount per file
+					http.fetchPackageFileStats(packageType, packageName, version).then((response) => {
+						let downloadsPerFile = response.reduce((downloadsPerFile, fileStats) => {
+							let fileStatsPathsArr = fileStats.name.split('/');
+							let fileName = fileStatsPathsArr[fileStatsPathsArr.length - 1];
+
+							if (!fileName) { return downloadsPerFile; }
+
+							downloadsPerFile = {
+								...downloadsPerFile,
+								[fileName]: fileStats.hits.total,
+							};
+
+							return downloadsPerFile;
+						}, {});
+
+						this.set('downloadsPerFile', downloadsPerFile);
 					});
 				});
 			}
