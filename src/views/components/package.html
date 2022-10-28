@@ -68,8 +68,7 @@
 				version="{{versionP}}"
 				versions="{{packageVersionsList}}"
 				path="{{path}}"
-				collection="{{collection}}"
-				files="{{~/files}}">
+				collection="{{collection}}">
 			</c-package-file-browser>
 
 			<c-collection-box collection="{{collection}}"></c-collection-box>
@@ -247,31 +246,6 @@
 	};
 
 	component.exports = {
-		computed: {
-			hasSourceMaps () {
-				let files = this.get('files');
-				let hasMin, hasMap;
-
-				if (!files) {
-					return true;
-				}
-
-				_.flattenFiles(files).forEach((file) => {
-					if (/\.min\.(?:js|css)$/.test(file)) {
-						hasMin = true;
-					} else if (/\.map$/.test(file)) {
-						hasMap = true;
-					}
-				});
-
-				return !hasMin || hasMap;
-			},
-			issueSourceMaps () {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=No source maps for minified files`
-					+ `&body=[This package](${this.get('@global.location.href')}) doesn't contain source maps for the minified files. It would be great to add them for easier debugging.`;
-			},
-		},
 		data () {
 			return {
 				_,
