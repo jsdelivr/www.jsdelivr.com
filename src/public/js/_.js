@@ -579,14 +579,19 @@ module.exports = {
 
 		if (groupBy === 'day') {
 			let tempCurrMonth = labels[0][1];
-			let lastPeriodMonth = labels[labels.length - 1][1];
+			let currAxisYear = labels[0][2];
 
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
 					case screen.width >= 992:
-						if (idx === 0 || idx === labels.length - 1) {
+						if (idx === 0) {
 							return label.slice(1, 3);
-						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
+						} else if (label[2] !== currAxisYear && label[1] !== tempCurrMonth) {
+							currAxisYear = label[2];
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth && label[2] === currAxisYear) {
 							tempCurrMonth = label[1];
 
 							return label.slice(1, 2);
