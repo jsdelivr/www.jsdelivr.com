@@ -20,7 +20,7 @@
 				</div>
 			</div>
 
-			<div class="horizontal-divider mt-24 mb-24"></div>
+			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
 				<span>Requests Served</span>
@@ -35,7 +35,7 @@
 				{{/if}}
 			</div>
 
-			<div class="horizontal-divider mt-24 mb-24"></div>
+			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
 				<span>Bandwidth</span>
@@ -50,12 +50,12 @@
 				{{/if}}
 			</div>
 
-			<div class="horizontal-divider mt-24 mb-24"></div>
+			<div class="horizontal-divider"></div>
 		</div>
 
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
-			<span>Top version - {{noDataOfVersions ? package.version : versionStats[0].version}}</span>
+			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
 			<span>{{noDataOfVersions ? 'No data' : _.formatNumber(topVersionHits)}}</span>
 		</div>
 
@@ -64,7 +64,7 @@
 
 
 			{{#unless noDataOfVersions}}
-				<div class="horizontal-divider mt-24 mb-24"></div>
+				<div class="horizontal-divider"></div>
 
 				<div class="twitter-share">
 					<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
@@ -155,48 +155,35 @@
 						let statsPeriod = this.get('statsPeriod');
 						let period = statsPeriodValues[statsPeriod];
 
-						// get package version stats
-						http.fetchPackageVersionStats(type, name, period).then((data) => {
-							if (data.total) {
-								let versionsStatsArr = [];
+						// get overall package stats (hits-bandwidth data for charts, hits rank of package)
+						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+							this.animate('packageRank', response.hits.rank, { duration: 1000 });
 
-								Object.keys(data.versions).forEach((key) => {
-									versionsStatsArr.push({
-										version: key,
-										hits: data.versions[key].total,
-									});
-								});
-
-								let versionStats = versionsStatsArr.sort((a, b) => b.hits - a.hits);
-
-								this.animate('versionStats', versionStats, { duration: 1000 });
-								this.animate('packageRank', data.rank + 1, { duration: 1000 });
-								this.animate('topVersionHits', versionStats[0].hits, { duration: 1000 });
-							} else {
-								this.set('noDataOfVersions', true);
-							}
-						});
-
-						// get package date stats
-						http.fetchPackageDateStats(type, name, period).then((response) => {
-							if (response.total) {
+							if (response.hits.total) {
 								this.set('noDataOfRequests', false);
-								this.set('packageDateStats', response);
-								this.animate('requestsTotal', response.total, { duration: 1000 });
+								this.set('packageDateStats', response.hits);
+								this.animate('requestsTotal', response.hits.total, { duration: 1000 });
 							} else {
 								this.set('noDataOfRequests', true);
 							}
-						});
 
-						// get package bandwidth stats
-						http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-							if (response.total) {
+							if (response.bandwidth.total) {
 								this.set('noDataOfBandwidth', false);
-								this.set('packageBandwidthStats', response);
-								this.animate('bandwidthTotal', _.convertBytesToUnits(response.total), { duration: 1000 });
+								this.set('packageBandwidthStats', response.bandwidth);
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total), { duration: 1000 });
 							} else {
 								this.set('noDataOfBandwidth', true);
 							}
+						});
+
+						// get package top version stats
+						http.fetchPackageVersionsStats(type, name, period, 'hits').then((response) => {
+							if (!response.length) {
+								this.set('noDataOfVersions', true);
+							}
+
+							this.set('topVersion', response[0].version);
+							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
 						});
 					}
 				});
@@ -213,13 +200,7 @@
 						return null;
 					}
 
-					let array = [];
-
-					Object.keys(packageDateStats.dates).forEach((date) => {
-						array.push([ date, packageDateStats.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					let array = Object.entries(packageDateStats.dates);
 
 					if (requestsChart) {
 						requestsChart.destroy();
@@ -227,8 +208,8 @@
 						this.set('requestsChart', null);
 					}
 
-					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					let data = array.map(value => value[1].total);
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => item[1]);
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
@@ -279,13 +260,7 @@
 						return null;
 					}
 
-					let array = [];
-
-					Object.keys(packageBandwidthStats.dates).forEach((date) => {
-						array.push([ date, packageBandwidthStats.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					let array = Object.entries(packageBandwidthStats.dates);
 
 					if (bandwidthChart) {
 						bandwidthChart.destroy();
@@ -293,8 +268,8 @@
 						this.set('bandwidthChart', null);
 					}
 
-					let labels = array.map(value => _.formatDate(new Date(value[0])).toUpperCase());
-					let data = array.map(value => _.convertBytesToUnits(value[1].total));
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => _.convertBytesToUnits(item[1]));
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {

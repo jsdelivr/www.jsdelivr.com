@@ -1,5 +1,5 @@
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
-const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemper', 'October', 'November', 'December' ];
+const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
 const MONTH_FULL_OF_DAYS = '31';
 const MONTH_SHORT_OF_DAYS = '30';
@@ -18,9 +18,11 @@ module.exports = {
 	isTabletScreen () {
 		return screen.width > screenType.mobile && screen.width <= screenType.tablet;
 	},
+
 	isMobileScreen () {
 		return screen.width <= screenType.mobile;
 	},
+
 	flattenFiles: function flattenFiles (tree, path = '/', files = []) {
 		tree.forEach((item) => {
 			if (item.type === 'file') {
@@ -32,9 +34,11 @@ module.exports = {
 
 		return files;
 	},
+
 	formatDate (date) {
 		return `${MONTHS_SHORT_NAMES_LIST[date.getUTCMonth()]} ${date.getUTCDate()}`;
 	},
+
 	formatHits (hits) {
 		if (hits < 1e9) {
 			return 1;
@@ -42,12 +46,15 @@ module.exports = {
 
 		return Math.round(hits / 1e9);
 	},
-	formatMiB2TiB (mb) {
-		return Math.floor(mb / 1024 / 1024 / 10) * 10;
+
+	formatBytes2TiB (bytes) {
+		return Math.round(bytes / 1.1e+12);
 	},
+
 	formatNumber (number) {
 		return Math.floor(number).toString().replace(/\d(?=(?:\d{3})+$)/g, '$& ');
 	},
+
 	formatNumberWithSpace (val) {
 		// remove sign if negative
 		let sign = 1;
@@ -69,12 +76,15 @@ module.exports = {
 
 		return sign < 0 ? '-' + num : num;
 	},
+
 	getMinifiedName (name) {
 		return name.replace(/\.(js|css)$/i, '.min.$1');
 	},
+
 	getNonMinifiedName (name) {
 		return name.replace(/\.min\.(js|css)$/i, '.$1');
 	},
+
 	listFiles: function listFiles (files = [], path) {
 		if (!path.length) {
 			return files;
@@ -86,6 +96,7 @@ module.exports = {
 
 		return d && d.files ? listFiles(d.files, p) : null;
 	},
+
 	linRange (max, number) {
 		let array = [];
 
@@ -95,6 +106,7 @@ module.exports = {
 
 		return array;
 	},
+
 	logRange (min, max) {
 		let array = [];
 
@@ -104,6 +116,7 @@ module.exports = {
 
 		return array;
 	},
+
 	multiplyDeep: function multiplyDeep (data, n) {
 		if (typeof data !== 'object') {
 			return data;
@@ -119,6 +132,7 @@ module.exports = {
 
 		return data;
 	},
+
 	nth (n) {
 		n = Math.floor(n);
 		let m = n % 10;
@@ -196,6 +210,7 @@ module.exports = {
 
 		return chartXData;
 	},
+
 	// escaping code: https://github.com/component/escape-html/blob/master/index.js
 	unescapeHtml (text) {
 		return text
@@ -205,6 +220,7 @@ module.exports = {
 			.replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>');
 	},
+
 	// ignoreExtremlySmallValue: true when you need to find min value for the axis min e.g.
 	getValueByMagnitude (value, rounding = 'round', magnitudeCorrection = 0, ignoreExtremlySmallValue = true) {
 		let magnitude = Math.floor(Math.log10(value) === -Infinity ? 0 : Math.log10(value)) - magnitudeCorrection;
@@ -288,6 +304,25 @@ module.exports = {
 
 		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
 	},
+
+	formatToNumberWithUnits (num, numSymbolSeparator = '') {
+		let lookup = [
+			{ value: 1, symbol: '' },
+			{ value: 1e3, symbol: 'K' },
+			{ value: 1e6, symbol: 'M' },
+			{ value: 1e9, symbol: 'B' },
+			{ value: 1e12, symbol: 'T' },
+			{ value: 1e15, symbol: 'P' },
+			{ value: 1e18, symbol: 'E' },
+		];
+		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+		let item = lookup.slice().reverse().find((item) => {
+			return num >= item.value;
+		});
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
+	},
+
 	makeHTTPRequest (obj) {
 		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
 
@@ -311,9 +346,11 @@ module.exports = {
 			xhr.send(body);
 		});
 	},
+
 	createQueryString (params) {
 		return '?' + Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
 	},
+
 	deepExtend (out = {}, ...rest) {
 		for (let i = 0; i < rest.length; i++) {
 			let obj = rest[i];
@@ -337,6 +374,7 @@ module.exports = {
 
 		return out;
 	},
+
 	onDocumentReady (fn) {
 		if (document.readyState !== 'loading') {
 			fn();
@@ -414,7 +452,7 @@ module.exports = {
 
 		return rawDataDatesKeys.reduce((resData, date) => {
 			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
-			let valueByDateConverted = rawDataDatesData[date] / convertionFactor;
+			let valueByDateConverted = Math.round(rawDataDatesData[date] / convertionFactor);
 
 			switch (groupBy) {
 				case 'month':
@@ -541,14 +579,19 @@ module.exports = {
 
 		if (groupBy === 'day') {
 			let tempCurrMonth = labels[0][1];
-			let lastPeriodMonth = labels[labels.length - 1][1];
+			let currAxisYear = labels[0][2];
 
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
 					case screen.width >= 992:
-						if (idx === 0 || idx === labels.length - 1) {
+						if (idx === 0) {
 							return label.slice(1, 3);
-						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
+						} else if (label[2] !== currAxisYear && label[1] !== tempCurrMonth) {
+							currAxisYear = label[2];
+							tempCurrMonth = label[1];
+
+							return label.slice(1, 3);
+						} else if (label[1] !== tempCurrMonth && label[2] === currAxisYear) {
 							tempCurrMonth = label[1];
 
 							return label.slice(1, 2);
@@ -615,7 +658,7 @@ module.exports = {
 	},
 
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
-	getPreparedDataForChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+	getPreparedDataForBarChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
 		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
 		let convertionFactor = showChartBandwidth ? 1e9 : 1;
 		let valueUnits = showChartBandwidth ? ' GB' : '';
@@ -706,5 +749,113 @@ module.exports = {
 			default:
 				return schema.regularBar;
 		}
+	},
+
+	// prepare data for LineChart
+	getPreparedDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, numberOfDatasets = 5, onlyFullPeriods = true) {
+		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+		let rawDataFiltered = rawData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, numberOfDatasets);
+
+		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
+		let convertionFactor = showChartBandwidth ? 1e9 : 1;
+		let valueUnits = showChartBandwidth ? ' GB' : '';
+		// get top by stats version of package to get from it values for y-axis, and labels to x-axis
+		let topVersionData = rawDataFiltered[0][dataType];
+		let { preparedData: topVersionPrepData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy, convertionFactor);
+		let labelsData = {
+			labels: [],
+			labelsStartEndPeriods: [],
+		};
+		let dataToIteract = groupBy === 'day' ? topVersionPrepData.days : Object.values(topVersionPrepData);
+
+		// collect labels, period starts/ends adta for chart
+		labelsData = dataToIteract.reduce((labelsData, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
+
+			labelsData.labels.push([ period.day, period.month, period.year ]);
+			labelsData.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+
+			return labelsData;
+		}, labelsData);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
+				break;
+			case 'month':
+				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+			case 'year':
+				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+		}
+
+		let { allGroupedByValues, datasets } = rawDataFiltered.reduce((res, versionData, idx) => {
+			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy, convertionFactor);
+			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+			let groupedByValues = dataToIteract.reduce((values, period) => {
+				if (onlyFullPeriods && period.isFull === false) { return values; }
+
+				values.push(period.value);
+
+				return values;
+			}, []);
+
+			let dataset = {
+				label: `v${versionData.version}`,
+				data: groupedByValues,
+			};
+
+			switch (idx) {
+				case 0:
+					dataset.borderColor = '#5C667A';
+					dataset.backgroundColor = '#5C667A';
+					break;
+				case 1:
+					dataset.borderColor = '#BC5090';
+					dataset.backgroundColor = '#BC5090';
+					break;
+				case 2:
+					dataset.borderColor = '#FFA600';
+					dataset.backgroundColor = '#FFA600';
+					break;
+				case 3:
+					dataset.borderColor = '#FF6361';
+					dataset.backgroundColor = '#FF6361';
+					break;
+				case 4:
+					dataset.borderColor = '#69C4F7';
+					dataset.backgroundColor = '#69C4F7';
+					break;
+			}
+
+			res.datasets.push(dataset);
+			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
+
+			return res;
+		}, { allGroupedByValues: [], datasets: [] });
+
+		// get min/max magnitude for y-axis
+		let maxRangeValue = this.getValueByMagnitude(Math.max(...allGroupedByValues), 'ceil', 1);
+
+		return {
+			...labelsData,
+			maxRangeValue,
+			valueUnits,
+			datasets,
+		};
+	},
+
+	// create barChart, lineChart improved tooltip title
+	createImprovedExternalTooltipTitle (periodStart, periodEnd, groupedBy) {
+		if (groupedBy === 'month') {
+			let [ monthName, , year ] = periodStart.split(' ');
+
+			return `${monthName}, ${year}`;
+		}
+
+		return periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
 	},
 };

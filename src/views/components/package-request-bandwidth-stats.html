@@ -1,0 +1,66 @@
+<link rel="ractive" href="./request-bandwidth-stats.html" name="c-request-bandwidth-stats">
+
+<div class="c-package-request-bandwidth-stats">
+	<c-request-bandwidth-stats
+		requestsAmount="{{requestsAmount}}"
+		requestsGrowthPercent="{{requestsGrowthPercent}}"
+		growthPeriod="{{growthPeriod}}"
+		bandwidthAmount="{{bandwidthAmount}}"
+		bandwidthUnit="{{bandwidthUnit}}"
+		bandwidthGrowthPercent="{{bandwidthGrowthPercent}}">
+	</c-request-bandwidth-stats>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+				requestsAmount: 0,
+				bandwidthAmount: 0,
+				requestsGrowthPercent: 0,
+				bandwidthGrowthPercent: 0,
+				growthPeriods: {
+					day: 'daily',
+					week: 'weekly',
+					month: 'monthly',
+					year: 'yearly',
+				},
+				growthPeriod: 'monthly',
+			};
+		},
+		calculateGrowth (curr, prev) {
+			return Math.round((curr / prev) * 100 - 100);
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('period', (period) => {
+					let name = this.get('name');
+					let type = this.get('type');
+					let bandwidthUnit = this.get('bandwidthUnit');
+					this.set('growthPeriod', this.get('growthPeriods')[period]);
+
+					http.fetchPackageSummaryStats(type, name, period).then(({ hits, bandwidth }) => {
+						if (hits.total >= 0) {
+							this.animate('requestsAmount', hits.total, { duration: 1000 });
+							this.animate('requestsGrowthPercent', this.calculateGrowth(hits.total, hits.prev.total), { duration: 1000 });
+						}
+
+						if (bandwidth.total >= 0) {
+							if (!bandwidthUnit) {
+								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+								this.set('bandwidthUnit', bandwidthUnit);
+							}
+
+							this.animate('bandwidthAmount', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
+							this.animate('bandwidthGrowthPercent', this.calculateGrowth(bandwidth.total, bandwidth.prev.total), { duration: 1000 });
+						}
+					});
+				});
+			}
+		},
+	};
+</script>

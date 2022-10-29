@@ -7,23 +7,23 @@ const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/content/${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/content?period=${period}` });
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
 };
 
-module.exports.fetchPackageDateStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/date/${period}` });
+module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by } });
 };
 
-module.exports.fetchPackageFileStats = (type, name, version, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/stats/${period}` });
+module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}`, body: { period } });
 };
 
-module.exports.fetchPackageVersionStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/${period}` });
+module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = 'hits', limit = '5') => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions`, body: { period, by, limit } });
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
@@ -53,10 +53,6 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 
 module.exports.fetchPackageEntrypoints = (type, name, version) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
-};
-
-module.exports.fetchPackageBandwidthStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}` });
 };
 
 module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
@@ -129,3 +125,4 @@ module.exports.fetchProjectStats = (type, statsType, period) => {
 		},
 	});
 };
+

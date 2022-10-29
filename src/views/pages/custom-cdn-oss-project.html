@@ -4,7 +4,7 @@
 <link rel="ractive" href="../components/cdn-oss-hosting-info.html" name="c-cdn-oss-hosting-info">
 <link rel="ractive" href="../components/cdn-oss-head.html" name="c-cdn-oss-head">
 <link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
-<link rel="ractive" href="../components/request-bandwidth-stats.html" name="c-request-bandwidth-stats">
+<link rel="ractive" href="../components/proxy-request-bandwidth-stats.html" name="c-proxy-request-bandwidth-stats">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
@@ -44,8 +44,8 @@
 							twoway="false">
 
 						<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-							<span>Request</span>
-							<span>GB</span>
+							<span>Requests</span>
+							<span>Bandwidth</span>
 							<div class="slide-select">
 								<div class="selected"></div>
 							</div>
@@ -71,7 +71,7 @@
 				</div>
 			</div>
 
-			<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-request-bandwidth-stats>
+			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-proxy-request-bandwidth-stats>
 
 			{{#if noPackageStatsData}}
 				<div class="no-data-wrapper">
@@ -266,11 +266,18 @@
 					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					// collect X-Axis dates, group data by period, get
-					let { values, labels, labelsStartEndPeriods, maxRangeValue, valueUnits } = _.getPreparedDataForChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+					let {
+						values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+
 					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
 					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
 
@@ -379,10 +386,10 @@
 										let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
 										if (_.isMobileScreen()) {
-											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.autoConvertBytesToUnits(valueByMagnitude);
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
 										}
 
-										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} GB` : _.formatNumber(valueByMagnitude);
+										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
 									},
 								},
 								grid: {

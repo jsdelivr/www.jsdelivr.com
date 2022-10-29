@@ -1,39 +1,45 @@
 <link rel="ractive" href="./collection-box.html" name="c-collection-box">
 <link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
 <link rel="ractive" href="./package-header.html" name="c-package-header">
+<link rel="ractive" href="./package-install-block.html" name="c-package-install-block">
 <link rel="ractive" href="./top-stats-table.html" name="c-top-stats-table">
 <link rel="ractive" href="./package-sidemenu.html" name="c-package-sidemenu">
 <link rel="ractive" href="./markdown.html" name="c-markdown">
-<link rel="ractive" href="./request-bandwidth-stats.html" name="c-request-bandwidth-stats">
+<link rel="ractive" href="./package-request-bandwidth-stats.html" name="c-package-request-bandwidth-stats">
 
 <div class="c-package">
-	<div class="container-fluid">
-		<div class="content-wrapper">
+	<div class="page-content">
+		<div class="page-content_top-content-wrapper">
 			<div class="main-content">
 				<c-package-header
 					package="{{package}}"
 					type="{{type}}"
 					name="{{name}}"
 					version="{{versionP}}"
-					query="{{query}}"
-					packageVersionsNotFound="{{packageVersionsNotFound}}"
-					navRoute="{{navRoute}}">
+					packageVersionsNotFound="{{packageVersionsNotFound}}">
 				</c-package-header>
+
+				<c-package-install-block
+					package="{{package}}"
+					type="{{type}}"
+					name="{{name}}"
+					version="{{versionP}}">
+				</c-package-install-block>
 
 				<div class="package-nav">
 					{{#if package.readme}}
-						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav-route {{navRoute === 'readme' ? 'package-nav-route-active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>Readme</span>
+						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav_route {{navRoute === 'readme' ? 'package-nav_route_active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
-					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav-route {{navRoute === 'config' ? 'package-nav-route-active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>Show/Configure Files</span>
+					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav_route {{navRoute === 'config' ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>{{navMenuTitles.configTabTitle}}</span>
 					</a>
-					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav-route {{navRoute === 'stats' ? 'package-nav-route-active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>Statistics</span>
+					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav_route {{navRoute === 'stats' ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
-					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav-route">
-						<span>Browse CDN Files</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
+						<span>{{navMenuTitles.browseCdnTitle}}</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
@@ -60,7 +66,7 @@
 				name="{{name}}"
 				github="{{package.githubRepo}}"
 				version="{{versionP}}"
-				versions="{{versions}}"
+				versions="{{packageVersionsList}}"
 				path="{{path}}"
 				collection="{{collection}}"
 				files="{{~/files}}">
@@ -78,13 +84,13 @@
 
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/statsPeriods[statsPeriodTemp]}}</span>
+								<span>{{~/statsPeriods[statsPeriod]}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each ~/statsPeriods}}
-									<li><a on-click="@this.changeStatsPeriod(@key)">{{this}}</a></li>
+									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -92,8 +98,13 @@
 				</div>
 			</div>
 
-			{{#if navRoute === "stats"}}
-				<c-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriodTemp]}}" bandwidthUnit="GB"></c-request-bandwidth-stats>
+			{{#if navRoute === 'stats'}}
+				<c-package-request-bandwidth-stats
+					name="{{name}}"
+					type="{{type}}"
+					period="{{statsPeriods[statsPeriod]}}"
+					bandwidthUnit="GB">
+				</c-package-request-bandwidth-stats>
 			{{/if}}
 
 			{{#if noPackageStatsData && noVersionsData}}
@@ -116,8 +127,11 @@
 								twoway="false">
 
 							<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-								<span>Request</span>
-								<span>GB</span>
+								<span>Requests</span>
+								<span>Bandwidth</span>
+								<div class="slide-select">
+									<div class="selected"></div>
+								</div>
 							</label>
 						</div>
 
@@ -135,9 +149,7 @@
 								<ul class="dropdown-menu">
 									{{#each ~/usageChartGroupByValues}}
 										<li>
-											{{#if this.isDisabled}}
-												<a class="disabled">{{this.value}}</a>
-											{{else}}
+											{{#if this.isAvailable}}
 												<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
 											{{/if}}
 										</li>
@@ -152,34 +164,42 @@
 					</div>
 				</div>
 
-				<div class="horizontal-divider mt-40 mb-40"></div>
+				<div class="horizontal-divider"></div>
 
 				<div class="chart-tops">
-					{{#if ~/topFiveVersionsTemp}}
-						<c-top-stats-table title="Top 5 versions" data="{{~/topFiveVersionsTemp}}" type="{{~/type}}" name="{{~/name}}" version="{{~/fileStatsVersion}}">
+					{{#if ~/topFiveVersions}}
+						<c-top-stats-table
+							title="Top 5 versions"
+							data="{{~/topFiveVersions}}"
+							type="{{~/type}}"
+							name="{{~/name}}"
+							version="{{~/fileStatsVersion}}">
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
 						</c-top-stats-table>
 
-						<c-top-stats-table data="{{~/fileStats ? ~/fileStats.slice(0, 5): []}}"
+						<c-top-stats-table
+							data="{{~/filesStats}}"
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
-							versions="{{~/versions}}">
+							versions="{{~/packageVersionsList}}">
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
 							{{/partial}}
 
 							{{#partial column1}}
-								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">{{file}}</a>
+								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">
+									{{file}}
+								</a>
 							{{/partial}}
 						</c-top-stats-table>
 					{{/if}}
 				</div>
 
-				<div class="horizontal-divider mt-40 mb-40"></div>
+				<div class="horizontal-divider"></div>
 
 				<div class="chart-hits-per-period">
 					<div class="package-usage">
@@ -191,7 +211,7 @@
 					</div>
 
 					<div class="hits-chart-legend">
-						{{#each topFiveVersions}}
+						{{#each hitsChartLegendVersions}}
 							<div class="legend-item">
 								<div></div>
 								{{version}}
@@ -207,10 +227,24 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
 	const createLineChart = require('../../public/js/utils/create-line-chart');
+	const NAV_MENU_SHORT_TITLES = {
+		readmeTabTitle: 'Readme',
+		configTabTitle: 'Show Files',
+		statsTabTitle: 'Statistics',
+		browseCdnTitle: 'CDN',
+	};
+	const NAV_MENU_FULL_TITLES = {
+		readmeTabTitle: 'Readme',
+		configTabTitle: 'Show/Configure Files',
+		statsTabTitle: 'Statistics',
+		browseCdnTitle: 'Browse CDN Files',
+	};
 
 	component.exports = {
 		computed: {
@@ -248,20 +282,20 @@
 					30: 'month',
 					365: 'year',
 				},
-				statsPeriodTemp: 30,
 				statsPeriod: 30,
-				versions: [],
+				packageVersionsList: [],
 				navRoute: 'readme',
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
-					day: { value: 'day', isDisabled: false },
-					week: { value: 'week', isDisabled: false },
-					month: { value: 'month', isDisabled: false },
+					day: { value: 'day', isAvailable: true },
+					week: { value: 'week', isAvailable: true },
+					// since default statsPeriod is 30 (month) - group by month not available initially
+					month: { value: 'month', isAvailable: false },
 				},
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				noVersionsData: false,
-				versionsHitsTotal: 0,
+				navMenuTitles: NAV_MENU_SHORT_TITLES,
 			};
 		},
 		decorators: {
@@ -270,11 +304,9 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.set('link', this.get('@global.location.href'));
-
-				// Load package versions.
+				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
 				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
-					this.set('versions', data.versions);
+					this.set('packageVersionsList', data.versions);
 
 					// This can only happen for GitHub packages.
 					if (data.versions.length === 0) {
@@ -295,99 +327,74 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-				this.observe('statsPeriodTemp fileStatsVersion', () => {
-					if (this.get('statsPeriodTemp') && this.get('fileStatsVersion')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let version = this.get('fileStatsVersion');
-						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
-
-						Pace.restart();
-
-						http.fetchPackageFileStats(type, name, version, period).then((data) => {
-							let array = [];
-
-							Object.keys(data.files).forEach((key) => {
-								array.push({
-									file: key,
-									hits: data.files[key].total,
-								});
-							});
-
-							this.animate('fileStats', array.sort((a, b) => b.hits - a.hits));
-						});
+				// fetch Package Version File Stats for Top-5-file-per-package-version
+				this.observe('statsPeriod fileStatsVersion showChartBandwidth', () => {
+					if (!this.get('statsPeriod') || !this.get('fileStatsVersion')) {
+						return;
 					}
+
+					let version = this.get('fileStatsVersion');
+					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+					let type = this.get('type');
+					let name = this.get('name');
+
+					http.fetchPackageFileStats(type, name, version, period, dataType).then((response) => {
+						let filesStats = response.map(statsPerFile => ({
+							file: statsPerFile.name,
+							hits: statsPerFile[dataType].total,
+						}));
+
+						this.animate('filesStats', filesStats.slice(0, 5));
+					});
 				});
 
-				// Get top 5 versions for table
-				this.observe('statsPeriodTemp versionP navRoute', () => {
-					if (this.get('statsPeriodTemp') && this.get('versionP')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriodTemp')];
+				// get Package Version Stats for Top-5-package-versions
+				this.observe('statsPeriod versionP showChartBandwidth', () => {
+					if (!this.get('statsPeriod') || !this.get('versionP')) { return; }
 
-						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							let array = [];
+					let type = this.get('type');
+					let name = this.get('name');
+					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
-							Object.keys(response.versions).forEach((key) => {
-								array.push({
-									version: key,
-									hits: response.versions[key].total,
-									dates: response.versions[key].dates,
-								});
-							});
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						let versionsStats = response.map(statsPerVersion => ({
+							version: statsPerVersion.version,
+							hits: statsPerVersion[dataType].total,
+						}));
 
-							let topFiveVersionsTemp = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-							this.animate('topFiveVersionsTemp', topFiveVersionsTemp);
-						});
-					}
-				});
-
-				// get package data (for charts, etc.)
-				this.observe('statsPeriod showChartBandwidth versionP navRoute', () => {
-					if (this.get('statsPeriod') && this.get('versionP')) {
-						let type = this.get('type');
-						let name = this.get('name');
-						let period = this.get('statsPeriods')[this.get('statsPeriod')];
-						let showChartBandwidth = this.get('showChartBandwidth');
-
-						// get package date stats data
-						if (showChartBandwidth) {
-							http.fetchPackageBandwidthStats(type, name, period).then((response) => {
-								if (!response.total) {
-									this.set('noPackageStatsData', true);
-									return;
-								}
-
-								this.set('noPackageStatsData', false);
-								this.set('statsDateData', response);
-							});
-						} else {
-							http.fetchPackageDateStats(type, name, period).then((response) => {
-								if (!response.total) {
-									this.set('noPackageStatsData', true);
-									return;
-								}
-
-								this.set('noPackageStatsData', false);
-								this.set('statsDateData', response);
-							});
+						if (versionsStats[0]) {
+							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
-						// get package versions data
-						http.fetchPackageVersionStats(type, name, period).then((response) => {
-							if (!response.total) {
-								this.set('noVersionsData', true);
-								return;
-							}
+						this.animate('topFiveVersions', versionsStats);
+					});
+				});
 
-							this.set('noVersionsData', false);
-							this.set('hitsData', response);
-						});
+				// change Nav Menu titles depending on the screen size (also on the resize of the page)
+				// switch tab to readme after resizing (if it was Config tab)
+				this.observe('screenWidth', (newScreenWidth) => {
+					let actualScreenWidth = newScreenWidth ? newScreenWidth : screen.width;
+					let currentTab = this.get('navRoute');
+
+					// set tab titles after resizing
+					if (actualScreenWidth >= 768 && actualScreenWidth < 1200) {
+						this.set('navMenuTitles', NAV_MENU_SHORT_TITLES);
+					} else {
+						this.set('navMenuTitles', NAV_MENU_FULL_TITLES);
+					}
+
+					// switch tab to Readme after resizing
+					if (currentTab === 'config' && actualScreenWidth < 768) {
+						this.set('navRoute', 'readme');
 					}
 				});
 
+				// check if Package has readme (if algolia has no Readme, we try to fetch it from https://raw.githubusercontent.com, getGHUserContentPackageReadme)
+				// if readme still absent we show ConfigTab as default
 				this.observe('package', () => {
 					// package.readme
 					let readme = this.get('package').readme;
@@ -401,39 +408,164 @@
 					this.set('versionP', this.get('package.version'));
 				}
 
-				// control the value of the DateRange and change the value of the GroupBy respectively
-				this.observe('statsPeriod', (statsPeriod) => {
-					let statsPeriods = this.get('statsPeriods');
-					let usageChartGroupByValues = this.get('usageChartGroupByValues');
-					let usageChartGroupBy = this.get('usageChartGroupBy');
+				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
+				this.observe('statsPeriod', () => {
+					let statsPeriod = this.get('statsPeriod');
+					let period = this.get('statsPeriods')[statsPeriod];
+					let type = this.get('type');
+					let name = this.get('name');
+					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 
-					switch (statsPeriods[statsPeriod]) {
-						case 'day':
-							usageChartGroupBy = 'day';
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = true;
-							usageChartGroupByValues.month.isDisabled = true;
+					// once chart period is changed - update groupBy options respectively to period
+					switch (period) {
+						case 'year':
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: true },
+								month: { value: 'month', isAvailable: true },
+							});
+
+							break;
+
+						case 'month':
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: true },
+								month: { value: 'month', isAvailable: false },
+							});
+
 							break;
 
 						case 'week':
-							if (usageChartGroupBy === 'month') {
-								usageChartGroupBy = 'week';
-							}
+							this.set('usageChartGroupByValues', {
+								day: { value: 'day', isAvailable: true },
+								week: { value: 'week', isAvailable: false },
+								month: { value: 'month', isAvailable: false },
+							});
 
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = false;
-							usageChartGroupByValues.month.isDisabled = true;
 							break;
-
-						default:
-							usageChartGroupByValues.day.isDisabled = false;
-							usageChartGroupByValues.week.isDisabled = false;
-							usageChartGroupByValues.month.isDisabled = false;
 					}
 
-					this.set('usageChartGroupBy', usageChartGroupBy);
-					this.set('usageChartGroupByValues', usageChartGroupByValues);
+					// prevent chart data fetching from the back when period is DAY, left it as it was prev
+					if (period === 'day') { return; }
+
+					// get data for barChart
+					http.fetchPackageSummaryStats(type, name, period).then((response) => {
+						if (!response.hits.total || !response.bandwidth.total) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
+						this.set('rawStatsChartData', response);
+					});
+
+					// get data for lineChart
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						if (!response.length) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
+						this.set('rawHitsChartData', response);
+					});
 				});
+
+				// get data for lineChart when Request/Bandwidth switch clicked (since it is sorting on the server)
+				this.observe('showChartBandwidth', (showChartBandwidth) => {
+					let statsPeriod = this.get('statsPeriod');
+					let period = this.get('statsPeriods')[statsPeriod];
+					let type = this.get('type');
+					let name = this.get('name');
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						if (!response.length) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						this.set('rawHitsChartData', response);
+					});
+				}, { init: false });
+
+				// handle raw StatsChart data and prepare it for StatsChart
+				// screenWidth to observe when screen width is resized to recreate stats chart
+				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawStatsChartData = this.get('rawStatsChartData');
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(rawStatsChartData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
+					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
+
+					// set prepared data for chart
+					this.set('preparedStatsChartData', {
+						data: values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						barThickness: chartBarThickness,
+						useYAxisBorderPlugin: screenWidth >= 768,
+						yAxisPadding: screenWidth >= 768 ? 20 : 8,
+						valueUnits,
+						usageChartGroupBy,
+					});
+				}, { init: false });
+
+				// handle raw HitsChart data and prepare it for HitsChart
+				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawHitsChartData = this.get('rawHitsChartData');
+					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : screen.width;
+
+					// collect versions for hitsChart Legend element
+					let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						labels,
+						maxRangeValue,
+						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
+					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					this.set('preparedHitsChartData', {
+						datasets,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						useYAxisBorderPlugin: screenWidth >= 768,
+						yAxisPadding: screenWidth >= 768 ? 30 : 18,
+						valueUnits,
+						usageChartGroupBy,
+					});
+
+					this.set('hitsChartLegendVersions', hitsChartLegendVersions);
+				}, { init: false });
 			}
 		},
 		onrender () {
@@ -441,80 +573,48 @@
 				let statsChart;
 				let hitsChart;
 
-				// create stats chart
-				this.observe('statsDateData usageChartGroupBy', () => {
-					let statsDateData = this.get('statsDateData');
+				// create barChart
+				this.observe('preparedStatsChartData', (preparedStatsChartData) => {
+					let {
+						labels,
+						maxRangeValue,
+						data,
+						showChartBandwidth,
+						barThickness,
+						useYAxisBorderPlugin,
+						yAxisPadding,
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
+					} = preparedStatsChartData;
 					let statsChartCanvasEl = this.find('#stats-chart');
 
-					if (!statsDateData || !statsChartCanvasEl) { return; }
-
-					let array = [];
-
-					Object.keys(statsDateData.dates).forEach((date) => {
-						array.push([ date, statsDateData.dates[date] ]);
-					});
-
-					array.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+					if (!preparedStatsChartData || !statsChartCanvasEl) { return; }
 
 					if (statsChart) {
 						statsChart.destroy();
 						statsChart = null;
 					}
 
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let groupBy = { day: 1, week: 7, month: 30, year: 365 };
-					let groupedDayCount = groupBy[usageChartGroupBy];
-
-					let countDay = 0;
-					let xAxisDates = [];
-					array.forEach((value) => {
-						countDay++;
-
-						if (countDay % groupedDayCount === 0) {
-							countDay = 0;
-							xAxisDates.push(value[0]);
-						}
-					});
-
-					let groupData = [];
-					let tempData = 0;
-					countDay = 0;
-					let showChartBandwidth = this.get('showChartBandwidth');
-					let tempGB = 1;
-
-					if (showChartBandwidth) {
-						tempGB = 1e9;
-					}
-
-					Object.keys(statsDateData.dates).forEach((date) => {
-						countDay++;
-						tempData += statsDateData.dates[date].total;
-
-						if (countDay >= groupedDayCount) {
-							groupData.push(Math.round(tempData / tempGB));
-							countDay = 0; tempData = 0;
-						}
-					});
-
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
-					let yAxisTicksAmount = 8;
-					let minRangeValue = _.getValueByMagnitude(Math.min(...groupData), 'floor');
-					let maxRangeValue = _.getValueByMagnitude(Math.max(...groupData), 'ceil', 1);
-
 					let chartData = {
-						labels: _.getChartXAxisData(xAxisDates, chartPeriod, usageChartGroupBy),
+						labels,
 						datasets: [{
-							data: groupData,
+							data,
 							borderWidth: 0,
-							barThickness: xAxisDates.length < 20 ? 10 : xAxisDates.length < 60 ? 5 : 2,
+							barThickness,
 							hoverBackgroundColor: '#F65128',
 						}],
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
 					};
 					let chartSettings = {
-						useYAxisBorderPlugin: true,
+						useYAxisBorderPlugin,
 						useExternalTooltip: true,
+						useImprovedTooltip: true,
 						externalTooltipVerticalOffset: 40,
 					};
+					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 					let chartConfig = {
 						options: {
 							scales: {
@@ -527,23 +627,14 @@
 											family: 'Lexend, sans-serif',
 											lineHeight: 2,
 										},
+										// return nothing when labelValue array is empty
+										// this way we will not get italicized text when all ticks can't be displayed at once normally
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-											if (chartPeriod === 'year') {
-												if (labelValue[2]) {
-													return [ labelValue[1], labelValue[2] ];
-												}
-
-												return;
+											if (labelValue.length) {
+												return labelValue;
 											}
-
-											if (Array.isArray(labelValue)) {
-												return [ day, labelValue[1] ];
-											}
-
-											return [ day ];
 										},
 									},
 									grid: {
@@ -553,20 +644,26 @@
 								},
 								y: {
 									display: true,
-									min: minRangeValue,
-									max: maxRangeValue,
+									min: 0,
+									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
-										count: yAxisTicksAmount,
+										padding: yAxisPadding,
+										count: 9,
 										color: '#5C667A',
 										crossAlign: 'near',
-										padding: 22,
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 										},
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 2, false)) + (showChartBandwidth ? ' GB' : '');
+											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+
+											if (_.isMobileScreen()) {
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+											}
+
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
 										},
 									},
 									grid: {
@@ -579,123 +676,65 @@
 					};
 
 					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-				});
+				}, { init: false });
 
-				// create hits chart
-				this.observe('hitsData', (hitsData) => {
+				// create lineChart
+				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+					let {
+						datasets,
+						labels,
+						maxRangeValue,
+						useYAxisBorderPlugin,
+						showChartBandwidth,
+						yAxisPadding,
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
+					} = preparedHitsChartData;
 					let hitsChartCanvasEl = this.find('#hits-chart');
 
-					if (!hitsData || !hitsChartCanvasEl) { return; }
-
-					let array = [];
-
-					Object.keys(hitsData.versions).forEach((key) => {
-						array.push({
-							version: key,
-							hits: hitsData.versions[key].total,
-							dates: hitsData.versions[key].dates,
-						});
-					});
-
-					let topFiveVersions = array.sort((a, b) => b.hits - a.hits).slice(0, 5);
-
-					this.animate('versionsHitsTotal', hitsData.total);
-					this.animate('topFiveVersions', topFiveVersions);
-
-					// Maybe we have no stats yet.
-					if (array[0]) {
-						this.set('fileStatsVersion', array[0].version);
-					}
+					if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
 
 					if (hitsChart) {
 						hitsChart.destroy();
 						hitsChart = null;
 					}
 
-					let yAxisTicksAmount = 8;
-					let minRangeValue = _.getValueByMagnitude(
-						Math.min(...topFiveVersions.map(version => Math.min(...Object.values(version.dates).filter(v => v !== 0)))),
-						'floor'
-					);
-					let maxRangeValue = _.getValueByMagnitude(
-						Math.max(...topFiveVersions.map(version => Math.max(...Object.values(version.dates)))),
-						'ceil',
-						1
-					);
-					let datasets = topFiveVersions.reduce((datasets, tfvItem, idx) => {
-						let dataset = {
-							label: `v${tfvItem.version}`,
-							data: Object.values(tfvItem.dates),
-						};
-
-						switch (idx) {
-							case 0:
-								dataset.borderColor = '#5C667A';
-								dataset.backgroundColor = '#5C667A';
-								break;
-							case 1:
-								dataset.borderColor = '#BC5090';
-								dataset.backgroundColor = '#BC5090';
-								break;
-							case 2:
-								dataset.borderColor = '#FFA600';
-								dataset.backgroundColor = '#FFA600';
-								break;
-							case 3:
-								dataset.borderColor = '#FF6361';
-								dataset.backgroundColor = '#FF6361';
-								break;
-							case 4:
-								dataset.borderColor = '#69C4F7';
-								dataset.backgroundColor = '#69C4F7';
-								break;
-						}
-
-						datasets.push(dataset);
-
-						return datasets;
-					}, []);
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
 					let chartData = {
-						labels: _.getChartXAxisData(Object.keys(topFiveVersions[0].dates), chartPeriod),
+						labels,
 						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
 					};
 					let chartSettings = {
+						useYAxisBorderPlugin,
 						useExternalTooltip: true,
+						useImprovedTooltip: true,
+						plugins: {
+							useExternalTooltip: true,
+						},
 					};
+					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 					let chartConfig = {
 						options: {
 							scales: {
 								x: {
 									display: true,
-									// offset: true,
 									ticks: {
+										autoSkip: false,
 										color: '#5C667A',
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 											lineHeight: 2,
 										},
-										// whole callback needed to prepare dates for displaying on the x-axis
-										// since we need only the day and not full date (which we must to pass here for the tooltip title)
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											// check if it is not contains only a date but also a month
-											let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
 
-											if (chartPeriod === 'year') {
-												if (labelValue[2]) {
-													return [ labelValue[1], labelValue[2] ];
-												}
-
-												return;
+											if (labelValue.length) {
+												return labelValue;
 											}
-
-											if (Array.isArray(labelValue)) {
-												return [ day, labelValue[1] ];
-											}
-
-											return [ day ];
 										},
 									},
 									grid: {
@@ -705,20 +744,26 @@
 								},
 								y: {
 									display: true,
-									min: minRangeValue,
-									max: maxRangeValue,
+									min: 0,
+									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 									ticks: {
-										count: yAxisTicksAmount,
+										padding: yAxisPadding,
+										count: 9,
 										color: '#5C667A',
 										crossAlign: 'near',
-										padding: 48,
 										font: {
 											size: 12,
 											family: 'Lexend, sans-serif',
 										},
 										callback (tickIdx) {
 											let labelValue = this.getLabelForValue(tickIdx);
-											return _.formatNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
+											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+
+											if (_.isMobileScreen()) {
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+											}
+
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
 										},
 									},
 									grid: {
@@ -726,25 +771,16 @@
 										color: '#CFD6DD',
 										tickLength: 0,
 									},
-									afterFit: (scale) => {
-										scale.width = 114;
-									},
 								},
 							},
 						},
 					};
 
-					// console.log('hits chartData : ', chartData);
-
 					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-				});
-			}
-		},
-		changeStatsPeriod (strKey) {
-			this.set('statsPeriodTemp', strKey);
+				}, { init: false });
 
-			if (strKey > 1) {
-				this.set('statsPeriod', strKey);
+				// detect window resize
+				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', screen.width), 200)));
 			}
 		},
 	};

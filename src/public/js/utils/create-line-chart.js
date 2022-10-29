@@ -1,14 +1,30 @@
+const _ = require('../_');
+
 // chartEl - canvas element
 // chartData (labels, datasets) - data to render within the chart
 // chartSettings - additional params for the chart
+//	chartSettings.useYAxisBorderPlugin - use plugin to render vertical y-axis border
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
-function createLineChart (chartEl, chartData = {}, chartSettings = { useExternalTooltip: false }, chartConfig = {}) {
+function createLineChart (
+	chartEl,
+	chartData = {},
+	chartSettings = { useExternalTooltip: false },
+	chartConfig = {}
+) {
+	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
+	let prevTooltipInstance = document.getElementById('lineChart-tooltip');
+
+	if (prevTooltipInstance) {
+		prevTooltipInstance.remove();
+	}
+
 	if (!chartEl) { return; }
 
-	// create external tooltip
-	let externalTooltip = (ctx) => {
+	// TODO: Statistics page only, should be rechecked and fix if needed
+	// create external tooltip (prev version)
+	let externalTooltipOldVersion = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
@@ -103,6 +119,92 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 		tooltipInstance.style.top = chartArea.top + 'px';
 	};
 
+	// create external tooltip (new version)
+	let externalTooltip = (ctx) => {
+		let { chart, tooltip: tooltipModel } = ctx;
+		let tooltipInstance = document.getElementById('lineChart-tooltip');
+
+		// Create element on first render
+		if (!tooltipInstance) {
+			tooltipInstance = document.createElement('div');
+			tooltipInstance.id = 'lineChart-tooltip';
+			tooltipInstance.classList.add('tooltipEl');
+			let wrapper = document.createElement('div');
+			wrapper.classList.add('tooltipWrapper', 'tooltipWrapper-improved');
+			tooltipInstance.appendChild(wrapper);
+			let verticalLine = document.createElement('div');
+			verticalLine.classList.add('tooltipVerticalLine');
+			tooltipInstance.appendChild(verticalLine);
+			chart.canvas.parentNode.appendChild(tooltipInstance);
+		}
+
+		// Hide if no tooltip
+		if (tooltipModel.opacity === 0) {
+			tooltipInstance.style.opacity = 0;
+			return;
+		}
+
+		if (tooltipModel.body) {
+			let [ periodStart, periodEnd ] = chartData.labelsStartEndPeriods[tooltipModel.dataPoints[0].parsed.x];
+			let tooltipDate = _.createImprovedExternalTooltipTitle(periodStart, periodEnd, chartData.usageChartGroupBy);
+
+			// prepare body lines and color map for lines-backgrounds
+			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
+				res.lines.push(item.lines[0]);
+				res.linesMap[item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+				return res;
+			}, { lines: [], linesMap: {} });
+
+			// sort body lines from max to min
+			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
+
+			// create title element
+			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'>`;
+
+			// create body lines
+			sortedBodyLines.forEach((line) => {
+				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
+				let [ iVersion, iAmount ] = line.split(':');
+				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
+
+				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
+				innerHtml += `<span>${iVersion}</span><span>${formattedAmount + chartData.valueUnits}</span>`;
+				innerHtml += '</div>';
+			});
+
+			let tooltipWrapper = tooltipInstance.querySelector('div.tooltipWrapper');
+			tooltipWrapper.innerHTML = innerHtml;
+		}
+
+		tooltipInstance.style.opacity = 1;
+		let { canvas, chartArea } = chart;
+
+		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
+		let tooltipWrapperEl = tooltipInstance.querySelector('div.tooltipWrapper');
+
+		if (screen.width >= 768) {
+			tooltipInstance.style.top = chartArea.top + 'px';
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+
+			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
+				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			} else {
+				tooltipVerticalLine.style.left = '-10px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
+		} else {
+			tooltipInstance.style.top = chartArea.top + 'px';
+			// tooltip data wrapper should be stick to the center
+			tooltipWrapperEl.style.position = 'absolute';
+			tooltipWrapperEl.style.left = canvas.clientWidth / 2 - tooltipWrapperEl.offsetWidth / 2 + 'px';
+			tooltipWrapperEl.style.top = -tooltipWrapperEl.offsetHeight + 'px';
+			// only vertical line is moving around the chart
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+			tooltipVerticalLine.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetLeft + 'px';
+		}
+	};
+
 	// create vertical y-axis border line
 	let verticalYAxisBorder = {
 		id: 'lineChartYBorder',
@@ -110,8 +212,8 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 			let { ctx, chartArea } = chart;
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(chartArea.left - 24, 48);
-			ctx.lineTo(chartArea.left - 24, 320);
+			ctx.moveTo(chartArea.left - 20, 22);
+			ctx.lineTo(chartArea.left - 20, 319);
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = '#DADDE2';
 			ctx.stroke();
@@ -119,12 +221,17 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 		},
 	};
 
-	let plugins = {
-		verticalYAxisBorder,
+	// get chart plugins
+	let getChartPlugins = () => {
+		let { useYAxisBorderPlugin } = chartSettings;
+		let plugins = [];
+
+		if (useYAxisBorderPlugin) {
+			plugins.push(verticalYAxisBorder);
+		}
+
+		return plugins;
 	};
-	Object.keys(chartSettings.plugins).forEach((key) => {
-		if (!chartSettings.plugins[key]) { delete plugins[key]; }
-	});
 
 	// chart configuration
 	let defaultConfig = {
@@ -148,7 +255,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: chartSettings.useExternalTooltip ? externalTooltip : null,
+					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltip : externalTooltipOldVersion,
 				},
 			},
 			scales: {
@@ -167,7 +274,7 @@ function createLineChart (chartEl, chartData = {}, chartSettings = { useExternal
 				intersect: false,
 			},
 		},
-		plugins: [ Object.values(plugins) ],
+		plugins: getChartPlugins(),
 	};
 
 	// create chart instance
