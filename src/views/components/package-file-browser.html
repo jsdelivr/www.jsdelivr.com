@@ -245,6 +245,40 @@
 						this.set('downloadsPerFile', downloadsPerFile);
 					});
 				});
+
+				this.observe('files downloadsPerFile', () => {
+					let files = this.get('files');
+					let downloadsPerFile = this.get('downloadsPerFile');
+
+					if (!files.length || !Object.keys(downloadsPerFile).length) { return; }
+
+					function countDirDownloadsRecursively (items, downloadsPerFile, incResults = {}, currentDirName = '/') {
+						let results = incResults || {};
+
+						results[currentDirName] = results[currentDirName] || 0;
+
+						items.forEach((item) => {
+							if (item.type === 'directory') {
+								let recResults = countDirDownloadsRecursively(item.files, downloadsPerFile, results, `${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`);
+
+								results = {
+									...results,
+									...recResults,
+								};
+
+								results[currentDirName] += recResults[`${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`] || 0;
+							}
+
+							results[currentDirName] += downloadsPerFile[item.name] || 0;
+						});
+
+						return results;
+					}
+
+					let downloadsPerDir = countDirDownloadsRecursively(files, downloadsPerFile);
+
+					this.set('downloadsPerDir', downloadsPerDir);
+				});
 			}
 		},
 		getCollectionIndex (collection, type, name, version, file) {
