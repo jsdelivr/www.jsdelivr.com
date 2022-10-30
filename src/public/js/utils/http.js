@@ -11,7 +11,7 @@ module.exports.fetchNetworkStats = (period = 'month') => {
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}${flat ? '/flat' : ''}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}${flat ? '?structure=flat' : ''}` });
 };
 
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits') => {
@@ -31,7 +31,7 @@ module.exports.fetchPackageVersions = (type, name) => {
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages/npm/${period}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages?type=npm&period=${period}` });
 };
 
 module.exports.fetchProjectCommits = (owner, repo) => {
@@ -52,7 +52,7 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 };
 
 module.exports.fetchPackageEntrypoints = (type, name, version) => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
 };
 
 module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
