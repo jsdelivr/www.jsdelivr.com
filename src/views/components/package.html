@@ -278,14 +278,14 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-
 				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
-				http.fetchPackageVersionsNEW(this.get('type'), this.get('name')).then((response) => {
+				http.fetchPackageVersions(this.get('type'), this.get('name')).then((response) => {
 					let versionsArr = response.versions.map(item => item.version);
 
 					// This can only happen for GitHub packages.
 					if (response.versions.length === 0) {
-						this.set({ packageVersionsNotFound: true })
+						this.set({ packageVersionsNotFound: true });
+
 						return;
 					}
 
