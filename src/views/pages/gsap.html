@@ -346,8 +346,8 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				// get versions
-				http.fetchPackageVersionsDEPRECATED(this.get('packageType'), this.get('packageName')).then((data) => {
-					this.set('versionsList', data.versions);
+				http.fetchPackageVersions(this.get('packageType'), this.get('packageName')).then((response) => {
+					this.set('versionsList', response.versions.map(item => item.version));
 				}).catch((error) => {
 					console.error(`Gsap versions not found.`, error);
 				});
