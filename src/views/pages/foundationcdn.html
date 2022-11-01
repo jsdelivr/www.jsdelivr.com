@@ -319,13 +319,13 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchPackageVersionsDEPRECATED('npm', 'foundation-sites').then((data) => {
-					data.versions = data.versions.filter((version) => {
+				http.fetchPackageVersions('npm', 'foundation-sites').then((response) => {
+					let filteredVersionsArr = response.versions.map(item => item.version).filter((version) => {
 						return /^\d+\.\d+\.\d+$/.test(version) && Number(version.split('.')[0]) > 5;
 					});
 
-					this.set('selectedVersion', data.tags.latest);
-					this.set('versions', data.versions);
+					this.set('selectedVersion', response.tags.latest);
+					this.set('versions', filteredVersionsArr);
 
 					this.updateFiles().then(() => {
 						this.observe('addTag', () => {
