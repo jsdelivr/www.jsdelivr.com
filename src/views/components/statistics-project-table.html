@@ -1,6 +1,6 @@
 <div class="c-statistics-project-table">
 	<div class="projects-info">
-		<h3>{{ title }}</h3>
+		<h3>{{title}}</h3>
 		<div class="btn-group">
 			<span>Type:</span>
 			<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -10,9 +10,9 @@
 
 			<ul class="dropdown-menu">
 				{{#each statsTypeList}}
-				<li>
-					<a on-click="@this.set('statsType', @key)">{{this}}</a>
-				</li>
+					<li>
+						<a on-click="@this.set('statsType', @key)">{{this}}</a>
+					</li>
 				{{/each}}
 			</ul>
 		</div>
@@ -23,9 +23,9 @@
 				<th>Name</th>
 				<th>Requests</th>
 				<th>Bandwidth</th>
-				{{ #if type === "trending" }}
+				{{#if type === "trending"}}
 					<th>Increased</th>
-				{{ /if }}
+				{{/if}}
 			</tr>
 			<tr>
 				<td colspan="{{ #if type === 'trending' }}4{{ else }}3{{ /if }}">
@@ -44,11 +44,9 @@
 									</td>
 									<td>
 										<div class="percentage-bar-container">
-											<div class="text">{{ formatNumberWithSpace(hits) }}</div>
+											<div class="text">{{formatNumberWithSpace(hits)}}</div>
 											<div class="percentage-bar">
-												<div class="barWidth" style="width: {{ barWidth.hits }}">
-
-												</div>
+												<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
 											</div>
 										</div>
 									</td>
@@ -62,11 +60,11 @@
 											</div>
 										</div>
 									</td>
-									{{ #if ~/type === "trending" }}
+									{{#if ~/type === "trending"}}
 										<td class="{{ interest >= 0? 'positive': 'negative'}}">
-											{{ toSignedPercentage(interest) }}
+											{{toSignedPercentage(interest)}}
 										</td>
-									{{ /if }}
+									{{/if}}
 								</tr>
 							{{/each}}
 						</table>
@@ -84,11 +82,10 @@
 					</div>
 					<h5 class="item-name">Requests</h5>
 					<div class="requests">
-						{{ formatNumberWithSpace(hits) }}
-						<div class="percentage-bar">
-							<div class="barWidth" style="width: {{ barWidth.hits }}">
+						{{formatNumberWithSpace(hits)}}
 
-							</div>
+						<div class="percentage-bar">
+							<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
 						</div>
 					</div>
 					<h5 class="item-name">Bandwidth</h5>
@@ -103,36 +100,38 @@
 			{{/each}}
 		</div>
 		<div class="pagination">
-			<p>{{ pageRange }}</p>
+			<p>{{pageRange}}</p>
 			<div class="pagination-change-page">
 				<button>
 					<img
 						width="20"
 						height="24"
 						src="{{@shared.assetsHost}}/img/statistics/left.svg"
-						loading="lazy"
-					/>
+						loading="lazy" />
 				</button>
 
-				{{ #each showablePages.pageCount }}
+				{{#each showablePages.pageCount}}
 					<button
 						class="page-num {{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
-						on-click="@this.set('page', ~/showablePages.start + @key)"
-					>
-						{{ ~/showablePages.start + @key }}
+						on-click="@this.set('page', ~/showablePages.start + @key)">
+						{{~/showablePages.start + @key}}
 					</button>
-				{{ /each }}
+				{{/each}}
 				<div class="btn-group for-mobile">
-					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+					<button
+						type="button"
+						class="btn dropdown-toggle"
+						data-toggle="dropdown"
+						aria-haspopup="true"
 						aria-expanded="false">
 						<span>page:&nbsp;&nbsp;{{page}}</span>
 						<i class="fa fa-angle-down" aria-hidden="true"></i>
 					</button>
 					<ul class="dropdown-menu">
-						{{#each Array(totalPageCount) }}
-						<li>
-							<a on-click="@this.set('page', @key + 1)">{{@key + 1}}</a>
-						</li>
+						{{#each Array(totalPageCount)}}
+							<li>
+								<a on-click="@this.set('page', @key + 1)">{{@key + 1}}</a>
+							</li>
 						{{/each}}
 					</ul>
 				</div>
@@ -142,22 +141,25 @@
 						width="24"
 						height="24"
 						src="{{@shared.assetsHost}}/img/statistics/right.svg"
-						loading="lazy"
-					/>
+						loading="lazy" />
 				</button>
 			</div>
 			<div class="btn-group">
 				<span>Show:</span>
-				<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+				<button
+					type="button"
+					class="btn dropdown-toggle"
+					data-toggle="dropdown"
+					aria-haspopup="true"
 					aria-expanded="false">
 					<span>{{pageLimit}}</span>
 					<i class="fa fa-angle-down" aria-hidden="true"></i>
 				</button>
 				<ul class="dropdown-menu">
 					{{#each paginationLimits}}
-					<li>
-						<a on-click="@this.set('pageLimit', this)">{{this}}</a>
-					</li>
+						<li>
+							<a on-click="@this.set('pageLimit', this)">{{this}}</a>
+						</li>
 					{{/each}}
 				</ul>
 				<span>per page</span>
