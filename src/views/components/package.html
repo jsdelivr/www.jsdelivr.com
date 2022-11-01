@@ -278,23 +278,27 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+
 				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
-				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
-					this.set('packageVersionsList', data.versions);
+				http.fetchPackageVersionsNEW(this.get('type'), this.get('name')).then((response) => {
+					let versionsArr = response.versions.map(item => item.version);
 
 					// This can only happen for GitHub packages.
-					if (data.versions.length === 0) {
-						return this.set({ packageVersionsNotFound: true });
+					if (response.versions.length === 0) {
+						this.set({ packageVersionsNotFound: true })
+						return;
 					}
+
+					this.set('packageVersionsList', versionsArr);
 
 					// Set version for GitHub packages.
 					if (!this.get('package.version')) {
-						this.set('package.version', data.versions[0]);
+						this.set('package.version', response.versions[0].version);
 					}
 
 					// Set version for GitHub packages or when an invalid version is selected.
-					if (!this.get('versionP') || data.versions.indexOf(this.get('versionP')) === -1) {
-						this.set('versionP', data.versions[0]);
+					if (!this.get('versionP') || versionsArr.indexOf(this.get('versionP')) === -1) {
+						this.set('versionP', response.versions[0].version);
 					}
 				}).catch((error) => {
 					this.set({ packageNotFound: true });
