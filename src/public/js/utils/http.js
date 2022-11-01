@@ -1,7 +1,6 @@
 
 const _ = require('../_');
 const STAGING_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
-const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
