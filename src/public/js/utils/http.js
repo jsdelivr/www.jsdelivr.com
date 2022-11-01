@@ -26,8 +26,12 @@ module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = '
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions`, body: { period, by, limit } });
 };
 
-module.exports.fetchPackageVersions = (type, name) => {
+module.exports.fetchPackageVersionsDEPRECATED = (type, name) => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}` });
+};
+
+module.exports.fetchPackageVersions = (type, name) => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}` });
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
