@@ -188,7 +188,7 @@
 						.style('font-size', '12px')
 						.text((d, index) => {
 							let value = min + index * (max - min) / (legendColorRange.length - 1);
-							return _.autoConvertBytesToUnits(value);
+							return _.formatToShortNumber(value);
 						});
 				} else {
 					svg.append('rect')
@@ -353,7 +353,7 @@
 			});
 		},
 		calcRatio (hits, bandwidth) {
-			return hits ? _.autoConvertBytesToUnits(bandwidth / hits) : 0;
+			return hits ? _.formatToShortNumber(bandwidth / hits) : 0;
 		},
 		hideTooltip () {
 			d3.select('.map-overlay')

@@ -286,26 +286,30 @@ module.exports = {
 		return unit.symbol;
 	},
 
-	autoConvertBytesToUnits (num, numSymbolSeparator = ' ') {
+	formatBytesToGB (num) {
+		return `${module.exports.formatNumber(Math.round(num / 1e9))} GB`;
+	},
+
+	formatBytesWithUnit (num, unit) {
 		let lookup = [
 			{ value: 1, symbol: '' },
-			{ value: 1e3, symbol: 'K' },
-			{ value: 1e6, symbol: 'M' },
-			{ value: 1e9, symbol: 'G' },
-			{ value: 1e12, symbol: 'T' },
-			{ value: 1e15, symbol: 'P' },
-			{ value: 1e18, symbol: 'E' },
+			{ value: 1e3, symbol: 'kB' },
+			{ value: 1e6, symbol: 'MB' },
+			{ value: 1e9, symbol: 'GB' },
+			{ value: 1e12, symbol: 'TB' },
+			{ value: 1e15, symbol: 'PB' },
+			{ value: 1e18, symbol: 'EB' },
 		];
 		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
-		let item = lookup.slice().reverse().find((item) => {
+		let item = lookup.find(l => l.symbol === unit) || lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
 
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + ' ' + item.symbol : '0';
 	},
 
-	formatToNumberWithUnits (num, numSymbolSeparator = '') {
+	formatToShortNumber (num) {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -320,7 +324,8 @@ module.exports = {
 		let item = lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
+
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 	},
 
 	makeHTTPRequest (obj) {

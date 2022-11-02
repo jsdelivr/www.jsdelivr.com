@@ -172,7 +172,9 @@
 							data="{{~/topFiveVersions}}"
 							type="{{~/type}}"
 							name="{{~/name}}"
-							version="{{~/fileStatsVersion}}">
+							version="{{~/fileStatsVersion}}"
+							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+						>
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -183,7 +185,9 @@
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
-							versions="{{~/packageVersionsList}}">
+							versions="{{~/packageVersionsList}}"
+							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+						>
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -638,7 +642,7 @@
 											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
 											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
 											}
 
 											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
@@ -738,7 +742,7 @@
 											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
 											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
 											}
 
 											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);

@@ -144,7 +144,7 @@ function createBarChart (
 
 		if (tooltipModel.body) {
 			let bodyValue = tooltipModel.body.map(item => item.lines[0])[0];
-			let innerHtml = `<span>${bodyValue}</span>`;
+			let innerHtml = `<span>${bodyValue}${chartData.valueUnits || ''}</span>`;
 			let tooltipWrapper = tooltipInstance.querySelector('div.barTooltipWrapper');
 			tooltipWrapper.innerHTML = innerHtml;
 		}
