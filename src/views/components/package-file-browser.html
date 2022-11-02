@@ -44,8 +44,8 @@
 
 					<div class="file-default-ctrls">
 						{{#if ~/downloadsPerFile[default.substring(default.indexOf('/') + 1)]}}
-							<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-								<span>{{~/downloadsPerFile[default.substring(default.indexOf('/') + 1)]}}</span>
+							<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+								<span>{{_.formatToNumberWithUnits(~/downloadsPerFile[default.substring(default.indexOf('/') + 1)])}}</span>
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
 							</div>
 						{{/if}}
@@ -76,53 +76,52 @@
 				{{/if}}
 
 				{{#partial fileLink}}
-					<div class="file-item">
+					<div class="file-item file-item-{{type}}">
 						{{#if type === 'directory'}}
 							<a on-click="@this.push('path', name)">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/folder.svg" loading="lazy"/>
 								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
-
-							<div>
-								{{#if ~/downloadsPerDir[pathS + name]}}
-									<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-										<span>{{~/downloadsPerDir[pathS + name]}}</span>
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
-									</div>
-								{{/if}}
-							</div>
 						{{else}}
 							<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
 								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
-
-							<div>
-								{{#if ~/downloadsPerFile[pathS + name]}}
-									<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-										<span>{{~/downloadsPerFile[pathS + name]}}</span>
+						{{/if}}
+						<div>
+							{{#if type === 'directory'}}
+								{{#if ~/downloadsPerDir[pathS + name]}}
+									<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+										<span>{{_.formatToNumberWithUnits(~/downloadsPerDir[pathS + name])}}</span>
 										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
 									</div>
 								{{/if}}
+								{{else}}
+								{{#if ~/downloadsPerFile[pathS + name]}}
+									<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+										<span>{{_.formatToNumberWithUnits(~/downloadsPerFile[pathS + name])}}</span>
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+									</div>
+								{{/if}}
+							{{/if}}
 
-								<c-copy-dropdown
-									url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
-									hash="{{hash}}"
-									dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
-								</c-copy-dropdown>
+							<c-copy-dropdown
+								url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
+								hash="{{hash}}"
+								dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
+							</c-copy-dropdown>
 
-								<input id="{{name}}"
-									type="checkbox"
-									class="switch-inline"
-									checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
-									twoway="false">
+							<input id="{{name}}"
+								type="checkbox"
+								class="switch-inline"
+								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+								twoway="false">
 
-								<label for="{{name}}"
-									on-click="@this.toggleCollectionFile('/' + pathS + name)"
-									as-tooltip="'Add to collection', 'top'">
-								</label>
-							</div>
-						{{/if}}
+							<label for="{{name}}"
+								on-click="@this.toggleCollectionFile('/' + pathS + name)"
+								as-tooltip="'Add to collection', 'top'">
+							</label>
+						</div>
 					</div>
 				{{/partial}}
 
