@@ -43,9 +43,9 @@
 					</a>
 
 					<div class="file-default-ctrls">
-						{{#if ~/downloadsPerFile[default.substr(default.lastIndexOf('/') + 1)]}}
+						{{#if ~/downloadsPerFile[default.substring(default.indexOf('/') + 1)]}}
 							<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-								<span>{{~/downloadsPerFile[default.substr(default.lastIndexOf('/') + 1)]}}</span>
+								<span>{{~/downloadsPerFile[default.substring(default.indexOf('/') + 1)]}}</span>
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
 							</div>
 						{{/if}}
@@ -98,9 +98,9 @@
 							</a>
 
 							<div>
-								{{#if ~/downloadsPerFile[name]}}
+								{{#if ~/downloadsPerFile[pathS + name]}}
 									<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-										<span>{{~/downloadsPerFile[name]}}</span>
+										<span>{{~/downloadsPerFile[pathS + name]}}</span>
 										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
 									</div>
 								{{/if}}
@@ -241,7 +241,7 @@
 					// fetch package File stats to get downloads amount per file
 					http.fetchPackageFileStats(packageType, packageName, version).then((response) => {
 						let downloadsPerFile = response.reduce((downloadsPerFile, fileStats) => {
-							let fileName = fileStats.name.substr(fileStats.name.lastIndexOf('/') + 1);
+							let fileName = fileStats.name.substring(fileStats.name.indexOf('/') + 1);
 
 							if (!fileName) { return downloadsPerFile; }
 
@@ -280,7 +280,7 @@
 								results[currentDirName] += recResults[`${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`] || 0;
 							}
 
-							results[currentDirName] += downloadsPerFile[item.name] || 0;
+							results[currentDirName] += downloadsPerFile[`${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`] || 0;
 						});
 
 						return results;
