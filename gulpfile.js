@@ -22,9 +22,9 @@ const srcAssetsDir = `${srcDir}/public`;
 const dstDir = './dist';
 let cache;
 
-const getRollupStream = () => rollupStream({
+const getRollupStream = file => rollupStream({
 	cache,
-	input: `${srcAssetsDir}/js/app.js`,
+	input: `${srcAssetsDir}/js/${file}`,
 	external: [
 		'algoliasearch',
 		'ractive',
@@ -78,26 +78,41 @@ gulp.task('less:prod', () => {
 		.pipe(gulp.dest(`${dstDir}/css`));
 });
 
-gulp.task('js', () => {
-	return getRollupStream()
+gulp.task('js', gulp.parallel(
+	() => getRollupStream('app.js')
 		.pipe(plumber())
 		.pipe(source(`app.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(`${dstDir}/js`))
-		.pipe(livereload());
-});
+		.pipe(livereload()),
+	() => getRollupStream('app-docs.js')
+		.pipe(plumber())
+		.pipe(source(`app-docs.js`, srcAssetsDir))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(`${dstDir}/js`))
+		.pipe(livereload())
+));
 
-gulp.task('js:prod', () => {
-	return getRollupStream()
+gulp.task('js:prod', gulp.parallel(
+	() => getRollupStream('app.js')
 		.pipe(source(`app.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/js`));
-});
+		.pipe(gulp.dest(`${dstDir}/js`)),
+	() => getRollupStream('app-docs.js')
+		.pipe(source(`app-docs.js`, srcAssetsDir))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(terser({ sourceMap: { includeSources: true } }))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(`${dstDir}/js`))
+));
 
 gulp.task('build', gulp.series('clean', 'copy', 'less:prod', 'js:prod'));
 

@@ -20,6 +20,23 @@
 		}
 	}
 
+	&.header-with-dark-bg {
+		.navbar {
+			background-color: #323334;
+			border: 1px solid #232425;
+		}
+	}
+
+	&.header-fw-docs {
+		.container-fluid {
+			max-width: 100%;
+
+			@media (min-width: 1024px) {
+				padding: 0 92px 0 14px;
+			}
+		}
+	}
+
 	.navbar-default {
 		position: relative;
 		box-shadow: 0 2px 2px -2px rgba(23, 35, 59, .04), 0 2px 8px rgba(23, 35, 59, .04);
@@ -34,42 +51,26 @@
 
 	.container-fluid {
 		height: 100%;
-		padding: 0;
 
 		@media (min-width: @screen-md-min) {
-			padding: 0 5vw;
 			display: flex;
 			align-items: center;
 		}
 
-		@media (min-width: @screen-xxl-lg-min) {
-			width: 1254px;
-			padding: 0 15px;
-		}
-
 		.navbar-collapse {
-			position: absolute;
-			left: 0;
-			right: 0;
-			padding: 0;
-			margin: 0;
+			@media (max-width: @screen-sm-max) {
+				position: absolute;
+				left: 0;
+				right: 0;
+				margin: 0;
+			}
 
 			@media (min-width: @screen-md-min) {
-				position: unset;
 				margin-left: auto;
-				background: transparent;
 			}
 
 			&.collapsing {
 				position: absolute;
-				padding: 0;
-			}
-
-			.container-fluid {
-				@media (min-width: @screen-sm-max) {
-					width: unset;
-					padding: 0;
-				}
 			}
 		}
 	}
@@ -84,11 +85,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin: 0 16px;
-
-		@media (min-width: @screen-sm-min) {
-			margin: 0 5vw;
-		}
+		margin: 0;
 
 		@media (min-width: @screen-md-min) {
 			margin-right: 0;
@@ -185,7 +182,7 @@
 		border-left: none;
 		box-shadow: none;
 
-		.navbar-toggle.collapsed > span {
+		.navbar-toggle > span {
 			background-color: #fff;
 		}
 	}
@@ -229,7 +226,7 @@
 				& > a {
 					justify-content: flex-start;
 					height: auto;
-					padding: 14px 13px 16px 16px;
+					padding: 14px 0 16px;
 
 					> i.fa-angle-down {
 						margin-left: auto;
@@ -311,5 +308,10 @@
 
 	&.disabled, &.disabled * {
 		pointer-events: none;
+	}
+
+	.fa-external-link {
+		font-size: 80%;
+		margin-left: 6px;
 	}
 }

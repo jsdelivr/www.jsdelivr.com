@@ -2,7 +2,6 @@
 <link rel="ractive" href="./slide.html" name="c-slide">
 
 <div class="c-landing-top">
-
 	<div class="content">
 		<section class="heading">
 			<span>Fast. Reliable. Automated.</span>
@@ -21,157 +20,161 @@
 				<span>last month</span>
 			</div>
 		</section>
-
-
-		<section class="docs">
-			<div class="docs_tabs">
-				<div class="docs_tabs_wrapper">
-					<div class="docs_tabs_tab {{#unless activeDocs}}active-docs-tab{{/unless}}">
-						<a on-click="@this.set('activeDocs', '')" class="{{#unless activeDocs}}active{{/unless}}">
-							<img width="50" height="14" src="{{@shared.assetsHost}}/img/landing/new/docs-code/npm.svg">
-						</a>
-					</div>
-
-					<div class="docs_tabs_tab {{#if activeDocs === 'esm'}}active-docs-tab{{/if}}">
-						<a on-click="@this.set('activeDocs', 'esm')" class="{{#if activeDocs === 'esm'}}active{{/if}}">
-							<img width="44" height="17" src="{{@shared.assetsHost}}/img/landing/new/docs-code/esm.svg">
-						</a>
-					</div>
-
-					<div class="docs_tabs_tab {{#if activeDocs === 'gh'}}active-docs-tab{{/if}}">
-						<a on-click="@this.set('activeDocs', 'gh')" class="{{#if activeDocs === 'gh'}}active{{/if}}">
-							<img width="67" height="19" src="{{@shared.assetsHost}}/img/landing/new/docs-code/github.svg">
-						</a>
-					</div>
-
-					<div class="docs_tabs_tab {{#if activeDocs === 'wp'}}active-docs-tab{{/if}}">
-						<a on-click="@this.set('activeDocs', 'wp')" class="{{#if activeDocs === 'wp'}}active{{/if}}">
-							<img width="107" height="22" src="{{@shared.assetsHost}}/img/landing/new/docs-code/wordpress.svg">
-						</a>
-					</div>
-
-					<div class="active-tab-line" style="left: {{activeDocsLineLeft}}%"></div>
-				</div>
-
-				<div class="dropdown">
-					<button class="dropdown-toggle" type="button" id="cdn-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-						<div class="selected">
-							<img src="{{ @shared.assetsHost }}/img/landing/new/docs-code/{{ cdnsList[activeDocsIndex].image }}">
-						</div>
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg" loading="lazy"/>
-					</button>
-
-					<ul class="dropdown-menu" aria-labelledby="cdn-dropdown">
-						{{#each ~/cdnsList}}
-							{{ #if activeDocs !== .slug }}
-								<li>
-									<a on-click="@this.set('activeDocs', .slug)">
-										<img src="{{ @shared.assetsHost }}/img/landing/new/docs-code/{{ .image }}">
-									</a>
-								</li>
-							{{ /if }}
-						{{/each}}
-					</ul>
-				</div>
-			</div>
-
-			<div class="docs_code">
-				<c-slider active="{{activeSlide}}" direction="horizontal" distance="400" duration="400">
-					{{#each slidesData:slideIdx}}
-						<c-slide>
-							<div class="docs_code_slide" id="{{slideIdx}}">
-								{{#each this:idx}}
-									{{#each this.comments}}
-										<p class="docs-comment">{{this}}</p>
-									{{/each}}
-
-									{{#each this.links}}
-										<p class="docs-link">
-											<a target="_blank" rel="noopener noreferrer" href="{{this}}">
-												{{this}}
-											</a>
-										</p>
-									{{/each}}
-
-									{{#unless idx === slidesData[slideIdx].length -1}}
-										<br>
-									{{/unless}}
-								{{/each}}
+	</div>
+	<div class="container-fluid container-mw">
+		<div class="row">
+			<div class="col-xs-12 col-lg-10 col-lg-push-1">
+				<section class="docs">
+					<div class="docs_tabs">
+						<div class="docs_tabs_wrapper">
+							<div class="docs_tabs_tab {{#unless activeDocs}}active-docs-tab{{/unless}}">
+								<a on-click="@this.set('activeDocs', '')" class="{{#unless activeDocs}}active{{/unless}}">
+									<img width="50" height="14" src="{{@shared.assetsHost}}/img/landing/new/docs-code/npm.svg">
+								</a>
 							</div>
-						</c-slide>
-					{{/each}}
-				</c-slider>
+
+							<div class="docs_tabs_tab {{#if activeDocs === 'esm'}}active-docs-tab{{/if}}">
+								<a on-click="@this.set('activeDocs', 'esm')" class="{{#if activeDocs === 'esm'}}active{{/if}}">
+									<img width="44" height="17" src="{{@shared.assetsHost}}/img/landing/new/docs-code/esm.svg">
+								</a>
+							</div>
+
+							<div class="docs_tabs_tab {{#if activeDocs === 'gh'}}active-docs-tab{{/if}}">
+								<a on-click="@this.set('activeDocs', 'gh')" class="{{#if activeDocs === 'gh'}}active{{/if}}">
+									<img width="67" height="19" src="{{@shared.assetsHost}}/img/landing/new/docs-code/github.svg">
+								</a>
+							</div>
+
+							<div class="docs_tabs_tab {{#if activeDocs === 'wp'}}active-docs-tab{{/if}}">
+								<a on-click="@this.set('activeDocs', 'wp')" class="{{#if activeDocs === 'wp'}}active{{/if}}">
+									<img width="107" height="22" src="{{@shared.assetsHost}}/img/landing/new/docs-code/wordpress.svg">
+								</a>
+							</div>
+
+							<div class="active-tab-line" style="left: {{activeDocsLineLeft}}%"></div>
+						</div>
+
+						<div class="dropdown">
+							<button class="dropdown-toggle" type="button" id="cdn-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+								<div class="selected">
+									<img src="{{ @shared.assetsHost }}/img/landing/new/docs-code/{{ cdnsList[activeDocsIndex].image }}">
+								</div>
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg" loading="lazy"/>
+							</button>
+
+							<ul class="dropdown-menu" aria-labelledby="cdn-dropdown">
+								{{#each ~/cdnsList}}
+									{{ #if activeDocs !== .slug }}
+										<li>
+											<a on-click="@this.set('activeDocs', .slug)">
+												<img src="{{ @shared.assetsHost }}/img/landing/new/docs-code/{{ .image }}">
+											</a>
+										</li>
+									{{ /if }}
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<div class="docs_code">
+						<c-slider active="{{activeSlide}}" direction="horizontal" distance="400" duration="400">
+							{{#each slidesData:slideIdx}}
+								<c-slide>
+									<div class="docs_code_slide" id="{{slideIdx}}">
+										{{#each this:idx}}
+											{{#each this.comments}}
+												<p class="docs-comment">{{this}}</p>
+											{{/each}}
+
+											{{#each this.links}}
+												<p class="docs-link">
+													<a target="_blank" rel="noopener noreferrer" href="{{this}}">
+														{{this}}
+													</a>
+												</p>
+											{{/each}}
+
+											{{#unless idx === slidesData[slideIdx].length -1}}
+												<br>
+											{{/unless}}
+										{{/each}}
+									</div>
+								</c-slide>
+							{{/each}}
+						</c-slider>
+					</div>
+
+					<a class="btn-docview btn-grey btn-sm" href="https://github.com/jsdelivr/jsdelivr#usage-documentation" target="_blank">
+						<img src="{{ @shared.assetsHost }}/img/icons/info_circle.svg">Full docs
+					</a>
+				</section>
+
+				<section class="sponsors">
+					<span>jsDelivr operates thanks to our main sponsors:</span>
+
+					<div class="sponsors-logos">
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com">
+								<img width="149"
+									height="50"
+									src="{{@shared.assetsHost}}/img/landing/cloudflare.png"
+									srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x"
+									title="Sponsored by Cloudflare">
+							</a>
+						</div>
+
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com">
+								<img width="116"
+									height="50"
+									src="{{@shared.assetsHost}}/img/landing/fastly.png"
+									srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x"
+									title="Sponsored by Fastly">
+							</a>
+						</div>
+
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://gcorelabs.com/">
+								<img width="409"
+									height="116"
+									src="{{@shared.assetsHost}}/img/landing/new/gcorelabs.svg"
+									title="Sponsored by G-Core Labs">
+							</a>
+						</div>
+
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://ns1.com">
+								<img width="94"
+									height="50"
+									src="{{@shared.assetsHost}}/img/landing/ns1.png"
+									srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x"
+									title="Sponsored by NS1">
+							</a>
+						</div>
+
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://render.com/">
+								<img width="186"
+									height="50"
+									src="{{@shared.assetsHost}}/img/landing/render.png"
+									srcset="{{@shared.assetsHost}}/img/landing/render@2x.png 2x"
+									title="Sponsored by render.com">
+							</a>
+						</div>
+
+						<div class="sponsors-logos_item">
+							<a target="_blank" rel="noopener noreferrer" href="https://bunny.net">
+								<img width="172"
+									height="50"
+									src="{{@shared.assetsHost}}/img/landing/bunny.png"
+									srcset="{{@shared.assetsHost}}/img/landing/bunny@2x.png 2x"
+									title="Sponsored by bunny.net">
+							</a>
+						</div>
+					</div>
+				</section>
 			</div>
-
-			<a class="btn-docview btn-grey btn-sm" href="https://github.com/jsdelivr/jsdelivr#usage-documentation" target="_blank">
-				<img src="{{ @shared.assetsHost }}/img/icons/info_circle.svg">Full docs
-			</a>
-		</section>
-
-		<section class="sponsors">
-			<span>jsDelivr operates thanks to our main sponsors:</span>
-
-			<div class="sponsors-logos">
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com">
-						<img width="149"
-							height="50"
-							src="{{@shared.assetsHost}}/img/landing/cloudflare.png"
-							srcset="{{@shared.assetsHost}}/img/landing/cloudflare@2x.png 2x"
-							title="Sponsored by Cloudflare">
-					</a>
-				</div>
-
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com">
-						<img width="116"
-							height="50"
-							src="{{@shared.assetsHost}}/img/landing/fastly.png"
-							srcset="{{@shared.assetsHost}}/img/landing/fastly@2x.png 2x"
-							title="Sponsored by Fastly">
-					</a>
-				</div>
-
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://gcorelabs.com/">
-						<img width="409"
-							height="116"
-							src="{{@shared.assetsHost}}/img/landing/new/gcorelabs.svg"
-							title="Sponsored by G-Core Labs">
-					</a>
-				</div>
-
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://ns1.com">
-						<img width="94"
-							height="50"
-							src="{{@shared.assetsHost}}/img/landing/ns1.png"
-							srcset="{{@shared.assetsHost}}/img/landing/ns1@2x.png 2x"
-							title="Sponsored by NS1">
-					</a>
-				</div>
-
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://render.com/">
-						<img width="186"
-							height="50"
-							src="{{@shared.assetsHost}}/img/landing/render.png"
-							srcset="{{@shared.assetsHost}}/img/landing/render@2x.png 2x"
-							title="Sponsored by render.com">
-					</a>
-				</div>
-
-				<div class="sponsors-logos_item">
-					<a target="_blank" rel="noopener noreferrer" href="https://bunny.net">
-						<img width="172"
-							height="50"
-							src="{{@shared.assetsHost}}/img/landing/bunny.png"
-							srcset="{{@shared.assetsHost}}/img/landing/bunny@2x.png 2x"
-							title="Sponsored by bunny.net">
-					</a>
-				</div>
-			</div>
-		</section>
+		</div>
 	</div>
 </div>
 
