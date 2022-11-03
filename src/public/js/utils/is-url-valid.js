@@ -1,13 +1,13 @@
 module.exports = {
 	test: (url) => {
-		let pattern = /(?<=https?:\/\/cdn\.jsdelivr\.net\/).*/g;
+		let pattern = /https?:\/\/cdn\.jsdelivr\.net\/.*/g;
 		return pattern.test(url);
 	},
 	getPathFromUrl: (url) => {
 		try {
-			let pattern = /(?<=https?:\/\/cdn\.jsdelivr\.net).*/;
+			let pattern = /https?:\/\/cdn\.jsdelivr\.net(.*)/;
 			let res = url.match(pattern);
-			return res[0];
+			return res[1];
 		} catch (e) {
 			return '/';
 		}
