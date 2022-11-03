@@ -1,15 +1,15 @@
-<link rel="ractive" href="../r-page.html" />
-<link rel="ractive" href="../components/coming-soon.html" name="c-coming-soon"/>
-<link rel="ractive" href="../components/header.html" name="c-header" />
-<link rel="ractive" href="../components/footer.html" name="c-footer" />
-<link rel="ractive" href="../components/notification.html" name="c-notification"/>
-<link rel="ractive" href="../components/stats-table.html" name="c-stats-table"/>
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/coming-soon.html" name="c-coming-soon">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/stats-table.html" name="c-stats-table">
 
-<link rel="ractive" href="../components/network-provider-stats.html" name="c-network-provider-stats" />
-<link rel="ractive" href="../components/network-request-chart.html" name="c-network-request-chart" />
-<link rel="ractive" href="../components/network-request-map.html" name="c-network-request-map" />
-<link rel="ractive" href="../components/top-platform-browser.html" name="c-top-platform-browser" />
-<link rel="ractive" href="../components/statistics-project-table.html" name="c-statistics-project-table" />
+<link rel="ractive" href="../components/network-provider-stats.html" name="c-network-provider-stats">
+<link rel="ractive" href="../components/network-request-chart.html" name="c-network-request-chart">
+<link rel="ractive" href="../components/network-request-map.html" name="c-network-request-map">
+<link rel="ractive" href="../components/top-platform-browser.html" name="c-top-platform-browser">
+<link rel="ractive" href="../components/statistics-project-table.html" name="c-statistics-project-table">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -21,28 +21,31 @@
 					class="head-map-bg"
 					width="800"
 					height="428"
-					src="{{@shared.assetsHost}}/img/sponsors/map.svg"
-				/>
+					src="{{@shared.assetsHost}}/img/sponsors/map.svg">
+
 				<h2 class="head-title">Statistics</h2>
+
 				<p class="head-text">
 					Global internet insights from jsDelivr based on anonymous
 					aggregated data
 				</p>
+
 				<div class="global_data">
 					<div class="global_data_info">
 						<img
 							width="44"
 							height="48"
 							src="{{@shared.assetsHost}}/img/statistics/globalData.svg"
-							loading="lazy"
-						/>
+							loading="lazy">
+
 						<h2 class="title">Global data</h2>
+
 						<img
 							class="setting-ico {{ #if globalDataSetting }}active{{ /if }}"
 							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
-							on-click="@this.set('globalDataSetting', !globalDataSetting)"
-						/>
+							on-click="@this.set('globalDataSetting', !globalDataSetting)">
 					</div>
+
 					<div class="header-ctrls {{ #if globalDataSetting }}show{{ /if }}">
 						<div class="data-range-ctrl">
 							<div class="btn-group">
@@ -52,47 +55,44 @@
 									class="btn dropdown-toggle"
 									data-toggle="dropdown"
 									aria-haspopup="true"
-									aria-expanded="false"
-								>
+									aria-expanded="false">
 									<span>{{ globalStatsPeriod }}</span>
-									<i
-										class="fa fa-angle-down"
-										aria-hidden="true"
-									></i>
+									<i class="fa fa-angle-down" aria-hidden="true">
+									</i>
 								</button>
 
 								<ul class="dropdown-menu">
 									{{#each statsPeriods}}
-									<li>
-										<a
-											on-click="@this.set('globalStatsPeriod', @key)"
-											>{{@key}}</a
-										>
-									</li>
+										<li>
+											<a on-click="@this.set('globalStatsPeriod', @key)">
+												{{@key}}
+											</a>
+										</li>
 									{{/each}}
 								</ul>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="verticalLine" />
+
+				<div class="verticalLine"></div>
+
 				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
 				<div class="hit-rate">
 					<h3>Cache hit rate</h3>
 					<div class="rate-row">
 						{{#each rateList}}
-						<div class="row-item">
-							<div>
-								<img
-									class="icon"
-									width="24"
-									height="24"
-									src='{{@shared.assetsHost}}{{svg}}'
-								/>
-								<span>{{name}}</span>
+							<div class="row-item">
+								<div>
+									<img
+										class="icon"
+										width="24"
+										height="24"
+										src='{{@shared.assetsHost}}{{svg}}'>
+									<span>{{name}}</span>
+								</div>
+								<div class="interest"><p class="text-table-number">{{interest}}</p></div>
 							</div>
-							<div class="interest"><p class="text-table-number">{{interest}}</p></div>
-						</div>
 						{{/each}}
 					</div>
 				</div>
@@ -106,17 +106,18 @@
 							width="44"
 							height="48"
 							src="{{@shared.assetsHost}}/img/statistics/network.svg"
-							loading="lazy"
-						/>
+							loading="lazy">
+
 						<h2 class="title">Network data</h2>
+
 						<img
 							class="setting-ico {{ #if networkDataSetting }}active{{ /if }}"
 							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
-							on-click="@this.set('networkDataSetting', !networkDataSetting)"
-						/>
+							on-click="@this.set('networkDataSetting', !networkDataSetting)">
 					</div>
+
 					<div class="network-data-action {{ #if networkDataSetting }}show{{ /if }}">
-						<input class="search" placeholder="Filter for a specific country or a continent..."/>
+						<input class="search" placeholder="Filter for a specific country or a continent...">
 						<div class="data-range-ctrl">
 							<div class="btn-group">
 								<span class="label-for-pinned">Data range</span>
@@ -136,21 +137,25 @@
 
 								<ul class="dropdown-menu">
 									{{#each statsPeriods}}
-									<li>
-										<a
-											on-click="@this.set('networkStatsPeriod', @key)"
-											>{{@key}}</a
-										>
-									</li>
+										<li>
+											<a
+												on-click="@this.set('networkStatsPeriod', @key)"
+												>{{@key}}</a
+											>
+										</li>
 									{{/each}}
 								</ul>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="verticalLine" />
+
+				<div class="verticalLine"></div>
+
 				<c-network-request-chart __ready="{{ __ready }}" period="{{ networkStatsPeriod }}" country="{{ country }}"></c-network-request-chart>
+
 				<c-network-request-map __ready="{{ __ready }}" period="{{ networkStatsPeriod }}"></c-network-request-map>
+
 				<div class="tops">
 					<c-top-platform-browser __ready="{{ __ready }}" type="platform"></c-top-platform-browser>
 					<c-top-platform-browser __ready="{{ __ready }}" type="browser"></c-top-platform-browser>
@@ -164,10 +169,11 @@
 						width="44"
 						height="48"
 						src="{{@shared.assetsHost}}/img/statistics/projects.svg"
-						loading="lazy"
-					/>
+						loading="lazy">
+
 					<h2 class="title">Projects statistics</h2>
 				</div>
+
 				<div class="data-range-ctrl">
 					<div class="btn-group">
 						<button
@@ -175,31 +181,38 @@
 							class="btn dropdown-toggle"
 							data-toggle="dropdown"
 							aria-haspopup="true"
-							aria-expanded="false"
-						>
+							aria-expanded="false">
 							<span>{{ projectStatsPeriod }}</span>
-							<i
-								class="fa fa-angle-down"
-								aria-hidden="true"
-							></i>
+
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
 						</button>
 
 						<ul class="dropdown-menu">
 							{{#each statsPeriods}}
-							<li>
-								<a
-									on-click="@this.set('projectStatsPeriod', @key)"
-									>{{@key}}</a
-								>
-							</li>
+								<li>
+									<a on-click="@this.set('projectStatsPeriod', @key)">{{@key}}</a>
+								</li>
 							{{/each}}
 						</ul>
 					</div>
 				</div>
 			</div>
-			<div class="verticalLine" />
-			<c-statistics-project-table __ready="{{ __ready }}" title="Most popular projects" type="popular" period="{{ projectStatsPeriod }}"></c-statistics-project-table>
-			<c-statistics-project-table __ready="{{ __ready }}" title="Trending projects" type="trending" period="{{ projectStatsPeriod }}"></c-statistics-project-table>
+
+			<div class="verticalLine"></div>
+
+			<c-statistics-project-table
+				__ready="{{ __ready }}"
+				title="Most popular projects"
+				type="popular"
+				period="{{ projectStatsPeriod }}">
+			</c-statistics-project-table>
+
+			<c-statistics-project-table
+				__ready="{{ __ready }}"
+				title="Trending projects"
+				type="trending"
+				period="{{ projectStatsPeriod }}">
+			</c-statistics-project-table>
 		</div>
 	</div>
 	<c-footer></c-footer>
@@ -270,7 +283,7 @@
 					displayKey: 'name',
 					templates: {
 						suggestion: (item) => {
-							return `<img width="21px" height="15px" src="${flagIconPath}/${item.code}.svg"/>` + item.name;
+							return `<img width="21px" height="15px" src="${flagIconPath}/${item.code}.svg">` + item.name;
 						},
 					},
 				},
