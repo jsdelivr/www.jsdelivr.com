@@ -916,9 +916,9 @@
 						height="56"
 						src="{{@shared.assetsHost}}/img/landing/new/endpoint1.png"
 						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint1@2x.png 2x" />
-					<p>406 745 962</p>
+					<p>{{_.formatNumber(cocoaHitsTotal)}}</p>
 					<span>Requests Served last month</span>
-					<p>52.3 GB</p>
+					<p>{{_.formatNumber(cocoaBandwidthTotal)}} {{cocoaBandwidthUnit}}</p>
 					<span>Bandwidth last month</span>
 				</div>
 
@@ -927,9 +927,9 @@
 						height="56"
 						src="{{@shared.assetsHost}}/img/landing/new/endpoint2.png"
 						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint2@2x.png 2x" />
-					<p>884 745 962</p>
+					<p>{{_.formatNumber(pyodideHitsTotal)}}</p>
 					<span>Requests Served last month</span>
-					<p>45.2 GB</p>
+					<p>{{_.formatNumber(pyodideBandwidthTotal)}} {{pyodideBandwidthUnit}}</p>
 					<span>Bandwidth last month</span>
 				</div>
 
@@ -938,9 +938,9 @@
 						height="56"
 						src="{{@shared.assetsHost}}/img/landing/new/endpoint3.png"
 						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint3@2x.png 2x" />
-					<p>28 745 962</p>
+					<p>{{_.formatNumber(musescoreHitsTotal)}}</p>
 					<span>Requests Served last month</span>
-					<p>34.5 GB</p>
+					<p>{{_.formatNumber(musescoreBandwidthTotal)}} {{musescoreBandwidthUnit}}</p>
 					<span>Bandwidth last month</span>
 				</div>
 			</div>
@@ -1051,6 +1051,15 @@
 					{ image: 'euro-vision.svg' },
 				],
 				showMoreExLogo: false,
+				cocoaBandwidthUnit: '',
+				pyodideBandwidthUnit: '',
+				musescoreBandwidthUnit: '',
+				cocoaHitsTotal: 0,
+				pyodideHitsTotal: 0,
+				musescoreHitsTotal: 0,
+				cocoaBandwidthTotal: 0,
+				pyodideBandwidthTotal: 0,
+				musescoreBandwidthTotal: 0,
 			};
 		},
 		oninit () {
@@ -1119,6 +1128,48 @@
 
 					this.animate('bandwidth', bandwidth, animationConfig);
 				}, 800);
+
+				// fetch Cocoa CDN OSS data cocoa)
+				http.fetchCdnOssStats('cocoa', 'month').then(({ hits, bandwidth }) => {
+					if (hits.total >= 0) {
+						this.animate('cocoaHitsTotal', hits.total, { duration: 1000 });
+					}
+
+					if (bandwidth.total >= 0) {
+						let cocoaBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+
+						this.set('cocoaBandwidthUnit', cocoaBandwidthUnit);
+						this.animate('cocoaBandwidthTotal', _.convertBytesToUnits(bandwidth.total, cocoaBandwidthUnit), { duration: 1000 });
+					}
+				});
+
+				// fetch Pyodide CDN OSS data cocoa)
+				http.fetchCdnOssStats('pyodide', 'month').then(({ hits, bandwidth }) => {
+					if (hits.total >= 0) {
+						this.animate('pyodideHitsTotal', hits.total, { duration: 1000 });
+					}
+
+					if (bandwidth.total >= 0) {
+						let pyodideBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+
+						this.set('pyodideBandwidthUnit', pyodideBandwidthUnit);
+						this.animate('pyodideBandwidthTotal', _.convertBytesToUnits(bandwidth.total, pyodideBandwidthUnit), { duration: 1000 });
+					}
+				});
+
+				// fetch Musescore CDN OSS data cocoa)
+				http.fetchCdnOssStats('musescore', 'month').then(({ hits, bandwidth }) => {
+					if (hits.total >= 0) {
+						this.animate('musescoreHitsTotal', hits.total, { duration: 1000 });
+					}
+
+					if (bandwidth.total >= 0) {
+						let musescoreBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+
+						this.set('musescoreBandwidthUnit', musescoreBandwidthUnit);
+						this.animate('musescoreBandwidthTotal', _.convertBytesToUnits(bandwidth.total, musescoreBandwidthUnit), { duration: 1000 });
+					}
+				});
 			}
 		},
 		oncomplete () {
