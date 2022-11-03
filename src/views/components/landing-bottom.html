@@ -2,6 +2,8 @@
 <link rel="ractive" href="./stats-table.html" name="c-stats-table" />
 <link rel="ractive" href="./slider.html" name="c-slider" />
 <link rel="ractive" href="./slide.html" name="c-slide" />
+<link	rel="ractive" href="../components/custom-cdn-oss-data-card.html" name="c-custom-cdn-oss-data-card" />
+
 <!-- Commenting this out while we switch to another API -->
 <!-- <link rel="ractive" href="./rum.html" name="c-rum"> -->
 
@@ -911,38 +913,11 @@
 
 		<div class="endpoints_list">
 			<div class="endpoints_list_wrapper">
-				<div class="endpoints_list_wrapper_item">
-					<img width="202"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint1.png"
-						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint1@2x.png 2x" />
-					<p>{{_.formatNumber(cocoaHitsTotal)}}</p>
-					<span>Requests Served last month</span>
-					<p>{{_.formatNumber(cocoaBandwidthTotal)}} {{cocoaBandwidthUnit}}</p>
-					<span>Bandwidth last month</span>
-				</div>
+				<c-custom-cdn-oss-data-card name="cocoa" period="month" imgName="endpoint1" imgWidth="202" imgHeight="56"></c-custom-cdn-oss-data-card>
 
-				<div class="endpoints_list_wrapper_item">
-					<img width="170"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint2.png"
-						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint2@2x.png 2x" />
-					<p>{{_.formatNumber(pyodideHitsTotal)}}</p>
-					<span>Requests Served last month</span>
-					<p>{{_.formatNumber(pyodideBandwidthTotal)}} {{pyodideBandwidthUnit}}</p>
-					<span>Bandwidth last month</span>
-				</div>
+				<c-custom-cdn-oss-data-card name="pyodide" period="month" imgName="endpoint2" imgWidth="170" imgHeight="56"></c-custom-cdn-oss-data-card>
 
-				<div class="endpoints_list_wrapper_item">
-					<img width="213"
-						height="56"
-						src="{{@shared.assetsHost}}/img/landing/new/endpoint3.png"
-						srcset="{{@shared.assetsHost}}/img/landing/new/endpoint3@2x.png 2x" />
-					<p>{{_.formatNumber(musescoreHitsTotal)}}</p>
-					<span>Requests Served last month</span>
-					<p>{{_.formatNumber(musescoreBandwidthTotal)}} {{musescoreBandwidthUnit}}</p>
-					<span>Bandwidth last month</span>
-				</div>
+				<c-custom-cdn-oss-data-card name="musescore" period="month" imgName="endpoint3" imgWidth="213" imgHeight="56"></c-custom-cdn-oss-data-card>
 			</div>
 		</div>
 
@@ -1051,15 +1026,6 @@
 					{ image: 'euro-vision.svg' },
 				],
 				showMoreExLogo: false,
-				cocoaBandwidthUnit: '',
-				pyodideBandwidthUnit: '',
-				musescoreBandwidthUnit: '',
-				cocoaHitsTotal: 0,
-				pyodideHitsTotal: 0,
-				musescoreHitsTotal: 0,
-				cocoaBandwidthTotal: 0,
-				pyodideBandwidthTotal: 0,
-				musescoreBandwidthTotal: 0,
 			};
 		},
 		oninit () {
@@ -1128,48 +1094,6 @@
 
 					this.animate('bandwidth', bandwidth, animationConfig);
 				}, 800);
-
-				// fetch Cocoa CDN OSS data cocoa)
-				http.fetchCdnOssStats('cocoa', 'month').then(({ hits, bandwidth }) => {
-					if (hits.total >= 0) {
-						this.animate('cocoaHitsTotal', hits.total, { duration: 1000 });
-					}
-
-					if (bandwidth.total >= 0) {
-						let cocoaBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
-
-						this.set('cocoaBandwidthUnit', cocoaBandwidthUnit);
-						this.animate('cocoaBandwidthTotal', _.convertBytesToUnits(bandwidth.total, cocoaBandwidthUnit), { duration: 1000 });
-					}
-				});
-
-				// fetch Pyodide CDN OSS data cocoa)
-				http.fetchCdnOssStats('pyodide', 'month').then(({ hits, bandwidth }) => {
-					if (hits.total >= 0) {
-						this.animate('pyodideHitsTotal', hits.total, { duration: 1000 });
-					}
-
-					if (bandwidth.total >= 0) {
-						let pyodideBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
-
-						this.set('pyodideBandwidthUnit', pyodideBandwidthUnit);
-						this.animate('pyodideBandwidthTotal', _.convertBytesToUnits(bandwidth.total, pyodideBandwidthUnit), { duration: 1000 });
-					}
-				});
-
-				// fetch Musescore CDN OSS data cocoa)
-				http.fetchCdnOssStats('musescore', 'month').then(({ hits, bandwidth }) => {
-					if (hits.total >= 0) {
-						this.animate('musescoreHitsTotal', hits.total, { duration: 1000 });
-					}
-
-					if (bandwidth.total >= 0) {
-						let musescoreBandwidthUnit = _.findUnitFromNumber(bandwidth.total);
-
-						this.set('musescoreBandwidthUnit', musescoreBandwidthUnit);
-						this.animate('musescoreBandwidthTotal', _.convertBytesToUnits(bandwidth.total, musescoreBandwidthUnit), { duration: 1000 });
-					}
-				});
 			}
 		},
 		oncomplete () {
