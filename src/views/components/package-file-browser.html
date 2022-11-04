@@ -127,8 +127,6 @@
 
 				{{#each _.listFiles(~/files, path).slice(0, ~/filesLimit)}}
 					{{>fileLink}}
-				{{else}}
-					<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
 				{{/each}}
 
 				{{#if showMoreFiles}}
@@ -140,6 +138,10 @@
 				{{/if}}
 			</div>
 		</div>
+
+		{{#if !files.length}}
+			<div class="text-center files-loading-msg">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+		{{/if}}
 
 		{{#if _.listFiles(~/files, path).length > filesLimit}}
 			<div class="show-more-toggle">
