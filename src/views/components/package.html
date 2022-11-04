@@ -28,18 +28,31 @@
 
 				<div class="package-nav">
 					{{#if package.readme}}
-						<a id="navRouteReadme" on-click="@this.set('navRoute', NAV_MENU_TABS.readme)" class="package-nav_route {{navRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>{{navMenuTitles.readmeTabTitle}}</span>
+						<a id="navRouteReadme"
+							on-click="@this.set('navRoute', NAV_MENU_TABS.readme)"
+							class="package-nav_route {{navRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg">
+							<span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
-					<a id="navRouteConfig" on-click="@this.set('navRoute', NAV_MENU_TABS.config)" class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>{{navMenuTitles.configTabTitle}}</span>
+
+					<a id="navRouteConfig"
+						on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
+						class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
+						<span>{{navMenuTitles.configTabTitle}}</span>
 					</a>
-					<a id="navRouteStats" on-click="@this.set('navRoute', NAV_MENU_TABS.stats)" class="package-nav_route {{navRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>{{navMenuTitles.statsTabTitle}}</span>
+
+					<a id="navRouteStats"
+						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
+						class="package-nav_route {{navRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg">
+						<span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
+
 					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
-						<span>{{navMenuTitles.browseCdnTitle}}</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+						<span>{{navMenuTitles.browseCdnTitle}}</span>
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
@@ -368,18 +381,12 @@
 				// switch tab to readme after resizing (if it was Config tab)
 				this.observe('screenWidth', (newScreenWidth) => {
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : innerWidth;
-					let currentTab = this.get('navRoute');
 
 					// set tab titles after resizing
-					if (actualScreenWidth >= 768 && actualScreenWidth < 1200) {
+					if (actualScreenWidth < 1200) {
 						this.set('navMenuTitles', NAV_MENU_SHORT_TITLES);
 					} else {
 						this.set('navMenuTitles', NAV_MENU_FULL_TITLES);
-					}
-
-					// switch tab to Readme after resizing
-					if (currentTab === NAV_MENU_TABS.config && actualScreenWidth < 768) {
-						this.set('navRoute', NAV_MENU_TABS.readme);
 					}
 				});
 
