@@ -88,7 +88,7 @@
 						let hits = hitsData[key].hits.dates[date];
 						let bandwidth = hitsData[key].bandwidth.dates[date];
 
-						ratioList[date] = hits ? _.autoConvertBytesToUnits(bandwidth / hits) : 0;
+						ratioList[date] = hits ? _.formatToShortNumber(bandwidth / hits) : 0;
 					});
 
 					array.push({
@@ -189,7 +189,7 @@
 									},
 									callback (tickIdx) {
 										let labelValue = this.getLabelForValue(tickIdx);
-										return _.autoConvertBytesToUnits(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
+										return _.formatToShortNumber(_.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false));
 									},
 								},
 								grid: {

@@ -59,10 +59,11 @@
 						border-radius: 0;
 						align-items: center;
 						height: 48px;
-						padding: 12px 24px 12px 27px;
+						padding: 12px 20px;
 						color: #5c667a;
 						cursor: pointer;
 						text-decoration: none;
+						user-select: none;
 
 						@media (min-width: @screen-sm-min) {
 							flex: initial;
@@ -72,7 +73,7 @@
 							border-radius: 5px;
 						}
 
-						&#navRouteConfig, &#navRouteCdn {
+						&#navRouteCdn {
 							display: none;
 
 							@media (min-width: @screen-sm-min) {
@@ -213,28 +214,50 @@
 
 		.package-config {
 			display: flex;
-			column-gap: 32px;
-			padding: 32px;
+			flex-direction: column;
+			row-gap: 32px;
+			padding: 16px;
 			background: #fff;
 			border: 1px solid #dfe3e7;
 			box-sizing: border-box;
 			box-shadow: 0 4px 2px -2px rgba(23, 35, 59, .06), 0 2px 8px rgba(23, 35, 59, .04);
 			border-radius: 6px;
 
+			@media (min-width: @screen-sm-min) {
+				padding: 32px;
+			}
+
+			@media (min-width: @screen-md-min) {
+				flex-direction: row;
+				column-gap: 32px;
+			}
+
 			.c-package-file-browser {
+				order: 2;
 				display: flex;
-				flex-grow: 1;
-				max-width: 736px;
+
+				@media (min-width: @screen-md-min) {
+					order: 1;
+					width: calc(68% - 32px);
+				}
+
+				@media (min-width: @screen-lg-min) {
+					max-width: 736px;
+				}
 			}
 
 			.c-collection-box {
+				order: 1;
 				display: flex;
 				flex-direction: column;
-				width: 260px;
 
 				@media (min-width: @screen-md-min) {
-					width: 100%;
-					max-width: 392px;
+					order: 2;
+					width: 32%;
+				}
+
+				@media (min-width: @screen-lg-min) {
+					width: 392px;
 				}
 			}
 		}
@@ -621,11 +644,8 @@
 					border: 1px solid #dfe3e7;
 					box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
 					border-radius: 6px;
-					width: 100%;
-
-					@media (min-width: @screen-xs) {
-						max-width: 320px;
-					}
+					width: auto;
+					max-width: 320px;
 
 					li {
 						>a {

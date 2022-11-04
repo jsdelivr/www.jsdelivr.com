@@ -28,22 +28,35 @@
 
 				<div class="package-nav">
 					{{#if package.readme}}
-						<a id="navRouteReadme" on-click="@this.set('navRoute', 'readme')" class="package-nav_route {{navRoute === 'readme' ? 'package-nav_route_active' : ''}}">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg"><span>{{navMenuTitles.readmeTabTitle}}</span>
+						<a id="navRouteReadme"
+							on-click="@this.set('navRoute', NAV_MENU_TABS.readme)"
+							class="package-nav_route {{navRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg">
+							<span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
-					<a id="navRouteConfig" on-click="@this.set('navRoute', 'config')" class="package-nav_route {{navRoute === 'config' ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg"><span>{{navMenuTitles.configTabTitle}}</span>
+
+					<a id="navRouteConfig"
+						on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
+						class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
+						<span>{{navMenuTitles.configTabTitle}}</span>
 					</a>
-					<a id="navRouteStats" on-click="@this.set('navRoute', 'stats')" class="package-nav_route {{navRoute === 'stats' ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg"><span>{{navMenuTitles.statsTabTitle}}</span>
+
+					<a id="navRouteStats"
+						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
+						class="package-nav_route {{navRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg">
+						<span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
+
 					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
-						<span>{{navMenuTitles.browseCdnTitle}}</span><img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
+						<span>{{navMenuTitles.browseCdnTitle}}</span>
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
-				{{#if navRoute === 'readme' && package.readme}}
+				{{#if navRoute === NAV_MENU_TABS.readme && package.readme}}
 					<div class="package-readme">
 						<c-markdown text="{{package.readme}}"></c-markdown>
 					</div>
@@ -60,7 +73,7 @@
 			</div>
 		</div>
 
-		<div style="display: {{#if navRoute === 'config'}}flex{{else}}none{{/if}};" class="package-config full-width-content">
+		<div style="display: {{#if navRoute === NAV_MENU_TABS.config}}flex{{else}}none{{/if}};" class="package-config full-width-content">
 			<c-package-file-browser
 				type="{{type}}"
 				name="{{name}}"
@@ -68,14 +81,15 @@
 				version="{{versionP}}"
 				versions="{{packageVersionsList}}"
 				path="{{path}}"
-				collection="{{collection}}"
-				files="{{~/files}}">
+				collection="{{collection}}">
 			</c-package-file-browser>
 
 			<c-collection-box collection="{{collection}}"></c-collection-box>
 		</div>
 
-		<div style="display: {{#if navRoute === 'stats'}}block{{else}}none{{/if}};" class="package-statistics full-width-content">
+		<div
+			style="visibility: {{#if navRoute === NAV_MENU_TABS.stats}}visible; height: auto;{{else}}hidden; height: 0;{{/if}}"
+			class="package-statistics full-width-content">
 			<div class="header">
 				<div class="header-title">Statistics</div>
 				<div class="header-ctrls">
@@ -98,7 +112,7 @@
 				</div>
 			</div>
 
-			{{#if navRoute === 'stats'}}
+			{{#if navRoute === NAV_MENU_TABS.stats}}
 				<c-package-request-bandwidth-stats
 					name="{{name}}"
 					type="{{type}}"
@@ -173,7 +187,9 @@
 							data="{{~/topFiveVersions}}"
 							type="{{~/type}}"
 							name="{{~/name}}"
-							version="{{~/fileStatsVersion}}">
+							version="{{~/fileStatsVersion}}"
+							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+						>
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -184,7 +200,9 @@
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
-							versions="{{~/packageVersionsList}}">
+							versions="{{~/packageVersionsList}}"
+							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+						>
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -245,33 +263,13 @@
 		statsTabTitle: 'Statistics',
 		browseCdnTitle: 'Browse CDN Files',
 	};
+	const NAV_MENU_TABS = {
+		readme: 'readme',
+		config: 'config',
+		stats: 'stats',
+	};
 
 	component.exports = {
-		computed: {
-			hasSourceMaps () {
-				let files = this.get('files');
-				let hasMin, hasMap;
-
-				if (!files) {
-					return true;
-				}
-
-				_.flattenFiles(files).forEach((file) => {
-					if (/\.min\.(?:js|css)$/.test(file)) {
-						hasMin = true;
-					} else if (/\.map$/.test(file)) {
-						hasMap = true;
-					}
-				});
-
-				return !hasMin || hasMap;
-			},
-			issueSourceMaps () {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=No source maps for minified files`
-					+ `&body=[This package](${this.get('@global.location.href')}) doesn't contain source maps for the minified files. It would be great to add them for easier debugging.`;
-			},
-		},
 		data () {
 			return {
 				_,
@@ -284,7 +282,7 @@
 				},
 				statsPeriod: 30,
 				packageVersionsList: [],
-				navRoute: 'readme',
+				navRoute: NAV_MENU_TABS.readme,
 				showChartBandwidth: false,
 				usageChartGroupByValues: {
 					day: { value: 'day', isAvailable: true },
@@ -296,6 +294,7 @@
 				noPackageStatsData: false,
 				noVersionsData: false,
 				navMenuTitles: NAV_MENU_SHORT_TITLES,
+				NAV_MENU_TABS,
 			};
 		},
 		decorators: {
@@ -305,22 +304,26 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
-				http.fetchPackageVersions(this.get('type'), this.get('name')).then((data) => {
-					this.set('packageVersionsList', data.versions);
+				http.fetchPackageVersions(this.get('type'), this.get('name')).then((response) => {
+					let versionsArr = response.versions.map(item => item.version);
 
 					// This can only happen for GitHub packages.
-					if (data.versions.length === 0) {
-						return this.set({ packageVersionsNotFound: true });
+					if (response.versions.length === 0) {
+						this.set({ packageVersionsNotFound: true });
+
+						return;
 					}
+
+					this.set('packageVersionsList', versionsArr);
 
 					// Set version for GitHub packages.
 					if (!this.get('package.version')) {
-						this.set('package.version', data.versions[0]);
+						this.set('package.version', response.versions[0].version);
 					}
 
 					// Set version for GitHub packages or when an invalid version is selected.
-					if (!this.get('versionP') || data.versions.indexOf(this.get('versionP')) === -1) {
-						this.set('versionP', data.versions[0]);
+					if (!this.get('versionP') || versionsArr.indexOf(this.get('versionP')) === -1) {
+						this.set('versionP', response.versions[0].version);
 					}
 				}).catch((error) => {
 					this.set({ packageNotFound: true });
@@ -378,18 +381,12 @@
 				// switch tab to readme after resizing (if it was Config tab)
 				this.observe('screenWidth', (newScreenWidth) => {
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : innerWidth;
-					let currentTab = this.get('navRoute');
 
 					// set tab titles after resizing
-					if (actualScreenWidth >= 768 && actualScreenWidth < 1200) {
+					if (actualScreenWidth < 1200) {
 						this.set('navMenuTitles', NAV_MENU_SHORT_TITLES);
 					} else {
 						this.set('navMenuTitles', NAV_MENU_FULL_TITLES);
-					}
-
-					// switch tab to Readme after resizing
-					if (currentTab === 'config' && actualScreenWidth < 768) {
-						this.set('navRoute', 'readme');
 					}
 				});
 
@@ -400,7 +397,7 @@
 					let readme = this.get('package').readme;
 
 					if (!readme || readme === 'ERROR: No README data found!') {
-						this.set('navRoute', 'config');
+						this.set('navRoute', NAV_MENU_TABS.config);
 					}
 				});
 
@@ -660,7 +657,7 @@
 											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
 											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
 											}
 
 											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
@@ -760,7 +757,7 @@
 											let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
 
 											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
 											}
 
 											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
