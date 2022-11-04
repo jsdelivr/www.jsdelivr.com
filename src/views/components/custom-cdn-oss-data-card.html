@@ -28,6 +28,7 @@
 				this.observe('name', () => {
 					let name = this.get('name');
 					let period = this.get('period') || 'month';
+					let bandwidthUnit = this.get('bandwidthUnit');
 
 					http.fetchCdnOssStats(name, period).then(({ hits, bandwidth }) => {
 						if (hits.total >= 0) {
@@ -35,7 +36,11 @@
 						}
 
 						if (bandwidth.total >= 0) {
-							let bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+							if (!bandwidthUnit) {
+								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+								this.set('bandwidthUnit', bandwidthUnit);
+							}
+
 							this.set('bandwidthUnit', bandwidthUnit);
 							this.animate('bandwidthTotal', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
 						}
