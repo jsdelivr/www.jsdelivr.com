@@ -701,6 +701,7 @@ module.exports = {
 			case 'month':
 				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
 				break;
+			case 'quarter':
 			case 'year':
 				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
 				break;
@@ -730,6 +731,22 @@ module.exports = {
 						return schema.regularBar;
 
 					case 'week':
+						return schema.wideBar;
+				}
+
+				break;
+
+			case 'quarter':
+				switch (usageChartGroupBy) {
+					case 'day':
+						if (sreenWidth >= 768) { return schema.regularBar; }
+
+						return schema.thinBar;
+
+					case 'week':
+						return schema.regularBar;
+
+					case 'month':
 						return schema.wideBar;
 				}
 
@@ -791,6 +808,7 @@ module.exports = {
 			case 'month':
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
+			case 'quarter':
 			case 'year':
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;

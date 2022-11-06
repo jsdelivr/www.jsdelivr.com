@@ -245,6 +245,7 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
@@ -270,26 +271,21 @@
 	};
 
 	component.exports = {
+		computed: {
+			usageChartGroupByValues () {
+				return stats.groupByOptions[stats.periods[this.get('statsPeriod')]];
+			},
+		},
 		data () {
 			return {
 				_,
 				collection: [],
-				statsPeriods: {
-					1: 'day',
-					7: 'week',
-					30: 'month',
-					365: 'year',
-				},
+				statsPeriods: stats.periods,
 				statsPeriod: 30,
 				packageVersionsList: [],
 				navRoute: NAV_MENU_TABS.readme,
 				showChartBandwidth: false,
-				usageChartGroupByValues: {
-					day: { value: 'day', isAvailable: true },
-					week: { value: 'week', isAvailable: true },
-					// since default statsPeriod is 30 (month) - group by month not available initially
-					month: { value: 'month', isAvailable: false },
-				},
+				usageChartGroupByValues: stats.groupByOptions.month,
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				noVersionsData: false,
@@ -412,36 +408,6 @@
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
-
-					// once chart period is changed - update groupBy options respectively to period
-					switch (period) {
-						case 'year':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: true },
-								month: { value: 'month', isAvailable: true },
-							});
-
-							break;
-
-						case 'month':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: true },
-								month: { value: 'month', isAvailable: false },
-							});
-
-							break;
-
-						case 'week':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: false },
-								month: { value: 'month', isAvailable: false },
-							});
-
-							break;
-					}
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
 					if (period === 'day') { return; }
