@@ -146,7 +146,10 @@
 	component.exports = {
 		computed: {
 			title () {
-				return this.get('projectTitle') ? this.get('projectTitle') + ' - jsDelivr' : ' jsDelivr';
+				return this.get('projectTitle') + ' CDN by jsDelivr';
+			},
+			description () {
+				return `A free, fast, and reliable CDN for ${this.get('projectTitle')}. ${this.get('projectDescr')}`;
 			},
 			usageChartGroupByValues () {
 				return stats.groupByOptions[stats.periods[this.get('statsPeriod')]];
@@ -154,7 +157,6 @@
 		},
 		data () {
 			return {
-				description: 'TODO',
 				statsPeriods: stats.periods,
 				statsPeriod: '30',
 				showChartBandwidth: false,
@@ -195,18 +197,18 @@
 			};
 		},
 		oninit () {
+			this.observe('name', (name) => {
+				let projectsData = this.get('projectsData');
+
+				this.set('projectTitle', projectsData[name].title);
+				this.set('projectDescr', projectsData[name].descr);
+				this.set('projectImgW', projectsData[name].imgW);
+				this.set('projectImgH', projectsData[name].imgH);
+				this.set('projectLink', projectsData[name].link);
+				this.set('docsLink', projectsData[name].docsLink);
+			});
+
 			if (!Ractive.isServer) {
-				this.observe('name', (name) => {
-					let projectsData = this.get('projectsData');
-
-					this.set('projectTitle', projectsData[name].title);
-					this.set('projectDescr', projectsData[name].descr);
-					this.set('projectImgW', projectsData[name].imgW);
-					this.set('projectImgH', projectsData[name].imgH);
-					this.set('projectLink', projectsData[name].link);
-					this.set('docsLink', projectsData[name].docsLink);
-				});
-
 				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('statsPeriod', (newStatsPeriod) => {
 					let period = this.get('statsPeriods')[newStatsPeriod];
