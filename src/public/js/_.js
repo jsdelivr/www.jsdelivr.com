@@ -706,18 +706,6 @@ module.exports = {
 		};
 		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
-		if (showChartBandwidth) {
-			let unit = module.exports.findUnitFromArray(dataToIteract.map(v => v.value));
-			results.valueUnits = ` ${unit}`;
-
-			dataToIteract = dataToIteract.map((v) => {
-				return {
-					...v,
-					value: module.exports.convertBytesToUnits(v.value, unit),
-				};
-			});
-		}
-
 		// collect data for chart depending on groupBy
 		results = dataToIteract.reduce((res, period) => {
 			if (onlyFullPeriods && period.isFull === false) { return res; }
@@ -728,6 +716,12 @@ module.exports = {
 
 			return res;
 		}, results);
+
+		if (showChartBandwidth) {
+			let unit = module.exports.findUnitFromArray(results.values);
+			results.values = results.values.map(v => module.exports.convertBytesToUnits(v, unit));
+			results.valueUnits = ` ${unit}`;
+		}
 
 		// get min/max magnitude for y-axis
 		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
@@ -827,18 +821,6 @@ module.exports = {
 		};
 		let dataToIteract = groupBy === 'day' ? topVersionPrepData.days : Object.values(topVersionPrepData);
 
-		if (showChartBandwidth) {
-			unit = module.exports.findUnitFromArray(dataToIteract.map(v => v.value));
-			valueUnits = ` ${unit}`;
-
-			dataToIteract = dataToIteract.map((v) => {
-				return {
-					...v,
-					value: module.exports.convertBytesToUnits(v.value, unit),
-				};
-			});
-		}
-
 		// collect labels, period starts/ends adta for chart
 		labelsData = dataToIteract.reduce((labelsData, period) => {
 			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
@@ -867,15 +849,6 @@ module.exports = {
 			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy);
 			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
-			if (showChartBandwidth) {
-				dataToIteract = dataToIteract.map((v) => {
-					return {
-						...v,
-						value: module.exports.convertBytesToUnits(v.value, unit),
-					};
-				});
-			}
-
 			let groupedByValues = dataToIteract.reduce((values, period) => {
 				if (onlyFullPeriods && period.isFull === false) { return values; }
 
@@ -883,6 +856,15 @@ module.exports = {
 
 				return values;
 			}, []);
+
+			if (showChartBandwidth) {
+				if (!unit) {
+					unit = module.exports.findUnitFromArray(groupedByValues);
+					valueUnits = ` ${unit}`;
+				}
+
+				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
+			}
 
 			let dataset = {
 				label: `v${versionData.version}`,
