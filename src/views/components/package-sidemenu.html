@@ -39,7 +39,7 @@
 
 			<div class="stats-section mb-18">
 				<span>Bandwidth {{usageChartGroupByLabel}}</span>
-				<span>{{noDataOfBandwidth ? 'No data': _.formatNumber(bandwidthTotal) + ' GB'}}</span>
+				<span>{{#if noDataOfBandwidth}}No data{{else}}{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnit}}{{/if}}</span>
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
@@ -56,7 +56,7 @@
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
 			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
-			<span>{{noDataOfVersions ? 'No data' : _.formatNumber(topVersionHits)}}</span>
+			<span>{{#if noDataOfVersions}}No data{{else}}{{_.formatNumber(topVersionHits)}}{{/if}}</span>
 		</div>
 
 		{{#if navRoute !== "config"}}
@@ -196,7 +196,8 @@
 							if (response.bandwidth.total) {
 								this.set('noDataOfBandwidth', false);
 								this.set('packageBandwidthStats', response.bandwidth);
-								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total), { duration: 1000 });
+								this.set('bandwidthUnit', _.findUnitFromNumber(response.bandwidth.total));
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total, this.get('bandwidthUnit')), { duration: 1000 });
 							} else {
 								this.set('noDataOfBandwidth', true);
 							}

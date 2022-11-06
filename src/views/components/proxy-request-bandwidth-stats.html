@@ -28,9 +28,6 @@
 				growthPeriod: 'monthly',
 			};
 		},
-		calculateGrowth (curr, prev) {
-			return Math.round((curr / prev) * 100 - 100);
-		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period', (period) => {
@@ -41,7 +38,7 @@
 					http.fetchCdnOssStats(name, period).then(({ hits, bandwidth }) => {
 						if (hits.total >= 0) {
 							this.animate('requestsAmount', hits.total, { duration: 1000 });
-							this.animate('requestsGrowthPercent', this.calculateGrowth(hits.total, hits.prev.total), { duration: 1000 });
+							this.animate('requestsGrowthPercent', _.calculateGrowth(hits.total, hits.prev.total), { duration: 1000 });
 						}
 
 						if (bandwidth.total >= 0) {
@@ -51,7 +48,7 @@
 							}
 
 							this.animate('bandwidthAmount', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
-							this.animate('bandwidthGrowthPercent', this.calculateGrowth(bandwidth.total, bandwidth.prev.total), { duration: 1000 });
+							this.animate('bandwidthGrowthPercent', _.calculateGrowth(bandwidth.total, bandwidth.prev.total), { duration: 1000 });
 						}
 					});
 				});

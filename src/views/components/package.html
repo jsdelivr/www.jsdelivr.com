@@ -116,8 +116,7 @@
 				<c-package-request-bandwidth-stats
 					name="{{name}}"
 					type="{{type}}"
-					period="{{statsPeriods[statsPeriod]}}"
-					bandwidthUnit="GB">
+					period="{{statsPeriods[statsPeriod]}}">
 				</c-package-request-bandwidth-stats>
 			{{/if}}
 
@@ -185,10 +184,11 @@
 						<c-top-stats-table
 							title="Top 5 versions"
 							data="{{~/topFiveVersions}}"
+							rawData="{{~/topFiveVersionsRaw}}"
 							type="{{~/type}}"
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
-							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+							formatterOptions="{{~/versionStatsFormatterOptions}}"
 						>
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
@@ -201,7 +201,7 @@
 							name="{{~/name}}"
 							version="{{~/fileStatsVersion}}"
 							versions="{{~/packageVersionsList}}"
-							formatValue="{{showChartBandwidth ? _.formatBytesToGB : _.formatNumber}}"
+							formatterOptions="{{~/fileStatsFormatterOptions}}"
 						>
 							{{#partial header}}
 								Top 5 files in version
@@ -343,9 +343,10 @@
 						let filesStats = response.map(statsPerFile => ({
 							file: statsPerFile.name,
 							hits: statsPerFile[dataType].total,
-						}));
+						})).slice(0, 5);
 
-						this.animate('filesStats', filesStats.slice(0, 5));
+						this.set('fileStatsFormatterOptions', { data: filesStats, showChartBandwidth });
+						this.animate('filesStats', filesStats);
 					});
 				});
 
@@ -369,6 +370,7 @@
 							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
+						this.set('versionStatsFormatterOptions', { data: versionsStats, showChartBandwidth });
 						this.animate('topFiveVersions', versionsStats);
 					});
 				});
