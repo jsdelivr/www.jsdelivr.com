@@ -8,12 +8,12 @@
 
 				<div class="btn-group">
 					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<span>{{statsPeriodValues[statsPeriod]}}</span>
+						<span>{{statsPeriods[statsPeriod]}}</span>
 						<i class="fa fa-angle-down" aria-hidden="true"></i>
 					</button>
 
 					<ul class="dropdown-menu">
-						{{#each statsPeriodValues}}
+						{{#each statsPeriods}}
 							<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
 						{{/each}}
 					</ul>
@@ -23,7 +23,7 @@
 			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
-				<span>Requests Served</span>
+				<span>Requests Served {{usageChartGroupByLabel}}</span>
 				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(requestsTotal)}}</span>
 			</div>
 
@@ -38,8 +38,8 @@
 			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
-				<span>Bandwidth</span>
-				<span>{{noDataOfBandwidth ? 'No data': _.formatNumber(bandwidthTotal) + ' GB'}}</span>
+				<span>Bandwidth {{usageChartGroupByLabel}}</span>
+				<span>{{#if noDataOfBandwidth}}No data{{else}}{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnit}}{{/if}}</span>
 			</div>
 
 			<div class="bandwidth-chart-wrapper">
@@ -56,7 +56,7 @@
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
 			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
-			<span>{{noDataOfVersions ? 'No data' : _.formatNumber(topVersionHits)}}</span>
+			<span>{{#if noDataOfVersions}}No data{{else}}{{_.formatNumber(topVersionHits)}}{{/if}}</span>
 		</div>
 
 		{{#if navRoute !== "config"}}
@@ -67,11 +67,15 @@
 				<div class="horizontal-divider"></div>
 
 				<div class="twitter-share">
-					<div>{{_.nth(packageRank)}} most popular on jsDelivr</div>
+					<div>
+						{{#if packageRank}}
+							{{_.nth(packageRank)}} most popular on jsDelivr
+						{{/if}}
+					</div>
 					<a class="btn-twitter-share mt-8"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${statsPeriodValues[~/statsPeriod]}: ${~/link}`)}}">
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${statsPeriods[~/statsPeriod]}: ${~/link}`)}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 						Share
 					</a>
@@ -115,21 +119,43 @@
 
 <script>
 	const _ = require('../../public/js/_');
+	const stats = require('../../public/js/utils/stats');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const http = require('../../public/js/utils/http');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
 
 	component.exports = {
+		computed: {
+			barThickness () {
+				switch (stats.periods[this.get('statsPeriod')]) {
+					case 'quarter':
+						return 2;
+
+					case 'year':
+						return 1;
+
+					default:
+						return 4;
+				}
+			},
+			usageChartGroupBy () {
+				switch (stats.periods[this.get('statsPeriod')]) {
+					default:
+						return 'day';
+				}
+			},
+			usageChartGroupByLabel () {
+				switch (this.get('usageChartGroupBy')) {
+					case 'day':
+						return '';
+				}
+			},
+		},
 		data () {
 			return {
 				_,
-				statsPeriodValues: {
-					1: 'day',
-					7: 'week',
-					30: 'month',
-					365: 'year',
-				},
+				statsPeriods: stats.periods,
 				statsPeriod: 30,
 				noDataOfRequests: false,
 				noDataOfBandwidth: false,
@@ -151,9 +177,9 @@
 					if (this.get('statsPeriod')) {
 						let type = this.get('type');
 						let name = this.get('name');
-						let statsPeriodValues = this.get('statsPeriodValues');
+						let statsPeriods = this.get('statsPeriods');
 						let statsPeriod = this.get('statsPeriod');
-						let period = statsPeriodValues[statsPeriod];
+						let period = statsPeriods[statsPeriod];
 
 						// get overall package stats (hits-bandwidth data for charts, hits rank of package)
 						http.fetchPackageSummaryStats(type, name, period).then((response) => {
@@ -170,7 +196,8 @@
 							if (response.bandwidth.total) {
 								this.set('noDataOfBandwidth', false);
 								this.set('packageBandwidthStats', response.bandwidth);
-								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total), { duration: 1000 });
+								this.set('bandwidthUnit', _.findUnitFromNumber(response.bandwidth.total));
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total, this.get('bandwidthUnit')), { duration: 1000 });
 							} else {
 								this.set('noDataOfBandwidth', true);
 							}
@@ -180,6 +207,7 @@
 						http.fetchPackageVersionsStats(type, name, period, 'hits').then((response) => {
 							if (!response.length) {
 								this.set('noDataOfVersions', true);
+								return;
 							}
 
 							this.set('topVersion', response[0].version);
@@ -200,16 +228,17 @@
 						return null;
 					}
 
-					let array = Object.entries(packageDateStats.dates);
-
 					if (requestsChart) {
 						requestsChart.destroy();
 						requestsChart = null;
 						this.set('requestsChart', null);
 					}
 
-					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
-					let data = array.map(item => item[1]);
+					let {
+						values,
+						labels,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(packageDateStats, this.get('usageChartGroupBy'), this.get('statsPeriods')[this.get('statsPeriod')], false);
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
@@ -217,12 +246,13 @@
 						let chartData = {
 							labels,
 							datasets: [{
-								data,
+								data: values,
 								borderWidth: 0,
-								barThickness: 4,
+								barThickness: this.get('barThickness'),
 								hoverBackgroundColor: '#F65128',
 								borderRadius: 1,
 							}],
+							valueUnits,
 						};
 						let chartSettings = {
 							useExternalTooltip: true,
@@ -260,16 +290,17 @@
 						return null;
 					}
 
-					let array = Object.entries(packageBandwidthStats.dates);
-
 					if (bandwidthChart) {
 						bandwidthChart.destroy();
 						bandwidthChart = null;
 						this.set('bandwidthChart', null);
 					}
 
-					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
-					let data = array.map(item => _.convertBytesToUnits(item[1]));
+					let {
+						values,
+						labels,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(packageBandwidthStats, this.get('usageChartGroupBy'), this.get('statsPeriods')[this.get('statsPeriod')], true);
 
 					// temp solution to fix chart recreation after switching from stats tab
 					setTimeout(() => {
@@ -277,12 +308,13 @@
 						let chartData = {
 							labels,
 							datasets: [{
-								data,
+								data: values,
 								borderWidth: 0,
-								barThickness: 4,
+								barThickness: this.get('barThickness'),
 								hoverBackgroundColor: '#F65128',
 								borderRadius: 1,
 							}],
+							valueUnits,
 						};
 						let chartSettings = {
 							useExternalTooltip: true,

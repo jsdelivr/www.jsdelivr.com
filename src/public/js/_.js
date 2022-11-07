@@ -23,6 +23,23 @@ module.exports = {
 		return screen.width <= screenType.mobile;
 	},
 
+	calculateGrowth (curr, prev) {
+		if (!prev) {
+			return 0;
+		}
+
+		return Math.round((curr / prev) * 100 - 100);
+	},
+
+	getValueFormatter (isBandwidth, values) {
+		if (!isBandwidth) {
+			return module.exports.formatNumber;
+		}
+
+		let unit = module.exports.findUnitFromArray(values);
+		return value => module.exports.formatBytesWithUnit(value, unit);
+	},
+
 	flattenFiles: function flattenFiles (tree, path = '/', files = []) {
 		tree.forEach((item) => {
 			if (item.type === 'file') {
@@ -260,10 +277,28 @@ module.exports = {
 				unitsBase = 1e18;
 				break;
 			default:
-				unitsBase = 1e9;
+				unitsBase = 1;
 		}
 
 		return Math.round(bytesAmount / unitsBase);
+	},
+
+	findUnitFromArray (numbers) {
+		let lookup = [
+			{ value: 1, symbol: 'B' },
+			{ value: 1e4, symbol: 'kB' },
+			{ value: 1e7, symbol: 'MB' },
+			{ value: 1e10, symbol: 'GB' },
+			{ value: 1e13, symbol: 'TB' },
+			{ value: 1e16, symbol: 'PB' },
+			{ value: 1e19, symbol: 'EB' },
+		];
+
+		return numbers.map((num) => {
+			return lookup.slice().reverse().find((item) => {
+				return num >= item.value;
+			});
+		}).sort((a, b) => a.value - b.value)[0].symbol;
 	},
 
 	findUnitFromNumber (num) {
@@ -275,37 +310,37 @@ module.exports = {
 			{ value: 1e16, symbol: 'PB' },
 			{ value: 1e19, symbol: 'EB' },
 		];
+
 		let unit = lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
 
 		if (!unit) {
-			return '';
+			return 'B';
 		}
 
 		return unit.symbol;
 	},
 
-	autoConvertBytesToUnits (num, numSymbolSeparator = ' ') {
+	formatBytesWithUnit (num, unit) {
 		let lookup = [
-			{ value: 1, symbol: '' },
-			{ value: 1e3, symbol: 'K' },
-			{ value: 1e6, symbol: 'M' },
-			{ value: 1e9, symbol: 'G' },
-			{ value: 1e12, symbol: 'T' },
-			{ value: 1e15, symbol: 'P' },
-			{ value: 1e18, symbol: 'E' },
+			{ value: 1, symbol: 'B' },
+			{ value: 1e3, symbol: 'kB' },
+			{ value: 1e6, symbol: 'MB' },
+			{ value: 1e9, symbol: 'GB' },
+			{ value: 1e12, symbol: 'TB' },
+			{ value: 1e15, symbol: 'PB' },
+			{ value: 1e18, symbol: 'EB' },
 		];
-		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
-		let item = lookup.slice().reverse().find((item) => {
+		let item = lookup.find(l => l.symbol === unit) || lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
 
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
+		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
-	formatToNumberWithUnits (num, numSymbolSeparator = '') {
+	formatToShortNumber (num) {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -320,7 +355,8 @@ module.exports = {
 		let item = lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + numSymbolSeparator + item.symbol : '0';
+
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
 	},
 
 	makeHTTPRequest (obj) {
@@ -446,13 +482,13 @@ module.exports = {
 		};
 	},
 
-	prepareDataForChartGroupedBy (rawData, groupBy, convertionFactor) {
+	prepareDataForChartGroupedBy (rawData, groupBy) {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
 
 		return rawDataDatesKeys.reduce((resData, date) => {
 			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
-			let valueByDateConverted = Math.round(rawDataDatesData[date] / convertionFactor);
+			let valueByDateConverted = rawDataDatesData[date];
 
 			switch (groupBy) {
 				case 'month':
@@ -551,14 +587,14 @@ module.exports = {
 			formattedLabels = labels.map((label, idx) => {
 				switch (true) {
 					case screen.width >= 992:
-						if (idx === 0 || idx === labels.length - 1 || label[0] === '01') {
+						if (idx === 0 || label[0] === '01') {
 							return label.slice(0, 2);
 						}
 
 						return label.slice(0, 1);
 
 					case idx === Math.round(labels.length / 2):
-					case idx === 0 || idx === labels.length - 1:
+					case idx === 0:
 						return label.slice(0, 2);
 
 					default:
@@ -659,17 +695,14 @@ module.exports = {
 
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
 	getPreparedDataForBarChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
-		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
-		let convertionFactor = showChartBandwidth ? 1e9 : 1;
-		let valueUnits = showChartBandwidth ? ' GB' : '';
-		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy, convertionFactor);
+		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy);
 		let results = {
 			values: [],
 			labels: [],
 			labelsStartEndPeriods: [],
 			minRangeValue: 0,
 			maxRangeValue: 0,
-			valueUnits,
+			valueUnits: '',
 		};
 		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
@@ -684,6 +717,12 @@ module.exports = {
 			return res;
 		}, results);
 
+		if (showChartBandwidth) {
+			let unit = module.exports.findUnitFromArray(results.values);
+			results.values = results.values.map(v => module.exports.convertBytesToUnits(v, unit));
+			results.valueUnits = ` ${unit}`;
+		}
+
 		// get min/max magnitude for y-axis
 		results.minRangeValue = this.getValueByMagnitude(Math.min(...results.values), 'floor');
 		results.maxRangeValue = this.getValueByMagnitude(Math.max(...results.values), 'ceil', 1);
@@ -696,6 +735,7 @@ module.exports = {
 			case 'month':
 				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
 				break;
+			case 'quarter':
 			case 'year':
 				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
 				break;
@@ -730,6 +770,22 @@ module.exports = {
 
 				break;
 
+			case 'quarter':
+				switch (usageChartGroupBy) {
+					case 'day':
+						if (sreenWidth >= 768) { return schema.regularBar; }
+
+						return schema.thinBar;
+
+					case 'week':
+						return schema.regularBar;
+
+					case 'month':
+						return schema.wideBar;
+				}
+
+				break;
+
 			case 'year':
 				switch (usageChartGroupBy) {
 					case 'day':
@@ -755,13 +811,10 @@ module.exports = {
 	getPreparedDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, numberOfDatasets = 5, onlyFullPeriods = true) {
 		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 		let rawDataFiltered = rawData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, numberOfDatasets);
-
-		// if we are showing bandwidth instead of number of requests we should change convertionFactor for conversion to GB's
-		let convertionFactor = showChartBandwidth ? 1e9 : 1;
-		let valueUnits = showChartBandwidth ? ' GB' : '';
+		let valueUnits = '', unit;
 		// get top by stats version of package to get from it values for y-axis, and labels to x-axis
 		let topVersionData = rawDataFiltered[0][dataType];
-		let { preparedData: topVersionPrepData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy, convertionFactor);
+		let { preparedData: topVersionPrepData } = this.prepareDataForChartGroupedBy(topVersionData, groupBy);
 		let labelsData = {
 			labels: [],
 			labelsStartEndPeriods: [],
@@ -786,13 +839,14 @@ module.exports = {
 			case 'month':
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
+			case 'quarter':
 			case 'year':
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}
 
 		let { allGroupedByValues, datasets } = rawDataFiltered.reduce((res, versionData, idx) => {
-			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy, convertionFactor);
+			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy);
 			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
 			let groupedByValues = dataToIteract.reduce((values, period) => {
@@ -802,6 +856,15 @@ module.exports = {
 
 				return values;
 			}, []);
+
+			if (showChartBandwidth) {
+				if (!unit) {
+					unit = module.exports.findUnitFromArray(groupedByValues);
+					valueUnits = ` ${unit}`;
+				}
+
+				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
+			}
 
 			let dataset = {
 				label: `v${versionData.version}`,

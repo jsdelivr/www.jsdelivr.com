@@ -43,6 +43,13 @@
 					</a>
 
 					<div class="file-default-ctrls">
+						{{#if ~/downloadsPerFile[default.substring(default.indexOf('/') + 1)]}}
+							<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+								<span>{{_.formatToShortNumber(~/downloadsPerFile[default.substring(default.indexOf('/') + 1)])}}</span>
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+							</div>
+						{{/if}}
+
 						<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 
 						<input type="checkbox"
@@ -69,7 +76,7 @@
 				{{/if}}
 
 				{{#partial fileLink}}
-					<div class="file-item">
+					<div class="file-item file-item-{{type}}">
 						{{#if type === 'directory'}}
 							<a on-click="@this.push('path', name)">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/folder.svg" loading="lazy"/>
@@ -80,38 +87,46 @@
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
 								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
-
-							<div>
-								<div class="downloads-cnt" as-tooltip="'Downloads', 'top'">
-									<span>51</span>
-									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
-								</div>
-
-								<c-copy-dropdown
-									url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
-									hash="{{hash}}"
-									dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
-								</c-copy-dropdown>
-
-								<input id="{{name}}"
-									type="checkbox"
-									class="switch-inline"
-									checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
-									twoway="false">
-
-								<label for="{{name}}"
-									on-click="@this.toggleCollectionFile('/' + pathS + name)"
-									as-tooltip="'Add to collection', 'top'">
-								</label>
-							</div>
 						{{/if}}
+						<div>
+							{{#if type === 'directory'}}
+								{{#if ~/downloadsPerDir[pathS + name]}}
+									<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+										<span>{{_.formatToShortNumber(~/downloadsPerDir[pathS + name])}}</span>
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+									</div>
+								{{/if}}
+								{{else}}
+								{{#if ~/downloadsPerFile[pathS + name]}}
+									<div class="downloads-cnt" as-tooltip="'Monthly downloads', 'top'">
+										<span>{{_.formatToShortNumber(~/downloadsPerFile[pathS + name])}}</span>
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chart.svg" loading="lazy"/>
+									</div>
+								{{/if}}
+							{{/if}}
+
+							<c-copy-dropdown
+								url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
+								hash="{{hash}}"
+								dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
+							</c-copy-dropdown>
+
+							<input id="{{name}}"
+								type="checkbox"
+								class="switch-inline"
+								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+								twoway="false">
+
+							<label for="{{name}}"
+								on-click="@this.toggleCollectionFile('/' + pathS + name)"
+								as-tooltip="'Add to collection', 'top'">
+							</label>
+						</div>
 					</div>
 				{{/partial}}
 
 				{{#each _.listFiles(~/files, path).slice(0, ~/filesLimit)}}
 					{{>fileLink}}
-				{{else}}
-					<div class="text-center">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
 				{{/each}}
 
 				{{#if showMoreFiles}}
@@ -121,18 +136,22 @@
 						{{/each}}
 					</div>
 				{{/if}}
-
-				{{#if _.listFiles(~/files, path).length > filesLimit}}
-					<div class="show-more-toggle">
-						{{#if showMoreFiles}}
-							<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
-						{{else}}
-							<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
-						{{/if}}
-					</div>
-				{{/if}}
 			</div>
 		</div>
+
+		{{#if !files.length}}
+			<div class="text-center files-loading-msg">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+		{{/if}}
+
+		{{#if _.listFiles(~/files, path).length > filesLimit}}
+			<div class="show-more-toggle">
+				{{#if showMoreFiles}}
+					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
+				{{else}}
+					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
+				{{/if}}
+			</div>
+		{{/if}}
 	</div>
 </div>
 
@@ -169,6 +188,8 @@
 				filesLimit: 10,
 				filesLoadingMessage: '',
 				path: [],
+				downloadsPerFile: [],
+				downloadsPerDir: [],
 			};
 		},
 		decorators: {
@@ -183,40 +204,92 @@
 				});
 
 				this.observe('version', (version) => {
-					if (version) {
-						this.set('files', []);
-						this.set('filesLoadingMessage', '');
-						let packageType = this.get('type');
-						let packageName = this.get('name');
+					if (!version) { return; }
 
-						http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
-							this.set('default', data.js ? data.js.file : '');
-						});
+					this.set('files', []);
+					this.set('filesLoadingMessage', '');
+					let packageType = this.get('type');
+					let packageName = this.get('name');
 
-						// Load package files.
-						http.fetchPackageFiles(packageType, packageName, version).then((data) => {
-							this.set('files', data.files);
-						}).catch((error) => {
-							let defaultError = 'Failed to load the file listing.';
+					http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
+						this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
+					});
 
-							if (error.responseJSON && error.responseJSON.message) {
-								let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+					// Load package files.
+					http.fetchPackageFiles(packageType, packageName, version).then((data) => {
+						this.set('files', data.files);
+					}).catch((error) => {
+						let defaultError = 'Failed to load the file listing.';
 
-								if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
-									http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
-										errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
-									}).always(() => {
-										errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
-										this.set('filesLoadingMessage', errorHtml);
-									});
-								}
+						if (error.responseJSON && error.responseJSON.message) {
+							let errorHtml = defaultError + '<br>' + error.responseJSON.message;
 
-								this.set('filesLoadingMessage', errorHtml);
-							} else {
-								this.set('filesLoadingMessage', defaultError);
+							if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
+								http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
+									errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
+								}).always(() => {
+									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+									this.set('filesLoadingMessage', errorHtml);
+								});
 							}
+
+							this.set('filesLoadingMessage', errorHtml);
+						} else {
+							this.set('filesLoadingMessage', defaultError);
+						}
+					});
+
+					// fetch package File stats to get downloads amount per file
+					http.fetchPackageFileStats(packageType, packageName, version).then((response) => {
+						let downloadsPerFile = response.reduce((downloadsPerFile, fileStats) => {
+							let fileName = fileStats.name.substring(fileStats.name.indexOf('/') + 1);
+
+							if (!fileName) { return downloadsPerFile; }
+
+							downloadsPerFile = {
+								...downloadsPerFile,
+								[fileName]: fileStats.hits.total,
+							};
+
+							return downloadsPerFile;
+						}, {});
+
+						this.set('downloadsPerFile', downloadsPerFile);
+					});
+				});
+
+				this.observe('files downloadsPerFile', () => {
+					let files = this.get('files');
+					let downloadsPerFile = this.get('downloadsPerFile');
+
+					if (!files.length || !Object.keys(downloadsPerFile).length) { return; }
+
+					function countDirDownloadsRecursively (items, downloadsPerFile, incResults = {}, currentDirName = '/') {
+						let results = incResults || {};
+
+						results[currentDirName] = results[currentDirName] || 0;
+
+						items.forEach((item) => {
+							if (item.type === 'directory') {
+								let recResults = countDirDownloadsRecursively(item.files, downloadsPerFile, results, `${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`);
+
+								results = {
+									...results,
+									...recResults,
+								};
+
+								results[currentDirName] += recResults[`${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`] || 0;
+							}
+
+							results[currentDirName] += downloadsPerFile[`${currentDirName === '/' ? '' : currentDirName + '/'}${item.name}`] || 0;
 						});
+
+						return results;
 					}
+
+					let downloadsPerDir = countDirDownloadsRecursively(files, downloadsPerFile);
+
+					this.set('downloadsPerDir', downloadsPerDir);
 				});
 			}
 		},

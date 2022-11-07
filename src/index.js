@@ -337,6 +337,7 @@ koaElasticUtils.addRoutes(router, [
 	[ '/custom-cdn-oss/:name', '/custom-cdn-oss/:name' ],
 ], async (ctx) => {
 	let data = {
+		name: ctx.params.name,
 		actualPath: ctx.path,
 	};
 

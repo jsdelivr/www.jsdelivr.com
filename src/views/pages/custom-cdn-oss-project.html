@@ -13,6 +13,8 @@
 		<div class="content-wrapper">
 			<c-cdn-oss-head name="{{name}}"
 				link="{{projectLink}}"
+				docsLink="{{docsLink}}"
+				jsDelivrLink="/custom-cdn-oss/{{name}}"
 				title="{{projectTitle}}"
 				descr="{{projectDescr}}"
 				imgW="{{projectImgW}}"
@@ -136,6 +138,7 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
 	const createBarChart = require('../../public/js/utils/create-bar-chart');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
@@ -143,47 +146,44 @@
 	component.exports = {
 		computed: {
 			title () {
-				return this.get('projectTitle') ? this.get('projectTitle') + ' - jsDelivr' : ' jsDelivr';
+				return this.get('projectTitle') + ' CDN by jsDelivr';
+			},
+			description () {
+				return `A free, fast, and reliable CDN for ${this.get('projectTitle')}. ${this.get('projectDescr')}`;
+			},
+			usageChartGroupByValues () {
+				return stats.groupByOptions[stats.periods[this.get('statsPeriod')]];
 			},
 		},
 		data () {
 			return {
-				description: 'TODO',
-				statsPeriods: {
-					1: 'day',
-					7: 'week',
-					30: 'month',
-					365: 'year',
-				},
-				statsPeriod: '30',
+				statsPeriods: stats.periods,
+				statsPeriod: 90,
 				showChartBandwidth: false,
-				usageChartGroupByValues: {
-					day: { value: 'day', isAvailable: true },
-					week: { value: 'week', isAvailable: true },
-					// since default statsPeriod is 30 (month) - group by month not available initially
-					month: { value: 'month', isAvailable: false },
-				},
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				projectsData: {
 					cocoa: {
 						title: 'CocoaPods',
 						descr: 'CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.',
-						link: 'www.cocoapods.org',
+						link: 'https://www.cocoapods.org',
+						docsLink: 'https://github.com/CocoaPods/cdn.cocoapods.org',
 						imgW: '202',
 						imgH: '46',
 					},
 					pyodide: {
 						title: 'Pyodide',
 						descr: 'Pyodide brings the Python 3.9 runtime to the browser via WebAssembly, thanks to Emscripten. It builds the Python scientific stack including NumPy, Pandas, Matplotlib, SciPy, and scikit-learn. Over 75 packages are currently available. In addition, it’s possible to install pure Python wheels from PyPI.',
-						link: 'pyodide.org',
+						link: 'https://pyodide.org',
+						docsLink: 'https://pyodide.org/en/stable/usage/index.html',
 						imgW: '170',
 						imgH: '56',
 					},
 					musescore: {
 						title: 'MuseScore',
 						descr: 'Create, play and print beautiful sheet music. The world’s most popular notation software.',
-						link: 'musescore.org',
+						link: 'https://musescore.org',
+						docsLink: 'https://musescore.org',
 						imgW: '213',
 						imgH: '48',
 					},
@@ -197,51 +197,22 @@
 			};
 		},
 		oninit () {
+			this.observe('name', (name) => {
+				let projectsData = this.get('projectsData');
+
+				this.set('projectTitle', projectsData[name].title);
+				this.set('projectDescr', projectsData[name].descr);
+				this.set('projectImgW', projectsData[name].imgW);
+				this.set('projectImgH', projectsData[name].imgH);
+				this.set('projectLink', projectsData[name].link);
+				this.set('docsLink', projectsData[name].docsLink);
+			});
+
 			if (!Ractive.isServer) {
-				this.observe('name', (name) => {
-					let projectsData = this.get('projectsData');
-
-					this.set('projectTitle', projectsData[name].title);
-					this.set('projectDescr', projectsData[name].descr);
-					this.set('projectImgW', projectsData[name].imgW);
-					this.set('projectImgH', projectsData[name].imgH);
-					this.set('projectLink', projectsData[name].link);
-				});
-
 				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('statsPeriod', (newStatsPeriod) => {
 					let period = this.get('statsPeriods')[newStatsPeriod];
 					let name = this.get('name');
-
-					// once chart period is changed - update groupBy options respectively to period
-					switch (period) {
-						case 'year':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: true },
-								month: { value: 'month', isAvailable: true },
-							});
-
-							break;
-
-						case 'month':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: true },
-								month: { value: 'month', isAvailable: false },
-							});
-
-							break;
-
-						case 'week':
-							this.set('usageChartGroupByValues', {
-								day: { value: 'day', isAvailable: true },
-								week: { value: 'week', isAvailable: false },
-								month: { value: 'month', isAvailable: false },
-							});
-
-							break;
-					}
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
 					if (period === 'day') { return; }
@@ -355,8 +326,8 @@
 									},
 									// return nothing when labelValue array is empty
 									// this way we will not get italicized text when all ticks can't be displayed at once normally
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
+									callback (value) {
+										let labelValue = this.getLabelForValue(value);
 
 										if (labelValue.length) {
 											return labelValue;
@@ -381,12 +352,11 @@
 										size: 12,
 										family: 'Lexend, sans-serif',
 									},
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let valueByMagnitude = _.getValueByMagnitude(Math.round(labelValue.replace(/,/g, '')), 'round', 1, false);
+									callback (value) {
+										let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
 
 										if (_.isMobileScreen()) {
-											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToNumberWithUnits(valueByMagnitude, ' ');
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
 										}
 
 										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);

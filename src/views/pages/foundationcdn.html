@@ -319,13 +319,13 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchPackageVersions('npm', 'foundation-sites').then((data) => {
-					data.versions = data.versions.filter((version) => {
+				http.fetchPackageVersions('npm', 'foundation-sites').then((response) => {
+					let filteredVersionsArr = response.versions.map(item => item.version).filter((version) => {
 						return /^\d+\.\d+\.\d+$/.test(version) && Number(version.split('.')[0]) > 5;
 					});
 
-					this.set('selectedVersion', data.tags.latest);
-					this.set('versions', data.versions);
+					this.set('selectedVersion', response.tags.latest);
+					this.set('versions', filteredVersionsArr);
 
 					this.updateFiles().then(() => {
 						this.observe('addTag', () => {
@@ -382,9 +382,12 @@
 
 				document.addEventListener('scroll', () => {
 					let $customizeBar = document.querySelector('.section-2 .customize-bar');
+					let sectionOneEl = document.querySelector('.section-1');
+
+					if (!sectionOneEl) { return; }
 
 					if (document.body.clientWidth >= 992) {
-						let offset = parseFloat(getComputedStyle(document.querySelector('.section-1'), null).height.replace('px', ''));
+						let offset = parseFloat(getComputedStyle(sectionOneEl, null).height.replace('px', ''));
 						let scrolled = window.pageYOffset;
 
 						if ($customizeBar.classList.contains('fixed-cb')) {

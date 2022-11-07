@@ -1,7 +1,6 @@
 
 const _ = require('../_');
 const STAGING_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
-const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
@@ -27,7 +26,7 @@ module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = '
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
-	return _.makeHTTPRequest({ url: `${API_HOST}/v1/package/${type}/${name}` });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}` });
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
