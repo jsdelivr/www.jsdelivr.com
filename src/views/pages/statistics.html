@@ -32,52 +32,49 @@
 
 				<div class="global_data">
 					<div class="global_data_info">
-						<img
-							width="44"
+						<img class="global_data_info_icon"
+							width="48"
 							height="48"
-							src="{{@shared.assetsHost}}/img/statistics/globalData.svg"
-							loading="lazy">
+							src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
 
-						<h2 class="title">Global data</h2>
+						<h2 class="global_data_info_title">Global data</h2>
 
-						<img
-							class="setting-ico {{ #if globalDataSetting }}active{{ /if }}"
+						<img class="global_data_info_settings-icon {{ #if globalDataSetting }}active{{ /if }}"
 							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
 							on-click="@this.set('globalDataSetting', !globalDataSetting)">
 					</div>
 
-					<div class="header-ctrls {{ #if globalDataSetting }}show{{ /if }}">
-						<div class="data-range-ctrl">
-							<div class="btn-group">
-								<span class="label-for-pinned">Data range</span>
-								<button
-									type="button"
-									class="btn dropdown-toggle"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<span>{{ globalStatsPeriod }}</span>
-									<i class="fa fa-angle-down" aria-hidden="true">
-									</i>
-								</button>
+					<div class="data-range-ctrl">
+						<div class="btn-group">
+							<span class="label-for-pinned">Data range</span>
+							<button
+								type="button"
+								class="btn dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{ globalStatsPeriod }}</span>
+								<i class="fa fa-angle-down" aria-hidden="true">
+								</i>
+							</button>
 
-								<ul class="dropdown-menu">
-									{{#each statsPeriods}}
-										<li>
-											<a on-click="@this.set('globalStatsPeriod', @key)">
-												{{@key}}
-											</a>
-										</li>
-									{{/each}}
-								</ul>
-							</div>
+							<ul class="dropdown-menu">
+								{{#each statsPeriods}}
+									<li>
+										<a on-click="@this.set('globalStatsPeriod', @key)">
+											{{@key}}
+										</a>
+									</li>
+								{{/each}}
+							</ul>
 						</div>
 					</div>
+
+					<div class="horizontal-divider"></div>
 				</div>
 
-				<div class="verticalLine"></div>
-
 				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
+
 				<div class="hit-rate">
 					<h3>Cache hit rate</h3>
 					<div class="rate-row">
@@ -98,6 +95,7 @@
 				</div>
 			</div>
 		</div>
+
 		<div class="grey">
 			<div class="container">
 				<div class="network-data">
@@ -150,7 +148,7 @@
 					</div>
 				</div>
 
-				<div class="verticalLine"></div>
+				<div class="horizontal-divider"></div>
 
 				<c-network-request-chart __ready="{{ __ready }}" period="{{ networkStatsPeriod }}" country="{{ country }}"></c-network-request-chart>
 
@@ -162,6 +160,7 @@
 				</div>
 			</div>
 		</div>
+
 		<div class="container">
 			<div class="projects-data">
 				<div class="projects_data_info">
@@ -198,7 +197,7 @@
 				</div>
 			</div>
 
-			<div class="verticalLine"></div>
+			<div class="horizontal-divider"></div>
 
 			<c-statistics-project-table
 				__ready="{{ __ready }}"
