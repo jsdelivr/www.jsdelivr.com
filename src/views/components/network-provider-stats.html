@@ -4,19 +4,20 @@
 
 		<div class="table">
 			<div class="bandwidth-stats">
-				<div>
-					<div class="card-icon">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+				<div class="card-icon">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+				</div>
+
+				<div class="card-main-stat">
+					<span class="text-table-number">{{formatNumberWithSpace(requestsData.total)}}</span>
+				</div>
+
+				<div class="card-growth">
+					<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+						<span class="text-table-number">{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth}}%</span>
 					</div>
-					<div class="card-main-stat">
-						<span class="text-table-number">{{ formatNumberWithSpace(requestsData.total) }}</span>
-					</div>
-					<div class="card-growth">
-						<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
-							<span class="text-table-number">{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth}}%</span>
-						</div>
-						<div><span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span></div>
-					</div>
+
+					<span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
@@ -49,19 +50,20 @@
 
 		<div class="table">
 			<div class="bandwidth-stats">
-				<div>
-					<div class="card-icon">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
+				<div class="card-icon">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
+				</div>
+
+				<div class="card-main-stat">
+					<span class="text-table-number">{{converBytesTo(bandwidthData.total)}}</span>
+				</div>
+
+				<div class="card-growth">
+					<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+						<span class="text-table-number">{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth}}%</span>
 					</div>
-					<div class="card-main-stat">
-						<span class="text-table-number">{{converBytesTo(bandwidthData.total)}}</span>
-					</div>
-					<div class="card-growth">
-						<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
-							<span class="text-table-number">{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth}}%</span>
-						</div>
-						<div><span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span></div>
-					</div>
+
+					<span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
