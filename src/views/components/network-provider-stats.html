@@ -1,6 +1,7 @@
 <div class="c-network-provider-stats">
 	<div class="block">
 		<h3>Requests Served</h3>
+
 		<div class="table">
 			<div class="bandwidth-stats">
 				<div>
@@ -11,13 +12,14 @@
 						<span class="text-table-number">{{ formatNumberWithSpace(requestsData.total) }}</span>
 					</div>
 					<div class="card-growth">
-						<div class="{{ requestsData.growth >= 0? 'growth-positive': 'growth-negative'}}">
-							<span class="text-table-number">{{#if requestsData.growth>0}}+{{/if}}{{requestsData.growth}}%</span>
+						<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+							<span class="text-table-number">{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth}}%</span>
 						</div>
-						<div><span>{{period}}ly {{ requestsData.growth >= 0? 'growth': 'decline'}}</span></div>
+						<div><span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span></div>
 					</div>
 				</div>
 			</div>
+
 			<div class="bandwidth-list">
 				{{#each requestsData.statsList}}
 					<div class="list">
@@ -26,12 +28,12 @@
 								<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
 								<span >{{name}}</span>
 							</div>
-							<div class="value text-table-number">{{ formatNumberWithSpace(value) }}</div>
+							<div class="value text-table-number">{{formatNumberWithSpace(value)}}</div>
 						</div>
 						<div class="chart">
-							<div class="value text-table-number-for-mobile">{{ formatNumberWithSpace(value) }}</div>
+							<div class="value text-table-number-for-mobile">{{formatNumberWithSpace(value)}}</div>
 							<div class="percentage-bar">
-								<div class="barWidth" style="width: {{ @this.calcPercentage(value, requestsData.total) }}; background: {{ color }}">
+								<div class="barWidth" style="width: {{@this.calcPercentage(value, requestsData.total)}}; background: {{color}}">
 								</div>
 							</div>
 							<div class="interest text-table-number">{{interest}}%</div>
@@ -41,8 +43,10 @@
 			</div>
 		</div>
 	</div>
+
 	<div class="block">
 		<h3>Bandwidth</h3>
+
 		<div class="table">
 			<div class="bandwidth-stats">
 				<div>
@@ -53,13 +57,14 @@
 						<span class="text-table-number">{{converBytesTo(bandwidthData.total)}}</span>
 					</div>
 					<div class="card-growth">
-						<div class="{{ bandwidthData.growth >= 0? 'growth-positive': 'growth-negative'}}">
-							<span class="text-table-number">{{#if bandwidthData.growth>0}}+{{/if}}{{bandwidthData.growth}}%</span>
+						<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+							<span class="text-table-number">{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth}}%</span>
 						</div>
-						<div><span>{{period}}ly {{ bandwidthData.growth >= 0? 'growth': 'decline'}}</span></div>
+						<div><span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span></div>
 					</div>
 				</div>
 			</div>
+
 			<div class="bandwidth-list">
 				{{#each bandwidthData.statsList}}
 					<div class="list">
@@ -89,7 +94,7 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const providers = require('../../public/json/net-providers.json');
+	const providersJson = require('../../public/json/net-providers.json');
 
 	component.exports = {
 		data () {
@@ -118,9 +123,9 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period', (period) => {
-					http.fetchNetworkProviderStats(period).then((res) => {
-						this.set('requestsData', this.processStats(res.providers, 'hits'));
-						this.set('bandwidthData', this.processStats(res.providers, 'bandwidth'));
+					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
+						this.set('requestsData', this.processStats(hits.providers));
+						this.set('bandwidthData', this.processStats(bandwidth.providers));
 					});
 				});
 			}
@@ -128,21 +133,23 @@
 		onrender () {
 
 		},
-		processStats (stats, type) {
+		processStats (providers) {
 			let result = {
 				total: 0,
 				prevTotal: 0,
 				growth: '0%',
 				statsList: [],
 			};
-			Object.keys(stats).forEach((key) => {
-				let provider = providers[key] ?? {};
+
+			Object.keys(providers).forEach((key) => {
+				let provider = providersJson[key] ?? {};
 				let svg = provider.imgPath;
 				let color = provider.color;
 				let name = provider.name;
 
-				let stat = stats[key][type];
+				let stat = providers[key];
 				let value = stat.total;
+
 				let interest = this.calcGrowth(value, stat.prev.total);
 
 				result.statsList.push({ svg, name, value, color, interest });
@@ -151,6 +158,7 @@
 			});
 
 			result.growth = this.calcGrowth(result.total, result.prevTotal);
+
 			return result;
 		},
 		calcGrowth (cur, prev) {
