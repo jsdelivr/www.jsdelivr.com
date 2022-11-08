@@ -6,7 +6,7 @@
 		requestsGrowthPercent="{{requestsGrowthPercent}}"
 		growthPeriod="{{growthPeriod}}"
 		bandwidthAmount="{{bandwidthAmount}}"
-		bandwidthUnit="{{bandwidthUnit}}"
+		bandwidthUnit="{{bandwidthUnitInternal}}"
 		bandwidthGrowthPercent="{{bandwidthGrowthPercent}}">
 	</c-request-bandwidth-stats>
 </div>
@@ -45,9 +45,9 @@
 						if (bandwidth.total >= 0) {
 							if (!bandwidthUnit) {
 								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
-								this.set('bandwidthUnit', bandwidthUnit);
 							}
 
+							this.set('bandwidthUnitInternal', bandwidthUnit);
 							this.animate('bandwidthAmount', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
 							this.animate('bandwidthGrowthPercent', _.calculateGrowth(bandwidth.total, bandwidth.prev.total), { duration: 1000 });
 						}

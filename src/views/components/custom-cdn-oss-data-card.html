@@ -6,7 +6,7 @@
 		srcset="{{@shared.assetsHost}}/img/landing/new/{{imgName}}@2x.png 2x" />
 	<p>{{_.formatNumber(hitsTotal)}}</p>
 	<span>Requests Served past {{period}}</span>
-	<p>{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnit}}</p>
+	<p>{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnitInternal}}</p>
 	<span>Bandwidth past {{period}}</span>
 </div>
 
@@ -38,10 +38,9 @@
 						if (bandwidth.total >= 0) {
 							if (!bandwidthUnit) {
 								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
-								this.set('bandwidthUnit', bandwidthUnit);
 							}
 
-							this.set('bandwidthUnit', bandwidthUnit);
+							this.set('bandwidthUnitInternal', bandwidthUnit);
 							this.animate('bandwidthTotal', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
 						}
 					});
