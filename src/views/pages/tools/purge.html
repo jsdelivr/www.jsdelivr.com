@@ -234,14 +234,12 @@
 			this.set('purgingInProcess', true);
 			this.set('purgeErrorMsg', '');
 
-			let paths = this.get('urls').replace(/\n/g, ',').map(p => p.trim()).filter(p => p);
+			let paths = this.get('urls').replace(/\n/g, ',').split(',').map(p => p.trim()).filter(p => p);
 
-			if (paths === '') {
+			if (!paths.length) {
 				this.set('purgingInProcess', false);
 				return;
 			}
-
-			paths = paths.split(',');
 
 			paths = paths.map((path) => {
 				return isUrlValid.getPathFromUrl(path);
