@@ -168,7 +168,7 @@
 
 				this.observe('urls', (newValue) => {
 					let paths = newValue.replace(/\n/g, ',');
-					let pathsArr = paths.split(',');
+					let pathsArr = paths.split(',').map(p => p.trim()).filter(p => p);
 
 					if (pathsArr.length > 10) {
 						this.set('purgeErrorMsg', 'Allowed up to 10 URLs - one per line');
@@ -190,7 +190,7 @@
 							this.set('purgeErrorMsg', 'Invalid URLs!');
 						}
 
-						if (paths.length > 0 && isPathsValid) {
+						if (pathsArr.length > 0 && isPathsValid) {
 							this.set('purgeBtnDisabled', false);
 						} else {
 							this.set('purgeBtnDisabled', true);
@@ -234,7 +234,7 @@
 			this.set('purgingInProcess', true);
 			this.set('purgeErrorMsg', '');
 
-			let paths = this.get('urls').replace(/\n/g, ',');
+			let paths = this.get('urls').replace(/\n/g, ',').map(p => p.trim()).filter(p => p);
 
 			if (paths === '') {
 				this.set('purgingInProcess', false);
