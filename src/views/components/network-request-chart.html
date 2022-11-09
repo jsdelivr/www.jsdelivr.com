@@ -8,8 +8,8 @@
 		</div>
 	</div>
 
-	<div class="hits-chart-wrapper">
-		<div class="switch-block">
+	<div class="hits-chart-block">
+		<div class="hits-chart-block_switcher">
 			{{#each switchList}}
 				<div class="switch-item">
 					<label class="switch">
@@ -21,7 +21,7 @@
 			{{/each}}
 		</div>
 
-		<div class="hits-chart-block">
+		<div class="hits-chart-block_chart-wrapper">
 			<canvas id="hits-chart"></canvas>
 		</div>
 	</div>
@@ -50,20 +50,19 @@
 
 						if (country === 'WW') { country = ''; }
 
-						http.fetchNetworkProviderStats(period, country)
-							.then((res) => {
-								res = res.providers;
+						http.fetchNetworkProviderStats(period, country).then((response) => {
+							response = response.hits.providers;
 
-								let oldSwitchList = this.get('switchList');
-								let newSwitchList = Object.keys(res)
-									.map((key) => {
-										let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
+							let oldSwitchList = this.get('switchList');
+							let newSwitchList = Object.keys(response).map((key) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
 
-										return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
-									});
-								this.set('switchList', newSwitchList);
-								this.set('hitsData', res);
+								return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
 							});
+
+							this.set('switchList', newSwitchList);
+							this.set('hitsData', response);
+						});
 					}
 				});
 			}
