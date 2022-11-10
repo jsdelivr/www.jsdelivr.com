@@ -178,16 +178,14 @@
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
-							<span>{{ projectStatsPeriod }}</span>
+							<span>{{ statsPeriods[projectStatsPeriod] }}</span>
 
 							<i class="fa fa-angle-down" aria-hidden="true"></i>
 						</button>
 
 						<ul class="dropdown-menu">
 							{{#each statsPeriods}}
-								<li>
-									<a on-click="@this.set('projectStatsPeriod', @key)">{{@key}}</a>
-								</li>
+								<li><a on-click="@this.set('projectStatsPeriod', @key)">{{this}}</a></li>
 							{{/each}}
 						</ul>
 					</div>
@@ -200,14 +198,14 @@
 				__ready="{{ __ready }}"
 				title="Most popular projects"
 				type="popular"
-				period="{{ projectStatsPeriod }}">
+				period="{{ statsPeriods[projectStatsPeriod] }}">
 			</c-statistics-project-table>
 
 			<c-statistics-project-table
 				__ready="{{ __ready }}"
 				title="Trending projects"
 				type="trending"
-				period="{{ projectStatsPeriod }}">
+				period="{{ statsPeriods[projectStatsPeriod] }}">
 			</c-statistics-project-table>
 		</div>
 	</div>
@@ -251,7 +249,7 @@
 				country: '',
 				networkDataSetting: false,
 				networkStatsPeriod: 30,
-				projectStatsPeriod: 'month',
+				projectStatsPeriod: 30,
 				lastOffsetTop: 0,
 			};
 		},
