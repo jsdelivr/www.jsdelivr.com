@@ -52,18 +52,14 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{ globalStatsPeriod }}</span>
+								<span>{{ statsPeriods[globalStatsPeriod] }}</span>
 								<i class="fa fa-angle-down" aria-hidden="true">
 								</i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each statsPeriods}}
-									<li>
-										<a on-click="@this.set('globalStatsPeriod', @key)">
-											{{@key}}
-										</a>
-									</li>
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -72,7 +68,7 @@
 					<div class="horizontal-divider"></div>
 				</div>
 
-				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
+				<c-network-provider-stats period="{{ statsPeriods[globalStatsPeriod] }}"></c-network-provider-stats>
 
 				<div class="hit-rate">
 					<h3>Cache hit rate</h3>
@@ -233,7 +229,7 @@
 				name: 'd3',
 				description: 'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
 				statsPeriods: stats.periods,
-				globalStatsPeriod: 'month',
+				globalStatsPeriod: 30,
 				globalDataSetting: false,
 				rateList: [
 					{
