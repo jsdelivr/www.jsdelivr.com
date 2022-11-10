@@ -3,8 +3,8 @@
 		<h3>Requests served over time</h3>
 
 		<div class="chart-header_switch">
-			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
-			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+			<button class="button {{ showChartBandwidth ? '' : 'selected' }}" on-click="@this.set('showChartBandwidth', false)">Requests</button>
+			<button class="button {{ showChartBandwidth ? 'selected' : '' }}" on-click="@this.set('showChartBandwidth', true)">Bandwidth</button>
 		</div>
 	</div>
 
@@ -31,14 +31,16 @@
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const createLineChart = require('../../public/js/utils/create-line-chart');
-	const providers = require('../../public/json/net-providers.json');
+	const providersJson = require('../../public/json/net-providers.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 
 	component.exports = {
 		data () {
 			return {
-				type: 'hits',
+				showChartBandwidth: false,
 				switchList: [],
-				hitsData: '',
+				rawHitsChartData: '',
 			};
 		},
 		oninit () {
@@ -51,125 +53,111 @@
 						if (country === 'WW') { country = ''; }
 
 						http.fetchNetworkProviderStats(period, country).then((response) => {
-							response = response.hits.providers;
+							let { providers: respProviders } = response.hits;
 
 							let oldSwitchList = this.get('switchList');
-							let newSwitchList = Object.keys(response).map((key) => {
-								let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
+							let newSwitchList = Object.keys(respProviders).map((key) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
 
-								return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
+								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true };
 							});
 
 							this.set('switchList', newSwitchList);
-							this.set('hitsData', response);
+							this.set('rawHitsChartData', response);
 						});
 					}
 				});
+
+				this.observe('rawHitsChartData showChartBandwidth screenWidth', () => {
+					let rawHitsChartData = this.get('rawHitsChartData');
+					let chartPeriod = this.get('period');
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = 'day';
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						labels,
+						maxRangeValue,
+						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
+					} = _.getPreparedProvidersDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					this.set('preparedHitsChartData', {
+						datasets,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						useYAxisBorderPlugin: screenWidth >= 768,
+						yAxisPadding: screenWidth >= 768 ? 30 : 18,
+						valueUnits,
+						usageChartGroupBy,
+					});
+				}, { init: false });
 			}
 		},
 		onrender () {
 			let hitsChart;
 
 			// create hits chart
-			this.observe('hitsData switchList type', () => {
-				let switchList = this.get('switchList');
-				let hitsData = this.get('hitsData');
-				let type = this.get('type');
+			this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+				let {
+					datasets,
+					labels,
+					maxRangeValue,
+					useYAxisBorderPlugin,
+					showChartBandwidth,
+					yAxisPadding,
+					labelsStartEndPeriods,
+					valueUnits,
+					usageChartGroupBy,
+				} = preparedHitsChartData;
 				let hitsChartCanvasEl = this.find('#hits-chart');
 
-				if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
-
-				let array = [];
-				Object.keys(hitsData).forEach((key) => {
-					let provider = switchList.filter(one => one.name === providers[key].name);
-
-					if (!provider[0]?.active) { return; }
-
-					let ratioList = {};
-					Object.keys(hitsData[key][type].dates).forEach((date) => {
-						let hits = hitsData[key].hits.dates[date];
-						let bandwidth = hitsData[key].bandwidth.dates[date];
-
-						ratioList[date] = hits ? _.formatToShortNumber(bandwidth / hits) : 0;
-					});
-
-					array.push({
-						label: key,
-						data: Object.values(hitsData[key][type].dates),
-						dates: Object.keys(hitsData[key][type].dates),
-						ratio: ratioList,
-						borderColor: providers[key].color,
-						backgroundColor: providers[key].color,
-					});
-				});
+				if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
 
 				if (hitsChart) {
 					hitsChart.destroy();
 					hitsChart = null;
 				}
 
-				if (!array.length) { return; }
-
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(
-					Math.min(...array.map(one => Math.min(...one.data.filter(v => v !== 0)))),
-					'floor'
-				);
-				let maxRangeValue = _.getValueByMagnitude(
-					Math.max(...array.map(one => Math.max(...one.data))),
-					'ceil',
-					1
-				);
-
-				let chartPeriod = this.get('period');
-				console.log(chartPeriod);
 				let chartData = {
-					labels: _.getChartXAxisData(array[0].dates, chartPeriod),
-					datasets: array,
+					labels,
+					datasets,
+					labelsStartEndPeriods,
+					valueUnits,
+					usageChartGroupBy,
 				};
 				let chartSettings = {
+					useYAxisBorderPlugin,
 					useExternalTooltip: true,
+					useImprovedTooltip: true,
 					plugins: {
-						verticalYAxisBorder: false,
+						useExternalTooltip: true,
 					},
 				};
+				let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 				let chartConfig = {
 					options: {
 						scales: {
 							x: {
 								display: true,
 								ticks: {
+									autoSkip: false,
 									color: '#5C667A',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 										lineHeight: 2,
 									},
-									// whole callback needed to prepare dates for displaying on the x-axis
-									// since we need only the day and not full date (which we must to pass here for the tooltip title)
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+									callback (value) {
+										let labelValue = this.getLabelForValue(value);
 
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
-
-												return [ labelValue[1], labelValue[2] ];
-											}
-
-											if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
-
-											return;
+										if (labelValue.length) {
+											return labelValue;
 										}
-
-										if (Array.isArray(labelValue) && labelValue[1]) {
-											return [ day, labelValue[1] ];
-										}
-
-										if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
-
-										return [ day ];
 									},
 								},
 								grid: {
@@ -179,18 +167,25 @@
 							},
 							y: {
 								display: true,
-								min: minRangeValue,
-								max: maxRangeValue,
+								min: 0,
+								suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 								ticks: {
-									count: yAxisTicksAmount,
+									padding: yAxisPadding,
+									count: 9,
 									color: '#5C667A',
-									crossAlign: 'far',
+									crossAlign: 'near',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 									},
 									callback (value) {
-										return _.formatToShortNumber(_.getValueByMagnitude(Math.round(value), 'round', 1, false));
+										let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+
+										if (_.isMobileScreen()) {
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+										}
+
+										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
 									},
 								},
 								grid: {
@@ -204,7 +199,10 @@
 				};
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
+			}, { init: false });
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 	};
 </script>

@@ -482,13 +482,13 @@ module.exports = {
 		};
 	},
 
-	prepareDataForChartGroupedBy (rawData, groupBy) {
+	prepareDataForChartGroupedBy (rawData, groupBy, valueByDatePropName = '') {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
 
 		return rawDataDatesKeys.reduce((resData, date) => {
 			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
-			let valueByDateConverted = rawDataDatesData[date];
+			let valueByDateConverted = valueByDatePropName ? rawDataDatesData[date][valueByDatePropName] : rawDataDatesData[date];
 
 			switch (groupBy) {
 				case 'month':
@@ -805,6 +805,115 @@ module.exports = {
 			default:
 				return schema.regularBar;
 		}
+	},
+
+	// prepare data for Providers Line Chart
+	getPreparedProvidersDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+		let valueUnits = '', unit;
+		let { preparedData: topProviderPrepData } = this.prepareDataForChartGroupedBy(rawData[dataType].providers.CF, groupBy, 'total');
+		let labelsData = {
+			labels: [],
+			labelsStartEndPeriods: [],
+		};
+		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
+		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerName) => {
+			result.push({
+				providerName,
+				...rawData[dataType].providers[providerName],
+			});
+
+			return result;
+		}, []);
+
+		// collect labels, period starts/ends data for chart
+		labelsData = dataToIteract.reduce((labelsData, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
+
+			labelsData.labels.push([ period.day, period.month, period.year ]);
+			labelsData.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+
+			return labelsData;
+		}, labelsData);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
+				break;
+			case 'month':
+				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+			case 'quarter':
+			case 'year':
+				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+		}
+
+		let { allGroupedByValues, datasets } = prepProvidersData.reduce((res, providerData, idx) => {
+			let { preparedData } = this.prepareDataForChartGroupedBy(providerData, groupBy, 'total');
+			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+			let groupedByValues = dataToIteract.reduce((values, period) => {
+				if (onlyFullPeriods && period.isFull === false) { return values; }
+
+				values.push(period.value);
+
+				return values;
+			}, []);
+
+			if (showChartBandwidth) {
+				if (!unit) {
+					unit = module.exports.findUnitFromArray(groupedByValues);
+					valueUnits = ` ${unit}`;
+				}
+
+				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
+			}
+
+			let dataset = {
+				label: `v${providerData.providerName}`,
+				data: groupedByValues,
+			};
+
+			switch (idx) {
+				case 0:
+					dataset.borderColor = '#5C667A';
+					dataset.backgroundColor = '#5C667A';
+					break;
+				case 1:
+					dataset.borderColor = '#BC5090';
+					dataset.backgroundColor = '#BC5090';
+					break;
+				case 2:
+					dataset.borderColor = '#FFA600';
+					dataset.backgroundColor = '#FFA600';
+					break;
+				case 3:
+					dataset.borderColor = '#FF6361';
+					dataset.backgroundColor = '#FF6361';
+					break;
+				case 4:
+					dataset.borderColor = '#69C4F7';
+					dataset.backgroundColor = '#69C4F7';
+					break;
+			}
+
+			res.datasets.push(dataset);
+			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
+
+			return res;
+		}, { allGroupedByValues: [], datasets: [] });
+
+		// get min/max magnitude for y-axis
+		let maxRangeValue = this.getValueByMagnitude(Math.max(...allGroupedByValues), 'ceil', 1);
+
+		return {
+			...labelsData,
+			maxRangeValue,
+			valueUnits,
+			datasets,
+		};
 	},
 
 	// prepare data for LineChart
