@@ -128,7 +128,7 @@
 									aria-haspopup="true"
 									aria-expanded="false">
 
-									<span>{{ networkStatsPeriod }}</span>
+									<span>{{ statsPeriods[networkStatsPeriod] }}</span>
 
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
@@ -136,7 +136,7 @@
 								<ul class="dropdown-menu">
 									{{#each statsPeriods}}
 										<li>
-											<a on-click="@this.set('networkStatsPeriod', @key)">{{@key}}</a>
+											<a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a>
 										</li>
 									{{/each}}
 								</ul>
@@ -147,9 +147,9 @@
 
 				<div class="horizontal-divider"></div>
 
-				<c-network-request-chart __ready="{{ __ready }}" period="{{ networkStatsPeriod }}" country="{{ country }}"></c-network-request-chart>
+				<c-network-request-chart __ready="{{ __ready }}" period="{{ statsPeriods[networkStatsPeriod] }}" country="{{ country }}"></c-network-request-chart>
 
-				<c-network-request-map __ready="{{ __ready }}" period="{{ networkStatsPeriod }}"></c-network-request-map>
+				<c-network-request-map __ready="{{ __ready }}" period="{{ statsPeriods[networkStatsPeriod] }}"></c-network-request-map>
 
 				<div class="tops">
 					<c-top-platform-browser __ready="{{ __ready }}" type="platform"></c-top-platform-browser>
@@ -250,7 +250,7 @@
 				],
 				country: '',
 				networkDataSetting: false,
-				networkStatsPeriod: 'month',
+				networkStatsPeriod: 30,
 				projectStatsPeriod: 'month',
 				lastOffsetTop: 0,
 			};
