@@ -819,10 +819,10 @@ module.exports = {
 			labelsStartEndPeriods: [],
 		};
 		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
-		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerName) => {
+		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerNameAsKey) => {
 			result.push({
-				providerName,
-				...rawData[dataType].providers[providerName],
+				providerName: module.exports.translateProviderName(providerNameAsKey),
+				...rawData[dataType].providers[providerNameAsKey],
 			});
 
 			return result;
@@ -874,7 +874,7 @@ module.exports = {
 			}
 
 			let dataset = {
-				label: `v${providerData.providerName}`,
+				label: providerData.providerName,
 				data: groupedByValues,
 				...module.exports.getLineColorsFromMask(idx),
 			};
@@ -993,5 +993,16 @@ module.exports = {
 		let defaultColorsArr = [ '#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7' ];
 
 		return mask ? mask[key] : { borderColor: defaultColorsArr[key], backgroundColor: defaultColorsArr[key] };
+	},
+
+	translateProviderName (name) {
+		switch (name) {
+			case 'CF':
+				return 'Cloudflare';
+			case 'FY':
+				return 'Fastly';
+			case 'GC':
+				return 'G-Core';
+		};
 	},
 };
