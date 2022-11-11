@@ -876,30 +876,8 @@ module.exports = {
 			let dataset = {
 				label: `v${providerData.providerName}`,
 				data: groupedByValues,
+				...module.exports.getLineColorsFromMask(idx),
 			};
-
-			switch (idx) {
-				case 0:
-					dataset.borderColor = '#5C667A';
-					dataset.backgroundColor = '#5C667A';
-					break;
-				case 1:
-					dataset.borderColor = '#BC5090';
-					dataset.backgroundColor = '#BC5090';
-					break;
-				case 2:
-					dataset.borderColor = '#FFA600';
-					dataset.backgroundColor = '#FFA600';
-					break;
-				case 3:
-					dataset.borderColor = '#FF6361';
-					dataset.backgroundColor = '#FF6361';
-					break;
-				case 4:
-					dataset.borderColor = '#69C4F7';
-					dataset.backgroundColor = '#69C4F7';
-					break;
-			}
 
 			res.datasets.push(dataset);
 			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
@@ -980,30 +958,8 @@ module.exports = {
 			let dataset = {
 				label: `v${versionData.version}`,
 				data: groupedByValues,
+				...module.exports.getLineColorsFromMask(idx),
 			};
-
-			switch (idx) {
-				case 0:
-					dataset.borderColor = '#5C667A';
-					dataset.backgroundColor = '#5C667A';
-					break;
-				case 1:
-					dataset.borderColor = '#BC5090';
-					dataset.backgroundColor = '#BC5090';
-					break;
-				case 2:
-					dataset.borderColor = '#FFA600';
-					dataset.backgroundColor = '#FFA600';
-					break;
-				case 3:
-					dataset.borderColor = '#FF6361';
-					dataset.backgroundColor = '#FF6361';
-					break;
-				case 4:
-					dataset.borderColor = '#69C4F7';
-					dataset.backgroundColor = '#69C4F7';
-					break;
-			}
 
 			res.datasets.push(dataset);
 			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
@@ -1031,5 +987,11 @@ module.exports = {
 		}
 
 		return periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+	},
+
+	getLineColorsFromMask (key, mask = null) {
+		let defaultColorsArr = [ '#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7' ];
+
+		return mask ? mask[key] : { borderColor: defaultColorsArr[key], backgroundColor: defaultColorsArr[key] };
 	},
 };
