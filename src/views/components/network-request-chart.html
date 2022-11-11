@@ -70,11 +70,15 @@
 
 				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList', () => {
 					let rawHitsChartData = this.get('rawHitsChartData');
+					let switchList = this.get('switchList');
+
+					if (!rawHitsChartData || switchList.length === 0) { return; }
+
 					let chartPeriod = this.get('period');
 					let showChartBandwidth = this.get('showChartBandwidth');
-					let usageChartGroupBy = 'day';
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
-					let notActiveSwitches = this.get('switchList').filter(s => s.active === false).map(s => s.shortName);
+					let usageChartGroupBy = 'day';
+					let notActiveSwitches = switchList.filter(s => s.active === false).map(s => s.shortName);
 					let hitsProviders = { ...rawHitsChartData.hits.providers };
 					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
 
