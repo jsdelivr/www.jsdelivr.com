@@ -10,10 +10,15 @@
 
 	<div class="hits-chart-block">
 		<div class="hits-chart-block_switchers">
-			{{#each switchList}}
-				<div class="hits-chart-block_switchers_item">
+			{{#each switchList:index}}
+				<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled}}disabled{{/if}}">
 					<label class="hits-chart-block_switchers_item_switch">
-						<input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
+						<input
+							class="{{name}}"
+							type="checkbox"
+							on-click="@this.set('switchList['+@index+'].active', !active)"
+							disabled="{{switchList[index].disabled}}"
+							checked>
 						<span class="slider round"></span>
 						</label>
 						<span class="hits-chart-block_switchers_item_name">{{name}}</span>
@@ -66,6 +71,32 @@
 							this.set('rawHitsChartData', response);
 						});
 					}
+				});
+
+				this.observe('switchList', (switchList) => {
+					let disabledSwitches = switchList.filter(s => s.active === false).length;
+					let switchListLength = switchList.length;
+					let updatedSwitchList = [];
+
+					if (disabledSwitches === switchListLength - 1) {
+						updatedSwitchList = switchList.map((switchItem) => {
+							if (switchItem.active) {
+								switchItem.disabled = true;
+							} else {
+								switchItem.disabled = false;
+							}
+
+							return switchItem;
+						});
+					} else {
+						updatedSwitchList = switchList.map((switchItem) => {
+							switchItem.disabled = false;
+
+							return switchItem;
+						});
+					}
+
+					this.set('switchList', updatedSwitchList);
 				});
 
 				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList', () => {
