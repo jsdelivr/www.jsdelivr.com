@@ -811,7 +811,9 @@ module.exports = {
 	getPreparedProvidersDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
 		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 		let valueUnits = '', unit;
-		let { preparedData: topProviderPrepData } = this.prepareDataForChartGroupedBy(rawData[dataType].providers.CF, groupBy, 'total');
+		let sortedProviders = Object.values(rawData[dataType].providers).sort((a, b) => b.total - a.total);
+		let topProviderData = sortedProviders[0] || {};
+		let { preparedData: topProviderPrepData } = this.prepareDataForChartGroupedBy(topProviderData, groupBy, 'total');
 		let labelsData = {
 			labels: [],
 			labelsStartEndPeriods: [],

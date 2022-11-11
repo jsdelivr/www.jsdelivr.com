@@ -59,7 +59,7 @@
 							let newSwitchList = Object.keys(respProviders).map((key) => {
 								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
 
-								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true };
+								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
 							});
 
 							this.set('switchList', newSwitchList);
@@ -68,12 +68,32 @@
 					}
 				});
 
-				this.observe('rawHitsChartData showChartBandwidth screenWidth', () => {
+				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList', () => {
 					let rawHitsChartData = this.get('rawHitsChartData');
 					let chartPeriod = this.get('period');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = 'day';
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let notActiveSwitches = this.get('switchList').filter(s => s.active === false).map(s => s.shortName);
+					let hitsProviders = { ...rawHitsChartData.hits.providers };
+					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
+
+					notActiveSwitches.forEach((s) => {
+						delete hitsProviders[s];
+						delete bandwidthProviders[s];
+					});
+
+					let filteredHitsChartData = {
+						...rawHitsChartData,
+						bandwidth: {
+							...rawHitsChartData.bandwidth,
+							providers: bandwidthProviders,
+						},
+						hits: {
+							...rawHitsChartData.hits,
+							providers: hitsProviders,
+						},
+					};
 
 					// collect X-Axis dates, group data by period, get
 					let {
@@ -82,7 +102,7 @@
 						datasets,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = _.getPreparedProvidersDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
 
 					this.set('preparedHitsChartData', {
 						datasets,
