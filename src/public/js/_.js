@@ -819,10 +819,10 @@ module.exports = {
 			labelsStartEndPeriods: [],
 		};
 		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
-		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerNameAsKey) => {
+		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerName) => {
 			result.push({
-				providerName: module.exports.translateProviderName(providerNameAsKey),
-				...rawData[dataType].providers[providerNameAsKey],
+				providerName,
+				...rawData[dataType].providers[providerName],
 			});
 
 			return result;
@@ -873,10 +873,17 @@ module.exports = {
 				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
 			}
 
+			let lineColorsArr = ['#F6821F', '#FF282D', '#A234D2'];
+			let lineColorsMask = {
+				CF: lineColorsArr[0],
+				FY: lineColorsArr[1],
+				GC: lineColorsArr[2],
+			};
+
 			let dataset = {
-				label: providerData.providerName,
+				label: module.exports.translateProviderName(providerData.providerName),
 				data: groupedByValues,
-				...module.exports.getLineColorsFromMask(idx),
+				...module.exports.getLineColorsFromMask(providerData.providerName, lineColorsMask),
 			};
 
 			res.datasets.push(dataset);
@@ -989,10 +996,15 @@ module.exports = {
 		return periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
 	},
 
-	getLineColorsFromMask (key, mask = null) {
+	getLineColorsFromMask (key, mask = null, customColorsArr = null) {
 		let defaultColorsArr = [ '#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7' ];
+		let colorsArr = customColorsArr ? customColorsArr : defaultColorsArr;
+		let lineColors = {
+			borderColor:  mask ? mask[key] : colorsArr[key],
+			backgroundColor:  mask ? mask[key] : colorsArr[key],
+		};
 
-		return mask ? mask[key] : { borderColor: defaultColorsArr[key], backgroundColor: defaultColorsArr[key] };
+		return lineColors;
 	},
 
 	translateProviderName (name) {
