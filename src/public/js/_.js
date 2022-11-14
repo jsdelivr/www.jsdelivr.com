@@ -852,7 +852,7 @@ module.exports = {
 				break;
 		}
 
-		let { allGroupedByValues, datasets } = prepProvidersData.reduce((res, providerData, idx) => {
+		let { allGroupedByValues, datasets } = prepProvidersData.reduce((res, providerData) => {
 			let { preparedData } = this.prepareDataForChartGroupedBy(providerData, groupBy, 'total');
 			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
@@ -873,7 +873,7 @@ module.exports = {
 				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
 			}
 
-			let lineColorsArr = ['#F6821F', '#FF282D', '#A234D2'];
+			let lineColorsArr = [ '#F6821F', '#FF282D', '#A234D2' ];
 			let lineColorsMask = {
 				CF: lineColorsArr[0],
 				FY: lineColorsArr[1],
@@ -1000,8 +1000,8 @@ module.exports = {
 		let defaultColorsArr = [ '#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7' ];
 		let colorsArr = customColorsArr ? customColorsArr : defaultColorsArr;
 		let lineColors = {
-			borderColor:  mask ? mask[key] : colorsArr[key],
-			backgroundColor:  mask ? mask[key] : colorsArr[key],
+			borderColor: mask ? mask[key] : colorsArr[key],
+			backgroundColor: mask ? mask[key] : colorsArr[key],
 		};
 
 		return lineColors;
@@ -1015,6 +1015,6 @@ module.exports = {
 				return 'Fastly';
 			case 'GC':
 				return 'G-Core';
-		};
+		}
 	},
 };
