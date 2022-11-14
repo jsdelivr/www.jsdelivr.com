@@ -14,10 +14,15 @@
 	<div class="table">
 		<div class="chosen-platform">
 			{{#if !selectedItem}}
-				<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/information.svg" loading="lazy">
+				<img class="chosen-platform_choose-icon"
+					width="20"
+					height="20"
+					src="{{@shared.assetsHost}}/img/statistics/information.svg"
+					loading="lazy">
+
 				<span>Choose {{ browserDataType }} below to check more data</span>
 			{{else}}
-				<div class="selected">
+				<div class="chosen-platform_selected">
 					<div class="chosen-name">
 						<img class="chevron-left-btn"
 							src="{{@shared.assetsHost}}/img/statistics/left.svg"
@@ -101,39 +106,40 @@
 			</tr>
 		</table>
 
-		<div class="pagination">
-			<p>{{ pageRange }}</p>
+		<div class="table_pagination">
+			<div class="table_pagination_range">{{ pageRange }}</div>
 
-			<div class="btn-group">
-				<div class="page-limit-container">
+			<div class="table_pagination_ctrls">
+				<button class="table_pagination_ctrls_btn table_pagination_ctrls_btn-prev" on-click="@this.prevPage()">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+				</button>
+
+				<div class="table_pagination_ctrls_limit">
 					<span>Show:</span>
-					<button type="button"
-						class="btn dropdown-toggle"
-						data-toggle="dropdown"
-						aria-haspopup="true"
-						aria-expanded="false">
-						<span>{{ pageLimit }}</span>
-						<i class="fa fa-angle-down" aria-hidden="true"></i>
-					</button>
 
-					<ul class="dropdown-menu">
-						{{#each paginationLimits}}
-							<li>
-								<a on-click="@this.set('pageLimit', this)">{{ this }}</a>
-							</li>
-						{{/each}}
-					</ul>
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+
+							<span>{{ pageLimit }}</span>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each paginationLimits}}
+								<li><a on-click="@this.set('pageLimit', this)">{{ this }}</a></li>
+							{{/each}}
+						</ul>
+					</div>
 				</div>
 
-				<div class="pagination-change-page">
-					<button on-click="@this.prevPage()">
-						<img width="20" height="24" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
-					</button>
-
-					<button on-click="@this.nextPage()">
-						<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
-					</button>
-				</div>
+				<button class="table_pagination_ctrls_btn table_pagination_ctrls_btn-next" on-click="@this.nextPage()">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+				</button>
 			</div>
 		</div>
 	</div>
