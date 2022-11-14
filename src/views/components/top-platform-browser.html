@@ -1,6 +1,7 @@
 <div class="c-top-platform-browser">
 	<div class="info">
 		<h3>Top {{ type }}s</h3>
+
 		<div class="switch-block">
 			<label class="switch">
 				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" checked>
@@ -9,40 +10,49 @@
 			<span class="name">Group {{ type }} versions</span>
 		</div>
 	</div>
+
 	<div class="table">
 		<div class="chosen-platform">
-			{{ #if !selectedItem }}
-			<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/information.svg" loading="lazy" />
-			<p>Choose {{ type }} below to check more data</p>
-			{{ else }}
-			<div class="selected">
-				<div class="chosen-name">
-					<img class="chevron-left-btn" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy"
-						on-click="@this.set('selectedItem', '')" />
-					{{ #if selectedItem.icon }}
-					<img class="icon" width="24" height="24"
-						src="{{@shared.assetsHost}}/img/statistics{{selectedItem.icon}}" loading="lazy" />
-					{{ /if }}
-					{{ selectedItem.name }} ({{ selectedItem.share }}%<span> global shares</span>)
-				</div>
-				<div class="btn-group">
-					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-						aria-expanded="false">
-						<span>{{ breakdownList[breakdown] }}</span>
-						<i class="fa fa-angle-down" aria-hidden="true"></i>
-					</button>
+			{{#if !selectedItem}}
+				<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/information.svg" loading="lazy" />
+				<p>Choose {{ type }} below to check more data</p>
+			{{else}}
+				<div class="selected">
+					<div class="chosen-name">
+						<img class="chevron-left-btn" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy"
+							on-click="@this.set('selectedItem', '')" />
+						{{#if selectedItem.icon}}
+							<img class="icon"
+								width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/statistics{{selectedItem.icon}}" loading="lazy" />
+						{{/if}}
 
-					<ul class="dropdown-menu">
-						{{#each breakdownList}}
-						<li>
-							<a on-click="@this.set('breakdown', @key)">{{ . }}<span> breakdown</span></a>
-						</li>
-						{{/each}}
-					</ul>
+						{{ selectedItem.name }} ({{ selectedItem.share }}%<span> global shares</span>)
+					</div>
+
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{ breakdownList[breakdown] }}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each breakdownList}}
+								<li>
+									<a on-click="@this.set('breakdown', @key)">{{ . }}<span> breakdown</span></a>
+								</li>
+							{{/each}}
+						</ul>
+					</div>
 				</div>
-			</div>
-			{{ /if }}
+			{{/if}}
 		</div>
+
 		<table>
 			<tr>
 				<th>Name</th>
@@ -58,67 +68,74 @@
 					</div>
 				</th>
 			</tr>
+
 			<tr>
 				<td colspan="3">
 					<div class="scrollable">
 						<table class="content">
 							{{#each topListByPage as one}}
-							<tr>
-								<td>
-									<span>{{ index+1 }}</span>
-									<div>
-										{{ #if icon }}
-										<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}"
-											loading="lazy" />
-										{{ /if }}
-										{{ #if !selectedItem }}
-										<span on-click="@this.set('selectedItem', one)">{{ name }}</span>
-										{{ else }}
-										<span>{{ name }}</span>
-										{{ /if }}
-									</div>
-								</td>
-								<td class="text-table-number">{{ share }}%</td>
-								<td class="text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{
-									toSignedPercentage(changes) }}</td>
-							</tr>
+								<tr>
+									<td>
+										<span>{{ index+1 }}</span>
+										<div>
+											{{#if icon}}
+												<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy" />
+											{{/if}}
+
+											{{#if !selectedItem}}
+												<span on-click="@this.set('selectedItem', one)">{{ name }}</span>
+											{{else}}
+												<span>{{ name }}</span>
+											{{/if}}
+										</div>
+									</td>
+									<td class="text-table-number">{{ share }}%</td>
+									<td class="text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</td>
+								</tr>
 							{{/each}}
 						</table>
 					</div>
 				</td>
 			</tr>
 		</table>
+
 		<div class="pagination">
 			<p>{{ pageRange }}</p>
+
 			<div class="btn-group">
 				<div class="page-limit-container">
 					<span>Show:</span>
-					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+					<button type="button"
+						class="btn dropdown-toggle"
+						data-toggle="dropdown"
+						aria-haspopup="true"
 						aria-expanded="false">
-						<span>{{pageLimit}}</span>
+						<span>{{ pageLimit }}</span>
 						<i class="fa fa-angle-down" aria-hidden="true"></i>
 					</button>
+
 					<ul class="dropdown-menu">
 						{{#each paginationLimits}}
-						<li>
-							<a on-click="@this.set('pageLimit', this)">{{this}}</a>
-						</li>
+							<li>
+								<a on-click="@this.set('pageLimit', this)">{{ this }}</a>
+							</li>
 						{{/each}}
 					</ul>
 				</div>
+
 				<div class="pagination-change-page">
 					<button on-click="@this.prevPage()">
-						<img width="20" height="24" src="{{@shared.assetsHost}}/img/statistics/left.svg"
-							loading="lazy" />
+						<img width="20" height="24" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy" />
 					</button>
+
 					<button on-click="@this.nextPage()">
-						<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics/right.svg"
-							loading="lazy" />
+						<img width="24" height="24" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy" />
 					</button>
 				</div>
 			</div>
 		</div>
 	</div>
+
 	<h3 class="previous-changes-for-mobile">Changes compared to the previous 30 day period</h3>
 </div>
 
