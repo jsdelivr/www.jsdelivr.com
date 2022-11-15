@@ -23,11 +23,8 @@
 				<span class="chosen-platform_choose-msg">Choose {{ browserDataType }} below to check more data</span>
 			{{else}}
 				<div class="chosen-platform_selected">
-					<div class="chosen-name">
-						<img class="chevron-left-btn"
-							src="{{@shared.assetsHost}}/img/statistics/left.svg"
-							on-click="@this.set('selectedItem', '')"
-							loading="lazy">
+					<div class="chosen-name" on-click="@this.set('selectedItem', '')">
+						<img src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 
 						{{#if selectedItem.icon}}
 							<img class="icon"
@@ -39,7 +36,7 @@
 
 						<span class="chosen-name_platform-name">{{ selectedItem.name }}</span>
 						&nbsp;
-						<span class="chosen-name_platform-share">({{ selectedItem.share }}%<span> global shares</span>)</span>
+						<span class="chosen-name_platform-share">({{ selectedItem.share }}%<span>&nbsp;global shares</span>)</span>
 					</div>
 
 					<div class="btn-group">
@@ -48,15 +45,15 @@
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
+
 							<span>{{ breakdownList[breakdown] }}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 						</button>
 
 						<ul class="dropdown-menu">
 							{{#each breakdownList}}
-								<li>
-									<a on-click="@this.set('breakdown', @key)">{{ . }}<span> breakdown</span></a>
-								</li>
+								<li><a on-click="@this.set('breakdown', @key)">{{ . }}<span> breakdown</span></a></li>
 							{{/each}}
 						</ul>
 					</div>
