@@ -64,7 +64,48 @@
 			{{/if}}
 		</div>
 
-		<table>
+		<div class="table_content">
+			<div class="table_content_header">
+				<div class="cell cell_one">Name</div>
+
+				<div class="cell cell_two">
+					Market share
+					<img width="14" height="14" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
+				</div>
+
+				<div class="cell cell_three">
+					Changes
+					<img width="16" height="16" src="{{@shared.assetsHost}}/img/statistics/information.svg" loading="lazy">
+					<!-- <div class="header-tooltip">
+						<span>Compared to the previous 30 day period</span>
+					</div> -->
+				</div>
+			</div>
+
+			{{#each topListByPage as one}}
+				<div class="table_content_row">
+					<div class="cell cell_one">
+						<span class="platform-index">{{ index + 1 }}</span>
+
+						{{#if icon}}
+							<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
+						{{/if}}
+
+						{{#if !selectedItem}}
+							<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ name }}</span>
+						{{else}}
+							<span class="platform-name">{{ name }}</span>
+						{{/if}}
+					</div>
+
+					<div class="cell cell_two text-table-number">{{ share }}%</div>
+
+					<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</div>
+				</div>
+			{{/each}}
+		</div>
+
+		<!-- <table>
 			<tr>
 				<th>Name</th>
 				<th>Market share</th>
@@ -107,7 +148,7 @@
 					</div>
 				</td>
 			</tr>
-		</table>
+		</table> -->
 
 		<div class="table_pagination">
 			<div class="table_pagination_range">{{ pageRange }}</div>
