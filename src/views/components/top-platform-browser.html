@@ -83,27 +83,29 @@
 				</div>
 			</div>
 
-			{{#each topListByPage as one}}
-				<div class="table-wrapper_content_row">
-					<div class="cell cell_one">
-						<span class="platform-index">{{ index + 1 }}</span>
+			<div class="table-wrapper_content_scrollable">
+				{{#each topListByPage as one}}
+					<div class="table-wrapper_content_row">
+						<div class="cell cell_one">
+							<span class="platform-index">{{ index + 1 }}</span>
 
-						{{#if icon}}
-							<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
-						{{/if}}
+							{{#if icon}}
+								<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
+							{{/if}}
 
-						{{#if !selectedItem}}
-							<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ name }}</span>
-						{{else}}
-							<span class="platform-name">{{ name }}</span>
-						{{/if}}
+							{{#if !selectedItem}}
+								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ name }}</span>
+							{{else}}
+								<span class="platform-name">{{ name }}</span>
+							{{/if}}
+						</div>
+
+						<div class="cell cell_two text-table-number">{{ share }}%</div>
+
+						<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</div>
 					</div>
-
-					<div class="cell cell_two text-table-number">{{ share }}%</div>
-
-					<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</div>
-				</div>
-			{{/each}}
+				{{/each}}
+			</div>
 		</div>
 
 		<div class="table-wrapper_pagination">
