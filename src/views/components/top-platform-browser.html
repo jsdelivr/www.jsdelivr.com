@@ -75,10 +75,11 @@
 
 				<div class="cell cell_three">
 					Changes
-					<img width="16" height="16" src="{{@shared.assetsHost}}/img/statistics/information.svg" loading="lazy">
-					<!-- <div class="header-tooltip">
-						<span>Compared to the previous 30 day period</span>
-					</div> -->
+					<img width="16"
+						height="16"
+						as-tooltip="'Compared to the previous 30 day period', 'bottom'"
+						src="{{@shared.assetsHost}}/img/statistics/information.svg"
+						loading="lazy">
 				</div>
 			</div>
 
@@ -193,6 +194,7 @@
 
 <script>
 	const countries = require('../../public/json/countries.json');
+	const tooltip = require('../../public/js/decorators/tooltip');
 
 	component.exports = {
 		computed: {
@@ -240,6 +242,9 @@
 
 				return topList.slice(start - 1, end);
 			},
+		},
+		decorators: {
+			tooltip,
 		},
 		data () {
 			return {
