@@ -150,6 +150,7 @@
 				display: flex;
 				flex-direction: column;
 				row-gap: 16px;
+				padding: 16px;
 				background: #fff;
 				box-shadow: inset 0 -1px 0 #dfe3e7;
 
@@ -161,18 +162,15 @@
 					display: flex;
 					align-items: center;
 					justify-content: flex-start;
-					padding: 16px;
 
 					&_one {
-						.proj-type, .proj-name {
-							font-size: 14px;
-							line-height: 20px;
-						}
+						align-items: flex-start;
 
 						.proj-index {
 							display: flex;
 							align-items: center;
 							justify-content: center;
+							flex-shrink: 0;
 							width: 24px;
 							height: 24px;
 							background: #f3f5f7;
@@ -181,26 +179,93 @@
 							color: #17233b;
 						}
 
-						.proj-type {
-							color: #79849a;
+						.proj-path {
+							display: block;
+							font-size: 14px;
+							line-height: 20px;
+							padding-right: 10px;
+
+							&_type {
+								color: #79849a;
+							}
+
+							&_name {
+								color: #17233b;
+								word-break: break-all;
+							}
 						}
 
-						.proj-name {
-							color: #17233b;
+						.proj-growth {
+							margin-left: auto;
+
+							@media (min-width: @screen-sm-min) {
+								display: none;
+							}
+
+							&.positive {
+								color: #0b8e5f;
+							}
+
+							&.negative {
+								color: #eb3333;
+							}
 						}
 					}
 
-					// &_two {
+					&_two, &_three {
+						display: flex;
+						flex-direction: column;
+						row-gap: 4px;
 
-					// }
+						>span, >div {
+							width: 100%;
+						}
 
-					// &_three {
+						>span {
+							font-weight: 600;
+							font-size: 12px;
+							line-height: 16px;
+							letter-spacing: .2px;
+							color: #111a2c;
+						}
 
-					// }
+						.percentage-bar-container {
+							display: grid;
+							grid-template-columns: minmax(100px, auto) 1fr;
+							align-items: center;
+							column-gap: 16px;
 
-					// &_four {
+							.text {
+								font-size: 14px;
+								line-height: 20px;
+								color: #f65128;
+							}
 
-					// }
+							.percentage-bar {
+								.barWidth {
+									height: 4px;
+									background: #f65128;
+									border-radius: 2px;
+								}
+							}
+						}
+					}
+
+					&_four {
+						display: none;
+
+						@media (min-width: @screen-sm-min) {
+							display: flex;
+						}
+
+						&.positive {
+							color: #0b8e5f;
+						}
+
+						&.negative {
+							color: #eb3333;
+						}
+					}
 				}
 			}
 		}
