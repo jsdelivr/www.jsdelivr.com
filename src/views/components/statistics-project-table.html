@@ -17,63 +17,49 @@
 		</div>
 	</div>
 
-	<div class="projects-data-table">
-		<table>
-			<tr>
-				<th>Name</th>
-				<th>Requests</th>
-				<th>Bandwidth</th>
-				{{#if type === "trending"}}
-					<th>Increased</th>
-				{{/if}}
-			</tr>
-			<tr>
-				<td colspan="{{ #if type === 'trending' }}4{{ else }}3{{ /if }}">
-					<div class="scrollable">
-						<table class="content">
-							{{#each projectListByPage}}
-								<tr>
-									<td>
-										<div class="first-cell">
-											<i class="id">{{id}}</i>
-											<div>
-												<span>{{type}}/</span>
-												<p>{{name}}</p>
-											</div>
-										</div>
-									</td>
-									<td>
-										<div class="percentage-bar-container">
-											<div class="text">{{formatNumberWithSpace(hits)}}</div>
-											<div class="percentage-bar">
-												<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
-											</div>
-										</div>
-									</td>
-									<td>
-										<div class="percentage-bar-container">
-											<div class="text">{{bandwidth}}</div>
-											<div class="percentage-bar">
-												<div class="barWidth" style="width: {{ barWidth.bandwidth }}">
+	<div class="projects-content">
+		<div class="projects-content_table">
+			<div class="projects-content_table_header">
+				<div>Name</div>
+				<div>Requests</div>
+				<div>Bandwidth</div>
+				<div>{{#if type === "trending"}}Increased{{/if}}</div>
+			</div>
 
-												</div>
-											</div>
-										</div>
-									</td>
-									{{#if ~/type === "trending"}}
-										<td class="{{ interest >= 0? 'positive': 'negative'}}">
-											{{toSignedPercentage(interest)}}
-										</td>
-									{{/if}}
-								</tr>
-							{{/each}}
-						</table>
+			{{#each projectListByPage}}
+				<div class="projects-content_table_row">
+					<div class="cell cell_one">
+						<span class="proj-index">{{id}}</span>
+						<span class="proj-type">{{type}}/</span>
+						<span class="proj-name">{{name}}</span>
 					</div>
-				</td>
-			</tr>
-		</table>
 
-		<div class="pagination">
+					<div class="cell cell_two">
+						<div class="percentage-bar-container">
+							<div class="text">{{formatNumberWithSpace(hits)}}</div>
+							<div class="percentage-bar">
+								<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="cell cell_three">
+						<div class="percentage-bar-container">
+							<div class="text">{{bandwidth}}</div>
+							<div class="percentage-bar">
+								<div class="barWidth" style="width: {{ barWidth.bandwidth }}"></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="cell cell_four {{ interest >= 0? 'positive': 'negative'}}">
+						{{toSignedPercentage(interest)}}
+					</div>
+				</div>
+			{{/each}}
+		</div>
+
+		<div class="projects-content_pagination">
 			<p>{{pageRange}}</p>
 
 			<div class="pagination-change-page">
