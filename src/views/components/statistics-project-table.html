@@ -23,7 +23,7 @@
 				<div class="cell cell_one">Name</div>
 				<div class="cell cell_two">Requests</div>
 				<div class="cell cell_three">Bandwidth</div>
-				<div class="cell cell_four">{{#if type === "trending"}}Increased{{/if}}</div>
+				<div class="cell cell_four">{{#if dataType === "trending"}}Increased{{/if}}</div>
 			</div>
 
 			{{#each projectListByPage}}
@@ -60,7 +60,9 @@
 					</div>
 
 					<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}}">
-						{{toSignedPercentage(interest)}}
+						{{#if dataType === "trending"}}
+							{{toSignedPercentage(interest)}}
+						{{/if}}
 					</div>
 				</div>
 			{{/each}}
@@ -211,11 +213,11 @@
 			if (!Ractive.isServer) {
 				this.observe('period statsType __ready', function () {
 					if (this.get('__ready')) {
-						let type = this.get('type');
+						let dataType = this.get('dataType');
 						let period = this.get('period');
 						let statsType = this.get('statsType');
 						// fetch projectList using http api calls
-						http.fetchProjectStats(type, statsType, period).then((res) => {
+						http.fetchProjectStats(dataType, statsType, period).then((res) => {
 							this.set('projectList', this.processProjectStats(res));
 						});
 					}
