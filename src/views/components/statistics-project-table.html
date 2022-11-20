@@ -69,9 +69,12 @@
 		</div>
 
 		<div class="projects-content_pagination">
-			<p>{{pageRange}}</p>
+			<div class="projects-content_pagination_range">
+				<span class="supporting-text_alt">Records</span>
+				<span>{{pageRange}}</span>
+			</div>
 
-			<div class="pagination-change-page">
+			<div class="projects-content_pagination_numeration">
 				<button>
 					<img
 						width="20"
@@ -98,6 +101,7 @@
 						<span>page:&nbsp;&nbsp;{{page}}</span>
 						<i class="fa fa-angle-down" aria-hidden="true"></i>
 					</button>
+
 					<ul class="dropdown-menu">
 						{{#each Array(totalPageCount)}}
 							<li>
@@ -116,25 +120,40 @@
 				</button>
 			</div>
 
-			<div class="btn-group">
-				<span>Show:</span>
-
-				<button
-					type="button"
-					class="btn dropdown-toggle"
-					data-toggle="dropdown"
-					aria-haspopup="true"
-					aria-expanded="false">
-					<span>{{pageLimit}}</span>
-					<i class="fa fa-angle-down" aria-hidden="true"></i>
+			<div class="projects-content_pagination_ctrls">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
-				<ul class="dropdown-menu">
-					{{#each paginationLimits}}
-						<li><a on-click="@this.set('pageLimit', this)">{{this}}</a></li>
-					{{/each}}
-				</ul>
-				<span>per page</span>
+				<div class="projects-content_pagination_ctrls_limit">
+					<span class="supporting-text">Page:</span>
+					<span class="supporting-text_alt">Show:</span>
+
+					<div class="btn-group">
+						<button
+							type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{pageLimit}}</span>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each paginationLimits}}
+								<li><a on-click="@this.set('pageLimit', this)">{{this}}</a></li>
+							{{/each}}
+						</ul>
+
+						<span class="supporting-text_alt">per page</span>
+					</div>
+				</div>
+
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+				</button>
 			</div>
 		</div>
 	</div>
@@ -155,7 +174,7 @@
 				let end = start + pageLimit - 1;
 				end = total > end ? end : total;
 
-				return `Records ${start} - ${end} of ${total}`;
+				return `${start} - ${end} of ${total}`;
 			},
 			showablePages () {
 				let page = this.get('page');
