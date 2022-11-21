@@ -153,10 +153,8 @@
 				let page = this.get('page');
 				let pageLimit = parseInt(this.get('pageLimit'));
 				let total = this.get('projectList').length;
-
 				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
-				end = total > end ? end : total;
 
 				return `${start} - ${end} of ${total}`;
 			},
@@ -164,7 +162,6 @@
 				let page = this.get('page');
 				let pageLimit = parseInt(this.get('pageLimit'));
 				let totalRows = this.get('projectList').length;
-
 				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
 
 				let start = (page - 2) < 1 ? 1 : page - 2;
@@ -185,19 +182,10 @@
 				let page = this.get('page');
 				let pageLimit = parseInt(this.get('pageLimit'));
 				let projectList = this.get('projectList');
-				let total = projectList.length;
-
 				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
-				end = total > end ? end : total;
 
 				return projectList.slice(start - 1, end);
-			},
-			totalPageCount () {
-				let pageLimit = parseInt(this.get('pageLimit'));
-				let totalRows = this.get('projectList').length;
-
-				return Math.ceil(totalRows / pageLimit) || 1;
 			},
 		},
 		data () {
@@ -231,6 +219,10 @@
 						});
 					}
 				});
+
+				this.observe('pageLimit', () => {
+					this.set('page', 1);
+				}, { init: false });
 			}
 		},
 		processProjectStats (projectList) {
