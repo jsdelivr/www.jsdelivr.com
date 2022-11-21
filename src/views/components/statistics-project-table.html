@@ -75,7 +75,7 @@
 			</div>
 
 			<div class="projects-content_pagination_numeration">
-				<button>
+				<button on-click="@this.prevPage()">
 					<img
 						width="20"
 						height="24"
@@ -91,27 +91,7 @@
 					</button>
 				{{/each}}
 
-				<div class="btn-group for-mobile">
-					<button
-						type="button"
-						class="btn dropdown-toggle"
-						data-toggle="dropdown"
-						aria-haspopup="true"
-						aria-expanded="false">
-						<span>page:&nbsp;&nbsp;{{page}}</span>
-						<i class="fa fa-angle-down" aria-hidden="true"></i>
-					</button>
-
-					<ul class="dropdown-menu">
-						{{#each Array(totalPageCount)}}
-							<li>
-								<a on-click="@this.set('page', @key + 1)">{{@key + 1}}</a>
-							</li>
-						{{/each}}
-					</ul>
-				</div>
-
-				<button>
+				<button on-click="@this.nextPage()">
 					<img
 						width="24"
 						height="24"
@@ -121,7 +101,7 @@
 			</div>
 
 			<div class="projects-content_pagination_ctrls">
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev" on-click="@this.prevPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
@@ -151,7 +131,7 @@
 					<span class="supporting-text_alt">per page</span>
 				</div>
 
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next" on-click="@this.nextPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -258,6 +238,18 @@
 
 				return { ...one, interest, barWidth, id: index + 1 };
 			});
+		},
+		prevPage () {
+			let page = this.get('page');
+
+			this.set('page', page > 1 ? page - 1 : page);
+		},
+		nextPage () {
+			let page = this.get('page');
+			let pageLimit = parseInt(this.get('pageLimit'));
+			let total = this.get('projectList').length;
+
+			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
 		},
 	};
 </script>
