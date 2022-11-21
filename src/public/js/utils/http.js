@@ -114,11 +114,11 @@ module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedI
 	return _.makeHTTPRequest({ url });
 };
 
-module.exports.fetchProjectStats = (type, statsType, period) => {
+module.exports.fetchProjectStats = (statsType, period) => {
 	statsType = statsType === 'all' ? '' : `/${statsType}`;
 
 	return _.makeHTTPRequest({
-		url: type === 'popular' ? `${STAGING_API_HOST}/v1/stats/packages${statsType}` : `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
+		url: `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
 		body: {
 			period,
 		},
