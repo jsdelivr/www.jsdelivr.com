@@ -166,7 +166,12 @@
 				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
 
 				let start = (page - 2) < 1 ? 1 : page - 2;
-				let end = (start + 4) > totalPages ? totalPages : start + 4;
+				let end = start + 4;
+
+				if (start + 4 > totalPages) {
+					start = totalPages - 4 > 0 ? totalPages - 4 : 1;
+					end = totalPages;
+				}
 
 				return {
 					start,
