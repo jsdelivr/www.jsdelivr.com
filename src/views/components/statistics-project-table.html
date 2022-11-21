@@ -219,11 +219,11 @@
 			if (!Ractive.isServer) {
 				this.observe('period statsType __ready', function () {
 					if (this.get('__ready')) {
-						let dataType = this.get('dataType');
 						let period = this.get('period');
 						let statsType = this.get('statsType');
+
 						// fetch projectList using http api calls
-						http.fetchProjectStats(dataType, statsType, period).then((res) => {
+						http.fetchProjectStats(statsType, period).then((res) => {
 							this.set('projectList', this.processProjectStats(res));
 						});
 					}
