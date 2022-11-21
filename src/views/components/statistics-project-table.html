@@ -26,46 +26,48 @@
 				<div class="cell cell_four">{{#if dataType === "trending"}}Increased{{/if}}</div>
 			</div>
 
-			{{#each projectListByPage}}
-				<div class="projects-content_table_row">
-					<div class="cell cell_one">
-						<span class="proj-index">{{id}}</span>
+			<div class="projects-content_table_scrollable">
+				{{#each projectListByPage}}
+					<div class="projects-content_table_row">
+						<div class="cell cell_one">
+							<span class="proj-index">{{id}}</span>
 
-						<div class="proj-path">
-							<span class="proj-path_type">{{type}}/</span>
-							<span class="proj-path_name">{{name}}</span>
+							<div class="proj-path">
+								<span class="proj-path_type">{{type}}/</span>
+								<span class="proj-path_name">{{name}}</span>
+							</div>
+
+							<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">{{toSignedPercentage(interest)}}</span>
 						</div>
 
-						<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">{{toSignedPercentage(interest)}}</span>
-					</div>
-
-					<div class="cell cell_two">
-						<span>Requests</span>
-						<div class="percentage-bar-container">
-							<div class="text">{{formatNumberWithSpace(hits)}}</div>
-							<div class="percentage-bar">
-								<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
+						<div class="cell cell_two">
+							<span>Requests</span>
+							<div class="percentage-bar-container">
+								<div class="text">{{formatNumberWithSpace(hits)}}</div>
+								<div class="percentage-bar">
+									<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="cell cell_three">
-						<span>Bandwidth</span>
-						<div class="percentage-bar-container">
-							<div class="text">{{bandwidth}}</div>
-							<div class="percentage-bar">
-								<div class="barWidth" style="width: {{ barWidth.bandwidth }}"></div>
+						<div class="cell cell_three">
+							<span>Bandwidth</span>
+							<div class="percentage-bar-container">
+								<div class="text">{{bandwidth}}</div>
+								<div class="percentage-bar">
+									<div class="barWidth" style="width: {{ barWidth.bandwidth }}"></div>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}}">
-						{{#if dataType === "trending"}}
-							{{toSignedPercentage(interest)}}
-						{{/if}}
+						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}}">
+							{{#if dataType === "trending"}}
+								{{toSignedPercentage(interest)}}
+							{{/if}}
+						</div>
 					</div>
-				</div>
-			{{/each}}
+				{{/each}}
+			</div>
 		</div>
 
 		<div class="projects-content_pagination">
