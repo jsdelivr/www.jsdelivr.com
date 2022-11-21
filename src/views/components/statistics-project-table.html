@@ -77,7 +77,7 @@
 			</div>
 
 			<div class="projects-content_pagination_numeration">
-				<button on-click="@this.prevPage()">
+				<button on-click="@this.prevPage()" class="{{#if page === 1}}disabled{{/if}}">
 					<img
 						width="20"
 						height="24"
@@ -93,7 +93,7 @@
 					</button>
 				{{/each}}
 
-				<button on-click="@this.nextPage()">
+				<button on-click="@this.nextPage()" class="{{#if page === showablePages.totalPages }}disabled{{/if}}">
 					<img
 						width="24"
 						height="24"
@@ -103,7 +103,8 @@
 			</div>
 
 			<div class="projects-content_pagination_ctrls">
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev" on-click="@this.prevPage()">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}"
+					on-click="@this.prevPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
@@ -133,7 +134,8 @@
 					<span class="supporting-text_alt">per page</span>
 				</div>
 
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next" on-click="@this.nextPage()">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page === showablePages.totalPages}}disabled{{/if}}"
+					on-click="@this.nextPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -175,6 +177,7 @@
 
 				return {
 					start,
+					totalPages,
 					pageCount: new Array(end - start + 1),
 				};
 			},
