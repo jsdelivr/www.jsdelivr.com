@@ -19,7 +19,7 @@
 		<div class="container">
 			<div class="head-wrapper">
 				<div class="head-wrapper_map-wrapper">
-					<img class="head-map-bg" width="908" height="428" src="{{@shared.assetsHost}}/img/sponsors/map.svg" />
+					<img class="head-map-bg" width="908" height="428" src="{{@shared.assetsHost}}/img/sponsors/map.svg">
 				</div>
 
 				<h2 class="head-title">Statistics</h2>
@@ -38,12 +38,13 @@
 
 						<h2 class="global-data_info_title">Global data</h2>
 
-						<img class="global-data_info_settings-icon {{ #if globalDataSetting }}active{{ /if }}"
-							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
+						<div class="global-data_info_settings-icon {{ #if globalDataSetting }}active{{ /if }}"
 							on-click="@this.set('globalDataSetting', !globalDataSetting)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
 					</div>
 
-					<div class="data-range-ctrl">
+					<div class="data-range-ctrl {{ #if globalDataSetting }}active{{ /if }}">
 						<div class="btn-group">
 							<span class="label-for-pinned">Data range</span>
 							<button
@@ -286,10 +287,8 @@
 			});
 		},
 		oncomplete () {
-			let el = this.find('.global-data');
-			this.stickyObserve(el);
-			el = this.find('.network-data');
-			this.stickyObserve(el);
+			this.stickyObserve(this.find('.global-data'));
+			this.stickyObserve(this.find('.network-data'));
 		},
 		stickyObserve (el) {
 			let observer = new IntersectionObserver(
