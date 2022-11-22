@@ -106,12 +106,12 @@
 							src="{{@shared.assetsHost}}/img/statistics/network.svg"
 							loading="lazy">
 
-						<span class="title">Network data</span>
+						<h2 class="network-data_info_title">Network data</h2>
 
-						<img
-							class="setting-ico {{ #if networkDataSetting }}active{{ /if }}"
-							src="{{ @shared.assetsHost }}/img/statistics/setting.svg"
+						<div class="network-data_info_settings-icon {{ #if networkDataSetting }}active{{ /if }}"
 							on-click="@this.set('networkDataSetting', !networkDataSetting)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
 					</div>
 
 					<div class="network-data_action {{ #if networkDataSetting }}show{{ /if }}">
@@ -166,6 +166,11 @@
 						loading="lazy">
 
 					<h2 class="projects-data_info_title">Projects statistics</h2>
+
+					<div class="projects-data_info_settings-icon {{ #if projectsDataSetting }}active{{ /if }}"
+						on-click="@this.set('projectsDataSetting', !projectsDataSetting)">
+						<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+					</div>
 				</div>
 
 				<div class="data-range-ctrl">
@@ -249,6 +254,7 @@
 				networkStatsPeriod: DEFAULT_PERIOD_KEY,
 				projectStatsPeriod: DEFAULT_PERIOD_KEY,
 				lastOffsetTop: 0,
+				projectsDataSetting: false,
 			};
 		},
 		decorators: {
@@ -288,6 +294,7 @@
 		},
 		oncomplete () {
 			this.stickyObserve(this.find('.global-data'));
+			this.stickyObserve(this.find('.projects-data'));
 			this.stickyObserve(this.find('.network-data'));
 		},
 		stickyObserve (el) {

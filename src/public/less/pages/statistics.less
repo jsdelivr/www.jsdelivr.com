@@ -10,11 +10,11 @@
 	}
 
 	.container {
-		padding: 0 24px;
+		padding: 48px 24px 0;
 		position: relative;
 
 		@media (min-width: @screen-sm-min) {
-			padding: 0 12px;
+			padding: 80px 12px 0;
 		}
 
 		.horizontal-divider {
@@ -193,16 +193,17 @@
 			}
 		}
 
-		.global-data, .projects-data {
+		.global-data, .projects-data, .network-data {
 			display: flex;
 			flex-direction: column;
-			margin-top: 48px;
-			position: -webkit-sticky;
-			position: sticky;
-			top: -1px;
+
+			@media (max-width: @screen-xs-max) {
+				position: -webkit-sticky;
+				position: sticky;
+				top: -1px;
+			}
 
 			@media (min-width: @screen-sm-min) {
-				margin-top: 80px;
 				flex-flow: row wrap;
 				justify-content: space-between;
 				align-items: center;
@@ -322,105 +323,6 @@
 							}
 						}
 					}
-				}
-			}
-
-			&.is-pinned {
-				margin-left: -24px;
-				margin-right: -24px;
-				padding: 12px 24px 0;
-				background: #fff;
-				box-shadow: 0 2px 2px -2px rgba(23, 35, 59, .1), 0 2px 8px rgba(23, 35, 59, .1);
-
-				.global-data_info, .projects-data_info {
-					&_icon {
-						width: 32px;
-						height: 32px;
-					}
-
-					&_settings-icon {
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						margin-left: auto;
-						border-radius: 6px;
-						height: 36px;
-						width: 36px;
-
-						&.active {
-							background: #fcf0ed;
-						}
-					}
-				}
-
-				.data-range-ctrl {
-					max-height: 0;
-					opacity: 0;
-					margin-top: 12px;
-					-webkit-transition: max-height .5s, opacity .5s;
-					-moz-transition: max-height .5s, opacity .5s;
-					-ms-transition: max-height .5s, opacity .5s;
-					-o-transition: max-height .5s, opacity .5s;
-					transition: max-height .5s, opacity .5s;
-					overflow: hidden;
-
-					&.active {
-						opacity: 1;
-						max-height: 40px;
-						margin-bottom: 12px;
-						overflow: visible;
-					}
-				}
-			}
-		}
-
-		.network-data {
-			display: flex;
-			flex-direction: column;
-
-			@media (min-width: @screen-sm-min) {
-				flex-direction: row;
-				justify-content: space-between;
-				align-items: center;
-				column-gap: 48px;
-			}
-
-			&_info {
-				display: flex;
-				align-items: center;
-				column-gap: 8px;
-				margin-bottom: 16px;
-
-				@media (min-width: @screen-sm-min) {
-					margin-bottom: 0;
-					column-gap: 24px;
-				}
-
-				img {
-					width: 40px;
-					height: 40px;
-
-					@media (min-width: @screen-sm-min) {
-						width: 48px;
-						height: 48px;
-					}
-				}
-
-				.title {
-					font-weight: 600;
-					font-size: 20px;
-					line-height: 32px;
-					letter-spacing: .2px;
-					color: #17233b;
-
-					@media (min-width: @screen-sm-min) {
-						font-size: 32px;
-						line-height: 44px;
-					}
-				}
-
-				.setting-ico {
-					display: none;
 				}
 			}
 
@@ -553,6 +455,57 @@
 									border-radius: 4px;
 								}
 							}
+						}
+					}
+				}
+			}
+
+			&.is-pinned {
+				@media (max-width: @screen-xs-max) {
+					z-index: 1000;
+					margin-left: -24px;
+					margin-right: -24px;
+					padding: 12px 24px 0;
+					background: #fff;
+					box-shadow: 0 2px 2px -2px rgba(23, 35, 59, .1), 0 2px 8px rgba(23, 35, 59, .1);
+
+					.global-data_info, .projects-data_info, .network-data_info {
+						&_icon {
+							width: 32px;
+							height: 32px;
+						}
+
+						&_settings-icon {
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							margin-left: auto;
+							border-radius: 6px;
+							height: 36px;
+							width: 36px;
+
+							&.active {
+								background: #fcf0ed;
+							}
+						}
+					}
+
+					.data-range-ctrl {
+						max-height: 0;
+						opacity: 0;
+						margin-top: 12px;
+						-webkit-transition: max-height .5s, opacity .5s;
+						-moz-transition: max-height .5s, opacity .5s;
+						-ms-transition: max-height .5s, opacity .5s;
+						-o-transition: max-height .5s, opacity .5s;
+						transition: max-height .5s, opacity .5s;
+						overflow: hidden;
+
+						&.active {
+							opacity: 1;
+							max-height: 40px;
+							margin-bottom: 12px;
+							overflow: visible;
 						}
 					}
 				}
