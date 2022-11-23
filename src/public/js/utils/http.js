@@ -91,23 +91,23 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
 };
 
 /** *
- * @param type - platform type  value:  "platforms", "browsers"
- * @param isVersionGrouped  -  version grouped switchbox value: boolean
+ * @param dataType - request type value: "platforms", "browsers"
+ * @param isVersionGrouped  - version grouped switchbox value: boolean
  * @param selectedItem - selected certain platform or browser value:string
- * @param breakdown - country breakdown, browser breakdown, platform , version berakdown
+ * @param breakdown - country breakdown, browser breakdown, platform, version breakdown
  ***/
-module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedItem, breakdown) => {
-	let url = type === 'platform' ? '/v1/stats/platforms' : '/v1/stats/browsers';
+module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, selectedItem, breakdown) => {
+	let url = dataType === 'platform' ? '/v1/stats/platforms' : '/v1/stats/browsers';
 
-	if (!isVersionGrouped) {
-		if (!selectedItem) {
-			url += '/versions'; // initial state but <version group> switch box is disabled
-		} else { 					// when a user selected one platform or browser in the list , <version group> is disabled
-			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
-		}
-	} else {						// <version group> switchbox is enabled
-		if (selectedItem) { 		// user selected one platform or browser
+	if (isVersionGrouped) {
+		if (selectedItem) {
 			url += `${selectedItem.name}/${breakdown}`;
+		}
+	} else {
+		if (selectedItem) {
+			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
+		} else {
+			url += '/versions';
 		}
 	}
 
