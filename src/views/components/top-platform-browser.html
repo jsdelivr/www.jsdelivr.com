@@ -1,13 +1,13 @@
 <div class="c-top-platform-browser">
 	<div class="table-info">
-		<h3>Top {{ browserDataType }}s</h3>
+		<h3>Top {{ topDataType }}s</h3>
 
 		<div class="switch-block">
 			<label class="switch">
 				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" checked>
 				<span class="slider round"></span>
 			</label>
-			<span class="name">Group {{ browserDataType }} versions</span>
+			<span class="name">Group {{ topDataType }} versions</span>
 		</div>
 	</div>
 
@@ -20,7 +20,7 @@
 					src="{{@shared.assetsHost}}/img/statistics/information.svg"
 					loading="lazy">
 
-				<span class="table-wrapper_chosen-platform_choose-msg">Choose {{ browserDataType }} below to check more data</span>
+				<span class="table-wrapper_chosen-platform_choose-msg">Choose {{ topDataType }} below to check more data</span>
 			{{else}}
 				<div class="table-wrapper_chosen-platform_selected">
 					<div class="chosen-name" on-click="@this.set('selectedItem', '')">
@@ -158,17 +158,17 @@
 	component.exports = {
 		computed: {
 			breakdownList () {
-				let browserDataType = this.get('browserDataType');
+				let topDataType = this.get('topDataType');
 
 				let result = [];
 
-				if (browserDataType === 'platform') {
+				if (topDataType === 'platform') {
 					result = {
 						countries: 'Country',
 						browsers: 'Browser',
 						versions: 'Version',
 					};
-				} else if (browserDataType === 'browser') {
+				} else if (topDataType === 'browser') {
 					result = {
 						countries: 'Country',
 						platforms: 'Platform',
@@ -228,13 +228,13 @@
 			if (!Ractive.isServer) {
 				this.observe('isVersionGrouped selectedItem breakdown __ready', function () {
 					if (this.get('__ready')) {
-						let browserDataType = this.get('browserDataType');
+						let topDataType = this.get('topDataType');
 						let isVersionGrouped = this.get('isVersionGrouped');
 						let selectedItem = this.get('selectedItem');
 						let breakdown = this.get('breakdown');
 
 						// please uncomment this line when real api is ready..
-						// http.fetchTopPlatformBrowserStats(browserDataType, isVersionGrouped, selectedItem, breakdown);
+						// http.fetchTopPlatformBrowserStats(topDataType, isVersionGrouped, selectedItem, breakdown);
 
 						// please remove below lines when real api is ready..
 						let fetchedData = [];
@@ -704,7 +704,7 @@
 										break;
 								}
 							} else {
-								if (browserDataType === 'platform') {
+								if (topDataType === 'platform') {
 									fetchedData = [
 										{
 											platform: 'Android',
@@ -906,7 +906,7 @@
 					} else if (key === 'country') {
 						result.icon = `/flags/${one[key]}.svg`;
 					} else if (key === 'name') {
-						result.icon = this.get('browserDataType') === 'platform' ? `/browsers/${one[key]}@2x.png` : `/platforms/${one[key]}@2x.png`;
+						result.icon = this.get('topDataType') === 'platform' ? `/browsers/${one[key]}@2x.png` : `/platforms/${one[key]}@2x.png`;
 					}
 				});
 
