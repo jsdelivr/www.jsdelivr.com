@@ -84,7 +84,7 @@
 			</div>
 
 			<div class="table-wrapper_content_scrollable">
-				{{#each topListByPage as one}}
+				{{#each topListByPage.list as one}}
 					<div class="table-wrapper_content_row">
 						<div class="cell cell_one">
 							<span class="platform-index">{{ index + 1 }}</span>
@@ -112,7 +112,8 @@
 			<div class="table-wrapper_pagination_range">{{ pageRange }}</div>
 
 			<div class="table-wrapper_pagination_ctrls">
-				<button class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-prev" on-click="@this.prevPage()">
+				<button on-click="@this.prevPage()"
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
@@ -139,7 +140,8 @@
 					</div>
 				</div>
 
-				<button class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next" on-click="@this.nextPage()">
+				<button on-click="@this.nextPage()"
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === topListByPage.totalPages}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -191,13 +193,17 @@
 				let page = this.get('page');
 				let pageLimit = parseInt(this.get('pageLimit'));
 				let topList = this.get('topList');
-				let total = topList.length;
+				let totalRows = topList.length;
+				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
 
 				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
-				end = total > end ? end : total;
+				end = totalRows > end ? end : totalRows;
 
-				return topList.slice(start - 1, end);
+				return {
+					totalPages,
+					list: topList.slice(start - 1, end),
+				};
 			},
 		},
 		decorators: {
