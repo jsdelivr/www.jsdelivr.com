@@ -89,7 +89,7 @@
 													{{else}}
 														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
 													{{/if}}
-													<span>{{this[0]}}</span>
+													<span>{{~/providerData[this[0]].name}}</span>
 												</span>
 											{{/each}}
 										</div>
@@ -106,6 +106,7 @@
 </r-page>
 
 <script>
+	const providerData = require('../../../public/json/net-providers.json');
 	const isUrlValid = require('../../../public/js/utils/is-url-valid');
 	const _ = require('../../../public/js/_');
 
@@ -127,6 +128,7 @@
 				detailsDisplaying: false,
 				openedResultsList: [],
 				purgeBtnDisabled: true,
+				providerData,
 			};
 		},
 		oninit () {
