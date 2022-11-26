@@ -108,7 +108,7 @@ module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, perio
 
 	if (selectedItem) {
 		if (selectedItem.version) {
-			url += `/${selectedItem.name.toLowerCase()}/versions/${selectedItem.version}/${breakdown}`;
+			url += `/${selectedItem.name.toLowerCase()}/versions/${selectedItem.version}/countries`;
 		} else {
 			url += `/${selectedItem.name.toLowerCase()}/${breakdown}`;
 		}
