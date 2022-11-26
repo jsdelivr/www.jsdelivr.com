@@ -34,7 +34,7 @@
 								loading="lazy">
 						{{/if}}
 
-						<span class="chosen-name_platform-name">{{ selectedItem.preparedName }}</span>
+						<span class="chosen-name_platform-name">{{ selectedItem.displayName }}</span>
 						&nbsp;
 						<span class="chosen-name_platform-share">({{ selectedItem.share }}%<span>&nbsp;global shares</span>)</span>
 					</div>
@@ -94,9 +94,9 @@
 							{{/if}}
 
 							{{#if !selectedItem}}
-								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ preparedName }}</span>
+								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ displayName }}</span>
 							{{else}}
-								<span class="platform-name">{{ preparedName }}</span>
+								<span class="platform-name">{{ displayName }}</span>
 							{{/if}}
 						</div>
 
@@ -255,8 +255,9 @@
 				let result = {
 					index,
 					name: one.name,
-					preparedName: '',
+					version: one.version,
 					share: one.share,
+					displayName: '',
 				};
 
 				Object.keys(one).forEach((key) => {
@@ -267,11 +268,11 @@
 					// set name
 					if (key === 'country') {
 						let country = countries.find(country => country.code === one[key]);
-						result.preparedName += country?.name + ' ';
+						result.displayName += country?.name + ' ';
 					} else if (key === 'versionName') {
-						result.preparedName += `(${one[key]}) `;
+						result.displayName += `(${one[key]}) `;
 					} else {
-						result.preparedName += one[key] + ' ';
+						result.displayName += one[key] + ' ';
 					}
 
 					// set icon
@@ -294,7 +295,7 @@
 					}
 				});
 
-				result.preparedName = result.preparedName.trim();
+				result.displayName = result.displayName.trim();
 				result.changes = ((one.share / one.prev.share - 1) * 100).toFixed(2);
 
 				return result;
