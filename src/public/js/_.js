@@ -1017,4 +1017,15 @@ module.exports = {
 				return 'G-Core';
 		}
 	},
+
+	translatePeriodsToSNotation (period) {
+		switch (period) {
+			case 'month':
+				return 's-month';
+			case 'quarter':
+				return 's-quarter';
+			case 'year':
+				return 's-year';
+		}
+	}
 };
