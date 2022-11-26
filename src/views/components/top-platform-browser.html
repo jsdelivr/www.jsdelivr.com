@@ -248,6 +248,8 @@
 		},
 		processFetchedData (data) {
 			let topDataType = this.get('topDataType');
+			let breakdown = this.get('breakdown');
+			let selectedItem = this.get('selectedItem');
 
 			data = data.map((one, index) => {
 				let result = {
@@ -272,14 +274,22 @@
 					}
 
 					// set icon
-					if (key === 'platform') {
-						result.icon = `/platforms/${one[key]}@2x.png`;
-					} else if (key === 'browser') {
-						result.icon = `/browsers/${one[key]}@2x.png`;
-					} else if (key === 'country') {
-						result.icon = `/flags/${one[key]}.svg`;
-					} else if (key === 'name') {
-						result.icon = topDataType === 'platform' ? `/platforms/${one[key]}@2x.png` : `/browsers/${one[key]}@2x.png`;
+					if (selectedItem) {
+						switch (breakdown) {
+							case 'platforms':
+								result.icon = `/platforms/${one[key]}@2x.png`;
+								break;
+							case 'versions':
+								result.icon = `/browsers/${selectedItem.name}@2x.png`;
+								break;
+							case 'countries':
+								result.icon = `/flags/${one[key]}.svg`;
+								break;
+						}
+					} else {
+						if (key === 'name') {
+							result.icon = topDataType === 'platform' ? `/platforms/${one[key]}@2x.png` : `/browsers/${one[key]}@2x.png`;
+						}
 					}
 				});
 
