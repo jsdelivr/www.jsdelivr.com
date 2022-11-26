@@ -47,7 +47,7 @@
 							aria-expanded="false">
 
 							<span class="breakdown">
-								{{ breakdownList[breakdown] }}
+								{{ breakdownList[breakdownIdx].name }}
 								<span>&nbsp;breakdown</span>
 							</span>
 
@@ -55,8 +55,14 @@
 						</button>
 
 						<ul class="dropdown-menu">
-							{{#each breakdownList}}
-								<li><a on-click="@this.set('breakdown', @key)">{{ . }}<span>&nbsp;breakdown</span></a></li>
+							{{#each breakdownList:idx}}
+								<li>
+									<a on-click="@this.handleBreakdownSelect(idx, breakdownList[idx].disabled)"
+										class="{{#if breakdownList[idx].disabled}}disabled{{/if}}">
+										{{ breakdownList[idx].name }}
+										<span>&nbsp;breakdown</span>
+									</a>
+								</li>
 							{{/each}}
 						</ul>
 					</div>
@@ -158,26 +164,6 @@
 
 	component.exports = {
 		computed: {
-			breakdownList () {
-				let topDataType = this.get('topDataType');
-				let result = [];
-
-				if (topDataType === 'platform') {
-					result = {
-						countries: 'Country',
-						browsers: 'Browser',
-						versions: 'Version',
-					};
-				} else if (topDataType === 'browser') {
-					result = {
-						countries: 'Country',
-						platforms: 'Platform',
-						versions: 'Version',
-					};
-				}
-
-				return result;
-			},
 			pageRange () {
 				let page = this.get('page');
 				let pageLimit = parseInt(this.get('pageLimit'));
@@ -215,6 +201,7 @@
 				isVersionGrouped: true,
 				selectedItem: '',
 				breakdown: 'countries',
+				breakdownIdx: 0,
 				breakdownList: [],
 				page: 1,
 				pageLimit: '10',
@@ -226,6 +213,41 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.observe('topDataType selectedItem country', () => {
+					let topDataType = this.get('topDataType');
+					let selectedItem = this.get('selectedItem');
+					let country = this.get('country');
+
+					let breakdownList = [
+						{
+							value: 'countries',
+							name: 'Country',
+							disabled: country || false,
+						},
+						{
+							value: topDataType === 'platform' ? 'browsers' : 'platforms',
+							name: topDataType === 'platform' ? 'Browser' : 'Platform',
+							disabled: selectedItem.version || false,
+						},
+						{
+							value: 'versions',
+							name: 'Version',
+							disabled: selectedItem.version || false,
+						},
+					];
+
+					this.set('breakdownList', breakdownList);
+				});
+
+				this.observe('breakdownIdx', (breakdownIdx) => {
+					let breakdownList = this.get('breakdownList');
+					let { value, disabled } = breakdownList[breakdownIdx];
+
+					if (!disabled) {
+						this.set('breakdown', value);
+					}
+				});
+
 				this.observe('isVersionGrouped selectedItem breakdown __ready period country', function () {
 					if (this.get('__ready')) {
 						let topDataType = this.get('topDataType');
@@ -314,6 +336,11 @@
 			let total = this.get('topList').length;
 
 			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
+		},
+		handleBreakdownSelect (idx, isDisabled) {
+			if (isDisabled) { return; }
+
+			this.set('breakdownIdx', idx);
 		},
 	};
 </script>
