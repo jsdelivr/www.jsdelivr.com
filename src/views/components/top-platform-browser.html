@@ -34,7 +34,7 @@
 								loading="lazy">
 						{{/if}}
 
-						<span class="chosen-name_platform-name">{{ selectedItem.name }}</span>
+						<span class="chosen-name_platform-name">{{ selectedItem.preparedName }}</span>
 						&nbsp;
 						<span class="chosen-name_platform-share">({{ selectedItem.share }}%<span>&nbsp;global shares</span>)</span>
 					</div>
@@ -94,9 +94,9 @@
 							{{/if}}
 
 							{{#if !selectedItem}}
-								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ name }}</span>
+								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ preparedName }}</span>
 							{{else}}
-								<span class="platform-name">{{ name }}</span>
+								<span class="platform-name">{{ preparedName }}</span>
 							{{/if}}
 						</div>
 
@@ -254,7 +254,8 @@
 			data = data.map((one, index) => {
 				let result = {
 					index,
-					name: '',
+					name: one.name,
+					preparedName: '',
 					share: one.share,
 				};
 
@@ -266,11 +267,11 @@
 					// set name
 					if (key === 'country') {
 						let country = countries.find(country => country.code === one[key]);
-						result.name += country?.name + ' ';
+						result.preparedName += country?.name + ' ';
 					} else if (key === 'versionName') {
-						result.name += `(${one[key]}) `;
+						result.preparedName += `(${one[key]}) `;
 					} else {
-						result.name += one[key] + ' ';
+						result.preparedName += one[key] + ' ';
 					}
 
 					// set icon
@@ -280,7 +281,7 @@
 								result.icon = `/platforms/${one[key]}@2x.png`;
 								break;
 							case 'versions':
-								result.icon = `/browsers/${selectedItem.name.replace(/[0-9]/g, '').trim()}@2x.png`;
+								result.icon = `/browsers/${selectedItem.name}@2x.png`;
 								break;
 							case 'countries':
 								result.icon = `/flags/${one[key]}.svg`;
@@ -293,7 +294,7 @@
 					}
 				});
 
-				result.name = result.name.trim();
+				result.preparedName = result.preparedName.trim();
 				result.changes = ((one.share / one.prev.share - 1) * 100).toFixed(2);
 
 				return result;
