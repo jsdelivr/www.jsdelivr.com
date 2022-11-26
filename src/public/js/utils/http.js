@@ -98,20 +98,16 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
  ***/
 module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, period, selectedItem, breakdown, country) => {
 	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
+	let body = { period: _.translatePeriodsToSNotation(period) };
 
-	if (isVersionGrouped) {
-		if (selectedItem) {
-			url += `${selectedItem.name}/${breakdown}`;
-		}
-	} else {
-		if (selectedItem) {
-			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
-		} else {
-			url += '/versions';
-		}
+
+	if (selectedItem) {
+		url += `/${selectedItem.name.toLowerCase()}/${breakdown}`;
+	} else if (!isVersionGrouped) {
+		url += '/versions';
 	}
 
-	return _.makeHTTPRequest({ url });
+	return _.makeHTTPRequest({ url, body });
 };
 
 module.exports.fetchProjectStats = (type, period) => {
