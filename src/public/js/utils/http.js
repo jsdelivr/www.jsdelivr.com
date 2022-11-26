@@ -96,8 +96,8 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
  * @param selectedItem - selected certain platform or browser value:string
  * @param breakdown - country breakdown, browser breakdown, platform, version breakdown
  ***/
-module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, selectedItem, breakdown) => {
-	let url = dataType === 'platform' ? '/v1/stats/platforms' : '/v1/stats/browsers';
+module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, period, selectedItem, breakdown, country) => {
+	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
 
 	if (isVersionGrouped) {
 		if (selectedItem) {
