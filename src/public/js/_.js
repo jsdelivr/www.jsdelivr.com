@@ -1027,5 +1027,5 @@ module.exports = {
 			case 'year':
 				return 's-year';
 		}
-	}
+	},
 };
