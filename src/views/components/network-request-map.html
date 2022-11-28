@@ -39,26 +39,13 @@
 	const http = require('../../public/js/utils/http.js');
 	const _ = require('../../public/js/_.js');
 	const geoData = require('../../public/json/geodata.json');
-	const netProviders = require('../../public/json/net-providers.json');
+	const providersJson = require('../../public/json/net-providers.json');
 
 	component.exports = {
 		data () {
 			return {
 				type: 'hits',
-				switchList: [
-					{
-						name: 'Cloudflare',
-						active: true,
-					},
-					{
-						name: 'Fastly',
-						active: true,
-					},
-					{
-						name: 'G-Core',
-						active: true,
-					},
-				],
+				switchList: [],
 				hitsData: [],
 			};
 		},
@@ -68,10 +55,21 @@
 					if (this.get('__ready')) {
 						let period = this.get('period');
 
-						http.fetchNetworkProviderStatsByCountry(period)
-							.then((res) => {
-								this.set('hitsData', res.countries);
+
+						http.fetchNetworkProviderStatsByCountry(period).then((response) => {
+							this.set('hitsData', response.countries);
+
+							let providers = Object.values(response.hits.countries)[0].providers;
+
+							let oldSwitchList = this.get('switchList');
+							let newSwitchList = Object.keys(providers).map((key) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
+
+								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
 							});
+
+							this.set('switchList', newSwitchList);
+						});
 					}
 				});
 
@@ -128,7 +126,7 @@
 					let hitsTotal = 0;
 					let bandwidthTotal = 0;
 					Object.keys(countryStat.hits.providers).forEach((providerCode) => {
-						let provider = netProviders[providerCode];
+						let provider = providersJson[providerCode];
 						let switchOne = switchList.find(one => one.name === provider.name);
 
 						if (!switchOne.active) { return; }
@@ -138,7 +136,7 @@
 					});
 
 					Object.keys(countryStat.bandwidth.providers).forEach((providerCode) => {
-						let provider = netProviders[providerCode];
+						let provider = providersJson[providerCode];
 						let switchOne = switchList.find(one => one.name === provider.name);
 
 						if (!switchOne.active) { return; }
