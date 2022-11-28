@@ -158,6 +158,7 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const countries = require('../../public/json/countries.json');
 	const tooltip = require('../../public/js/decorators/tooltip');
@@ -318,7 +319,7 @@
 				});
 
 				result.displayName = result.displayName.trim();
-				result.changes = ((one.share / one.prev.share - 1) * 100).toFixed(2);
+				result.changes = _.calculateGrowth(one.share, one.prev.share);
 
 				return result;
 			});
