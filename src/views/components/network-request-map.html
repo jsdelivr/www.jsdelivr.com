@@ -40,6 +40,8 @@
 	const _ = require('../../public/js/_.js');
 	const geoData = require('../../public/json/geodata.json');
 	const providersJson = require('../../public/json/net-providers.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 
 	component.exports = {
 		data () {
@@ -55,7 +57,6 @@
 				this.observe('period __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
-
 
 						http.fetchNetworkProviderStatsByCountry(period).then(({ hits, bandwidth }) => {
 							this.set('hitsData', hits);
@@ -103,8 +104,7 @@
 			}
 		},
 		onrender () {
-			this.observe('hitsData bandwidthData type switchList', function () {
-				let $this = this;
+			this.observe('hitsData bandwidthData type switchList screenWidth', () => {
 				let svg = d3.select('#hits-map');
 				let legendSvg = d3.select('#map-legend');
 
@@ -306,7 +306,7 @@
 							.append('img')
 							.attr('src', '/img/statistics/close.svg')
 							.on('click', () => {
-								$this.hideTooltip();
+								this.hideTooltip();
 							});
 
 						switchList.forEach((one) => {
@@ -389,6 +389,9 @@
 					svg.call(zoom);
 				}
 			});
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		calcRatio (hits, bandwidth) {
 			return hits ? _.formatToShortNumber(bandwidth / hits) : 0;
