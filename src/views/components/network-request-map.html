@@ -7,18 +7,25 @@
 			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
 		</div>
 	</div>
+
 	<div class="map-wrapper">
-		<div class="switch-block">
-			{{#each switchList}}
-				<div class="switch-item">
-					<label class="switch">
-						<input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
+		<div class="switchers-block">
+			{{#each switchList:index}}
+				<div class="switchers-block_item {{#if switchList[index].disabled}}disabled{{/if}}">
+					<label class="switchers-block_item_switch">
+						<input
+							class="{{name}}"
+							type="checkbox"
+							on-click="@this.set('switchList['+@index+'].active', !active)"
+							disabled="{{switchList[index].disabled}}"
+							checked>
 						<span class="slider round"></span>
-					</label>
-					<span class="name">{{name}}</span>
+						</label>
+						<span class="switchers-block_item_name">{{name}}</span>
 				</div>
 			{{/each}}
 		</div>
+
 		<div class="hits-map-block">
 			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
 			<svg id="map-legend"></svg>
@@ -66,6 +73,32 @@
 								this.set('hitsData', res.countries);
 							});
 					}
+				});
+
+				this.observe('switchList', (switchList) => {
+					let disabledSwitches = switchList.filter(s => s.active === false).length;
+					let switchListLength = switchList.length;
+					let updatedSwitchList = [];
+
+					if (disabledSwitches === switchListLength - 1) {
+						updatedSwitchList = switchList.map((switchItem) => {
+							if (switchItem.active) {
+								switchItem.disabled = true;
+							} else {
+								switchItem.disabled = false;
+							}
+
+							return switchItem;
+						});
+					} else {
+						updatedSwitchList = switchList.map((switchItem) => {
+							switchItem.disabled = false;
+
+							return switchItem;
+						});
+					}
+
+					this.set('switchList', updatedSwitchList);
 				});
 			}
 		},
