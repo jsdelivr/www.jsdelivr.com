@@ -873,12 +873,13 @@ module.exports = {
 				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
 			}
 
-			let lineColorsArr = [ '#F6821F', '#FF282D', '#A234D2', 'green' ];
+			let lineColorsArr = [ '#F6821F', '#FF282D', '#A234D2', 'green', '#3370EB' ];
 			let lineColorsMask = {
 				CF: lineColorsArr[0],
 				FY: lineColorsArr[1],
 				GC: lineColorsArr[2],
 				QT: lineColorsArr[3],
+				BY: lineColorsArr[4],
 			};
 
 			let dataset = {
@@ -1018,6 +1019,8 @@ module.exports = {
 				return 'G-Core';
 			case 'QT':
 				return 'Quantil';
+			case 'BY':
+				return 'Bunny';
 		}
 	},
 
