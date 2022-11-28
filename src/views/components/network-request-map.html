@@ -46,7 +46,8 @@
 			return {
 				type: 'hits',
 				switchList: [],
-				hitsData: [],
+				hitsData: {},
+				bandwidthData: {},
 			};
 		},
 		oninit () {
@@ -56,10 +57,11 @@
 						let period = this.get('period');
 
 
-						http.fetchNetworkProviderStatsByCountry(period).then((response) => {
-							this.set('hitsData', response.countries);
+						http.fetchNetworkProviderStatsByCountry(period).then(({ hits, bandwidth }) => {
+							this.set('hitsData', hits);
+							this.set('bandwidthData', bandwidth);
 
-							let providers = Object.values(response.hits.countries)[0].providers;
+							let providers = Object.values(hits.countries)[0].providers;
 
 							let oldSwitchList = this.get('switchList');
 							let newSwitchList = Object.keys(providers).map((key) => {
@@ -101,51 +103,55 @@
 			}
 		},
 		onrender () {
-			this.observe('hitsData type switchList', function () {
+			this.observe('hitsData bandwidthData type switchList', function () {
 				let $this = this;
 				let svg = d3.select('#hits-map');
 				let legendSvg = d3.select('#map-legend');
 
 				if (!svg || !this.get('__ready')) { return; }
 
+				let hitsData = this.get('hitsData');
+				let bandwidthData = this.get('bandwidthData');
+				let switchList = this.get('switchList');
+				let type = this.get('type');
+
+				if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
+
 				svg.selectAll('*').remove();
 				legendSvg.selectAll('*').remove();
 
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
-
-				let hitsData = this.get('hitsData') ?? {};
-				let switchList = this.get('switchList');
-				let type = this.get('type');
 				let data = {};
 
-				Object.keys(hitsData).forEach((key) => {
-					let countryStat = hitsData[key];
-
+				Object.keys(hitsData.countries).forEach((key) => {
+					let countryHitsStat = hitsData.countries[key];
+					let countryBandwidthStat = bandwidthData.countries[key];
 					let ratioList = {};
-					let hitsTotal = 0;
-					let bandwidthTotal = 0;
-					Object.keys(countryStat.hits.providers).forEach((providerCode) => {
+					let hitsByCountryTotal = 0;
+					let bandwidthByCountryTotal = 0;
+
+					Object.keys(countryHitsStat.providers).forEach((providerCode) => {
 						let provider = providersJson[providerCode];
 						let switchOne = switchList.find(one => one.name === provider.name);
 
 						if (!switchOne.active) { return; }
 
-						ratioList[provider.name] = this.calcRatio(countryStat.hits.providers[providerCode], countryStat.bandwidth.providers[providerCode]);
-						hitsTotal += countryStat.hits.providers[providerCode];
+						ratioList[provider.name] = this.calcRatio(countryHitsStat.providers[providerCode].total, countryBandwidthStat.providers[providerCode].total);
+						hitsByCountryTotal += countryHitsStat.providers[providerCode].total;
 					});
 
-					Object.keys(countryStat.bandwidth.providers).forEach((providerCode) => {
+					Object.keys(countryBandwidthStat.providers).forEach((providerCode) => {
 						let provider = providersJson[providerCode];
 						let switchOne = switchList.find(one => one.name === provider.name);
 
 						if (!switchOne.active) { return; }
 
-						bandwidthTotal += countryStat.bandwidth.providers[providerCode];
+						bandwidthByCountryTotal += countryBandwidthStat.providers[providerCode].total;
 					});
 
-					data[key] = countryStat[type];
-					data[key].total = type === 'hits' ? hitsTotal : bandwidthTotal;
+					data[key] = countryHitsStat;
+					data[key].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
 					data[key].ratio = ratioList;
 				});
 
