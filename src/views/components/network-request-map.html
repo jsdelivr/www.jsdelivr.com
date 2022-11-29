@@ -114,6 +114,7 @@
 				let bandwidthData = this.get('bandwidthData');
 				let switchList = this.get('switchList');
 				let type = this.get('type');
+				let screenWidth = this.get('screenWidth');
 
 				if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
 
@@ -181,7 +182,7 @@
 
 				let defs = '';
 
-				if (_.isMobileScreen() || _.isTabletScreen()) {
+				if (screenWidth < 768) {
 					defs = legendSvg.append('defs');
 				} else {
 					defs = svg.append('defs');
@@ -200,7 +201,7 @@
 					y: (height + 420) / 2,
 				};
 
-				if (_.isMobileScreen() || _.isTabletScreen()) {
+				if (screenWidth < 768) {
 					let legendSvgWidth = parseInt(legendSvg.style('width').replace('px', ''));
 					legendSvg.append('rect')
 						.attr('transform', `rotate(-180, ${legendSvgWidth / 2}, 5)`)
@@ -262,7 +263,7 @@
 				let projection = d3.geoMercator()
 					.scale(width / 2.5 / Math.PI)
 					.center([ 0, 20 ])
-					.translate(_.isMobileScreen() || _.isTabletScreen() ? [ width / 2, height / 2 ] : [ width / 2 - 100, height / 2 + 50 ]);
+					.translate(screenWidth < 768 ? [ width / 2, height / 2 ] : [ width / 2 - 100, height / 2 + 50 ]);
 
 
 				// Draw the map
@@ -342,7 +343,7 @@
 					});
 
 
-				if (!_.isMobileScreen() && !_.isTabletScreen()) {
+				if (screenWidth > 768) {
 					mapContainer.on('mouseout', () => {
 						this.hideTooltip();
 					});
