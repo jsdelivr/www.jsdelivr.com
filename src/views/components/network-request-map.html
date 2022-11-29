@@ -54,6 +54,7 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				// fetch data
 				this.observe('period __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
@@ -76,6 +77,7 @@
 					}
 				});
 
+				// handle switchList logic
 				this.observe('switchList', (switchList) => {
 					let disabledSwitches = switchList.filter(s => s.active === false).length;
 					let switchListLength = switchList.length;
@@ -101,71 +103,85 @@
 
 					this.set('switchList', updatedSwitchList);
 				});
+
+				// prepare data for the Map
+				this.observe('hitsData bandwidthData type switchList', () => {
+					let preparedMapData = {
+						dataByCountries: {},
+						min: 0,
+						max: 0,
+						switchList: [],
+					};
+					let hitsData = this.get('hitsData');
+					let bandwidthData = this.get('bandwidthData');
+					let switchList = this.get('switchList');
+					let type = this.get('type');
+
+					if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
+
+					Object.keys(hitsData.countries).forEach((countryAsKey) => {
+						let countryHitsStat = hitsData.countries[countryAsKey];
+						let countryBandwidthStat = bandwidthData.countries[countryAsKey];
+						let ratioList = {};
+						let hitsByCountryTotal = 0;
+						let bandwidthByCountryTotal = 0;
+
+						Object.keys(countryHitsStat.providers).forEach((providerCode) => {
+							let provider = providersJson[providerCode];
+							let switchOne = switchList.find(one => one.name === provider.name);
+
+							if (!switchOne.active) { return; }
+
+							ratioList[provider.name] = this.calcRatio(countryHitsStat.providers[providerCode].total, countryBandwidthStat.providers[providerCode].total);
+							hitsByCountryTotal += countryHitsStat.providers[providerCode].total;
+						});
+
+						Object.keys(countryBandwidthStat.providers).forEach((providerCode) => {
+							let provider = providersJson[providerCode];
+							let switchOne = switchList.find(one => one.name === provider.name);
+
+							if (!switchOne.active) { return; }
+
+							bandwidthByCountryTotal += countryBandwidthStat.providers[providerCode].total;
+						});
+
+						preparedMapData.dataByCountries[countryAsKey] = countryHitsStat;
+						preparedMapData.dataByCountries[countryAsKey].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
+						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
+					});
+
+					preparedMapData.min = _.getValueByMagnitude(
+						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
+						'floor'
+					);
+
+					preparedMapData.max = _.getValueByMagnitude(
+						Math.max(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
+						'ceil',
+						1
+					);
+
+					preparedMapData.switchList = switchList;
+
+					this.set('preparedMapData', preparedMapData);
+				});
 			}
 		},
 		onrender () {
-			this.observe('hitsData bandwidthData type switchList screenWidth', () => {
+			// draw the Map
+			this.observe('preparedMapData screenWidth', () => {
 				let svg = d3.select('#hits-map');
 				let legendSvg = d3.select('#map-legend');
-
-				if (!svg || !this.get('__ready')) { return; }
-
-				let hitsData = this.get('hitsData');
-				let bandwidthData = this.get('bandwidthData');
-				let switchList = this.get('switchList');
-				let type = this.get('type');
+				let { min, max, dataByCountries, switchList } = this.get('preparedMapData');
 				let screenWidth = this.get('screenWidth');
 
-				if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
+				if (!svg || !this.get('__ready')) { return; }
 
 				svg.selectAll('*').remove();
 				legendSvg.selectAll('*').remove();
 
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
-				let data = {};
-
-				Object.keys(hitsData.countries).forEach((key) => {
-					let countryHitsStat = hitsData.countries[key];
-					let countryBandwidthStat = bandwidthData.countries[key];
-					let ratioList = {};
-					let hitsByCountryTotal = 0;
-					let bandwidthByCountryTotal = 0;
-
-					Object.keys(countryHitsStat.providers).forEach((providerCode) => {
-						let provider = providersJson[providerCode];
-						let switchOne = switchList.find(one => one.name === provider.name);
-
-						if (!switchOne.active) { return; }
-
-						ratioList[provider.name] = this.calcRatio(countryHitsStat.providers[providerCode].total, countryBandwidthStat.providers[providerCode].total);
-						hitsByCountryTotal += countryHitsStat.providers[providerCode].total;
-					});
-
-					Object.keys(countryBandwidthStat.providers).forEach((providerCode) => {
-						let provider = providersJson[providerCode];
-						let switchOne = switchList.find(one => one.name === provider.name);
-
-						if (!switchOne.active) { return; }
-
-						bandwidthByCountryTotal += countryBandwidthStat.providers[providerCode].total;
-					});
-
-					data[key] = countryHitsStat;
-					data[key].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
-					data[key].ratio = ratioList;
-				});
-
-
-				let min = _.getValueByMagnitude(
-					Math.min(...Object.keys(data).map(key => data[key].total)),
-					'floor'
-				);
-				let max = _.getValueByMagnitude(
-					Math.max(...Object.keys(data).map(key => data[key].total)),
-					'ceil',
-					1
-				);
 
 				let legendColorRange = [ '#A2ECF6', '#65D69E', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
 				let domainValues = d3.range(legendColorRange.length - 1)
@@ -277,12 +293,12 @@
 					.attr('fill', (d) => {
 						let countryCode = d.id;
 
-						if (!data[countryCode]) {
+						if (!dataByCountries[countryCode]) {
 							// console.log('geo country');
 							// console.log(d);
 						}
 
-						return colorScale(data[countryCode] ? data[countryCode].total : null);
+						return colorScale(dataByCountries[countryCode] ? dataByCountries[countryCode].total : null);
 					})
 					.attr('stroke', 'white')
 					.attr('stroke-width', '1px')
@@ -314,8 +330,8 @@
 						switchList.forEach((one) => {
 							if (!one.active) { return; }
 
-							let statsInfo = data[d.id] ? _.formatNumberWithSpace(data[d.id].total) : 0;
-							let ratio = data[d.id] ? data[d.id].ratio[one.name] : 0;
+							let statsInfo = dataByCountries[d.id] ? _.formatNumberWithSpace(dataByCountries[d.id].total) : 0;
+							let ratio = dataByCountries[d.id] ? dataByCountries[d.id].ratio[one.name] : 0;
 
 							let statsDiv = d3.select('#tooltip')
 								.append('div')
@@ -390,7 +406,7 @@
 
 					svg.call(zoom);
 				}
-			});
+			}, { init: false });
 
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
