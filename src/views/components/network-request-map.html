@@ -108,8 +108,8 @@
 				this.observe('hitsData bandwidthData type switchList', () => {
 					let preparedMapData = {
 						dataByCountries: {},
-						min: 0,
-						max: 0,
+						minMapValue: 0,
+						maxMapValue: 0,
 						switchList: [],
 					};
 					let hitsData = this.get('hitsData');
@@ -150,12 +150,12 @@
 						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
 					});
 
-					preparedMapData.min = _.getValueByMagnitude(
+					preparedMapData.minMapValue = _.getValueByMagnitude(
 						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'floor'
 					);
 
-					preparedMapData.max = _.getValueByMagnitude(
+					preparedMapData.maxMapValue = _.getValueByMagnitude(
 						Math.max(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'ceil',
 						1
@@ -170,9 +170,10 @@
 		onrender () {
 			// draw the Map
 			this.observe('preparedMapData screenWidth', () => {
+				let legendColorRange = [ '#A2ECF6', '#65D69E', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
 				let svg = d3.select('#hits-map');
 				let legendSvg = d3.select('#map-legend');
-				let { min, max, dataByCountries, switchList } = this.get('preparedMapData');
+				let { minMapValue, maxMapValue, dataByCountries, switchList } = this.get('preparedMapData');
 				let screenWidth = this.get('screenWidth');
 
 				if (!svg || !this.get('__ready')) { return; }
@@ -182,13 +183,11 @@
 
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
+				let domainValues = d3.range(legendColorRange.length - 1).map((index) => {
+					return minMapValue + index * Math.ceil((maxMapValue - minMapValue) / legendColorRange.length);
+				});
 
-				let legendColorRange = [ '#A2ECF6', '#65D69E', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
-				let domainValues = d3.range(legendColorRange.length - 1)
-					.map((index) => {
-						return min + index * Math.ceil((max - min) / legendColorRange.length);
-					});
-				domainValues = [ ...domainValues, max ];
+				domainValues = [ ...domainValues, maxMapValue ];
 
 				let colorScale = d3.scaleLinear()
 					.domain(domainValues)
@@ -204,8 +203,8 @@
 					defs = svg.append('defs');
 				}
 
-				let linearGradient = defs.append('linearGradient')
-					.attr('id', 'linear-gradient');
+				let linearGradient = defs.append('linearGradient').attr('id', 'linear-gradient');
+
 				linearGradient.selectAll('stop')
 					.data(colorScale.range())
 					.enter().append('stop')
@@ -243,7 +242,7 @@
 						.style('font-size', '12px')
 						.style('line-height', '16px')
 						.text((d, index) => {
-							let value = min + index * (max - min) / (legendColorRange.length - 1);
+							let value = minMapValue + index * (maxMapValue - minMapValue) / (legendColorRange.length - 1);
 							return _.formatToShortNumber(value);
 						});
 				} else {
@@ -269,7 +268,7 @@
 						})
 						.style('fill', 'black')
 						.text((d, index) => {
-							let value = min + index * (max - min) / (legendColorRange.length - 1);
+							let value = minMapValue + index * (maxMapValue - minMapValue) / (legendColorRange.length - 1);
 							return value > 1e9 ? _.convertBytesToUnits(value, 'GB') + 'G' : value;
 						});
 				}
