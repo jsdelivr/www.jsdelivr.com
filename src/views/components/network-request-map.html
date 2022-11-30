@@ -28,8 +28,12 @@
 
 		<div class="hits-map-block">
 			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
+
 			<div class="hits-map-block_legend">
-				<div class="hits-map-block_legend_bar"></div>
+				{{#if legendAxisTicks.length}}
+					<div class="hits-map-block_legend_bar"></div>
+				{{/if}}
+
 				<div class="hits-map-block_legend_axis">
 					{{#each legendAxisTicks}}
 						<div class="hits-map-block_legend_axis_tick">{{this}}</div>
@@ -218,9 +222,9 @@
 						result.push(_.formatToShortNumber(rawValue, ' '));
 					} else {
 						if (type === 'bandwidth') {
-							result.push(_.convertBytesToUnits(rawValue, 'GB') + ' G');
+							result.push(_.formatNumber(_.convertBytesToUnits(rawValue, 'GB')) + ' G');
 						} else {
-							result.push(Math.round(rawValue));
+							result.push(_.formatNumber(Math.round(rawValue)));
 						}
 					}
 
