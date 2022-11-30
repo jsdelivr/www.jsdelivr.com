@@ -61,6 +61,7 @@
 	const providersJson = require('../../public/json/net-providers.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
+	const LEGEND_AXIS_TICKS_AMOUNT = 7;
 
 	component.exports = {
 		data () {
@@ -190,8 +191,10 @@
 					// prepare data for the Legend axis of the Map
 					preparedMapData.legendAxisValues = [];
 
-					for (let i = 7; i >= 0; i--) {
-						preparedMapData.legendAxisValues.push(preparedMapData.minMapValue + i * (preparedMapData.maxMapValue - preparedMapData.minMapValue) / 7);
+					for (let i = LEGEND_AXIS_TICKS_AMOUNT; i >= 0; i--) {
+						let tickValue = preparedMapData.minMapValue + i * (preparedMapData.maxMapValue - preparedMapData.minMapValue) / LEGEND_AXIS_TICKS_AMOUNT;
+
+						preparedMapData.legendAxisValues.push(tickValue);
 					}
 
 					// set prepared data
