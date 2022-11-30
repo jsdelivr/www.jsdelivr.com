@@ -340,7 +340,7 @@ module.exports = {
 		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
-	formatToShortNumber (num) {
+	formatToShortNumber (num, delimiter = '') {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -356,7 +356,7 @@ module.exports = {
 			return num >= item.value;
 		});
 
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + delimiter + item.symbol : '0';
 	},
 
 	makeHTTPRequest (obj) {
