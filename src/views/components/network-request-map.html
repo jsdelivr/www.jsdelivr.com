@@ -28,8 +28,17 @@
 
 		<div class="hits-map-block">
 			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
-			<!-- <svg id="map-legend"></svg> -->
+			<div class="hits-map-block_legend">
+				<div class="hits-map-block_legend_bar"></div>
+				<div class="hits-map-block_legend_axis">
+					{{#each legendAxisTicks}}
+						<div class="hits-map-block_legend_axis_tick">{{this}}</div>
+					{{/each}}
+				</div>
+			</div>
+
 			<div id="tooltip"></div>
+
 			<div class="map-overlay"></div>
 
 			<div class="hits-map-block_ctrls">
@@ -60,6 +69,8 @@
 				switchList: [],
 				hitsData: {},
 				bandwidthData: {},
+				legendAxisTicks: [],
+				screenWidth: 0,
 			};
 		},
 		oninit () {
@@ -129,6 +140,7 @@
 
 					if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
 
+					// prepare countries total, data by countries etc.
 					Object.keys(hitsData.countries).forEach((countryAsKey) => {
 						let countryHitsStat = hitsData.countries[countryAsKey];
 						let countryBandwidthStat = bandwidthData.countries[countryAsKey];
@@ -160,6 +172,7 @@
 						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
 					});
 
+					// calculate min max values present on the Map
 					preparedMapData.minMapValue = _.getValueByMagnitude(
 						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'floor'
@@ -171,25 +184,49 @@
 						1
 					);
 
+					// prepare additional data
 					preparedMapData.switchList = switchList;
+					preparedMapData.type = type;
 
+					// prepare data for the Legend axis of the Map
+					preparedMapData.legendAxisValues = [];
+
+					for (let i = 7; i >= 0; i--) {
+						preparedMapData.legendAxisValues.push(preparedMapData.minMapValue + i * (preparedMapData.maxMapValue - preparedMapData.minMapValue) / 7);
+					}
+
+					// set prepared data
 					this.set('preparedMapData', preparedMapData);
 				});
 			}
 		},
 		onrender () {
-			// draw the Map
+			// draw the Map and the Legend
 			this.observe('preparedMapData screenWidth', () => {
 				let legendColorRange = [ '#a2ecf6', '#65d69e', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
 				let svg = d3.select('#hits-map');
-				let legendSvg = d3.select('#map-legend');
-				let { minMapValue, maxMapValue, dataByCountries, switchList } = this.get('preparedMapData');
+				let { minMapValue, maxMapValue, dataByCountries, switchList, legendAxisValues, type } = this.get('preparedMapData');
 				let screenWidth = this.get('screenWidth');
+
+				let legendAxisTicks = legendAxisValues.reduce((result, rawValue) => {
+					if (screenWidth < 768) {
+						result.push(_.formatToShortNumber(rawValue));
+					} else {
+						if (type === 'bandwidth') {
+							result.push(_.convertBytesToUnits(rawValue, 'GB') + 'G');
+						} else {
+							result.push(rawValue);
+						}
+					}
+
+					return result;
+				}, []);
+
+				this.set('legendAxisTicks', legendAxisTicks);
 
 				if (!svg || !this.get('__ready')) { return; }
 
 				svg.selectAll('*').remove();
-				legendSvg.selectAll('*').remove();
 
 				let width = parseInt(svg.style('width').replace('px', ''));
 				let height = parseInt(svg.style('height').replace('px', ''));
@@ -205,86 +242,7 @@
 					.clamp(true)
 					.unknown('#ccc');
 
-				let defs = '';
-
-				if (screenWidth < 768) {
-					defs = legendSvg.append('defs');
-				} else {
-					defs = svg.append('defs');
-				}
-
-				let linearGradient = defs.append('linearGradient').attr('id', 'linear-gradient');
-
-				linearGradient.selectAll('stop')
-					.data(colorScale.range())
-					.enter().append('stop')
-					.attr('offset', (d, i) => { return i / (colorScale.range().length - 1); })
-					.attr('stop-color', (d) => { return d; });
-
-				let legendPosition = {
-					x: width - 130,
-					y: (height + 420) / 2,
-				};
-
-				if (screenWidth < 768) {
-					let legendSvgWidth = parseInt(legendSvg.style('width').replace('px', ''));
-					legendSvg.append('rect')
-						.attr('transform', `rotate(-180, ${legendSvgWidth / 2}, 5)`)
-						.attr('x', 0)
-						.attr('y', 0)
-						.attr('width', legendSvgWidth)
-						.attr('height', 10)
-						.attr('rx', 6)
-						.attr('ry', 6)
-						.style('fill', 'url(#linear-gradient)');
-
-					legendSvg.append('g')
-						.attr('class', 'legend-text')
-						.selectAll('text')
-						.data(colorScale.range())
-						.enter()
-						.append('text')
-						.attr('x', (d, index) => {
-							return (legendSvgWidth - 20) - index * (legendSvgWidth - 20) / (legendColorRange.length - 1);
-						})
-						.attr('y', 30)
-						.style('fill', '#5C667A')
-						.style('font-size', '12px')
-						.style('line-height', '16px')
-						.text((d, index) => {
-							let value = minMapValue + index * (maxMapValue - minMapValue) / (legendColorRange.length - 1);
-							return _.formatToShortNumber(value);
-						});
-				} else {
-					svg.append('rect')
-						.attr('transform', `rotate(-90, ${legendPosition.x}, ${legendPosition.y})`)
-						.attr('x', legendPosition.x)
-						.attr('y', legendPosition.y)
-						.attr('width', 420)
-						.attr('height', 16)
-						.attr('rx', 6)
-						.attr('ry', 6)
-						.style('fill', 'url(#linear-gradient)');
-
-					svg.append('g')
-						.attr('class', 'legend-text')
-						.selectAll('text')
-						.data(colorScale.range())
-						.enter()
-						.append('text')
-						.attr('x', legendPosition.x + 30)
-						.attr('y', (d, index) => {
-							return legendPosition.y - index * 420 / (legendColorRange.length - 1);
-						})
-						.style('fill', 'black')
-						.text((d, index) => {
-							let value = minMapValue + index * (maxMapValue - minMapValue) / (legendColorRange.length - 1);
-							return value > 1e9 ? _.convertBytesToUnits(value, 'GB') + 'G' : value;
-						});
-				}
-
 				// Map and projection
-				// let path = d3.geoPath();
 				let projection = d3.geoMercator()
 					.scale(width / 2.5 / Math.PI)
 					.center([ 0, 20 ])
@@ -412,5 +370,5 @@
 
 			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
 		},
-};
+	};
 </script>
