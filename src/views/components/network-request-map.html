@@ -28,9 +28,19 @@
 
 		<div class="hits-map-block">
 			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
-			<svg id="map-legend"></svg>
+			<!-- <svg id="map-legend"></svg> -->
 			<div id="tooltip"></div>
 			<div class="map-overlay"></div>
+
+			<div class="hits-map-block_ctrls">
+				<div class="hits-map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
+					<img src="{{@shared.assetsHost}}/img/statistics/plus.svg">
+				</div>
+
+				<div class="hits-map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
+					<img src="{{@shared.assetsHost}}/img/statistics/minus.svg">
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -286,9 +296,9 @@
 					.selectAll('path')
 					.data(geoData.features)
 					.join('path')
-				// draw each country
+					// draw each country
 					.attr('d', d3.geoPath().projection(projection))
-				// set the color of each country
+					// set the color of each country
 					.attr('fill', (d) => {
 						let countryCode = d.id;
 
@@ -369,39 +379,6 @@
 							svg.selectAll('g')
 								.attr('transform', event.transform);
 						});
-					svg.append('rect')
-						.attr('x', width - 45)
-						.attr('y', height - 80)
-						.attr('width', 32)
-						.attr('height', 32)
-						.attr('fill', '#fff')
-						.attr('rx', 6)
-						.attr('ry', 6);
-
-					svg.append('image')
-						.attr('href', '/img/statistics/plus.svg')
-						.attr('x', width - 37)
-						.attr('y', height - 74)
-						.on('click', () => {
-							zoom.scaleBy(svg.transition().duration(750), 1.4);
-						});
-
-					svg.append('rect')
-						.attr('x', width - 45)
-						.attr('y', height - 55)
-						.attr('width', 32)
-						.attr('height', 32)
-						.attr('fill', '#fff')
-						.attr('rx', 6)
-						.attr('ry', 6);
-
-					svg.append('image')
-						.attr('href', '/img/statistics/minus.svg')
-						.attr('x', width - 37)
-						.attr('y', height - 46)
-						.on('click', () => {
-							zoom.scaleBy(svg.transition().duration(750), 0.6);
-						});
 
 					svg.call(zoom);
 				}
@@ -419,6 +396,21 @@
 
 			d3.select('#tooltip')
 				.style('display', 'none');
+		},
+		handleMapZoom (zoomDirection = 'in', scale = 1.4, duration = 750) {
+			let mapSvg = d3.select('#hits-map');
+			let zoom = d3.zoom()
+				.scaleExtent([ 1, 8 ])
+				.on('zoom', (event) => {
+					mapSvg.selectAll('g')
+						.attr('transform', event.transform);
+				});
+
+			if (zoomDirection === 'out') {
+				scale = 0.6;
+			}
+
+			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
 		},
 };
 </script>
