@@ -70,7 +70,6 @@
 				hitsData: {},
 				bandwidthData: {},
 				legendAxisTicks: [],
-				screenWidth: 0,
 			};
 		},
 		oninit () {
@@ -204,9 +203,12 @@
 			// draw the Map and the Legend
 			this.observe('preparedMapData screenWidth', () => {
 				let legendColorRange = [ '#a2ecf6', '#65d69e', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
+				let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
 				let svg = d3.select('#hits-map');
+
+				if (!svg || !this.get('__ready') || !screenWidth) { return; }
+
 				let { minMapValue, maxMapValue, dataByCountries, switchList, legendAxisValues, type } = this.get('preparedMapData');
-				let screenWidth = this.get('screenWidth');
 
 				let legendAxisTicks = legendAxisValues.reduce((result, rawValue) => {
 					if (screenWidth < 768) {
@@ -215,7 +217,7 @@
 						if (type === 'bandwidth') {
 							result.push(_.convertBytesToUnits(rawValue, 'GB') + 'G');
 						} else {
-							result.push(rawValue);
+							result.push(Math.round(rawValue));
 						}
 					}
 
@@ -223,8 +225,6 @@
 				}, []);
 
 				this.set('legendAxisTicks', legendAxisTicks);
-
-				if (!svg || !this.get('__ready')) { return; }
 
 				svg.selectAll('*').remove();
 
