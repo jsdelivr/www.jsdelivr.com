@@ -307,22 +307,8 @@
 					})
 					.attr('stroke', 'white')
 					.attr('stroke-width', '1px')
-					.on('click', (event, d) => {
-						if (screenWidth < 768 && this.get('currentCountryId') !== d.id) {
-							this.showTooltip(event, d);
-							this.set('currentCountryId', d.id);
-						}
-					})
-					.on('mouseover mousemove', (event, d) => {
-						if (screenWidth >= 768 && this.get('currentCountryId') !== d.id) {
-							this.showTooltip(event, d);
-							this.set('currentCountryId', d.id);
-						}
-					})
-					.on('mouseout', () => {
-						this.hideTooltip();
-					});
-
+					.on('mouseover click', (event, d) => this.showTooltip(event, d))
+					.on('mouseout', () => this.hideTooltip());
 
 				if (screenWidth > 768) {
 					mapContainer.on('mouseout', () => {
@@ -373,6 +359,12 @@
 			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
 		},
 		showTooltip (event, data) {
+			let currentCountryId = this.get('currentCountryId');
+
+			if (currentCountryId === data.id) { return; }
+
+			this.set('currentCountryId', data.id);
+
 			let { dataByCountries, switchList } = this.get('preparedMapData');
 			let { layerX, layerY, type: eventType } = event;
 			let { properties: { name: countryName }, id: countryId } = data;
