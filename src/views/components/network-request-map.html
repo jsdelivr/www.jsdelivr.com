@@ -381,14 +381,20 @@
 
 			tooltipEl.style.opacity = 1;
 			tooltipEl.style.zIndex = 2;
-			tooltipEl.style.top = `${layerY + 10}px`;
-			tooltipEl.style.left = `${layerX + 10}px`;
 
 			if (eventType === 'click') {
 				let mapOverlayEl = document.querySelector('.map-block_map-wrapper_overlay');
 
 				mapOverlayEl.style.opacity = 0.6;
 				mapOverlayEl.style.zIndex = 1;
+
+				tooltipEl.style.top = '50%';
+				tooltipEl.style.left = '50%';
+				tooltipEl.style.transform = 'translate(-50%, -50%)';
+			} else {
+				tooltipEl.style.top = `${layerY + 10}px`;
+				tooltipEl.style.left = `${layerX + 10}px`;
+				tooltipEl.style.transform = 'none';
 			}
 
 			switchList.forEach((provider) => {
