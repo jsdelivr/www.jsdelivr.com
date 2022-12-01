@@ -387,8 +387,23 @@
 				tooltipEl.style.left = '50%';
 				tooltipEl.style.transform = 'translate(-50%, -50%)';
 			} else {
-				tooltipEl.style.top = `${layerY + 10}px`;
-				tooltipEl.style.left = `${layerX + 10}px`;
+				let svgMapEl = document.querySelector('#hits-map');
+				let { clientWidth: svgElWidth, clientHeight: svgElHeight } = svgMapEl;
+
+				if (layerY > svgElHeight / 2) {
+					tooltipEl.style.bottom = `${svgElHeight - layerY}px`;
+					tooltipEl.style.top = 'auto';
+				} else {
+					tooltipEl.style.top = `${layerY + 10}px`;
+					tooltipEl.style.bottom = 'auto';
+				}
+
+				if (layerX + tooltipEl.clientWidth > svgElWidth && layerX - tooltipEl.clientWidth - 10 > 0) {
+					tooltipEl.style.left = `${layerX - tooltipEl.clientWidth - 10}px`;
+				} else {
+					tooltipEl.style.left = `${layerX + 10}px`;
+				}
+
 				tooltipEl.style.transform = 'none';
 			}
 
