@@ -27,7 +27,7 @@
 		</div>
 
 		<div class="hits-map-block">
-			<svg id="hits-map" xmlns="http://www.w3.org/2000/svg"></svg>
+			<svg id="hits-map" class="hits-map-block_map" xmlns="http://www.w3.org/2000/svg"></svg>
 
 			<div class="hits-map-block_legend">
 				{{#if legendAxisTicks.length}}
@@ -41,7 +41,8 @@
 				</div>
 			</div>
 
-			<div id="tooltip"></div>
+			<!-- <div id="tooltip"></div> -->
+			<div class="hits-map-block_tooltip"></div>
 
 			<div class="map-overlay"></div>
 
@@ -255,7 +256,6 @@
 					.center([ 0, 20 ])
 					.translate(screenWidth < 768 ? [ mapSvgWidth / 2, mapSvgHeight / 2 ] : [ mapSvgWidth / 2 - 100, mapSvgHeight / 2 + 50 ]);
 
-
 				// Draw the map
 				let mapContainer = svg.append('g')
 					.selectAll('path')
@@ -276,60 +276,71 @@
 					})
 					.attr('stroke', 'white')
 					.attr('stroke-width', '1px')
+					.on('click', (event, d) => {
+						if (screenWidth < 768 && this.get('currentCountryId') !== d.id) {
+							this.showTooltipOnClick(event, d);
+							this.set('currentCountryId', d.id);
+						}
+					})
 					.on('mouseover mousemove', (event, d) => {
-						d3.select('#tooltip')
-							.selectAll('*')
-							.remove();
+						if (screenWidth >= 768 && this.get('currentCountryId') !== d.id) {
+							this.showTooltipOnMouseOver(event, d);
+							this.set('currentCountryId', d.id);
+						}
 
-						/** *map overlay for mobile***/
-						d3.select('.map-overlay')
-							.style('width', `${mapSvgWidth}px`)
-							.style('height', `${mapSvgHeight}px`)
-							.style('display', 'block');
+						// d3.select('#tooltip')
+						// 	.selectAll('*')
+						// 	.remove();
 
-						/** *tooltip for map***/
-						d3.select('#tooltip')
-							.style('left', `${event.layerX + 10}px`)
-							.style('top', `${event.layerY + 10}px`)
-							.style('display', 'block')
-							.append('div')
-							.attr('class', 'title')
-							.text(d.properties.name)
-							.append('img')
-							.attr('src', '/img/statistics/close.svg')
-							.on('click', () => {
-								this.hideTooltip();
-							});
+						// /** *map overlay for mobile***/
+						// d3.select('.map-overlay')
+						// 	.style('width', `${mapSvgWidth}px`)
+						// 	.style('height', `${mapSvgHeight}px`)
+						// 	.style('display', 'block');
 
-						switchList.forEach((one) => {
-							if (!one.active) { return; }
+						// /** *tooltip for map***/
+						// d3.select('#tooltip')
+						// 	.style('left', `${event.layerX + 10}px`)
+						// 	.style('top', `${event.layerY + 10}px`)
+						// 	.style('display', 'block')
+						// 	.append('div')
+						// 	.attr('class', 'title')
+						// 	.text(d.properties.name)
+						// 	.append('img')
+						// 	.attr('src', '/img/statistics/close.svg')
+						// 	.on('click', () => {
+						// 		this.hideTooltip();
+						// 	});
 
-							let statsInfo = dataByCountries[d.id] ? _.formatNumberWithSpace(dataByCountries[d.id].total) : 0;
-							let ratio = dataByCountries[d.id] ? dataByCountries[d.id].ratio[one.name] : 0;
+						// switchList.forEach((one) => {
+						// 	if (!one.active) { return; }
 
-							let statsDiv = d3.select('#tooltip')
-								.append('div')
-								.attr('class', `stats ${one.name}`);
+						// 	let statsInfo = dataByCountries[d.id] ? _.formatNumberWithSpace(dataByCountries[d.id].total) : 0;
+						// 	let ratio = dataByCountries[d.id] ? dataByCountries[d.id].ratio[one.name] : 0;
 
-							let textContainer = statsDiv.append('div')
-								.attr('class', 'text-container');
-							let textDiv = textContainer.append('div')
-								.attr('class', 'text');
-							textDiv.append('span')
-								.text(one.name);
+						// 	let statsDiv = d3.select('#tooltip')
+						// 		.append('div')
+						// 		.attr('class', `stats ${one.name}`);
 
-							textDiv.append('span')
-								.text(statsInfo);
+						// 	let textContainer = statsDiv.append('div')
+						// 		.attr('class', 'text-container');
+						// 	let textDiv = textContainer.append('div')
+						// 		.attr('class', 'text');
+						// 	textDiv.append('span')
+						// 		.text(one.name);
 
-							textDiv = textContainer.append('div')
-								.attr('class', 'text');
+						// 	textDiv.append('span')
+						// 		.text(statsInfo);
 
-							textDiv.append('span')
-								.text('Average file size');
+						// 	textDiv = textContainer.append('div')
+						// 		.attr('class', 'text');
 
-							textDiv.append('span')
-								.text(ratio);
-						});
+						// 	textDiv.append('span')
+						// 		.text('Average file size');
+
+						// 	textDiv.append('span')
+						// 		.text(ratio);
+						// });
 					});
 
 
@@ -376,6 +387,18 @@
 			}
 
 			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
+		},
+		showTooltipOnClick (event, data) {
+			console.log("++++ showTooltipOnClick");
+			console.log("++++ event", event);
+			console.log("++++ data", data);
+			console.log("________________");
+		},
+		showTooltipOnMouseOver (event, data) {
+			console.log("++++ showTooltipOnMouseOver");
+			console.log("++++ event", event);
+			console.log("++++ data", data);
+			console.log("________________");
 		},
 	};
 </script>
