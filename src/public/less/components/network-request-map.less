@@ -201,7 +201,7 @@
 			}
 		}
 
-		.hits-map-block {
+		.map-block {
 			position: relative;
 			height: auto;
 			margin-top: 16px;
@@ -211,17 +211,106 @@
 				margin-top: 0;
 			}
 
-			&_map {
-				height: 380px;
-				border: 1px solid #cfd6dd;
-				border-radius: 8px;
-				width: 100%;
+			&_map-wrapper {
+				position: relative;
 
-				@media (min-width: @screen-sm-min) {
-					height: 687px;
-					border: 0;
-					border-radius: 0;
-					padding: 20px 204px 20px 20px;
+				&_map {
+					height: 380px;
+					border: 1px solid #cfd6dd;
+					border-radius: 8px;
+					width: 100%;
+
+					@media (min-width: @screen-sm-min) {
+						height: 687px;
+						border: 0;
+						border-radius: 0;
+						padding: 20px 204px 20px 20px;
+					}
+				}
+
+				&_overlay {
+					position: absolute;
+					left: 0;
+					top: 0;
+					background: #111a2c;
+					opacity: 0;
+					border-radius: 8px;
+					z-index: -1;
+					width: 100%;
+					height: 380px;
+
+					@media (min-width: @screen-sm-min) {
+						height: 687px;
+					}
+				}
+
+				&_tooltip {
+					position: absolute;
+					display: flex;
+					flex-direction: column;
+					row-gap: 18px;
+					width: 280px;
+					padding: 18px;
+					background: #fff;
+					box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
+					border-radius: 6px;
+					opacity: 0;
+					z-index: -1;
+
+					&_head {
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+						font-size: 14px;
+						line-height: 20px;
+						color: #17233b;
+
+						>img {
+							cursor: pointer;
+						}
+					}
+
+					&_body {
+						display: flex;
+						flex-direction: column;
+						row-gap: 12px;
+
+						&_row {
+							display: flex;
+							align-items: center;
+							column-gap: 8px;
+							width: 100%;
+
+							&_box {
+								height: 16px;
+								width: 16px;
+								border-radius: 2px;
+							}
+
+							&_content {
+								display: flex;
+								flex-direction: column;
+								width: 100%;
+
+								&_main-data, &_file-size {
+									display: flex;
+									justify-content: space-between;
+									align-items: center;
+								}
+
+								&_main-data {
+									font-size: 14px;
+									line-height: 20px;
+									color: #5c667a;
+								}
+
+								&_file-size {
+									font-size: 11px;
+									color: #07080a;
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -274,70 +363,6 @@
 				}
 			}
 
-			&_tooltip {
-				position: absolute;
-				display: flex;
-				flex-direction: column;
-				row-gap: 18px;
-				width: 280px;
-				padding: 18px;
-				background: #fff;
-				box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
-				border-radius: 6px;
-
-				&_head {
-					display: flex;
-					align-items: center;
-					justify-content: space-between;
-					font-size: 14px;
-					line-height: 20px;
-					color: #17233b;
-				}
-
-				&_body {
-					display: flex;
-					flex-direction: column;
-					row-gap: 12px;
-
-					&_row {
-						display: flex;
-						align-items: center;
-						column-gap: 8px;
-						width: 100%;
-
-						&_box {
-							background: #f00;// TODO: replace or remove
-							height: 16px;
-							width: 16px;
-							border-radius: 2px;
-						}
-
-						&_content {
-							display: flex;
-							flex-direction: column;
-							width: 100%;
-
-							&_main-data, &_file-size {
-								display: flex;
-								justify-content: space-between;
-								align-items: center;
-							}
-
-							&_main-data {
-								font-size: 14px;
-								line-height: 20px;
-								color: #5c667a;
-							}
-
-							&_file-size {
-								font-size: 11px;
-								color: #07080a;
-							}
-						}
-					}
-				}
-			}
-
 			&_ctrls {
 				display: flex;
 				flex-direction: column;
@@ -363,21 +388,6 @@
 
 				&_plus {
 					box-shadow: inset 0 -1px 0 #dfe3e7;
-				}
-			}
-
-			// TODO: review code below
-			.map-overlay {
-				position: absolute;
-				left: 0;
-				top: 0;
-				background: #111a2c;
-				opacity: .6;
-				border-radius: 8px;
-				z-index: 1;
-
-				@media (min-width: @screen-sm-min) {
-					display: none !important;
 				}
 			}
 		}

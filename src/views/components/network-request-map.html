@@ -26,56 +26,61 @@
 			{{/each}}
 		</div>
 
-		<div class="hits-map-block">
-			<svg id="hits-map" class="hits-map-block_map" xmlns="http://www.w3.org/2000/svg"></svg>
+		<div class="map-block">
+			<div class="map-block_map-wrapper">
+				<svg id="hits-map" class="map-block_map-wrapper_map" xmlns="http://www.w3.org/2000/svg"></svg>
 
-			<div class="hits-map-block_legend">
-				{{#if legendAxisTicks.length}}
-					<div class="hits-map-block_legend_bar"></div>
-				{{/if}}
+				<div class="map-block_map-wrapper_overlay"></div>
 
-				<div class="hits-map-block_legend_axis">
-					{{#each legendAxisTicks}}
-						<div class="hits-map-block_legend_axis_tick">{{this}}</div>
-					{{/each}}
-				</div>
-			</div>
+				<div class="map-block_map-wrapper_tooltip">
+					<div class="map-block_map-wrapper_tooltip_head">
+						<span class="map-block_map-wrapper_tooltip_head_name">{{tooltipData.countryName}}</span>
+						<img on-click="@this.hideTooltip()"
+							width="20"
+							height="20"
+							src="{{@shared.assetsHost}}/img/statistics/close.svg">
+					</div>
 
-			<div class="hits-map-block_tooltip">
-				<div class="hits-map-block_tooltip_head">
-					<span class="hits-map-block_tooltip_head_name">{{tooltipData.countryName}}</span>
-					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/close.svg">
-				</div>
+					<div class="map-block_map-wrapper_tooltip_body">
+						{{#each tooltipData.providersData}}
+							<div class="map-block_map-wrapper_tooltip_body_row">
+								<div class="map-block_map-wrapper_tooltip_body_row_box" style="background: {{this.providerBoxColor}}"></div>
 
-				<div class="hits-map-block_tooltip_body">
-					{{#each tooltipData.providersData}}
-						<div class="hits-map-block_tooltip_body_row">
-							<div class="hits-map-block_tooltip_body_row_box"></div>
+								<div class="map-block_map-wrapper_tooltip_body_row_content">
+									<div class="map-block_map-wrapper_tooltip_body_row_content_main-data">
+										<span>{{ this.provider.name }}</span>
+										<span>{{ this.statsInfo }}</span>
+									</div>
 
-							<div class="hits-map-block_tooltip_body_row_content">
-								<div class="hits-map-block_tooltip_body_row_content_main-data">
-									<span>{{ this.provider.name }}</span>
-									<span>{{ this.statsInfo }}</span>
-								</div>
-
-								<div class="hits-map-block_tooltip_body_row_content_file-size">
-									<span>Average file size</span>
-									<span>{{ this.ratio }}</span>
+									<div class="map-block_map-wrapper_tooltip_body_row_content_file-size">
+										<span>Average file size</span>
+										<span>{{ this.ratio }}</span>
+									</div>
 								</div>
 							</div>
-						</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="map-block_legend">
+				{{#if legendAxisTicks.length}}
+					<div class="map-block_legend_bar"></div>
+				{{/if}}
+
+				<div class="map-block_legend_axis">
+					{{#each legendAxisTicks}}
+						<div class="map-block_legend_axis_tick">{{this}}</div>
 					{{/each}}
 				</div>
 			</div>
 
-			<div class="map-overlay"></div>
-
-			<div class="hits-map-block_ctrls">
-				<div class="hits-map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
+			<div class="map-block_ctrls">
+				<div class="map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
 					<img src="{{@shared.assetsHost}}/img/statistics/plus.svg">
 				</div>
 
-				<div class="hits-map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
+				<div class="map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
 					<img src="{{@shared.assetsHost}}/img/statistics/minus.svg">
 				</div>
 			</div>
@@ -101,6 +106,7 @@
 				bandwidthData: {},
 				legendAxisTicks: [],
 				tooltipData: {},
+				currentCountryId: null,
 			};
 		},
 		oninit () {
@@ -338,11 +344,15 @@
 			return hits ? _.formatToShortNumber(bandwidth / hits) : 0;
 		},
 		hideTooltip () {
-			d3.select('.map-overlay')
-				.style('display', 'none');
+			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
+			let mapOverlayEl = document.querySelector('.map-block_map-wrapper_overlay');
 
-			d3.select('#tooltip')
-				.style('display', 'none');
+			tooltipEl.style.opacity = 0;
+			tooltipEl.style.zIndex = -1;
+			mapOverlayEl.style.opacity = 0;
+			mapOverlayEl.style.zIndex = -1;
+			this.set('tooltipData', {});
+			this.set('currentCountryId', null);
 		},
 		handleMapZoom (zoomDirection = 'in', scale = 1.4, duration = 750) {
 			let mapSvg = d3.select('#hits-map');
@@ -361,28 +371,38 @@
 		},
 		showTooltip (event, data) {
 			let { dataByCountries, switchList } = this.get('preparedMapData');
-			let { layerX, layerY } = event;
+			let { layerX, layerY, type: eventType } = event;
 			let { properties: { name: countryName }, id: countryId } = data;
-			let tooltipEl = document.querySelector('.hits-map-block_tooltip');
-
-			tooltipEl.style.top = `${layerY - 10}px`;
-			tooltipEl.style.left = `${layerX - 10}px`;
-
+			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
 			let tooltipData = {
 				countryName,
 				providersData: [],
 			};
+
+			tooltipEl.style.opacity = 1;
+			tooltipEl.style.zIndex = 2;
+			tooltipEl.style.top = `${layerY + 10}px`;
+			tooltipEl.style.left = `${layerX + 10}px`;
+
+			if (eventType === 'click') {
+				let mapOverlayEl = document.querySelector('.map-block_map-wrapper_overlay');
+
+				mapOverlayEl.style.opacity = 0.6;
+				mapOverlayEl.style.zIndex = 1;
+			}
 
 			switchList.forEach((provider) => {
 				if (!provider.active) { return; }
 
 				let statsInfo = dataByCountries[countryId] ? _.formatNumberWithSpace(dataByCountries[countryId].total) : 0;
 				let ratio = dataByCountries[countryId] ? dataByCountries[countryId].ratio[provider.name] : 0;
+				let providerBoxColor = providersJson[provider.shortName].color;
 
 				tooltipData.providersData.push({
 					statsInfo,
 					provider,
 					ratio,
+					providerBoxColor,
 				});
 			});
 
