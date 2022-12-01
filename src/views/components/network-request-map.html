@@ -41,8 +41,32 @@
 				</div>
 			</div>
 
-			<!-- <div id="tooltip"></div> -->
-			<div class="hits-map-block_tooltip"></div>
+			<div class="hits-map-block_tooltip">
+				<div class="hits-map-block_tooltip_head">
+					<span class="hits-map-block_tooltip_head_name">{{tooltipData.countryName}}</span>
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/close.svg">
+				</div>
+
+				<div class="hits-map-block_tooltip_body">
+					{{#each tooltipData.providersData}}
+						<div class="hits-map-block_tooltip_body_row">
+							<div class="hits-map-block_tooltip_body_row_box"></div>
+
+							<div class="hits-map-block_tooltip_body_row_content">
+								<div class="hits-map-block_tooltip_body_row_content_main-data">
+									<span>{{ this.provider.name }}</span>
+									<span>{{ this.statsInfo }}</span>
+								</div>
+
+								<div class="hits-map-block_tooltip_body_row_content_file-size">
+									<span>Average file size</span>
+									<span>{{ this.ratio }}</span>
+								</div>
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			</div>
 
 			<div class="map-overlay"></div>
 
@@ -76,6 +100,7 @@
 				hitsData: {},
 				bandwidthData: {},
 				legendAxisTicks: [],
+				tooltipData: {},
 			};
 		},
 		oninit () {
@@ -216,7 +241,7 @@
 
 				if (!svg || !this.get('__ready') || !screenWidth) { return; }
 
-				let { minMapValue, maxMapValue, dataByCountries, switchList, legendAxisValues, type } = this.get('preparedMapData');
+				let { minMapValue, maxMapValue, dataByCountries, legendAxisValues, type } = this.get('preparedMapData');
 
 				let legendAxisTicks = legendAxisValues.reduce((result, rawValue) => {
 					if (screenWidth < 768) {
@@ -278,69 +303,15 @@
 					.attr('stroke-width', '1px')
 					.on('click', (event, d) => {
 						if (screenWidth < 768 && this.get('currentCountryId') !== d.id) {
-							this.showTooltipOnClick(event, d);
+							this.showTooltip(event, d);
 							this.set('currentCountryId', d.id);
 						}
 					})
 					.on('mouseover mousemove', (event, d) => {
 						if (screenWidth >= 768 && this.get('currentCountryId') !== d.id) {
-							this.showTooltipOnMouseOver(event, d);
+							this.showTooltip(event, d);
 							this.set('currentCountryId', d.id);
 						}
-
-						// d3.select('#tooltip')
-						// 	.selectAll('*')
-						// 	.remove();
-
-						// /** *map overlay for mobile***/
-						// d3.select('.map-overlay')
-						// 	.style('width', `${mapSvgWidth}px`)
-						// 	.style('height', `${mapSvgHeight}px`)
-						// 	.style('display', 'block');
-
-						// /** *tooltip for map***/
-						// d3.select('#tooltip')
-						// 	.style('left', `${event.layerX + 10}px`)
-						// 	.style('top', `${event.layerY + 10}px`)
-						// 	.style('display', 'block')
-						// 	.append('div')
-						// 	.attr('class', 'title')
-						// 	.text(d.properties.name)
-						// 	.append('img')
-						// 	.attr('src', '/img/statistics/close.svg')
-						// 	.on('click', () => {
-						// 		this.hideTooltip();
-						// 	});
-
-						// switchList.forEach((one) => {
-						// 	if (!one.active) { return; }
-
-						// 	let statsInfo = dataByCountries[d.id] ? _.formatNumberWithSpace(dataByCountries[d.id].total) : 0;
-						// 	let ratio = dataByCountries[d.id] ? dataByCountries[d.id].ratio[one.name] : 0;
-
-						// 	let statsDiv = d3.select('#tooltip')
-						// 		.append('div')
-						// 		.attr('class', `stats ${one.name}`);
-
-						// 	let textContainer = statsDiv.append('div')
-						// 		.attr('class', 'text-container');
-						// 	let textDiv = textContainer.append('div')
-						// 		.attr('class', 'text');
-						// 	textDiv.append('span')
-						// 		.text(one.name);
-
-						// 	textDiv.append('span')
-						// 		.text(statsInfo);
-
-						// 	textDiv = textContainer.append('div')
-						// 		.attr('class', 'text');
-
-						// 	textDiv.append('span')
-						// 		.text('Average file size');
-
-						// 	textDiv.append('span')
-						// 		.text(ratio);
-						// });
 					});
 
 
@@ -388,17 +359,34 @@
 
 			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
 		},
-		showTooltipOnClick (event, data) {
-			console.log("++++ showTooltipOnClick");
-			console.log("++++ event", event);
-			console.log("++++ data", data);
-			console.log("________________");
-		},
-		showTooltipOnMouseOver (event, data) {
-			console.log("++++ showTooltipOnMouseOver");
-			console.log("++++ event", event);
-			console.log("++++ data", data);
-			console.log("________________");
+		showTooltip (event, data) {
+			let { dataByCountries, switchList } = this.get('preparedMapData');
+			let { layerX, layerY } = event;
+			let { properties: { name: countryName }, id: countryId } = data;
+			let tooltipEl = document.querySelector('.hits-map-block_tooltip');
+
+			tooltipEl.style.top = `${layerY - 10}px`;
+			tooltipEl.style.left = `${layerX - 10}px`;
+
+			let tooltipData = {
+				countryName,
+				providersData: [],
+			};
+
+			switchList.forEach((provider) => {
+				if (!provider.active) { return; }
+
+				let statsInfo = dataByCountries[countryId] ? _.formatNumberWithSpace(dataByCountries[countryId].total) : 0;
+				let ratio = dataByCountries[countryId] ? dataByCountries[countryId].ratio[provider.name] : 0;
+
+				tooltipData.providersData.push({
+					statsInfo,
+					provider,
+					ratio,
+				});
+			});
+
+			this.set('tooltipData', tooltipData);
 		},
 	};
 </script>
