@@ -1,3 +1,4 @@
+const providersJson = require('../../public/json/net-providers.json');
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
@@ -873,19 +874,11 @@ module.exports = {
 				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
 			}
 
-			let lineColorsArr = [ '#F6821F', '#FF282D', '#A234D2', 'green', '#3370EB' ];
-			let lineColorsMask = {
-				CF: lineColorsArr[0],
-				FY: lineColorsArr[1],
-				GC: lineColorsArr[2],
-				QT: lineColorsArr[3],
-				BY: lineColorsArr[4],
-			};
-
 			let dataset = {
 				label: module.exports.translateProviderName(providerData.providerName),
 				data: groupedByValues,
-				...module.exports.getLineColorsFromMask(providerData.providerName, lineColorsMask),
+				borderColor: providersJson[providerData.providerName].color,
+				backgroundColor: providersJson[providerData.providerName].color,
 			};
 
 			res.datasets.push(dataset);
