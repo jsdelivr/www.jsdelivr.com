@@ -15,7 +15,7 @@
 				<div class="card-growth">
 					<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
 						<span class="text-table-number">
-							{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth.toFixed(1)}}%
+							{{#if requestsData.growth > 0}}+{{/if}}{{@this.prettifyGrowthToDisplay(requestsData.growth)}}%
 						</span>
 					</div>
 
@@ -40,7 +40,7 @@
 								<div class="percentage-bar_filled" style="width: {{@this.calcPercentage(value, requestsData.total)}}; background: {{color}}"></div>
 							</div>
 
-							<div class="interest text-table-number">{{interest.toFixed(1)}}%</div>
+							<div class="interest text-table-number">{{@this.prettifyGrowthToDisplay(interest)}}%</div>
 						</div>
 					</div>
 				{{/each}}
@@ -64,7 +64,7 @@
 				<div class="card-growth">
 					<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
 						<span class="text-table-number">
-							{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth.toFixed(1)}}%
+							{{#if bandwidthData.growth > 0}}+{{/if}}{{@this.prettifyGrowthToDisplay(bandwidthData.growth)}}%
 						</span>
 					</div>
 
@@ -87,7 +87,7 @@
 								<div class="percentage-bar_filled" style="width: {{ @this.calcPercentage(value, bandwidthData.total) }}; background: {{ color }}"></div>
 							</div>
 
-							<div class="interest text-table-number">{{interest.toFixed(1)}}%</div>
+							<div class="interest text-table-number">{{@this.prettifyGrowthToDisplay(interest)}}%</div>
 						</div>
 					</div>
 				{{/each}}
@@ -182,6 +182,9 @@
 		},
 		prettifyNumbersToDisplay (num) {
 			return _.formatNumberWithSpace(Math.round(num));
+		},
+		prettifyGrowthToDisplay (growth) {
+			return Number(growth) !== 0 ? growth.toFixed(1) : 0;
 		},
 	};
 </script>
