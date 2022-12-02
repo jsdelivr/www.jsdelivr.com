@@ -1002,21 +1002,6 @@ module.exports = {
 		return lineColors;
 	},
 
-	translateProviderName (name) {
-		switch (name) {
-			case 'CF':
-				return 'Cloudflare';
-			case 'FY':
-				return 'Fastly';
-			case 'GC':
-				return 'G-Core';
-			case 'QT':
-				return 'Quantil';
-			case 'BY':
-				return 'Bunny';
-		}
-	},
-
 	translatePeriodsToSNotation (period) {
 		switch (period) {
 			case 'month':
