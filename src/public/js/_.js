@@ -875,7 +875,7 @@ module.exports = {
 			}
 
 			let dataset = {
-				label: module.exports.translateProviderName(providerData.providerName),
+				label: providersJson[providerData.providerName].name,
 				data: groupedByValues,
 				borderColor: providersJson[providerData.providerName].color,
 				backgroundColor: providersJson[providerData.providerName].color,
