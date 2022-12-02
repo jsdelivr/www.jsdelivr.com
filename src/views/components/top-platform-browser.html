@@ -108,7 +108,7 @@
 
 						<div class="cell cell_two text-table-number">{{ share }}%</div>
 
-						<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ toSignedPercentage(changes) }}</div>
+						<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ @this.toSignedPercentage(changes) }}</div>
 					</div>
 				{{/each}}
 			</div>
@@ -207,9 +207,6 @@
 				page: 1,
 				pageLimit: '10',
 				paginationLimits: [ '10', '20', '30', '40' ],
-				toSignedPercentage (num) {
-					return `${num > 0 ? '+' : ''}${num}%`;
-				},
 			};
 		},
 		oninit () {
@@ -342,6 +339,9 @@
 			if (isDisabled) { return; }
 
 			this.set('breakdownIdx', idx);
+		},
+		toSignedPercentage (num) {
+			return `${num > 0 ? '+' : ''}${num}%`;
 		},
 	};
 </script>
