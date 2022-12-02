@@ -310,20 +310,14 @@
 					.on('mouseover click', (event, d) => this.showTooltip(event, d))
 					.on('mouseout', () => this.hideTooltip());
 
-				if (screenWidth > 768) {
-					mapContainer.on('mouseout', () => {
-						this.hideTooltip();
+				let zoom = d3.zoom()
+					.scaleExtent([ 1, 8 ])
+					.on('zoom', (event) => {
+						svg.selectAll('g')
+							.attr('transform', event.transform);
 					});
-				} else {
-					let zoom = d3.zoom()
-						.scaleExtent([ 1, 8 ])
-						.on('zoom', (event) => {
-							svg.selectAll('g')
-								.attr('transform', event.transform);
-						});
 
-					svg.call(zoom);
-				}
+				svg.call(zoom);
 			}, { init: false });
 
 			// detect window resize
