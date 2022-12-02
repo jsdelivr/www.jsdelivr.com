@@ -9,13 +9,13 @@
 				</div>
 
 				<div class="card-main-stat text-table-number">
-					{{this.prettifyNumbersToDisplay(requestsData.total))}}
+					{{@this.prettifyNumbersToDisplay(requestsData.total)}}
 				</div>
 
 				<div class="card-growth">
 					<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
 						<span class="text-table-number">
-							{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth}}%
+							{{#if requestsData.growth > 0}}+{{/if}}{{requestsData.growth.toFixed(1)}}%
 						</span>
 					</div>
 
@@ -33,14 +33,14 @@
 
 						<div class="bandwidth-list_item_provider-stats">
 							<div class="bandwidth-list_item_provider-stats_value text-table-number">
-								{{this.prettifyNumbersToDisplay(value))}}
+								{{@this.prettifyNumbersToDisplay(value)}}
 							</div>
 
 							<div class="percentage-bar">
 								<div class="percentage-bar_filled" style="width: {{@this.calcPercentage(value, requestsData.total)}}; background: {{color}}"></div>
 							</div>
 
-							<div class="interest text-table-number">{{interest}}%</div>
+							<div class="interest text-table-number">{{interest.toFixed(1)}}%</div>
 						</div>
 					</div>
 				{{/each}}
@@ -64,7 +64,7 @@
 				<div class="card-growth">
 					<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
 						<span class="text-table-number">
-							{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth}}%
+							{{#if bandwidthData.growth > 0}}+{{/if}}{{bandwidthData.growth.toFixed(1)}}%
 						</span>
 					</div>
 
@@ -87,7 +87,7 @@
 								<div class="percentage-bar_filled" style="width: {{ @this.calcPercentage(value, bandwidthData.total) }}; background: {{ color }}"></div>
 							</div>
 
-							<div class="interest text-table-number">{{interest}}%</div>
+							<div class="interest text-table-number">{{interest.toFixed(1)}}%</div>
 						</div>
 					</div>
 				{{/each}}
@@ -173,9 +173,7 @@
 			return result;
 		},
 		calcGrowth (cur, prev) {
-			let growth = prev ? (cur - prev) * 100 / prev : 100;
-
-			return growth.toFixed(1);
+			return prev ? (cur - prev) * 100 / prev : 100;
 		},
 		calcPercentage (cur, total) {
 			let percentage = (cur * 100 / total).toFixed(1);
