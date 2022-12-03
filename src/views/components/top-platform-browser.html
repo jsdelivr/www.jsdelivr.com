@@ -90,39 +90,41 @@
 			</div>
 
 			<div class="table-wrapper_content_scrollable">
-				{{#unless pageListOfItems.length}}
-					<div class="table-wrapper_content_no-data">
-						<img
-							width="270"
-							height="148"
-							src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-						<span>No data</span>
-					</div>
-				{{/unless}}
+				{{#if pageListOfItems !== null}}
+					{{#if pageListOfItems.length}}
+						{{#each pageListOfItems:idx}}
+							<div class="table-wrapper_content_row">
+								<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
+									<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
 
-				{{#each pageListOfItems:idx}}
-					<div class="table-wrapper_content_row">
-						<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
-							<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
+									{{#if icon}}
+										<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
+									{{/if}}
 
-							{{#if icon}}
-								<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
-							{{/if}}
+									{{#if !selectedItem}}
+										<span class="platform-name" on-click="@this.set('selectedItem', pageListOfItems[idx])">{{ displayName }}</span>
+									{{else}}
+										<span class="platform-name">{{ displayName }}</span>
+									{{/if}}
+								</div>
 
-							{{#if !selectedItem}}
-								<span class="platform-name" on-click="@this.set('selectedItem', pageListOfItems[idx])">{{ displayName }}</span>
-							{{else}}
-								<span class="platform-name">{{ displayName }}</span>
-							{{/if}}
+								<div class="cell cell_two text-table-number">{{ @this.prettifyNumbersToDisplay(share) }}%</div>
+
+								<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
+									{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(changes)) }}
+								</div>
+							</div>
+						{{/each}}
+					{{else}}
+						<div class="table-wrapper_content_no-data">
+							<img
+								width="270"
+								height="148"
+								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+							<span>No data</span>
 						</div>
-
-						<div class="cell cell_two text-table-number">{{ @this.prettifyNumbersToDisplay(share) }}%</div>
-
-						<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
-							{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(changes)) }}
-						</div>
-					</div>
-				{{/each}}
+					{{/if}}
+				{{/if}}
 			</div>
 		</div>
 
@@ -203,7 +205,7 @@
 				page: 1,
 				pageLimit: 10,
 				paginationLimits: [ 10, 20, 30, 40 ],
-				pageListOfItems: [],
+				pageListOfItems: null,
 			};
 		},
 		oninit () {
