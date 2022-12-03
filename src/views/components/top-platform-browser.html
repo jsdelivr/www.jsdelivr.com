@@ -90,25 +90,27 @@
 			</div>
 
 			<div class="table-wrapper_content_scrollable">
-				{{#each topListByPage.list as one}}
+				{{#each pageListOfItems:idx}}
 					<div class="table-wrapper_content_row">
 						<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
-							<span class="platform-index">{{ index + 1 }}</span>
+							<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
 
 							{{#if icon}}
 								<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
 							{{/if}}
 
 							{{#if !selectedItem}}
-								<span class="platform-name" on-click="@this.set('selectedItem', one)">{{ displayName }}</span>
+								<span class="platform-name" on-click="@this.set('selectedItem', pageListOfItems[idx])">{{ displayName }}</span>
 							{{else}}
 								<span class="platform-name">{{ displayName }}</span>
 							{{/if}}
 						</div>
 
-						<div class="cell cell_two text-table-number">{{ share }}%</div>
+						<div class="cell cell_two text-table-number">{{ @this.prettifyNumbersToDisplay(share) }}%</div>
 
-						<div class="cell cell_three text-table-number {{ changes >= 0? 'positive': 'negative' }}">{{ @this.toSignedPercentage(changes) }}</div>
+						<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
+							{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(changes)) }}
+						</div>
 					</div>
 				{{/each}}
 			</div>
@@ -147,7 +149,7 @@
 				</div>
 
 				<button on-click="@this.nextPage()"
-					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === topListByPage.totalPages}}disabled{{/if}}">
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === totalPages}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -167,7 +169,7 @@
 		computed: {
 			pageRange () {
 				let page = this.get('page');
-				let pageLimit = parseInt(this.get('pageLimit'));
+				let pageLimit = this.get('pageLimit');
 				let total = this.get('topList').length;
 
 				let start = (page - 1) * pageLimit + 1;
@@ -175,22 +177,6 @@
 				end = total > end ? end : total;
 
 				return `Records ${start} - ${end} of ${total}`;
-			},
-			topListByPage () {
-				let page = this.get('page');
-				let pageLimit = parseInt(this.get('pageLimit'));
-				let topList = this.get('topList');
-				let totalRows = topList.length;
-				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
-
-				let start = (page - 1) * pageLimit + 1;
-				let end = start + pageLimit - 1;
-				end = totalRows > end ? end : totalRows;
-
-				return {
-					totalPages,
-					list: topList.slice(start - 1, end),
-				};
 			},
 		},
 		decorators: {
@@ -205,8 +191,9 @@
 				breakdownIdx: 0,
 				breakdownList: [],
 				page: 1,
-				pageLimit: '10',
-				paginationLimits: [ '10', '20', '30', '40' ],
+				pageLimit: 10,
+				paginationLimits: [ 10, 20, 30, 40 ],
+				pageListOfItems: [],
 			};
 		},
 		oninit () {
@@ -256,7 +243,57 @@
 						let country = this.get('country');
 
 						http.fetchTopPlatformBrowserStats(topDataType, isVersionGrouped, period, selectedItem, breakdown, country).then((response) => {
-							this.set('topList', this.processFetchedData(response));
+							let topList = response.map((one, index) => {
+								let result = {
+									index,
+									name: one.name,
+									version: one.version,
+									share: one.share,
+									displayName: '',
+								};
+
+								Object.keys(one).forEach((key) => {
+									if (key === 'share' || key === 'prev' || key === 'links') {
+										return;
+									}
+
+									// set name
+									if (key === 'country') {
+										let country = countries.find(country => country.code === one[key]);
+										result.displayName += country?.name + ' ';
+									} else if (key === 'versionName') {
+										result.displayName += `(${one[key]}) `;
+									} else {
+										result.displayName += one[key] + ' ';
+									}
+
+									// set icon
+									if (selectedItem) {
+										switch (breakdown) {
+											case 'platforms':
+												result.icon = `/platforms/${one[key]}@2x.png`;
+												break;
+											case 'versions':
+												result.icon = topDataType === 'platform' ? `/platforms/${selectedItem.name}@2x.png` : `/browsers/${selectedItem.name}@2x.png`;
+												break;
+											case 'countries':
+												result.icon = `/flags/${one[key]}.svg`;
+												break;
+										}
+									} else {
+										if (key === 'name') {
+											result.icon = topDataType === 'platform' ? `/platforms/${one[key]}@2x.png` : `/browsers/${one[key]}@2x.png`;
+										}
+									}
+								});
+
+								result.displayName = result.displayName.trim();
+								result.changes = _.calculateGrowth(one.share, one.prev.share);
+
+								return result;
+							});
+
+							this.set('topList', topList);
 						});
 					}
 				});
@@ -264,64 +301,24 @@
 				this.observe('pageLimit', () => {
 					this.set('page', 1);
 				}, { init: false });
+
+				this.observe('page pageLimit topList', () => {
+					let page = this.get('page');
+					let pageLimit = this.get('pageLimit');
+					let topList = this.get('topList');
+					let totalRows = topList.length;
+					let totalPages = Math.ceil(totalRows / pageLimit) || 1;
+					let start = (page - 1) * pageLimit + 1;
+					let end = start + pageLimit - 1;
+
+					end = totalRows > end ? end : totalRows;
+
+					let pageListOfItems = topList.slice(start - 1, end);
+
+					this.set('totalPages', totalPages);
+					this.animate('pageListOfItems', pageListOfItems);
+				}, { init: false });
 			}
-		},
-		processFetchedData (data) {
-			let topDataType = this.get('topDataType');
-			let breakdown = this.get('breakdown');
-			let selectedItem = this.get('selectedItem');
-
-			data = data.map((one, index) => {
-				let result = {
-					index,
-					name: one.name,
-					version: one.version,
-					share: one.share,
-					displayName: '',
-				};
-
-				Object.keys(one).forEach((key) => {
-					if (key === 'share' || key === 'prev' || key === 'links') {
-						return;
-					}
-
-					// set name
-					if (key === 'country') {
-						let country = countries.find(country => country.code === one[key]);
-						result.displayName += country?.name + ' ';
-					} else if (key === 'versionName') {
-						result.displayName += `(${one[key]}) `;
-					} else {
-						result.displayName += one[key] + ' ';
-					}
-
-					// set icon
-					if (selectedItem) {
-						switch (breakdown) {
-							case 'platforms':
-								result.icon = `/platforms/${one[key]}@2x.png`;
-								break;
-							case 'versions':
-								result.icon = topDataType === 'platform' ? `/platforms/${selectedItem.name}@2x.png` : `/browsers/${selectedItem.name}@2x.png`;
-								break;
-							case 'countries':
-								result.icon = `/flags/${one[key]}.svg`;
-								break;
-						}
-					} else {
-						if (key === 'name') {
-							result.icon = topDataType === 'platform' ? `/platforms/${one[key]}@2x.png` : `/browsers/${one[key]}@2x.png`;
-						}
-					}
-				});
-
-				result.displayName = result.displayName.trim();
-				result.changes = _.calculateGrowth(one.share, one.prev.share);
-
-				return result;
-			});
-
-			return data;
 		},
 		prevPage () {
 			let page = this.get('page');
@@ -330,7 +327,7 @@
 		},
 		nextPage () {
 			let page = this.get('page');
-			let pageLimit = parseInt(this.get('pageLimit'));
+			let pageLimit = this.get('pageLimit');
 			let total = this.get('topList').length;
 
 			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
@@ -342,6 +339,12 @@
 		},
 		toSignedPercentage (num) {
 			return `${num > 0 ? '+' : ''}${num}%`;
+		},
+		prettifyNumbersToDisplay (num) {
+			return _.formatNumberWithSpace(Math.round(num));
+		},
+		prettifyGrowthToDisplay (growth) {
+			return Number(growth) !== 0 ? Number(growth.toFixed(1)) : 0;
 		},
 	};
 </script>
