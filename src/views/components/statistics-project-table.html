@@ -27,23 +27,25 @@
 			</div>
 
 			<div class="projects-content_table_scrollable">
-				{{#each projectListByPage}}
+				{{#each projectListByPage:idx}}
 					<div class="projects-content_table_row">
 						<div class="cell cell_one">
-							<span class="proj-index">{{id}}</span>
+							<span class="proj-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
 
 							<div class="proj-path">
-								<span class="proj-path_type">{{type}}/</span>
-								<span class="proj-path_name">{{name}}</span>
+								<span class="proj-path_type">{{ type }}/</span>
+								<span class="proj-path_name">{{ name }}</span>
 							</div>
 
-							<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">{{toSignedPercentage(interest)}}</span>
+							<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">
+								{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(interest)) }}
+							</span>
 						</div>
 
 						<div class="cell cell_two">
 							<span>Requests</span>
 							<div class="percentage-bar-container">
-								<div class="text">{{formatNumberWithSpace(hits)}}</div>
+								<div class="text">{{ @this.prettifyNumbersToDisplay(hits) }}</div>
 								<div class="percentage-bar">
 									<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
 								</div>
@@ -53,7 +55,7 @@
 						<div class="cell cell_three">
 							<span>Bandwidth</span>
 							<div class="percentage-bar-container">
-								<div class="text">{{bandwidth}}</div>
+								<div class="text">{{ @this.prettifyNumbersToDisplay(bandwidth) }} GB</div>
 								<div class="percentage-bar">
 									<div class="barWidth" style="width: {{ barWidth.bandwidth }}"></div>
 								</div>
@@ -62,7 +64,7 @@
 
 						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}}">
 							{{#if dataType === "trending"}}
-								{{toSignedPercentage(interest)}}
+								{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(interest)) }}
 							{{/if}}
 						</div>
 					</div>
@@ -178,15 +180,6 @@
 					pageCount: new Array(end - start + 1),
 				};
 			},
-			projectListByPage () {
-				let page = this.get('page');
-				let pageLimit = parseInt(this.get('pageLimit'));
-				let projectList = this.get('projectList');
-				let start = (page - 1) * pageLimit + 1;
-				let end = start + pageLimit - 1;
-
-				return projectList.slice(start - 1, end);
-			},
 		},
 		data () {
 			return {
@@ -200,10 +193,6 @@
 				pageLimit: '10',
 				paginationLimits: [ '10', '20', '30', '40' ],
 				projectList: [],
-				toSignedPercentage (num) {
-					return `${num > 0 ? '+' : ''}${num}%`;
-				},
-				formatNumberWithSpace: _.formatNumberWithSpace,
 			};
 		},
 		oninit () {
@@ -224,22 +213,34 @@
 				this.observe('pageLimit', () => {
 					this.set('page', 1);
 				}, { init: false });
+
+
+				this.observe('page pageLimit projectList', () => {
+					let page = this.get('page');
+					let pageLimit = parseInt(this.get('pageLimit'));
+					let projectList = this.get('projectList');
+					let start = (page - 1) * pageLimit + 1;
+					let end = start + pageLimit - 1;
+
+					this.animate('projectListByPage', projectList.slice(start - 1, end));
+				});
 			}
 		},
 		processProjectStats (projectList) {
 			let hitsMax = Math.max(...projectList.map(({ hits }) => hits));
 			let bandwidthMax = Math.max(...projectList.map(({ bandwidth }) => bandwidth));
 
-			return projectList.map((one, index) => {
+			return projectList.map((one) => {
 				let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
-				interest = interest.toFixed(2);
 				let barWidth = {
 					hits: (one.hits * 100 / hitsMax) + '%',
 					bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
 				};
-				one.bandwidth = _.formatNumberWithSpace(_.convertBytesToUnits(one.bandwidth)) + ' GB';
+				let bandwidth = _.convertBytesToUnits(one.bandwidth);
 
-				return { ...one, interest, barWidth, id: index + 1 };
+				interest = Number(interest.toFixed(2));
+
+				return { ...one, interest, barWidth, bandwidth };
 			});
 		},
 		prevPage () {
@@ -253,6 +254,15 @@
 			let total = this.get('projectList').length;
 
 			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
+		},
+		toSignedPercentage (num) {
+			return `${num > 0 ? '+' : ''}${num}%`;
+		},
+		prettifyNumbersToDisplay (num) {
+			return _.formatNumberWithSpace(Math.round(num));
+		},
+		prettifyGrowthToDisplay (growth) {
+			return Number(growth) !== 0 ? Number(growth.toFixed(2)) : 0;
 		},
 	};
 </script>
