@@ -98,7 +98,7 @@
 									<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
 
 									{{#if icon}}
-										<img class="platform-icon" width="24" height="24" src="{{@shared.assetsHost}}/img/statistics{{icon}}" loading="lazy">
+										<img class="platform-icon" width="24" height="24" src="{{icon}}" loading="lazy">
 									{{/if}}
 
 									{{#if !selectedItem}}
@@ -253,6 +253,8 @@
 						let breakdown = this.get('breakdown');
 						let period = this.get('period');
 						let country = this.get('country');
+						let sharedAssetsHost = this.get('@shared.assetsHost');
+						let baseUrl = `${sharedAssetsHost}/img/statistics`;
 
 						http.fetchTopPlatformBrowserStats(topDataType, isVersionGrouped, period, selectedItem, breakdown, country).then((response) => {
 							let topList = response.map((one, index) => {
@@ -283,18 +285,23 @@
 									if (selectedItem) {
 										switch (breakdown) {
 											case 'platforms':
-												result.icon = `/platforms/${one[key]}@2x.png`;
+												result.icon = `${baseUrl}/platforms/${one[key]}@2x.png`;
 												break;
 											case 'versions':
-												result.icon = topDataType === 'platform' ? `/platforms/${selectedItem.name}@2x.png` : `/browsers/${selectedItem.name}@2x.png`;
+												result.icon = topDataType === 'platform'
+													? `${baseUrl}/platforms/${selectedItem.name}@2x.png`
+													: `${baseUrl}/browsers/${selectedItem.name}@2x.png`;
+
 												break;
 											case 'countries':
-												result.icon = `/flags/${one[key]}.svg`;
+												result.icon = `https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/${one[key]}.svg`;
 												break;
 										}
 									} else {
 										if (key === 'name') {
-											result.icon = topDataType === 'platform' ? `/platforms/${one[key]}@2x.png` : `/browsers/${one[key]}@2x.png`;
+											result.icon = topDataType === 'platform'
+												? `${baseUrl}/platforms/${one[key]}@2x.png`
+												: `${baseUrl}/browsers/${one[key]}@2x.png`;
 										}
 									}
 								});
