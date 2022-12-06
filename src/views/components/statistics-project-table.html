@@ -216,13 +216,18 @@
 
 
 				this.observe('page pageLimit projectList', () => {
+					let projectListByPage = [];
 					let page = this.get('page');
 					let pageLimit = parseInt(this.get('pageLimit'));
 					let projectList = this.get('projectList');
 					let start = (page - 1) * pageLimit + 1;
 					let end = start + pageLimit - 1;
 
-					this.animate('projectListByPage', projectList.slice(start - 1, end));
+					for (let i = start; i <= end; i++) {
+						projectListByPage.push({...projectList[i]});
+					}
+
+					this.animate('projectListByPage', projectListByPage);
 				});
 			}
 		},
