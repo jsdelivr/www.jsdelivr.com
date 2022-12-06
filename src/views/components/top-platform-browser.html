@@ -322,6 +322,7 @@
 				}, { init: false });
 
 				this.observe('page pageLimit topList', () => {
+					let pageListOfItems = [];
 					let page = this.get('page');
 					let pageLimit = this.get('pageLimit');
 					let topList = this.get('topList');
@@ -332,7 +333,9 @@
 
 					end = totalRows > end ? end : totalRows;
 
-					let pageListOfItems = topList.slice(start - 1, end);
+					for (let i = start; i <= end; i++) {
+						pageListOfItems.push({...topList[i]});
+					}
 
 					this.set('totalPages', totalPages);
 					this.animate('pageListOfItems', pageListOfItems);
