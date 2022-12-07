@@ -98,7 +98,11 @@
 									<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
 
 									{{#if icon}}
-										<img class="platform-icon" width="24" height="24" src="{{icon}}" loading="lazy">
+										<img class="platform-icon"
+											width="24"
+											height="24"
+											src="{{icon}}"
+											on-error="@this.handleIconBrokenSrc(event)">
 									{{/if}}
 
 									{{#if !selectedItem}}
@@ -367,6 +371,13 @@
 		},
 		prettifyGrowthToDisplay (growth) {
 			return Number(growth) !== 0 ? Number(growth.toFixed(1)) : 0;
+		},
+		handleIconBrokenSrc (e) {
+			let sharedAssetsHost = this.get('@shared.assetsHost');
+			let dataTypeIconsDir = this.get('topDataType') === 'platform' ? 'platforms' : 'browsers';
+			let defaultIconName = 'Other@2x.png';
+
+			e.event.target.src = `${sharedAssetsHost}/img/statistics/${dataTypeIconsDir}/${defaultIconName}`;
 		},
 	};
 </script>
