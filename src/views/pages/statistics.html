@@ -284,7 +284,9 @@
 			});
 		},
 		onrender () {
+			let sharedAssetsHost = this.get('@shared.assetsHost');
 			let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
+			let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
 
 			$('.search').autocomplete({ hint: false }, [
 				{
@@ -299,8 +301,10 @@
 					},
 					displayKey: 'name',
 					templates: {
-						suggestion: (item) => {
-							return `<img width="21px" height="15px" src="${flagIconPath}/${item.code}.svg">` + item.name;
+						suggestion: ({code, name}) => {
+							let src = code === 'WW' ? wwIconSrc : `${flagIconPath}/${code}.svg`;
+
+							return `<img width="21px" height="15px" src="${src}">` + name;
 						},
 					},
 				},
