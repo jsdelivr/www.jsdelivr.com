@@ -112,10 +112,10 @@
 									{{/if}}
 								</div>
 
-								<div class="cell cell_two text-table-number">{{ @this.prettifyNumbersToDisplay(share) }}%</div>
+								<div class="cell cell_two text-table-number">{{ @this.prettifyPercentageToDisplay(share, 2) }}%</div>
 
 								<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
-									{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(changes)) }}
+									{{ @this.toSignedPercentage(@this.prettifyPercentageToDisplay(changes)) }}
 								</div>
 							</div>
 						{{/each}}
@@ -366,11 +366,8 @@
 		toSignedPercentage (num) {
 			return `${num > 0 ? '+' : ''}${num}%`;
 		},
-		prettifyNumbersToDisplay (num) {
-			return _.formatNumberWithSpace(Math.round(num));
-		},
-		prettifyGrowthToDisplay (growth) {
-			return Number(growth) !== 0 ? Number(growth.toFixed(1)) : 0;
+		prettifyPercentageToDisplay (growth, digits = 0) {
+			return Number(growth) !== 0 ? Number(growth.toFixed(digits)) : 0;
 		},
 		handleIconBrokenSrc (e) {
 			let sharedAssetsHost = this.get('@shared.assetsHost');
