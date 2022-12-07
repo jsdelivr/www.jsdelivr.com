@@ -117,7 +117,7 @@
 					<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
 						<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
 
-						<input class="search" placeholder="Search">
+						<input class="search" placeholder="{{searchPlaceholder}}">
 
 						<div class="data-range-ctrl">
 							<div class="btn-group">
@@ -230,6 +230,8 @@
 	const stats = require('../../public/js/utils/stats');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const countries = require('../../public/json/countries.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 	const DEFAULT_PERIOD_KEY = 30;
 
 	component.exports = {
@@ -271,6 +273,15 @@
 		decorators: {
 			tooltip,
 		},
+		oninit () {
+			this.observe('screenWidth', (screenWidth) => {
+				if ((screenWidth || innerWidth) < 768) {
+					this.set('searchPlaceholder', 'Search');
+				} else {
+					this.set('searchPlaceholder', 'Filter for a specific country or a continent...');
+				}
+			});
+		},
 		onrender () {
 			let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
 
@@ -302,6 +313,9 @@
 			}).on('autocomplete:opened', () => {
 				$('.search').removeAttr('style');
 			});
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		oncomplete () {
 			this.stickyObserve(this.find('.global-data'));
