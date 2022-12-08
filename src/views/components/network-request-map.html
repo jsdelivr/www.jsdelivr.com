@@ -165,8 +165,6 @@
 				this.observe('hitsData bandwidthData type switchList', () => {
 					let preparedMapData = {
 						dataByCountries: {},
-						minMapValue: 0,
-						maxMapValue: 0,
 						switchList: [],
 					};
 					let hitsData = this.get('hitsData');
@@ -209,12 +207,12 @@
 					});
 
 					// calculate min max values present on the Map
-					preparedMapData.minMapValue = _.getValueByMagnitude(
+					let minMapValue = _.getValueByMagnitude(
 						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'floor'
 					);
 
-					preparedMapData.maxMapValue = _.getValueByMagnitude(
+					let maxMapValue = _.getValueByMagnitude(
 						Math.max(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'ceil',
 						1
@@ -225,12 +223,15 @@
 					preparedMapData.type = type;
 
 					// prepare data for the Legend axis of the Map
-					preparedMapData.legendAxisValues = [];
+					preparedMapData.mapValuesRangeSteps = [];
+					preparedMapData.mapValuesRangeSteps.push(maxMapValue);
 
-					for (let i = LEGEND_AXIS_TICKS_AMOUNT; i >= 0; i--) {
-						let tickValue = preparedMapData.minMapValue + i * (preparedMapData.maxMapValue - preparedMapData.minMapValue) / LEGEND_AXIS_TICKS_AMOUNT;
+					let valuesRangeStep = Math.ceil((maxMapValue - minMapValue) / (LEGEND_AXIS_TICKS_AMOUNT + 1));
 
-						preparedMapData.legendAxisValues.push(tickValue);
+					for (let i = LEGEND_AXIS_TICKS_AMOUNT - 1; i >= 0; i--) {
+						let tickValue = minMapValue + i * valuesRangeStep;
+
+						preparedMapData.mapValuesRangeSteps.push(tickValue);
 					}
 
 					// set prepared data
@@ -247,9 +248,9 @@
 
 				if (!svg || !this.get('__ready') || !screenWidth) { return; }
 
-				let { minMapValue, maxMapValue, dataByCountries, legendAxisValues, type } = this.get('preparedMapData');
+				let { dataByCountries, mapValuesRangeSteps, type } = this.get('preparedMapData');
 
-				let legendAxisTicks = legendAxisValues.reduce((result, rawValue) => {
+				let legendAxisTicks = mapValuesRangeSteps.reduce((result, rawValue) => {
 					if (screenWidth < 768) {
 						result.push(_.formatToShortNumber(rawValue, ' '));
 					} else {
@@ -269,14 +270,9 @@
 
 				let mapSvgWidth = parseInt(svg.style('width').replace('px', ''));
 				let mapSvgHeight = parseInt(svg.style('height').replace('px', ''));
-				let domainValues = d3.range(legendColorRange.length - 1).map((index) => {
-					return minMapValue + index * Math.ceil((maxMapValue - minMapValue) / legendColorRange.length);
-				});
-
-				domainValues = [ ...domainValues, maxMapValue ];
 
 				let colorScale = d3.scaleLinear()
-					.domain(domainValues)
+					.domain(mapValuesRangeSteps.reverse())
 					.range(legendColorRange)
 					.clamp(true)
 					.unknown('#ccc');
