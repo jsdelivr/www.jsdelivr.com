@@ -143,6 +143,7 @@
 	const styles = require('../../public/js/map/styles.json');
 	const locations = require('../../public/js/map/map.json').sort((a, b) => a.title > b.title ? -1 : a.title < b.title);
 	const providers = Object.values(require('../../public/json/net-providers.json')).filter(provider => provider.enabled);
+	const xIndexes = { GCore: 1, Cloudflare: 2, Fastly: 3, Bunny: 4 };
 	const getProvider = location => providers.find(provider => location.title.startsWith(provider.name));
 	let infoWindows = [];
 	let markers = [];
@@ -244,7 +245,7 @@
 					position: new google.maps.LatLng(location.latitude, location.longitude),
 					title: location.title,
 					optimized: false,
-					zIndex: providers.indexOf(getProvider(location)),
+					zIndex: xIndexes[getProvider(location).name],
 				});
 
 				google.maps.event.addListener(marker, 'click', () => {
