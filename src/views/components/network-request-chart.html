@@ -1,4 +1,16 @@
 <div class="c-network-request-chart">
+	<style>
+		{{#each providersJson}}
+			.hits-chart-block_switchers_item_switch input.{{name}}:checked + .slider {
+				background-color: {{color}};
+			}
+
+			.hits-chart-block_switchers_item_switch input.{{name}}:focus + .slider {
+				box-shadow: 0 0 1px {{color}};
+			}
+		{{/each}}
+	</style>
+
 	<div class="chart-header">
 		<h3>Requests served over time</h3>
 
@@ -46,6 +58,7 @@
 				showChartBandwidth: false,
 				switchList: [],
 				rawHitsChartData: '',
+				providersJson,
 			};
 		},
 		oninit () {
