@@ -206,7 +206,11 @@
 						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
 					});
 
-					// calculate min max values present on the Map
+					// prepare additional data
+					preparedMapData.switchList = switchList;
+					preparedMapData.type = type;
+
+					// prepare data for the Legend axis of the Map and for the Map itself (domain values)
 					let minMapValue = _.getValueByMagnitude(
 						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
 						'floor'
@@ -217,21 +221,22 @@
 						'ceil',
 						1
 					);
+					let maxMapValuesRangeMagnitude = Math.floor(Math.log10(maxMapValue));
+					let suggestedLegendMax = Math.ceil(maxMapValue / Math.pow(10, maxMapValuesRangeMagnitude)) * Math.pow(10, maxMapValuesRangeMagnitude);
 
-					// prepare additional data
-					preparedMapData.switchList = switchList;
-					preparedMapData.type = type;
-
-					// prepare data for the Legend axis of the Map
+					preparedMapData.legendValuesRangeSteps = [ suggestedLegendMax ];
 					preparedMapData.mapValuesRangeSteps = [];
-					preparedMapData.mapValuesRangeSteps.push(maxMapValue);
 
-					let valuesRangeStep = Math.ceil((maxMapValue - minMapValue) / (LEGEND_AXIS_TICKS_AMOUNT + 1));
+					let mapValuesRangeStep = Math.ceil((maxMapValue - minMapValue) / (LEGEND_AXIS_TICKS_AMOUNT + 1));
+					let lagendValuesRangeStep = Math.ceil(suggestedLegendMax / (LEGEND_AXIS_TICKS_AMOUNT + 1));
 
 					for (let i = LEGEND_AXIS_TICKS_AMOUNT - 1; i >= 0; i--) {
-						let tickValue = minMapValue + i * valuesRangeStep;
+						preparedMapData.legendValuesRangeSteps.push(i * lagendValuesRangeStep);
+						preparedMapData.mapValuesRangeSteps.push(minMapValue + (LEGEND_AXIS_TICKS_AMOUNT - i) * mapValuesRangeStep);
 
-						preparedMapData.mapValuesRangeSteps.push(tickValue);
+						if (i === 0) {
+							preparedMapData.mapValuesRangeSteps.push(maxMapValue);
+						}
 					}
 
 					// set prepared data
@@ -248,9 +253,9 @@
 
 				if (!svg || !this.get('__ready') || !screenWidth) { return; }
 
-				let { dataByCountries, mapValuesRangeSteps, type } = this.get('preparedMapData');
+				let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
 
-				let legendAxisTicks = mapValuesRangeSteps.reduce((result, rawValue) => {
+				let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
 					if (screenWidth < 768) {
 						result.push(_.formatToShortNumber(rawValue, ' '));
 					} else {
@@ -272,7 +277,7 @@
 				let mapSvgHeight = parseInt(svg.style('height').replace('px', ''));
 
 				let colorScale = d3.scaleLinear()
-					.domain(mapValuesRangeSteps.reverse())
+					.domain(mapValuesRangeSteps)
 					.range(legendColorRange)
 					.clamp(true)
 					.unknown('#ccc');
