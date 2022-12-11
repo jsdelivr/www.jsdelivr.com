@@ -18,6 +18,12 @@
 			font-size: 15px;
 			margin-bottom: 20px;
 		}
+
+		{{#unless loaded}}
+			[slot] {
+				display: none;
+			}
+		{{/unless}}
 	</style>
 
 	<c-notification></c-notification>
@@ -128,8 +134,14 @@
 			},
 		},
 		onrender () {
-			this.set('screenWidth', innerWidth);
-			window.addEventListener('resize', debounce(() => this.set('screenWidth', innerWidth), 100));
+			if (!Ractive.isServer) {
+				this.set('screenWidth', innerWidth);
+				window.addEventListener('resize', debounce(() => this.set('screenWidth', innerWidth), 100));
+
+				this.find('rapi-doc').addEventListener('before-render', () => {
+					this.set('loaded', true);
+				});
+			}
 		},
 };
 </script>
