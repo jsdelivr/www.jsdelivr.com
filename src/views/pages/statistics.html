@@ -30,43 +30,45 @@
 				</p>
 
 				<div class="global-data">
-					<div class="global-data_info">
-						<img class="global-data_info_icon"
-							width="48"
-							height="48"
-							src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
+					<div class="global-data_content-wrapper">
+						<div class="global-data_info">
+							<img class="global-data_info_icon"
+								width="48"
+								height="48"
+								src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
 
-						<h2 class="global-data_info_title">Global data</h2>
+							<h2 class="global-data_info_title">Global data</h2>
 
-						<div class="global-data_info_settings-icon {{ #if showGlobalStickyMenu }}active{{ /if }}"
-							on-click="@this.set('showGlobalStickyMenu', !showGlobalStickyMenu)">
-							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+							<div class="global-data_info_settings-icon {{ #if showGlobalStickyMenu }}active{{ /if }}"
+								on-click="@this.set('showGlobalStickyMenu', !showGlobalStickyMenu)">
+								<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+							</div>
 						</div>
-					</div>
 
-					<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
-						<div class="btn-group">
-							<span class="label-for-pinned">Data range</span>
-							<button
-								type="button"
-								class="btn dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{ statsPeriods[globalStatsPeriod] }}</span>
+						<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
+							<div class="btn-group">
+								<span class="label-for-pinned">Data range</span>
+								<button
+									type="button"
+									class="btn dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{ statsPeriods[globalStatsPeriod] }}</span>
 
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
 
-							<ul class="dropdown-menu">
-								{{#each statsPeriods}}
-									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
-								{{/each}}
-							</ul>
+								<ul class="dropdown-menu">
+									{{#each statsPeriods}}
+										<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
 						</div>
-					</div>
 
-					<div class="horizontal-divider"></div>
+						<div class="horizontal-divider"></div>
+					</div>
 				</div>
 
 				<c-network-provider-stats period="{{ statsPeriods[globalStatsPeriod] }}"></c-network-provider-stats>
@@ -99,45 +101,47 @@
 		<div class="grey">
 			<div class="container">
 				<div class="network-data">
-					<div class="network-data_info">
-						<img class="network-data_info_icon"
-							width="48"
-							height="48"
-							src="{{@shared.assetsHost}}/img/statistics/network.svg"
-							loading="lazy">
+					<div class="network-data_content-wrapper">
+						<div class="network-data_info">
+							<img class="network-data_info_icon"
+								width="48"
+								height="48"
+								src="{{@shared.assetsHost}}/img/statistics/network.svg"
+								loading="lazy">
 
-						<h2 class="network-data_info_title">Network data</h2>
+							<h2 class="network-data_info_title">Network data</h2>
 
-						<div class="network-data_info_settings-icon {{ #if showNetworkStickyMenu }}active{{ /if }}"
-							on-click="@this.set('showNetworkStickyMenu', !showNetworkStickyMenu)">
-							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+							<div class="network-data_info_settings-icon {{ #if showNetworkStickyMenu }}active{{ /if }}"
+								on-click="@this.set('showNetworkStickyMenu', !showNetworkStickyMenu)">
+								<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+							</div>
 						</div>
-					</div>
 
-					<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
-						<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
+						<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
+							<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
 
-						<input class="search" placeholder="{{searchPlaceholder}}">
+							<input class="search" placeholder="{{searchPlaceholder}}">
 
-						<div class="data-range-ctrl">
-							<div class="btn-group">
-								<span class="label-for-pinned">Data range</span>
-								<button
-									type="button"
-									class="btn dropdown-toggle"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<span>{{ statsPeriods[networkStatsPeriod] }}</span>
+							<div class="data-range-ctrl">
+								<div class="btn-group">
+									<span class="label-for-pinned">Data range</span>
+									<button
+										type="button"
+										class="btn dropdown-toggle"
+										data-toggle="dropdown"
+										aria-haspopup="true"
+										aria-expanded="false">
+										<span>{{ statsPeriods[networkStatsPeriod] }}</span>
 
-									<i class="fa fa-angle-down" aria-hidden="true"></i>
-								</button>
+										<i class="fa fa-angle-down" aria-hidden="true"></i>
+									</button>
 
-								<ul class="dropdown-menu">
-									{{#each statsPeriods}}
-										<li><a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a></li>
-									{{/each}}
-								</ul>
+									<ul class="dropdown-menu">
+										{{#each statsPeriods}}
+											<li><a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a></li>
+										{{/each}}
+									</ul>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -169,40 +173,42 @@
 
 		<div class="container">
 			<div class="projects-data">
-				<div class="projects-data_info">
-					<img class="projects-data_info_icon"
-						width="48"
-						height="48"
-						src="{{@shared.assetsHost}}/img/statistics/projects.svg"
-						loading="lazy">
+				<div class="projects-data_content-wrapper">
+					<div class="projects-data_info">
+						<img class="projects-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/projects.svg"
+							loading="lazy">
 
-					<h2 class="projects-data_info_title">Projects statistics</h2>
+						<h2 class="projects-data_info_title">Projects statistics</h2>
 
-					<div class="projects-data_info_settings-icon {{ #if showProjectsStickyMenu }}active{{ /if }}"
-						on-click="@this.set('showProjectsStickyMenu', !showProjectsStickyMenu)">
-						<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						<div class="projects-data_info_settings-icon {{ #if showProjectsStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showProjectsStickyMenu', !showProjectsStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
 					</div>
-				</div>
 
-				<div class="data-range-ctrl {{ #if showProjectsStickyMenu }}projects-data_visible{{ /if }}">
-					<div class="btn-group">
-						<span class="label-for-pinned">Data range</span>
-						<button
-							type="button"
-							class="btn dropdown-toggle"
-							data-toggle="dropdown"
-							aria-haspopup="true"
-							aria-expanded="false">
-							<span>{{ statsPeriods[projectStatsPeriod] }}</span>
+					<div class="data-range-ctrl {{ #if showProjectsStickyMenu }}projects-data_visible{{ /if }}">
+						<div class="btn-group">
+							<span class="label-for-pinned">Data range</span>
+							<button
+								type="button"
+								class="btn dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{ statsPeriods[projectStatsPeriod] }}</span>
 
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
 
-						<ul class="dropdown-menu">
-							{{#each statsPeriods}}
-								<li><a on-click="@this.set('projectStatsPeriod', @key)">{{this}}</a></li>
-							{{/each}}
-						</ul>
+							<ul class="dropdown-menu">
+								{{#each statsPeriods}}
+									<li><a on-click="@this.set('projectStatsPeriod', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>

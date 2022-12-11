@@ -209,25 +209,24 @@
 
 		.global-data, .projects-data, .network-data {
 			display: flex;
-			flex-direction: column;
+			justify-content: center;
+			position: -webkit-sticky;
+			position: sticky;
+			top: -1px;
 
-			@media (max-width: @screen-xs-max) {
-				position: -webkit-sticky;
-				position: sticky;
-				top: -1px;
-			}
+			&_content-wrapper {
+				height: 100%;
+				width: 100%;
+				max-width: 1224px;
+				display: flex;
+				flex-direction: column;
 
-			@media (min-width: @screen-sm-min) {
-				position: -webkit-sticky;
-				position: sticky;
-				top: -1px;
-			}
-
-			@media (min-width: @screen-sm-min) {
-				flex-flow: row wrap;
-				justify-content: space-between;
-				align-items: center;
-				column-gap: 24px;
+				@media (min-width: @screen-sm-min) {
+					flex-flow: row wrap;
+					justify-content: space-between;
+					align-items: center;
+					column-gap: 24px;
+				}
 			}
 
 			&_info {
@@ -530,15 +529,15 @@
 
 			&.is-pinned {
 				height: auto;
+				z-index: 1000;
+				background: #fff;
+				transition: 100ms;
+				margin-left: calc((100vw - 100%) / -2);
+				margin-right: calc((100vw - 100%) / -2);
 
 				@media (max-width: @screen-xs-max) {
-					z-index: 1000;
-					margin-left: -24px;
-					margin-right: -24px;
 					padding: 12px 24px 0;
-					background: #fff;
 					box-shadow: 0 2px 2px -2px rgba(23, 35, 59, .1), 0 2px 8px rgba(23, 35, 59, .1);
-					transition: 100ms;
 
 					.global-data_info, .projects-data_info, .network-data_info {
 						&_icon {
@@ -601,13 +600,9 @@
 				}
 
 				@media (min-width: @screen-sm-min) {
-					z-index: 1000;
-					margin-left: -24px;
-					margin-right: -24px;
+					width: 100vw;
 					height: 48px;
 					padding: 0 24px;
-					background: #fff;
-					transition: 100ms;
 					box-shadow: 0 4px 2px -2px rgba(23, 35, 59, .06), 0 2px 8px rgba(23, 35, 59, .04);
 
 					.horizontal-divider {
