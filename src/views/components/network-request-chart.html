@@ -34,14 +34,14 @@
 			</div>
 
 			{{#each switchList:index}}
-				<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled}}disabled{{/if}}">
+				<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
 					<label class="hits-chart-block_switchers_item_switch">
 						<input
 							class="{{name}}"
 							type="checkbox"
 							on-click="@this.set('switchList['+@index+'].active', !active)"
-							disabled="{{switchList[index].disabled}}"
-							checked>
+							disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
+							checked="{{switchList[index].active}}">
 						<span class="slider round"></span>
 						</label>
 						<span class="hits-chart-block_switchers_item_name">{{name}}</span>
@@ -186,6 +186,20 @@
 						usageChartGroupBy,
 					});
 				}, { init: false });
+
+				this.observe('showProviderBreakdown', (showProviderBreakdown) => {
+					if (showProviderBreakdown === false) {
+						let switchList = this.get("switchList");
+
+						let updSwitchList = switchList.map((switchItem) => ({
+							...switchItem,
+							active: true,
+							disabled: true,
+						}));
+
+						this.set("switchList", updSwitchList);
+					}
+				});
 			}
 		},
 		onrender () {
