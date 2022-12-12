@@ -22,31 +22,36 @@
 
 	<div class="hits-chart-block">
 		<div class="hits-chart-block_switchers">
-			<div class="hits-chart-block_switchers_item">
-				<label class="hits-chart-block_switchers_item_switch">
-					<input
-						type="checkbox"
-						on-click="@this.toggle('showProviderBreakdown')"
-						checked>
-					<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
-					</label>
-					<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
-			</div>
-
-			{{#each switchList:index}}
-				<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
+			<div class="hits-chart-block_switchers_breakdown">
+				<div class="hits-chart-block_switchers_item">
 					<label class="hits-chart-block_switchers_item_switch">
 						<input
-							class="{{name}}"
 							type="checkbox"
-							on-click="@this.set('switchList['+@index+'].active', !active)"
-							disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
-							checked="{{switchList[index].active}}">
-						<span class="slider round"></span>
+							on-click="@this.toggle('showProviderBreakdown')"
+							checked>
+						<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
 						</label>
-						<span class="hits-chart-block_switchers_item_name">{{name}}</span>
+						<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
 				</div>
-			{{/each}}
+			</div>
+
+
+			<div class="hits-chart-block_switchers_wrapper">
+				{{#each switchList:index}}
+					<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
+						<label class="hits-chart-block_switchers_item_switch">
+							<input
+								class="{{name}}"
+								type="checkbox"
+								on-click="@this.set('switchList['+@index+'].active', !active)"
+								disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
+								checked="{{switchList[index].active}}">
+							<span class="slider round"></span>
+							</label>
+							<span class="hits-chart-block_switchers_item_name">{{name}}</span>
+					</div>
+				{{/each}}
+			</div>
 		</div>
 
 		<div class="hits-chart-block_chart-wrapper">
