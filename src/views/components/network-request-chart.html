@@ -22,6 +22,17 @@
 
 	<div class="hits-chart-block">
 		<div class="hits-chart-block_switchers">
+			<div class="hits-chart-block_switchers_item">
+				<label class="hits-chart-block_switchers_item_switch">
+					<input
+						type="checkbox"
+						on-click="@this.toggle('showProviderBreakdown')"
+						checked>
+					<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
+					</label>
+					<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
+			</div>
+
 			{{#each switchList:index}}
 				<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled}}disabled{{/if}}">
 					<label class="hits-chart-block_switchers_item_switch">
@@ -59,6 +70,7 @@
 				switchList: [],
 				rawHitsChartData: '',
 				providersJson,
+				showProviderBreakdown: true,
 			};
 		},
 		oninit () {
