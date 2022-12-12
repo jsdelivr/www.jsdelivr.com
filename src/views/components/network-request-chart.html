@@ -139,22 +139,14 @@
 					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
 					let filteredHitsChartData = {};
 
-					if (!showProviderBreakdown) {
-						let notActiveSwitches = switchList.filter(s => s.active === false).map(s => s.shortName);
+					if (showProviderBreakdown) {
+						let notActiveSwitches = [ ...switchList ].filter(s => s.active === false).map(s => s.shortName);
 
 						notActiveSwitches.forEach((s) => {
 							delete hitsProviders[s];
 							delete bandwidthProviders[s];
 						});
-					}
 
-					if (!showProviderBreakdown) {
-						filteredHitsChartData = {
-							...rawHitsChartData,
-							bandwidth: this.combineProvidersData(bandwidthProviders),
-							hits: this.combineProvidersData(hitsProviders),
-						};
-					} else {
 						filteredHitsChartData = {
 							...rawHitsChartData,
 							bandwidth: {
@@ -165,6 +157,12 @@
 								...rawHitsChartData.hits,
 								providers: hitsProviders,
 							},
+						};
+					} else {
+						filteredHitsChartData = {
+							...rawHitsChartData,
+							bandwidth: this.combineProvidersData(bandwidthProviders),
+							hits: this.combineProvidersData(hitsProviders),
 						};
 					}
 
