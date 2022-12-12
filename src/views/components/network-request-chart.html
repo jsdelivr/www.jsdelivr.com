@@ -124,7 +124,7 @@
 					this.set('switchList', updatedSwitchList);
 				});
 
-				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList', () => {
+				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList showProviderBreakdown', () => {
 					let rawHitsChartData = this.get('rawHitsChartData');
 					let switchList = this.get('switchList');
 
@@ -132,28 +132,41 @@
 
 					let chartPeriod = this.get('period');
 					let showChartBandwidth = this.get('showChartBandwidth');
+					let showProviderBreakdown = this.get('showProviderBreakdown');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
 					let usageChartGroupBy = 'day';
-					let notActiveSwitches = switchList.filter(s => s.active === false).map(s => s.shortName);
 					let hitsProviders = { ...rawHitsChartData.hits.providers };
 					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
+					let filteredHitsChartData = {};
 
-					notActiveSwitches.forEach((s) => {
-						delete hitsProviders[s];
-						delete bandwidthProviders[s];
-					});
+					if (!showProviderBreakdown) {
+						let notActiveSwitches = switchList.filter(s => s.active === false).map(s => s.shortName);
 
-					let filteredHitsChartData = {
-						...rawHitsChartData,
-						bandwidth: {
-							...rawHitsChartData.bandwidth,
-							providers: bandwidthProviders,
-						},
-						hits: {
-							...rawHitsChartData.hits,
-							providers: hitsProviders,
-						},
-					};
+						notActiveSwitches.forEach((s) => {
+							delete hitsProviders[s];
+							delete bandwidthProviders[s];
+						});
+					}
+
+					if (!showProviderBreakdown) {
+						filteredHitsChartData = {
+							...rawHitsChartData,
+							bandwidth: this.combineProvidersData(bandwidthProviders),
+							hits: this.combineProvidersData(hitsProviders),
+						}
+					} else {
+						filteredHitsChartData = {
+							...rawHitsChartData,
+							bandwidth: {
+								...rawHitsChartData.bandwidth,
+								providers: bandwidthProviders,
+							},
+							hits: {
+								...rawHitsChartData.hits,
+								providers: hitsProviders,
+							},
+						};
+					}
 
 					// collect X-Axis dates, group data by period, get
 					let {
@@ -281,5 +294,43 @@
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
+		combineProvidersData (providersList) {
+			return Object.keys(providersList).reduce((res, provKey) => {
+				let currProvider = providersList[provKey];
+
+				if (!res.providers) {
+					res = {
+						total: 0,
+						prev: { total: 0 },
+						providers: {
+							combinedProviders: {
+								dates: {},
+								prev: { total: 0 },
+								total: 0,
+							},
+						},
+					};
+				}
+
+				Object.keys(currProvider.dates).forEach((dateKey) => {
+					if (!res.providers.combinedProviders.dates[dateKey]) {
+						res.providers.combinedProviders.dates[dateKey] = {
+							total: 0,
+						};
+					}
+
+					let currProviderDateValue = currProvider.dates[dateKey].total;
+
+					res.providers.combinedProviders.dates[dateKey].total += currProviderDateValue;
+				});
+
+				res.providers.combinedProviders.total += currProvider.total;
+				res.total += currProvider.total;
+				res.providers.combinedProviders.prev.total += currProvider.prev.total;
+				res.prev.total += currProvider.prev.total;
+
+				return res;
+			}, {});
+		}
 	};
 </script>
