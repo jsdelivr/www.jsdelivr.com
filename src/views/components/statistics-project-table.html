@@ -52,7 +52,10 @@
 						src="{{@shared.assetsHost}}/img/statistics/left.svg"
 						loading="lazy">
 				</div>
-				<div class="cell cell_four">{{#if dataType === "trending"}}Increased{{/if}}</div>
+				<div class="cell cell_four {{ dataType !== 'trending' && sortProjectsBy === 'bandwidth' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					{{#if dataType === "trending"}}Increased{{/if}}
+				</div>
 			</div>
 
 			<div class="projects-content_table_scrollable">
@@ -91,7 +94,7 @@
 							</div>
 						</div>
 
-						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}}">
+						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}} {{ dataType !== 'trending' && sortProjectsBy === 'bandwidth' && 'sorted' }}">
 							{{#if dataType === "trending"}}
 								{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(interest)) }}
 							{{/if}}
