@@ -323,7 +323,7 @@ module.exports = {
 		return unit.symbol;
 	},
 
-	formatBytesWithUnit (num, unit, delimiter = ' ') {
+	formatBytesWithUnit (num, unit) {
 		let lookup = [
 			{ value: 1, symbol: 'B' },
 			{ value: 1e3, symbol: 'kB' },
@@ -338,7 +338,7 @@ module.exports = {
 			return num >= item.value;
 		});
 
-		return item ? module.exports.formatNumber(num / item.value) + delimiter + item.symbol : '0';
+		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
 	formatToShortNumber (num, delimiter = '') {
