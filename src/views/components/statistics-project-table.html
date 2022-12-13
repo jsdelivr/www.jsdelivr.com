@@ -35,8 +35,23 @@
 		<div class="projects-content_table">
 			<div class="projects-content_table_header">
 				<div class="cell cell_one">Name</div>
-				<div class="cell cell_two">Requests</div>
-				<div class="cell cell_three">Bandwidth</div>
+				<div class="cell cell_two {{ sortProjectsBy === 'hits' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'hits')">
+					Requests
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy">
+				</div>
+
+				<div class="cell cell_three {{ sortProjectsBy === 'bandwidth' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					Bandwidth
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy">
+				</div>
 				<div class="cell cell_four">{{#if dataType === "trending"}}Increased{{/if}}</div>
 			</div>
 
@@ -56,7 +71,7 @@
 							</span>
 						</div>
 
-						<div class="cell cell_two">
+						<div class="cell cell_two {{ sortProjectsBy === 'hits' && 'sorted' }}">
 							<span>Requests</span>
 							<div class="percentage-bar-container">
 								<div class="text">{{ @this.prettifyNumbersToDisplay(hits) }}</div>
@@ -66,7 +81,7 @@
 							</div>
 						</div>
 
-						<div class="cell cell_three">
+						<div class="cell cell_three {{ sortProjectsBy === 'bandwidth' && 'sorted' }}">
 							<span>Bandwidth</span>
 							<div class="percentage-bar-container">
 								<div class="text">{{ @this.prettifyNumbersToDisplay(bandwidth) }} GB</div>
