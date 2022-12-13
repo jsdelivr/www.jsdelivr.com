@@ -18,6 +18,20 @@
 	</div>
 
 	<div class="projects-content">
+		<div class="projects-content_ctrls">
+			<span>Sort by:</span>
+			<div class="projects-content_ctrls_switch">
+				<button class="button {{ sortProjectsBy === 'hits' && 'selected' }}"
+					on-click="@this.set('sortProjectsBy', 'hits')">
+					Requests
+				</button>
+				<button class="button {{ sortProjectsBy === 'bandwidth' && 'selected' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					Bandwidth
+				</button>
+			</div>
+		</div>
+
 		<div class="projects-content_table">
 			<div class="projects-content_table_header">
 				<div class="cell cell_one">Name</div>
@@ -193,17 +207,19 @@
 				pageLimit: '10',
 				paginationLimits: [ '10', '20', '30', '40' ],
 				projectList: [],
+				sortProjectsBy: 'hits',
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period statsType __ready', function () {
+				this.observe('period statsType sortProjectsBy __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
 						let statsType = this.get('statsType');
+						let sortProjectsBy = this.get('sortProjectsBy');
 
 						// fetch projectList using http api calls
-						http.fetchProjectStats(statsType, period).then((res) => {
+						http.fetchProjectStats(statsType, period, sortProjectsBy).then((res) => {
 							this.set('page', 1);
 							this.set('projectList', this.processProjectStats(res));
 						});

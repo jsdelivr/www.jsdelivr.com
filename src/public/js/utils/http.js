@@ -119,9 +119,10 @@ module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, perio
 	return _.makeHTTPRequest({ url, body });
 };
 
-module.exports.fetchProjectStats = (type, period) => {
+module.exports.fetchProjectStats = (type, period, sortBy = 'hits') => {
 	let body = {
 		period,
+		by: sortBy,
 	};
 
 	if (type !== 'all') {
