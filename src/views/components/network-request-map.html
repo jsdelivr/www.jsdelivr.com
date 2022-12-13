@@ -214,7 +214,7 @@
 							bandwidthByCountryTotal += countryBandwidthStat.providers[providerCode].total;
 						});
 
-						preparedMapData.dataByCountries[countryAsKey] = countryHitsStat;
+						preparedMapData.dataByCountries[countryAsKey] = type === 'hits' ? countryHitsStat : countryBandwidthStat;
 						preparedMapData.dataByCountries[countryAsKey].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
 						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
 					});
@@ -366,6 +366,7 @@
 		},
 		showTooltip (event, data) {
 			let currentCountryId = this.get('currentCountryId');
+			let mapDataType = this.get('type');
 
 			if (currentCountryId === data.id) { return; }
 
@@ -416,7 +417,8 @@
 			switchList.forEach((provider) => {
 				if (!provider.active) { return; }
 
-				let statsInfo = dataByCountries[countryId] ? _.formatNumberWithSpace(dataByCountries[countryId].total) : 0;
+				let statsValueRaw = dataByCountries[countryId]?.providers[provider.shortName]?.total || 0;
+				let statsInfo = mapDataType === 'hits' ? _.formatNumberWithSpace(statsValueRaw) : _.formatBytesWithUnit(statsValueRaw);
 				let ratio = dataByCountries[countryId] ? dataByCountries[countryId].ratio[provider.name] : 0;
 				let providerBoxColor = providersJson[provider.shortName].color;
 
