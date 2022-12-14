@@ -96,14 +96,14 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
  * @param selectedItem - selected certain platform or browser value:string
  * @param breakdown - country breakdown, browser breakdown, platform, version breakdown
  * @param period -  time period for which the stats are returned (s-month, s-year)
- * @param area - country or continent. Includes only data for this area
+ * @param country - country or continent. Includes only data for this country
  ***/
-module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, period, selectedItem, breakdown, area) => {
+module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, period, selectedItem, breakdown, country) => {
 	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
 	let body = { period: _.translatePeriodsToSNotation(period) };
 
-	if (area) {
-		body.area = area;
+	if (country) {
+		body.country = country;
 	}
 
 	if (selectedItem) {
