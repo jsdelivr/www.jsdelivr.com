@@ -89,9 +89,9 @@
 			</div>
 
 			<div class="table-wrapper_content_scrollable">
-				{{#if pageListOfItems !== null}}
-					{{#if pageListOfItems.length}}
-						{{#each pageListOfItems:idx}}
+				{{#if topList !== null}}
+					{{#if topList.length}}
+						{{#each topList:idx}}
 							<div class="table-wrapper_content_row">
 								<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
 									<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
@@ -104,7 +104,7 @@
 									{{/if}}
 
 									{{#if !selectedItem}}
-										<span class="platform-name" on-click="@this.set('selectedItem', pageListOfItems[idx])">{{ displayName }}</span>
+										<span class="platform-name" on-click="@this.set('selectedItem', topList[idx])">{{ displayName }}</span>
 									{{else}}
 										<span class="platform-name">{{ displayName }}</span>
 									{{/if}}
@@ -163,7 +163,7 @@
 				</div>
 
 				<button on-click="@this.nextPage()"
-					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === totalPages}}disabled{{/if}}">
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -184,13 +184,16 @@
 			pageRange () {
 				let page = this.get('page');
 				let pageLimit = this.get('pageLimit');
-				let total = this.get('topList').length;
-
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
 				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
-				end = total > end ? end : total;
 
-				return total ? `Records ${start} - ${end} of ${total}` : 'Records 0 of 0';
+				if (xTotalCount < end) {
+					end = xTotalCount;
+				}
+
+				return xTotalPages && xTotalCount ? `Records ${start} - ${end} of ${xTotalCount}` : 'Records 0 of 0';
 			},
 		},
 		decorators: {
@@ -198,7 +201,7 @@
 		},
 		data () {
 			return {
-				topList: [],
+				topList: null,
 				isVersionGrouped: true,
 				selectedItem: '',
 				breakdown: 'countries',
@@ -207,7 +210,8 @@
 				page: 1,
 				pageLimit: 10,
 				paginationLimits: [ 10, 20, 30, 40 ],
-				pageListOfItems: null,
+				xTotalCount: 0,
+				xTotalPages: 0,
 			};
 		},
 		oninit () {
@@ -247,7 +251,7 @@
 					}
 				});
 
-				this.observe('isVersionGrouped selectedItem breakdown __ready period country', function () {
+				this.observe('isVersionGrouped selectedItem breakdown __ready period country pageLimit page', function () {
 					if (this.get('__ready')) {
 						let topDataType = this.get('topDataType');
 						let isVersionGrouped = this.get('isVersionGrouped');
@@ -255,10 +259,21 @@
 						let breakdown = this.get('breakdown');
 						let period = this.get('period');
 						let country = this.get('country');
+						let page = this.get('page');
+						let pageLimit = this.get('pageLimit');
 						let sharedAssetsHost = this.get('@shared.assetsHost');
 						let baseUrl = `${sharedAssetsHost}/img/statistics`;
 
-						http.fetchTopPlatformBrowserStats(topDataType, isVersionGrouped, period, selectedItem, breakdown, country).then((response) => {
+						http.fetchTopPlatformBrowserStats(
+							topDataType,
+							isVersionGrouped,
+							period,
+							selectedItem,
+							breakdown,
+							country,
+							page,
+							pageLimit
+						).then(({ response, responseHeaders }) => {
 							let topList = response.map((one, index) => {
 								let result = {
 									index,
@@ -314,6 +329,8 @@
 								return result;
 							});
 
+							this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+							this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
 							this.set('topList', topList);
 						});
 					}
@@ -321,26 +338,6 @@
 
 				this.observe('pageLimit selectedItem', () => {
 					this.set('page', 1);
-				}, { init: false });
-
-				this.observe('page pageLimit topList', () => {
-					let pageListOfItems = [];
-					let page = this.get('page');
-					let pageLimit = this.get('pageLimit');
-					let topList = this.get('topList');
-					let totalRows = topList.length;
-					let totalPages = Math.ceil(totalRows / pageLimit) || 1;
-					let start = (page - 1) * pageLimit + 1;
-					let end = start + pageLimit - 1;
-
-					end = totalRows > end ? end : totalRows;
-
-					for (let i = start - 1; i <= end - 1; i++) {
-						pageListOfItems.push({ ...topList[i] });
-					}
-
-					this.set('totalPages', totalPages);
-					this.animate('pageListOfItems', pageListOfItems);
 				}, { init: false });
 			}
 		},
@@ -351,10 +348,9 @@
 		},
 		nextPage () {
 			let page = this.get('page');
-			let pageLimit = this.get('pageLimit');
-			let total = this.get('topList').length;
+			let xTotalPages = this.get('xTotalPages');
 
-			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
+			this.set('page', page + 1 > xTotalPages ? page : page + 1);
 		},
 		handleBreakdownSelect (idx, isDisabled) {
 			if (isDisabled) { return; }
