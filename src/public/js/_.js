@@ -361,7 +361,7 @@ module.exports = {
 	},
 
 	makeHTTPRequest (obj) {
-		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
+		let { method = 'GET', rawResponse = false, body, url, headers, responseHeadersToGet = null } = obj;
 
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
@@ -373,7 +373,22 @@ module.exports = {
 
 			xhr.onload = () => {
 				if (xhr.status >= 200 && xhr.status < 300) {
-					resolve(rawResponse ? xhr.response : JSON.parse(xhr.response));
+					let response = rawResponse ? xhr.response : JSON.parse(xhr.response);
+
+					if (responseHeadersToGet && responseHeadersToGet.length) {
+						let responseHeaders = responseHeadersToGet.reduce((headerValuePairs, headerName) => {
+							headerValuePairs[headerName] = xhr.getResponseHeader(headerName);
+
+							return headerValuePairs;
+						}, {});
+
+						resolve({
+							response,
+							responseHeaders,
+						});
+					} else {
+						resolve(response);
+					}
 				} else {
 					reject(xhr.statusText);
 				}
