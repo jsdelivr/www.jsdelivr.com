@@ -237,9 +237,11 @@
 						let sortProjectsBy = this.get('sortProjectsBy');
 
 						// fetch projectList using http api calls
-						http.fetchProjectStats(statsType, period, sortProjectsBy).then((res) => {
+						http.fetchProjectStats(statsType, period, sortProjectsBy).then(({ response, responseHeaders }) => {
+							console.log('++++ responseHeaders', responseHeaders);
+							console.log('_______________________');
 							this.set('page', 1);
-							this.set('projectList', this.processProjectStats(res));
+							this.set('projectList', this.processProjectStats(response));
 						});
 					}
 				});
