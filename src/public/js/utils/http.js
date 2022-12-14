@@ -120,6 +120,7 @@ module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, perio
 };
 
 module.exports.fetchProjectStats = (type, period, sortBy = 'hits') => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 	let body = {
 		period,
 		by: sortBy,
@@ -129,6 +130,6 @@ module.exports.fetchProjectStats = (type, period, sortBy = 'hits') => {
 		body.type = type;
 	}
 
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body });
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
