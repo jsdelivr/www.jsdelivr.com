@@ -59,7 +59,7 @@
 			</div>
 
 			<div class="projects-content_table_scrollable">
-				{{#each projectListByPage:idx}}
+				{{#each projectsList:idx}}
 					<div class="projects-content_table_row">
 						<div class="cell cell_one">
 							<span class="proj-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
@@ -122,12 +122,12 @@
 				{{#each showablePages.pageCount}}
 					<button
 						class="page-num {{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
-						on-click="@this.set('page', ~/showablePages.start + @key)">
+						on-click="@this.set('page', parseInt(~/showablePages.start + @key))">
 						{{~/showablePages.start + @key}}
 					</button>
 				{{/each}}
 
-				<button on-click="@this.nextPage()" class="{{#if page === showablePages.totalPages }}disabled{{/if}}">
+				<button on-click="@this.nextPage()" class="{{#if page === xTotalPages }}disabled{{/if}}">
 					<img
 						width="24"
 						height="24"
@@ -168,7 +168,7 @@
 					<span class="supporting-text_alt">per page</span>
 				</div>
 
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page === showablePages.totalPages}}disabled{{/if}}"
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}"
 					on-click="@this.nextPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
@@ -185,30 +185,28 @@
 		computed: {
 			pageRange () {
 				let page = this.get('page');
-				let pageLimit = parseInt(this.get('pageLimit'));
-				let total = this.get('projectList').length;
+				let pageLimit = this.get('pageLimit');
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
 				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
 
-				return total ? `${start} - ${end} of ${total}` : '0 of 0';
+				return xTotalPages && xTotalCount ? `${start} - ${end} of ${xTotalCount}` : '0 of 0';
 			},
 			showablePages () {
 				let page = this.get('page');
-				let pageLimit = parseInt(this.get('pageLimit'));
-				let totalRows = this.get('projectList').length;
-				let totalPages = Math.ceil(totalRows / pageLimit) || 1;
-
+				let xTotalPages = this.get('xTotalPages');
 				let start = (page - 2) < 1 ? 1 : page - 2;
 				let end = start + 4;
 
-				if (start + 4 > totalPages) {
-					start = totalPages - 4 > 0 ? totalPages - 4 : 1;
-					end = totalPages;
+				if (start + 4 > xTotalPages) {
+					start = xTotalPages - 4 > 0 ? xTotalPages - 4 : 1;
+					end = xTotalPages;
 				}
 
 				return {
 					start,
-					totalPages,
+					xTotalPages,
 					pageCount: new Array(end - start + 1),
 				};
 			},
@@ -222,26 +220,29 @@
 					gh: 'Github',
 				},
 				page: 1,
-				pageLimit: '10',
-				paginationLimits: [ '10', '20', '30', '40' ],
-				projectList: [],
+				pageLimit: 10,
+				paginationLimits: [ 10, 20, 30, 40 ],
+				projectsList: [],
 				sortProjectsBy: 'hits',
+				xTotalCount: 0,
+				xTotalPages: 0,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period statsType sortProjectsBy __ready', function () {
+				this.observe('period statsType sortProjectsBy page pageLimit __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
 						let statsType = this.get('statsType');
 						let sortProjectsBy = this.get('sortProjectsBy');
+						let pageLimit = this.get('pageLimit');
+						let page = this.get('page');
 
-						// fetch projectList using http api calls
-						http.fetchProjectStats(statsType, period, sortProjectsBy).then(({ response, responseHeaders }) => {
-							console.log('++++ responseHeaders', responseHeaders);
-							console.log('_______________________');
-							this.set('page', 1);
-							this.set('projectList', this.processProjectStats(response));
+						// fetch projectsList using http api calls
+						http.fetchProjectStats(statsType, period, sortProjectsBy, page, pageLimit).then(({ response, responseHeaders }) => {
+							this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+							this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
+							this.set('projectsList', this.processProjectStats(response));
 						});
 					}
 				});
@@ -249,29 +250,13 @@
 				this.observe('pageLimit', () => {
 					this.set('page', 1);
 				}, { init: false });
-
-
-				this.observe('page pageLimit projectList', () => {
-					let projectListByPage = [];
-					let page = this.get('page');
-					let pageLimit = parseInt(this.get('pageLimit'));
-					let projectList = this.get('projectList');
-					let start = (page - 1) * pageLimit + 1;
-					let end = start + pageLimit - 1;
-
-					for (let i = start - 1; i <= end - 1; i++) {
-						projectListByPage.push({ ...projectList[i] });
-					}
-
-					this.animate('projectListByPage', projectListByPage);
-				}, { init: false });
 			}
 		},
-		processProjectStats (projectList) {
-			let hitsMax = Math.max(...projectList.map(({ hits }) => hits));
-			let bandwidthMax = Math.max(...projectList.map(({ bandwidth }) => bandwidth));
+		processProjectStats (projectsList) {
+			let hitsMax = Math.max(...projectsList.map(({ hits }) => hits));
+			let bandwidthMax = Math.max(...projectsList.map(({ bandwidth }) => bandwidth));
 
-			return projectList.map((one) => {
+			return projectsList.map((one) => {
 				let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
 				let barWidth = {
 					hits: (one.hits * 100 / hitsMax) + '%',
@@ -291,10 +276,9 @@
 		},
 		nextPage () {
 			let page = this.get('page');
-			let pageLimit = parseInt(this.get('pageLimit'));
-			let total = this.get('projectList').length;
+			let xTotalPages = this.get('xTotalPages');
 
-			this.set('page', page * pageLimit + 1 > total ? page : page + 1);
+			this.set('page', page + 1 > xTotalPages ? page : page + 1);
 		},
 		toSignedPercentage (num) {
 			return `${num > 0 ? '+' : ''}${num}%`;
