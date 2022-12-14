@@ -98,9 +98,23 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
  * @param period -  time period for which the stats are returned (s-month, s-year)
  * @param country - country or continent. Includes only data for this country
  ***/
-module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, period, selectedItem, breakdown, country) => {
+module.exports.fetchTopPlatformBrowserStats = (
+	dataType,
+	isVersionGrouped,
+	period,
+	selectedItem,
+	breakdown,
+	country,
+	page = 1,
+	limit = 10
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
-	let body = { period: _.translatePeriodsToSNotation(period) };
+	let body = {
+		period: _.translatePeriodsToSNotation(period),
+		page,
+		limit,
+	};
 
 	if (country) {
 		body.country = country;
@@ -116,7 +130,7 @@ module.exports.fetchTopPlatformBrowserStats = (dataType, isVersionGrouped, perio
 		url += '/versions';
 	}
 
-	return _.makeHTTPRequest({ url, body });
+	return _.makeHTTPRequest({ url, body, responseHeadersToGet });
 };
 
 module.exports.fetchProjectStats = (type, period, sortBy = 'hits', page = 1, limit = 10) => {
