@@ -80,14 +80,17 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period country __ready', function () {
+				this.observe('period country continent __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
-						let country = this.get('country') || '';
+						let country = this.get('country');
+						let continent = this.get('continent');
 
-						if (country === 'WW') { country = ''; }
+						if (country === null) { country = ''; }
 
-						http.fetchNetworkProviderStats(period, country).then((response) => {
+						if (continent === null) { continent = ''; }
+
+						http.fetchNetworkProviderStats(period, country, continent).then((response) => {
 							let { providers: respProviders } = response.hits;
 
 							let oldSwitchList = this.get('switchList');
