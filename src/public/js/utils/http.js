@@ -78,11 +78,12 @@ module.exports.fetchCdnOssStats = (name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/proxies/${name}`, body: { period } });
 };
 
-module.exports.fetchNetworkProviderStats = (period, country = '') => {
+module.exports.fetchNetworkProviderStats = (period, country = '', continent = '') => {
 	let body = {
 		period,
 	};
 	country && (body.country = country);
+	continent && (body.continent = continent);
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network`, body });
 };
 
