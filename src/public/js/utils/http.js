@@ -97,7 +97,8 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
  * @param selectedItem - selected certain platform or browser value:string
  * @param breakdown - country breakdown, browser breakdown, platform, version breakdown
  * @param period -  time period for which the stats are returned (s-month, s-year)
- * @param country - country or continent. Includes only data for this country
+ * @param country - country. Includes only data for this country
+ * @param continent - continent. Includes only data for this country
  ***/
 module.exports.fetchTopPlatformBrowserStats = (
 	dataType,
@@ -106,6 +107,7 @@ module.exports.fetchTopPlatformBrowserStats = (
 	selectedItem,
 	breakdown,
 	country,
+	continent,
 	page = 1,
 	limit = 10
 ) => {
@@ -119,6 +121,10 @@ module.exports.fetchTopPlatformBrowserStats = (
 
 	if (country) {
 		body.country = country;
+	}
+
+	if (continent) {
+		body.continent = continent;
 	}
 
 	if (selectedItem) {
