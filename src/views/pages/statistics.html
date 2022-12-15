@@ -149,7 +149,12 @@
 
 				<div class="horizontal-divider"></div>
 
-				<c-network-request-chart __ready="{{ __ready }}" period="{{ statsPeriods[networkStatsPeriod] }}" country="{{ country }}"></c-network-request-chart>
+				<c-network-request-chart
+					__ready="{{ __ready }}"
+					period="{{ statsPeriods[networkStatsPeriod] }}"
+					country="{{ selectedCountry }}"
+					continent="{{ selectedContinent }}">
+				</c-network-request-chart>
 
 				<c-network-request-map __ready="{{ __ready }}" period="{{ statsPeriods[networkStatsPeriod] }}"></c-network-request-map>
 
@@ -157,14 +162,15 @@
 					<c-top-platform-browser
 						__ready="{{ __ready }}"
 						topDataType="platform"
-						country="{{country}}"
-						period="{{statsPeriods[networkStatsPeriod]}}">
+						country="{{ selectedCountry }}"
+						continent="{{ selectedContinent }}"
+						period="{{ statsPeriods[networkStatsPeriod] }}">
 					</c-top-platform-browser>
 
 					<c-top-platform-browser
 						__ready="{{ __ready }}"
 						topDataType="browser"
-						country="{{country}}"
+						continent="{{selectedContinent}}"
 						period="{{statsPeriods[networkStatsPeriod]}}">
 					</c-top-platform-browser>
 				</div>
@@ -237,9 +243,14 @@
 	const stats = require('../../public/js/utils/stats');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const countries = require('../../public/json/countries.json');
+	const continents = require('../../public/json/continents.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
 	const DEFAULT_PERIOD_KEY = 30;
+	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
+	const COUNTRY_SEARCH_ITEM_TYPE = 'country';
+	const CONTINENT_SEARCH_ITEM_TYPE = 'continent';
+	const GLOBAL_SEARCH_ITEM = { code: 'WW', name: 'Global', type: GLOBAL_SEARCH_ITEM_TYPE };
 
 	component.exports = {
 		data () {
@@ -269,18 +280,25 @@
 						interest: '99.81%',
 					},
 				],
-				country: '',
+				selectedCountry: null,
+				selectedContinent: null,
 				showNetworkStickyMenu: false,
 				networkStatsPeriod: DEFAULT_PERIOD_KEY,
 				projectStatsPeriod: DEFAULT_PERIOD_KEY,
 				lastOffsetTop: 0,
 				showProjectsStickyMenu: false,
+				selectedSearchItem: null,
 			};
 		},
 		decorators: {
 			tooltip,
 		},
 		oninit () {
+			let continentsList = continents.map(i => ({ ...i, type: CONTINENT_SEARCH_ITEM_TYPE }));
+			let countriesList = countries.map(i => ({ ...i, type: COUNTRY_SEARCH_ITEM_TYPE }));
+
+			this.set('searchList', [ ...continentsList, ...countriesList ]);
+
 			this.observe('screenWidth', (screenWidth) => {
 				if ((screenWidth || innerWidth) < 768) {
 					this.set('searchPlaceholder', 'Search');
@@ -288,40 +306,73 @@
 					this.set('searchPlaceholder', 'Filter for a specific country or a continent...');
 				}
 			});
+
+			this.observe('selectedSearchItem', (selectedSearchItem) => {
+				switch (selectedSearchItem.type) {
+					case COUNTRY_SEARCH_ITEM_TYPE:
+						this.set('selectedCountry', selectedSearchItem.code);
+						this.set('selectedContinent', null);
+						break;
+					case CONTINENT_SEARCH_ITEM_TYPE:
+						this.set('selectedContinent', selectedSearchItem.code);
+						this.set('selectedCountry', null);
+						break;
+					case GLOBAL_SEARCH_ITEM_TYPE:
+						this.set('selectedCountry', null);
+						this.set('selectedContinent', null);
+						break;
+				}
+			}, { init: false });
 		},
 		onrender () {
 			let sharedAssetsHost = this.get('@shared.assetsHost');
 			let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
 			let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
+			let searchList = this.get('searchList');
 
 			$('.search').autocomplete({ hint: false }, [
 				{
 					source: (query, cb) => {
-						let result = countries.filter((one) => {
-							query = query.toLowerCase();
-
-							return one.name.toLowerCase().search(query) !== -1;
+						let results = searchList.filter((one) => {
+							return one.name.toLowerCase().search(query.toLowerCase()) !== -1;
 						});
-						result = [{ code: 'WW', name: 'Global' }, ...result ];
-						cb(result);
+
+						results = [ GLOBAL_SEARCH_ITEM, ...results ];
+
+						cb(results);
 					},
 					displayKey: 'name',
 					templates: {
-						suggestion: ({ code, name }) => {
-							let src = code === 'WW' ? wwIconSrc : `${flagIconPath}/${code}.svg`;
+						suggestion: ({ code, name, type }) => {
+							let src = type !== COUNTRY_SEARCH_ITEM_TYPE ? wwIconSrc : `${flagIconPath}/${code}.svg`;
+							let itemClassName = type === COUNTRY_SEARCH_ITEM_TYPE ? 'search-item_country' : type === CONTINENT_SEARCH_ITEM_TYPE ? 'search-item_continent' : 'search-item_global';
+							let contentEl = `<img width="21px" height="15px" src="${src}">${name}`;
+							let suggestionEl = `<div class='search-item ${itemClassName}'>`;
 
-							return `<img width="21px" height="15px" src="${src}">` + name;
+							switch (type) {
+								case COUNTRY_SEARCH_ITEM_TYPE:
+									suggestionEl += `${contentEl}`;
+									break;
+								case CONTINENT_SEARCH_ITEM_TYPE:
+								case GLOBAL_SEARCH_ITEM_TYPE:
+									suggestionEl += `${contentEl}<hr />`;
+									break;
+							}
+
+							suggestionEl += '</div>';
+
+							return suggestionEl;
 						},
 					},
 				},
 			]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion) => {
-				this.set('country', suggestion.code);
+				this.set('selectedSearchItem', suggestion);
 
-				$('.search').css({
-					'background-image': `url('${suggestion.code === 'WW' ? wwIconSrc : flagIconPath + '/' + suggestion.code + '.svg'}')`,
-					'background-size': '21px 15px',
-					'padding-left': '40px',
-				});
+				// $('.search').css({
+				// 	'background-image': `url('${suggestion.code === 'WW' ? wwIconSrc : flagIconPath + '/' + suggestion.code + '.svg'}')`,
+				// 	'background-size': '21px 15px',
+				// 	'padding-left': '40px',
+				// });
 			}).on('autocomplete:opened', () => {
 				$('.search').removeAttr('style');
 			});
