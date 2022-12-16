@@ -122,7 +122,8 @@
 
 							<div class="search-block">
 								{{#if searchDefaultIcon}}
-									<img width="{{searchDefaultIcon.width}}"
+									<img class="{{searchDefaultIcon.class}}"
+										width="{{searchDefaultIcon.width}}"
 										height="{{searchDefaultIcon.height}}"
 										src="{{searchDefaultIcon.src}}"
 										loading="lazy">
@@ -328,9 +329,11 @@
 				if (!selectedSearchItem) {
 					this.set('searchDefaultIcon', {
 						src: defaultSrc,
-						width: '14px',
-						height: '14px',
+						width: '20px',
+						height: '20px',
+						class: 'default',
 					});
+
 					return;
 				}
 
@@ -338,29 +341,35 @@
 					case COUNTRY_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', selectedSearchItem.code);
 						this.set('selectedContinent', null);
+
 						this.set('searchDefaultIcon', {
 							src: `${flagIconPath}/${selectedSearchItem.code}.svg`,
 							width: '21px',
 							height: '15px',
 						});
+
 						break;
 					case CONTINENT_SEARCH_ITEM_TYPE:
 						this.set('selectedContinent', selectedSearchItem.code);
 						this.set('selectedCountry', null);
+
 						this.set('searchDefaultIcon', {
 							src: wwIconSrc,
 							width: '21px',
 							height: '15px',
 						});
+
 						break;
 					case GLOBAL_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', null);
 						this.set('selectedContinent', null);
+
 						this.set('searchDefaultIcon', {
 							src: wwIconSrc,
 							width: '21px',
 							height: '15px',
 						});
+
 						break;
 				}
 			});
