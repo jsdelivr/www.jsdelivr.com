@@ -120,7 +120,16 @@
 						<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
 							<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
 
-							<input class="search" placeholder="{{searchPlaceholder}}">
+							<div class="search-block">
+								{{#if searchDefaultIcon}}
+									<img width="{{searchDefaultIcon.width}}"
+										height="{{searchDefaultIcon.height}}"
+										src="{{searchDefaultIcon.src}}"
+										loading="lazy">
+								{{/if}}
+
+								<input class="search" placeholder="{{searchPlaceholder}}">
+							</div>
 
 							<div class="data-range-ctrl">
 								<div class="btn-group">
@@ -289,6 +298,7 @@
 				lastOffsetTop: 0,
 				showProjectsStickyMenu: false,
 				selectedSearchItem: null,
+				searchDefaultIcon: null,
 			};
 		},
 		decorators: {
@@ -310,21 +320,50 @@
 			});
 
 			this.observe('selectedSearchItem', (selectedSearchItem) => {
+				let sharedAssetsHost = this.get('@shared.assetsHost');
+				let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
+				let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
+				let defaultSrc = `${sharedAssetsHost}/img/statistics/search.svg`;
+
+				if (!selectedSearchItem) {
+					this.set('searchDefaultIcon', {
+						src: defaultSrc,
+						width: '14px',
+						height: '14px',
+					});
+					return;
+				}
+
 				switch (selectedSearchItem.type) {
 					case COUNTRY_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', selectedSearchItem.code);
 						this.set('selectedContinent', null);
+						this.set('searchDefaultIcon', {
+							src: `${flagIconPath}/${selectedSearchItem.code}.svg`,
+							width: '21px',
+							height: '15px',
+						});
 						break;
 					case CONTINENT_SEARCH_ITEM_TYPE:
 						this.set('selectedContinent', selectedSearchItem.code);
 						this.set('selectedCountry', null);
+						this.set('searchDefaultIcon', {
+							src: wwIconSrc,
+							width: '21px',
+							height: '15px',
+						});
 						break;
 					case GLOBAL_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', null);
 						this.set('selectedContinent', null);
+						this.set('searchDefaultIcon', {
+							src: wwIconSrc,
+							width: '21px',
+							height: '15px',
+						});
 						break;
 				}
-			}, { init: false });
+			});
 		},
 		onrender () {
 			let sharedAssetsHost = this.get('@shared.assetsHost');
