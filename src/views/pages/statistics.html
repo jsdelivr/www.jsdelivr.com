@@ -381,8 +381,9 @@
 			let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
 			let continentsList = this.get('continentsList');
 			let countriesList = this.get('countriesList');
+			let seachElement = $('#search');
 
-			$('#search').autocomplete({ hint: false }, [
+			seachElement.autocomplete({ hint: false }, [
 				{
 					source: (query, cb) => {
 						let results = continentsList.filter((one) => {
@@ -427,11 +428,29 @@
 
 				// hack to bypass lib behavior nd do not set "Global" as search value
 				setTimeout(() => {
-					$('#search').val(suggestion.name === GLOBAL_SEARCH_ITEM.name ? '' : suggestion.name);
-				}, 10);
+					seachElement.val(suggestion.type === GLOBAL_SEARCH_ITEM_TYPE ? '' : suggestion.name);
+				}, 4);
 			}).on('autocomplete:opened', () => {
-				$('#search').removeAttr('style');
+				seachElement.removeAttr('style');
 			});
+
+
+			seachElement.focusout((event) => {
+				let selectedSearchItem = this.get('selectedSearchItem');
+
+				if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
+					if (selectedSearchItem.type === GLOBAL_SEARCH_ITEM_TYPE) {
+						setTimeout(() => {
+							seachElement.val('');
+						}, 4);
+					} else {
+						setTimeout(() => {
+							seachElement.val(selectedSearchItem.name);
+						}, 4);
+					}
+				}
+			});
+
 
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
