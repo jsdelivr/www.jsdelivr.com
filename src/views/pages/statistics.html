@@ -129,7 +129,7 @@
 										loading="lazy">
 								{{/if}}
 
-								<input id="search" class="search" placeholder="{{searchPlaceholder}}">
+								<input id="search" class="search" placeholder="{{searchPlaceholder}}" value="{{searchDisplayValue}}">
 							</div>
 
 							<div class="data-range-ctrl">
@@ -300,6 +300,7 @@
 				showProjectsStickyMenu: false,
 				selectedSearchItem: null,
 				searchDefaultIcon: null,
+				searchDisplayValue: '',
 			};
 		},
 		decorators: {
@@ -341,6 +342,7 @@
 					case COUNTRY_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', selectedSearchItem.code);
 						this.set('selectedContinent', null);
+						this.set('searchDisplayValue', selectedSearchItem.name);
 
 						this.set('searchDefaultIcon', {
 							src: `${flagIconPath}/${selectedSearchItem.code}.svg`,
@@ -352,6 +354,7 @@
 					case CONTINENT_SEARCH_ITEM_TYPE:
 						this.set('selectedContinent', selectedSearchItem.code);
 						this.set('selectedCountry', null);
+						this.set('searchDisplayValue', selectedSearchItem.name);
 
 						this.set('searchDefaultIcon', {
 							src: wwIconSrc,
@@ -363,6 +366,7 @@
 					case GLOBAL_SEARCH_ITEM_TYPE:
 						this.set('selectedCountry', null);
 						this.set('selectedContinent', null);
+						this.set('searchDisplayValue', '');
 
 						this.set('searchDefaultIcon', {
 							src: defaultSrc,
@@ -383,7 +387,11 @@
 			let countriesList = this.get('countriesList');
 			let seachElement = $('#search');
 
-			seachElement.autocomplete({ hint: false }, [
+			seachElement.autocomplete({
+				hint: false,
+				clearOnSelected: true,
+			},
+			[
 				{
 					source: (query, cb) => {
 						let results = continentsList.filter((one) => {
@@ -425,32 +433,17 @@
 				},
 			]).on('autocomplete:selected', (e, suggestion) => {
 				this.set('selectedSearchItem', suggestion);
-
-				// hack to bypass lib behavior nd do not set "Global" as search value
-				setTimeout(() => {
-					seachElement.val(suggestion.type === GLOBAL_SEARCH_ITEM_TYPE ? '' : suggestion.name);
-				}, 4);
-			}).on('autocomplete:opened', () => {
-				seachElement.removeAttr('style');
 			});
-
 
 			seachElement.focusout((event) => {
-				let selectedSearchItem = this.get('selectedSearchItem');
+				setTimeout(() => {
+					let selectedSearchItem = this.get('selectedSearchItem');
 
-				if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
-					if (selectedSearchItem.type === GLOBAL_SEARCH_ITEM_TYPE) {
-						setTimeout(() => {
-							seachElement.val('');
-						}, 4);
-					} else {
-						setTimeout(() => {
-							seachElement.val(selectedSearchItem.name);
-						}, 4);
+					if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
+						seachElement.val(selectedSearchItem.type === GLOBAL_SEARCH_ITEM_TYPE ? '' : selectedSearchItem.name);
 					}
-				}
+				}, 4);
 			});
-
 
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
