@@ -129,7 +129,7 @@
 										loading="lazy">
 								{{/if}}
 
-								<input class="search" placeholder="{{searchPlaceholder}}">
+								<input id="search" class="search" placeholder="{{searchPlaceholder}}">
 							</div>
 
 							<div class="data-range-ctrl">
@@ -365,9 +365,10 @@
 						this.set('selectedContinent', null);
 
 						this.set('searchDefaultIcon', {
-							src: wwIconSrc,
-							width: '21px',
-							height: '15px',
+							src: defaultSrc,
+							width: '20px',
+							height: '20px',
+							class: 'default',
 						});
 
 						break;
@@ -381,7 +382,7 @@
 			let continentsList = this.get('continentsList');
 			let countriesList = this.get('countriesList');
 
-			$('.search').autocomplete({ hint: false }, [
+			$('#search').autocomplete({ hint: false }, [
 				{
 					source: (query, cb) => {
 						let results = continentsList.filter((one) => {
@@ -421,10 +422,16 @@
 						},
 					},
 				},
-			]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion) => {
-				this.set('selectedSearchItem', suggestion);
+			// ]).on('autocomplete:selected autocomplete:autocompleted', (e, suggestion) => {
+			]).on('autocomplete:selected', (e, suggestion, dataset, context) => {
+					this.set('selectedSearchItem', suggestion);
+
+				// hack to bypass lib behavior nd do not set "Global" as search value
+				setTimeout(() => {
+					$('#search').val(suggestion.name === GLOBAL_SEARCH_ITEM.name ? '' : suggestion.name);
+				}, 10);
 			}).on('autocomplete:opened', () => {
-				$('.search').removeAttr('style');
+				$('#search').removeAttr('style');
 			});
 
 			// detect window resize
