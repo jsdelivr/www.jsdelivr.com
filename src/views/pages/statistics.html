@@ -259,9 +259,11 @@
 	const throttle = require('../../public/js/utils/throttle');
 	const DEFAULT_PERIOD_KEY = 30;
 	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
+	const NO_RESULTS_SEARCH_ITEM_TYPE = 'no-results';
 	const COUNTRY_SEARCH_ITEM_TYPE = 'country';
 	const CONTINENT_SEARCH_ITEM_TYPE = 'continent';
 	const GLOBAL_SEARCH_ITEM = { code: 'WW', name: 'Global', type: GLOBAL_SEARCH_ITEM_TYPE };
+	const NO_RESULTS_SEARCH_ITEM = { code: 'no-results', name: 'No results found', type: NO_RESULTS_SEARCH_ITEM_TYPE };
 
 	component.exports = {
 		data () {
@@ -394,6 +396,8 @@
 							return one.name.toLowerCase().search(query.toLowerCase()) !== -1;
 						});
 
+						this.set('noSearchContinents', results.length === 0);
+
 						cb([ GLOBAL_SEARCH_ITEM, ...results ]);
 					},
 					displayKey: 'name',
@@ -410,25 +414,38 @@
 				},
 				{
 					source: (query, cb) => {
+						let noSearchContinents = this.get('noSearchContinents');
 						let results = countriesList.filter((one) => {
 							return one.name.toLowerCase().search(query.toLowerCase()) !== -1;
 						});
 
-						cb(results);
+						if (noSearchContinents && !results.length) {
+							cb([ NO_RESULTS_SEARCH_ITEM, ...results ]);
+						} else {
+							cb(results);
+						}
 					},
 					displayKey: 'name',
 					templates: {
-						suggestion: ({ code, name }) => {
+						suggestion: ({ code, name, type }) => {
+							let itemClassName = type === NO_RESULTS_SEARCH_ITEM_TYPE
+								? 'search-item_no-results' : 'search-item_country';
 							let src = `${flagIconPath}/${code}.svg`;
-							let contentEl = `<img width="21px" height="15px" src="${src}">${name}`;
-							let suggestionEl = `<div class='search-item search-item_country'>${contentEl}</div>`;
+							let contentEl = type === NO_RESULTS_SEARCH_ITEM_TYPE ? name : `<img width="21px" height="15px" src="${src}">${name}`;
+							let suggestionEl = `<div class='search-item ${itemClassName}'>${contentEl}</div>`;
 
 							return suggestionEl;
 						},
 					},
 				},
 			]).on('autocomplete:selected', (e, suggestion) => {
-				this.set('selectedSearchItem', suggestion);
+				if (suggestion.type === NO_RESULTS_SEARCH_ITEM_TYPE) {
+					let selecteItem = this.get('selectedSearchItem');
+
+					this.set('selectedSearchItem', selecteItem);
+				} else {
+					this.set('selectedSearchItem', suggestion);
+				}
 			});
 
 			seachElement.focusout((event) => {
@@ -436,7 +453,16 @@
 					let selectedSearchItem = this.get('selectedSearchItem');
 
 					if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
-						seachElement.val(selectedSearchItem.type === GLOBAL_SEARCH_ITEM_TYPE ? '' : selectedSearchItem.name);
+						switch (selectedSearchItem.type) {
+							case GLOBAL_SEARCH_ITEM_TYPE:
+							case NO_RESULTS_SEARCH_ITEM_TYPE:
+								seachElement.val('');
+								break;
+							case COUNTRY_SEARCH_ITEM_TYPE:
+							case CONTINENT_SEARCH_ITEM_TYPE:
+								seachElement.val(selectedSearchItem.name);
+								break;
+						}
 					}
 				}, 4);
 			});
