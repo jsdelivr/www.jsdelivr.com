@@ -476,8 +476,25 @@
 			this.stickyObserve(this.find('.projects-data'));
 		},
 		stickyObserve (el) {
+			let defaultElWidth = el.clientWidth;
+
 			let observer = new IntersectionObserver(
-				([ e ]) => e.target.classList.toggle('is-pinned', e.intersectionRatio < 1),
+				([ e ]) => {
+					let bodyClientWidth = document.querySelector('body').clientWidth;
+					let currentElWidth = el.clientWidth;
+
+					if (e.intersectionRatio < 1) {
+						e.target.style.width = `${bodyClientWidth}px`;
+						e.target.style.marginLeft = `${(bodyClientWidth - currentElWidth) / -2}px`;
+						e.target.style.marginRight = `${(bodyClientWidth - currentElWidth) / -2}px`;
+					} else {
+						e.target.style.width = `${defaultElWidth}px`;
+						e.target.style.marginLeft = 0;
+						e.target.style.marginRight = 0;
+					}
+
+					return e.target.classList.toggle('is-pinned', e.intersectionRatio < 1);
+				},
 				{ threshold: [ 1 ] }
 			);
 			observer.observe(el);
