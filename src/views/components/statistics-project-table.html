@@ -234,7 +234,11 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period statsType sortProjectsBy page pageLimit __ready', function () {
+				this.observe('period statsType sortProjectsBy pageLimit', () => {
+					this.set('page', 1);
+				}, { init: false });
+
+				this.observe('period statsType sortProjectsBy pageLimit page __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
 						let statsType = this.get('statsType');
@@ -250,10 +254,6 @@
 						});
 					}
 				});
-
-				this.observe('pageLimit', () => {
-					this.set('page', 1);
-				}, { init: false });
 			}
 		},
 		processProjectStats (projectsList) {
