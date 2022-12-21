@@ -251,7 +251,11 @@
 					}
 				});
 
-				this.observe('isVersionGrouped selectedItem breakdown __ready period country continent pageLimit page', function () {
+				this.observe('isVersionGrouped selectedItem breakdown period country continent pageLimit', () => {
+					this.set('page', 1);
+				}, { init: false });
+
+				this.observe('isVersionGrouped selectedItem breakdown period country continent pageLimit page __ready', () => {
 					if (this.get('__ready')) {
 						let topDataType = this.get('topDataType');
 						let isVersionGrouped = this.get('isVersionGrouped');
@@ -260,8 +264,8 @@
 						let period = this.get('period');
 						let country = this.get('country');
 						let continent = this.get('continent');
-						let page = this.get('page');
 						let pageLimit = this.get('pageLimit');
+						let page = this.get('page');
 						let sharedAssetsHost = this.get('@shared.assetsHost');
 						let baseUrl = `${sharedAssetsHost}/img/statistics`;
 
@@ -337,10 +341,6 @@
 						});
 					}
 				});
-
-				this.observe('pageLimit selectedItem', () => {
-					this.set('page', 1);
-				}, { init: false });
 			}
 		},
 		prevPage () {
