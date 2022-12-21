@@ -16,61 +16,65 @@
 	<c-header></c-header>
 
 	<div class="p-statistics">
-		<div class="container">
-			<div class="head-wrapper">
-				<div class="head-wrapper_map-wrapper">
-					<img class="head-map-bg" width="908" height="428" src="{{@shared.assetsHost}}/img/sponsors/map.svg">
-				</div>
-
-				<h2 class="head-title">Statistics</h2>
-
-				<p class="head-text">
-					Global internet insights from jsDelivr
-					based on anonymous aggregated data
-				</p>
-
-				<div class="global-data">
-					<div class="global-data_content-wrapper">
-						<div class="global-data_info">
-							<img class="global-data_info_icon"
-								width="48"
-								height="48"
-								src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
-
-							<h2 class="global-data_info_title">Global data</h2>
-
-							<div class="global-data_info_settings-icon {{ #if showGlobalStickyMenu }}active{{ /if }}"
-								on-click="@this.set('showGlobalStickyMenu', !showGlobalStickyMenu)">
-								<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
-							</div>
-						</div>
-
-						<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
-							<div class="btn-group">
-								<span class="label-for-pinned">Data range</span>
-								<button
-									type="button"
-									class="btn dropdown-toggle"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<span>{{ statsPeriods[globalStatsPeriod] }}</span>
-
-									<i class="fa fa-angle-down" aria-hidden="true"></i>
-								</button>
-
-								<ul class="dropdown-menu">
-									{{#each statsPeriods}}
-										<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
-									{{/each}}
-								</ul>
-							</div>
-						</div>
-
-						<div class="horizontal-divider"></div>
+		<div>
+			<div class="container">
+				<div class="head-wrapper">
+					<div class="head-wrapper_map-wrapper">
+						<img class="head-map-bg" width="908" height="428" src="{{@shared.assetsHost}}/img/sponsors/map.svg">
 					</div>
-				</div>
 
+					<h2 class="head-title">Statistics</h2>
+
+					<p class="head-text">
+						Global internet insights from jsDelivr
+						based on anonymous aggregated data
+					</p>
+				</div>
+			</div>
+
+			<div class="global-data">
+				<div class="global-data_content-wrapper">
+					<div class="global-data_info">
+						<img class="global-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
+
+						<h2 class="global-data_info_title">Global data</h2>
+
+						<div class="global-data_info_settings-icon {{ #if showGlobalStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showGlobalStickyMenu', !showGlobalStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
+					</div>
+
+					<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
+						<div class="btn-group">
+							<span class="label-for-pinned">Data range</span>
+							<button
+								type="button"
+								class="btn dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{ statsPeriods[globalStatsPeriod] }}</span>
+
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each statsPeriods}}
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<div class="horizontal-divider"></div>
+				</div>
+			</div>
+
+			<div class="container">
 				<c-network-provider-stats period="{{ statsPeriods[globalStatsPeriod] }}"></c-network-provider-stats>
 
 				<div class="hit-rate">
@@ -99,64 +103,64 @@
 		</div>
 
 		<div class="grey">
-			<div class="container">
-				<div class="network-data">
-					<div class="network-data_content-wrapper">
-						<div class="network-data_info">
-							<img class="network-data_info_icon"
-								width="48"
-								height="48"
-								src="{{@shared.assetsHost}}/img/statistics/network.svg"
-								loading="lazy">
+			<div class="network-data">
+				<div class="network-data_content-wrapper">
+					<div class="network-data_info">
+						<img class="network-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/network.svg"
+							loading="lazy">
 
-							<h2 class="network-data_info_title">Network data</h2>
+						<h2 class="network-data_info_title">Network data</h2>
 
-							<div class="network-data_info_settings-icon {{ #if showNetworkStickyMenu }}active{{ /if }}"
-								on-click="@this.set('showNetworkStickyMenu', !showNetworkStickyMenu)">
-								<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
-							</div>
+						<div class="network-data_info_settings-icon {{ #if showNetworkStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showNetworkStickyMenu', !showNetworkStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
+					</div>
+
+					<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
+						<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
+
+						<div class="search-block">
+							{{#if searchDefaultIcon}}
+								<img class="{{searchDefaultIcon.class}}"
+									width="{{searchDefaultIcon.width}}"
+									height="{{searchDefaultIcon.height}}"
+									src="{{searchDefaultIcon.src}}"
+									loading="lazy">
+							{{/if}}
+
+							<input id="search" class="search" placeholder="{{searchPlaceholder}}" value="{{searchDisplayValue}}">
 						</div>
 
-						<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
-							<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
+						<div class="data-range-ctrl">
+							<div class="btn-group">
+								<span class="label-for-pinned">Data range</span>
+								<button
+									type="button"
+									class="btn dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{ statsPeriods[networkStatsPeriod] }}</span>
 
-							<div class="search-block">
-								{{#if searchDefaultIcon}}
-									<img class="{{searchDefaultIcon.class}}"
-										width="{{searchDefaultIcon.width}}"
-										height="{{searchDefaultIcon.height}}"
-										src="{{searchDefaultIcon.src}}"
-										loading="lazy">
-								{{/if}}
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
 
-								<input id="search" class="search" placeholder="{{searchPlaceholder}}" value="{{searchDisplayValue}}">
-							</div>
-
-							<div class="data-range-ctrl">
-								<div class="btn-group">
-									<span class="label-for-pinned">Data range</span>
-									<button
-										type="button"
-										class="btn dropdown-toggle"
-										data-toggle="dropdown"
-										aria-haspopup="true"
-										aria-expanded="false">
-										<span>{{ statsPeriods[networkStatsPeriod] }}</span>
-
-										<i class="fa fa-angle-down" aria-hidden="true"></i>
-									</button>
-
-									<ul class="dropdown-menu">
-										{{#each statsPeriods}}
-											<li><a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a></li>
-										{{/each}}
-									</ul>
-								</div>
+								<ul class="dropdown-menu">
+									{{#each statsPeriods}}
+										<li><a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a></li>
+									{{/each}}
+								</ul>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div>
 
+			<div class="container">
 				<div class="horizontal-divider"></div>
 
 				<c-network-request-chart
@@ -188,7 +192,7 @@
 			</div>
 		</div>
 
-		<div class="container">
+		<div>
 			<div class="projects-data">
 				<div class="projects-data_content-wrapper">
 					<div class="projects-data_info">
@@ -230,20 +234,22 @@
 				</div>
 			</div>
 
-			<div class="horizontal-divider"></div>
+			<div class="container">
+				<div class="horizontal-divider"></div>
 
-			<c-statistics-project-table
-				__ready="{{ __ready }}"
-				title="Most popular projects"
-				period="{{ statsPeriods[projectStatsPeriod] }}">
-			</c-statistics-project-table>
+				<c-statistics-project-table
+					__ready="{{ __ready }}"
+					title="Most popular projects"
+					period="{{ statsPeriods[projectStatsPeriod] }}">
+				</c-statistics-project-table>
 
-			<!-- <c-statistics-project-table
-				__ready="{{ __ready }}"
-				title="Trending projects"
-				dataType="trending"
-				period="{{ statsPeriods[projectStatsPeriod] }}">
-			</c-statistics-project-table> -->
+				<!-- <c-statistics-project-table
+					__ready="{{ __ready }}"
+					title="Trending projects"
+					dataType="trending"
+					period="{{ statsPeriods[projectStatsPeriod] }}">
+				</c-statistics-project-table> -->
+			</div>
 		</div>
 	</div>
 	<c-footer></c-footer>
@@ -471,32 +477,22 @@
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		oncomplete () {
-			this.stickyObserve(this.find('.global-data'));
-			this.stickyObserve(this.find('.network-data'));
-			this.stickyObserve(this.find('.projects-data'));
+			let globalEl = this.find('.global-data');
+			let networkEl = this.find('.network-data');
+			let projectsEl = this.find('.projects-data');
+
+			this.stickyObserve(globalEl);
+			this.stickyObserve(networkEl);
+			this.stickyObserve(projectsEl);
 		},
 		stickyObserve (el) {
-			let defaultElWidth = el.clientWidth;
-
 			let observer = new IntersectionObserver(
 				([ e ]) => {
-					let bodyClientWidth = document.querySelector('body').clientWidth;
-					let currentElWidth = el.clientWidth;
-
-					if (e.intersectionRatio < 1) {
-						e.target.style.width = `${bodyClientWidth}px`;
-						e.target.style.marginLeft = `${(bodyClientWidth - currentElWidth) / -2}px`;
-						e.target.style.marginRight = `${(bodyClientWidth - currentElWidth) / -2}px`;
-					} else {
-						e.target.style.width = `${defaultElWidth}px`;
-						e.target.style.marginLeft = 0;
-						e.target.style.marginRight = 0;
-					}
-
 					return e.target.classList.toggle('is-pinned', e.intersectionRatio < 1);
 				},
 				{ threshold: [ 1 ] }
 			);
+
 			observer.observe(el);
 		},
 	};
