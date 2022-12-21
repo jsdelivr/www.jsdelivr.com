@@ -95,7 +95,7 @@
 						{{#each topList:idx}}
 							<div class="table-wrapper_content_row">
 								<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
-									<span class="platform-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
+									<span class="platform-index">{{ (page.value - 1) * pageLimit + idx + 1 }}</span>
 
 									{{#if icon}}
 										<img class="platform-icon {{#if selectedItem}}breakdown-{{breakdown}}{{/if}}"
@@ -136,7 +136,7 @@
 
 			<div class="table-wrapper_pagination_ctrls">
 				<button on-click="@this.prevPage()"
-					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}">
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
@@ -164,7 +164,7 @@
 				</div>
 
 				<button on-click="@this.nextPage()"
-					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}">
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
 			</div>
@@ -187,7 +187,7 @@
 				let pageLimit = this.get('pageLimit');
 				let xTotalCount = this.get('xTotalCount');
 				let xTotalPages = this.get('xTotalPages');
-				let start = (page - 1) * pageLimit + 1;
+				let start = (page.value - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
 
 				if (xTotalCount < end) {
@@ -208,7 +208,7 @@
 				breakdown: 'countries',
 				breakdownIdx: 0,
 				breakdownList: [],
-				page: 1,
+				page: { value: 1 },
 				pageLimit: 10,
 				paginationLimits: [ 10, 20, 30, 40 ],
 				xTotalCount: 0,
@@ -253,10 +253,10 @@
 				});
 
 				this.observe('isVersionGrouped selectedItem breakdown period country continent pageLimit', () => {
-					this.set('page', 1);
+					this.set('page', { value: 1 });
 				}, { init: false });
 
-				this.observe('isVersionGrouped selectedItem breakdown period country continent pageLimit page __ready', () => {
+				this.observe('page __ready', () => {
 					if (this.get('__ready')) {
 						let topDataType = this.get('topDataType');
 						let isVersionGrouped = this.get('isVersionGrouped');
@@ -278,7 +278,7 @@
 							breakdown,
 							country,
 							continent,
-							page,
+							page.value,
 							pageLimit
 						).then(({ response, responseHeaders }) => {
 							let topList = response.map((one, index) => {
@@ -346,14 +346,16 @@
 		},
 		prevPage () {
 			let page = this.get('page');
+			let value = page.value > 1 ? page.value - 1 : page.value;
 
-			this.set('page', page > 1 ? page - 1 : page);
+			this.set('page', { value });
 		},
 		nextPage () {
 			let page = this.get('page');
 			let xTotalPages = this.get('xTotalPages');
+			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
 
-			this.set('page', page + 1 > xTotalPages ? page : page + 1);
+			this.set('page', { value });
 		},
 		handleBreakdownSelect (idx, isDisabled) {
 			if (isDisabled) { return; }
