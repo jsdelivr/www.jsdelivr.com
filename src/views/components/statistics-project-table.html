@@ -62,7 +62,7 @@
 				{{#each projectsList:idx}}
 					<div class="projects-content_table_row">
 						<div class="cell cell_one">
-							<span class="proj-index">{{ (page - 1) * pageLimit + idx + 1 }}</span>
+							<span class="proj-index">{{ (page.value - 1) * pageLimit + idx + 1 }}</span>
 
 							<div class="proj-path">
 								<span class="proj-path_type">{{ type }}/</span>
@@ -111,7 +111,7 @@
 			</div>
 
 			<div class="projects-content_pagination_numeration">
-				<button on-click="@this.prevPage()" class="{{#if page === 1}}disabled{{/if}}">
+				<button on-click="@this.prevPage()" class="{{#if page.value === 1}}disabled{{/if}}">
 					<img
 						width="20"
 						height="24"
@@ -121,13 +121,13 @@
 
 				{{#each showablePages.pageCount}}
 					<button
-						class="page-num {{ #if (~/showablePages.start + @key) === page }}selected{{ /if }}"
-						on-click="@this.set('page', parseInt(~/showablePages.start + @key))">
+						class="page-num {{ #if (~/showablePages.start + @key) === page.value }}selected{{ /if }}"
+						on-click="@this.set('page', { value: parseInt(~/showablePages.start + @key) })">
 						{{~/showablePages.start + @key}}
 					</button>
 				{{/each}}
 
-				<button on-click="@this.nextPage()" class="{{#if page === xTotalPages }}disabled{{/if}}">
+				<button on-click="@this.nextPage()" class="{{#if page.value === xTotalPages }}disabled{{/if}}">
 					<img
 						width="24"
 						height="24"
@@ -137,7 +137,7 @@
 			</div>
 
 			<div class="projects-content_pagination_ctrls">
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}"
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}"
 					on-click="@this.prevPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
@@ -168,7 +168,7 @@
 					<span class="supporting-text_alt">per page</span>
 				</div>
 
-				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}"
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}"
 					on-click="@this.nextPage()">
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 				</button>
@@ -188,7 +188,7 @@
 				let pageLimit = this.get('pageLimit');
 				let xTotalCount = this.get('xTotalCount');
 				let xTotalPages = this.get('xTotalPages');
-				let start = (page - 1) * pageLimit + 1;
+				let start = (page.value - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
 
 				if (xTotalCount < end) {
@@ -200,7 +200,7 @@
 			showablePages () {
 				let page = this.get('page');
 				let xTotalPages = this.get('xTotalPages');
-				let start = (page - 2) < 1 ? 1 : page - 2;
+				let start = (page.value - 2) < 1 ? 1 : page.value - 2;
 				let end = start + 4;
 
 				if (start + 4 > xTotalPages) {
@@ -223,7 +223,7 @@
 					npm: 'npm',
 					gh: 'Github',
 				},
-				page: 1,
+				page: { value: 1 },
 				pageLimit: 10,
 				paginationLimits: [ 10, 20, 30, 40 ],
 				projectsList: [],
@@ -235,10 +235,11 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period statsType sortProjectsBy pageLimit', () => {
-					this.set('page', 1);
+					this.set('page', { value: 1 });
 				}, { init: false });
 
-				this.observe('period statsType sortProjectsBy pageLimit page __ready', function () {
+				// this.observe('period statsType sortProjectsBy pageLimit page __ready', function () {
+				this.observe('page __ready', () => {
 					if (this.get('__ready')) {
 						let period = this.get('period');
 						let statsType = this.get('statsType');
@@ -247,7 +248,7 @@
 						let page = this.get('page');
 
 						// fetch projectsList using http api calls
-						http.fetchProjectStats(statsType, period, sortProjectsBy, page, pageLimit).then(({ response, responseHeaders }) => {
+						http.fetchProjectStats(statsType, period, sortProjectsBy, page.value, pageLimit).then(({ response, responseHeaders }) => {
 							this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
 							this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
 							this.animate('projectsList', this.processProjectStats(response));
@@ -275,14 +276,16 @@
 		},
 		prevPage () {
 			let page = this.get('page');
+			let value = page.value > 1 ? page.value - 1 : page.value;
 
-			this.set('page', page > 1 ? page - 1 : page);
+			this.set('page', { value });
 		},
 		nextPage () {
 			let page = this.get('page');
 			let xTotalPages = this.get('xTotalPages');
+			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
 
-			this.set('page', page + 1 > xTotalPages ? page : page + 1);
+			this.set('page', { value });
 		},
 		toSignedPercentage (num) {
 			return `${num > 0 ? '+' : ''}${num}%`;
