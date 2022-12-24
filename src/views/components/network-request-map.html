@@ -50,7 +50,7 @@
 						<img on-click="@this.hideTooltip()"
 							width="20"
 							height="20"
-							src="{{@shared.assetsHost}}/img/statistics/close.svg">
+							src="{{@shared.assetsHost}}/img/statistics/close.white.svg">
 					</div>
 
 					<div class="map-block_map-wrapper_tooltip_body">
@@ -310,11 +310,6 @@
 					.attr('fill', (d) => {
 						let countryCode = d.id;
 
-						if (!dataByCountries[countryCode]) {
-							// console.log('geo country');
-							// console.log(d);
-						}
-
 						return colorScale(dataByCountries[countryCode] ? dataByCountries[countryCode].total : null);
 					})
 					.attr('stroke', 'white')
@@ -322,8 +317,35 @@
 					.on('mouseover click', (event, d) => this.showTooltip(event, d))
 					.on('mouseout', () => this.hideTooltip());
 
+				function filter (event) {
+					switch (event.type) {
+						case 'wheel':
+							if (event.ctrlKey) {
+								event.preventDefault();
+								return true;
+							}
+
+							break;
+
+						case 'touchstart':
+							return true;
+
+						case 'click':
+							return true;
+
+						default:
+							return false;
+					}
+				}
+
+				function wheelDelta (event) {
+					return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+				}
+
 				let zoom = d3.zoom()
 					.scaleExtent([ 1, 8 ])
+					.filter(filter)
+					.wheelDelta(wheelDelta)
 					.on('zoom', (event) => {
 						svg.selectAll('g')
 							.attr('transform', event.transform);
