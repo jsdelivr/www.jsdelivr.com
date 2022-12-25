@@ -18,7 +18,8 @@
 				title="{{projectTitle}}"
 				descr="{{projectDescr}}"
 				imgW="{{projectImgW}}"
-				imgH="{{projectImgH}}">
+				imgH="{{projectImgH}}"
+				imgExt="{{projectImgExt}}">
 				{{#partial title}}
 					{{title}}
 				{{/partial}}
@@ -28,7 +29,7 @@
 				{{/partial}}
 
 				{{#partial img}}
-					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}.svg">
+					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/custom-cdn-oss/{{name}}{{imgExt}}">
 				{{/partial}}
 			</c-cdn-oss-head>
 
@@ -187,6 +188,15 @@
 						imgW: '213',
 						imgH: '48',
 					},
+					ghost: {
+						title: 'Ghost',
+						descr: 'Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content. It comes with modern tools to build a website, publish content, send newsletters & offer paid subscriptions to members.',
+						link: 'https://ghost.org',
+						docsLink: 'https://ghost.org/docs/install',
+						imgW: '152',
+						imgH: '56',
+						imgExt: '.png',
+					},
 				},
 				projectTitle: '',
 				projectDescr: '',
@@ -204,6 +214,7 @@
 				this.set('projectDescr', projectsData[name].descr);
 				this.set('projectImgW', projectsData[name].imgW);
 				this.set('projectImgH', projectsData[name].imgH);
+				this.set('projectImgExt', projectsData[name].imgExt || '.svg');
 				this.set('projectLink', projectsData[name].link);
 				this.set('docsLink', projectsData[name].docsLink);
 			});
