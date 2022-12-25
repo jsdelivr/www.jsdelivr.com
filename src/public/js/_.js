@@ -1,3 +1,4 @@
+const providersJson = require('../../public/json/net-providers.json');
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
@@ -340,7 +341,7 @@ module.exports = {
 		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
-	formatToShortNumber (num) {
+	formatToShortNumber (num, delimiter = '') {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -356,11 +357,11 @@ module.exports = {
 			return num >= item.value;
 		});
 
-		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + item.symbol : '0';
+		return item ? (num / item.value).toFixed(1).replace(rx, '$1') + delimiter + item.symbol : '0';
 	},
 
 	makeHTTPRequest (obj) {
-		let { method = 'GET', rawResponse = false, body, url, headers } = obj;
+		let { method = 'GET', rawResponse = false, body, url, headers, responseHeadersToGet = null } = obj;
 
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
@@ -372,7 +373,22 @@ module.exports = {
 
 			xhr.onload = () => {
 				if (xhr.status >= 200 && xhr.status < 300) {
-					resolve(rawResponse ? xhr.response : JSON.parse(xhr.response));
+					let response = rawResponse ? xhr.response : JSON.parse(xhr.response);
+
+					if (responseHeadersToGet && responseHeadersToGet.length) {
+						let responseHeaders = responseHeadersToGet.reduce((headerValuePairs, headerName) => {
+							headerValuePairs[headerName] = xhr.getResponseHeader(headerName);
+
+							return headerValuePairs;
+						}, {});
+
+						resolve({
+							response,
+							responseHeaders,
+						});
+					} else {
+						resolve(response);
+					}
 				} else {
 					reject(xhr.statusText);
 				}
@@ -482,13 +498,13 @@ module.exports = {
 		};
 	},
 
-	prepareDataForChartGroupedBy (rawData, groupBy) {
+	prepareDataForChartGroupedBy (rawData, groupBy, valueByDatePropName = '') {
 		let rawDataDatesKeys = Object.keys(rawData.dates);
 		let rawDataDatesData = rawData.dates;
 
 		return rawDataDatesKeys.reduce((resData, date) => {
 			let { dateYear, dateMonth, dateDay, dateDayName, periodMonthShort, periodMonthFull, parsedDateDay } = this.getDateFormats(date);
-			let valueByDateConverted = rawDataDatesData[date];
+			let valueByDateConverted = valueByDatePropName ? rawDataDatesData[date][valueByDatePropName] : rawDataDatesData[date];
 
 			switch (groupBy) {
 				case 'month':
@@ -807,6 +823,96 @@ module.exports = {
 		}
 	},
 
+	// prepare data for Providers Line Chart
+	getPreparedProvidersDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
+		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+		let valueUnits = '', unit;
+		let sortedProviders = Object.values(rawData[dataType].providers).sort((a, b) => b.total - a.total);
+		let topProviderData = sortedProviders[0] || {};
+		let { preparedData: topProviderPrepData } = this.prepareDataForChartGroupedBy(topProviderData, groupBy, 'total');
+		let labelsData = {
+			labels: [],
+			labelsStartEndPeriods: [],
+		};
+		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
+		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerName) => {
+			result.push({
+				providerName,
+				...rawData[dataType].providers[providerName],
+			});
+
+			return result;
+		}, []);
+
+		// collect labels, period starts/ends data for chart
+		labelsData = dataToIteract.reduce((labelsData, period) => {
+			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
+
+			labelsData.labels.push([ period.day, period.month, period.year ]);
+			labelsData.labelsStartEndPeriods.push([ period.periodStart, period.periodEnd, period.value ]);
+
+			return labelsData;
+		}, labelsData);
+
+		// create labels depending on chartPeriod, Screen size, groupBy
+		switch (chartPeriod) {
+			case 'week':
+				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
+				break;
+			case 'month':
+				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+			case 'quarter':
+			case 'year':
+				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
+				break;
+		}
+
+		let { allGroupedByValues, datasets } = prepProvidersData.reduce((res, providerData) => {
+			let { preparedData } = this.prepareDataForChartGroupedBy(providerData, groupBy, 'total');
+			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+
+			let groupedByValues = dataToIteract.reduce((values, period) => {
+				if (onlyFullPeriods && period.isFull === false) { return values; }
+
+				values.push(period.value);
+
+				return values;
+			}, []);
+
+			if (showChartBandwidth) {
+				if (!unit) {
+					unit = module.exports.findUnitFromArray(groupedByValues);
+					valueUnits = ` ${unit}`;
+				}
+
+				groupedByValues = groupedByValues.map(v => module.exports.convertBytesToUnits(v, unit));
+			}
+
+			let dataset = {
+				label: providersJson[providerData.providerName].name,
+				data: groupedByValues,
+				borderColor: providersJson[providerData.providerName].color,
+				backgroundColor: providersJson[providerData.providerName].color,
+			};
+
+			res.datasets.push(dataset);
+			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
+
+			return res;
+		}, { allGroupedByValues: [], datasets: [] });
+
+		// get min/max magnitude for y-axis
+		let maxRangeValue = this.getValueByMagnitude(Math.max(...allGroupedByValues), 'ceil', 1);
+
+		return {
+			...labelsData,
+			maxRangeValue,
+			valueUnits,
+			datasets,
+		};
+	},
+
 	// prepare data for LineChart
 	getPreparedDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, numberOfDatasets = 5, onlyFullPeriods = true) {
 		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
@@ -869,30 +975,8 @@ module.exports = {
 			let dataset = {
 				label: `v${versionData.version}`,
 				data: groupedByValues,
+				...module.exports.getLineColorsFromMask(idx),
 			};
-
-			switch (idx) {
-				case 0:
-					dataset.borderColor = '#5C667A';
-					dataset.backgroundColor = '#5C667A';
-					break;
-				case 1:
-					dataset.borderColor = '#BC5090';
-					dataset.backgroundColor = '#BC5090';
-					break;
-				case 2:
-					dataset.borderColor = '#FFA600';
-					dataset.backgroundColor = '#FFA600';
-					break;
-				case 3:
-					dataset.borderColor = '#FF6361';
-					dataset.backgroundColor = '#FF6361';
-					break;
-				case 4:
-					dataset.borderColor = '#69C4F7';
-					dataset.backgroundColor = '#69C4F7';
-					break;
-			}
 
 			res.datasets.push(dataset);
 			res.allGroupedByValues = [ ...res.allGroupedByValues, ...groupedByValues ];
@@ -920,5 +1004,27 @@ module.exports = {
 		}
 
 		return periodStart === periodEnd ? `${periodStart}` : `${periodStart} - ${periodEnd}`;
+	},
+
+	getLineColorsFromMask (key, mask = null, customColorsArr = null) {
+		let defaultColorsArr = [ '#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7' ];
+		let colorsArr = customColorsArr ? customColorsArr : defaultColorsArr;
+		let lineColors = {
+			borderColor: mask ? mask[key] : colorsArr[key],
+			backgroundColor: mask ? mask[key] : colorsArr[key],
+		};
+
+		return lineColors;
+	},
+
+	translatePeriodsToSNotation (period) {
+		switch (period) {
+			case 'month':
+				return 's-month';
+			case 'quarter':
+				return 's-quarter';
+			case 'year':
+				return 's-year';
+		}
 	},
 };

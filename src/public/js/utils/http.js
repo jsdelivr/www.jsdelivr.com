@@ -78,11 +78,12 @@ module.exports.fetchCdnOssStats = (name, period = 'month') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/proxies/${name}`, body: { period } });
 };
 
-module.exports.fetchNetworkProviderStats = (period, country = '') => {
+module.exports.fetchNetworkProviderStats = (period, country = '', continent = '') => {
 	let body = {
 		period,
 	};
 	country && (body.country = country);
+	continent && (body.continent = continent);
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network`, body });
 };
 
@@ -91,37 +92,67 @@ module.exports.fetchNetworkProviderStatsByCountry = (period) => {
 };
 
 /** *
- * @param type - platform type  value:  "platforms", "browsers"
- * @param isVersionGrouped  -  version grouped switchbox value: boolean
+ * @param dataType - request type value: "platforms", "browsers"
+ * @param isVersionGrouped  - version grouped switchbox value: boolean
  * @param selectedItem - selected certain platform or browser value:string
- * @param breakdown - country breakdown, browser breakdown, platform , version berakdown
+ * @param breakdown - country breakdown, browser breakdown, platform, version breakdown
+ * @param period -  time period for which the stats are returned (s-month, s-year)
+ * @param country - country. Includes only data for this country
+ * @param continent - continent. Includes only data for this country
  ***/
-module.exports.fetchTopPlatformBrowserStats = (type, isVersionGrouped, selectedItem, breakdown) => {
-	let url = type === 'platform' ? '/v1/stats/platforms' : '/v1/stats/browsers';
+module.exports.fetchTopPlatformBrowserStats = (
+	dataType,
+	isVersionGrouped,
+	period,
+	selectedItem,
+	breakdown,
+	country,
+	continent,
+	page = 1,
+	limit = 10
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
+	let body = {
+		period: _.translatePeriodsToSNotation(period),
+		page,
+		limit,
+	};
 
-	if (!isVersionGrouped) {
-		if (!selectedItem) {
-			url += '/versions'; // initial state but <version group> switch box is disabled
-		} else { 					// when a user selected one platform or browser in the list , <version group> is disabled
-			url += `/${selectedItem.name}/versions/${selectedItem.version}/countries`;
-		}
-	} else {						// <version group> switchbox is enabled
-		if (selectedItem) { 		// user selected one platform or browser
-			url += `${selectedItem.name}/${breakdown}`;
-		}
+	if (country) {
+		body.country = country;
 	}
 
-	return _.makeHTTPRequest({ url });
+	if (continent) {
+		body.continent = continent;
+	}
+
+	if (selectedItem) {
+		if (selectedItem.version) {
+			url += `/${selectedItem.name.toLowerCase()}/versions/${selectedItem.version}/countries`;
+		} else {
+			url += `/${selectedItem.name.toLowerCase()}/${breakdown}`;
+		}
+	} else if (!isVersionGrouped) {
+		url += '/versions';
+	}
+
+	return _.makeHTTPRequest({ url, body, responseHeadersToGet });
 };
 
-module.exports.fetchProjectStats = (type, statsType, period) => {
-	statsType = statsType === 'all' ? '' : `/${statsType}`;
+module.exports.fetchProjectStats = (type, period, sortBy = 'hits', page = 1, limit = 10) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+	let body = {
+		period,
+		by: sortBy,
+		page,
+		limit,
+	};
 
-	return _.makeHTTPRequest({
-		url: type === 'popular' ? `${STAGING_API_HOST}/v1/stats/packages${statsType}` : `${STAGING_API_HOST}/v1/stats/packages${statsType}`,
-		body: {
-			period,
-		},
-	});
+	if (type !== 'all') {
+		body.type = type;
+	}
+
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 

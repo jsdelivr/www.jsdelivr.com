@@ -1,24 +1,60 @@
 <div class="c-network-request-chart">
+	<style>
+		{{#each providersJson}}
+			.hits-chart-block_switchers_item_switch input.{{name}}:checked + .slider {
+				background-color: {{color}};
+			}
+
+			.hits-chart-block_switchers_item_switch input.{{name}}:focus + .slider {
+				box-shadow: 0 0 1px {{color}};
+			}
+		{{/each}}
+	</style>
+
 	<div class="chart-header">
 		<h3>Requests served over time</h3>
-		<div>
-			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
-			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+
+		<div class="chart-header_switch">
+			<button class="button {{ showChartBandwidth ? '' : 'selected' }}" on-click="@this.set('showChartBandwidth', false)">Requests</button>
+			<button class="button {{ showChartBandwidth ? 'selected' : '' }}" on-click="@this.set('showChartBandwidth', true)">Bandwidth</button>
 		</div>
 	</div>
-	<div class="hits-chart-wrapper">
-		<div class="switch-block">
-			{{#each switchList}}
-				<div class="switch-item">
-					<label class="switch">
-						<input class="{{ name }}" type="checkbox" on-click="@this.set('switchList['+@index+'].active', !active)" checked>
-						<span class="slider round"></span>
+
+	<div class="hits-chart-block">
+		<div class="hits-chart-block_switchers">
+			<div class="hits-chart-block_switchers_breakdown">
+				<div class="hits-chart-block_switchers_item">
+					<label class="hits-chart-block_switchers_item_switch">
+						<input
+							type="checkbox"
+							on-click="@this.toggle('showProviderBreakdown')"
+							checked>
+						<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
 						</label>
-						<span class="name">{{name}}</span>
+						<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
 				</div>
-			{{/each}}
+			</div>
+
+
+			<div class="hits-chart-block_switchers_wrapper">
+				{{#each switchList:index}}
+					<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
+						<label class="hits-chart-block_switchers_item_switch">
+							<input
+								class="{{name}}"
+								type="checkbox"
+								on-click="@this.set('switchList['+@index+'].active', !active)"
+								disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
+								checked="{{switchList[index].active}}">
+							<span class="slider round"></span>
+							</label>
+							<span class="hits-chart-block_switchers_item_name">{{name}}</span>
+					</div>
+				{{/each}}
+			</div>
 		</div>
-		<div class="hits-chart-block">
+
+		<div class="hits-chart-block_chart-wrapper">
 			<canvas id="hits-chart"></canvas>
 		</div>
 	</div>
@@ -28,39 +64,148 @@
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const createLineChart = require('../../public/js/utils/create-line-chart');
-	const providers = require('../../public/json/net-providers.json');
+	const providersJson = require('../../public/json/net-providers.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
 
 	component.exports = {
 		data () {
 			return {
-				type: 'hits',
+				showChartBandwidth: false,
 				switchList: [],
-				hitsData: '',
+				rawHitsChartData: '',
+				providersJson,
+				showProviderBreakdown: true,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period country __ready', function () {
+				this.observe('period country continent __ready', function () {
 					if (this.get('__ready')) {
 						let period = this.get('period');
-						let country = this.get('country') || '';
+						let country = this.get('country');
+						let continent = this.get('continent');
 
-						if (country === 'WW') { country = ''; }
+						if (country === null) { country = ''; }
 
-						http.fetchNetworkProviderStats(period, country)
-							.then((res) => {
-								res = res.providers;
+						if (continent === null) { continent = ''; }
 
-								let oldSwitchList = this.get('switchList');
-								let newSwitchList = Object.keys(res)
-									.map((key) => {
-										let oldOne = oldSwitchList.filter(one => one.name === providers[key].name);
+						http.fetchNetworkProviderStats(period, country, continent).then((response) => {
+							let { providers: respProviders } = response.hits;
 
-										return oldOne.length ? oldOne[0] : { name: providers[key].name, active: true };
-									});
-								this.set('switchList', newSwitchList);
-								this.set('hitsData', res);
+							let oldSwitchList = this.get('switchList');
+							let newSwitchList = Object.keys(respProviders).map((key) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
+
+								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
 							});
+
+							this.set('switchList', newSwitchList);
+							this.set('rawHitsChartData', response);
+						});
+					}
+				});
+
+				this.observe('switchList', (switchList) => {
+					let disabledSwitches = switchList.filter(s => s.active === false).length;
+					let switchListLength = switchList.length;
+					let updatedSwitchList = [];
+
+					if (disabledSwitches === switchListLength - 1) {
+						updatedSwitchList = switchList.map((switchItem) => {
+							if (switchItem.active) {
+								switchItem.disabled = true;
+							} else {
+								switchItem.disabled = false;
+							}
+
+							return switchItem;
+						});
+					} else {
+						updatedSwitchList = switchList.map((switchItem) => {
+							switchItem.disabled = false;
+
+							return switchItem;
+						});
+					}
+
+					this.set('switchList', updatedSwitchList);
+				});
+
+				this.observe('rawHitsChartData showChartBandwidth screenWidth switchList showProviderBreakdown', () => {
+					let rawHitsChartData = this.get('rawHitsChartData');
+					let switchList = this.get('switchList');
+
+					if (!rawHitsChartData || switchList.length === 0) { return; }
+
+					let chartPeriod = this.get('period');
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let showProviderBreakdown = this.get('showProviderBreakdown');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let usageChartGroupBy = 'day';
+					let hitsProviders = { ...rawHitsChartData.hits.providers };
+					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
+					let filteredHitsChartData = {};
+
+					if (showProviderBreakdown) {
+						let notActiveSwitches = [ ...switchList ].filter(s => s.active === false).map(s => s.shortName);
+
+						notActiveSwitches.forEach((s) => {
+							delete hitsProviders[s];
+							delete bandwidthProviders[s];
+						});
+
+						filteredHitsChartData = {
+							...rawHitsChartData,
+							bandwidth: {
+								...rawHitsChartData.bandwidth,
+								providers: bandwidthProviders,
+							},
+							hits: {
+								...rawHitsChartData.hits,
+								providers: hitsProviders,
+							},
+						};
+					} else {
+						filteredHitsChartData = {
+							...rawHitsChartData,
+							bandwidth: this.combineProvidersData(bandwidthProviders),
+							hits: this.combineProvidersData(hitsProviders),
+						};
+					}
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						labels,
+						maxRangeValue,
+						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
+					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					this.set('preparedHitsChartData', {
+						datasets,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						yAxisPadding: screenWidth >= 768 ? 24 : 12,
+						valueUnits,
+						usageChartGroupBy,
+					});
+				}, { init: false });
+
+				this.observe('showProviderBreakdown', (showProviderBreakdown) => {
+					if (showProviderBreakdown === false) {
+						let switchList = this.get('switchList');
+
+						let updSwitchList = switchList.map(switchItem => ({
+							...switchItem,
+							active: true,
+							disabled: true,
+						}));
+
+						this.set('switchList', updSwitchList);
 					}
 				});
 			}
@@ -69,105 +214,60 @@
 			let hitsChart;
 
 			// create hits chart
-			this.observe('hitsData switchList type', () => {
-				let switchList = this.get('switchList');
-				let hitsData = this.get('hitsData');
-				let type = this.get('type');
+			this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+				let {
+					datasets,
+					labels,
+					maxRangeValue,
+					showChartBandwidth,
+					yAxisPadding,
+					labelsStartEndPeriods,
+					valueUnits,
+					usageChartGroupBy,
+				} = preparedHitsChartData;
 				let hitsChartCanvasEl = this.find('#hits-chart');
 
-				if (switchList.length === 0 || !hitsData || !hitsChartCanvasEl) { return; }
-
-				let array = [];
-				Object.keys(hitsData).forEach((key) => {
-					let provider = switchList.filter(one => one.name === providers[key].name);
-
-					if (!provider[0]?.active) { return; }
-
-					let ratioList = {};
-					Object.keys(hitsData[key][type].dates).forEach((date) => {
-						let hits = hitsData[key].hits.dates[date];
-						let bandwidth = hitsData[key].bandwidth.dates[date];
-
-						ratioList[date] = hits ? _.formatToShortNumber(bandwidth / hits) : 0;
-					});
-
-					array.push({
-						label: key,
-						data: Object.values(hitsData[key][type].dates),
-						dates: Object.keys(hitsData[key][type].dates),
-						ratio: ratioList,
-						borderColor: providers[key].color,
-						backgroundColor: providers[key].color,
-					});
-				});
+				if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
 
 				if (hitsChart) {
 					hitsChart.destroy();
 					hitsChart = null;
 				}
 
-				if (!array.length) { return; }
-
-				let yAxisTicksAmount = 8;
-				let minRangeValue = _.getValueByMagnitude(
-					Math.min(...array.map(one => Math.min(...one.data.filter(v => v !== 0)))),
-					'floor'
-				);
-				let maxRangeValue = _.getValueByMagnitude(
-					Math.max(...array.map(one => Math.max(...one.data))),
-					'ceil',
-					1
-				);
-
-				let chartPeriod = this.get('period');
-				console.log(chartPeriod);
 				let chartData = {
-					labels: _.getChartXAxisData(array[0].dates, chartPeriod),
-					datasets: array,
+					labels,
+					datasets,
+					labelsStartEndPeriods,
+					valueUnits,
+					usageChartGroupBy,
 				};
 				let chartSettings = {
 					useExternalTooltip: true,
+					useImprovedTooltip: true,
 					plugins: {
-						verticalYAxisBorder: false,
+						useExternalTooltip: true,
 					},
 				};
+				let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
 				let chartConfig = {
 					options: {
 						scales: {
 							x: {
 								display: true,
 								ticks: {
+									autoSkip: false,
 									color: '#5C667A',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 										lineHeight: 2,
 									},
-									// whole callback needed to prepare dates for displaying on the x-axis
-									// since we need only the day and not full date (which we must to pass here for the tooltip title)
-									callback (tickIdx) {
-										let labelValue = this.getLabelForValue(tickIdx);
-										let day = Array.isArray(labelValue) ? labelValue[0].split('-').slice(-1)[0] : labelValue.split('-').slice(-1)[0];
+									callback (value) {
+										let labelValue = this.getLabelForValue(value);
 
-										if (chartPeriod === 'year') {
-											if (labelValue[2]) {
-												if (_.isMobileScreen()) { return [ `${labelValue[2]} ${labelValue[1]}` ]; }
-
-												return [ labelValue[1], labelValue[2] ];
-											}
-
-											if (labelValue[1] && !_.isMobileScreen()) { return [ labelValue[1] ]; }
-
-											return;
+										if (labelValue.length) {
+											return labelValue;
 										}
-
-										if (Array.isArray(labelValue) && labelValue[1]) {
-											return [ day, labelValue[1] ];
-										}
-
-										if (chartPeriod === 'month' && _.isMobileScreen()) { return; }
-
-										return [ day ];
 									},
 								},
 								grid: {
@@ -177,18 +277,25 @@
 							},
 							y: {
 								display: true,
-								min: minRangeValue,
-								max: maxRangeValue,
+								min: 0,
+								suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
 								ticks: {
-									count: yAxisTicksAmount,
+									padding: yAxisPadding,
+									count: 9,
 									color: '#5C667A',
-									crossAlign: 'far',
+									crossAlign: 'near',
 									font: {
 										size: 12,
 										family: 'Lexend, sans-serif',
 									},
 									callback (value) {
-										return _.formatToShortNumber(_.getValueByMagnitude(Math.round(value), 'round', 1, false));
+										let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+
+										if (_.isMobileScreen()) {
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+										}
+
+										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
 									},
 								},
 								grid: {
@@ -202,7 +309,48 @@
 				};
 
 				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-			});
+			}, { init: false });
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		combineProvidersData (providersList) {
+			return Object.keys(providersList).reduce((res, provKey) => {
+				let currProvider = providersList[provKey];
+
+				if (!res.providers) {
+					res = {
+						total: 0,
+						prev: { total: 0 },
+						providers: {
+							combinedProviders: {
+								dates: {},
+								prev: { total: 0 },
+								total: 0,
+							},
+						},
+					};
+				}
+
+				Object.keys(currProvider.dates).forEach((dateKey) => {
+					if (!res.providers.combinedProviders.dates[dateKey]) {
+						res.providers.combinedProviders.dates[dateKey] = {
+							total: 0,
+						};
+					}
+
+					let currProviderDateValue = currProvider.dates[dateKey].total;
+
+					res.providers.combinedProviders.dates[dateKey].total += currProviderDateValue;
+				});
+
+				res.providers.combinedProviders.total += currProvider.total;
+				res.total += currProvider.total;
+				res.providers.combinedProviders.prev.total += currProvider.prev.total;
+				res.prev.total += currProvider.prev.total;
+
+				return res;
+			}, {});
 		},
 	};
 </script>

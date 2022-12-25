@@ -7,16 +7,16 @@
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<style>
 		{{#each providers}}
-			.{{this}}.switch-inline + label:before {
-				background-color: {{getColor(this)}};
+			.{{name}}.switch-inline + label:before {
+				background-color: {{color}};
 			}
 
-			.{{this}}.switch-inline:checked + label {
-				background-color: {{getColor(this)}};
-				border-color: {{getColor(this)}};
+			.{{name}}.switch-inline:checked + label {
+				background-color: {{color}};
+				border-color: {{color}};
 			}
 
-			.{{this}}.switch-inline:checked + label:before {
+			.{{name}}.switch-inline:checked + label:before {
 				background-color: #fff;
 			}
 		{{/each}}
@@ -55,12 +55,12 @@
 			<div class="network-controls network-controls_type-{{providers.length}}">
 				{{#each providers:idx}}
 					<div class="network-controls_switcher {{#if providers.length - 1 == idx && providers.length % 2 != 0 }}unpaired{{/if}}">
-						<input class="switch-inline {{this}}"
+						<input class="switch-inline {{name}}"
 							type="checkbox"
-							id="provider-{{this}}"
-							checked="{{enabled[idx]}}"
+							id="provider-{{name}}"
+							checked="{{~/enabled[idx]}}"
 							twoway="false">
-						<label for="provider-{{this}}" on-click="@this.toggleMap(idx)"></label>{{this}}
+						<label for="provider-{{name}}" on-click="@this.toggleMap(idx)"></label>{{name}}
 					</div>
 				{{/each}}
 			</div>
@@ -142,10 +142,9 @@
 <script>
 	const styles = require('../../public/js/map/styles.json');
 	const locations = require('../../public/js/map/map.json').sort((a, b) => a.title > b.title ? -1 : a.title < b.title);
-	const providers = require('../../public/js/map/providers');
-	const getIcon = require('../../public/js/map/get-icon');
-	const getColor = require('../../public/js/map/get-color');
-	const getProvider = require('../../public/js/map/get-provider');
+	const providers = Object.values(require('../../public/json/net-providers.json')).filter(provider => provider.enabled);
+	const xIndexes = { GCore: 1, Cloudflare: 2, Fastly: 3, Bunny: 4 };
+	const getProvider = location => providers.find(provider => location.title.startsWith(provider.name));
 	let infoWindows = [];
 	let markers = [];
 	let map;
@@ -154,17 +153,18 @@
 		computed: {
 			locations () {
 				return locations.filter((location) => {
+					let p = getProvider(location);
+
 					return providers.some((provider, index) => {
-						return getProvider(location.title) === provider && this.get('enabled')[index];
+						return provider === p && this.get('enabled')[index];
 					});
 				});
 			},
 		},
 		data () {
 			return {
-				getColor,
 				providers,
-				enabled: { 0: true, 1: true, 2: true, 3: true },
+				enabled: providers.map(() => true),
 				title: 'Our network - jsDelivr',
 				description: 'jsDelivr uses Cloudflare, Fastly, Bunny, and Quantil, as well as custom servers in locations where CDNs have little or no presence.',
 			};
@@ -241,11 +241,11 @@
 
 				let marker = new google.maps.Marker({
 					map,
-					icon: getIcon(location.title),
+					icon: `/img/features/map-${getProvider(location).name.toLowerCase()}.svg`,
 					position: new google.maps.LatLng(location.latitude, location.longitude),
 					title: location.title,
 					optimized: false,
-					zIndex: providers.indexOf(getProvider(location.title)),
+					zIndex: xIndexes[getProvider(location).name],
 				});
 
 				google.maps.event.addListener(marker, 'click', () => {
