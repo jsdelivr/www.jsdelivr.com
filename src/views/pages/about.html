@@ -82,11 +82,15 @@
 				<h2 class="about-header">jsDelivr in numbers</h2>
 				<div class="about-numbers_table">
 					<div>
-						<span class="bold-text_lg"><b data-target="montlyRequests" data-value="150" class="animatedOnScroll">{{ Math.round(montlyRequests) }}</b>+ billion</span>
+						<span class="bold-text_lg">
+							<b data-target="montlyRequests" data-value="{{montlyRequestsActual}}" class="animatedOnScroll">{{ Math.round(montlyRequests) }}</b>+ billion
+						</span>
 						<p>monthly requests</p>
 					</div>
 					<div>
-						<span class="bold-text_lg"><b data-target="traffic" data-value="8" class="animatedOnScroll">{{ Math.round(traffic) }}</b>+ petabytes</span>
+						<span class="bold-text_lg">
+							<b data-target="monthlyTraffic" data-value="{{monthlyTrafficActual}}" class="animatedOnScroll">{{ Math.round(monthlyTraffic) }}</b>+ petabytes
+						</span>
 						<p>traffic</p>
 					</div>
 					<div>
@@ -369,17 +373,28 @@
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+
 	component.exports = {
 		data () {
 			return {
 				title: 'About - jsDelivr',
 				description: 'jsDelivr is a public, open-source CDN (Content Delivery Network) developed by ProspectOne, focused on performance, reliability, and security. It is free to use for everyone, with no bandwidth limits.',
 				montlyRequests: 0,
-				traffic: 0,
+				monthlyTraffic: 0,
 				regions: 0,
 				usedBy: 0,
 				projects: 0,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchNetworkWideStats().then(({ hits, bandwidth }) => {
+					this.set('montlyRequestsActual', parseInt(_.formatToShortNumber(hits.total, ' ')));
+					this.set('monthlyTrafficActual', parseInt(_.formatBytesWithUnit(bandwidth.total)));
+				});
+			}
 		},
 		onrender () {
 			let options = { threshold: 1 };
@@ -387,8 +402,8 @@
 			let callback = (entries, observer) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						let el = entry.target.dataset.target,
-							newValue = entry.target.dataset.value;
+						let el = entry.target.dataset.target;
+						let newValue = entry.target.dataset.value;
 
 						setTimeout(() => {
 							this.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
