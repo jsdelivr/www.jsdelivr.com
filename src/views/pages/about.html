@@ -94,15 +94,21 @@
 						<p>traffic</p>
 					</div>
 					<div>
-						<span class="bold-text_lg"><b data-target="regions" data-value="300" class="animatedOnScroll">{{ Math.round(regions) }}</b>+</span>
+						<span class="bold-text_lg">
+							<b data-target="regions" data-value="{{regionsActual}}" class="animatedOnScroll">{{ Math.round(regions) }}</b>+
+						</span>
 						<p>global regions</p>
 					</div>
 					<div>
-						<span class="bold-text_lg"><b data-target="usedBy" data-value="12" class="animatedOnScroll">{{ Math.round(usedBy) }}</b>+ million</span>
+						<span class="bold-text_lg">
+							<b data-target="usedBy" data-value="12" class="animatedOnScroll">{{ Math.round(usedBy) }}</b>+ million
+						</span>
 						<p>websites using jsDelivr</p>
 					</div>
 					<div>
-						<span class="bold-text_lg"><b data-target="projects" data-value="{{projectsActual}}" class="animatedOnScroll">{{ Math.round(projects) }}</b>+</span>
+						<span class="bold-text_lg">
+							<b data-target="projects" data-value="{{projectsActual}}" class="animatedOnScroll">{{ Math.round(projects) }}</b>+
+						</span>
 						<p>active projects being served</p>
 					</div>
 					<a href="/network/infographic">
@@ -398,14 +404,19 @@
 				http.fetchNumberOfResources().then(({ responseHeaders }) => {
 					this.set('projectsActual', responseHeaders['x-total-count']);
 				});
+
+				http.fetchNetworkProviderStatsByCountry().then(({ hits }) => {
+					this.set('regionsActual', hits.countries.length);
+				});
 			}
 		},
 		onrender () {
-			this.observe('montlyRequestsActual monthlyTrafficActual', () => {
+			this.observe('montlyRequestsActual monthlyTrafficActual projectsActual regionsActual', () => {
 				if (
 					!this.get('montlyRequestsActual')
 					|| !this.get('monthlyTrafficActual')
 					|| !this.get('projectsActual')
+					|| !this.get('regionsActual')
 				) { return; }
 
 				let options = { threshold: 1 };
