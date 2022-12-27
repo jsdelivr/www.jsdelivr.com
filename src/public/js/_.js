@@ -341,7 +341,7 @@ module.exports = {
 		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
-	formatToShortNumber (num, delimiter = '') {
+	formatToShortNumber (num, delimiter = '', unit) {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -353,7 +353,7 @@ module.exports = {
 		];
 		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
-		let item = lookup.slice().reverse().find((item) => {
+		let item = lookup.find(l => l.symbol === unit) || lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
 
