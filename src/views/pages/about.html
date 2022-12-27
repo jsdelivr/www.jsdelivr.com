@@ -397,27 +397,31 @@
 			}
 		},
 		onrender () {
-			let options = { threshold: 1 };
+			this.observe('montlyRequestsActual monthlyTrafficActual', () => {
+				if (!this.get('montlyRequestsActual') || !this.get('monthlyTrafficActual')) { return; }
 
-			let callback = (entries, observer) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						let el = entry.target.dataset.target;
-						let newValue = entry.target.dataset.value;
+				let options = { threshold: 1 };
 
-						setTimeout(() => {
-							this.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
-							observer.unobserve(entry.target);
-						}, 300);
-					}
+				let callback = (entries, observer) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							let el = entry.target.dataset.target;
+							let newValue = entry.target.dataset.value;
+
+							setTimeout(() => {
+								this.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
+								observer.unobserve(entry.target);
+							}, 300);
+						}
+					});
+				};
+
+				let observer = new IntersectionObserver(callback, options),
+					animated = this.findAll('.animatedOnScroll');
+
+				animated.forEach((el) => {
+					observer.observe(el);
 				});
-			};
-
-			let observer = new IntersectionObserver(callback, options),
-				animated = this.findAll('.animatedOnScroll');
-
-			animated.forEach((el) => {
-				observer.observe(el);
 			});
 		},
 	};
