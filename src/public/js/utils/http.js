@@ -156,3 +156,7 @@ module.exports.fetchProjectStats = (type, period, sortBy = 'hits', page = 1, lim
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
+
+module.exports.fetchNetworkWideStats = () => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network` });
+};
