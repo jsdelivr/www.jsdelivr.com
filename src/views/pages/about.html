@@ -102,7 +102,7 @@
 						<p>websites using jsDelivr</p>
 					</div>
 					<div>
-						<span class="bold-text_lg"><b data-target="projects" data-value="6000" class="animatedOnScroll">{{ Math.round(projects) }}</b>+</span>
+						<span class="bold-text_lg"><b data-target="projects" data-value="{{projectsActual}}" class="animatedOnScroll">{{ Math.round(projects) }}</b>+</span>
 						<p>active projects being served</p>
 					</div>
 					<a href="/network/infographic">
@@ -394,11 +394,19 @@
 					this.set('montlyRequestsActual', parseInt(_.formatToShortNumber(hits.total, ' ')));
 					this.set('monthlyTrafficActual', parseInt(_.formatBytesWithUnit(bandwidth.total)));
 				});
+
+				http.fetchNumberOfResources().then(({ responseHeaders }) => {
+					this.set('projectsActual', responseHeaders['x-total-count']);
+				});
 			}
 		},
 		onrender () {
 			this.observe('montlyRequestsActual monthlyTrafficActual', () => {
-				if (!this.get('montlyRequestsActual') || !this.get('monthlyTrafficActual')) { return; }
+				if (
+					!this.get('montlyRequestsActual')
+					|| !this.get('monthlyTrafficActual')
+					|| !this.get('projectsActual')
+				) { return; }
 
 				let options = { threshold: 1 };
 
