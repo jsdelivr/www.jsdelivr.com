@@ -87,7 +87,7 @@ module.exports.fetchNetworkProviderStats = (period, country = '', continent = ''
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network`, body });
 };
 
-module.exports.fetchNetworkProviderStatsByCountry = (period) => {
+module.exports.fetchNetworkProviderStatsByCountry = (period = 'month') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { period } });
 };
 
