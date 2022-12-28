@@ -381,6 +381,8 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const locationsArr = require('../../public/js/map/map.json');
+	const disabledProvidersArr = Object.values(require('../../public/json/net-providers.json')).filter(provider => !provider.enabled);
 
 	component.exports = {
 		data () {
@@ -405,9 +407,35 @@
 					this.set('projectsActual', responseHeaders['x-total-count']);
 				});
 
-				http.fetchNetworkProviderStatsByCountry().then(({ hits }) => {
-					this.set('regionsActual', hits.countries.length);
-				});
+				// filter CDNs locations from disabled CDNs
+				let filteredLocations = disabledProvidersArr.reduce((res, provider) => {
+					res = res.filter((location) => {
+						let target = location.title.toLowerCase();
+						let search = provider.name.toLowerCase();
+
+						if (target.includes(search)) {
+							return false;
+						}
+
+						return true;
+					});
+
+					return res;
+				}, locationsArr);
+
+				// get rid of duplicates
+				let locationsActual = filteredLocations.reduce((res, item) => {
+					// replace CDN_NAME with actual locationName
+					let locationName = item.title.replace(/(?:\w+\s?-\s?){1}(.*)/, '$1');
+
+					if (!res.includes(locationName)) {
+						res.push(locationName);
+					}
+
+					return res;
+				}, []);
+
+				this.set('regionsActual', locationsActual.length);
 			}
 		},
 		onrender () {
