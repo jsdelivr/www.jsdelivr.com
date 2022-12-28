@@ -137,12 +137,12 @@
 				statsList: [],
 			};
 
-			Object.keys(providers).forEach((key) => {
-				let provider = providersJson[key] ?? {};
-				let svg = provider.imgPath;
-				let color = provider.color;
-				let name = provider.name;
-				let stat = providers[key];
+			providers.forEach((provider, idx) => {
+				let providerData = providersJson[provider.code] ?? {};
+				let svg = providerData.imgPath;
+				let color = providerData.color;
+				let name = providerData.name;
+				let stat = providers[idx];
 
 				let interest = this.calcGrowth(stat.total, stat.prev.total);
 				let percentage = this.calcPercentage(stat.total, total);
