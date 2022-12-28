@@ -134,12 +134,11 @@
 							this.set('bandwidthData', bandwidth);
 
 							let providers = Object.values(hits.countries)[0].providers;
-
 							let oldSwitchList = this.get('switchList');
-							let newSwitchList = Object.keys(providers).map((key) => {
-								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
+							let newSwitchList = providers.map((provider) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[provider.code].name);
 
-								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
+								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
 							});
 
 							this.set('switchList', newSwitchList);
