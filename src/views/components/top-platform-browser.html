@@ -246,6 +246,16 @@
 					this.set('breakdownList', breakdownList);
 				});
 
+				this.observe('country continent', () => {
+					let country = this.get('country');
+					let continent = this.get('continent');
+					let isVersionGrouped = this.get('isVersionGrouped');
+
+					if (country || continent && !isVersionGrouped) {
+						this.set('selectedItem', '');
+					}
+				});
+
 				this.observe('breakdownIdx', (breakdownIdx) => {
 					let breakdownList = this.get('breakdownList');
 					let { value, disabled } = breakdownList[breakdownIdx];
