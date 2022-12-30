@@ -1,13 +1,13 @@
 <div class="c-top-platform-browser">
 	<div class="table-info">
-		<h3>Top {{ topDataType }}s</h3>
+		<h3>Top {{ tableDataType }}s</h3>
 
 		<div class="switch-block">
 			<label class="switch">
 				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" disabled='{{selectedItem}}' checked>
 				<span class="slider round"></span>
 			</label>
-			<span class="name">Group {{ topDataType }} versions</span>
+			<span class="name">Group {{ tableDataType }} versions</span>
 		</div>
 	</div>
 
@@ -20,7 +20,7 @@
 					src="{{@shared.assetsHost}}/img/statistics/information.svg"
 					loading="lazy">
 
-				<span class="table-wrapper_chosen-platform_choose-msg">Choose {{ topDataType }} below to check more data</span>
+				<span class="table-wrapper_chosen-platform_choose-msg">Choose {{ tableDataType }} below to check more data</span>
 			{{else}}
 				<div class="table-wrapper_chosen-platform_selected">
 					<div class="chosen-name" on-click="@this.set('selectedItem', '')">
@@ -220,26 +220,26 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('topDataType selectedItem country', () => {
-					let topDataType = this.get('topDataType');
-					let selectedItem = this.get('selectedItem');
-					let country = this.get('country');
+				this.observe('tableDataType selectedItem country continent isVersionGrouped', () => {
+					let tableDataType = this.get('tableDataType');
+					let location = this.get('country') || this.get('continent');
+					let isVersionGrouped = this.get('isVersionGrouped');
 
 					let breakdownList = [
 						{
 							value: 'countries',
 							name: 'Country',
-							disabled: country || false,
+							disabled: location || false,
 						},
 						{
-							value: topDataType === 'platform' ? 'browsers' : 'platforms',
-							name: topDataType === 'platform' ? 'Browser' : 'Platform',
-							disabled: selectedItem.version || false,
+							value: tableDataType === 'platform' ? 'browsers' : 'platforms',
+							name: tableDataType === 'platform' ? 'Browser' : 'Platform',
+							disabled: !isVersionGrouped,
 						},
 						{
 							value: 'versions',
 							name: 'Version',
-							disabled: selectedItem.version || false,
+							disabled: !isVersionGrouped,
 						},
 					];
 
@@ -259,9 +259,10 @@
 					this.set('page', { value: 1 });
 				}, { init: false });
 
+				// fetch platform/browser data
 				this.observe('page __ready', () => {
 					if (this.get('__ready')) {
-						let topDataType = this.get('topDataType');
+						let tableDataType = this.get('tableDataType');
 						let isVersionGrouped = this.get('isVersionGrouped');
 						let selectedItem = this.get('selectedItem');
 						let breakdown = this.get('breakdown');
@@ -274,7 +275,7 @@
 						let baseUrl = `${sharedAssetsHost}/img/statistics`;
 
 						http.fetchTopPlatformBrowserStats(
-							topDataType,
+							tableDataType,
 							isVersionGrouped,
 							period,
 							selectedItem,
@@ -315,7 +316,7 @@
 												result.icon = `${baseUrl}/platforms/${one[key]}@2x.png`;
 												break;
 											case 'versions':
-												result.icon = topDataType === 'platform'
+												result.icon = tableDataType === 'platform'
 													? `${baseUrl}/platforms/${selectedItem.name}@2x.png`
 													: `${baseUrl}/browsers/${selectedItem.name}@2x.png`;
 
@@ -326,7 +327,7 @@
 										}
 									} else {
 										if (key === 'name') {
-											result.icon = topDataType === 'platform'
+											result.icon = tableDataType === 'platform'
 												? `${baseUrl}/platforms/${one[key]}@2x.png`
 												: `${baseUrl}/browsers/${one[key]}@2x.png`;
 										}
@@ -367,7 +368,7 @@
 		},
 		handleIconBrokenSrc (e) {
 			let sharedAssetsHost = this.get('@shared.assetsHost');
-			let dataTypeIconsDir = this.get('topDataType') === 'platform' ? 'platforms' : 'browsers';
+			let dataTypeIconsDir = this.get('tableDataType') === 'platform' ? 'platforms' : 'browsers';
 			let defaultIconName = 'Other@2x.png';
 
 			e.event.target.src = `${sharedAssetsHost}/img/statistics/${dataTypeIconsDir}/${defaultIconName}`;
