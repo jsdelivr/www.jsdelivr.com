@@ -267,11 +267,11 @@
 				let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
 
 				let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
-					if (screenWidth < 768) {
-						result.push(_.formatToShortNumber(rawValue, ' '));
+					if (type === 'bandwidth') {
+						result.push(_.formatBytesWithUnit(rawValue, 'TB'));
 					} else {
-						if (type === 'bandwidth') {
-							result.push(_.formatBytesWithUnit(rawValue, 'TB'));
+						if (screenWidth < 768) {
+							result.push(_.formatToShortNumber(rawValue, ' '));
 						} else {
 							result.push(_.formatNumber(Math.round(rawValue)));
 						}
@@ -357,7 +357,7 @@
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		calcRatio (hits, bandwidth) {
-			return hits ? _.formatToShortNumber(bandwidth / hits) : 0;
+			return hits ? _.formatBytesWithUnit(bandwidth / hits) : 0;
 		},
 		hideTooltip () {
 			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
