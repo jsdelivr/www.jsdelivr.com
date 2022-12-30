@@ -70,7 +70,7 @@
 							</div>
 
 							<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">
-								{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(interest)) }}
+								{{_.formatGrowth(interest, 2)}}
 							</span>
 						</div>
 
@@ -96,7 +96,7 @@
 
 						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}} {{ dataType !== 'trending' && sortProjectsBy === 'bandwidth' && 'sorted' }}">
 							{{#if dataType === "trending"}}
-								{{ @this.toSignedPercentage(@this.prettifyGrowthToDisplay(interest)) }}
+								{{_.formatGrowth(interest, 2)}}
 							{{/if}}
 						</div>
 					</div>
@@ -287,14 +287,8 @@
 
 			this.set('page', { value });
 		},
-		toSignedPercentage (num) {
-			return `${num > 0 ? '+' : ''}${num}%`;
-		},
 		prettifyNumbersToDisplay (num) {
 			return _.formatNumberWithSpace(Math.round(num));
-		},
-		prettifyGrowthToDisplay (growth) {
-			return Number(growth) !== 0 ? Number(growth.toFixed(2)) : 0;
 		},
 	};
 </script>

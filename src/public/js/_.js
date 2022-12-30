@@ -29,7 +29,7 @@ module.exports = {
 			return 0;
 		}
 
-		return Math.round((curr / prev) * 100 - 100);
+		return (curr / prev) * 100 - 100;
 	},
 
 	getValueFormatter (isBandwidth, values) {
@@ -339,6 +339,22 @@ module.exports = {
 		});
 
 		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
+	},
+
+	formatGrowth (num, fixed = 1) {
+		if (num === 0 || num.toFixed(fixed) === '0') {
+			return `+0%`;
+		}
+
+		return `${num >= 0 ? '+' : ''}${num.toFixed(fixed)}%`;
+	},
+
+	formatShare (num, fixed = 1) {
+		if (num === 0 || num.toFixed(fixed) === '0') {
+			return `0%`;
+		}
+
+		return `${num.toFixed(fixed)}%`;
 	},
 
 	formatToShortNumber (num, delimiter = '', unit) {

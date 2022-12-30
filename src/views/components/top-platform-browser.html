@@ -111,10 +111,10 @@
 									{{/if}}
 								</div>
 
-								<div class="cell cell_two text-table-number">{{ @this.prettifyPercentageToDisplay(share, 2) }}%</div>
+								<div class="cell cell_two text-table-number">{{_.formatShare(share, 2)}}</div>
 
 								<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
-									{{ @this.toSignedPercentage(@this.prettifyPercentageToDisplay(changes)) }}
+									{{_.formatGrowth(changes)}}
 								</div>
 							</div>
 						{{/each}}
@@ -202,6 +202,7 @@
 		},
 		data () {
 			return {
+				_,
 				topList: null,
 				isVersionGrouped: true,
 				selectedItem: '',
@@ -361,12 +362,6 @@
 			if (isDisabled) { return; }
 
 			this.set('breakdownIdx', idx);
-		},
-		toSignedPercentage (num) {
-			return `${num > 0 ? '+' : ''}${num}%`;
-		},
-		prettifyPercentageToDisplay (growth, digits = 0) {
-			return Number(growth) !== 0 ? growth.toFixed(digits) : 0;
 		},
 		handleIconBrokenSrc (e) {
 			let sharedAssetsHost = this.get('@shared.assetsHost');
