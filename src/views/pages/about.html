@@ -83,7 +83,7 @@
 				<div class="about-numbers_table">
 					<div>
 						<span class="bold-text_lg">
-							<b data-target="montlyRequests" data-value="{{montlyRequestsActual}}" class="animatedOnScroll">{{ Math.round(montlyRequests) }}</b>+ billion
+							<b data-target="montlyRequests" data-value="{{monthlyRequestsActual}}" class="animatedOnScroll">{{ Math.round(montlyRequests) }}</b>+ billion
 						</span>
 						<p>monthly requests</p>
 					</div>
@@ -399,7 +399,7 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				http.fetchNetworkWideStats().then(({ hits, bandwidth }) => {
-					this.set('montlyRequestsActual', parseInt(_.formatToShortNumber(hits.total, ' ', 'B')));
+					this.set('monthlyRequestsActual', parseInt(_.formatToShortNumber(hits.total, ' ', 'B')));
 					this.set('monthlyTrafficActual', parseInt(_.formatBytesWithUnit(bandwidth.total)));
 				});
 
@@ -439,9 +439,9 @@
 			}
 		},
 		onrender () {
-			this.observe('montlyRequestsActual monthlyTrafficActual projectsActual regionsActual', () => {
+			this.observe('monthlyRequestsActual monthlyTrafficActual projectsActual regionsActual', () => {
 				if (
-					!this.get('montlyRequestsActual')
+					!this.get('monthlyRequestsActual')
 					|| !this.get('monthlyTrafficActual')
 					|| !this.get('projectsActual')
 					|| !this.get('regionsActual')
