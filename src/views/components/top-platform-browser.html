@@ -80,10 +80,10 @@
 				</div>
 
 				<div class="cell cell_three">
-					Changes
+					Change
 					<img width="16"
 						height="16"
-						as-tooltip="'Compared to the previous 30 day period', 'bottom'"
+						as-tooltip="'Compared to the previous ' + periods[period] + '-day period', 'top'"
 						src="{{@shared.assetsHost}}/img/statistics/information.svg"
 						loading="lazy">
 				</div>
@@ -171,12 +171,13 @@
 		</div>
 	</div>
 
-	<div class="table-msg">Changes compared to the previous 30 day period</div>
+	<div class="table-msg">Compared to the previous {{periods[period]}}-day period</div>
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
 	const countries = require('../../public/json/countries.json');
 	const tooltip = require('../../public/js/decorators/tooltip');
 
@@ -214,6 +215,7 @@
 				paginationLimits: [ 10, 20, 30, 40 ],
 				xTotalCount: 0,
 				xTotalPages: 0,
+				periods: stats.periods,
 			};
 		},
 		oninit () {
