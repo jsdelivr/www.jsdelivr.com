@@ -246,12 +246,17 @@
 					this.set('breakdownList', breakdownList);
 				});
 
-				this.observe('country continent', () => {
+				this.observe('country continent selectedItem', () => {
 					let location = this.get('country') || this.get('continent');
 					let isVersionGrouped = this.get('isVersionGrouped');
+					let selectedItem = this.get('selectedItem');
 
 					if (location && !isVersionGrouped) {
 						this.set('selectedItem', '');
+					}
+
+					if (location && isVersionGrouped && selectedItem) {
+						this.set('breakdownIdx', 1);
 					}
 				});
 
