@@ -144,14 +144,14 @@
 									data-toggle="dropdown"
 									aria-haspopup="true"
 									aria-expanded="false">
-									<span>{{ networkStatsPeriod }}</span>
+									<span>{{ globalStatsPeriod }}</span>
 
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
 								<ul class="dropdown-menu">
 									{{#each statsPeriods}}
-										<li><a on-click="@this.set('networkStatsPeriod', @key)">{{@key}}</a></li>
+										<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
 									{{/each}}
 								</ul>
 							</div>
@@ -165,12 +165,12 @@
 			<div class="container">
 				<c-network-request-chart
 					__ready="{{ __ready }}"
-					period="{{ networkStatsPeriod }}"
+					period="{{ globalStatsPeriod }}"
 					country="{{ selectedCountry }}"
 					continent="{{ selectedContinent }}">
 				</c-network-request-chart>
 
-				<c-network-request-map __ready="{{ __ready }}" period="{{ networkStatsPeriod }}"></c-network-request-map>
+				<c-network-request-map __ready="{{ __ready }}" period="{{ globalStatsPeriod }}"></c-network-request-map>
 
 				<div class="tops">
 					<c-top-platform-browser
@@ -178,7 +178,7 @@
 						topDataType="platform"
 						country="{{ selectedCountry }}"
 						continent="{{ selectedContinent }}"
-						period="{{ networkStatsPeriod }}">
+						period="{{ globalStatsPeriod }}">
 					</c-top-platform-browser>
 
 					<c-top-platform-browser
@@ -186,7 +186,7 @@
 						topDataType="browser"
 						country="{{ selectedCountry }}"
 						continent="{{selectedContinent}}"
-						period="{{networkStatsPeriod}}">
+						period="{{globalStatsPeriod}}">
 					</c-top-platform-browser>
 				</div>
 			</div>
@@ -219,14 +219,14 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{ projectStatsPeriod }}</span>
+								<span>{{ globalStatsPeriod }}</span>
 
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each statsPeriods}}
-									<li><a on-click="@this.set('projectStatsPeriod', @key)">{{@key}}</a></li>
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -240,14 +240,14 @@
 				<c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Most popular projects"
-					period="{{ projectStatsPeriod }}">
+					period="{{ globalStatsPeriod }}">
 				</c-statistics-project-table>
 
 				<!-- <c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Trending projects"
 					dataType="trending"
-					period="{{ projectStatsPeriod }}">
+					period="{{ globalStatsPeriod }}">
 				</c-statistics-project-table> -->
 			</div>
 		</div>
@@ -302,8 +302,6 @@
 				selectedCountry: null,
 				selectedContinent: null,
 				showNetworkStickyMenu: false,
-				networkStatsPeriod: DEFAULT_PERIOD_KEY,
-				projectStatsPeriod: DEFAULT_PERIOD_KEY,
 				lastOffsetTop: 0,
 				showProjectsStickyMenu: false,
 				selectedSearchItem: null,
