@@ -5,15 +5,15 @@
 
 			<div class="btn-group">
 				<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<span>{{periodsList[periodKey]}}</span>
+					<span>{{periodKey}}</span>
 					<i class="fa fa-angle-down" aria-hidden="true"></i>
 				</button>
 
 				<ul class="dropdown-menu">
-					{{#each periodsList: key}}
+					{{#each periodsList}}
 						<li>
 							<a on-click="@this.set('periodKey', key)" class="{{#if key === periodKey}}current{{/if}}">
-								{{this}}
+								{{@key}}
 							</a>
 						</li>
 					{{/each}}
@@ -79,7 +79,7 @@
 			return {
 				_,
 				periodsList: stats.periods,
-				periodKey: '30',
+				periodKey: 'month',
 				packageTotal: 0,
 				bandwidthTotal: 0,
 				topVersion: '',
@@ -96,9 +96,7 @@
 					if (this.get('periodKey')) {
 						let type = this.get('type');
 						let name = this.get('name');
-						let periodsList = this.get('periodsList');
-						let periodKey = this.get('periodKey');
-						let period = periodsList[periodKey];
+						let period = this.get('periodKey');
 
 						// get overall GSAP stats (data for charts, rank)
 						http.fetchPackageSummaryStats(type, name, period).then((response) => {

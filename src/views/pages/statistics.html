@@ -57,14 +57,14 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{ statsPeriods[globalStatsPeriod] }}</span>
+								<span>{{ globalStatsPeriod }}</span>
 
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each statsPeriods}}
-									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{this}}</a></li>
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -75,7 +75,7 @@
 			</div>
 
 			<div class="container">
-				<c-network-provider-stats period="{{ statsPeriods[globalStatsPeriod] }}"></c-network-provider-stats>
+				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
 
 				<div class="hit-rate">
 					<h3>Cache hit rate</h3>
@@ -144,14 +144,14 @@
 									data-toggle="dropdown"
 									aria-haspopup="true"
 									aria-expanded="false">
-									<span>{{ statsPeriods[networkStatsPeriod] }}</span>
+									<span>{{ networkStatsPeriod }}</span>
 
 									<i class="fa fa-angle-down" aria-hidden="true"></i>
 								</button>
 
 								<ul class="dropdown-menu">
 									{{#each statsPeriods}}
-										<li><a on-click="@this.set('networkStatsPeriod', @key)">{{this}}</a></li>
+										<li><a on-click="@this.set('networkStatsPeriod', @key)">{{@key}}</a></li>
 									{{/each}}
 								</ul>
 							</div>
@@ -165,12 +165,12 @@
 			<div class="container">
 				<c-network-request-chart
 					__ready="{{ __ready }}"
-					period="{{ statsPeriods[networkStatsPeriod] }}"
+					period="{{ networkStatsPeriod }}"
 					country="{{ selectedCountry }}"
 					continent="{{ selectedContinent }}">
 				</c-network-request-chart>
 
-				<c-network-request-map __ready="{{ __ready }}" period="{{ statsPeriods[networkStatsPeriod] }}"></c-network-request-map>
+				<c-network-request-map __ready="{{ __ready }}" period="{{ networkStatsPeriod }}"></c-network-request-map>
 
 				<div class="tops">
 					<c-top-platform-browser
@@ -178,7 +178,7 @@
 						topDataType="platform"
 						country="{{ selectedCountry }}"
 						continent="{{ selectedContinent }}"
-						period="{{ statsPeriods[networkStatsPeriod] }}">
+						period="{{ networkStatsPeriod }}">
 					</c-top-platform-browser>
 
 					<c-top-platform-browser
@@ -186,7 +186,7 @@
 						topDataType="browser"
 						country="{{ selectedCountry }}"
 						continent="{{selectedContinent}}"
-						period="{{statsPeriods[networkStatsPeriod]}}">
+						period="{{networkStatsPeriod}}">
 					</c-top-platform-browser>
 				</div>
 			</div>
@@ -219,14 +219,14 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{ statsPeriods[projectStatsPeriod] }}</span>
+								<span>{{ projectStatsPeriod }}</span>
 
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each statsPeriods}}
-									<li><a on-click="@this.set('projectStatsPeriod', @key)">{{this}}</a></li>
+									<li><a on-click="@this.set('projectStatsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -240,14 +240,14 @@
 				<c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Most popular projects"
-					period="{{ statsPeriods[projectStatsPeriod] }}">
+					period="{{ projectStatsPeriod }}">
 				</c-statistics-project-table>
 
 				<!-- <c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Trending projects"
 					dataType="trending"
-					period="{{ statsPeriods[projectStatsPeriod] }}">
+					period="{{ projectStatsPeriod }}">
 				</c-statistics-project-table> -->
 			</div>
 		</div>
@@ -263,7 +263,7 @@
 	const continents = require('../../public/json/continents.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
-	const DEFAULT_PERIOD_KEY = 30;
+	const DEFAULT_PERIOD_KEY = 'month';
 	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
 	const NO_RESULTS_SEARCH_ITEM_TYPE = 'no-results';
 	const COUNTRY_SEARCH_ITEM_TYPE = 'country';

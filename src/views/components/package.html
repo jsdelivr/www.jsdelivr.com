@@ -100,13 +100,13 @@
 
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/statsPeriods[statsPeriod]}}</span>
+								<span>{{~/statsPeriod}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each ~/statsPeriods}}
-									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+									<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -118,7 +118,7 @@
 				<c-package-request-bandwidth-stats
 					name="{{name}}"
 					type="{{type}}"
-					period="{{statsPeriods[statsPeriod]}}">
+					period="{{statsPeriod}}">
 				</c-package-request-bandwidth-stats>
 			{{/if}}
 
@@ -131,7 +131,7 @@
 			{{else}}
 				<div class="chart-stats-per-period">
 					<div class="package-usage">
-						<div class="small-headline">Stats for past {{~/statsPeriods[statsPeriod]}}</div>
+						<div class="small-headline">Stats for past {{~/statsPeriod}}</div>
 
 						<div class="chart-type-ctrl">
 							<span>Show numbers of</span>
@@ -223,7 +223,7 @@
 
 				<div class="chart-hits-per-period">
 					<div class="package-usage">
-						<div class="small-headline">{{#if showChartBandwidth}}Bandwidth{{else}}Requests{{/if}} per {{~/statsPeriods[statsPeriod]}} per version</div>
+						<div class="small-headline">{{#if showChartBandwidth}}Bandwidth{{else}}Requests{{/if}} per {{~/statsPeriod}} per version</div>
 					</div>
 
 					<div class="hits-chart-wrapper">
@@ -275,7 +275,7 @@
 	component.exports = {
 		computed: {
 			usageChartGroupByValues () {
-				return stats.groupByOptions[stats.periods[this.get('statsPeriod')]];
+				return stats.groupByOptions[this.get('statsPeriod')];
 			},
 		},
 		data () {
@@ -283,7 +283,7 @@
 				_,
 				collection: [],
 				statsPeriods: stats.periods,
-				statsPeriod: 90,
+				statsPeriod: 'quarter',
 				packageVersionsList: [],
 				navRoute: NAV_MENU_TABS.readme,
 				showChartBandwidth: false,
@@ -335,7 +335,7 @@
 					}
 
 					let version = this.get('fileStatsVersion');
-					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let period = this.get('statsPeriod');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let type = this.get('type');
@@ -358,7 +358,7 @@
 
 					let type = this.get('type');
 					let name = this.get('name');
-					let period = this.get('statsPeriods')[this.get('statsPeriod')];
+					let period = this.get('statsPeriod');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
@@ -408,7 +408,7 @@
 				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
 				this.observe('statsPeriod', () => {
 					let statsPeriod = this.get('statsPeriod');
-					let period = this.get('statsPeriods')[statsPeriod];
+					let period = statsPeriod;
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
@@ -446,7 +446,7 @@
 				// get data for lineChart when Request/Bandwidth switch clicked (since it is sorting on the server)
 				this.observe('showChartBandwidth', (showChartBandwidth) => {
 					let statsPeriod = this.get('statsPeriod');
-					let period = this.get('statsPeriods')[statsPeriod];
+					let period = statsPeriod;
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
@@ -466,7 +466,7 @@
 				// screenWidth to observe when screen width is resized to recreate stats chart
 				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsChartData = this.get('rawStatsChartData');
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let chartPeriod = this.get('statsPeriod');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
@@ -502,7 +502,7 @@
 				// handle raw HitsChart data and prepare it for HitsChart
 				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawHitsChartData = this.get('rawHitsChartData');
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let chartPeriod = this.get('statsPeriod');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;

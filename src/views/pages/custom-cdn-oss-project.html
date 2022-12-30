@@ -60,13 +60,13 @@
 
 						<div class="btn-group">
 							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span>{{~/statsPeriods[statsPeriod]}}</span>
+								<span>{{~/statsPeriod}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<ul class="dropdown-menu">
 								{{#each ~/statsPeriods}}
-									<li><a on-click="@this.set('statsPeriod', @key)">{{this}}</a></li>
+									<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -74,7 +74,7 @@
 				</div>
 			</div>
 
-			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{statsPeriods[statsPeriod]}}"></c-proxy-request-bandwidth-stats>
+			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{statsPeriod}}"></c-proxy-request-bandwidth-stats>
 
 			{{#if noPackageStatsData}}
 				<div class="no-data-wrapper">
@@ -84,7 +84,7 @@
 				</div>
 			{{else}}
 				<div class="chart-ctrls">
-					<div class="chart-ctrls-title">Stats for last {{~/statsPeriods[statsPeriod]}}</div>
+					<div class="chart-ctrls-title">Stats for last {{~/statsPeriod}}</div>
 					<div class="chart-ctrls-group-by">
 						<span>
 							Group by:
@@ -153,13 +153,13 @@
 				return `A free, fast, and reliable CDN for ${this.get('projectTitle')}. ${this.get('projectDescr')}`;
 			},
 			usageChartGroupByValues () {
-				return stats.groupByOptions[stats.periods[this.get('statsPeriod')]];
+				return stats.groupByOptions[this.get('statsPeriod')];
 			},
 		},
 		data () {
 			return {
 				statsPeriods: stats.periods,
-				statsPeriod: 90,
+				statsPeriod: 'quarter',
 				showChartBandwidth: false,
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
@@ -222,7 +222,7 @@
 			if (!Ractive.isServer) {
 				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('statsPeriod', (newStatsPeriod) => {
-					let period = this.get('statsPeriods')[newStatsPeriod];
+					let period = newStatsPeriod;
 					let name = this.get('name');
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
@@ -245,7 +245,7 @@
 				// screenWidth to observe when screen width is resized to recreate chart
 				this.observe('rawStatsData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsData = this.get('rawStatsData');
-					let chartPeriod = this.get('statsPeriods')[this.get('statsPeriod')];
+					let chartPeriod = this.get('statsPeriod');
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;

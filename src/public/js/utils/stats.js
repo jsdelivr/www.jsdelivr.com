@@ -1,10 +1,10 @@
 module.exports = {
 	periods: {
-		// 1: 'day',
-		// 7: 'week',
-		30: 'month',
-		90: 'quarter',
-		365: 'year',
+		// day: 1,
+		// week: 7,
+		month: 30,
+		quarter: 90,
+		year: 365,
 	},
 	groupByOptions: {
 		month: {
