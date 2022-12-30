@@ -94,10 +94,10 @@
 							let { providers: respProviders } = response.hits;
 
 							let oldSwitchList = this.get('switchList');
-							let newSwitchList = Object.keys(respProviders).map((key) => {
-								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
+							let newSwitchList = respProviders.map((provider) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[provider.code].name);
 
-								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
+								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
 							});
 
 							this.set('switchList', newSwitchList);
@@ -143,16 +143,16 @@
 					let showProviderBreakdown = this.get('showProviderBreakdown');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
 					let usageChartGroupBy = 'day';
-					let hitsProviders = { ...rawHitsChartData.hits.providers };
-					let bandwidthProviders = { ...rawHitsChartData.bandwidth.providers };
+					let hitsProviders = [ ...rawHitsChartData.hits.providers ];
+					let bandwidthProviders = [ ...rawHitsChartData.bandwidth.providers ];
 					let filteredHitsChartData = {};
 
 					if (showProviderBreakdown) {
 						let notActiveSwitches = [ ...switchList ].filter(s => s.active === false).map(s => s.shortName);
 
 						notActiveSwitches.forEach((s) => {
-							delete hitsProviders[s];
-							delete bandwidthProviders[s];
+							hitsProviders = hitsProviders.filter(p => p.code !== s);
+							bandwidthProviders = bandwidthProviders.filter(p => p.code !== s);
 						});
 
 						filteredHitsChartData = {
@@ -315,38 +315,37 @@
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		combineProvidersData (providersList) {
-			return Object.keys(providersList).reduce((res, provKey) => {
-				let currProvider = providersList[provKey];
-
+			return providersList.reduce((res, currProvider) => {
 				if (!res.providers) {
 					res = {
 						total: 0,
 						prev: { total: 0 },
-						providers: {
-							combinedProviders: {
+						providers: [
+							{
+								code: 'combinedProviders',
 								dates: {},
 								prev: { total: 0 },
 								total: 0,
 							},
-						},
+						],
 					};
 				}
 
 				Object.keys(currProvider.dates).forEach((dateKey) => {
-					if (!res.providers.combinedProviders.dates[dateKey]) {
-						res.providers.combinedProviders.dates[dateKey] = {
+					if (!res.providers[0].dates[dateKey]) {
+						res.providers[0].dates[dateKey] = {
 							total: 0,
 						};
 					}
 
 					let currProviderDateValue = currProvider.dates[dateKey].total;
 
-					res.providers.combinedProviders.dates[dateKey].total += currProviderDateValue;
+					res.providers[0].dates[dateKey].total += currProviderDateValue;
 				});
 
-				res.providers.combinedProviders.total += currProvider.total;
+				res.providers[0].total += currProvider.total;
 				res.total += currProvider.total;
-				res.providers.combinedProviders.prev.total += currProvider.prev.total;
+				res.providers[0].prev.total += currProvider.prev.total;
 				res.prev.total += currProvider.prev.total;
 
 				return res;

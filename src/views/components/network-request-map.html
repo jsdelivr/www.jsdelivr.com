@@ -114,8 +114,7 @@
 			return {
 				type: 'hits',
 				switchList: [],
-				hitsData: {},
-				bandwidthData: {},
+				providerStatsByCountry: {},
 				legendAxisTicks: [],
 				tooltipData: {},
 				currentCountryId: null,
@@ -129,20 +128,17 @@
 					if (this.get('__ready')) {
 						let period = this.get('period');
 
-						http.fetchNetworkProviderStatsByCountry(period).then(({ hits, bandwidth }) => {
-							this.set('hitsData', hits);
-							this.set('bandwidthData', bandwidth);
-
-							let providers = Object.values(hits.countries)[0].providers;
-
+						http.fetchNetworkProviderStatsByCountry(period).then((response) => {
+							let providers = Object.values(response.hits.countries)[0].providers;
 							let oldSwitchList = this.get('switchList');
-							let newSwitchList = Object.keys(providers).map((key) => {
-								let oldOne = oldSwitchList.filter(one => one.name === providersJson[key].name);
+							let newSwitchList = providers.map((provider) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[provider.code].name);
 
-								return oldOne.length ? oldOne[0] : { name: providersJson[key].name, active: true, shortName: key };
+								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
 							});
 
 							this.set('switchList', newSwitchList);
+							this.set('providerStatsByCountry', response);
 						});
 					}
 				});
@@ -175,48 +171,52 @@
 				});
 
 				// prepare data for the Map
-				this.observe('hitsData bandwidthData type switchList', () => {
+				this.observe('providerStatsByCountry type switchList', () => {
 					let preparedMapData = {
 						dataByCountries: {},
 						switchList: [],
 					};
-					let hitsData = this.get('hitsData');
-					let bandwidthData = this.get('bandwidthData');
+					let { hits: hitsData, bandwidth: bandwidthData } = this.get('providerStatsByCountry');
+
+					if (!hitsData || !bandwidthData) { return; }
+
 					let switchList = this.get('switchList');
 					let type = this.get('type');
 
 					if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
 
 					// prepare countries total, data by countries etc.
-					Object.keys(hitsData.countries).forEach((countryAsKey) => {
-						let countryHitsStat = hitsData.countries[countryAsKey];
-						let countryBandwidthStat = bandwidthData.countries[countryAsKey];
+					hitsData.countries.forEach((country) => {
+						let countryHitsStat = country;
+						let countryBandwidthStat = bandwidthData.countries.find(i => i.code === country.code);
 						let ratioList = {};
 						let hitsByCountryTotal = 0;
 						let bandwidthByCountryTotal = 0;
 
-						Object.keys(countryHitsStat.providers).forEach((providerCode) => {
-							let provider = providersJson[providerCode];
-							let switchOne = switchList.find(one => one.name === provider.name);
+						countryHitsStat.providers.forEach((provider) => {
+							let providerData = providersJson[provider.code];
+							let switchOne = switchList.find(one => one.name === providerData.name);
 
 							if (!switchOne.active) { return; }
 
-							ratioList[provider.name] = this.calcRatio(countryHitsStat.providers[providerCode].total, countryBandwidthStat.providers[providerCode].total);
-							hitsByCountryTotal += countryHitsStat.providers[providerCode].total;
+							let providerBandwidthObj = countryBandwidthStat.providers.find(i => i.code === provider.code);
+
+							ratioList[providerData.name] = this.calcRatio(provider.total, providerBandwidthObj.total);
+							hitsByCountryTotal += provider.total;
 						});
 
-						Object.keys(countryBandwidthStat.providers).forEach((providerCode) => {
-							let provider = providersJson[providerCode];
-							let switchOne = switchList.find(one => one.name === provider.name);
+						countryBandwidthStat.providers.forEach((provider) => {
+							let providerData = providersJson[provider.code];
+							let switchOne = switchList.find(one => one.name === providerData.name);
 
 							if (!switchOne.active) { return; }
 
-							bandwidthByCountryTotal += countryBandwidthStat.providers[providerCode].total;
+							bandwidthByCountryTotal += provider.total;
 						});
 
-						preparedMapData.dataByCountries[countryAsKey] = type === 'hits' ? countryHitsStat : countryBandwidthStat;
-						preparedMapData.dataByCountries[countryAsKey].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
-						preparedMapData.dataByCountries[countryAsKey].ratio = ratioList;
+						preparedMapData.dataByCountries[country.code] = type === 'hits' ? countryHitsStat : countryBandwidthStat;
+						preparedMapData.dataByCountries[country.code].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
+						preparedMapData.dataByCountries[country.code].ratio = ratioList;
 					});
 
 					// prepare additional data
@@ -252,7 +252,7 @@
 
 					// set prepared data
 					this.set('preparedMapData', preparedMapData);
-				});
+				}, { init: false });
 			}
 		},
 		onrender () {
@@ -267,11 +267,11 @@
 				let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
 
 				let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
-					if (screenWidth < 768) {
-						result.push(_.formatToShortNumber(rawValue, ' '));
+					if (type === 'bandwidth') {
+						result.push(_.formatBytesWithUnit(rawValue, 'TB'));
 					} else {
-						if (type === 'bandwidth') {
-							result.push(_.formatBytesWithUnit(rawValue, 'TB'));
+						if (screenWidth < 768) {
+							result.push(_.formatToShortNumber(rawValue, ' '));
 						} else {
 							result.push(_.formatNumber(Math.round(rawValue)));
 						}
@@ -357,7 +357,7 @@
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 		calcRatio (hits, bandwidth) {
-			return hits ? _.formatToShortNumber(bandwidth / hits) : 0;
+			return hits ? _.formatBytesWithUnit(bandwidth / hits) : 0;
 		},
 		hideTooltip () {
 			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
@@ -438,7 +438,7 @@
 			switchList.forEach((provider) => {
 				if (!provider.active) { return; }
 
-				let statsValueRaw = dataByCountries[countryId]?.providers[provider.shortName]?.total || 0;
+				let statsValueRaw = dataByCountries[countryId]?.providers.find(i => i.code === provider.shortName)?.total || 0;
 				let statsInfo = mapDataType === 'hits' ? _.formatNumberWithSpace(statsValueRaw) : _.formatBytesWithUnit(statsValueRaw);
 				let ratio = dataByCountries[countryId] ? dataByCountries[countryId].ratio[provider.name] : 0;
 				let providerBoxColor = providersJson[provider.shortName].color;

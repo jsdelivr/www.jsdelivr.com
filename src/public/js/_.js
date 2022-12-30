@@ -341,7 +341,7 @@ module.exports = {
 		return item ? module.exports.formatNumber(num / item.value) + ' ' + item.symbol : '0';
 	},
 
-	formatToShortNumber (num, delimiter = '') {
+	formatToShortNumber (num, delimiter = '', unit) {
 		let lookup = [
 			{ value: 1, symbol: '' },
 			{ value: 1e3, symbol: 'K' },
@@ -353,7 +353,7 @@ module.exports = {
 		];
 		let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
-		let item = lookup.slice().reverse().find((item) => {
+		let item = lookup.find(l => l.symbol === unit) || lookup.slice().reverse().find((item) => {
 			return num >= item.value;
 		});
 
@@ -827,7 +827,7 @@ module.exports = {
 	getPreparedProvidersDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
 		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 		let valueUnits = '', unit;
-		let sortedProviders = Object.values(rawData[dataType].providers).sort((a, b) => b.total - a.total);
+		let sortedProviders = rawData[dataType].providers.sort((a, b) => b.total - a.total);
 		let topProviderData = sortedProviders[0] || {};
 		let { preparedData: topProviderPrepData } = this.prepareDataForChartGroupedBy(topProviderData, groupBy, 'total');
 		let labelsData = {
@@ -835,14 +835,6 @@ module.exports = {
 			labelsStartEndPeriods: [],
 		};
 		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
-		let prepProvidersData = Object.keys(rawData[dataType].providers).reduce((result, providerName) => {
-			result.push({
-				providerName,
-				...rawData[dataType].providers[providerName],
-			});
-
-			return result;
-		}, []);
 
 		// collect labels, period starts/ends data for chart
 		labelsData = dataToIteract.reduce((labelsData, period) => {
@@ -868,7 +860,7 @@ module.exports = {
 				break;
 		}
 
-		let { allGroupedByValues, datasets } = prepProvidersData.reduce((res, providerData) => {
+		let { allGroupedByValues, datasets } = rawData[dataType].providers.reduce((res, providerData) => {
 			let { preparedData } = this.prepareDataForChartGroupedBy(providerData, groupBy, 'total');
 			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
 
@@ -890,10 +882,10 @@ module.exports = {
 			}
 
 			let dataset = {
-				label: providersJson[providerData.providerName].name,
+				label: providersJson[providerData.code].name,
 				data: groupedByValues,
-				borderColor: providersJson[providerData.providerName].color,
-				backgroundColor: providersJson[providerData.providerName].color,
+				borderColor: providersJson[providerData.code].color,
+				backgroundColor: providersJson[providerData.code].color,
 			};
 
 			res.datasets.push(dataset);

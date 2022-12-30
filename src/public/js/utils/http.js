@@ -87,7 +87,7 @@ module.exports.fetchNetworkProviderStats = (period, country = '', continent = ''
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network`, body });
 };
 
-module.exports.fetchNetworkProviderStatsByCountry = (period) => {
+module.exports.fetchNetworkProviderStatsByCountry = (period = 'month') => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { period } });
 };
 
@@ -156,3 +156,13 @@ module.exports.fetchProjectStats = (type, period, sortBy = 'hits', page = 1, lim
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
+module.exports.fetchNetworkWideStats = () => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network` });
+};
+
+module.exports.fetchNumberOfResources = () => {
+	let responseHeadersToGet = [ 'x-total-count' ];
+	let body = { limit: 1 };
+
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
+};
