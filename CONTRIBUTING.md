@@ -23,6 +23,16 @@ npm start
 
 Configuration for IntelliJ based IDEs is also available in this repository. If you use one, it is a good idea to add https://github.com/MartinKolarik/idea-config as a [read-only settings repository](https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#share-more-settings-through-read-only-repo). It contains code style and inspection profiles used by this project.
 
+
+### Updating the network map
+
+1. Check which providers are currenly in use and find a list of their locations, e.g.:
+   - Cloudflare: https://www.cloudflare.com/network/ (without China locations)
+   - Fastly: https://www.fastly.com/network-map
+2. Update [`/data/map.txt`](https://github.com/jsdelivr/www.jsdelivr.com/blob/master/data/map.txt)
+   - If a provider lists two separate datacenters in the same location, include the location twice (as two separate entries, each on its own line)
+3. Run `node bin/geocode` which updates the JSON version of the map.
+
 ## Testing
 
 -   JS code style: `npm run lint:js`
