@@ -101,7 +101,7 @@
 		<h3>Cache hit rate</h3>
 
 		<div class="rate-row">
-			{{#each providersJson}}
+			{{#each providersToDisplay}}
 				<div class="row-item">
 					<div class="row-item_provider">
 						<img
@@ -140,7 +140,7 @@
 					growth: 0,
 					statsList: [],
 				},
-				providersJson,
+				providersToDisplay: [],
 			};
 		},
 		oninit () {
@@ -149,8 +149,13 @@
 					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
 						this.animate('requestsData', this.processStats(hits));
 						this.animate('bandwidthData', this.processStats(bandwidth));
+						this.set('providersCodes', hits.providers.map(p => p.code));
 					});
 				});
+
+				this.observe('providersCodes', (providersCodes) => {
+					this.set('providersToDisplay', providersCodes.map(code => providersJson[code]));
+				}, { init: false });
 			}
 		},
 		processStats (data) {
