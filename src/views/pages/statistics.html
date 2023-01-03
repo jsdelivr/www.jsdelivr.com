@@ -415,8 +415,14 @@
 			seachElement.focusout((event) => {
 				setTimeout(() => {
 					let selectedSearchItem = this.get('selectedSearchItem');
+					let searchDisplayValue = this.get('searchDisplayValue');
 
-					if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
+					// when user cleared search input after he already selected location
+					if (!event.target.value && !searchDisplayValue && selectedSearchItem && selectedSearchItem.name) {
+						seachElement.val('');
+						this.set('selectedSearchItem', GLOBAL_SEARCH_ITEM);
+					} else if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
+					// when user not completely removed data from search input after he already selected location
 						switch (selectedSearchItem.type) {
 							case GLOBAL_SEARCH_ITEM_TYPE:
 							case NO_RESULTS_SEARCH_ITEM_TYPE:
