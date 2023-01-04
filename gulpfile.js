@@ -131,7 +131,7 @@ gulp.task('watch', () => {
 
 	gulp.watch([
 		`${srcDir}/**/*.html`,
-		`${srcAssetsDir}/**/*.js`,
+		`${srcAssetsDir}/**/*.(js|json)`,
 	], gulp.series('js'));
 
 	gulp.watch([

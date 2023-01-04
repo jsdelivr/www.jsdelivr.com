@@ -96,6 +96,31 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="hit-rate">
+		<h3>Cache hit rate</h3>
+
+		{{#if providersToDisplay.length}}
+			<div class="rate-row {{#if providersToDisplay.length % 2}}rate-row_odd{{else}}rate-row_even{{/if}}">
+				{{#each providersToDisplay}}
+					<div class="row-item">
+						<div class="row-item_provider">
+							<img
+								width="24"
+								height="24"
+								src='{{@shared.assetsHost}}{{imgPath}}'>
+
+							<span>{{name}}</span>
+						</div>
+
+						<div class="row-item_interest text-table-number">
+							{{cacheHitRate}}
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		{{/if}}
+	</div>
 </div>
 
 <script>
@@ -117,6 +142,7 @@
 					growth: 0,
 					statsList: [],
 				},
+				providersToDisplay: [],
 			};
 		},
 		oninit () {
@@ -125,8 +151,13 @@
 					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
 						this.animate('requestsData', this.processStats(hits));
 						this.animate('bandwidthData', this.processStats(bandwidth));
+						this.set('providersCodes', hits.providers.map(p => p.code));
 					});
 				});
+
+				this.observe('providersCodes', (providersCodes) => {
+					this.set('providersToDisplay', providersCodes.map(code => providersJson[code]));
+				}, { init: false });
 			}
 		},
 		processStats (data) {
