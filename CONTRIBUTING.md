@@ -26,7 +26,7 @@ Configuration for IntelliJ based IDEs is also available in this repository. If y
 
 ### Updating the network map
 
-1. Check which providers are currenly in use and find a list of their locations (excluding China locations), e.g.:
+1. Check which providers are currenly in use and find a list of their locations (excluding mainland China locations), e.g.:
    - Cloudflare: https://www.cloudflare.com/network/
    - Fastly: https://www.fastly.com/network-map
 2. Update [`/data/map.txt`](https://github.com/jsdelivr/www.jsdelivr.com/blob/master/data/map.txt)
