@@ -291,20 +291,20 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('selectedVersion', () => {
-					let installPackageVersion = '';
+					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
 					let packageVersion = this.get('version');
 					let packageType = this.get('type');
 
 					if (selectedVersion === 'Static') {
-						installPackageVersion = packageVersion;
+						installPackageVersion += packageVersion;
 					} else if (selectedVersion === 'Major') {
-						installPackageVersion = packageVersion.split('.')[0];
+						installPackageVersion += packageVersion.split('.')[0];
 					} else if (selectedVersion === 'Minor') {
-						installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
+						installPackageVersion += packageVersion.split('.').slice(0, 2).join('.');
 					} else {
-						installPackageVersion = 'latest';
+						installPackageVersion = '';
 					}
 
 					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
@@ -318,7 +318,7 @@
 							}
 
 							packageJsEntrypoint = data.entrypoints.js.file;
-							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
+							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}${installPackageVersion}${packageJsEntrypoint}`);
 							this.set('packageJsEntrypoint', packageJsEntrypoint);
 						}
 
@@ -328,12 +328,12 @@
 							}
 
 							packageCssEntrypoint = data.entrypoints.css.file;
-							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
+							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}${installPackageVersion}${packageCssEntrypoint}`);
 							this.set('packageCssEntrypoint', packageCssEntrypoint);
 						}
 
 						this.set('isGuessedFile', isGuessedFile);
-						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
+						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
 
 						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 							if (packageJsEntrypoint) {
