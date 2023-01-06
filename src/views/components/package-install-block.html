@@ -264,6 +264,26 @@
 				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
 			},
 		},
+		data () {
+			return {
+				_,
+				versionsList: [
+					'Static',
+					'Minor',
+					'Major',
+					'Latest',
+				],
+				isDefaultPackage: true,
+				selectedVersion: 'Static',
+				isDefaultPackageTmp: true,
+				selectedVersionTmp: 'Static',
+				isGuessedFile: false,
+				buildIntegrity,
+				canBuildHtml,
+				buildHtml,
+				mobileSettingsVisible: false,
+			};
+		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('selectedVersion', () => {
@@ -348,7 +368,6 @@
 				});
 			}
 		},
-
 		onClickMobileApply () {
 			this.set('isDefaultPackage', this.get('isDefaultPackageTmp'));
 			this.set('selectedVersion', this.get('selectedVersionTmp'));
@@ -359,31 +378,9 @@
 			this.set('selectedVersionTmp', this.get('selectedVersion'));
 			this.set('mobileSettingsVisible', false);
 		},
-
-		data () {
-			return {
-				_,
-				versionsList: [
-					'Static',
-					'Minor',
-					'Major',
-					'Latest',
-				],
-				isDefaultPackage: true,
-				selectedVersion: 'Static',
-				isDefaultPackageTmp: true,
-				selectedVersionTmp: 'Static',
-				isGuessedFile: false,
-				buildIntegrity,
-				canBuildHtml,
-				buildHtml,
-				mobileSettingsVisible: false,
-			};
-		},
 		decorators: {
 			clipboard,
 		},
-
 		setTypeFilter (filterBy) {
 			if (filterBy === this.get('filterType')) {
 				this.set('filterType', '');
