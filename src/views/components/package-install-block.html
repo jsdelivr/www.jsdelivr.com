@@ -236,7 +236,7 @@
 					<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
 				</form>
 
-				<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
+				<a href="{{learnMoreHref}}" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
 					Learn more
 				</a>
 			</div>
@@ -286,10 +286,22 @@
 				canBuildHtml,
 				buildHtml,
 				mobileSettingsVisible: false,
+				learnMoreHref: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.observe('isDefaultPackage name', () => {
+					let isDefaultPackage = this.get('isDefaultPackage');
+					let name = this.get('name');
+
+					if (isDefaultPackage) {
+						this.set('learnMoreHref', `https://www.npmjs.com/package/${name}`);
+					} else {
+						this.set('learnMoreHref', 'https://www.jsdelivr.com/esm');
+					}
+				});
+
 				this.observe('selectedVersion', () => {
 					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
