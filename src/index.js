@@ -309,10 +309,12 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	try {
-		data.package = await algoliaNode.getObjectWithCache(data.name);
+		let packageFullName = data.scope ? `${data.scope}/${data.name}` : data.name;
+
+		data.package = await algoliaNode.getObjectWithCache(packageFullName);
 
 		if (data.package) {
-			data.description = `A free, fast, and reliable CDN for ${data.name}. ${data.package.description}`;
+			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description}`;
 			data.package.readme = data.package.readme || ' ';
 		}
 	} catch {}
