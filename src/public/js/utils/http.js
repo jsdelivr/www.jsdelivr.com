@@ -54,7 +54,7 @@ module.exports.fetchPackageEntrypoints = (type, name, version) => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
 };
 
-module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead) => {
+module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead = 'HEAD') => {
 	return new Promise((resolve, reject) => {
 		_.makeHTTPRequest({
 			url: `${RAW_GH_USER_CONTENT_HOST}/${packageOwner}/${packageName}/${packageGitHead}/README.md`,
