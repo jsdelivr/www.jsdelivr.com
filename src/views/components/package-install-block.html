@@ -48,9 +48,9 @@
 						<input id="switch-id" type="checkbox" twoway="false"
 							class="switch-input {{#if isDefaultPackageTmp}}checked{{/if}}">
 
-						<label for="switch-id" on-click="@this.toggle('isDefaultPackageTmp')">
-							<span>ESM</span>
-							<span>Default</span>
+						<label for="switch-id" on-click="@this.handleMobileEsmDefaultSwitch()" class="{{#unless installEsmSrc && installScriptSrc}}disabled{{/unless}}">
+							<span class="{{#unless installEsmSrc}}disabled{{/unless}}">ESM</span>
+							<span class="{{#unless installScriptSrc}}disabled{{/unless}}">Default</span>
 						</label>
 					</div>
 
@@ -411,6 +411,14 @@
 
 			if (installScriptSrc && installEsmSrc) {
 				this.toggle('isDefaultPackage');
+			}
+		},
+		handleMobileEsmDefaultSwitch () {
+			let installScriptSrc = this.get('installScriptSrc');
+			let installEsmSrc = this.get('installEsmSrc');
+
+			if (installScriptSrc && installEsmSrc) {
+				this.toggle('isDefaultPackageTmp');
 			}
 		},
 	};
