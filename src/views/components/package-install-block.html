@@ -3,16 +3,18 @@
 		<div class="install-settings">
 			<div>INSTALL</div>
 
-			<div class="switch-wrapper">
-				<span>Type:</span>
-				<input id="switch-id" type="checkbox" twoway="false"
-					class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+			{{#if isDefaultPackage !== null}}
+				<div class="switch-wrapper">
+					<span>Type:</span>
+					<input id="switch-id" type="checkbox" twoway="false"
+						class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
 
-				<label for="switch-id" on-click="@this.toggle('isDefaultPackage')">
-					<span>ESM</span>
-					<span>Default</span>
-				</label>
-			</div>
+					<label for="switch-id" on-click="@this.toggle('isDefaultPackage')">
+						<span>ESM</span>
+						<span>Default</span>
+					</label>
+				</div>
+			{{/if}}
 
 			<div class="dropdown-wrapper">
 				<label for="version-select">Version:&nbsp;&nbsp;</label>
@@ -77,7 +79,7 @@
 		<div class="horizontal-divider-19"></div>
 
 		<div class="install-script">
-			{{#if isDefaultPackage}}
+			{{#if isDefaultPackage === true}}
 				{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
 						<span class="script-tag">&#60;script src="</span>
@@ -182,7 +184,7 @@
 						</div>
 					</div>
 				{{/if}}
-			{{else}}
+			{{elseif isDefaultPackage === false}}
 				<div class="script-wrapper-esm">
 					<span class="script-tag">&#60;script type="module"&#62;</span>
 					<span class="script-text">
@@ -277,9 +279,9 @@
 					'Major',
 					'Latest',
 				],
-				isDefaultPackage: true,
+				isDefaultPackage: null,
+				isDefaultPackageTmp: null,
 				selectedVersion: 'Static',
-				isDefaultPackageTmp: true,
 				selectedVersionTmp: 'Static',
 				isGuessedFile: false,
 				buildIntegrity,
@@ -371,6 +373,9 @@
 					if (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1) {
 						this.set('isDefaultPackage', false);
 						this.set('isDefaultPackageTmp', false);
+					} else {
+						this.set('isDefaultPackage', true);
+						this.set('isDefaultPackageTmp', true);
 					}
 				});
 
