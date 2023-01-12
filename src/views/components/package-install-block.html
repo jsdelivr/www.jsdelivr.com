@@ -3,16 +3,20 @@
 		<div class="install-settings">
 			<div>INSTALL</div>
 
-			<div class="switch-wrapper">
-				<span>Type:</span>
-				<input id="switch-id" type="checkbox" twoway="false"
-					class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
+			{{#if isDefaultPackage !== null}}
+				<div class="switch-wrapper">
+					<span>Type:</span>
+					<input id="switch-id"
+						type="checkbox"
+						twoway="false"
+						class="switch-input {{#if isDefaultPackage}}checked{{/if}}">
 
-				<label for="switch-id" on-click="@this.set('isDefaultPackage', !isDefaultPackage)">
-					<span>ESM</span>
-					<span>Default</span>
-				</label>
-			</div>
+					<label for="switch-id" on-click="@this.handleEsmDefaultSwitch()" class="{{#unless installEsmSrc && installScriptSrc}}disabled{{/unless}}">
+						<span class="{{#unless installEsmSrc}}disabled{{/unless}}">ESM</span>
+						<span class="{{#unless installScriptSrc}}disabled{{/unless}}">Default</span>
+					</label>
+				</div>
+			{{/if}}
 
 			<div class="dropdown-wrapper">
 				<label for="version-select">Version:&nbsp;&nbsp;</label>
@@ -36,7 +40,7 @@
 			</button>
 
 			{{#if mobileSettingsVisible}}
-				<div class="overlay" on-click="@this.set('mobileSettingsVisible', false)"></div>
+				<div class="overlay" on-click="@this.onClickMobileCancel()"></div>
 
 				<div class="settings-mobile" slide-in slide-out>
 					<div class="switch-wrapper">
@@ -44,9 +48,9 @@
 						<input id="switch-id" type="checkbox" twoway="false"
 							class="switch-input {{#if isDefaultPackageTmp}}checked{{/if}}">
 
-						<label for="switch-id" on-click="@this.set('isDefaultPackageTmp', !isDefaultPackageTmp)">
-							<span>ESM</span>
-							<span>Default</span>
+						<label for="switch-id" on-click="@this.handleMobileEsmDefaultSwitch()" class="{{#unless installEsmSrc && installScriptSrc}}disabled{{/unless}}">
+							<span class="{{#unless installEsmSrc}}disabled{{/unless}}">ESM</span>
+							<span class="{{#unless installScriptSrc}}disabled{{/unless}}">Default</span>
 						</label>
 					</div>
 
@@ -77,11 +81,14 @@
 		<div class="horizontal-divider-19"></div>
 
 		<div class="install-script">
-			{{#if isDefaultPackage}}
+			{{#if isDefaultPackage === true}}
 				{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
 						<span class="script-tag">&#60;script src="</span>
-						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installScriptSrc}}</span>
+						<span class="script-text">
+							<a target="_blank" href="{{~/installEsmSrc}}">{{~/installScriptSrc}}</a>
+						</span>
+
 						<span class="script-tag">"&#62;&#60;/script&#62;</span>
 
 						<div class="btn-group btn-group_copy-dropdown">
@@ -131,7 +138,9 @@
 				{{#if ~/packageCssEntrypoint}}
 					<div class="script-wrapper-default">
 						<span class="script-tag">&#60;link href="</span>
-						<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;{{~/installLinkHref}}</span>
+						<span class="script-text">
+							<a target="_blank" href="{{~/installLinkHref}}">{{~/installLinkHref}}</a>
+						</span>
 						<span class="script-tag">" rel="stylesheet"&#62;&#60;/link&#62;</span>
 
 						<div class="btn-group btn-group_copy-dropdown">
@@ -177,10 +186,13 @@
 						</div>
 					</div>
 				{{/if}}
-			{{else}}
+			{{elseif isDefaultPackage === false}}
 				<div class="script-wrapper-esm">
 					<span class="script-tag">&#60;script type="module"&#62;</span>
-					<span class="script-text">&nbsp;&nbsp;&nbsp;&nbsp;import {{name}} from '{{~/installEsmSrc}}'</span>
+					<span class="script-text">
+						<span>import {{name}} from</span>
+						<span>'<a target="_blank" href="{{~/installEsmSrc}}">{{~/installEsmSrc}}</a>'</span>
+					</span>
 					<span class="script-tag">&#60;/script&#62;</span>
 
 					<div class="btn-group btn-group_copy-dropdown">
@@ -222,17 +234,17 @@
 			</div>
 		{{else}}
 			<div class="install-esm-ctrls">
-				<a href="https://esm.run/{{name}}" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
-					Open in new tab
-				</a>
-
 				<form class="jsfiddle-form" action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
-					<input type="hidden" name="title" value="esm.run {{name}} demo">
+					<input type="hidden" name="title" value="{{#if isDefaultPackage}}jsDelivr{{else}}esm.run{{/if}} {{name}} demo">
+					{{#if isDefaultPackage}}
+					<input type="hidden" name="resources" value="{{installScriptSrc}}" twoway="false">
+					{{else}}
 					<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+					{{/if}}
 					<button type="submit" class="esm-ctrl" tabindex="2">Open in jsfiddle</button>
 				</form>
 
-				<a href="https://www.jsdelivr.com/esm" class="esm-ctrl" target="_blank" rel="noopener noreferrer">
+				<a href="{{learnMoreHref}}" class="esm-ctrl">
 					Learn more
 				</a>
 			</div>
@@ -264,23 +276,57 @@
 				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
 			},
 		},
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				_,
+				versionsList: [
+					'Static',
+					'Minor',
+					'Major',
+					'Latest',
+				],
+				isDefaultPackage: null,
+				isDefaultPackageTmp: null,
+				selectedVersion: 'Static',
+				selectedVersionTmp: 'Static',
+				isGuessedFile: false,
+				buildIntegrity,
+				canBuildHtml,
+				buildHtml,
+				mobileSettingsVisible: false,
+				learnMoreHref: null,
+			};
+		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.observe('isDefaultPackage name', () => {
+					let isDefaultPackage = this.get('isDefaultPackage');
+
+					if (isDefaultPackage) {
+						this.set('learnMoreHref', `/documentation#id-npm`);
+					} else {
+						this.set('learnMoreHref', '/esm');
+					}
+				});
+
 				this.observe('selectedVersion', () => {
-					let installPackageVersion = '';
+					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
 					let packageVersion = this.get('version');
 					let packageType = this.get('type');
 
 					if (selectedVersion === 'Static') {
-						installPackageVersion = packageVersion;
+						installPackageVersion += packageVersion;
 					} else if (selectedVersion === 'Major') {
-						installPackageVersion = packageVersion.split('.')[0];
+						installPackageVersion += packageVersion.split('.')[0];
 					} else if (selectedVersion === 'Minor') {
-						installPackageVersion = packageVersion.split('.').slice(0, 2).join('.');
+						installPackageVersion += packageVersion.split('.').slice(0, 2).join('.');
 					} else {
-						installPackageVersion = 'latest';
+						installPackageVersion = '';
 					}
 
 					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
@@ -294,7 +340,7 @@
 							}
 
 							packageJsEntrypoint = data.entrypoints.js.file;
-							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageJsEntrypoint}`);
+							this.set('installScriptSrc', `https://cdn.jsdelivr.net/${packageType}/${packageName}${installPackageVersion}${packageJsEntrypoint}`);
 							this.set('packageJsEntrypoint', packageJsEntrypoint);
 						}
 
@@ -304,12 +350,12 @@
 							}
 
 							packageCssEntrypoint = data.entrypoints.css.file;
-							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}@${installPackageVersion}${packageCssEntrypoint}`);
+							this.set('installLinkHref', `https://cdn.jsdelivr.net/${packageType}/${packageName}${installPackageVersion}${packageCssEntrypoint}`);
 							this.set('packageCssEntrypoint', packageCssEntrypoint);
 						}
 
 						this.set('isGuessedFile', isGuessedFile);
-						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}@${installPackageVersion}/+esm`);
+						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
 
 						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 							if (packageJsEntrypoint) {
@@ -334,6 +380,10 @@
 				this.observe('package.moduleTypes', (value) => {
 					if (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1) {
 						this.set('isDefaultPackage', false);
+						this.set('isDefaultPackageTmp', false);
+					} else {
+						this.set('isDefaultPackage', true);
+						this.set('isDefaultPackageTmp', true);
 					}
 				});
 
@@ -348,57 +398,31 @@
 				});
 			}
 		},
-
 		onClickMobileApply () {
+			this.set('mobileSettingsVisible', false);
 			this.set('isDefaultPackage', this.get('isDefaultPackageTmp'));
 			this.set('selectedVersion', this.get('selectedVersionTmp'));
-			this.set('mobileSettingsVisible', false);
 		},
 		onClickMobileCancel () {
+			this.set('mobileSettingsVisible', false);
 			this.set('isDefaultPackageTmp', this.get('isDefaultPackage'));
 			this.set('selectedVersionTmp', this.get('selectedVersion'));
-			this.set('mobileSettingsVisible', false);
 		},
+		handleEsmDefaultSwitch () {
+			let installScriptSrc = this.get('installScriptSrc');
+			let installEsmSrc = this.get('installEsmSrc');
 
-		data () {
-			return {
-				_,
-				versionsList: [
-					'Static',
-					'Minor',
-					'Major',
-					'Latest',
-				],
-				isDefaultPackage: true,
-				selectedVersion: 'Static',
-				isDefaultPackageTmp: true,
-				selectedVersionTmp: 'Static',
-				isGuessedFile: false,
-				buildIntegrity,
-				canBuildHtml,
-				buildHtml,
-				mobileSettingsVisible: false,
-			};
-		},
-		decorators: {
-			clipboard,
-		},
-
-		setTypeFilter (filterBy) {
-			if (filterBy === this.get('filterType')) {
-				this.set('filterType', '');
-			} else {
-				this.set('filterType', filterBy);
+			if (installScriptSrc && installEsmSrc) {
+				this.toggle('isDefaultPackage');
 			}
 		},
-		setStyleFilter (filterBy) {
-			if (filterBy === this.get('filterStyle')) {
-				this.set('filterStyle', '');
-			} else {
-				this.set('filterStyle', filterBy);
-			}
+		handleMobileEsmDefaultSwitch () {
+			let installScriptSrc = this.get('installScriptSrc');
+			let installEsmSrc = this.get('installEsmSrc');
 
-			console.log(this.get('filterStyle'));
+			if (installScriptSrc && installEsmSrc) {
+				this.toggle('isDefaultPackageTmp');
+			}
 		},
 	};
 </script>
