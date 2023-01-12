@@ -37,5 +37,18 @@
 				},
 			};
 		},
+		oninit () {
+			// if page URL has a hash then scroll page to the anchor
+			this.observeOnce('text', () => {
+				let anchor = app.router.uri.hash;
+				let el = anchor ? this.find(anchor) : null;
+
+				if (el) {
+					el.scrollIntoView({
+						behavior: 'smooth',
+					});
+				}
+			}, { init: false, defer: true });
+		},
 	};
 </script>
