@@ -58,10 +58,6 @@ module.exports = {
 	},
 
 	formatHits (hits) {
-		if (hits < 1e9) {
-			return 1;
-		}
-
 		return Math.round(hits / 1e9);
 	},
 
