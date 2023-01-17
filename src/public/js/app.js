@@ -23,8 +23,8 @@ const cHistory = require('../../views/pages/history.html');
 const cGsap = require('../../views/pages/gsap.html');
 const cSkypack = require('../../views/pages/skypack.html');
 const cEsmsh = require('../../views/pages/esmsh.html');
-const cCustomCdnOss = require('../../views/pages/proxy.html');
-const cCustomCdnOssProject = require('../../views/pages/proxy-project.html');
+const cCustomCdnOss = require('../../views/pages/oss-cdn.html');
+const cCustomCdnOssProject = require('../../views/pages/oss-cdn-project.html');
 const cDocumentation = require('../../views/pages/documentation.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
@@ -92,8 +92,8 @@ app.router.addRoute('/history', cHistory);
 app.router.addRoute('/gsap', cGsap);
 app.router.addRoute('/skypack', cSkypack);
 app.router.addRoute('/esmsh', cEsmsh);
-app.router.addRoute('/proxy', cCustomCdnOss);
-app.router.addRoute('/proxy/:name', cCustomCdnOssProject);
+app.router.addRoute('/oss-cdn', cCustomCdnOss);
+app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
