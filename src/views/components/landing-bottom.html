@@ -820,12 +820,15 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="fireworks"></div>
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const codeTabs = [ 'entrypoints', 'versions', 'files' ];
+	const FIREWORKS_ANIMATION_DURATION = 4000;
 
 	function createLineNums (heightSelector, lineHeightSelector, targetSelector) {
 		let preOffsetHeight = document.querySelector(heightSelector).offsetHeight;
@@ -942,25 +945,48 @@
 				createLineNums('.js-modules_code pre', '.js-modules_code pre span', '.js-modules_code_wrapper_counters');
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
 
+				let fireworks = null;
 				document.getElementById('runesmcript').onclick = () => {
 					let t0 = 0;
 					let scriptEl = document.createElement('script');
 
 					scriptEl.id = 'esm-script';
 
-					scriptEl.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+					scriptEl.src = 'https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js';
 
 					scriptEl.onload = () => {
 						this.set('esmScriptTime', Math.round(performance.now() - t0));
-						// eslint-disable-next-line no-undef
-						confetti();
+
+						let container = document.querySelector('.fireworks');
+
+						container.style.zIndex = '1000';
+
+						// eslint-disable-next-line no-undef, new-cap
+						fireworks = new Fireworks.default(container);
+
+						fireworks.start();
+
+						setTimeout(() => {
+							fireworks.stop();
+							container.style.zIndex = '-1';
+						}, FIREWORKS_ANIMATION_DURATION);
+
 						t0 = 0;
 					};
 
 					if (document.getElementById('esm-script')) {
 						this.set('esmScriptTime', t0);
-						// eslint-disable-next-line no-undef
-						confetti();
+
+						let container = document.querySelector('.fireworks');
+
+						container.style.zIndex = '1000';
+
+						fireworks.start();
+
+						setTimeout(() => {
+							fireworks.stop();
+							container.style.zIndex = '-1';
+						}, FIREWORKS_ANIMATION_DURATION);
 					} else {
 						document.body.appendChild(scriptEl);
 						t0 = performance.now();
