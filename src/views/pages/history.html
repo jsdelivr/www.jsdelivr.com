@@ -34,7 +34,7 @@
 									<div class="binding"></div>
 								</div>
 
-								<div class="event-block_main {{@index % 2 ? 'pos-right' : 'pos-left'}}">
+								<div class="event-block_main {{index % 2 ? 'pos-right' : 'pos-left'}}">
 									{{#if data.type}}
 										<img class="event-block_main_type-icon" src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg">
 									{{/if}}
@@ -57,7 +57,7 @@
 									{{/if}}
 								</div>
 
-								<div class="event-block_relation {{@index % 2 ? 'pos-left' : 'pos-right'}}">
+								<div class="event-block_relation {{index % 2 ? 'pos-left' : 'pos-right'}}">
 									{{#if data.img && data.img.ext === ".svg"}}
 										<img class="{{data.img.class}}"
 											width="{{data.img.widthLarge}}"
@@ -81,6 +81,10 @@
 </r-page>
 
 <script>
+	const DATA_TYPE_UPDATES = 'updates';
+	const DATA_TYPE_DEALS = 'deals';
+	const DATA_TYPE_NUMBERS = 'numbers';
+
 	component.exports = {
 		data () {
 			return {
@@ -88,27 +92,72 @@
 				description: 'History and milestones - jsDelivr',
 				eventsData: [
 					{
+						year: '2023',
+						events: [
+							{
+								month: 'January',
+								data: {
+									text: 'Website redesigned to support new ESM and stats features and provide more information about packages',
+									type: DATA_TYPE_UPDATES,
+								},
+							},
+						],
+					},
+					{
+						year: '2022',
+						events: [
+							{
+								month: 'December',
+								data: {
+									text: 'New DNS system and simplified Multi-CDN routing for better performance and availability',
+									type: DATA_TYPE_UPDATES,
+								},
+							},
+							{
+								month: 'September',
+								data: {
+									text: 'Served 160B requests, 6 PB of bandwidth per month',
+									type: DATA_TYPE_NUMBERS,
+								},
+							},
+							{
+								month: 'August',
+								data: {
+									text: 'Gcore joins as a sponsor',
+									type: DATA_TYPE_DEALS,
+								},
+							},
+							{
+								month: 'July',
+								data: {
+									text: '<a href="https://github.com/jsdelivr/globalping" >Globalping</a> launches in Beta',
+									type: DATA_TYPE_UPDATES,
+								},
+							},
+						],
+					},
+					{
 						year: '2021',
 						events: [
 							{
 								month: 'October',
 								data: {
 									text: 'On-the-fly SVG optimization goes live',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'September',
 								data: {
 									text: 'Served 130B requests, 6 PB of bandwidth per month',
-									type: 'numbers',
+									type: DATA_TYPE_NUMBERS,
 								},
 							},
 							{
 								month: 'May',
 								data: {
 									text: 'RawGit CDN becomes part of jsDelivr',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'rawgit',
 										widthLarge: '68',
@@ -121,7 +170,7 @@
 								month: 'February',
 								data: {
 									text: 'BunnyCDN joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'bunny',
 										widthLarge: '148',
@@ -139,14 +188,14 @@
 								month: 'October',
 								data: {
 									text: '<a href="/esm">esm.run</a> launches to make jsDelivr a first choice CDN for ES modules',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'October',
 								data: {
 									text: '<a href="/blog/jsdelivr-welcomes-bootstrapcdn/" class="router-ignore">BootstrapCDN</a> becomes part of jsDelivr',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'bootstrap',
 										widthLarge: '147',
@@ -159,7 +208,7 @@
 								month: 'October',
 								data: {
 									text: 'Pyodide becomes powered by jsDelivr, speeding up WASM delivery',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'pyodide',
 										widthLarge: '105',
@@ -172,7 +221,7 @@
 								month: 'May',
 								data: {
 									text: 'CocoaPods becomes powered by jsDelivr, speeding up the installation of packages',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'cocoapods',
 										widthLarge: '147',
@@ -190,14 +239,14 @@
 								month: 'October',
 								data: {
 									text: 'Served 60B requests, reaching the 2B / day average',
-									type: 'numbers',
+									type: DATA_TYPE_NUMBERS,
 								},
 							},
 							{
 								month: 'May',
 								data: {
 									text: 'The jsDelivr team builds PerfOps, a commercial service to improve multi-CDN routing',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'perfops',
 										widthLarge: '147',
@@ -215,14 +264,14 @@
 								month: 'October',
 								data: {
 									text: 'Plugins for Atom, IntelliJ, and Visual Studio released',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'September',
 								data: {
 									text: 'Served 30 billion requests per month, reaching a daily average of 1B for the first time',
-									type: 'numbers',
+									type: DATA_TYPE_NUMBERS,
 								},
 							},
 						],
@@ -234,28 +283,28 @@
 								month: 'August',
 								data: {
 									text: 'Website rebuilt to support the new automated system that works with NPM and GitHub directly.',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'July',
 								data: {
 									text: 'Data API launches, providing detailed download statistics',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'May',
 								data: {
 									text: 'Fully automated npm and GitHub proxies launch',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'April',
 								data: {
 									text: 'Fastly joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'fastly',
 										widthLarge: '84',
@@ -273,14 +322,14 @@
 								month: 'April',
 								data: {
 									text: 'OSSCDN becomes part of jsDelivr',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'February',
 								data: {
 									text: 'Martin Kolárik joins as core developer',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'martin-kolarik',
 										widthLarge: '80',
@@ -299,14 +348,14 @@
 								month: 'November',
 								data: {
 									text: 'Served 7 billion requests, 132 TB per month',
-									type: 'numbers',
+									type: DATA_TYPE_NUMBERS,
 								},
 							},
 							{
 								month: 'September',
 								data: {
 									text: 'Quantil joins as a sponsor, adds locations in mainland China',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'quantil',
 										widthLarge: '105',
@@ -319,7 +368,7 @@
 								month: 'September',
 								data: {
 									text: 'Complete redesign of the website',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 						],
@@ -331,7 +380,7 @@
 								month: 'December',
 								data: {
 									text: 'NS1 joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'ns1',
 										widthLarge: '68',
@@ -344,42 +393,42 @@
 								month: 'December',
 								data: {
 									text: 'WordPress plugins proxy launches',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'November',
 								data: {
 									text: 'Purge API launches',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'July',
 								data: {
 									text: 'Serving multiple files in one response possible thanks to /g/',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'June',
 								data: {
 									text: 'Automated project updates via libgrabber',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'April',
 								data: {
 									text: 'jsDelivr becomes the fastest open-source CDN according to CDNPerf',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'March',
 								data: {
 									text: 'Cloudflare joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'cloudflare',
 										widthLarge: '118',
@@ -397,14 +446,14 @@
 								month: 'December',
 								data: {
 									text: 'Public data API launches',
-									type: 'updates',
+									type: DATA_TYPE_UPDATES,
 								},
 							},
 							{
 								month: 'June',
 								data: {
 									text: 'Cedexis joins as a sponsor, allows multi-CDN routing based on RUM',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'cedexis',
 										widthLarge: '119',
@@ -417,7 +466,7 @@
 								month: 'May',
 								data: {
 									text: 'CDN.NET joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'cdnnet',
 										widthLarge: '118',
@@ -435,7 +484,7 @@
 								month: 'June',
 								data: {
 									text: 'MaxCDN joins as a sponsor',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'maxcdn',
 										widthLarge: '132',
@@ -448,7 +497,7 @@
 								month: 'May',
 								data: {
 									text: 'Dmitriy Akulov founds jsDelivr',
-									type: 'deals',
+									type: DATA_TYPE_DEALS,
 									img: {
 										name: 'dmitriy-akulov',
 										widthLarge: '80',
@@ -460,7 +509,19 @@
 							},
 						],
 					},
-				],
+				].map((yearData, index, years) => {
+					let before = years.slice(0, index).reduce((acc, val) => acc + val.events.length, 0);
+
+					return {
+						...yearData,
+						events: yearData.events.map((event, index) => {
+							return {
+								...event,
+								index: index + before,
+							};
+						}),
+					};
+				}),
 			};
 		},
 	};
