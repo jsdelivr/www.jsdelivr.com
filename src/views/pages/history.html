@@ -34,7 +34,7 @@
 									<div class="binding"></div>
 								</div>
 
-								<div class="event-block_main {{@index % 2 ? 'pos-right' : 'pos-left'}}">
+								<div class="event-block_main {{index % 2 ? 'pos-right' : 'pos-left'}}">
 									{{#if data.type}}
 										<img class="event-block_main_type-icon" src="{{@shared.assetsHost}}/img/history/{{data.type}}.svg">
 									{{/if}}
@@ -57,7 +57,7 @@
 									{{/if}}
 								</div>
 
-								<div class="event-block_relation {{@index % 2 ? 'pos-left' : 'pos-right'}}">
+								<div class="event-block_relation {{index % 2 ? 'pos-left' : 'pos-right'}}">
 									{{#if data.img && data.img.ext === ".svg"}}
 										<img class="{{data.img.class}}"
 											width="{{data.img.widthLarge}}"
@@ -97,14 +97,19 @@
 							{
 								month: 'February',
 								data: {
-									text: 'jsDelivr automated ESM goes into production',
+									text: 'Website redesigned to support the ESM and stats features.',
 									type: DATA_TYPE_UPDATES,
 								},
 							},
+						],
+					},
+					{
+						year: '2023',
+						events: [
 							{
 								month: 'January',
 								data: {
-									text: 'New website, global stats, improved purge and new API',
+									text: 'Website redesigned to support new ESM and stats features and provide more information about packages',
 									type: DATA_TYPE_UPDATES,
 								},
 							},
@@ -123,6 +128,13 @@
 							{
 								month: 'September',
 								data: {
+									text: 'Served 160B requests, 6 PB of bandwidth per month',
+									type: DATA_TYPE_NUMBERS,
+								},
+							},
+							{
+								month: 'August',
+								data: {
 									text: 'Gcore joins as a sponsor',
 									type: DATA_TYPE_DEALS,
 								},
@@ -130,7 +142,7 @@
 							{
 								month: 'July',
 								data: {
-									text: '<a href="https://github.com/jsdelivr/globalping">Globalping</a> launches in Beta',
+									text: '<a href="https://github.com/jsdelivr/globalping" >Globalping</a> launches in Beta',
 									type: DATA_TYPE_UPDATES,
 								},
 							},
@@ -509,7 +521,19 @@
 							},
 						],
 					},
-				],
+				].map((yearData, index, years) => {
+					let before = years.slice(0, index).reduce((acc, val) => acc + val.events.length, 0);
+
+					return {
+						...yearData,
+						events: yearData.events.map((event, index) => {
+							return {
+								...event,
+								index: index + before,
+							};
+						}),
+					};
+				}),
 			};
 		},
 	};
