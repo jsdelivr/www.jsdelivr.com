@@ -570,8 +570,17 @@
 						</div>
 
 						<div class="code-footer">
-							<span>230 ms loaded from CDN</span>
-							<button class="btn-primary">Run</button>
+							<span>
+								{{#if esmScriptTime !== null}}
+									{{#if esmScriptTime}}
+										{{esmScriptTime}} ms loaded from CDN
+									{{else}}
+										{{esmScriptTime}} ms, still cached
+									{{/if}}
+								{{/if}}
+							</span>
+
+							<button id="runesmcript" class="btn-primary">Run</button>
 						</div>
 					</div>
 				</section>
@@ -861,6 +870,7 @@
 					{ image: 'euro-vision.svg' },
 				],
 				showMoreExLogo: false,
+				esmScriptTime: null,
 			};
 		},
 		oninit () {
@@ -931,6 +941,31 @@
 			if (!Ractive.isServer) {
 				createLineNums('.js-modules_code pre', '.js-modules_code pre span', '.js-modules_code_wrapper_counters');
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
+
+				document.getElementById('runesmcript').onclick = () => {
+					let t0 = 0;
+					let scriptEl = document.createElement('script');
+
+					scriptEl.id = 'esm-script';
+
+					scriptEl.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+
+					scriptEl.onload = () => {
+						this.set('esmScriptTime', performance.now() - t0);
+						// eslint-disable-next-line no-undef
+						confetti();
+						t0 = 0;
+					};
+
+					if (document.getElementById('esm-script')) {
+						this.set('esmScriptTime', t0);
+						// eslint-disable-next-line no-undef
+						confetti();
+					} else {
+						document.body.appendChild(scriptEl);
+						t0 = performance.now();
+					}
+				};
 			}
 		},
 		getRandom (min, max) {
