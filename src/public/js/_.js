@@ -65,10 +65,6 @@ module.exports = {
 		return Math.round(hits / 1e9);
 	},
 
-	formatBytes2TiB (bytes) {
-		return Math.round(bytes / 1.1e+12);
-	},
-
 	formatNumber (number) {
 		return Math.floor(number).toString().replace(/\d(?=(?:\d{3})+$)/g, '$& ');
 	},
