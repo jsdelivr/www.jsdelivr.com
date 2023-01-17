@@ -558,23 +558,41 @@
 							<div class="js-modules_code_wrapper_counters"></div>
 
 							<pre>
-								<span>import _ from 'https://esm.run/lodash-es'</span>
-								<span>import * as d3 from 'https://esm.run/d3';</span>
-								<span>import colors from 'https://esm.run/nice-color-palettes';</span>
-								<span>const message = 'jsDelivr is Awesome!';</span>
-								<span>for (let char of message.split(' ')) {
-									&nbsp;&nbsp;d3.select('#msg')
-									&nbsp;&nbsp;&nbsp;&nbsp;.append('span')
-									&nbsp;&nbsp;&nbsp;&nbsp;.text(char + ' ')
-									&nbsp;&nbsp;&nbsp;&nbsp;.style('color', colors[_.random(0, 99)][_.random(0, 4)]);
+								<span>import { Fireworks } from 'https://esm.run/fireworks-js'</span>
+								<span>let container = document.querySelector('.container');</span>
+								<span>let options = {
+									&nbsp;&nbsp;lineStyle: 'round',
+									&nbsp;&nbsp;explosion: 5,
+									&nbsp;&nbsp;opacity: 0.5,
+									&nbsp;&nbsp;acceleration: 1.05,
+									&nbsp;&nbsp;friction: 0.95,
+									&nbsp;&nbsp;gravity: 1.5,
+									&nbsp;&nbsp;particles: 50,
+									&nbsp;&nbsp;traceLength: 3,
+									&nbsp;&nbsp;flickering: 50,
+									&nbsp;&nbsp;intensity: 30,
+									&nbsp;&nbsp;traceSpeed: 10,
+									&nbsp;&nbsp;intensity: 30,
+									&nbsp;&nbsp;autoresize: true,
 									}
 								</span>
+								<span>let fireworks = new Fireworks(container, options);</span>
+								<span>fireworks.start();</span>
 								</pre>
 						</div>
 
 						<div class="code-footer">
-							<span>230 ms loaded from CDN</span>
-							<button class="btn-primary">Run</button>
+							<span>
+								{{#if esmScriptTime !== null}}
+									{{#if esmScriptTime}}
+										{{esmScriptTime}} ms loaded from CDN
+									{{else}}
+										{{esmScriptTime}} ms, still cached
+									{{/if}}
+								{{/if}}
+							</span>
+
+							<button id="runesmcript" class="btn-primary">Run</button>
 						</div>
 					</div>
 				</section>
@@ -814,12 +832,15 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="fireworks"></div>
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const codeTabs = [ 'entrypoints', 'versions', 'files' ];
+	const FIREWORKS_ANIMATION_DURATION = 4000;
 
 	function createLineNums (heightSelector, lineHeightSelector, targetSelector) {
 		let preOffsetHeight = document.querySelector(heightSelector).offsetHeight;
@@ -864,6 +885,7 @@
 					{ image: 'euro-vision.svg' },
 				],
 				showMoreExLogo: false,
+				esmScriptTime: null,
 			};
 		},
 		oninit () {
@@ -934,6 +956,54 @@
 			if (!Ractive.isServer) {
 				createLineNums('.js-modules_code pre', '.js-modules_code pre span', '.js-modules_code_wrapper_counters');
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
+
+				let fireworks = null;
+				document.getElementById('runesmcript').onclick = () => {
+					let t0 = 0;
+					let scriptEl = document.createElement('script');
+
+					scriptEl.id = 'esm-script';
+
+					scriptEl.src = 'https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js';
+
+					scriptEl.onload = () => {
+						this.set('esmScriptTime', Math.round(performance.now() - t0));
+
+						let container = document.querySelector('.fireworks');
+
+						container.style.zIndex = '1000';
+
+						// eslint-disable-next-line no-undef, new-cap
+						fireworks = new Fireworks.default(container);
+
+						fireworks.start();
+
+						setTimeout(() => {
+							fireworks.stop();
+							container.style.zIndex = '-1';
+						}, FIREWORKS_ANIMATION_DURATION);
+
+						t0 = 0;
+					};
+
+					if (document.getElementById('esm-script')) {
+						this.set('esmScriptTime', t0);
+
+						let container = document.querySelector('.fireworks');
+
+						container.style.zIndex = '1000';
+
+						fireworks.start();
+
+						setTimeout(() => {
+							fireworks.stop();
+							container.style.zIndex = '-1';
+						}, FIREWORKS_ANIMATION_DURATION);
+					} else {
+						document.body.appendChild(scriptEl);
+						t0 = performance.now();
+					}
+				};
 			}
 		},
 		getRandom (min, max) {
