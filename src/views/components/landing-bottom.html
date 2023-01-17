@@ -16,7 +16,7 @@
 					<h2>Built for production</h2>
 
 					<div class="features_features-list">
-						<a href="/network">
+						<a href="/network/infographic">
 							<img width="64"
 								height="64"
 								src="{{@shared.assetsHost}}/img/landing/new/built-for-prod/1.svg" />
@@ -30,7 +30,7 @@
 							<h6>More than 750 points<br /> of presence</h6>
 						</a>
 
-						<a href="/network">
+						<a href="/network#china">
 							<img width="64"
 								height="64"
 								src="{{@shared.assetsHost}}/img/landing/new/built-for-prod/3.svg" />
@@ -38,7 +38,7 @@
 							<h6>Low latency "Near China"<br /> network</h6>
 						</a>
 
-						<a target="_blank" rel="noopener noreferrer" href="https://www.cdnperf.com">
+						<a href="/documentation#id-multi-cdn">
 							<img width="64"
 								height="64"
 								src="{{@shared.assetsHost}}/img/landing/new/built-for-prod/4.svg" />
@@ -52,7 +52,7 @@
 							<h6>Multi-layer cache<br /> and failover</h6>
 						</a>
 
-						<a href="/network">
+						<a href="/terms">
 							<img width="64"
 								height="64"
 								src="{{@shared.assetsHost}}/img/landing/new/built-for-prod/6.svg" />
@@ -141,7 +141,7 @@
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" />
 								<div class="network-data_stats_item_regular">
-									<span>{{ bandwidth.toFixed(1) }} Mbps</span>
+									<span>{{ Math.round(bandwidth) }} Mbps</span>
 									<span>bandwidth</span>
 								</div>
 							</div>
@@ -204,7 +204,7 @@
 						<h6>Version aliasing</h6>
 					</a>
 
-					<a>
+					<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/plugin-vs-code">
 						<img width="64"
 							height="64"
 							src="{{@shared.assetsHost}}/img/landing/new/dev-friendly/6.svg" />
@@ -714,19 +714,51 @@
 
 		<div class="endpoints_list">
 			<div class="endpoints_list_wrapper">
-				<c-custom-cdn-oss-data-card name="cocoa" period="month" bandwidthUnit="GB" imgName="endpoint1" imgWidth="202" imgHeight="56"></c-custom-cdn-oss-data-card>
+				<c-custom-cdn-oss-data-card
+					name="cocoa"
+					linkHref="https://www.cocoapods.org"
+					period="month"
+					bandwidthUnit="GB"
+					imgName="endpoint1"
+					imgWidth="202"
+					imgHeight="56">
+				</c-custom-cdn-oss-data-card>
 
-				<c-custom-cdn-oss-data-card name="ghost" period="month" bandwidthUnit="GB" imgName="endpoint4" imgWidth="152" imgHeight="56"></c-custom-cdn-oss-data-card>
+				<c-custom-cdn-oss-data-card
+					name="ghost"
+					linkHref="https://ghost.org"
+					period="month"
+					bandwidthUnit="GB"
+					imgName="endpoint4"
+					imgWidth="152"
+					imgHeight="56">
+				</c-custom-cdn-oss-data-card>
 
-				<c-custom-cdn-oss-data-card name="pyodide" period="month" bandwidthUnit="GB" imgName="endpoint2" imgWidth="170" imgHeight="56"></c-custom-cdn-oss-data-card>
+				<c-custom-cdn-oss-data-card
+					name="pyodide"
+					linkHref="https://pyodide.org"
+					period="month"
+					bandwidthUnit="GB"
+					imgName="endpoint2"
+					imgWidth="170"
+					imgHeight="56">
+				</c-custom-cdn-oss-data-card>
 
-				<c-custom-cdn-oss-data-card name="musescore" period="month" bandwidthUnit="GB" imgName="endpoint3" imgWidth="213" imgHeight="56"></c-custom-cdn-oss-data-card>
+				<c-custom-cdn-oss-data-card
+					name="musescore"
+					linkHref="https://musescore.org"
+					period="month"
+					bandwidthUnit="GB"
+					imgName="endpoint3"
+					imgWidth="213"
+					imgHeight="56">
+				</c-custom-cdn-oss-data-card>
 			</div>
 		</div>
 
 		<div class="btn-link-to bottom">
 			<a class="btn-arrow" href="/custom-cdn-oss">
-				Explore all custom endpoints
+				<span>Explore all custom endpoints</span>
 				<img width="20"
 					height="20"
 					src="{{@shared.assetsHost}}/img/icons/arrow-right.svg" />
@@ -882,12 +914,8 @@
 				};
 
 				setInterval(() => {
-					let requestsPerSecond
-						= (this.getRandom(97, 102) / 100)
-						* this.get('baseRequestsPerSecond'),
-						bandwidth
-						= (this.getRandom(97, 102) / 100)
-						* this.get('baseBandwidth');
+					let requestsPerSecond = (this.getRandom(97, 102) / 100) * this.get('baseRequestsPerSecond');
+					let bandwidth = (this.getRandom(97, 102) / 100) * this.get('baseBandwidth');
 
 					this.animate(
 						'requestsPerSecond',
