@@ -202,7 +202,7 @@ const render = async (svg) => {
 module.exports = async (ctx) => {
 	try {
 		let data = await composeTemplate(ctx.params.name, ctx.params.scope);
-		let svg = await ctx.render('og-image-template.svg', data);
+		let svg = await ctx.render('og-image-template.svg.ractive', data);
 
 		ctx.body = await render(svg);
 		ctx.type = 'image/png';
