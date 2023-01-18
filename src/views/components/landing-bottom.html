@@ -563,10 +563,10 @@
 								<span><span class="code-colors_reserved">let</span>&nbsp;<span class="code-colors_var">container</span>&nbsp;=&nbsp;<span class="code-colors_obj">document</span><span class="code-colors_method">.querySelector</span>(<span class="code-colors_string">'.container'</span>);</span>
 								<span></span>
 								<span><span class="code-colors_reserved">let</span>&nbsp;<span class="code-colors_var">options</span>&nbsp;=&nbsp;<span class="code-colors_reserved">{</span>
-									&nbsp;&nbsp;<span class="code-colors_key">autoresize</span>:&nbsp;<span class="code-colors_boolean">true</span>,
-									&nbsp;&nbsp;<span class="code-colors_key">opacity</span>:&nbsp;<span class="code-colors_number">0.4</span>,
-									&nbsp;&nbsp;<span class="code-colors_key">acceleration</span>:&nbsp;<span class="code-colors_number">1.00</span>,
 									&nbsp;&nbsp;<span class="code-colors_key">gravity</span>:&nbsp;<span class="code-colors_number">1.4</span>,
+									&nbsp;&nbsp;<span class="code-colors_key">opacity</span>:&nbsp;<span class="code-colors_number">0.4</span>,
+									&nbsp;&nbsp;<span class="code-colors_key">autoresize</span>:&nbsp;<span class="code-colors_boolean">true</span>,
+									&nbsp;&nbsp;<span class="code-colors_key">acceleration</span>:&nbsp;<span class="code-colors_number">1.00</span>,
 									<span class="code-colors_reserved">}</span>;
 								</span>
 								<span><span class="code-colors_reserved">let</span>&nbsp;<span class="code-colors_var">fireworks</span>&nbsp;=&nbsp;<span class="code-colors_reserved">new</span>&nbsp;<span class="code-colors_obj">Fireworks</span>(<span class="code-colors_var">container</span>, <span class="code-colors_var">options</span>);</span>
@@ -578,16 +578,16 @@
 
 						<div class="code-footer">
 							<span>
-								{{#if esmScriptTime !== null}}
-									{{#if esmScriptTime}}
-										{{esmScriptTime}} ms loaded from CDN
+								{{#if esmDemoLoadTime !== null}}
+									{{#if esmDemoLoadTime}}
+										{{esmDemoLoadTime}} ms, loaded from the CDN
 									{{else}}
-										{{esmScriptTime}} ms, still cached
+										{{esmDemoLoadTime}} ms, still cached
 									{{/if}}
 								{{/if}}
 							</span>
 
-							<button id="runesmcript" class="btn-primary">Run</button>
+							<button on-click="@this.runEsmDemo(@event)" class="btn-primary">Run</button>
 						</div>
 					</div>
 				</section>
@@ -880,7 +880,9 @@
 					{ image: 'euro-vision.svg' },
 				],
 				showMoreExLogo: false,
-				esmScriptTime: null,
+				esmDemoLoadTime: null,
+				esmDemoRunning: false,
+				fireworks: null,
 			};
 		},
 		oninit () {
@@ -951,58 +953,34 @@
 			if (!Ractive.isServer) {
 				createLineNums('.js-modules_code pre', '.js-modules_code pre span', '.js-modules_code_wrapper_counters');
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
-
-				let fireworks = null;
-				document.getElementById('runesmcript').onclick = () => {
-					let t0 = 0;
-					let scriptEl = document.createElement('script');
-
-					scriptEl.id = 'esm-script';
-
-					scriptEl.src = 'https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js';
-
-					scriptEl.onload = () => {
-						this.set('esmScriptTime', Math.round(performance.now() - t0));
-
-						let container = document.querySelector('.fireworks');
-
-						container.style.zIndex = '1000';
-
-						// eslint-disable-next-line no-undef, new-cap
-						fireworks = new Fireworks.default(container);
-
-						fireworks.start();
-
-						setTimeout(() => {
-							fireworks.waitStop();
-							container.style.zIndex = '-1';
-						}, FIREWORKS_ANIMATION_DURATION);
-
-						t0 = 0;
-					};
-
-					if (document.getElementById('esm-script')) {
-						this.set('esmScriptTime', t0);
-
-						let container = document.querySelector('.fireworks');
-
-						container.style.zIndex = '1000';
-
-						fireworks.start();
-
-						setTimeout(() => {
-							fireworks.waitStop();
-							container.style.zIndex = '-1';
-						}, FIREWORKS_ANIMATION_DURATION);
-					} else {
-						document.body.appendChild(scriptEl);
-						t0 = performance.now();
-					}
-				};
 			}
 		},
 		getRandom (min, max) {
 			return Math.floor(Math.random() * (max - min + 1) + min);
+		},
+		runEsmDemo (e) {
+			performance.clearResourceTimings();
+			let src = 'https://cdn.jsdelivr.net/npm/fireworks-js@2.10.1/+esm';
+
+			import(src).then(({ Fireworks }) => {
+				let entries = performance.getEntriesByType('resource').filter(resource => resource.name === src);
+				console.log(entries);
+				this.set('esmDemoLoadTime', entries.length && entries.at(-1).transferSize ? Math.round(entries.at(-1).duration) : 0);
+
+				let container = document.querySelector('.fireworks');
+				container.style.zIndex = '1000';
+
+				let fireworks = new Fireworks(container);
+
+				fireworks.start();
+
+				setTimeout(() => {
+					e.target.blur();
+					fireworks.waitStop();
+					container.style.zIndex = '-1';
+					container.innerHTML = '';
+				}, FIREWORKS_ANIMATION_DURATION);
+			});
 		},
 	};
 </script>
