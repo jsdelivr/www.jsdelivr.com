@@ -336,7 +336,7 @@ koaElasticUtils.addRoutes(router, [
  * Custom CDN OSS pages.
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/proxy/:name', '/proxy/:name' ],
+	[ '/oss-cdn/:name', '/oss-cdn/:name' ],
 ], async (ctx) => {
 	let data = {
 		name: ctx.params.name,
@@ -344,7 +344,7 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/proxy-project.html', data);
+		ctx.body = await ctx.render('pages/oss-cdn-project.html', data);
 		ctx.maxAge = 10 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
