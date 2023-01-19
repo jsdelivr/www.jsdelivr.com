@@ -44,9 +44,19 @@
 				let el = anchor ? this.find(anchor) : null;
 
 				if (el) {
-					el.scrollIntoView({
-						behavior: 'smooth',
-					});
+					if (document.visibilityState === 'visible') {
+						el.scrollIntoView({
+							behavior: 'smooth',
+						});
+					} else {
+						document.addEventListener('visibilitychange', function listener () {
+							el.scrollIntoView({
+								behavior: 'smooth',
+							});
+
+							document.removeEventListener('visibilitychange', listener);
+						});
+					}
 				}
 			}, { init: false, defer: true });
 		},
