@@ -24,7 +24,7 @@ const cGsap = require('../../views/pages/gsap.html');
 const cSkypack = require('../../views/pages/skypack.html');
 const cEsmsh = require('../../views/pages/esmsh.html');
 const cCustomCdnOss = require('../../views/pages/oss-cdn.html');
-const cCustomCdnOssProject = require('../../views/pages/oss-cdn-project.html');
+const cCustomCdnOssProject = require('../../views/pages/_oss-cdn-project.html');
 const cDocumentation = require('../../views/pages/documentation.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
