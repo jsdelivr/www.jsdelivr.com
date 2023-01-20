@@ -3,6 +3,7 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_.js');
 	const ID_PREFIX = 'id-';
 
 	component.exports = {
@@ -25,12 +26,18 @@
 							</a>
 						`;
 					},
+					image (src, title, text) {
+						let modSrc = _.makeLinksOptimized(src);
+
+						return `<img src="${modSrc}" alt="${text}">`;
+					},
 				};
 
 				marked.use({ renderer });
 			}
 
 			return {
+				_,
 				text: '',
 				markdown (md) {
 					return !Ractive.isServer ? marked.parse(md) : '';
