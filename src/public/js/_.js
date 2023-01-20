@@ -1037,7 +1037,7 @@ module.exports = {
 		let { prefiks, hosts } = optimizedHosts;
 		let prepUrl = url;
 
-		let withoutSchemeLink = url.replace('https;//', '');
+		let withoutSchemeLink = url.replace('https://', '');
 		let hostName = withoutSchemeLink.split('/')[0];
 
 		if (hosts.includes(hostName)) {
