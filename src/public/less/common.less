@@ -432,3 +432,85 @@ body.noscroll {
 		color: #549711;
 	}
 }
+
+// tooltip styles of ClipboardJS
+.tooltip.in {
+	opacity: 1;
+
+	>div {
+		&:nth-child(1), &:nth-child(3) {
+			display: none;
+		}
+
+		&:nth-child(2) {
+			position: relative;
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+			background: rgba(17, 26, 44, .9);
+			padding: 6px;
+			border-radius: 4px;
+			font-family: Lexend, sans-serif;
+			-webkit-font-smoothing: antialiased;
+			font-style: normal;
+			font-weight: 600;
+			font-size: 12px;
+			line-height: 16px;
+			letter-spacing: .2px;
+			color: #fff;
+		}
+	}
+
+	&.bottom > div:nth-child(2):before,
+	&.top > div:nth-child(2):before,
+	&.left > div:nth-child(2):before,
+	&.right > div:nth-child(2):before {
+		content: "";
+		position: absolute;
+		display: block;
+		width: 0;
+		border: 5px solid transparent;
+	}
+
+	&.top {
+		>div:nth-child(2):before {
+			left: 50%;
+			bottom: 0;
+			border-bottom: 0;
+			border-top: 5px solid rgba(17, 26, 44, .9);
+			transform: translate(-50%, 100%);
+		}
+	}
+
+	&.right {
+		>div:nth-child(2):before {
+			left: 0;
+			top: 50%;
+			border-left: 0;
+			border-right: 5px solid rgba(17, 26, 44, .9);
+			transform: translate(-100%, -50%);
+		}
+	}
+
+	&.bottom {
+		>div:nth-child(2):before {
+			left: 50%;
+			top: 0;
+			border-top: 0;
+			border-bottom: 5px solid rgba(17, 26, 44, .9);
+			transform: translate(-50%, -100%);
+		}
+	}
+
+	&.left:before {
+		>div:nth-child(2):before {
+			right: 0;
+			top: 50%;
+			border-right: 0;
+			border-left: 5px solid rgba(17, 26, 44, .9);
+			transform: translate(100%, -50%);
+		}
+	}
+}
