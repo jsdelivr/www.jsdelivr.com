@@ -1,7 +1,7 @@
 let tooltipDecorator = (
 	node,
 	content,
-	position = 'bottom',
+	position = 'top',
 	elementName = 'div',
 	className,
 	offsetX,

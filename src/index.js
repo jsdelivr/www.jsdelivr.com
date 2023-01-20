@@ -277,6 +277,13 @@ koaElasticUtils.addRoutes(router, [
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
 
+	pages.push(
+		'oss-cdn/cocoa',
+		'oss-cdn/ghost',
+		'oss-cdn/musescore',
+		'oss-cdn/pyodide'
+	);
+
 	if (ctx.params.page === 'index') {
 		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
 	} else if (page > 0 && page <= maxPage) {
@@ -344,7 +351,7 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/oss-cdn-project.html', data);
+		ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
 		ctx.maxAge = 10 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
