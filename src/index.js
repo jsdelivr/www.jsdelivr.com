@@ -127,7 +127,7 @@ if (app.env === 'development') {
  * Static files.
  */
 app.use(async (ctx, next) => {
-	if (app.env === 'production' && (isRenderPreview || ctx.query.v === assetsVersion)) {
+	if (app.env === 'production' && (isRenderPreview || !ctx.query.v || ctx.query.v === assetsVersion)) {
 		ctx.res.allowCaching = true;
 	}
 
@@ -156,6 +156,10 @@ app.use(stripTrailingSlash());
  */
 app.use(async (ctx, next) => {
 	await next();
+
+	if (!ctx.res.allowCaching) {
+		return;
+	}
 
 	if (ctx.maxAge) {
 		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, stale-while-revalidate=600, stale-if-error=86400`);
