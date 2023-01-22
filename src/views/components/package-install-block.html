@@ -357,6 +357,14 @@
 						this.set('isGuessedFile', isGuessedFile);
 						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
 
+						if (Object.values(data.entrypoints).every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1) {
+							this.set('isDefaultPackage', false);
+							this.set('isDefaultPackageTmp', false);
+						} else {
+							this.set('isDefaultPackage', true);
+							this.set('isDefaultPackageTmp', true);
+						}
+
 						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 							if (packageJsEntrypoint) {
 								data.files.forEach((file) => {
@@ -375,16 +383,6 @@
 							}
 						});
 					});
-				});
-
-				this.observe('package.moduleTypes', (value) => {
-					if (value.indexOf('esm') !== -1 || value.indexOf('cjs') !== -1) {
-						this.set('isDefaultPackage', false);
-						this.set('isDefaultPackageTmp', false);
-					} else {
-						this.set('isDefaultPackage', true);
-						this.set('isDefaultPackageTmp', true);
-					}
 				});
 
 				this.observe('mobileSettingsVisible', (newValue) => {
