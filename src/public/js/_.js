@@ -1044,4 +1044,16 @@ module.exports = {
 
 		return parsed.toString();
 	},
+
+	packageToImportName (name) {
+		name = name.split(/[ ._-]/g).reduce((acc, value) => {
+			return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
+		}).replace(/[^a-zA-Z0-9_$]/g, '');
+
+		if (/^\d/.test(name)) {
+			return `_${name}`;
+		}
+
+		return name || 'm';
+	},
 };

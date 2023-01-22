@@ -186,15 +186,7 @@
 		},
 		computed: {
 			importName () {
-				let name = this.get('name').split(/[ ._-]/g).reduce((acc, value) => {
-					return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
-				}).replace(/[^a-zA-Z0-9_$]/g, '');
-
-				if (/^\d/.test(name)) {
-					return `_${name}`;
-				}
-
-				return name || 'm';
+				return _.packageToImportName(this.get('name'));
 			},
 			jsFiddleJsCode () {
 				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;
