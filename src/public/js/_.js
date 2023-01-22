@@ -1033,17 +1033,15 @@ module.exports = {
 		}
 	},
 
-	makeLinksOptimized (url) {
-		let { prefiks, hosts } = optimizedHosts;
-		let prepUrl = url;
+	makeLinksOptimized (url, github) {
+		let { newHost, hosts } = optimizedHosts;
+		let parsed = new URL(url.replace(/^\/+/, ''), github ? `https://cdn.jsdelivr.net/gh/${github.user}/${github.project}@${github.head}/` : location.href);
 
-		let withoutSchemeLink = url.replace('https://', '');
-		let hostName = withoutSchemeLink.split('/')[0];
-
-		if (hosts.includes(hostName)) {
-			prepUrl = `${prefiks}/${withoutSchemeLink}`;
+		if (hosts.includes(parsed.hostname)) {
+			parsed.pathname = parsed.hostname + parsed.pathname;
+			parsed.hostname = newHost;
 		}
 
-		return prepUrl;
+		return parsed.toString();
 	},
 };
