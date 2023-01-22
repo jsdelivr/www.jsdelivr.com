@@ -1,6 +1,5 @@
-const algoliasearch = require('algoliasearch');
-const algolia = algoliasearch('OFCNCOG2CU', 'f54e21fa3a2a0160595bb058179bfb1e', { protocol: 'https:' });
-const index = algolia.initIndex('npm-search');
+const { npmIndex } = require('../../../lib/algolia');
+const _ = require('../../../public/js/_');
 
 module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	return Promise.resolve().then(() => {
@@ -9,7 +8,7 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			page,
 			hitsPerPage,
 			attributesToHighlight: [],
-			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version' ],
+			attributesToRetrieve: [ 'deprecated', 'description', 'githubRepo', 'homepage', 'keywords', 'license', 'name', 'owner', 'version', 'popular', 'moduleTypes', 'styleTypes', 'jsDelivrHits' ],
 			analyticsTags: [ 'jsdelivr' ],
 		};
 
@@ -17,14 +16,9 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 			options.facetFilters = parsed.facetFilters;
 		}
 
-		return index.search(parsed.query, options).then((response) => {
-			// An exact match should always come first.
-			response.hits.sort((a, b) => {
-				return a.name === parsed.query ? -1 : b.name === parsed.query;
-			});
-
+		return npmIndex.search(parsed.query, options).then((response) => {
 			return {
-				response: $.extend(true, {}, response),
+				response: _.deepExtend({}, response),
 				query: queryString,
 			};
 		});
@@ -32,8 +26,8 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 };
 
 module.exports.getByName = (name) => {
-	return index.getObject(name).then((pkg) => {
-		return $.extend(true, {}, pkg);
+	return npmIndex.getObject(name).then((pkg) => {
+		return _.deepExtend({}, pkg);
 	});
 };
 
@@ -42,6 +36,7 @@ const QUERY_REGEXP = /^((?:(?:[^\s:]+(?![a-z]*\s*:))\s*)*)/i;
 const filterMapping = {
 	author: 'owner.name',
 	type: 'moduleTypes',
+	style: 'styleTypes',
 };
 
 function parseQuery (queryString) {

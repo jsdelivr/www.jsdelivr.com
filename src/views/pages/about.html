@@ -1,77 +1,475 @@
 <link rel="ractive" href="../r-page.html">
 <link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#partial seo}}
+	<script type="application/ld+json">
+		[{
+			"@context":"http://schema.org",
+			"@type":"Organization",
+			"url":"https://www.jsdelivr.com/",
+			"sameAs":["https://www.linkedin.com/company/jsdelivr/","https://twitter.com/jsdelivr", "https://en.wikipedia.org/wiki/JSDelivr"],
+			"@id":"#organization",
+			"name":"jsDelivr",
+			"alternateName": "JSDelivr",
+			"brand": "jsDelivr",
+			"foundingDate": "2012-04-10",
+			"logo":"https://www.jsdelivr.com/img/icon_256x256.png"
+		},
+		{
+			"@context": "http://schema.org",
+			"@type": "AboutPage",
+			"url":"https://www.jsdelivr.com/about",
+			"relatedLink": "https://www.jsdelivr.com/history",
+			"name": "About jsDelivr",
+			"description": "jsDelivr is a free CDN (Content Delivery Network) for open source files. We are tightly integrated with Github and NPM, allowing us to automatically provide a reliable CDN service to almost every open source project out there."
+		}]
+	</script>
+	{{/partial}}
 	<c-notification></c-notification>
-	<c-header></c-header>
+	<c-header additionalClasses="header-with-orange-bg"></c-header>
 
-	<div class="p-about text-page">
-		<div class="container">
-			<h1 class="page-title">About jsDelivr</h1>
-
-			<section>
-				<p>
-					jsDelivr is a public, open-source CDN (Content Delivery Network) developed by <a target="_blank" rel="noopener" href="https://dakulov.com/">Dmitriy Akulov</a> and <a target="_blank" rel="noopener" href="https://prospectone.io">Prospect One</a>,
-					focused on performance, reliability, and security. It is free to use for everyone, with no bandwidth limits.
-				</p>
-			</section>
-
-			<section id="security">
-				<h2>Security</h2>
-
-				<p>
-					We are focused on production use, which also means we are very serious about security.
-				</p>
-
-				<ul>
-					<li>All jsDelivr services support HTTPS.</li>
-					<li>All jsDelivr related accounts are protected by strong passwords, 2FA, and IP whitelists where possible.</li>
-					<li>Our critical code has been thoroughly reviewed both by us and several other independent experts.</li>
-				</ul>
-
-				<p>
-					We also have protections in place to prevent people from using jsDelivr to serve malicious files,
-					but if you find something that doesn't look right,
-					<a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr/issues/new?title=Malicious file">report it at our issue tracker</a>.
-				</p>
-			</section>
-
-			<section id="people">
-				<h2>The people behind</h2>
-
-				<p>
-					These people currently run or previously helped with running this project. Want to join them? We are always looking for help!
-				</p>
-
-				<ul>
-					<li><a target="_blank" rel="noopener" href="https://dakulov.com/">Dmitriy Akulov</a></li>
-					<li><a target="_blank" rel="noopener" href="https://kolarik.sk">Martin Kolárik</a></li>
-					<li><a target="_blank" rel="noopener" href="https://github.com/megawac">Graeme Yeates</a></li>
-					<li><a target="_blank" rel="noopener" href="https://linkedin.com/in/pnommensen">Patrick Nommensen</a></li>
-					<li><a target="_blank" rel="noopener" href="https://survivejs.com">Juho Vepsäläinen</a></li>
-					<li><a target="_blank" rel="noopener" href="https://andrewsun.com">Andrew Sun</a></li>
-					<li><a target="_blank" rel="noopener" href="https://www.linkedin.com/in/austinjbrown">Austin Brown</a></li>
-				</ul>
-
-				<p>
-					If you are a company, please check out <a href="/become-a-sponsor">Sponsors page</a> for more details.
-					If you are an individual, you may donate money, or help us with development (CDN, API, website, other jsDelivr projects),
-					promotion, or anything else you think would be useful. Just <a href="mailto:dak@prospectone.io?subject=How can I help you with jsDelivr?">send us an email</a>
-					or <a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr/issues/new?title=How can I help you with jsDelivr?">ask us on GitHub</a> for more details.
-				</p>
-			</section>
+	<div class="p-about">
+		<c-header-gradient showMap="{{true}}"></c-header-gradient>
+		<div class="navigation">
+			<a href="/about" class="active">About Us</a>
+			<a href="/history">Our History</a>
 		</div>
+
+		<section class="about-descr">
+			<div class="container container-sm">
+				<h1 class="page-title">
+					<span>About jsDelivr</span>
+					<span>A free global CDN</span>
+				</h1>
+
+				<p class="bold-text_reg-alt">
+					jsDelivr is a free CDN (Content Delivery Network) for open source files. We are
+					tightly integrated
+					with Github and NPM, allowing us to automatically provide a reliable CDN service to almost every
+					open source project out there.
+					<br />
+					<br />
+					We offer a stable CDN that can be used in production on popular websites with
+					huge amounts of traffic.
+					There are no bandwidth limits or premium features and its completely free to use by anybody.
+				</p>
+
+				<p class="bold-text_lg-alt">We’re focused on:</p>
+
+				<div class="about-descr_blocks">
+					<div>
+						<img width="38" height="46" src="{{@shared.assetsHost}}/img/about/performance.svg" loading="lazy"/>
+						<span class="bold-text_md">Performance</span>
+					</div>
+					<div>
+						<img width="40" height="48" src="{{@shared.assetsHost}}/img/about/reliability.svg" loading="lazy"/>
+						<span class="bold-text_md">Reliability</span>
+					</div>
+					<div>
+						<img width="44" height="48" src="{{@shared.assetsHost}}/img/about/security.svg" loading="lazy"/>
+						<span class="bold-text_md">Security</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="about-numbers">
+			<div class="container container-sm">
+				<h2 class="about-header">jsDelivr in numbers</h2>
+				<div class="about-numbers_table">
+					<div>
+						<span class="bold-text_lg">
+							<b data-target="montlyRequests" data-value="{{monthlyRequestsActual}}" class="animatedOnScroll">{{ Math.round(montlyRequests) }}</b>+ billion
+						</span>
+						<p>monthly requests</p>
+					</div>
+					<div>
+						<span class="bold-text_lg">
+							<b data-target="monthlyTraffic" data-value="{{monthlyTrafficActual}}" class="animatedOnScroll">{{ Math.round(monthlyTraffic) }}</b>+ petabytes
+						</span>
+						<p>traffic</p>
+					</div>
+					<div>
+						<span class="bold-text_lg">
+							<b data-target="regions" data-value="{{regionsActual}}" class="animatedOnScroll">{{ Math.round(regions) }}</b>+
+						</span>
+						<p>global regions</p>
+					</div>
+					<div>
+						<span class="bold-text_lg">
+							<b data-target="usedBy" data-value="12" class="animatedOnScroll">{{ Math.round(usedBy) }}</b>+ million
+						</span>
+						<p>websites using jsDelivr</p>
+					</div>
+					<div>
+						<span class="bold-text_lg">
+							<b data-target="projects" data-value="{{projectsActual}}" class="animatedOnScroll">{{ Math.round(projects) }}</b>+
+						</span>
+						<p>active projects being served</p>
+					</div>
+					<a href="/network/infographic">
+						See how we do it
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<section class="banner-history">
+			<div class="container container-lg">
+				<div class="container banner-history-container">
+					<div class="banner-history-content">
+						<div>Learn how jsDelivr has evolved over the years</div>
+						<a href="/history" class="btn-primary">Check our history</a>
+					</div>
+
+					<div class="banner-history-graphic">
+						<div class="bars">
+							<span>December</span>
+						</div>
+						<h2 class="about-header">2020</h2>
+						<div class="bars right">
+							<span>October</span>
+						</div>
+						<div class="bars">
+							<span>November</span>
+						</div>
+					</div>
+
+					<img class="banner-map" width="796" height="288" src="{{@shared.assetsHost}}/img/about/banner-jsdelivr-map.svg">
+				</div>
+			</div>
+		</section>
+
+		<section class="about-production">
+			<div class="container container-sm">
+				<h2 class="about-header">Ready for production</h2>
+				<p class="bold-text_reg">
+					Our public CDN is built to be used in production by even the largest websites.
+					Performance is monitored at all times, and we are always looking into new technologies
+					and providers that may further improve our CDN. Downtime, timeouts or slow responses are simply unacceptable.
+					<br />
+					<br />
+					We do everything possible to ensure our CDN will NEVER break any websites regardless of use-case.
+					If a file is available via our CDN we assume its used in production and make sure that file will continue to work no matter what.
+				</p>
+			</div>
+		</section>
+
+		<section class="about-sustainability">
+			<div class="container container-sm">
+				<h2 class="about-header">Sustainability</h2>
+				<p class="bold-text_reg">
+					Since jsDelivr is a free CDN we rely heavily on our sponsors to support the service.
+					All of the traffic we serve is offered to us for free thanks to our CDN sponsors.
+					We load-balance the traffic between them for better performance but also it allows us to avoid overloading a single CDN.
+					<br />
+					<br />
+					In case a CDN provider decides to stop sponsoring us we can quickly remove them from rotation
+					and if needed replace them with other sponsors. We maintain a good relationship with the CDN industry overall.
+					<br />
+					<br />
+					Our main expenses include hosting of the origin and supporting infrastructure like APIs and
+					log parsing. As well as part-time and freelancer developers and designers. At the moment these
+					expenses are covered by Dmitriy A..
+					<br />
+					<br />
+					Our goal is to eventually cover all expenses with the help of our users,
+						<a class="about-link" href="https://github.com/sponsors/jsdelivr" target="_blank" rel="noopener noreferrer">Github Sponsors</a> and <a class="about-link" href="https://opencollective.com/jsdelivr" target="_blank" rel="noopener noreferrer">Open Collective sponsors</a>.
+				</p>
+			</div>
+		</section>
+
+		<section class="about-people">
+			<div class="container container-sm">
+				<h2 class="about-header">The people behind</h2>
+				<p class="bold-text_reg">These people currently run or previously helped with running this project. Want to join them? We are always looking for help!</p>
+				<div class="about-people_row">
+					<h4 class="bold-text_lg-alt">Core Team</h4>
+
+					<div class="about-people_row_cell">
+						<img width="80"
+							height="80"
+							src="{{@shared.assetsHost}}/img/about/dmitriy-akulov.png"
+							srcset="{{@shared.assetsHost}}/img/about/dmitriy-akulov@2x.png 2x"
+							loading="lazy"/>
+						<div class="personal-info">
+							<h5>Dmitriy Akulov</h5>
+							<span>Founder</span>
+						</div>
+						<a href="https://twitter.com/jimaek" target="_blank" rel="noopener noreferrer">
+							<img width="24" height="24" src="{{@shared.assetsHost}}/img/about/twitter-icon.svg" loading="lazy"/>
+						</a>
+					</div>
+
+					<div class="about-people_row_cell">
+						<img width="80"
+							height="80"
+							src="{{@shared.assetsHost}}/img/about/martin-kolarik.png"
+							srcset="{{@shared.assetsHost}}/img/about/martin-kolarik@2x.png 2x"
+							loading="lazy"/>
+						<div class="personal-info">
+							<h5>Martin Kolarik</h5>
+							<span>Core Developer</span>
+						</div>
+						<a href="https://twitter.com/makolarik" target="_blank" rel="noopener noreferrer">
+							<img width="24" height="24" src="{{@shared.assetsHost}}/img/about/twitter-icon.svg" loading="lazy"/>
+						</a>
+					</div>
+				</div>
+
+				<div class="about-people_divider"></div>
+
+				<div class="about-people_row">
+					<h4 class="bold-text_lg-alt">Frequent Contributors</h4>
+
+					<div class="about-people_row_cell">
+						<img width="80"
+							height="80"
+							src="{{@shared.assetsHost}}/img/about/artem-stoianov.png"
+							srcset="{{@shared.assetsHost}}/img/about/artem-stoianov@2x.png 2x"
+							loading="lazy"/>
+						<div class="personal-info">
+							<h5>Artem Stoianov</h5>
+							<span>Developer</span>
+						</div>
+						<a href="https://twitter.com/zarianec" target="_blank" rel="noopener noreferrer">
+							<img width="24" height="24" src="{{@shared.assetsHost}}/img/about/twitter-icon.svg" loading="lazy"/>
+						</a>
+					</div>
+
+					<div class="about-people_row_cell">
+						<img width="80"
+							height="80"
+							src="{{@shared.assetsHost}}/img/about/jakub-drgon.png"
+							srcset="{{@shared.assetsHost}}/img/about/jakub-drgon@2x.png 2x"
+							loading="lazy"/>
+						<div class="personal-info">
+							<h5>Jakub Drgon</h5>
+							<span>Developer</span>
+						</div>
+						<a href="https://www.linkedin.com/in/jakub-drgon/" target="_blank" rel="noopener noreferrer">
+							<img width="24" height="24" src="{{@shared.assetsHost}}/img/about/linkedin-icon.svg" loading="lazy"/>
+						</a>
+					</div>
+
+					<div class="about-people_row_cell">
+						<img width="80"
+							height="80"
+							src="{{@shared.assetsHost}}/img/about/patryk-ilnicki.png"
+							srcset="{{@shared.assetsHost}}/img/about/patryk-ilnicki@2x.png 2x"
+							loading="lazy"/>
+						<div class="personal-info">
+							<h5>Patryk Ilnicki</h5>
+							<span>Designer</span>
+						</div>
+						<a href="https://twitter.com/IlnickiPatryk" target="_blank" rel="noopener noreferrer">
+							<img width="24" height="24" src="{{@shared.assetsHost}}/img/about/twitter-icon.svg" loading="lazy"/>
+						</a>
+					</div>
+				</div>
+
+				<div class="about-people_divider"></div>
+
+				<div class="about-people_contributors">
+					<h4 class="bold-text_lg-alt">Contributors</h4>
+					<img class="about-people_contributors_numbers"
+						width="291"
+						height="96"
+						src="{{@shared.assetsHost}}/img/about/contributors-numbers.svg"
+						loading="lazy"/>
+					<img class="about-people_contributors_list"
+						width="264"
+						height="96"
+						src="{{@shared.assetsHost}}/img/about/contributors.png"
+						srcset="{{@shared.assetsHost}}/img/about/contributors@2x.png 2x"
+						loading="lazy"/>
+				</div>
+			</div>
+		</section>
+
+		<section class="about-sponsors">
+			<div class="container container-sm">
+				<h2 class="about-header">Our Sponsors</h2>
+				<div class="about-sponsors_row">
+					<div class="about-sponsors_row_cell">
+						<img width="118"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/cloudflare.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="100"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/fastly.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="80"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/ns1.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="141"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/gcorelabs.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="138"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/bunny.svg"
+							loading="lazy"/>
+					</div>
+
+					<div class="about-sponsors_divider"></div>
+
+					<div class="about-sponsors_row_cell">
+						<img width="151"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/algolia.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="100"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/cloudns.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell alt-height">
+						<img width="229"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/pb.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="184"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/render.svg"
+							loading="lazy"/>
+					</div>
+
+					<div class="about-sponsors_divider"></div>
+
+					<div class="about-sponsors_row_cell">
+						<img width="154"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/clever-cloud.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell">
+						<img width="211"
+							height="40"
+							src="{{@shared.assetsHost}}/img/about/digitalocean.svg"
+							loading="lazy"/>
+					</div>
+					<div class="about-sponsors_row_cell about-sponsors_row_cell-btn">
+						<a class="btn-secondary" href="/sponsors">View all</a>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
+
+	<c-footer></c-footer>
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const locationsArr = require('../../public/js/map/map.json');
+	const disabledProvidersArr = Object.values(require('../../public/json/net-providers.json')).filter(provider => !provider.enabled);
+
 	component.exports = {
 		data () {
 			return {
 				title: 'About - jsDelivr',
 				description: 'jsDelivr is a public, open-source CDN (Content Delivery Network) developed by ProspectOne, focused on performance, reliability, and security. It is free to use for everyone, with no bandwidth limits.',
+				montlyRequests: 0,
+				monthlyTraffic: 0,
+				regions: 0,
+				usedBy: 0,
+				projects: 0,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchNetworkWideStats().then(({ hits, bandwidth }) => {
+					this.set('monthlyRequestsActual', parseInt(_.formatToShortNumber(hits.total, ' ', 'B')));
+					this.set('monthlyTrafficActual', parseInt(_.formatBytesWithUnit(bandwidth.total)));
+				});
+
+				http.fetchNumberOfResources().then(({ responseHeaders }) => {
+					this.set('projectsActual', responseHeaders['x-total-count']);
+				});
+
+				// filter CDNs locations from disabled CDNs
+				let filteredLocations = disabledProvidersArr.reduce((res, provider) => {
+					res = res.filter((location) => {
+						let target = location.title.toLowerCase();
+						let search = provider.name.toLowerCase();
+
+						if (target.includes(search)) {
+							return false;
+						}
+
+						return true;
+					});
+
+					return res;
+				}, locationsArr);
+
+				// get rid of duplicates
+				let locationsActual = filteredLocations.reduce((res, item) => {
+					// replace CDN_NAME with actual locationName
+					let locationName = item.title.replace(/(?:\w+\s?-\s?){1}(.*)/, '$1');
+
+					if (!res.includes(locationName)) {
+						res.push(locationName);
+					}
+
+					return res;
+				}, []);
+
+				this.set('regionsActual', locationsActual.length);
+			}
+		},
+		onrender () {
+			this.observe('monthlyRequestsActual monthlyTrafficActual projectsActual regionsActual', () => {
+				if (
+					!this.get('monthlyRequestsActual')
+					|| !this.get('monthlyTrafficActual')
+					|| !this.get('projectsActual')
+					|| !this.get('regionsActual')
+				) { return; }
+
+				let options = { threshold: 1 };
+
+				let callback = (entries, observer) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							let el = entry.target.dataset.target;
+							let newValue = entry.target.dataset.value;
+
+							setTimeout(() => {
+								this.animate(el, newValue, { duration: 1500, easing: x => 1 - Math.pow(1 - x, 5) });
+								observer.unobserve(entry.target);
+							}, 300);
+						}
+					});
+				};
+
+				let observer = new IntersectionObserver(callback, options),
+					animated = this.findAll('.animatedOnScroll');
+
+				animated.forEach((el) => {
+					observer.observe(el);
+				});
+			});
 		},
 	};
 </script>

@@ -1,87 +1,268 @@
 @import "../variables.less";
 
 .p-network {
-	.c-infographic-banner {
-		margin: 60px 0;
+	font-family: Lexend, sans-serif;
+	font-style: normal;
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+	position: relative;
+	z-index: 1;
+	color: #17233b;
+
+	@media (min-width: @screen-sm-min) {
+		margin-bottom: 68px;
 	}
 
-	.network-controls {
-		text-align: center;
-		margin: 20px 0 10px;
+	.c-new-infographic-banner {
+		width: 100%;
+		margin: 0 auto 40px;
 
-		.network-control {
-			margin: 10px 5px 14px 20px;
-			text-align: left;
+		@media (min-width: @screen-sm-min) {
+			margin: 0 auto 80px;
 		}
 	}
 
-	.page-title {
-		text-align: center;
-	}
+	.map-wrapper {
+		width: 100%;
+		height: 714px;
+		position: relative;
 
-	.network-map {
-		height: 600px;
-		margin-bottom: 28px;
-	}
+		@media (min-width: @screen-sm-min) {
+			height: auto;
+			margin: 56px 0 28px;
+		}
 
-	.china-banner {
-		.china-bg {
-			width: 100%;
-			max-width: 1140px;
-			position: relative;
-			line-height: 24px;
-			font-size: 16px;
-			margin-top: 40px;
+		.page-title {
+			top: 40px;
+			font-size: 32px;
+			line-height: 44px;
+			margin: 0;
+			font-weight: 600;
+			letter-spacing: .2px;
+			left: 0;
+			right: 0;
+			text-align: center;
 
-			@media (max-width: @screen-xs-max) {
-				width: 100%;
-				left: 0;
+			@media (min-width: @screen-sm-min) {
+				top: 24px;
+				font-size: 48px;
+				line-height: 68px;
+			}
+		}
+
+		[aria-label="Map"] > div:nth-child(2) {
+			box-shadow: inset 0 104px 61px -28px, inset 0 -105px 40px -16px;
+			color: inherit;
+
+			@media (min-width: @screen-sm-min) {
+				box-shadow: none;
+			}
+		}
+
+		.page-title, .network-controls {
+			position: absolute;
+			z-index: 100;
+		}
+
+		.network-controls {
+			display: grid;
+			grid-template-columns: 50% 50%;
+			width: calc(100% - 48px);
+			align-self: center;
+			background: #fff;
+			box-shadow: 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
+			filter: drop-shadow(0 4px 4px rgba(23, 35, 59, .06));
+			border-radius: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+			top: 108px;
+
+			@media (min-width: 576px) {
+				box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
 			}
 
-			@media (max-width: @screen-sm-max) {
-				margin: 0;
+			@media (min-width: @screen-sm-min) {
+				top: 116px;
+				width: auto;
+				max-width: calc(100% - 48px);
+
+				&_type-1 {
+					grid-template-columns: repeat(1, min-content);
+				}
+
+				&_type-2 {
+					grid-template-columns: repeat(2, min-content);
+				}
+
+				&_type-3 {
+					grid-template-columns: repeat(3, min-content);
+				}
+
+				&_type-4 {
+					grid-template-columns: repeat(4, min-content);
+				}
+
+				&_type-5 {
+					grid-template-columns: repeat(5, min-content);
+				}
+
+				&_type-6 {
+					grid-template-columns: repeat(6, min-content);
+				}
+
+				&_type-7 {
+					grid-template-columns: repeat(7, min-content);
+				}
+
+				&_type-8 {
+					grid-template-columns: repeat(8, min-content);
+				}
+			}
+
+			&_switcher {
+				display: grid;
+				grid-template-columns: 28px auto;
+				align-items: center;
+				gap: 8px;
+				height: 56px;
 				font-size: 14px;
 				line-height: 20px;
-				width: 100%;
-				left: 0;
-			}
+				color: #000;
+				padding: 0 24px;
+				box-shadow: inset 0 -1px 0 #dfe3e7;
 
-			p {
-				top: 40px;
-				position: absolute;
-				max-width: 340px;
-				left: 60px;
-
-				@media (max-width: @screen-sm-max) {
-					left: 40px;
-					max-width: 240px;
+				&:nth-child(2n +1) {
+					border-right: 1px solid #dfe3e7;
 				}
 
-				@media (max-width: @screen-xs-max) {
-					left: 0;
-					position: relative;
-					top: 0;
-					max-width: unset;
+				@media (min-width: @screen-sm-min) {
+					box-shadow: none;
+
+					&:nth-child(1) {
+						padding: 0 24px 0 16px;
+					}
+
+					&:nth-last-child(1) {
+						padding: 0 16px 0 24px;
+					}
+
+					&:not(:nth-last-child(1)) {
+						border-right: 1px solid #dfe3e7;
+					}
 				}
 
-				img {
-					height: 50px;
-					width: auto;
-					margin-bottom: 24px;
-					display: block;
+				&.unpaired {
+					box-shadow: none;
+					border-right: none;
+					grid-column: 1 / -1;
+					justify-content: center;
 
-					@media (max-width: @screen-xs-max) {
-						display: none;
+					@media (min-width: @screen-sm-min) {
+						grid-column: auto;
+					}
+				}
+
+				label {
+					margin: 0;
+					background-color: #79849a;
+					border: 2px solid #79849a;
+
+					&:before {
+						background: #fff;
 					}
 				}
 			}
+		}
 
-			img {
-				width: 100%;
-				height: auto;
+		.network-map {
+			height: 486px;
+			width: 100%;
+			top: 180px;
+			overflow: hidden;
 
-				@media (max-width: @screen-xs-max) {
-					display: none;
+			@media (min-width: @screen-sm-min) {
+				height: 762px;
+				top: 0;
+			}
+		}
+	}
+
+	.content-wrapper {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0 24px;
+
+		&_section {
+			width: 100%;
+			max-width: 808px;
+			margin: 0 auto;
+			font-size: 14px;
+			line-height: 24px;
+
+			@media (min-width: @screen-sm-min) {
+				font-size: 16px;
+			}
+
+			&:not(:nth-last-child(1)) {
+				margin-bottom: 40px;
+
+				@media (min-width: @screen-sm-min) {
+					margin-bottom: 80px;
+				}
+			}
+
+			h2 {
+				font-weight: 600;
+				font-size: 32px;
+				line-height: 44px;
+				margin: 0 0 24px;
+				letter-spacing: .2px;
+				background-image: linear-gradient(#f65128, rgba(246, 81, 40, .08));
+				background-clip: text;
+				-webkit-background-clip: text;
+				-moz-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				-moz-text-fill-color: transparent;
+				color: transparent;
+
+				@media (min-width: @screen-sm-min) {
+					font-size: 40px;
+					line-height: 56px;
+					margin: 0 0 40px;
+				}
+			}
+
+			&:first-child h2 {
+				margin-top: 24px;
+			}
+
+			p {
+				margin: 0;
+			}
+
+			.china-map {
+				display: flex;
+				justify-content: flex-end;
+				overflow: hidden;
+				margin: 56px -24px 0;
+
+				@media (min-width: 576px) {
+					justify-content: center;
+				}
+
+				@media (min-width: @screen-sm-min) {
+					margin: 64px 0 0;
+				}
+
+				img {
+					width: 575px;
+					height: 271px;
+
+					@media (min-width: @screen-sm-min) {
+						width: 806px;
+						height: 380px;
+					}
 				}
 			}
 		}

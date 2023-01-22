@@ -1,6 +1,7 @@
 const _ = require('../_');
 const JS_PATTERN = /\.js$/i;
 const CSS_PATTERN = /\.css$/i;
+const ESM_PATERN = /\+esm/i;
 const CDN_ROOT = 'https://cdn.jsdelivr.net';
 
 // from https://github.com/mojombo/semver/issues/232
@@ -28,7 +29,7 @@ function buildLinks (collection, html, optimize, alias, sri, outArray) {
 	}
 
 	let collectionCopy = collection.map((file) => {
-		let copy = $.extend(true, {}, file);
+		let copy = _.deepExtend({}, file);
 
 		if (optimize && copy.file === _.getNonMinifiedName(copy.file)) {
 			copy.file = _.getMinifiedName(file.file);
@@ -79,10 +80,12 @@ function buildFileLink (file, useDefault = false) {
 	return `${file.type}/${file.name}@${file.version}${file.isDefault && useDefault ? '' : file.file}`;
 }
 
-function buildFileLinkHtml (isJs, link, html, hash) {
+function buildFileLinkHtml (isJs, link, html, hash, esmName) {
 	let result = { text: link };
 
-	if (hash) {
+	if (esmName) {
+		result.html = `<script type="module"> import ${esmName} from ${link} </script>`;
+	} else if (hash) {
 		result.html = isJs ? `<script src="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous"></script>` : `<link rel="stylesheet" href="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous">`;
 	} else if (html) {
 		result.html = isJs ? `<script src="${link}"></script>` : `<link rel="stylesheet" href="${link}">`;
@@ -97,16 +100,18 @@ function buildIntegrity (hash) {
 	return `sha256-${hash}`;
 }
 
-function buildHtml (link, hash) {
+function buildHtml (link, hash, esmName) {
 	if (CSS_PATTERN.test(link)) {
 		return buildFileLinkHtml(false, link, true, hash).html;
 	} else if (JS_PATTERN.test(link)) {
 		return buildFileLinkHtml(true, link, true, hash).html;
+	} else if (ESM_PATERN.test(link)) {
+		return buildFileLinkHtml(true, link, true, hash, esmName).html;
 	}
 
 	return buildFileLinkHtml(null, link, false).html;
 }
 
 function canBuildHtml (link) {
-	return CSS_PATTERN.test(link) || JS_PATTERN.test(link);
+	return CSS_PATTERN.test(link) || JS_PATTERN.test(link) || ESM_PATERN.test(link);
 }

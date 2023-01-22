@@ -1,0 +1,391 @@
+<div class="c-top-platform-browser">
+	<div class="table-info">
+		<h3>Top {{ tableDataType }}s</h3>
+
+		<div class="switch-block">
+			<label class="switch">
+				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" disabled='{{selectedItem}}' checked>
+				<span class="slider round"></span>
+			</label>
+			<span class="name">Group {{ tableDataType }} versions</span>
+		</div>
+	</div>
+
+	<div class="table-wrapper">
+		<div class="table-wrapper_chosen-platform">
+			{{#if !selectedItem}}
+				<img class="table-wrapper_chosen-platform_choose-icon"
+					width="20"
+					height="20"
+					src="{{@shared.assetsHost}}/img/statistics/information.svg"
+					loading="lazy">
+
+				<span class="table-wrapper_chosen-platform_choose-msg">Choose {{ tableDataType }} below to check more data</span>
+			{{else}}
+				<div class="table-wrapper_chosen-platform_selected">
+					<div class="chosen-name" on-click="@this.set('selectedItem', '')">
+						<img src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+
+						{{#if selectedItem.icon}}
+							<img class="icon"
+								width="24"
+								height="24"
+								src="{{selectedItem.icon}}"
+								loading="lazy"
+								on-error="@this.handleIconBrokenSrc(event)">
+						{{/if}}
+
+						<span class="chosen-name_platform-name">{{ selectedItem.displayName }}</span>
+						&nbsp;
+						<span class="chosen-name_platform-share">({{ selectedItem.share }}%<span>&nbsp;globally</span>)</span>
+					</div>
+
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+
+							<span class="breakdown">
+								{{ breakdownList[breakdownIdx].name }}
+								<span>&nbsp;breakdown</span>
+							</span>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each breakdownList:idx}}
+								<li>
+									<a on-click="@this.handleBreakdownSelect(idx, breakdownList[idx].disabled)"
+										class="{{#if breakdownList[idx].disabled}}disabled{{/if}}">
+										{{ breakdownList[idx].name }}
+										<span>&nbsp;breakdown</span>
+									</a>
+								</li>
+							{{/each}}
+						</ul>
+					</div>
+				</div>
+			{{/if}}
+		</div>
+
+		<div class="table-wrapper_content">
+			<div class="table-wrapper_content_header">
+				<div class="cell cell_one">Name</div>
+
+				<div class="cell cell_two">
+					Market share
+				</div>
+
+				<div class="cell cell_three">
+					Change
+					<img width="16"
+						height="16"
+						as-tooltip="'Compared to the previous ' + periods[period] + '-day period', 'top'"
+						src="{{@shared.assetsHost}}/img/statistics/information.svg"
+						loading="lazy">
+				</div>
+			</div>
+
+			<div class="table-wrapper_content_scrollable">
+				{{#if topList !== null}}
+					{{#if topList.length}}
+						{{#each topList:idx}}
+							<div class="table-wrapper_content_row">
+								<div class="cell cell_one {{#unless selectedItem}}cell_one_active{{/unless}}">
+									<span class="platform-index">{{ (page.value - 1) * pageLimit + idx + 1 }}</span>
+
+									{{#if icon}}
+										<img class="platform-icon {{#if selectedItem}}breakdown-{{breakdown}}{{/if}}"
+											width="24"
+											src="{{icon}}"
+											on-error="@this.handleIconBrokenSrc(event)">
+									{{/if}}
+
+									{{#if !selectedItem}}
+										<span class="platform-name" on-click="@this.set('selectedItem', topList[idx])">{{ displayName }}</span>
+									{{else}}
+										<span class="platform-name">{{ displayName }}</span>
+									{{/if}}
+								</div>
+
+								<div class="cell cell_two text-table-number">{{_.formatShare(share, 2)}}</div>
+
+								<div class="cell cell_three text-table-number {{ changes >= 0 ? 'positive': 'negative' }}">
+									{{_.formatGrowth(changes)}}
+								</div>
+							</div>
+						{{/each}}
+					{{else}}
+						<div class="table-wrapper_content_no-data">
+							<img
+								width="270"
+								height="148"
+								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+							<span>No data</span>
+						</div>
+					{{/if}}
+				{{/if}}
+			</div>
+		</div>
+
+		<div class="table-wrapper_pagination">
+			<div class="table-wrapper_pagination_range">{{ pageRange }}</div>
+
+			<div class="table-wrapper_pagination_ctrls">
+				<button on-click="@this.prevPage()"
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+				</button>
+
+				<div class="table-wrapper_pagination_ctrls_limit">
+					<span>Show:</span>
+
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+
+							<span>{{ pageLimit }}</span>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each paginationLimits}}
+								<li><a on-click="@this.set('pageLimit', this)">{{ this }}</a></li>
+							{{/each}}
+						</ul>
+					</div>
+				</div>
+
+				<button on-click="@this.nextPage()"
+					class="table-wrapper_pagination_ctrls_btn table-wrapper_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="table-msg">Compared to the previous {{periods[period]}}-day period</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
+	const countries = require('../../public/json/countries.json');
+	const tooltip = require('../../public/js/decorators/tooltip');
+
+	component.exports = {
+		computed: {
+			pageRange () {
+				let page = this.get('page');
+				let pageLimit = this.get('pageLimit');
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
+				let start = (page.value - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+
+				if (xTotalCount < end) {
+					end = xTotalCount;
+				}
+
+				return xTotalPages && xTotalCount ? `Records ${start} - ${end} of ${xTotalCount}` : 'Records 0 of 0';
+			},
+		},
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				_,
+				topList: null,
+				isVersionGrouped: true,
+				selectedItem: '',
+				breakdown: 'countries',
+				breakdownIdx: 0,
+				breakdownList: [],
+				page: { value: 1 },
+				pageLimit: 10,
+				paginationLimits: [ 10, 20, 50, 100 ],
+				xTotalCount: 0,
+				xTotalPages: 0,
+				periods: stats.periods,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('tableDataType selectedItem country continent isVersionGrouped', () => {
+					let tableDataType = this.get('tableDataType');
+					let location = this.get('country') || this.get('continent');
+					let isVersionGrouped = this.get('isVersionGrouped');
+
+					let breakdownList = [
+						{
+							value: 'countries',
+							name: 'Country',
+							disabled: location || false,
+						},
+						{
+							value: tableDataType === 'platform' ? 'browsers' : 'platforms',
+							name: tableDataType === 'platform' ? 'Browser' : 'Platform',
+							disabled: !isVersionGrouped,
+						},
+						{
+							value: 'versions',
+							name: 'Version',
+							disabled: !isVersionGrouped,
+						},
+					];
+
+					this.set('breakdownList', breakdownList);
+				});
+
+				this.observe('country continent selectedItem', () => {
+					let location = this.get('country') || this.get('continent');
+					let isVersionGrouped = this.get('isVersionGrouped');
+					let selectedItem = this.get('selectedItem');
+
+					if (location && !isVersionGrouped) {
+						this.set('selectedItem', '');
+					}
+
+					if (location && isVersionGrouped && selectedItem) {
+						this.set('breakdownIdx', 1);
+					}
+				});
+
+				this.observe('breakdownIdx', (breakdownIdx) => {
+					let breakdownList = this.get('breakdownList');
+					let { value, disabled } = breakdownList[breakdownIdx];
+
+					if (!disabled) {
+						this.set('breakdown', value);
+					}
+				});
+
+				this.observe('isVersionGrouped selectedItem breakdown period country continent pageLimit', () => {
+					this.set('page', { value: 1 });
+				}, { init: false });
+
+				// fetch platform/browser data
+				this.observe('page __ready', () => {
+					if (this.get('__ready')) {
+						let tableDataType = this.get('tableDataType');
+						let isVersionGrouped = this.get('isVersionGrouped');
+						let selectedItem = this.get('selectedItem');
+						let breakdown = this.get('breakdown');
+						let period = this.get('period');
+						let country = this.get('country');
+						let continent = this.get('continent');
+						let pageLimit = this.get('pageLimit');
+						let page = this.get('page');
+						let sharedAssetsHost = this.get('@shared.assetsHost');
+						let baseUrl = `${sharedAssetsHost}/img/statistics`;
+
+						http.fetchTopPlatformBrowserStats(
+							tableDataType,
+							isVersionGrouped,
+							period,
+							selectedItem,
+							breakdown,
+							country,
+							continent,
+							page.value,
+							pageLimit
+						).then(({ response, responseHeaders }) => {
+							let topList = response.map((one, index) => {
+								let result = {
+									index,
+									name: one.name,
+									version: one.version,
+									share: one.share,
+									displayName: '',
+								};
+
+								Object.keys(one).forEach((key) => {
+									if (key === 'share' || key === 'prev' || key === 'links') {
+										return;
+									}
+
+									// set name
+									if (key === 'country') {
+										let country = countries.find(country => country.code === one[key]);
+										result.displayName += country?.name + ' ';
+									} else if (key === 'versionName') {
+										result.displayName += one[key] ? `(${one[key]}) ` : '';
+									} else {
+										result.displayName += one[key] + ' ';
+									}
+
+									// set icon
+									if (selectedItem) {
+										switch (breakdown) {
+											case 'platforms':
+												result.icon = `${baseUrl}/platforms/${one[key]}@2x.png`;
+												break;
+											case 'versions':
+												result.icon = tableDataType === 'platform'
+													? `${baseUrl}/platforms/${selectedItem.name}@2x.png`
+													: `${baseUrl}/browsers/${selectedItem.name}@2x.png`;
+
+												break;
+											case 'countries':
+												result.icon = `https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/${one[key]}.svg`;
+												break;
+										}
+									} else {
+										if (key === 'name') {
+											result.icon = tableDataType === 'platform'
+												? `${baseUrl}/platforms/${one[key]}@2x.png`
+												: `${baseUrl}/browsers/${one[key]}@2x.png`;
+										}
+									}
+								});
+
+								result.displayName = result.displayName.trim();
+								result.changes = _.calculateGrowth(one.share, one.prev.share);
+
+								return result;
+							});
+
+							this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+							this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
+							this.animate('topList', topList);
+						});
+					}
+				});
+			}
+		},
+		prevPage () {
+			let page = this.get('page');
+			let value = page.value > 1 ? page.value - 1 : page.value;
+
+			this.set('page', { value });
+		},
+		nextPage () {
+			let page = this.get('page');
+			let xTotalPages = this.get('xTotalPages');
+			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
+
+			this.set('page', { value });
+		},
+		handleBreakdownSelect (idx, isDisabled) {
+			if (isDisabled) { return; }
+
+			this.set('breakdownIdx', idx);
+		},
+		handleIconBrokenSrc (e) {
+			let sharedAssetsHost = this.get('@shared.assetsHost');
+			let dataTypeIconsDir = this.get('tableDataType') === 'platform' ? 'platforms' : 'browsers';
+			let defaultIconName = 'Other@2x.png';
+
+			e.event.target.src = `${sharedAssetsHost}/img/statistics/${dataTypeIconsDir}/${defaultIconName}`;
+		},
+	};
+</script>

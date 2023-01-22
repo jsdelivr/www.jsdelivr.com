@@ -1,0 +1,209 @@
+<div class="c-network-provider-stats">
+	<div class="block">
+		<h3>Requests Served</h3>
+
+		<div class="table">
+			<div class="bandwidth-stats">
+				<div class="card-icon">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/request.svg">
+				</div>
+
+				<div class="card-main-stat text-table-number">
+					{{@this.prettifyNumbersToDisplay(requestsData.total)}}
+				</div>
+
+				<div class="card-growth">
+					<div class="{{requestsData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+						<span class="text-table-number">
+							{{_.formatGrowth(requestsData.growth)}}
+						</span>
+					</div>
+
+					<span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
+				</div>
+			</div>
+
+			<div class="bandwidth-list">
+				{{#each requestsData.statsList}}
+					<div class="bandwidth-list_item">
+						<div class="bandwidth-list_item_provider">
+							<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+							<span >{{name}}</span>
+						</div>
+
+						<div class="bandwidth-list_item_provider-stats">
+							<div class="bandwidth-list_item_provider-stats_value text-table-number">
+								{{@this.prettifyNumbersToDisplay(total)}}
+							</div>
+
+							<div class="percentage-bar">
+								<div class="percentage-bar_filled" style="width: {{percentage}}; background: {{color}}"></div>
+							</div>
+
+							<div class="interest text-table-number {{interest < 0 ? 'growth-negative' : 'growth-positive'}}">{{_.formatGrowth(interest)}}</div>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		</div>
+	</div>
+
+	<div class="block">
+		<h3>Bandwidth</h3>
+
+		<div class="table">
+			<div class="bandwidth-stats">
+				<div class="card-icon">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/transfer.svg">
+				</div>
+
+				<div class="card-main-stat text-table-number">
+					{{ _.formatBytesWithUnit(bandwidthData.total, 'TB') }}
+				</div>
+
+				<div class="card-growth">
+					<div class="{{bandwidthData.growth < 0 ? 'growth-negative' : 'growth-positive'}}">
+						<span class="text-table-number">
+							{{_.formatGrowth(bandwidthData.growth)}}
+						</span>
+					</div>
+
+					<span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
+				</div>
+			</div>
+
+			<div class="bandwidth-list">
+				{{#each bandwidthData.statsList}}
+					<div class="bandwidth-list_item">
+						<div class="bandwidth-list_item_provider">
+							<img width="20" height="20" src='{{@shared.assetsHost}}{{svg}}'>
+							<span >{{name}}</span>
+						</div>
+
+						<div class="bandwidth-list_item_provider-stats">
+							<div class="bandwidth-list_item_provider-stats_value text-table-number">
+								{{ _.formatBytesWithUnit(total, 'TB') }}
+							</div>
+
+							<div class="percentage-bar">
+								<div class="percentage-bar_filled" style="width: {{percentage}}; background: {{color}}"></div>
+							</div>
+
+							<div class="interest text-table-number {{interest < 0 ? 'growth-negative' : 'growth-positive'}}">{{_.formatGrowth(interest)}}</div>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		</div>
+	</div>
+
+	<div class="hit-rate">
+		<h3>Cache hit rate</h3>
+
+		{{#if providersToDisplay.length}}
+			<div class="rate-row {{#if providersToDisplay.length % 2}}rate-row_odd{{else}}rate-row_even{{/if}}">
+				{{#each providersToDisplay}}
+					<div class="row-item">
+						<div class="row-item_provider">
+							<img
+								width="24"
+								height="24"
+								src='{{@shared.assetsHost}}{{imgPath}}'>
+
+							<span>{{name}}</span>
+						</div>
+
+						<div class="row-item_interest text-table-number">
+							{{cacheHitRate}}
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const providersJson = require('../../public/json/net-providers.json');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+				requestsData: {
+					total: 0,
+					growth: 0,
+					statsList: [],
+				},
+				bandwidthData: {
+					total: 0,
+					growth: 0,
+					statsList: [],
+				},
+				providersToDisplay: [],
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('period', (period) => {
+					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
+						this.animate('requestsData', this.processStats(hits));
+						this.animate('bandwidthData', this.processStats(bandwidth));
+						this.set('providersCodes', hits.providers.map(p => p.code));
+					});
+				});
+
+				this.observe('providersCodes', (providersCodes) => {
+					this.set('providersToDisplay', providersCodes.map(code => providersJson[code]));
+				}, { init: false });
+			}
+		},
+		processStats (data) {
+			let { providers, total, prev } = data;
+			let result = {
+				total: 0,
+				growth: 0,
+				statsList: [],
+			};
+
+			providers.forEach((provider, idx) => {
+				let providerData = providersJson[provider.code] ?? {};
+				let svg = providerData.imgPath;
+				let color = providerData.color;
+				let name = providerData.name;
+				let stat = providers[idx];
+
+				let interest = this.calcGrowth(stat.total, stat.prev.total);
+				let percentage = this.calcPercentage(stat.total, total);
+
+				result.statsList.push({
+					svg,
+					name,
+					color,
+					interest,
+					total: stat.total,
+					percentage,
+				});
+			});
+
+			result.statsList.sort((a, b) => b.total - a.total);
+			result.total = total;
+			result.growth = this.calcGrowth(total, prev.total);
+
+			return result;
+		},
+		calcGrowth (cur, prev) {
+			return prev ? (cur - prev) * 100 / prev : 100;
+		},
+		calcPercentage (provTotal, overallTotal) {
+			let percentage = Number((provTotal * 100 / overallTotal).toFixed(1));
+
+			return percentage < 1 ? '1%' : percentage + '%';
+		},
+		prettifyNumbersToDisplay (num) {
+			return _.formatNumberWithSpace(Math.round(num));
+		},
+	};
+</script>

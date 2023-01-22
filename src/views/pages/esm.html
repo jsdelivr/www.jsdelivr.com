@@ -1,141 +1,128 @@
 <link rel="ractive" href="../r-page.html">
-<link rel="ractive" href="../components/infographic-banner.html" name="c-infographic-banner">
+<link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
 <link rel="ractive" href="../components/stats-table.html" name="c-stats-table">
 <link rel="ractive" href="../components/spinner.html" name="c-spinner">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
-	<div class="p-esm page">
-		<div class="bg">
-			<div class="bg-inner"></div>
-		</div>
+	<c-header additionalClasses="header-with-orange-bg"></c-header>
+
+	<div class="p-esm">
+		<c-header-gradient showMap="{{true}}"></c-header-gradient>
 
 		<div class="content">
-			<section class="title">
-				<h1>esm.run<sup>BETA</sup></h1>
-				by <img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal-white.svg" title="jsDelivr">
-				<br><br><br>
+			<section class="content_title">
+				<h1>A New-Age CDN for JavaScript modules</h1>
 
-				<h2>A New-Age CDN for JavaScript modules</h2>
-
-				<h3 class="subtitle">
-					Load modern JavaScript packages built for you on-demand<br>
-					Works in modern web browsers, node.js, and deno
-				</h3>
+				<h2>
+					<span>Load modern JavaScript packages built for you on-demand</span>
+					<span>Works in modern web browsers, node.js, and deno</span>
+				</h2>
 			</section>
 
-			<section class="main-box">
-				<div class="container">
-					<div class="box">
-						<div class="code">
-							import <input value="{{name}}" placeholder="name" class="base-code-input package-name-input" as-autogrow="'name'" tabindex="1">
-							<span class="code-from">from 'https://esm.run/<span class="base-code-input" as-autogrow="'name'" tabindex="-1" value="{{name || 'name'}}">{{name || 'name'}}</span>';</span>
-						</div>
-
-						<div class="buttons">
-							<form action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
-								<input type="hidden" name="title" value="esm.run {{name}} demo">
-								<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
-								<button type="submit" class="btn btn-primary" tabindex="2">Open in JSFiddle</button>
-								<span class="buttons-or">or</span>
-								<a class="btn btn-secondary" target="_blank" rel="noopener" href="https://esm.run/{{name}}" tabindex="3">Open in a new tab</a>
-							</form>
-						</div>
-
-						<div class="warning-dev-only">
-							You can use esm.run links for quick demos or prototyping.<br>
-							In production (once this feature is out of beta), always use our main domain{{#if name}}: <a target="_blank" href="https://cdn.jsdelivr.net/npm/{{name}}/+esm" tabindex="4">https://cdn.jsdelivr.net/npm/{{name}}/+esm</a>{{else}}.{{/if}}
-						</div>
+			<section class="content_main-box">
+				<div class="code">
+					<div class="code_import">
+						<span>import</span>
+						<input class="package-name-input" value="{{name}}" placeholder="name" as-autogrow="'name'" tabindex="1">
 					</div>
+
+					<div class="code_from">
+						<span>from 'https://esm.run/</span>
+						<span tabindex="-1" value="{{name || 'name'}}">{{(name || 'name') + "';"}}</span>
+					</div>
+				</div>
+
+				<div class="buttons">
+					<form action="https://jsfiddle.net/api/post/library/pure" method="POST" target="_blank">
+						<input type="hidden" name="title" value="esm.run {{name}} demo">
+						<input type="hidden" name="js" value="{{jsFiddleJsCode}}" twoway="false">
+						<button type="submit" class="btn-primary" tabindex="2">Open in JSFiddle</button>
+						<span class="buttons-or">or</span>
+						<a class="btn-secondary" target="_blank" rel="noopener noreferrer" href="https://esm.run/{{name}}" tabindex="3">Open in a new tab</a>
+					</form>
+				</div>
+
+				<div class="notice">
+					<span>You can use esm.run links for quick demos or prototyping.</span>
+					<span>In production (once this feature is out of beta), always use our main domain.</span>
 				</div>
 			</section>
 
-			<section class="warning">
-				<div class="container">
-					<div class="alert alert-warning">
-						esm.run is currently in beta.<br>
-						There may be breaking changes until it's out of beta and we do not recommend using it for critical applications.<br>
-						Only packages that ship ESM code are supported at this time.
-						See <a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr/issues/18263">the announcement at GitHub</a>
-						for technical details or to provide feedback.
+			<section class="content_features">
+				<div class="content_features_row">
+					<div>
+						<img width="48" height="48" src="/img/esm/global-multi-cdn.png" alt="">
+						<h4 class="feature-title">Global Multi-CDN powered by jsDelivr</h4>
+						<div class="feature-content">
+							esm.run is powered by jsDelivr and it's sponsors like Cloudflare, Fastly, Bunny, and GCore.
+							This guarantees the best performance and uptime globally, including mainland China.
+						</div>
+					</div>
+					<div>
+						<img width="48" height="48" src="/img/esm/permanent-storage.png" alt="">
+						<h4 class="feature-title">On-demand builds with permanent storage</h4>
+						<div class="feature-content">
+							Once built, files are stored in a permanent storage
+							shared by all edge servers. That means future access will be
+							always fast, even for files not yet cached at the CDN edge.
+						</div>
+					</div>
+					<div>
+						<img width="48" height="48" src="/img/esm/optimized-delivery.png" alt="">
+						<h4 class="feature-title">State-of-the-art delivery</h4>
+						<div class="feature-content">
+							HTTP/2, HTTP/3, code minification, brotli compression, fine-tuned HTTP caching, dependency preloading
+							- we always use all available options for improving the overall performance.
+						</div>
 					</div>
 				</div>
+
+				<a href="/?query=*%20type%3A%20esm" class="btn-primary">Browse available packages</a>
 			</section>
 
-			<section class="features">
-				<div class="container">
-					<div class="row">
-						<div class="col-md-4">
-							<div class="feature-icon"><img width="48" height="48" src="/img/esm/global-multi-cdn.svg" alt=""></div>
-							<h4 class="feature-title">Global Multi-CDN powered by jsDelivr</h4>
+			<section class="content_performance">
+				<h2>Performance comparison</h2>
 
-							<div class="feature-content">
-								esm.run is powered by jsDelivr and it's sponsors like Cloudflare, Fastly, Bunny, Quantil, and appfleet.
-								This guarantees the best performance and uptime globally, including mainland China.
-							</div>
-						</div>
+				<div class="content_performance_row">
+					<c-stats-table title="{{statsName}} - load time"
+						data="{{sortedStats.duration}}"
+						columns="{{statsColumns}}"
+						formatValue="{{formatMs}}"
+						valueKey="duration"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								<span>{{name}}</span>
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
 
-						<div class="col-md-4">
-							<div class="feature-icon"><img width="48" height="48" src="/img/esm/permanent-storage.svg" alt=""></div>
-							<h4 class="feature-title">On-demand builds with permanent storage</h4>
-
-							<div class="feature-content">
-								Once built, files are stored in a permanent storage
-								shared by all edge servers. That means future access will be
-								always fast, even for files not yet cached at the CDN edge.
-							</div>
-						</div>
-
-						<div class="col-md-4">
-							<div class="feature-icon"><img width="48" height="48" src="/img/esm/optimized-delivery.svg" alt=""></div>
-							<h4 class="feature-title">State-of-the-art delivery</h4>
-
-							<div class="feature-content">
-								HTTP/2, HTTP/3, code minification, brotli compression, fine-tuned HTTP caching, dependency preloading
-								- we always use all available options for improving the overall performance.
-							</div>
-						</div>
-					</div>
-
-					<a href="/?query=*%20type%3A%20esm" class="btn btn-featured btn-learn-more">Browse available packages</a>
+					<c-stats-table title="{{statsName}} - number of requests"
+						data="{{sortedStats.requests}}"
+						columns="{{statsColumns}}"
+						valueKey="requests"
+						desc="false">
+						{{#partial column1}}
+							{{#if error}}
+								<span style="color: #f00;" as-tooltip="'Failed - ' + name">Failed - {{name}}</span>
+							{{else}}
+								<span>{{name}}</span>
+							{{/if}}
+						{{/partial}}
+					</c-stats-table>
 				</div>
-			</section>
 
-			<section class="performance">
-				<div class="container">
-					<h2 class="section-title">Performance comparison</h2>
-
-					<div class="row">
-						<div class="col-md-6">
-							<c-stats-table title="{{statsName}} - load time" data="{{sortedStats.duration}}" columns="{{statsColumns}}" formatValue="{{formatMs}}" valueKey="duration" desc="false">
-								{{#partial column1}}
-								{{#if error}}
-								<span style="color: #f00;">Failed - {{name}}</span>
-								{{else}}
-								{{name}}
-								{{/if}}
-								{{/partial}}
-							</c-stats-table>
-						</div>
-
-						<div class="col-md-6">
-							<c-stats-table title="{{statsName}} - number of requests" data="{{sortedStats.requests}}" columns="{{statsColumns}}" valueKey="requests" desc="false">
-								{{#partial column1}}
-								{{#if error}}
-								<span style="color: #f00;">Failed - {{name}}</span>
-								{{else}}
-								{{name}}
-								{{/if}}
-								{{/partial}}
-							</c-stats-table>
-						</div>
-					</div>
-
-					<div class="benchmark-text">
-						{{#if ~/showInstructions}}
+				<div class="benchmark-text">
+					{{#if ~/showInstructions}}
 						<div class="benchmark-instructions">
-							Please keep in mind the following to get correct benchmark results:<br><br>
+							<h4 class="benchmark-instructions-title">Please keep in mind the following to get correct benchmark results:</h4>
 
-							<ol class="text-left">
+							<ol class="benchmark-instructions-list">
 								<li>
 									There is currently no way for our code to bypass browser caching. To benchmark the real network performance,
 									you need to open you browser's DevTools and disable HTTP caching. If you run the benchmark with caching enabled,
@@ -149,40 +136,31 @@
 								</li>
 							</ol>
 						</div>
-						{{else}}
+					{{else}}
 						<div>
 							{{#if ~/loading}}
-							<c-spinner></c-spinner>
+								<c-spinner></c-spinner>
 							{{else}}
-							<div>{{statsMessage}}</div>
+								<div class="stats-message">{{statsMessage}}</div>
 							{{/if}}
 						</div>
-						{{/if}}
-					</div>
+					{{/if}}
+				</div>
 
-					<div class="benchmark-buttons">
-						{{#if ~/showInstructions}}
-						<a class="btn btn-primary" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
-						{{else}}
-						<a class="btn btn-primary" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
-						{{/if}}
-					</div>
+				<div class="benchmark-buttons">
+					{{#if ~/showInstructions}}
+						<a class="btn-primary i-read-instr" on-click="@this.run(name)">I read the instructions - run the benchmark</a>
+					{{else}}
+						<a class="btn-primary {{#if loading}}loading{{/if}}" on-click="@this.showInstructions()" disabled="{{loading}}">Run benchmark</a>
+					{{/if}}
 				</div>
 			</section>
 
-			<section class="infographic">
-				<div class="container">
-					<c-infographic-banner>
-						{{#partial text}}
-						Learn more<br>
-						about the infrastructure<br>
-						that powers esm.run
-						{{/partial}}
-					</c-infographic-banner>
-				</div>
-			</section>
+			<c-new-infographic-banner></c-new-infographic-banner>
 		</div>
 	</div>
+
+	<c-footer></c-footer>
 </r-page>
 
 <script>
@@ -208,15 +186,7 @@
 		},
 		computed: {
 			importName () {
-				let name = this.get('name').split(/[ ._-]/g).reduce((acc, value) => {
-					return acc + value.substr(0, 1).toUpperCase() + value.substr(1);
-				}).replace(/[^a-zA-Z0-9_$]/g, '');
-
-				if (/^\d/.test(name)) {
-					return `_${name}`;
-				}
-
-				return name || 'm';
+				return _.packageToImportName(this.get('name'));
 			},
 			jsFiddleJsCode () {
 				return `// See https://www.npmjs.com/package/${this.get('name')} documentation.\nimport * as ${this.get('importName')} from 'https://esm.run/${this.get('name')}';\n\nconsole.log(${this.get('importName')})\n`;

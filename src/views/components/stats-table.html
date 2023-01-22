@@ -1,54 +1,43 @@
 <link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
 
 <div class="c-stats-table">
-	<table class="stats-table-table">
-		<colgroup>
-			{{#each columns}}
-			<col style="width:{{width}};">
-			{{/each}}
-		</colgroup>
+  <div class="flex stats-table-table">
+    {{#if title}}
+      <div class="item state-title">{{title}}</div>
+    {{/if}}
 
-		<thead>
-			<tr>
-				<th colspan="3">
-					{{#if title}}
-					{{title}}
-					{{else}}
-					{{>header}}
-					{{/if}}
-				</th>
-			</tr>
-		</thead>
+    {{#each ~/data: i}}
+      <div class="item">
+        {{#if rowIndexes}}
+          <span class="index">{{i+1}}</span>
+        {{/if}}
 
-		<tbody>
-			{{#each ~/data}}
-			<tr>
-				<td>{{>column1}}</td>
-				<td class="hits">{{formatValue(this[valueKey])}}</td>
-				<td>
-					<div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
-				</td>
-			</tr>
-			{{/each}}
-		</tbody>
-	</table>
+        {{>column1}}
+
+        <span class="hits text-table-number">{{formatValue(this[valueKey])}}</span>
+
+        <div class="table-chart-lg">
+          <div class="table-chart" style-width="{{this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100}}%"></div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
 </div>
 
 <script>
 	const _ = require('../../public/js/_');
+	const tooltip = require('../../public/js/decorators/tooltip');
 
 	component.exports = {
 		data () {
 			return {
-				columns: [
-					{ width: '50%' },
-					{ width: '22%' },
-					{ width: '28%' },
-				],
 				desc: true,
 				formatValue: _.formatNumber,
 				valueKey: 'hits',
 			};
+		},
+		decorators: {
+			tooltip,
 		},
 	};
 </script>

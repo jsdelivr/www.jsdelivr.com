@@ -1,0 +1,392 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/proxy-hosting-info.html" name="c-proxy-hosting-info">
+<link rel="ractive" href="../components/proxy-head.html" name="c-proxy-head">
+<link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
+<link rel="ractive" href="../components/proxy-request-bandwidth-stats.html" name="c-proxy-request-bandwidth-stats">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-header></c-header>
+
+	<div class="p-proxy-project">
+		<div class="content-wrapper">
+			<c-proxy-head name="{{name}}"
+				link="{{projectLink}}"
+				docsLink="{{docsLink}}"
+				jsDelivrLink="/oss-cdn/{{name}}"
+				title="{{projectTitle}}"
+				descr="{{projectDescr}}"
+				imgW="{{projectImgW}}"
+				imgH="{{projectImgH}}"
+				imgExt="{{projectImgExt}}">
+				{{#partial title}}
+					{{title}}
+				{{/partial}}
+
+				{{#partial descr}}
+					{{descr}}
+				{{/partial}}
+
+				{{#partial img}}
+					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/proxy/{{name}}{{imgExt}}">
+				{{/partial}}
+			</c-proxy-head>
+
+			<div class="divider"></div>
+
+			<div class="ctrls-block">
+				<div class="ctrls-block-title">Statistics</div>
+				<div class="ctrls-block-ctrls">
+					<div class="chart-type-ctrl">
+						<span>Show numbers of</span>
+
+						<input id="chart-switch"
+							type="checkbox"
+							class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
+							twoway="false">
+
+						<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
+							<span>Requests</span>
+							<span>Bandwidth</span>
+							<div class="slide-select">
+								<div class="selected"></div>
+							</div>
+						</label>
+					</div>
+
+					<div class="data-range-ctrl">
+						<span>Data range:</span>
+
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/statsPeriod}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/statsPeriods}}
+									<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{statsPeriod}}"></c-proxy-request-bandwidth-stats>
+
+			{{#if noPackageStatsData}}
+				<div class="no-data-wrapper">
+					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+					<span>No statistics yet</span>
+					<span>This is probably not a very popular package :(</span>
+				</div>
+			{{else}}
+				<div class="chart-ctrls">
+					<div class="chart-ctrls-title">Stats for last {{~/statsPeriod}}</div>
+					<div class="chart-ctrls-group-by">
+						<span>
+							Group by:
+						</span>
+
+						<div class="btn-group">
+							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each ~/usageChartGroupByValues}}
+									<li>
+										{{#if this.isAvailable}}
+											<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
+										{{/if}}
+									</li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="chart-wrapper">
+					<canvas id="cdn-stats-chart"></canvas>
+				</div>
+			{{/if}}
+
+			<div class="explore-all-endpoints">
+				<a href="/oss-cdn/" class="btn-arrow">
+					<span>Explore all custom endpoints</span>
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
+				</a>
+			</div>
+
+			<c-new-infographic-banner>
+				{{#partial text}}
+					Learn more about<br />
+					the infrastructure that<br />
+					powers <a href="/network/infographic" target="_blank" class="router-ignore">jsDelivr</a>
+				{{/partial}}
+			</c-new-infographic-banner>
+
+			<c-proxy-hosting-info></c-proxy-hosting-info>
+		</div>
+	</div>
+
+	<c-footer></c-footer>
+</r-page>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+
+	component.exports = {
+		computed: {
+			title () {
+				return this.get('projectTitle') + ' CDN by jsDelivr';
+			},
+			description () {
+				return `A free, fast, and reliable CDN for ${this.get('projectTitle')}. ${this.get('projectDescr')}`;
+			},
+			usageChartGroupByValues () {
+				return stats.groupByOptions[this.get('statsPeriod')];
+			},
+		},
+		data () {
+			return {
+				statsPeriods: stats.periods,
+				statsPeriod: 'quarter',
+				showChartBandwidth: false,
+				usageChartGroupBy: 'day',
+				noPackageStatsData: false,
+				projectsData: {
+					cocoa: {
+						title: 'CocoaPods',
+						descr: 'CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.',
+						link: 'https://www.cocoapods.org',
+						docsLink: 'https://github.com/CocoaPods/cdn.cocoapods.org',
+						imgW: '202',
+						imgH: '46',
+					},
+					pyodide: {
+						title: 'Pyodide',
+						descr: 'Pyodide brings the Python 3.9 runtime to the browser via WebAssembly, thanks to Emscripten. It builds the Python scientific stack including NumPy, Pandas, Matplotlib, SciPy, and scikit-learn. Over 75 packages are currently available. In addition, it’s possible to install pure Python wheels from PyPI.',
+						link: 'https://pyodide.org',
+						docsLink: 'https://pyodide.org/en/stable/usage/index.html',
+						imgW: '170',
+						imgH: '56',
+					},
+					musescore: {
+						title: 'MuseScore',
+						descr: 'Create, play and print beautiful sheet music. The world’s most popular notation software.',
+						link: 'https://musescore.org',
+						docsLink: 'https://musescore.org',
+						imgW: '213',
+						imgH: '48',
+					},
+					ghost: {
+						title: 'Ghost',
+						descr: 'Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content. It comes with modern tools to build a website, publish content, send newsletters & offer paid subscriptions to members.',
+						link: 'https://ghost.org',
+						docsLink: 'https://ghost.org/docs/install',
+						imgW: '152',
+						imgH: '56',
+						imgExt: '.png',
+					},
+				},
+				projectTitle: '',
+				projectDescr: '',
+				projectImgW: '',
+				projectImgH: '',
+				rawStatsData: {},
+				preparedStatsData: {},
+			};
+		},
+		oninit () {
+			this.observe('name', (name) => {
+				let projectsData = this.get('projectsData');
+
+				this.set('projectTitle', projectsData[name].title);
+				this.set('projectDescr', projectsData[name].descr);
+				this.set('projectImgW', projectsData[name].imgW);
+				this.set('projectImgH', projectsData[name].imgH);
+				this.set('projectImgExt', projectsData[name].imgExt || '.svg');
+				this.set('projectLink', projectsData[name].link);
+				this.set('docsLink', projectsData[name].docsLink);
+			});
+
+			if (!Ractive.isServer) {
+				// handle chart period changes by updating groupBy options and chart data fetching
+				this.observe('statsPeriod', (newStatsPeriod) => {
+					let period = newStatsPeriod;
+					let name = this.get('name');
+
+					// prevent chart data fetching from the back when period is DAY, left it as it was prev
+					if (period === 'day') { return; }
+
+					http.fetchCdnOssStats(name, period).then((response) => {
+						if (!response.hits.total || !response.bandwidth.total) {
+							this.set('noPackageStatsData', true);
+							return;
+						}
+
+						this.set('noPackageStatsData', false);
+						// once new data fetched we should set groupBy to default value before raw data set
+						this.set('usageChartGroupBy', 'day');
+						this.set('rawStatsData', response);
+					});
+				});
+
+				// handle raw data and prepare it for chart
+				// screenWidth to observe when screen width is resized to recreate chart
+				this.observe('rawStatsData showChartBandwidth usageChartGroupBy screenWidth', () => {
+					let rawStatsData = this.get('rawStatsData');
+					let chartPeriod = this.get('statsPeriod');
+					let showChartBandwidth = this.get('showChartBandwidth');
+					let usageChartGroupBy = this.get('usageChartGroupBy');
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+
+					// collect X-Axis dates, group data by period, get
+					let {
+						values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+
+					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
+					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
+
+					// set prepared data for chart
+					this.set('preparedStatsData', {
+						data: values,
+						labels,
+						labelsStartEndPeriods,
+						maxRangeValue,
+						showChartBandwidth,
+						chartPeriod,
+						barThickness: chartBarThickness,
+						useYAxisBorderPlugin: screenWidth >= 768,
+						yAxisPadding: screenWidth >= 768 ? 20 : 8,
+						valueUnits,
+					});
+				}, { init: false });
+			}
+		},
+		onrender () {
+			let statsChart;
+
+			// draw a chart when data is ready
+			this.observe('preparedStatsData', (preparedStatsData) => {
+				let {
+					labels,
+					maxRangeValue,
+					data,
+					showChartBandwidth,
+					barThickness,
+					useYAxisBorderPlugin,
+					yAxisPadding,
+					labelsStartEndPeriods,
+					valueUnits,
+				} = preparedStatsData;
+				let statsChartCanvasEl = this.find('#cdn-stats-chart');
+
+				if (!preparedStatsData || !statsChartCanvasEl) { return; }
+
+				if (statsChart) {
+					statsChart.destroy();
+					statsChart = null;
+				}
+
+				let chartData = {
+					labels,
+					datasets: [{
+						data,
+						borderWidth: 0,
+						barThickness,
+						hoverBackgroundColor: '#F65128',
+					}],
+					labelsStartEndPeriods,
+					valueUnits,
+				};
+				let chartSettings = {
+					useYAxisBorderPlugin,
+					useExternalTooltip: true,
+					useImprovedTooltip: true,
+					externalTooltipVerticalOffset: 40,
+				};
+				let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
+				let chartConfig = {
+					options: {
+						scales: {
+							x: {
+								display: true,
+								ticks: {
+									autoSkip: false,
+									color: '#5C667A',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+										lineHeight: 2,
+									},
+									// return nothing when labelValue array is empty
+									// this way we will not get italicized text when all ticks can't be displayed at once normally
+									callback (value) {
+										let labelValue = this.getLabelForValue(value);
+
+										if (labelValue.length) {
+											return labelValue;
+										}
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+							y: {
+								display: true,
+								min: 0,
+								suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
+								ticks: {
+									padding: yAxisPadding,
+									count: 9,
+									color: '#5C667A',
+									crossAlign: 'near',
+									font: {
+										size: 12,
+										family: 'Lexend, sans-serif',
+									},
+									callback (value) {
+										let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+
+										if (_.isMobileScreen()) {
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+										}
+
+										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+									},
+								},
+								grid: {
+									display: false,
+									drawBorder: false,
+								},
+							},
+						},
+					},
+				};
+
+				statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+			}, { init: false });
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+	};
+</script>

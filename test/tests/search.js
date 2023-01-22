@@ -10,11 +10,21 @@ describe('search', () => {
 		await browser.sleep(4000);
 		await browser.findElement({ css: '.search-input' }).sendKeys('jsdelivr');
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.package-name' }).getText()).to.eventually.contain('jsdelivr');
-		await expect(browser.findElement({ css: '.package-name' }).getAttribute('href')).to.eventually.contain('/package/npm/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(2)' }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(3)' }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
-		await expect(browser.findElement({ css: '.package-buttons .button:nth-of-type(4)' }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+		let elements = await browser.findElements({ css: '.package-name' });
+
+		for (let key in elements) {
+			if (Object.hasOwn(elements, key)) {
+				let elText = await elements[key].getText();
+
+				if (elText === 'jsdelivr') {
+					await expect(elements[key].getText()).to.eventually.contain('jsdelivr');
+					await expect(elements[key].getAttribute('href')).to.eventually.match(/.*(package\/npm\/jsdelivr)$/);
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(2)` }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(3)` }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(4)` }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+				}
+			}
+		}
 	});
 
 	it('by author works', async () => {
@@ -22,38 +32,38 @@ describe('search', () => {
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.package-owner' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(1) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(2) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
-		await expect(browser.findElement({ css: '.c-package:nth-of-type(3) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(1) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(2) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
+		await expect(browser.findElement({ css: '.c-package-header:nth-of-type(3) .package-owner' }).getText()).to.eventually.equal('jsdelivr');
 	});
 
 	it('pagination works (click)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (url)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=2`);
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (prev)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=2`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(1) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(2)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(3)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 
 	it('pagination works (next)', async () => {
 		await browser.navigate().to(`${BASE_URL}/?query=jsdelivr&page=1`);
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(7) a' }).click();
+		await browser.findElement({ css: '.search-pagination div:nth-of-type(8)' }).click();
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '.search-pagination .pagination li:nth-of-type(4)' }).getAttribute('class')).to.eventually.contain('active');
+		await expect(browser.findElement({ css: '.search-pagination div:nth-of-type(5)' }).getAttribute('class')).to.eventually.contain('active');
 	});
 });

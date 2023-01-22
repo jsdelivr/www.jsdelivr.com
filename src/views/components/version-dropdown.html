@@ -1,20 +1,22 @@
 <div class="version-dropdown btn-group ">
 	{{#if versions.length > 1}}
-	<span class="version-dropdown-selected-version" data-toggle="dropdown">
-		<a>{{version}}</a>
-		<i class="fa fa-angle-down" aria-hidden="true"></i>
-	</span>
+		<div class="version-dropdown-selected-version" data-toggle="dropdown">
+			<a>{{version}}</a>
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy"/>
+		</div>
 
-	<ul class="dropdown-menu dropdown-menu-right">
-		{{#each versions}}
-		{{#if this !== version}}
-		<li><a on-click="@this.set('version', this)">{{this}}</a></li>
-		{{/if}}
-		{{/each}}
-	</ul>
+		<ul class="dropdown-menu dropdown-menu-right">
+			{{#each versions}}
+				{{#if this !== version}}
+					<li>
+						<a on-click="@this.set('version', this)">{{this}}</a>
+					</li>
+				{{/if}}
+			{{/each}}
+		</ul>
 	{{else}}
-	<span class="version-dropdown-selected-version">
-		<a>{{version}}</a>
-	</span>
+		<span class="version-dropdown-selected-version">
+			<a>{{version}}</a>
+		</span>
 	{{/if}}
 </div>

@@ -3,14 +3,67 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_.js');
+	const ID_PREFIX = 'id-';
+
 	component.exports = {
 		data () {
 			return {
+				_,
 				text: '',
 				markdown (md) {
-					return !Ractive.isServer ? marked(md) : '';
+					return !Ractive.isServer ? DOMPurify.sanitize(marked.parse(md)) : '';
 				},
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				let _this = this;
+
+				marked.setOptions({
+					langPrefix: 'hljs language-',
+					headerIds: true,
+					headerPrefix: ID_PREFIX,
+					highlight (code, language) {
+						return hljs.getLanguage(language) ? hljs.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
+					},
+				});
+
+				DOMPurify.removeAllHooks();
+
+				DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+					if ('target' in node) {
+						node.setAttribute('rel', 'nofollow noopener noreferrer');
+						node.setAttribute('target', '_blank');
+					}
+
+					if (node.hasAttribute('src')) {
+						node.setAttribute('src', _.makeLinksOptimized(node.getAttribute('src'), _this.get('github')));
+					}
+				});
+
+				// if page URL has a hash then scroll page to the anchor
+				this.observeOnce('text', () => {
+					let anchor = app.router.uri.hash;
+					let el = anchor ? this.find(anchor) : null;
+
+					if (el) {
+						if (document.visibilityState === 'visible') {
+							el.scrollIntoView({
+								behavior: 'smooth',
+							});
+						} else {
+							document.addEventListener('visibilitychange', function listener () {
+								el.scrollIntoView({
+									behavior: 'smooth',
+								});
+
+								document.removeEventListener('visibilitychange', listener);
+							});
+						}
+					}
+				}, { init: false, defer: true });
+			}
 		},
 	};
 </script>

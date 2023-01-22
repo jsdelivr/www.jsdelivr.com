@@ -24,11 +24,13 @@ module.exports = (options) => {
 			let component = new Component({ data });
 			component.set('@shared.escape', escape);
 			component.set('@shared.isServer', true);
+			component.set('@shared.serverHost', options.serverHost);
 			component.set('@shared.assetsHost', options.assetsHost);
+			component.set('@shared.apiDocHost', options.apiDocHost);
 			component.set('@shared.assetsVersion', options.assetsVersion);
 			component.set('@shared.options', ctx.options);
 			component.set('@shared.router', ctx.router);
-			let html = component.toHtml().replace('<<RACTIVE_SERIALIZED_DATA>>', JSON.stringify(data));
+			let html = component.toHtml().replace('<<RACTIVE_SERIALIZED_DATA>>', () => escape(JSON.stringify(data)));
 
 			component.teardown();
 

@@ -1,39 +1,42 @@
 <link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
-<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}" noFooter="true">
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-header additionalClasses="header-with-orange-bg"></c-header>
+
 	<div class="p-github">
-		<div class="bg">
-			<div class="bg-inner"></div>
-		</div>
+		<c-header-gradient showMap="{{ true }}"></c-header-gradient>
 
 		<div class="content">
 			<div class="title">
 				<h1>Migrating from GitHub to jsDelivr</h1>
 
-				<h2 class="subtitle">
-					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+				<h2>
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub.
 					Most GitHub links can be easily converted to jsDelivr links.
 				</h2>
 			</div>
 
 			<div class="container">
 				<div class="box">
-					<div class="bar {{#if out}}active{{/if}}">
+					<div class="bar {{#if out && !error}}bar-active{{/if}}">
 						<div class="circle"></div>
-						<div class="line"><div class="line-inner"></div></div>
-						<div class="circle circle-bottom"></div>
+						<div class="line {{#if out && !error}}filled{{/if}}"></div>
+						<div class="circle bottom {{#unless out && !error}}circle-disabled{{/unless}}"></div>
 					</div>
 
 					<div class="icon-competitor">
-						<img width="100" height="50" src="{{@shared.assetsHost}}/img/github.png" srcset="{{@shared.assetsHost}}/img/github@2x.png 2x">
+						<img width="84" height="30" src="{{@shared.assetsHost}}/img/github.svg">
 					</div>
 
-					<div class="input-wrapper">
+					<div class="input-wrapper mb-48">
 						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste a GitHub link here" value="{{in}}">
 					</div>
 
 					<div class="icon-jsdelivr">
-						<img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal.svg">
+						<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
 					</div>
 
 					<div class="input-wrapper">
@@ -47,19 +50,29 @@
 					{{#if displayHtmlWarning}}
 						<div class="alert alert-warning" role="alert">
 							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
-							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a> if this is a problem.
+							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a> if this is a problem.
 						</div>
-					{{else}}
-						<div style="height: 1px;"></div>
 					{{/if}}
+				</div>
 
-					<div class="buttons">
-						<a href="/?docs=gh" class="start-using">See All Features</a>
-					</div>
+				<div class="host-descr-title">
+					jsDelivr is a free CDN (Content Delivery Network)
+					<br />
+					for open source files
+				</div>
+
+				<div class="host-descr-text">
+					By using jsDelivr CDN URLs you get better performance globally thanks to our multi-CDN infrastructure. We also permanently cache all files to ensure reliability, even if your files get deleted from Github they will continue to work on jsDelivr without breaking any sites using them. The jsDelivr CDN is designed for production use with multiple layers of failover to ensure best possible uptime.
+				</div>
+
+				<div class="buttons">
+					<a href="/" class="all-features">See All Features</a>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<c-footer></c-footer>
 </r-page>
 
 <script>
@@ -69,6 +82,7 @@
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const defaultError = 'Sorry, this doesn\'t look like a valid GitHub link :(';
+	const _ = require('../../public/js/_');
 
 	component.exports = {
 		decorators: {
@@ -77,7 +91,7 @@
 		data () {
 			return {
 				title: 'Migrate from GitHub to jsDelivr',
-				description: 'Migrate from GitHub to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+				description: 'Migrate from GitHub to jsDelivr - a free, fast, and reliable Open Source CDN optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.',
 			};
 		},
 		oninit () {
@@ -90,7 +104,7 @@
 			};
 
 			let isCommitPrefixOrTag = (user, repo, sha) => {
-				return $.getJSON(`https://api.github.com/repos/${user}/${repo}/commits/${sha}`).then((response) => {
+				return _.makeHTTPRequest({ url: `https://api.github.com/repos/${user}/${repo}/commits/${sha}` }).then((response) => {
 					return response.sha.indexOf(sha) === 0 ? response.sha : sha;
 				}).catch(() => {
 					return false;
@@ -98,6 +112,9 @@
 			};
 
 			let gitHub2jsDelivr = gitHub => Promise.resolve().then(() => {
+				// TODO: broken match (version instead of sha, no file etc.)
+				// pattern must be broken, need to be rewrited
+				// why is it working if api.github returns 422
 				let pattern = /^https?:\/\/(?:github|raw\.githubusercontent)\.com\/([^/]+)\/([^/]+)(?:\/blob)?\/([^/]+)\/(.*)$/i;
 				let commitPattern = /^[0-9a-f]{40}$/;
 				let match = pattern.exec(gitHub);

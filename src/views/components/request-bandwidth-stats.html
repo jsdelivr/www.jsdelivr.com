@@ -1,0 +1,45 @@
+<div class="c-request-bandwidth-stats">
+	<div>
+		<div class="card-icon">
+			<img width="32" height="32" src="{{@shared.assetsHost}}/img/icons/request.alt.svg">
+		</div>
+		<div class="card-main-stat">
+			<div><span class="text-table-number">{{_.formatNumber(requestsAmount)}}</span></div>
+			<div><span>Requests Served</span></div>
+		</div>
+		<div class="card-growth">
+			<div class="{{#if requestsGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">
+				<span class="text-table-number">{{_.formatGrowth(requestsGrowthPercent)}}</span>
+			</div>
+			<div><span>{{growthPeriod}} {{#if requestsGrowthPercent>=0}}growth{{else}}decline{{/if}}</span></div>
+		</div>
+	</div>
+
+	<div>
+		<div class="card-icon">
+			<img width="32" height="32" src="{{@shared.assetsHost}}/img/icons/transfer.alt.svg">
+		</div>
+		<div class="card-main-stat">
+			<div><span class="text-table-number">{{_.formatNumber(bandwidthAmount)}} {{bandwidthUnit}}</span></div>
+			<div><span>Bandwidth</span></div>
+		</div>
+		<div class="card-growth">
+			<div class="{{#if bandwidthGrowthPercent>=0}}growth-positive{{else}}growth-negative{{/if}}">
+				<span class="text-table-number">{{_.formatGrowth(bandwidthGrowthPercent)}}</span>
+			</div>
+			<div><span>{{growthPeriod}} {{#if bandwidthGrowthPercent>=0}}growth{{else}}decline{{/if}}</span></div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+			};
+		},
+	};
+</script>

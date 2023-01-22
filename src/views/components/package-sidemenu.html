@@ -1,0 +1,343 @@
+<div class="c-package-sidemenu">
+	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
+		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
+
+		<div style="position: relative; z-index: 1;{{#unless navRoute !== 'stats'}}display: none;{{/unless}}">
+			<div class="sidemenu-title">
+				<span>Statistics</span>
+
+				<div class="btn-group">
+					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span>{{statsPeriod}}</span>
+						<i class="fa fa-angle-down" aria-hidden="true"></i>
+					</button>
+
+					<ul class="dropdown-menu">
+						{{#each statsPeriods}}
+							<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+
+			<div class="horizontal-divider"></div>
+
+			<div class="stats-section mb-18">
+				<span>Requests Served {{usageChartGroupByLabel}}</span>
+				<span>{{noDataOfRequests ? 'No data' : _.formatNumber(requestsTotal)}}</span>
+			</div>
+
+			<div class="requests-chart-wrapper">
+				{{#if noDataOfRequests}}
+					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
+				{{else}}
+					<canvas id="requests-chart"></canvas>
+				{{/if}}
+			</div>
+
+			<div class="horizontal-divider"></div>
+
+			<div class="stats-section mb-18">
+				<span>Bandwidth {{usageChartGroupByLabel}}</span>
+				<span>{{#if noDataOfBandwidth}}No data{{else}}{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnit}}{{/if}}</span>
+			</div>
+
+			<div class="bandwidth-chart-wrapper">
+				{{#if noDataOfBandwidth}}
+					<img src="{{@shared.assetsHost}}/img/no-data-chart-side.svg" class="empty-chart" width="294" height="56">
+				{{else}}
+					<canvas id="bandwidth-chart"></canvas>
+				{{/if}}
+			</div>
+
+			<div class="horizontal-divider"></div>
+		</div>
+
+		<div class="stats-section mb-24">
+			<!-- show package version if no data of top versions -->
+			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
+			<span>{{#if noDataOfVersions}}No data{{else}}{{_.formatNumber(topVersionHits)}}{{/if}}</span>
+		</div>
+
+		{{#if navRoute !== "config"}}
+			<a on-click="@this.set('navRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
+
+
+			{{#unless noDataOfVersions}}
+				<div class="horizontal-divider"></div>
+
+				<div class="twitter-share">
+					<div>
+						{{#if packageRank}}
+							{{_.nth(packageRank)}} most popular on jsDelivr
+						{{/if}}
+					</div>
+					<a class="btn-twitter-share mt-8"
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${~/statsPeriod}: ${~/link}`)}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
+						Share
+					</a>
+				</div>
+			{{/unless}}
+
+			{{#if package.keywords}}
+				<div class="stats-keywords mt-32">
+					<div class="stats-keywords-header">Keywords</div>
+					<div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
+						{{#each package.keywords}}
+							<div class="keyword-badge">{{this}}</div>
+						{{/each}}
+						{{#if true === 'stats'}}
+							<div class="badge-cover"></div>
+						{{/if}}
+					</div>
+				</div>
+			{{/if}}
+		{{/if}}
+	</div>
+
+	{{#if navRoute !== "config"}}
+		<div class="box-badge mt-32 mb-32">
+			<div class="box-title">Get a badge for your package</div>
+			<img src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
+			<img as-clipboard="'Copy markdown to clipboard'"
+				data-clipboard-text="[![](https://data.jsdelivr.com/v1/package/{{~/type}}/{{~/name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}})](https://www.jsdelivr.com/package/{{~/type}}/{{~/name}})"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
+			<img as-tooltip="'Alternate badge style'"
+				on-click="@this.toggle('badgeAltStyle')"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/icons/alternate-btn.svg">
+		</div>
+	{{/if}}
+</div>
+
+
+<script>
+	const _ = require('../../public/js/_');
+	const stats = require('../../public/js/utils/stats');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
+	const http = require('../../public/js/utils/http');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
+
+	component.exports = {
+		computed: {
+			barThickness () {
+				switch (this.get('statsPeriod')) {
+					case 'quarter':
+						return 2;
+
+					case 'year':
+						return 1;
+
+					default:
+						return 4;
+				}
+			},
+			usageChartGroupBy () {
+				switch (this.get('statsPeriod')) {
+					default:
+						return 'day';
+				}
+			},
+			usageChartGroupByLabel () {
+				switch (this.get('usageChartGroupBy')) {
+					case 'day':
+						return '';
+				}
+			},
+		},
+		data () {
+			return {
+				_,
+				statsPeriods: stats.periods,
+				statsPeriod: 'month',
+				noDataOfRequests: false,
+				noDataOfBandwidth: false,
+				noDataOfVersions: false,
+				topVersionHits: 0,
+				bandwidthTotal: 0,
+				requestsTotal: 0,
+			};
+		},
+		decorators: {
+			clipboard,
+			tooltip,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.set('link', this.get('@global.location.href'));
+
+				this.observe('statsPeriod', () => {
+					if (this.get('statsPeriod')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let period = this.get('statsPeriod');
+
+						// get overall package stats (hits-bandwidth data for charts, hits rank of package)
+						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+
+							if (response.hits.total) {
+								this.set('noDataOfRequests', false);
+								this.set('packageDateStats', response.hits);
+								this.animate('requestsTotal', response.hits.total, { duration: 1000 });
+							} else {
+								this.set('noDataOfRequests', true);
+							}
+
+							if (response.bandwidth.total) {
+								this.set('noDataOfBandwidth', false);
+								this.set('packageBandwidthStats', response.bandwidth);
+								this.set('bandwidthUnit', _.findUnitFromNumber(response.bandwidth.total));
+								this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total, this.get('bandwidthUnit')), { duration: 1000 });
+							} else {
+								this.set('noDataOfBandwidth', true);
+							}
+						});
+
+						// get package top version stats
+						http.fetchPackageVersionsStats(type, name, period, 'hits').then((response) => {
+							if (!response.length) {
+								this.set('noDataOfVersions', true);
+								return;
+							}
+
+							this.set('topVersion', response[0].version);
+							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
+						});
+					}
+				});
+
+				this.observe('packageDateStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let requestsChart = this.get('requestsChart');
+					let packageDateStats = this.get('packageDateStats');
+
+					if (!packageDateStats) {
+						return null;
+					}
+
+					if (requestsChart) {
+						requestsChart.destroy();
+						requestsChart = null;
+						this.set('requestsChart', null);
+					}
+
+					let {
+						values,
+						labels,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(packageDateStats, this.get('usageChartGroupBy'), this.get('statsPeriod'), false);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#requests-chart');
+						let chartData = {
+							labels,
+							datasets: [{
+								data: values,
+								borderWidth: 0,
+								barThickness: this.get('barThickness'),
+								hoverBackgroundColor: '#F65128',
+								borderRadius: 1,
+							}],
+							valueUnits,
+						};
+						let chartSettings = {
+							useExternalTooltip: true,
+							externalTooltipId: 'packageSidemenuRequestsChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
+
+						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+
+						this.set('requestsChart', requestsChart);
+					}, 100);
+				});
+
+				this.observe('packageBandwidthStats navRoute', () => {
+					if (this.get('navRoute') === 'stats') {
+						return null;
+					}
+
+					let bandwidthChart = this.get('bandwidthChart');
+					let packageBandwidthStats = this.get('packageBandwidthStats');
+
+					if (!packageBandwidthStats) {
+						return null;
+					}
+
+					if (bandwidthChart) {
+						bandwidthChart.destroy();
+						bandwidthChart = null;
+						this.set('bandwidthChart', null);
+					}
+
+					let {
+						values,
+						labels,
+						valueUnits,
+					} = _.getPreparedDataForBarChart(packageBandwidthStats, this.get('usageChartGroupBy'), this.get('statsPeriod'), true);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#bandwidth-chart');
+						let chartData = {
+							labels,
+							datasets: [{
+								data: values,
+								borderWidth: 0,
+								barThickness: this.get('barThickness'),
+								hoverBackgroundColor: '#F65128',
+								borderRadius: 1,
+							}],
+							valueUnits,
+						};
+						let chartSettings = {
+							useExternalTooltip: true,
+							externalTooltipId: 'packageSidemenuBandwidthChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
+
+						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+
+						this.set('bandwidthChart', bandwidthChart);
+					}, 100);
+				});
+			}
+		},
+	};
+</script>

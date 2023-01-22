@@ -1,15 +1,27 @@
 <div class="c-copy-dropdown btn-group {{#if dropup}}dropup{{/if}}">
 	<span data-toggle="dropdown">
-		<i class="fa fa-clipboard" aria-hidden="true"></i>
-		<i class="fa fa-angle-down" aria-hidden="true"></i>
+		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg" loading="lazy"/>
 	</span>
 
 	<ul class="dropdown-menu dropdown-menu-right">
-		<li><a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{url}}">Copy URL</a></li>
-		{{#if hash}}<li><a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</a></li>{{/if}}
+		<li>
+			<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{url}}">Copy URL</a>
+		</li>
+		{{#if hash}}
+			<li>
+				<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</a>
+			</li>
+		{{/if}}
+
 		{{#if canBuildHtml(url)}}
-		<li><a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url)}}">Copy HTML</a></li>
-		{{#if hash}}<li><a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url, hash)}}">Copy HTML + SRI</a></li>{{/if}}
+			<li>
+				<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url)}}">Copy HTML</a>
+			</li>
+			{{#if hash}}
+				<li>
+					<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url, hash)}}">Copy HTML + SRI</a>
+				</li>
+			{{/if}}
 		{{/if}}
 	</ul>
 </div>

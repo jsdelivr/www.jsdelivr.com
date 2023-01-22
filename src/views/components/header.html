@@ -1,50 +1,130 @@
-<header class="c-header">
-	<nav class="navbar navbar-default">
-		<div class="container">
+<header class="c-header {{#if searchOpened }} disabled {{/if}} {{#if additionalClasses}}{{additionalClasses}}{{/if}}">
+	<nav class="navbar navbar-default {{!actualPath || withFullWhiteLogoRoutes.includes(actualPath) ? 'navbar-filled' : ''}}">
+		<div class="container-fluid container-mw">
 			<div class="navbar-header">
+				<span on-click="@this.handleLogoClick()">
+					<!--
+						Looking for the logo?
+						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
+					-->
+					{{#if actualPath && withFullWhiteLogoRoutes.includes(actualPath)}}
+						{{#if actualPath.startsWith('/docs/')}}
+							<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-white.svg" title="jsDelivr">
+						{{else}}
+							<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-full-white.svg" title="jsDelivr">
+						{{/if}}
+					{{elseif actualPath && actualPath.startsWith('/package/')}}
+						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
+					{{elseif actualPath}}
+						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg" title="jsDelivr">
+					{{/if}}
+				</span>
+
+				{{#if actualPath && actualPath.includes('/package/npm')}}
+					{{yield}}
+				{{/if}}
+
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
 					<span class="sr-only">Toggle navigation</span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-
-				<a class="navbar-brand" href="/">
-					<!--
-Looking for the logo?
-Get all versions here: https://github.com/jsdelivr/jsdelivr-media
--->
-					<img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal.svg" title="jsDelivr">
-				</a>
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
-				<ul class="nav navbar-nav navbar-right">
-					<li><a href="/features">Features</a></li>
+				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : withFullWhiteLogoRoutes.includes(actualPath) ? 'about-navbar-right' : 'default-navbar-right'}}">
+					<li><a href="/about">About Us</a></li>
 					<li><a href="/network">Network</a></li>
 					<li><a href="/statistics">Stats</a></li>
 					<li><a href="/sponsors">Sponsors</a></li>
 					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools <i class="fa fa-angle-down" aria-hidden="true"></i></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							Tools <i class="fa fa-angle-down" aria-hidden="true"></i>
+						</a>
 						<ul class="dropdown-menu">
-							<li><a href="/tools/debug">Debug tool</a></li>
 							<li><a href="/tools/purge">Purge cache</a></li>
 							<li role="separator" class="divider"></li>
-							<li class="dropdown-header">Convert from</li>
+							<li class="dropdown-header"><div>Convert from</div></li>
 							<li><a href="/github">GitHub</a></li>
 							<li><a href="/google">Google Hosted Libraries</a></li>
-							<li><a href="/rawgit">RawGit</a></li>
 							<li><a href="/unpkg">unpkg</a></li>
+							<li><a href="/skypack">Skypack</a></li>
+							<li><a href="/esmsh">esm.sh</a></li>
 						</ul>
 					</li>
-					<li><a target="_blank" href="/blog/" class="router-ignore">Blog</a></li>
-					<li><a target="_blank" rel="noopener" href="https://jsdelivr.us11.list-manage.com/subscribe?u=0c85fe2c9a60310df9a3d6751&id=283887f736" class="featured">Newsletter</a></li>
-					<li><a target="_blank" rel="noopener" href="https://github.com/jsdelivr/jsdelivr" class="featured" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a></li>
-					<li><a target="_blank" rel="noopener" href="https://twitter.com/jsDelivr" class="featured" title="Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
-					<li><a target="_blank" rel="noopener" href="https://www.jsdelivr.com/discord" class="featured router-ignore" title="Discord"><img width="16" height="16" style="margin-top: -3px;" class="fa" src="{{@shared.assetsHost}}/img/discord.svg" title="Discord"></a></li>
-					<li><a href="/esm">esm.run</a></li>
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							Resources <i class="fa fa-angle-down" aria-hidden="true"></i>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a target="_blank" href="/blog/" class="router-ignore">Blog <i class="fa fa-external-link" aria-hidden="true"></i></a></li>
+							<li><a target="_blank" rel="noopener noreferrer" href="https://jsdelivr.us11.list-manage.com/subscribe?u=0c85fe2c9a60310df9a3d6751&id=283887f736">Newsletter <i class="fa fa-external-link" aria-hidden="true"></i></a></li>
+							<li><a href="/documentation">Documentation</a></li>
+							<li><a href="/esm">esm.run</a></li>
+							<li><a href="/docs/data.jsdelivr.com" class="router-ignore">API</a></li>
+						</ul>
+					</li>
+					<li>
+						<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/jsdelivr" title="GitHub">
+							<i class="fa fa-github" aria-hidden="true"></i>
+							<span class="icon-label-mobile">Github</span>
+						</a>
+					</li>
+					<li>
+						<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/jsDelivr" title="Twitter">
+							<i class="fa fa-twitter" aria-hidden="true"></i>
+							<span class="icon-label-mobile">Twitter</span>
+						</a>
+					</li>
+					<li>
+						<a target="_blank" rel="noopener noreferrer" href="https://www.jsdelivr.com/discord" title="Discord">
+							<img width="14" height="14" style="margin-top: 1px;" class="fa" src="{{@shared.assetsHost}}/img/discord.svg" title="Discord">
+							<span class="icon-label-mobile">Discord</span>
+						</a>
+					</li>
 				</ul>
 			</div>
 		</div>
 	</nav>
 </header>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				withFullWhiteLogoRoutes: [
+					'/about',
+					'/about/',
+					'/tools/purge',
+					'/tools/purge/',
+					'/esm',
+					'/esm/',
+					'/github',
+					'/github/',
+					'/google',
+					'/google/',
+					'/unpkg',
+					'/unpkg/',
+					'/history',
+					'/history/',
+					'/skypack',
+					'/skypack/',
+					'/esmsh',
+					'/esmsh/',
+					'/docs/data.jsdelivr.com',
+				],
+			};
+		},
+		oninit () {
+			if (Ractive.isServer) {
+				this.set('actualPath', this.root.get('actualPath'));
+			} else {
+				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
+			}
+		},
+		handleLogoClick () {
+			app.router.dispatch('/', { noHistory: true, qs: { query: '' } });
+		},
+	};
+</script>

@@ -1,14 +1,13 @@
 require('./polyfills');
 
+const _ = require('./_');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
-const cRawGit = require('../../views/pages/rawgit.html');
 const cGithub = require('../../views/pages/github.html');
 const cFoundationCdn = require('../../views/pages/foundationcdn.html');
 const cUnpkg = require('../../views/pages/unpkg.html');
 const cGoogle = require('../../views/pages/google.html');
 const cBecomeASponsor = require('../../views/pages/become-a-sponsor.html');
-const cFeatures = require('../../views/pages/features.html');
 const cIndex = require('../../views/pages/_index.html');
 const cNetwork = require('../../views/pages/network.html');
 const cNetworkInfographic = require('../../views/pages/network/infographic.html');
@@ -18,12 +17,15 @@ const cSponsors = require('../../views/pages/sponsors.html');
 const cStatistics = require('../../views/pages/statistics.html');
 const cSri = require('../../views/pages/using-sri-with-dynamic-files.html');
 const cPP = require('../../views/pages/terms.html');
-const cPPCom = require('../../views/pages/terms/privacy-policy-jsdelivr-com.html');
-const cPPNet = require('../../views/pages/terms/privacy-policy-jsdelivr-net.html');
-const cAUNet = require('../../views/pages/terms/acceptable-use-policy-jsdelivr-net.html');
-const cDebug = require('../../views/pages/tools/debug.html');
 const cPurge = require('../../views/pages/tools/purge.html');
 const cEsm = require('../../views/pages/esm.html');
+const cHistory = require('../../views/pages/history.html');
+const cGsap = require('../../views/pages/gsap.html');
+const cSkypack = require('../../views/pages/skypack.html');
+const cEsmsh = require('../../views/pages/esmsh.html');
+const cCustomCdnOss = require('../../views/pages/oss-cdn.html');
+const cCustomCdnOssProject = require('../../views/pages/_oss-cdn-project.html');
+const cDocumentation = require('../../views/pages/documentation.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -59,42 +61,44 @@ Ractive.Router.prototype.dispatch = function (...args) {
 		return;
 	}
 
-	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for open source';
-	$('meta[name=description]').attr('content', app.router.route.view.get('description') || 'Supports npm, GitHub, WordPress, Deno, and more. Largest network and best performance among all CDNs. Serving more than 80 billion requests per month.');
-
-	gtag('set', 'page', this.getUri());
-	gtag('send', 'pageview');
+	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for JS and open source';
+	document.querySelector('meta[name=description]').setAttribute('content', app.router.route.view.get('description') || 'Optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.');
 
 	return this;
 };
 
-app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query' ] });
+app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query', 'type', 'style' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
-app.router.addRoute('/rawgit', cRawGit);
+app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
+app.router.addRoute('/features', () => { location.pathname = '/'; });
 app.router.addRoute('/github', cGithub);
 app.router.addRoute('/foundationcdn', cFoundationCdn);
 app.router.addRoute('/unpkg', cUnpkg);
 app.router.addRoute('/google', cGoogle);
 app.router.addRoute('/become-a-sponsor', cBecomeASponsor);
-app.router.addRoute('/features', cFeatures);
 app.router.addRoute('/network', cNetwork);
 app.router.addRoute('/network/infographic', cNetworkInfographic);
 app.router.addRoute('/new-jsdelivr', cNewJsdelivr);
-app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version' ] });
-app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version' ] });
+app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
 app.router.addRoute('/sponsors', cSponsors);
 app.router.addRoute('/statistics', cStatistics);
-app.router.addRoute('/tools/debug', cDebug);
 app.router.addRoute('/tools/purge', cPurge);
 app.router.addRoute('/using-sri-with-dynamic-files', cSri);
 app.router.addRoute('/terms', cPP);
-app.router.addRoute('/terms/privacy-policy-jsdelivr-com', cPPCom);
-app.router.addRoute('/terms/privacy-policy-jsdelivr-net', cPPNet);
-app.router.addRoute('/terms/acceptable-use-policy-jsdelivr-net', cAUNet);
+app.router.addRoute('/terms/:currentPolicy', cPP);
+app.router.addRoute('/history', cHistory);
+app.router.addRoute('/gsap', cGsap);
+app.router.addRoute('/skypack', cSkypack);
+app.router.addRoute('/esmsh', cEsmsh);
+app.router.addRoute('/oss-cdn', cCustomCdnOss);
+app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
+app.router.addRoute('/documentation', cDocumentation);
 app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
 
-$(() => {
+_.onDocumentReady(() => {
+	let state = {};
 	let ractive = new Ractive();
 	ractive.set('@shared.app', app);
 
@@ -106,7 +110,7 @@ $(() => {
 	};
 
 	try {
-		let shared = JSON.parse(unescape($('#ractive-shared').html().trim()));
+		let shared = JSON.parse(unescape(document.querySelector('#ractive-shared').innerHTML.trim()));
 
 		if (shared) {
 			Object.keys(shared).forEach((key) => {
@@ -115,8 +119,12 @@ $(() => {
 		}
 	} catch (e) {}
 
+	try {
+		state = JSON.parse(unescape(document.querySelector('#ractive-data').innerHTML.trim()));
+	} catch (e) {}
+
 	app.router
-		.init({ noScroll: true })
+		.init({ noScroll: true, state })
 		.watchLinks()
 		.watchState();
 });

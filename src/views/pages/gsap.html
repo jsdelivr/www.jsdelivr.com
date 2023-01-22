@@ -1,0 +1,462 @@
+<link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/gsap-package-sidemenu.html" name="c-gsap-package-sidemenu">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-notification></c-notification>
+
+	<div class="p-gsap">
+		<header>
+			<div class="menu-main">
+				<div class="menu-main_left">
+					<a class="main-logo" href="/">
+						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-full-white.svg">
+					</a>
+
+					<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/docs/v3/Installation#CDN" class="header-btn">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/greensock.svg">
+						<span>GreenSock CDN</span>
+					</a>
+				</div>
+
+				<div class="menu-main_right">
+					<a href="/">jsdelivr</a>
+					<a target="_blank" rel="noopener noreferrer" href="https://greensock.com">GreenSock.com</a>
+					<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/docs">GSAP Docs</a>
+					<a target="_blank" rel="noopener noreferrer" href="https://github.com/greensock">Github Project</a>
+				</div>
+
+				<div class="menu-main_hamburger" on-click="@this.set('mmDropdownOpen', true)">
+					<span>Menu</span>
+
+					<div class="menu-main_hamburger_icon">
+						<div class="bar1"></div>
+						<div class="bar2"></div>
+						<div class="bar3"></div>
+					</div>
+				</div>
+
+				<div class="menu-main_dropdown-menu {{#if mmDropdownOpen === true}}menu-main_dropdown-menu_open{{/if}}">
+					<div class="menu-main_hamburger" on-click="@this.set('mmDropdownOpen', false)">
+						<span>Close</span>
+
+						<div class="menu-main_hamburger_icon">
+							<div class="bar1"></div>
+							<div class="bar2"></div>
+							<div class="bar3"></div>
+						</div>
+					</div>
+
+					<div class="menu-main_dropdown-menu_list">
+						<a href="/">jsdelivr</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://greensock.com">GreenSock.com</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/docs">GSAP Docs</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://github.com/greensock">Github Project</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="jumbotron">
+				<h1 class="title">GSAP</h1>
+
+				<div class="description-box">
+					<div class="description">
+						<p>Boost your animation superpowers with
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/docs/v3/GSAP" class="links">GSAP</a>
+							(GreenSock Animation Platform) - The industry standard for JavaScript animation.
+						</p>
+
+						<p>Use the core library to animate <span class="text-italic">anything</span> with ease: HTML DOM, SVG, canvas, WebGL, React, Vue. Leverage any of the 20+
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/gsap-plugins" class="links">Plugins</a>
+							like
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/scrolltrigger" class="links">ScrollTrigger</a>
+							for even more control.
+						</p>
+
+						<p>GSAP has <span class="text-bold">zero dependencies</span> and works in every major browser; we obsess over performance and compatibility so you can focus on the fun stuff.</p>
+						<p>Visit our
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/docs" class="links">docs</a>
+							and
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/forums" class="links">forums</a>
+							to learn more.
+						</p>
+					</div>
+
+					<div class="boxes-bottom">
+						<img width="112" height="112" src="{{@shared.assetsHost}}/img/gsap/left.png">
+						<img width="112" height="112" src="{{@shared.assetsHost}}/img/gsap/right.png">
+					</div>
+				</div>
+
+				<img width="279" height="484" src="{{@shared.assetsHost}}/img/gsap/boxes.svg" class="boxes">
+			</div>
+
+		</header>
+
+		<div class="content-wrapper flex">
+			<div class="main-content ">
+				<div class="main-content_title">Quick Start with GSAP CDN</div>
+				<div class="main-content_description">Get your production ready CDN links below. If you want your versions to be auto-upgraded then use
+					the dropdown below to select the method. "Minor" is recommended.
+				</div>
+
+				<div class="files-table-wrapper">
+					<div class="ctrls">
+						<div class="ctrl">
+							<span>Version:</span>
+
+							<div class="btn-group">
+								<button id="btn_version" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
+									<span>{{versionsList[versionIdx]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="menu-versions-web dropdown-menu">
+									{{#each versionsList:idx}}
+										<li>
+											<a on-click="@this.set('versionIdx', idx)" class="{{#if idx === versionIdx}}current{{/if}}">
+												{{this}}
+											</a>
+										</li>
+									{{/each}}
+								</ul>
+								<div class="menu-mobile-bg"></div>
+								<div class="menu-versions-mobile dropdown-menu">
+									<p>Version:</p>
+									<div class="select-cdn">
+										{{#each versionsList:idx}}
+											<div>
+												<input type="radio" class="select-cdn-tools" id={{idx}} name="Version" {{#if idx === versionIdxTmp}}checked{{/if}} >
+												<label on-click="@this.set('versionIdxTmp', idx)" for={{idx}}>{{this}}</label>
+											</div>
+										{{/each}}
+									</div>
+									<button on-click="@this.set('versionIdx', versionIdxTmp)" class="select-cdn-btn apply">Apply</button>
+									<button on-click="@this.set('versionIdxTmp', versionIdx)" class="menu-versions-mobile-btn-cancel select-cdn-btn cancel">Cancel</button>
+								</div>
+							</div>
+						</div>
+
+						<div class="ctrl">
+							<span>Aliasing:</span>
+
+							<div class="btn-group">
+								<button id="btn_aliasing" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{aliasingList[aliasingIdx]}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="menu-aliasing-web dropdown-menu">
+									{{#each aliasingList:idx}}
+										<li>
+											<a on-click="@this.set('aliasingIdx', idx)" class="{{#if idx === aliasingIdx}}current{{/if}}">
+												{{this}} {{@this.createAliasing(this, versionsList[versionIdx], true)}}
+											</a>
+										</li>
+									{{/each}}
+								</ul>
+								<div class="menu-mobile-bg"></div>
+								<div class="menu-aliasing-mobile dropdown-menu">
+									<p>Aliasing:</p>
+									<div class="select-cdn">
+										{{#each aliasingList:idx}}
+											<div>
+												<input type="radio" class="select-cdn-tools" id={{idx}} name="Aliasing" {{#if idx === aliasingIdxTmp}}checked{{/if}} >
+												<label on-click="@this.set('aliasingIdxTmp', idx)" for={{idx}}>{{this}} {{@this.createAliasing(this, versionsList[versionIdx], true)}}</label>
+											</div>
+										{{/each}}
+									</div>
+									<button on-click="@this.set('aliasingIdx', aliasingIdxTmp)" class="select-cdn-btn apply">Apply</button>
+									<button on-click="@this.set('aliasingIdxTmp', aliasingIdx)" class="select-cdn-btn cancel">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="divider"></div>
+
+					<div class="files-table">
+						<div class="files-item">
+							<div class="title">GSAP (core)</div>
+							<div class="block-core">
+								{{#if coreFile}}
+									<div class="block-core_switch">
+										<input id="type-switch"
+											type="checkbox"
+											class="data-type-switch {{#if showESMFiles}}checked{{/if}}"
+											twoway="false">
+
+										<label for="type-switch" on-click="@this.set('showESMFiles', !showESMFiles)">
+											<span>UMD</span>
+											<span>ESM</span>
+										</label>
+									</div>
+
+									<span class="block-core_url">
+										{{#each @this.createUrl(coreFile, showESMFiles, true).split('/'):idx}}
+											{{#if idx === @this.createUrl(coreFile, showESMFiles, true).split('/').length - 1}}
+												<span class="block-core_url_part">{{this}}</span>
+											{{else}}
+												<span class="block-core_url_part">{{this + '/'}}</span>
+											{{/if}}
+										{{/each}}
+									</span>
+
+									<a as-clipboard="'Copy URL to clipboard', 'right'"
+										data-clipboard-text="{{@this.createUrl(coreFile, showESMFiles, true)}}">
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
+									</a>
+								{{/if}}
+							</div>
+						</div>
+
+						<div class="extra-file-items {{ #if showMoreExLogo }} expanded {{ /if }}">
+							{{#each filesData:key}}
+								<div class="files-item">
+									<div class="title">{{key}}</div>
+
+									<div class="block">
+										{{#if this}}
+											<span class="ex-url">
+												{{#each @this.createUrl(this, showESMFiles).split('/'):idx}}
+													{{#if idx === @this.createUrl(this, showESMFiles).split('/').length - 1}}
+														<span class="ex-url_part">{{this}}</span>
+													{{else}}
+														<span class="ex-url_part">{{this + '/'}}</span>
+													{{/if}}
+												{{/each}}
+											</span>
+
+											<a as-clipboard="'Copy URL to clipboard', 'right'"
+												data-clipboard-text="{{@this.createUrl(this, showESMFiles)}}">
+													<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg">
+											</a>
+										{{/if}}
+									</div>
+								</div>
+							{{/each}}
+						</div>
+
+						<button class="btn-more" on-click="@this.set('showMoreExLogo', !showMoreExLogo)">
+							{{ #if !showMoreExLogo }}
+								Show more CDN
+							{{ else }}
+								Hide more CDN
+							{{ /if }}
+						</button>
+
+					</div>
+
+					<div class="plugins">
+						<p class="plugins-descr">
+							Other plugins like
+							<span class="plugin-badge">CustomBounce</span>,
+							<span class="plugin-badge">CustomWiggle</span>,
+							<span class="plugin-badge">DrawSVGPlugin</span>,
+							<span class="plugin-badge">GSDevTools</span>,
+							<span class="plugin-badge">InertiaPlugin</span>,
+							<span class="plugin-badge">MorphSVGPlugin</span>,
+							<span class="plugin-badge">MotionPathHelper</span>,
+							<span class="plugin-badge">Physics2DPlugin</span>,
+							<span class="plugin-badge">PhysicsPropsPlugin</span>,
+							<span class="plugin-badge">ScrambleTextPlugin</span>,
+							<span class="plugin-badge">ScrambleTextPlugin</span>
+							and more are membership benefits of
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/club" class="plugin-link">Club GreenSock</a>.
+						</p>
+
+						<p class="plugins-descr">
+							To get trial versions that only work on CodePen.io, CodeSandbox.io, and locally, see
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/try-plugins" class="plugin-link">https://greensock.com/try-plugins</a>.
+							To get the unrestricted files, sign up at
+							<a target="_blank" rel="noopener noreferrer" href="https://greensock.com/club" class="plugin-link">https://greensock.com/club</a>
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="side-content">
+				<c-gsap-package-sidemenu
+					name="{{packageName}}"
+					type="{{packageType}}">
+				</c-gsap-package-sidemenu>
+			</div>
+		</div>
+
+		<div class="footer-wrapper">
+			<div class="footer">
+				<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg">
+
+				<div class="footer_powered">
+					<span>Powered by <a href="/" class="footer_link">jsDelivr</a></span>
+					<span>
+						and sponsored by
+						<a class="footer_link" target="_blank" rel="noopener noreferrer" href="https://www.cloudflare.com">Cloudflare</a>,
+						<a class="footer_link" target="_blank" rel="noopener noreferrer" href="https://appfleet.com">appfleet</a>,
+						<a class="footer_link" target="_blank" rel="noopener noreferrer" href="https://www.fastly.com">Fastly</a>,
+						<a class="footer_link" target="_blank" rel="noopener noreferrer" href="https://ns1.com">NS1</a>
+						&
+						<a class="footer_link" target="_blank" rel="noopener noreferrer" href="https://bunny.net">bunny.net</a>
+					</span>
+				</div>
+
+				<div class="footer_nav">
+					<a class="footer_link" href="/about">About</a>
+					<a class="footer_link" href="/terms">Privacy Policy</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</r-page>
+
+<script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		data () {
+			return {
+				packageName: 'gsap',
+				packageType: 'npm',
+				showESMFiles: false,
+				aliasingList: [
+					'Static',
+					'Minor',
+					'Major',
+					'Latest',
+				],
+				versionIdx: 0,
+				versionIdxTmp: 0,
+				aliasingIdx: 1,
+				aliasingIdxTmp: 1,
+				versionsList: [],
+				filesData: {
+					CSSRulePlugin: '',
+					Draggable: '',
+					EasePack: '',
+					EaselPlugin: '',
+					MotionPathPlugin: '',
+					PixiPlugin: '',
+					ScrollToPlugin: '',
+					ScrollTrigger: '',
+					TextPlugin: '',
+				},
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				// get versions
+				http.fetchPackageVersions(this.get('packageType'), this.get('packageName')).then((response) => {
+					this.set('versionsList', response.versions.map(item => item.version));
+				}).catch((error) => {
+					console.error(`Gsap versions not found.`, error);
+				});
+
+				this.observe('versionIdx versionsList', () => {
+					let version = this.get('versionsList')[this.get('versionIdx')];
+
+					if (!version) { return; }
+
+					// get core file of GSAP package
+					http.fetchPackageEntrypoints(this.get('packageType'), this.get('packageName'), version).then((data) => {
+						this.set('coreFile', data.entrypoints.js.file);
+					});
+
+					// get the rest of files of GSAP package
+					http.fetchPackageFiles(this.get('packageType'), this.get('packageName'), version).then((data) => {
+						let distFiles = [];
+						let filesData = this.get('filesData');
+
+						// get /dist files, filter for .min.js only
+						for (let key in data.files) {
+							if (data.files[key].name === 'dist') {
+								distFiles = data.files[key].files.filter((file) => {
+									return file.name.endsWith('.min.js');
+								});
+
+								break;
+							}
+						}
+
+						// get all existing file paths
+						Object.keys(filesData).forEach((fileName) => {
+							for (let key in distFiles) {
+								if (distFiles[key].name.includes(fileName)) {
+									filesData[fileName] = distFiles[key].name;
+									break;
+								}
+							}
+						});
+
+						this.set('filesData', filesData);
+					});
+				});
+			}
+		},
+		createAliasing (aliasingBase, version, full = false) {
+			let versionSplitted = version.split('.');
+			let prepVersionBase = '';
+			let prepVersionPart = '';
+
+			switch (aliasingBase) {
+				case 'Minor':
+					prepVersionBase = `${versionSplitted[0]}.${versionSplitted[1]}`;
+					prepVersionPart = '.x';
+					break;
+				case 'Static':
+					prepVersionBase = version;
+					break;
+				case 'Major':
+					prepVersionBase = versionSplitted[0];
+					prepVersionPart = '.x.x';
+					break;
+			}
+
+			if (full) {
+				return prepVersionBase ? `(${prepVersionBase}${prepVersionPart})` : '';
+			}
+
+			return prepVersionBase ? prepVersionBase : 'latest';
+		},
+		createUrl (filePath, isEsm, isCore = false) {
+			let packageName = this.get('packageName');
+			let packageType = this.get('packageType');
+			let version = this.get('versionsList')[this.get('versionIdx')];
+			let aliasing = this.get('aliasingList')[this.get('aliasingIdx')];
+
+			if (!version || !filePath) { return; }
+
+			let URLbase = `https://cdn.jsdelivr.net/${packageType}/${packageName}@${this.createAliasing(aliasing, version)}`;
+
+			if (isCore && isEsm) {
+				return `${URLbase}/+esm`;
+			} else if (isCore && !isEsm) {
+				return `${URLbase}${filePath}`;
+			} else if (!isCore && isEsm) {
+				return `${URLbase}/dist/${filePath}/+esm`;
+			}
+
+			return `${URLbase}/dist/${filePath}`;
+		},
+		decorators: {
+			clipboard,
+		},
+		oncomplete () {
+			document.querySelector('.menu-versions-mobile').addEventListener('click', (event) => {
+				event.stopPropagation();
+
+				if (event.target.matches('button')) {
+					document.querySelector('#btn_version').parentNode.classList.remove('open');
+				}
+			}, false);
+
+			document.querySelector('.menu-aliasing-mobile').addEventListener('click', (event) => {
+				event.stopPropagation();
+
+				if (event.target.matches('button')) {
+					document.querySelector('#btn_aliasing').parentNode.classList.remove('open');
+				}
+			}, false);
+		},
+	};
+</script>

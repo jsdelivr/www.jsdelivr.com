@@ -1,0 +1,49 @@
+<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+
+<div class="c-top-stats-table">
+	<div class="table-wrapper">
+		<div class="table-header">
+			{{#if title}}
+				{{title}}
+			{{else}}
+				{{>header}}
+			{{/if}}
+		</div>
+
+		<div class="table-body">
+			{{#each ~/data}}
+				<div class="table-row">
+					<div>{{>column1}}</div>
+					<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
+					<div class="percentage-bar">
+						<div
+							class="table-chart"
+							style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+						</div>
+					</div>
+				</div>
+			{{/each}}
+		</div>
+	</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+
+	component.exports = {
+		computed: {
+			formatValue () {
+				let options = this.get('formatterOptions');
+				let key = this.get('valueKey');
+
+				return _.getValueFormatter(options.showChartBandwidth, options.data.map(v => v[key]));
+			},
+		},
+		data () {
+			return {
+				desc: true,
+				valueKey: 'hits',
+			};
+		},
+	};
+</script>

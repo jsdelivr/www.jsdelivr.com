@@ -1,23 +1,328 @@
 <link rel="ractive" href="../../r-page.html">
-<link rel="ractive" href="../../components/coming-soon.html" name="c-coming-soon">
 <link rel="ractive" href="../../components/header.html" name="c-header">
+<link rel="ractive" href="../../components/footer.html" name="c-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/header-gradient.html" name="c-header-gradient">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
-	<c-header></c-header>
+	<c-header additionalClasses="header-with-orange-bg"></c-header>
 
-	<div class="p-purge text-page">
-		<c-coming-soon title="A tool for purging CDN cache is coming soon"></c-coming-soon>
+	<div class="p-purge">
+		<c-header-gradient showMap="{{true}}"></c-header-gradient>
+
+		<div class="content">
+			<section class="content_heading">
+				<h1>Purge jsDelivr CDN cache</h1>
+				<h2>Purge the cache of a @latest or version aliased URL to force your users to get the new updated version. Otherwise they might wait up to 7 days.</h2>
+			</section>
+
+			<section class="content_purge-form">
+				<textarea id="purge-urls"
+					class="{{#if purgeErrorMsg}} textarea-error{{/if}}{{#if purgingInProcess}} loading{{/if}}"
+					placeholder="Enter up to 10 URLs - one per line"
+					value="{{urls}}">
+				</textarea>
+
+				{{#if purgingInProcess}}
+					<a class="animated">
+						<div class="animation"></div>
+					</a>
+				{{else}}
+					<a
+						class="btn-primary {{#if purgeBtnDisabled}}btn-primary-disabled{{/if}}"
+						on-click="@this.checkPurgeBtnStatus()">
+						Purge now
+					</a>
+				{{/if}}
+
+				{{#if purgeErrorMsg}}
+					<label class="error">{{purgeErrorMsg}}</label>
+				{{/if}}
+
+				{{#if proceedToCaptcha}}
+					<div class="recaptcha-wrapper">
+						<div id="recaptcha-service" class="g-recaptcha" data-callback="recaptchaCallback" data-sitekey="6LdXrfkUAAAAAFkzRiSAV4MBvUfNR1aynq1ggATK"></div>
+					</div>
+					<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+				{{/if}}
+			</section>
+
+			{{#if results.length}}
+				<section class="content_purge-results">
+					<h2>
+						<span>Results</span>
+						<span on-click="@this.toggle('detailsDisplaying')" class="results-toggle{{#if detailsDisplaying}} hide-details{{/if}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.orange.svg" />
+								{{#if detailsDisplaying}}
+									Hide details
+								{{else}}
+									Show details
+								{{/if}}
+						</span>
+					</h2>
+
+					<div class="results-table">
+						{{#each results: idx}}
+							<div class="results-item">
+								<div class="item-descr" on-click="@this.set('toggleOpenResult', {newIdx: idx})">
+									<span>{{this.path}}</span>
+									<div class="item-status {{#if this.status === 'Success'}}success{{else}}failed{{/if}} {{#if openedResultsList.includes(idx)}}opened{{/if}} {{#if this.throttled}}throttled{{/if}}">
+										{{this.status}}
+
+										{{#if this.throttled}}
+											<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/throttled.svg">
+										{{else}}
+											<img class="item-chevron" width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg">
+										{{/if}}
+									</div>
+								</div>
+
+								{{#unless this.throttled}}
+									<div class="item-cdns {{#if openedResultsList.includes(idx)}}opened{{/if}}">
+										<hr />
+										<div class="item-cdns-items">
+											{{#each this.providers}}
+												<span>
+													{{#if this[1] === true}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/check-circle.full.svg">
+													{{else}}
+														<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/close.svg">
+													{{/if}}
+													<span>{{~/providerData[this[0]].name}}</span>
+												</span>
+											{{/each}}
+										</div>
+									</div>
+								{{/unless}}
+							</div>
+						{{/each}}
+					</div>
+				</section>
+			{{/if}}
+		</div>
 	</div>
+	<c-footer></c-footer>
 </r-page>
 
 <script>
+	const providerData = require('../../../public/json/net-providers.json');
+	const isUrlValid = require('../../../public/js/utils/is-url-valid');
+	const _ = require('../../../public/js/_');
+
 	component.exports = {
+		oncomplete () {
+			$('#purge-urls').on('input', function () {
+				this.style.height = 'auto';
+				this.style.height = this.scrollHeight + 'px';
+			});
+		},
 		data () {
 			return {
 				title: 'Purge CDN cache - jsDelivr',
+				purgingInProcess: false,
+				purgeErrorMsg: '',
+				results: [],
+				captchaToken: '',
+				proceedToCaptcha: false,
+				detailsDisplaying: false,
+				openedResultsList: [],
+				purgeBtnDisabled: true,
+				providerData,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				let recaptchaCallback = (token) => {
+					this.set('captchaToken', token);
+				};
+
+				window.recaptchaCallback = undefined;
+
+				_.onDocumentReady(() => {
+					window.recaptchaCallback = recaptchaCallback;
+				});
+
+				this.observe('captchaToken', (token) => {
+					if (token) { this.purge(); }
+				});
+
+				this.observe('toggleOpenResult', (data) => {
+					if (typeof data === 'undefined') { return; }
+
+					let openedResultsList = this.get('openedResultsList');
+					let indexOfResult = openedResultsList.indexOf(data.newIdx);
+
+					if (indexOfResult === -1) {
+						openedResultsList.push(data.newIdx);
+					} else {
+						openedResultsList.splice(indexOfResult, 1);
+					}
+
+					if (!openedResultsList.length) {
+						this.set('detailsDisplaying', false);
+					} else {
+						this.set('detailsDisplaying', true);
+					}
+
+					this.set('openedResultsList', openedResultsList);
+				});
+
+				this.observe('urls', (newValue) => {
+					let paths = newValue.replace(/\n/g, ',');
+					let pathsArr = paths.split(',').map(p => p.trim()).filter(p => p);
+
+					if (pathsArr.length > 10) {
+						this.set('purgeErrorMsg', 'Allowed up to 10 URLs - one per line');
+						this.set('purgeBtnDisabled', true);
+						this.set('proceedToCaptcha', false);
+						this.set('captchaToken', '');
+					} else {
+						let isPathsValid = pathsArr.reduce((isValid, path) => {
+							if (!path) { return isValid; }
+
+							if (isUrlValid.test(path)) { return isValid && true; }
+
+							return false;
+						}, true);
+
+						if (isPathsValid) {
+							this.set('purgeErrorMsg', '');
+						} else {
+							this.set('purgeErrorMsg', 'Invalid URLs!');
+						}
+
+						if (pathsArr.length > 0 && isPathsValid) {
+							this.set('purgeBtnDisabled', false);
+						} else {
+							this.set('purgeBtnDisabled', true);
+							this.set('proceedToCaptcha', false);
+						}
+					}
+				});
+
+				this.observe('proceedToCaptcha', (newValue) => {
+					if (newValue) {
+						this.set('captchaToken', '');
+						this.set('results', []);
+					}
+				});
+
+				this.observe('detailsDisplaying', (value) => {
+					let resultsIdxs = [];
+
+					if (value) {
+						resultsIdxs = this.get('results').map((_, idx) => idx);
+					}
+
+					this.set('openedResultsList', resultsIdxs);
+				});
+			}
+		},
+		checkPurgeBtnStatus () {
+			if (this.get('purgeBtnDisabled')) { return; }
+
+			this.set('proceedToCaptcha', true);
+		},
+		getCDNstatus (id) {
+			return _.makeHTTPRequest({
+				url: `https://purge.jsdelivr.net/status/${id}`,
+			});
+		},
+		purge () {
+			this.set('purgingInProcess', true);
+			this.set('purgeErrorMsg', '');
+
+			let paths = this.get('urls').replace(/\n/g, ',').split(',').map(p => p.trim()).filter(p => p);
+
+			if (!paths.length) {
+				this.set('purgingInProcess', false);
+				return;
+			}
+
+			paths = paths.map((path) => {
+				return isUrlValid.getPathFromUrl(path);
+			});
+
+			if (paths.length > 10) {
+				this.set('purgingInProcess', false);
+				return;
+			}
+
+			_.makeHTTPRequest({
+				method: 'POST',
+				url: 'https://purge.jsdelivr.net/captcha',
+				headers: {
+					'content-type': 'application/json',
+				},
+				body: JSON.stringify({ 'g-recaptcha-response': this.get('captchaToken'), 'path': paths }),
+			}).then((response) => {
+				let intervalId = null;
+
+				intervalId = setInterval(() => {
+					this.getCDNstatus(response.id).then((data) => {
+						if (data.status === 'finished') {
+							clearInterval(intervalId);
+
+							let results = Object.keys(data.paths).map((path) => {
+								let providers = data.paths[path].providers ? Object.entries(data.paths[path].providers) : [];
+
+								let getProvidersStatus = (providers) => {
+									let failedProvidersStatus = '';
+									let amountOfFailed = providers.reduce((amountOfFailed, provider) => {
+										if (provider[1] === true) { return amountOfFailed; }
+
+										return amountOfFailed + 1;
+									}, 0);
+
+									switch (amountOfFailed) {
+										case 1:
+											failedProvidersStatus = 'One provider failed';
+											break;
+										case 2:
+											failedProvidersStatus = 'Two providers failed';
+											break;
+										case 3:
+											failedProvidersStatus = 'Three providers failed';
+											break;
+										case 4:
+											failedProvidersStatus = 'Four providers failed';
+											break;
+										case 5:
+											failedProvidersStatus = 'Five providers failed';
+											break;
+										default:
+											failedProvidersStatus = 'Success';
+									}
+
+									return failedProvidersStatus;
+								};
+
+								let status = data.paths[path].throttled ? 'Throttled' : getProvidersStatus(providers);
+
+								return {
+									path,
+									status,
+									providers,
+									throttled: data.paths[path].throttled,
+								};
+							});
+
+							this.set('results', results);
+							this.set('purgingInProcess', false);
+							this.set('proceedToCaptcha', false);
+							this.set('detailsDisplaying', false);
+							this.set('openedResultsList', []);
+						}
+					});
+				}, 1000);
+			}).catch(() => {
+				this.set('purgeErrorMsg', 'An error occurred while purging!');
+				this.set('purgingInProcess', false);
+				this.set('proceedToCaptcha', false);
+				this.set('detailsDisplaying', false);
+				this.set('openedResultsList', []);
+			});
 		},
 	};
 </script>

@@ -1,0 +1,79 @@
+<link rel="ractive" href="./r-serialize.html" name="r-serialize">
+
+{{#if !@shared.isServer}}
+	{{yield}}
+{{else}}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<meta name="description" content="{{description || 'Optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.'}}">
+			<meta name="keywords" content="jsdelivr, cdn, npm, github, js, javascript, free, open source, oss, deno, wordpress">
+			<meta property="og:locale" content="en_US">
+			<meta property="og:type" content="website">
+			<meta property="og:title" content="{{title || 'jsDelivr - A free, fast, and reliable CDN for JS and open source'}}">
+			<meta property="og:description" content="{{description || 'Optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.'}}">
+			<meta property="og:url" content="{{@shared.serverHost}}">
+			<meta property="og:site_name" content="jsDelivr">
+
+			{{#if openGraphImage}}
+			<meta property="og:image" content="{{openGraphImage}}">
+			<meta property="og:image:secure_url" content="{{openGraphImage}}">
+			<meta property="og:image:width" content="1200">
+			<meta property="og:image:height" content="600">
+			<meta name="twitter:image" content="{{openGraphImage}}">
+			{{else}}
+			<meta property="og:image" content="{{@shared.serverHost}}/img/logo@2x.png">
+			<meta property="og:image:secure_url" content="{{@shared.serverHost}}/img/logo@2x.png">
+			<meta name="twitter:image" content="https://www.jsdelivr.com/img/logo@2x.png">
+			{{/if}}
+
+			<meta name="twitter:card" content="summary_large_image">
+			<meta name="twitter:description" content="{{description || 'Optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.'}}">
+			<meta name="twitter:title" content="{{title || 'jsDelivr - A free, fast, and reliable CDN for JS and open source'}}">
+			<meta name="twitter:site" content="@jsdelivr">
+			<meta name="twitter:creator" content="@jsdelivr">
+			<title>{{title || 'jsDelivr - A free, fast, and reliable CDN for JS and open source'}}</title>
+			{{yield seo}}
+
+			<!-- Maybe will be useful in Firefox at some point. -->
+			<link rel="dns-prefetch" href="https://cdn.jsdelivr.net/">
+			<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+			<link rel="dns-prefetch" href="https://data.jsdelivr.com/">
+			<link rel="dns-prefetch" href="https://datum.jsdelivr.com/">
+
+			<link rel="preconnect" href="https://cdn.jsdelivr.net/" crossorigin="anonymous">
+			<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="anonymous">
+			<link rel="preconnect" href="https://data.jsdelivr.com/" crossorigin="anonymous">
+			<link rel="preconnect" href="https://datum.jsdelivr.com/" crossorigin="anonymous">
+			<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
+
+			<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@500&display=swap" rel="stylesheet">
+			<link rel="stylesheet" href="{{@shared.assetsHost}}/css/app.css?v={{@shared.assetsVersion}}">
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'">
+
+			<link rel="sitemap" href="/sitemap/index.xml" type="application/xml">
+			<link rel="search" href="/opensearch.xml" type="application/opensearchdescription+xml" title="jsDelivr">
+			{{yield css}}
+		</head>
+
+		<body>
+			<div id="page">
+				{{#unless noYield}}{{yield}}{{/unless}}
+			</div>
+
+			<r-serialize></r-serialize>
+			<script src="https://cdn.jsdelivr.net/npm/ractive@1.4.0/runtime.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/ractive-route@0.3.9/ractive-route.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/gh/MartinKolarik/RapiDoc@customized/dist/rapidoc-min.js?v={{@shared.assetsVersion}}"></script>
+			{{yield js}}
+			<script src="{{@shared.assetsHost}}/js/app-docs.js?v={{@shared.assetsVersion}}"></script>
+
+			<script defer data-domain="jsdelivr.com" src="https://datum.jsdelivr.com/js/script.js"></script>
+		</body>
+	</html>
+{{/if}}

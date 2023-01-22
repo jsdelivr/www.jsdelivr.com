@@ -1,27 +1,186 @@
-<div class="c-search-compact">
+<link rel="ractive" href="./package-header.html" name="c-package-header">
+
+<div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
-		<input type="text" class="search-input" placeholder="search all of npm" value="{{query}}" on-keydown="@this.onKeyDown()">
+		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
+		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" on-keydown="@this.onKeyDown(@event)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
 	</div>
+
+	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
+
+	{{#if searchOpened }}
+		<div class="c-search-compact-wrapper">
+			<div class="search-results">
+				{{#each packages}}
+					<div class="c-package-header-wrapper">
+						<c-package-header
+							package="{{this}}"
+							version="{{version}}"
+							query="{{query}}"
+							searchOpened={{searchOpened}}
+							packageNameAsLink="true"
+							showDownloads="true">
+						</c-package-header>
+					</div>
+				{{elseif query && nbHits === 0}}
+					<p class="c-search-compact-empty">No results found</p>
+				{{/each}}
+			</div>
+
+			{{#if query && nbHits !== 0}}
+				<nav class="search-pagination" aria-label="Search results pagination">
+					<ul class="pagination">
+						<li style="{{#unless page}}visibility: hidden;{{/unless}}">
+							<a on-click="page > 0 && @this.subtract('page')" aria-label="Previous">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						</li>
+
+						{{#each pagination(page, nbPages)}}
+						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+						{{/each}}
+
+						<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
+							<a on-click="page + 1 < nbPages && @this.add('page')" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			{{/if}}
+
+		</div>
+	{{/if}}
 </div>
 
 <script>
+	const _ = require('../../public/js/_');
+	const debounce = require('../../public/js/utils/debounce');
+	const search = require('../../public/js/utils/search');
+
 	component.exports = {
+		data () {
+			return {
+				_,
+				page: 0,
+				query: '',
+				packages: [],
+				pagination (page, nbPages) {
+					let start = Math.max(page - 2, 0);
+					let pages = [];
+
+					if (nbPages - page === 1) {
+						start = Math.max(Math.min(start, start - 1, start - 2), 0);
+					} else if (nbPages - page === 2) {
+						start = Math.max(Math.min(start, start - 1), 0);
+					}
+
+					for (let i = 0; i < 5 && start + i < nbPages; i++) {
+						pages.push(start + i);
+					}
+
+					return pages;
+				},
+			};
+		},
 		onrender () {
 			if (!this.isServer) {
-				this.observe('query', (newValue) => {
-					this.goTo(newValue);
-				}, { init: false });
+				let offsetTop = pageYOffset;
+				scrollTo(0, offsetTop);
+
+				let s = debounce((keypath) => {
+					if (this.get('query')) {
+						search(this.get('query'), this.get('page'), 5).then((result) => {
+							result.response.hits.forEach((hit) => {
+								hit.jsDelivrHits = _.formatToShortNumber(hit.jsDelivrHits);
+							});
+
+							// The query might have changed since we sent the request.
+							if (result.query === this.get('query')) {
+								this.set('packages', result.response.hits, { shuffle: 'name' });
+
+								if (this.get('inputFocused')) {
+									this.set('searchOpened', true);
+								}
+
+								this.set({
+									fadeIn: true,
+									nbPages: result.response.nbPages,
+									nbHits: result.response.nbHits,
+								});
+
+								// Scroll to the results.
+								if (!pageYOffset || keypath === 'page') {
+									this.scrollToSearch();
+								}
+							}
+						});
+					}
+				}, 40);
+
+				// Make sure query is always a string.
+				this.observe('query', (value) => {
+					if (typeof value !== 'string') {
+						this.set('query', String(value));
+					}
+				});
+
+				// Update results on input.
+				this.observe('page query __ready', (newValue, oldValue, keypath) => {
+					// Don't send requests before have all the data.
+					if (this.get('__ready')) {
+						// Reset page on query change.
+						if (keypath === 'query' && this.get('page') !== 0) {
+							this.set('page', 0);
+						} else if (!this.get('query')) {
+							this.set('searchOpened', false);
+							this.set('packages', []);
+						} else {
+							s(keypath);
+						}
+					}
+				});
+
+				this.observe('inputFocused', (value) => {
+					if (value) {
+						this.set('searchOpened', !!this.get('query'));
+					} else {
+						$('.c-package-header-wrapper.selected').removeClass('selected');
+					}
+				});
 			}
 		},
-		onKeyDown () {
-			// noinspection JSDeprecatedSymbols
-			if (this.event.original.keyCode === 13) {
+		onKeyDown (e) {
+			let $list = $(this.find('.c-search-compact-wrapper'));
+			let $selected = $list.find('.c-package-header-wrapper.selected');
+
+			if (e.key === 'ArrowDown') {
+				if (!$selected.length || !$selected.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					$list.find('.c-package-header-wrapper').first().addClass('selected');
+				}
+			} else if (e.key === 'ArrowUp') {
+				if (!$selected.length || !$selected.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					$list.find('.c-package-header-wrapper').last().addClass('selected');
+				}
+			} else if (e.key === 'Enter') {
+				if ($selected.length) {
+					app.router.dispatch(`/package/npm/${$selected.find('.package-name').text()}`);
+					return;
+				}
+
 				this.goTo(this.get('query'));
 			}
 		},
 		goTo (query) {
 			app.router.dispatch(`/?query=${encodeURIComponent(query)}`, { state: { caretPosition: this.find('.search-input').selectionStart } });
 			scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+		},
+		scrollToSearch () {
+			scrollTo({
+				top: 0,
+				left: Math.floor($('.search-input').offset().top / 100) * 100,
+				behavior: 'smooth',
+			});
 		},
 	};
 </script>

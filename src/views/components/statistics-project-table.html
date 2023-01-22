@@ -1,0 +1,295 @@
+<div class="c-statistics-project-table">
+	<div class="projects-info">
+		<h3>{{title}}</h3>
+
+		<div class="btn-group">
+			<span>Type:</span>
+			<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span>{{statsTypeList[statsType]}}</span>
+				<i class="fa fa-angle-down" aria-hidden="true"></i>
+			</button>
+
+			<ul class="dropdown-menu">
+				{{#each statsTypeList}}
+					<li><a on-click="@this.set('statsType', @key)">{{this}}</a></li>
+				{{/each}}
+			</ul>
+		</div>
+	</div>
+
+	<div class="projects-content">
+		<div class="projects-content_ctrls">
+			<span>Sort by:</span>
+			<div class="projects-content_ctrls_switch">
+				<button class="button {{ sortProjectsBy === 'hits' && 'selected' }}"
+					on-click="@this.set('sortProjectsBy', 'hits')">
+					Requests
+				</button>
+				<button class="button {{ sortProjectsBy === 'bandwidth' && 'selected' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					Bandwidth
+				</button>
+			</div>
+		</div>
+
+		<div class="projects-content_table">
+			<div class="projects-content_table_header">
+				<div class="cell cell_one">Name</div>
+				<div class="cell cell_two {{ sortProjectsBy === 'hits' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'hits')">
+					Requests
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy">
+				</div>
+
+				<div class="cell cell_three {{ sortProjectsBy === 'bandwidth' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					Bandwidth
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy">
+				</div>
+				<div class="cell cell_four {{ dataType !== 'trending' && sortProjectsBy === 'bandwidth' && 'sorted' }}"
+					on-click="@this.set('sortProjectsBy', 'bandwidth')">
+					{{#if dataType === "trending"}}Increased{{/if}}
+				</div>
+			</div>
+
+			<div class="projects-content_table_scrollable">
+				{{#each projectsList:idx}}
+					<div class="projects-content_table_row">
+						<div class="cell cell_one">
+							<span class="proj-index">{{ (page.value - 1) * pageLimit + idx + 1 }}</span>
+
+							<div class="proj-path">
+								<span class="proj-path_type">{{ type }}/</span>
+								<span class="proj-path_name">{{ name }}</span>
+							</div>
+
+							<span class="proj-growth {{ interest >= 0? 'positive': 'negative'}}">
+								{{_.formatGrowth(interest, 2)}}
+							</span>
+						</div>
+
+						<div class="cell cell_two {{ sortProjectsBy === 'hits' && 'sorted' }}">
+							<span>Requests</span>
+							<div class="percentage-bar-container">
+								<div class="text text-table-number">{{ @this.prettifyNumbersToDisplay(hits) }}</div>
+								<div class="percentage-bar">
+									<div class="barWidth" style="width: {{ barWidth.hits }}"></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="cell cell_three {{ sortProjectsBy === 'bandwidth' && 'sorted' }}">
+							<span>Bandwidth</span>
+							<div class="percentage-bar-container">
+								<div class="text text-table-number">{{ @this.prettifyNumbersToDisplay(bandwidth) }} GB</div>
+								<div class="percentage-bar">
+									<div class="barWidth" style="width: {{ barWidth.bandwidth }}"></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="cell cell_four {{interest >= 0 ? 'positive': 'negative'}} {{ dataType !== 'trending' && sortProjectsBy === 'bandwidth' && 'sorted' }}">
+							{{#if dataType === "trending"}}
+								{{_.formatGrowth(interest, 2)}}
+							{{/if}}
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		</div>
+
+		<div class="projects-content_pagination">
+			<div class="projects-content_pagination_range">
+				<span class="supporting-text_alt">Records</span>
+				<span>{{pageRange}}</span>
+			</div>
+
+			<div class="projects-content_pagination_numeration">
+				<button on-click="@this.prevPage()" class="{{#if page.value === 1}}disabled{{/if}}">
+					<img
+						width="20"
+						height="24"
+						src="{{@shared.assetsHost}}/img/statistics/left.svg"
+						loading="lazy">
+				</button>
+
+				{{#each showablePages.pageCount}}
+					<button
+						class="page-num {{ #if (~/showablePages.start + @key) === page.value }}selected{{ /if }}"
+						on-click="@this.set('page', { value: parseInt(~/showablePages.start + @key) })">
+						{{~/showablePages.start + @key}}
+					</button>
+				{{/each}}
+
+				<button on-click="@this.nextPage()" class="{{#if page.value === xTotalPages }}disabled{{/if}}">
+					<img
+						width="24"
+						height="24"
+						src="{{@shared.assetsHost}}/img/statistics/right.svg"
+						loading="lazy">
+				</button>
+			</div>
+
+			<div class="projects-content_pagination_ctrls">
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}"
+					on-click="@this.prevPage()">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+				</button>
+
+				<div class="projects-content_pagination_ctrls_limit">
+					<span class="supporting-text">Page:</span>
+					<span class="supporting-text_alt">Show:</span>
+
+					<div class="btn-group">
+						<button
+							type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{pageLimit}}</span>
+
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+						</button>
+
+						<ul class="dropdown-menu">
+							{{#each paginationLimits}}
+								<li><a on-click="@this.set('pageLimit', this)">{{this}}</a></li>
+							{{/each}}
+						</ul>
+					</div>
+
+					<span class="supporting-text_alt">per page</span>
+				</div>
+
+				<button class="projects-content_pagination_ctrls_btn projects-content_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}"
+					on-click="@this.nextPage()">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		computed: {
+			pageRange () {
+				let page = this.get('page');
+				let pageLimit = this.get('pageLimit');
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
+				let start = (page.value - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+
+				if (xTotalCount < end) {
+					end = xTotalCount;
+				}
+
+				return xTotalPages && xTotalCount ? `${start} - ${end} of ${xTotalCount}` : '0 of 0';
+			},
+			showablePages () {
+				let page = this.get('page');
+				let xTotalPages = this.get('xTotalPages');
+				let start = (page.value - 2) < 1 ? 1 : page.value - 2;
+				let end = start + 4;
+
+				if (start + 4 > xTotalPages) {
+					start = xTotalPages - 4 > 0 ? xTotalPages - 4 : 1;
+					end = xTotalPages;
+				}
+
+				return {
+					start,
+					xTotalPages,
+					pageCount: new Array(end - start + 1),
+				};
+			},
+		},
+		data () {
+			return {
+				_,
+				statsType: 'all',
+				statsTypeList: {
+					all: 'All types',
+					npm: 'npm',
+					gh: 'Github',
+				},
+				page: { value: 1 },
+				pageLimit: 10,
+				paginationLimits: [ 10, 20, 50, 100 ],
+				projectsList: [],
+				sortProjectsBy: 'hits',
+				xTotalCount: 0,
+				xTotalPages: 0,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('period statsType sortProjectsBy pageLimit', () => {
+					this.set('page', { value: 1 });
+				}, { init: false });
+
+				// this.observe('period statsType sortProjectsBy pageLimit page __ready', function () {
+				this.observe('page __ready', () => {
+					if (this.get('__ready')) {
+						let period = this.get('period');
+						let statsType = this.get('statsType');
+						let sortProjectsBy = this.get('sortProjectsBy');
+						let pageLimit = this.get('pageLimit');
+						let page = this.get('page');
+
+						// fetch projectsList using http api calls
+						http.fetchProjectStats(statsType, period, sortProjectsBy, page.value, pageLimit).then(({ response, responseHeaders }) => {
+							this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+							this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
+							this.animate('projectsList', this.processProjectStats(response));
+						});
+					}
+				});
+			}
+		},
+		processProjectStats (projectsList) {
+			let hitsMax = Math.max(...projectsList.map(({ hits }) => hits));
+			let bandwidthMax = Math.max(...projectsList.map(({ bandwidth }) => bandwidth));
+
+			return projectsList.map((one) => {
+				let interest = (one.hits + one.bandwidth) * 100 / (one.prev.hits + one.prev.bandwidth) - 1;
+				let barWidth = {
+					hits: (one.hits * 100 / hitsMax) + '%',
+					bandwidth: (one.bandwidth * 100 / bandwidthMax) + '%',
+				};
+				let bandwidth = _.convertBytesToUnits(one.bandwidth);
+
+				interest = Number(interest.toFixed(2));
+
+				return { ...one, interest, barWidth, bandwidth };
+			});
+		},
+		prevPage () {
+			let page = this.get('page');
+			let value = page.value > 1 ? page.value - 1 : page.value;
+
+			this.set('page', { value });
+		},
+		nextPage () {
+			let page = this.get('page');
+			let xTotalPages = this.get('xTotalPages');
+			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
+
+			this.set('page', { value });
+		},
+		prettifyNumbersToDisplay (num) {
+			return _.formatNumberWithSpace(Math.round(num));
+		},
+	};
+</script>

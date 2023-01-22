@@ -1,0 +1,147 @@
+<link rel="ractive" href="../../r-docs.html">
+<link rel="ractive" href="../../components/header.html" name="c-header">
+<link rel="ractive" href="../../components/footer.html" name="c-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/header-gradient.html" name="c-header-gradient">
+
+<r-docs noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<style>
+		.slot-overview {
+			padding: 20px 0 20px;
+		}
+
+		.slot-text {
+			margin-top: 20px;
+		}
+
+		p {
+			font-size: 15px;
+			margin-bottom: 20px;
+		}
+
+		{{#unless loaded}}
+			[slot] {
+				display: none;
+			}
+		{{/unless}}
+	</style>
+
+	<c-notification></c-notification>
+	<c-header additionalClasses="header-with-dark-bg header-fw-docs"></c-header>
+
+	{{#if screenWidth}}
+		<rapi-doc
+			spec-url="{{@shared.apiDocHost}}/v1/spec.yaml"
+			id="thedoc"
+			theme="light"
+			load-fonts="false"
+			render-style="{{readStyle}}"
+			regular-font="Lexend, sans-serif"
+			mono-font="'Source Code Pro', monospace"
+			show-header="false"
+			allow-search="true"
+			allow-advanced-search="false"
+			allow-spec-url-load="false"
+			allow-spec-file-load="false"
+			allow-spec-file-download="true"
+			allow-server-selection="false"
+			allow-authentication="false"
+			schema-description-expanded="true"
+			match-type="includes"
+			allow-schema-description-expand-toggle="false"
+		>
+			<div slot="overview">
+				<div class="slot-text slot-overview">
+					<p>
+						The public jsDelivr API provides information about npm packages, files, versions, entry points,
+						as well as their CDN URLs and download stats. The API is free to use and imposes no rate limits.
+						However, if you plan to make 100+ RPM for longer periods of time, you should contact us first.
+					</p>
+
+					<h3>Let us know how you use this API</h3>
+
+					<p>
+						If you create a tool/plugin/etc. which uses this API,
+						please include a link to your tool in the <strong>User-Agent</strong> header so that we can learn more about how this API is being used.
+					</p>
+
+					<h3>Endpoints</h3>
+
+					<p>
+						<a href="https://data-jsdelivr-com-preview.onrender.com/v1/">https://data-jsdelivr-com-preview.onrender.com/v1/</a>
+					</p>
+				</div>
+			</div>
+
+			<div slot="tag--Package-metadata--GitHub">
+				Provides information about repository versions and files.
+			</div>
+
+			<div slot="tag--Package-metadata--npm">
+				Provides information about package versions, files, and entrypoints.
+			</div>
+
+			<div slot="tag--Stats">
+				<div class="slot-text">
+					Provides a wide range of usage statistics of jsDelivr.
+					Most data are available with a two days delay, monthly and yearly summaries are available with a four days delay.
+					Please note that different categories of data have different historical availability.
+					The <a href="#get-/v1/stats/periods">List stat periods</a> endpoint provides
+					information about which data are available for which time periods.
+				</div>
+			</div>
+
+			<div slot="tag--Stats--packages">
+				<div class="slot-text">
+					Provides detailed usage information for npm and GitHub packages.
+				</div>
+			</div>
+
+			<div slot="tag--Stats--network">
+				<div class="slot-text">
+					Provides network-wide hits and bandwidth stats.
+				</div>
+			</div>
+
+			<div slot="tag--Stats--browsers">
+				<div class="slot-text">
+					Provides browser market share stats.
+				</div>
+			</div>
+
+			<div slot="tag--Stats--platforms">
+				<div class="slot-text">
+					Provides platform market share stats.
+				</div>
+			</div>
+
+			<div slot="tag--Stats--proxies">
+				<div class="slot-text">
+					Provides hits and bandwidth stats for proxy endpoints.
+				</div>
+			</div>
+		</rapi-doc>
+	{{/if}}
+</r-docs>
+
+<script>
+	const debounce = require('../../../public/js/utils/debounce');
+
+	component.exports = {
+		computed: {
+			readStyle () {
+				return this.get('screenWidth') < 768 ? 'view' : 'read';
+			},
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.set('screenWidth', innerWidth);
+				window.addEventListener('resize', debounce(() => this.set('screenWidth', innerWidth), 100));
+
+				this.find('rapi-doc').addEventListener('before-render', () => {
+					this.set('loaded', true);
+				});
+			}
+		},
+};
+</script>

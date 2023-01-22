@@ -1,24 +1,463 @@
 <link rel="ractive" href="../r-page.html">
 <link rel="ractive" href="../components/coming-soon.html" name="c-coming-soon">
 <link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/stats-table.html" name="c-stats-table">
 
+<link rel="ractive" href="../components/network-provider-stats.html" name="c-network-provider-stats">
+<link rel="ractive" href="../components/network-request-chart.html" name="c-network-request-chart">
+<link rel="ractive" href="../components/network-request-map.html" name="c-network-request-map">
+<link rel="ractive" href="../components/top-platform-browser.html" name="c-top-platform-browser">
+<link rel="ractive" href="../components/statistics-project-table.html" name="c-statistics-project-table">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
 	<c-header></c-header>
 
-	<div class="p-statistics text-page">
-		<c-coming-soon title="Detailed package usage and network statistics are coming soon"></c-coming-soon>
+	<div class="p-statistics">
+		<div>
+			<div class="container">
+				<div class="head-wrapper">
+					<div class="head-wrapper_map-wrapper">
+						<img class="head-map-bg" width="908" height="428" src="{{@shared.assetsHost}}/img/sponsors/map.svg">
+					</div>
+
+					<h2 class="head-title">Statistics</h2>
+
+					<p class="head-text">
+						Global internet insights from jsDelivr,
+						based on anonymous aggregated data
+					</p>
+				</div>
+			</div>
+
+			<div class="global-data">
+				<div class="global-data_content-wrapper">
+					<div class="global-data_info">
+						<img class="global-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/globalData.svg">
+
+						<h2 class="global-data_info_title">Global data</h2>
+
+						<div class="global-data_info_settings-icon {{ #if showGlobalStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showGlobalStickyMenu', !showGlobalStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
+					</div>
+
+					<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
+						<div class="btn-group">
+							<span class="label-for-pinned">Data range</span>
+							<button
+								type="button"
+								class="btn dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{ globalStatsPeriod }}</span>
+
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each statsPeriods}}
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<div class="horizontal-divider"></div>
+				</div>
+			</div>
+
+			<div class="container">
+				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
+			</div>
+		</div>
+
+		<div class="grey">
+			<div class="network-data">
+				<div class="network-data_content-wrapper">
+					<div class="network-data_info">
+						<img class="network-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/network.svg"
+							loading="lazy">
+
+						<h2 class="network-data_info_title">Network data</h2>
+
+						<div class="network-data_info_settings-icon {{ #if showNetworkStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showNetworkStickyMenu', !showNetworkStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
+					</div>
+
+					<div class="network-data_action {{ #if showNetworkStickyMenu }}network-data_visible{{ /if }}">
+						<span class="network-data_action_input-title">Filter for a specific country or a continent:</span>
+
+						<div class="search-block">
+							{{#if searchDefaultIcon}}
+								<img class="{{searchDefaultIcon.class}}"
+									width="{{searchDefaultIcon.width}}"
+									height="{{searchDefaultIcon.height}}"
+									src="{{searchDefaultIcon.src}}"
+									loading="lazy">
+							{{/if}}
+
+							<input id="search" class="search" placeholder="{{searchPlaceholder}}" value="{{searchDisplayValue}}">
+						</div>
+
+						<div class="data-range-ctrl">
+							<div class="btn-group">
+								<span class="label-for-pinned">Data range</span>
+								<button
+									type="button"
+									class="btn dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{ globalStatsPeriod }}</span>
+
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<ul class="dropdown-menu">
+									{{#each statsPeriods}}
+										<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<div class="horizontal-divider"></div>
+				</div>
+			</div>
+
+			<div class="container">
+				<c-network-request-chart
+					__ready="{{ __ready }}"
+					period="{{ globalStatsPeriod }}"
+					country="{{ selectedCountry }}"
+					continent="{{ selectedContinent }}">
+				</c-network-request-chart>
+
+				<c-network-request-map __ready="{{ __ready }}" period="{{ globalStatsPeriod }}"></c-network-request-map>
+
+				<div class="tops">
+					<c-top-platform-browser
+						__ready="{{ __ready }}"
+						tableDataType="platform"
+						country="{{ selectedCountry }}"
+						continent="{{ selectedContinent }}"
+						period="{{ globalStatsPeriod }}">
+					</c-top-platform-browser>
+
+					<c-top-platform-browser
+						__ready="{{ __ready }}"
+						tableDataType="browser"
+						country="{{ selectedCountry }}"
+						continent="{{selectedContinent}}"
+						period="{{globalStatsPeriod}}">
+					</c-top-platform-browser>
+				</div>
+			</div>
+		</div>
+
+		<div>
+			<div class="projects-data">
+				<div class="projects-data_content-wrapper">
+					<div class="projects-data_info">
+						<img class="projects-data_info_icon"
+							width="48"
+							height="48"
+							src="{{@shared.assetsHost}}/img/statistics/projects.svg"
+							loading="lazy">
+
+						<h2 class="projects-data_info_title">Projects statistics</h2>
+
+						<div class="projects-data_info_settings-icon {{ #if showProjectsStickyMenu }}active{{ /if }}"
+							on-click="@this.set('showProjectsStickyMenu', !showProjectsStickyMenu)">
+							<img width="20" height="20" src="{{ @shared.assetsHost }}/img/statistics/setting.svg">
+						</div>
+					</div>
+
+					<div class="data-range-ctrl {{ #if showProjectsStickyMenu }}projects-data_visible{{ /if }}">
+						<div class="btn-group">
+							<span class="label-for-pinned">Data range</span>
+							<button
+								type="button"
+								class="btn dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{ globalStatsPeriod }}</span>
+
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each statsPeriods}}
+									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<div class="horizontal-divider"></div>
+				</div>
+			</div>
+
+			<div class="container">
+				<c-statistics-project-table
+					__ready="{{ __ready }}"
+					title="Most popular projects"
+					period="{{ globalStatsPeriod }}">
+				</c-statistics-project-table>
+
+				<!-- <c-statistics-project-table
+					__ready="{{ __ready }}"
+					title="Trending projects"
+					dataType="trending"
+					period="{{ globalStatsPeriod }}">
+				</c-statistics-project-table> -->
+			</div>
+		</div>
 	</div>
+	<c-footer></c-footer>
 </r-page>
 
 <script>
+	const _ = require('../../public/js/_');
+	const stats = require('../../public/js/utils/stats');
+	const tooltip = require('../../public/js/decorators/tooltip');
+	const countries = require('../../public/json/countries.json');
+	const continents = require('../../public/json/continents.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const DEFAULT_PERIOD_KEY = 'month';
+	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
+	const NO_RESULTS_SEARCH_ITEM_TYPE = 'no-results';
+	const COUNTRY_SEARCH_ITEM_TYPE = 'country';
+	const CONTINENT_SEARCH_ITEM_TYPE = 'continent';
+	const GLOBAL_SEARCH_ITEM = { code: 'WW', name: 'Global', type: GLOBAL_SEARCH_ITEM_TYPE };
+	const NO_RESULTS_SEARCH_ITEM = { code: 'no-results', name: 'No results found', type: NO_RESULTS_SEARCH_ITEM_TYPE };
+
 	component.exports = {
 		data () {
 			return {
+				_,
+				desc: true,
 				title: 'Usage statistics - jsDelivr',
+				name: 'd3',
+				description: 'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
+				statsPeriods: stats.periods,
+				globalStatsPeriod: DEFAULT_PERIOD_KEY,
+				showGlobalStickyMenu: false,
+				selectedCountry: null,
+				selectedContinent: null,
+				showNetworkStickyMenu: false,
+				lastOffsetTop: 0,
+				showProjectsStickyMenu: false,
+				selectedSearchItem: null,
+				searchDefaultIcon: null,
+				searchDisplayValue: '',
 			};
+		},
+		decorators: {
+			tooltip,
+		},
+		oninit () {
+			let continentsList = continents.map(i => ({ ...i, type: CONTINENT_SEARCH_ITEM_TYPE }));
+			let countriesList = countries.map(i => ({ ...i, type: COUNTRY_SEARCH_ITEM_TYPE }));
+
+			this.set('continentsList', continentsList);
+			this.set('countriesList', countriesList);
+
+			this.observe('screenWidth', (screenWidth) => {
+				if ((screenWidth || innerWidth) < 768) {
+					this.set('searchPlaceholder', 'Search');
+				} else {
+					this.set('searchPlaceholder', 'Filter for a specific country or a continent...');
+				}
+			});
+
+			this.observe('selectedSearchItem', (selectedSearchItem) => {
+				let sharedAssetsHost = this.get('@shared.assetsHost');
+				let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
+				let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
+				let defaultSrc = `${sharedAssetsHost}/img/statistics/search.svg`;
+
+				if (!selectedSearchItem) {
+					this.set('searchDefaultIcon', {
+						src: defaultSrc,
+						width: '20px',
+						height: '20px',
+						class: 'default',
+					});
+
+					return;
+				}
+
+				switch (selectedSearchItem.type) {
+					case COUNTRY_SEARCH_ITEM_TYPE:
+						this.set('selectedCountry', selectedSearchItem.code);
+						this.set('selectedContinent', null);
+						this.set('searchDisplayValue', selectedSearchItem.name);
+
+						this.set('searchDefaultIcon', {
+							src: `${flagIconPath}/${selectedSearchItem.code}.svg`,
+							width: '21px',
+							height: '15px',
+						});
+
+						break;
+					case CONTINENT_SEARCH_ITEM_TYPE:
+						this.set('selectedContinent', selectedSearchItem.code);
+						this.set('selectedCountry', null);
+						this.set('searchDisplayValue', selectedSearchItem.name);
+
+						this.set('searchDefaultIcon', {
+							src: wwIconSrc,
+							width: '21px',
+							height: '15px',
+						});
+
+						break;
+					case GLOBAL_SEARCH_ITEM_TYPE:
+						this.set('selectedCountry', null);
+						this.set('selectedContinent', null);
+						this.set('searchDisplayValue', '');
+
+						this.set('searchDefaultIcon', {
+							src: defaultSrc,
+							width: '20px',
+							height: '20px',
+							class: 'default',
+						});
+
+						break;
+				}
+			});
+		},
+		onrender () {
+			let sharedAssetsHost = this.get('@shared.assetsHost');
+			let flagIconPath = 'https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2';
+			let wwIconSrc = `${sharedAssetsHost}/img/statistics/WW.svg`;
+			let continentsList = this.get('continentsList');
+			let countriesList = this.get('countriesList');
+			let seachElement = $('#search');
+
+			seachElement.autocomplete({ hint: false, clearOnSelected: true }, [
+				{
+					source: (query, cb) => {
+						let results = continentsList.filter((one) => {
+							return one.name.toLowerCase().search(query.toLowerCase()) !== -1;
+						});
+
+						this.set('noSearchContinents', results.length === 0);
+
+						cb([ GLOBAL_SEARCH_ITEM, ...results ]);
+					},
+					displayKey: 'name',
+					templates: {
+						suggestion: ({ name, type }) => {
+							let itemClassName = type === CONTINENT_SEARCH_ITEM_TYPE
+								? 'search-item_continent' : 'search-item_global';
+							let contentEl = `<img width="21px" height="15px" src="${wwIconSrc}"><span>${name}</span>`;
+							let suggestionEl = `<div class='search-item ${itemClassName}'>${contentEl}<hr /></div>`;
+
+							return suggestionEl;
+						},
+					},
+				},
+				{
+					source: (query, cb) => {
+						let noSearchContinents = this.get('noSearchContinents');
+						let results = countriesList.filter((one) => {
+							return one.name.toLowerCase().search(query.toLowerCase()) !== -1;
+						});
+
+						if (noSearchContinents && !results.length) {
+							cb([ NO_RESULTS_SEARCH_ITEM, ...results ]);
+						} else {
+							cb(results);
+						}
+					},
+					displayKey: 'name',
+					templates: {
+						suggestion: ({ code, name, type }) => {
+							let itemClassName = type === NO_RESULTS_SEARCH_ITEM_TYPE
+								? 'search-item_no-results' : 'search-item_country';
+							let src = `${flagIconPath}/${code}.svg`;
+							let contentEl = type === NO_RESULTS_SEARCH_ITEM_TYPE ? name : `<img width="21px" height="15px" src="${src}"><span>${name}</span>`;
+							let suggestionEl = `<div class='search-item ${itemClassName}'>${contentEl}</div>`;
+
+							return suggestionEl;
+						},
+					},
+				},
+			]).on('autocomplete:selected', (e, suggestion) => {
+				if (suggestion.type === NO_RESULTS_SEARCH_ITEM_TYPE) {
+					let selecteItem = this.get('selectedSearchItem');
+
+					this.set('selectedSearchItem', selecteItem);
+				} else {
+					this.set('selectedSearchItem', suggestion);
+				}
+			});
+
+			seachElement.focusout((event) => {
+				setTimeout(() => {
+					let selectedSearchItem = this.get('selectedSearchItem');
+					let searchDisplayValue = this.get('searchDisplayValue');
+
+					// when user cleared search input after he already selected location
+					if (!event.target.value && !searchDisplayValue && selectedSearchItem && selectedSearchItem.name) {
+						seachElement.val('');
+						this.set('selectedSearchItem', GLOBAL_SEARCH_ITEM);
+					} else if (selectedSearchItem && event.target.value !== selectedSearchItem.name) {
+					// when user not completely removed data from search input after he already selected location
+						switch (selectedSearchItem.type) {
+							case GLOBAL_SEARCH_ITEM_TYPE:
+							case NO_RESULTS_SEARCH_ITEM_TYPE:
+								seachElement.val('');
+								break;
+							case COUNTRY_SEARCH_ITEM_TYPE:
+							case CONTINENT_SEARCH_ITEM_TYPE:
+								seachElement.val(selectedSearchItem.name);
+								break;
+						}
+					}
+				}, 4);
+			});
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		oncomplete () {
+			let globalEl = this.find('.global-data');
+			let networkEl = this.find('.network-data');
+			let projectsEl = this.find('.projects-data');
+
+			this.stickyObserve(globalEl);
+			this.stickyObserve(networkEl);
+			this.stickyObserve(projectsEl);
+		},
+		stickyObserve (el) {
+			let observer = new IntersectionObserver(
+				([ e ]) => {
+					return e.target.classList.toggle('is-pinned', e.intersectionRatio < 1);
+				},
+				{ threshold: [ 1 ] }
+			);
+
+			observer.observe(el);
 		},
 	};
 </script>

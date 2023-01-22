@@ -1,0 +1,53 @@
+<div class="c-proxy-data-card endpoints_list_wrapper_item">
+	<a target="_blank" rel="noopener noreferrer" href="{{linkHref}}">
+		<img
+			width="{{imgWidth}}"
+			height="{{imgHeight}}"
+			src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.png"
+			srcset="{{@shared.assetsHost}}/img/landing/new/{{imgName}}@2x.png 2x" />
+	</a>
+	<p>{{_.formatNumber(hitsTotal)}}</p>
+	<span>Requests Served past {{period}}</span>
+	<p>{{_.formatNumber(bandwidthTotal)}} {{bandwidthUnitInternal}}</p>
+	<span>Bandwidth past {{period}}</span>
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+	const http = require('../../public/js/utils/http');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+				bandwidthUnit: '',
+				hitsTotal: 0,
+				bandwidthTotal: 0,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('name', () => {
+					let name = this.get('name');
+					let period = this.get('period') || 'month';
+					let bandwidthUnit = this.get('bandwidthUnit');
+
+					http.fetchCdnOssStats(name, period).then(({ hits, bandwidth }) => {
+						if (hits.total >= 0) {
+							this.animate('hitsTotal', hits.total, { duration: 1000 });
+						}
+
+						if (bandwidth.total >= 0) {
+							if (!bandwidthUnit) {
+								bandwidthUnit = _.findUnitFromNumber(bandwidth.total);
+							}
+
+							this.set('bandwidthUnitInternal', bandwidthUnit);
+							this.animate('bandwidthTotal', _.convertBytesToUnits(bandwidth.total, bandwidthUnit), { duration: 1000 });
+						}
+					});
+				});
+			}
+		},
+	};
+</script>

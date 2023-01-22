@@ -1,39 +1,43 @@
 <link rel="ractive" href="../r-page.html">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/comparison-table.html" name="c-comparison-table">
+<link rel="ractive" href="../components/header-gradient.html" name="c-header-gradient">
 
-<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}" noFooter="true">
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-header additionalClasses="header-with-orange-bg"></c-header>
+
 	<div class="p-unpkg">
-		<div class="bg">
-			<div class="bg-inner"></div>
-		</div>
+		<c-header-gradient showMap="{{ true }}"></c-header-gradient>
 
 		<div class="content">
 			<div class="title">
 				<h1>Migrating from unpkg to jsDelivr</h1>
 
-				<h2 class="subtitle">
-					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub. <br>
+				<h2>
+					jsDelivr is a free, fast, and reliable Open Source CDN for npm and GitHub.
 					Most unpkg links can be easily converted to jsDelivr links.
 				</h2>
 			</div>
 
 			<div class="container">
 				<div class="box">
-					<div class="bar {{#if out}}active{{/if}}">
+					<div class="bar {{#if out && !error}}bar-active{{/if}}">
 						<div class="circle"></div>
-						<div class="line"><div class="line-inner"></div></div>
-						<div class="circle circle-bottom"></div>
+						<div class="line {{#if out && !error}}filled{{/if}}"></div>
+						<div class="circle bottom {{#unless out && !error}}circle-disabled{{/unless}}"></div>
 					</div>
 
 					<div class="icon-competitor">
 						<img width="91" height="50" src="{{@shared.assetsHost}}/img/unpkg.png" srcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
 					</div>
 
-					<div class="input-wrapper">
+					<div class="input-wrapper mb-48">
 						<input type="text" class="input {{#if out}}active{{/if}}" placeholder="Paste an unpkg link here" value="{{in}}">
 					</div>
 
 					<div class="icon-jsdelivr">
-						<img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal.svg">
+						<img width="115" height="28" src="{{@shared.assetsHost}}/img/jsDelivr.logo.svg">
 					</div>
 
 					<div class="input-wrapper">
@@ -47,92 +51,36 @@
 					{{#if displayHtmlWarning}}
 						<div class="alert alert-warning" role="alert">
 							For security reasons, we serve HTML files with <code>Content-Type: text/plain</code>.
-							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a> if this is a problem.
+							We recommend using <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a> if this is a problem.
 						</div>
-					{{else}}
-						<div style="height: 1px;"></div>
 					{{/if}}
+				</div>
 
-					<div class="buttons">
-						<a href="/" class="start-using">See All Features</a>
-					</div>
+				<div class="host-descr-title">
+					unpkg and jsDelivr comparison
+				</div>
+
+				<div class="host-descr-text">
+					jsDelivr is a great alternative for unpkg and offers many advanced features like direct npm and github integration, file minification, and ES modules compilation and optimized delivery. In addition to that jsDelivr is faster thanks to it's global infrastructure that utilizes multiple CDN providers
 				</div>
 			</div>
 
 			<div class="container">
-				<h1 class="comparison-title">unpkg and jsDelivr comparison</h1>
+				<c-comparison-table
+					competitorImgSrc="{{@shared.assetsHost}}/img/unpkg.png"
+					competitorImgWidth="91"
+					competitorImgHeight="50"
+					competitorImgSrcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
+				</c-comparison-table>
 
-				<div class="c-stats-table">
-					<table class="stats-table-table">
-						<colgroup>
-							<col style="width: 26%;">
-							<col style="width: 37%;">
-							<col style="width: 37%;">
-						</colgroup>
-
-						<thead>
-							<tr>
-								<th></th>
-								<th>
-									<div class="icon-competitor">
-										<img width="91" height="50" src="{{@shared.assetsHost}}/img/unpkg.png" srcset="{{@shared.assetsHost}}/img/unpkg@2x.png 2x">
-									</div>
-								</th>
-								<th>
-									<div class="icon-jsdelivr">
-										<img width="140" height="34" src="{{@shared.assetsHost}}/img/logo-horizontal.svg">
-									</div>
-								</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							<tr>
-								<td>Multi-CDN <sup><i class="fa fa-info-circle" as-tooltip="'Uses multiple independent CDN providers'"></i></sup></td>
-								<td>1</td>
-								<td>4</td>
-							</tr>
-							<tr>
-								<td>Multi-DNS <sup><i class="fa fa-info-circle" as-tooltip="'Uses multiple independent DNS providers'"></i></sup></td>
-								<td>1</td>
-								<td>2</td>
-							</tr>
-							<tr>
-								<td>Smart load-balancing <sup><i class="fa fa-info-circle" as-tooltip="'Chooses the best provider for each individual user'"></i></sup></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png" srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-							<tr>
-								<td>Combining multiple files</td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png" srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-							<tr>
-								<td>Fully featured API <sup><i class="fa fa-info-circle" as-tooltip="'Package version listings, directory listings, and detailed usage stats'"></i></sup></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png" srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-							<tr>
-								<td>Cache purge API <sup><i class="fa fa-info-circle" as-tooltip="'Instantly refresh a file cached on the CDN'"></i></sup></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png" srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-							<tr>
-								<td>Download stats</td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png"  srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-							<tr>
-								<td>POPs in China <sup><i class="fa fa-info-circle" as-tooltip="'Including a valid ICP license'"></i></sup></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon.png" srcset="{{@shared.assetsHost}}/img/icons/feature-unsupported-icon@2x.png 2x" loading="lazy"></td>
-								<td class="tick"><img width="30" height="30" src="{{@shared.assetsHost}}/img/landing/features-list-icon.png" srcset="{{@shared.assetsHost}}/img/landing/features-list-icon@2x.png 2x" loading="lazy"></td>
-							</tr>
-						</tbody>
-					</table>
+				<div class="buttons">
+					<a href="/" class="all-features">See All Features</a>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<c-footer></c-footer>
 </r-page>
 
 <script>
@@ -141,18 +89,16 @@
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
-	const tooltip = require('../../public/js/decorators/tooltip');
 	const defaultError = 'Sorry, this doesn\'t look like a valid unpkg link :(';
 
 	component.exports = {
 		decorators: {
 			clipboard,
-			tooltip,
 		},
 		data () {
 			return {
 				title: 'Migrate from unpkg to jsDelivr',
-				description: 'Migrate from unpkg to jsDelivr - a free, fast, and reliable Open Source CDN for npm and GitHub with the largest network and best performance. Serving more than 30 billion requests per month.',
+				description: 'Migrate from unpkg to jsDelivr - a free, fast, and reliable Open Source CDN optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.',
 			};
 		},
 		oninit () {

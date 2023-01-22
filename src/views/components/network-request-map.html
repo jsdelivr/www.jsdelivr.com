@@ -1,0 +1,460 @@
+<div class="c-network-request-map">
+	<style>
+		{{#each providersJson}}
+			.switchers-block_item_switch input.{{name}}:checked + .slider {
+				background-color: {{color}};
+			}
+
+			.switchers-block_item_switch input.{{name}}:focus + .slider {
+				box-shadow: 0 0 1px {{color}};
+			}
+		{{/each}}
+	</style>
+
+	<div class="map-header">
+		<h3>Requests served by country</h3>
+
+		<div class="map-header_switch">
+			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
+			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+		</div>
+	</div>
+
+	<div class="map-wrapper">
+		<div class="switchers-block">
+			{{#each switchList:index}}
+				<div class="switchers-block_item {{#if switchList[index].disabled}}disabled{{/if}}">
+					<label class="switchers-block_item_switch">
+						<input
+							class="{{name}}"
+							type="checkbox"
+							on-click="@this.set('switchList['+@index+'].active', !active)"
+							disabled="{{switchList[index].disabled}}"
+							checked>
+						<span class="slider round"></span>
+						</label>
+						<span class="switchers-block_item_name">{{name}}</span>
+				</div>
+			{{/each}}
+		</div>
+
+		<div class="map-block">
+			<div class="map-block_map-wrapper">
+				<svg id="hits-map" class="map-block_map-wrapper_map" xmlns="http://www.w3.org/2000/svg"></svg>
+
+				<div class="map-block_map-wrapper_overlay"></div>
+
+				<div class="map-block_map-wrapper_tooltip">
+					<div class="map-block_map-wrapper_tooltip_head">
+						<span class="map-block_map-wrapper_tooltip_head_name">{{tooltipData.countryName}}</span>
+						<img on-click="@this.hideTooltip()"
+							width="20"
+							height="20"
+							src="{{@shared.assetsHost}}/img/statistics/close.white.svg">
+					</div>
+
+					<div class="map-block_map-wrapper_tooltip_body">
+						{{#each tooltipData.providersData}}
+							<div class="map-block_map-wrapper_tooltip_body_row">
+								<div class="map-block_map-wrapper_tooltip_body_row_box" style="background: {{this.providerBoxColor}}"></div>
+
+								<div class="map-block_map-wrapper_tooltip_body_row_content">
+									<div class="map-block_map-wrapper_tooltip_body_row_content_main-data">
+										<span>{{ this.provider.name }}</span>
+										<span>{{ this.statsInfo }}</span>
+									</div>
+
+									<div class="map-block_map-wrapper_tooltip_body_row_content_file-size">
+										<span>Average file size</span>
+										<span>{{ this.ratio }}</span>
+									</div>
+								</div>
+							</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="map-block_legend">
+				{{#if legendAxisTicks.length}}
+					<div class="map-block_legend_bar"></div>
+				{{/if}}
+
+				<div class="map-block_legend_axis">
+					{{#each legendAxisTicks}}
+						<div class="map-block_legend_axis_tick">{{this}}</div>
+					{{/each}}
+				</div>
+			</div>
+
+			<div class="map-block_ctrls">
+				<div class="map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
+					<img src="{{@shared.assetsHost}}/img/statistics/plus.svg">
+				</div>
+
+				<div class="map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
+					<img src="{{@shared.assetsHost}}/img/statistics/minus.svg">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const http = require('../../public/js/utils/http.js');
+	const _ = require('../../public/js/_.js');
+	const geoData = require('../../public/json/geodata.json');
+	const providersJson = require('../../public/json/net-providers.json');
+	const debounce = require('../../public/js/utils/debounce');
+	const throttle = require('../../public/js/utils/throttle');
+	const LEGEND_AXIS_TICKS_AMOUNT = 8;
+
+	component.exports = {
+		data () {
+			return {
+				type: 'hits',
+				switchList: [],
+				providerStatsByCountry: {},
+				legendAxisTicks: [],
+				tooltipData: {},
+				currentCountryId: null,
+				providersJson,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				// fetch data
+				this.observe('period __ready', function () {
+					if (this.get('__ready')) {
+						let period = this.get('period');
+
+						http.fetchNetworkProviderStatsByCountry(period).then((response) => {
+							let providers = Object.values(response.hits.countries)[0].providers;
+							let oldSwitchList = this.get('switchList');
+							let newSwitchList = providers.map((provider) => {
+								let oldOne = oldSwitchList.filter(one => one.name === providersJson[provider.code].name);
+
+								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
+							});
+
+							this.set('switchList', newSwitchList);
+							this.set('providerStatsByCountry', response);
+						});
+					}
+				});
+
+				// handle switchList logic
+				this.observe('switchList', (switchList) => {
+					let disabledSwitches = switchList.filter(s => s.active === false).length;
+					let switchListLength = switchList.length;
+					let updatedSwitchList = [];
+
+					if (disabledSwitches === switchListLength - 1) {
+						updatedSwitchList = switchList.map((switchItem) => {
+							if (switchItem.active) {
+								switchItem.disabled = true;
+							} else {
+								switchItem.disabled = false;
+							}
+
+							return switchItem;
+						});
+					} else {
+						updatedSwitchList = switchList.map((switchItem) => {
+							switchItem.disabled = false;
+
+							return switchItem;
+						});
+					}
+
+					this.set('switchList', updatedSwitchList);
+				});
+
+				// prepare data for the Map
+				this.observe('providerStatsByCountry type switchList', () => {
+					let preparedMapData = {
+						dataByCountries: {},
+						switchList: [],
+					};
+					let { hits: hitsData, bandwidth: bandwidthData } = this.get('providerStatsByCountry');
+
+					if (!hitsData || !bandwidthData) { return; }
+
+					let switchList = this.get('switchList');
+					let type = this.get('type');
+
+					if (!hitsData.countries || !bandwidthData.countries || switchList.length === 0) { return; }
+
+					// prepare countries total, data by countries etc.
+					hitsData.countries.forEach((country) => {
+						let countryHitsStat = country;
+						let countryBandwidthStat = bandwidthData.countries.find(i => i.code === country.code);
+						let ratioList = {};
+						let hitsByCountryTotal = 0;
+						let bandwidthByCountryTotal = 0;
+
+						countryHitsStat.providers.forEach((provider) => {
+							let providerData = providersJson[provider.code];
+							let switchOne = switchList.find(one => one.name === providerData.name);
+
+							if (!switchOne.active) { return; }
+
+							let providerBandwidthObj = countryBandwidthStat.providers.find(i => i.code === provider.code);
+
+							ratioList[providerData.name] = this.calcRatio(provider.total, providerBandwidthObj.total);
+							hitsByCountryTotal += provider.total;
+						});
+
+						countryBandwidthStat.providers.forEach((provider) => {
+							let providerData = providersJson[provider.code];
+							let switchOne = switchList.find(one => one.name === providerData.name);
+
+							if (!switchOne.active) { return; }
+
+							bandwidthByCountryTotal += provider.total;
+						});
+
+						preparedMapData.dataByCountries[country.code] = type === 'hits' ? countryHitsStat : countryBandwidthStat;
+						preparedMapData.dataByCountries[country.code].total = type === 'hits' ? hitsByCountryTotal : bandwidthByCountryTotal;
+						preparedMapData.dataByCountries[country.code].ratio = ratioList;
+					});
+
+					// prepare additional data
+					preparedMapData.switchList = switchList;
+					preparedMapData.type = type;
+
+					// prepare data for the Legend axis of the Map and for the Map itself (domain values)
+					let minMapValue = _.getValueByMagnitude(
+						Math.min(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
+						'floor'
+					);
+
+					let maxMapValue = _.getValueByMagnitude(
+						Math.max(...Object.keys(preparedMapData.dataByCountries).map(k => preparedMapData.dataByCountries[k].total)),
+						'ceil',
+						1
+					);
+					let maxMapValuesRangeMagnitude = Math.floor(Math.log10(maxMapValue));
+					let suggestedLegendMax = Math.floor(maxMapValue / Math.pow(10, maxMapValuesRangeMagnitude)) * Math.pow(10, maxMapValuesRangeMagnitude);
+
+					preparedMapData.legendValuesRangeSteps = [ suggestedLegendMax ];
+					preparedMapData.mapValuesRangeSteps = [ minMapValue ];
+
+					let mapValuesRangeStep = Math.ceil((suggestedLegendMax - minMapValue) / LEGEND_AXIS_TICKS_AMOUNT);
+					let lagendValuesRangeStep = Math.ceil(suggestedLegendMax / LEGEND_AXIS_TICKS_AMOUNT);
+
+					for (let i = LEGEND_AXIS_TICKS_AMOUNT - 1; i > 0; i--) {
+						preparedMapData.legendValuesRangeSteps.push(i * lagendValuesRangeStep);
+						preparedMapData.mapValuesRangeSteps.push(minMapValue + (LEGEND_AXIS_TICKS_AMOUNT - i) * mapValuesRangeStep);
+					}
+
+					preparedMapData.mapValuesRangeSteps.push(suggestedLegendMax);
+
+					// set prepared data
+					this.set('preparedMapData', preparedMapData);
+				}, { init: false });
+			}
+		},
+		onrender () {
+			// draw the Map and the Legend
+			this.observe('preparedMapData screenWidth', () => {
+				let legendColorRange = [ '#a2ecf6', '#65d69e', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
+				let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+				let svg = d3.select('#hits-map');
+
+				if (!svg || !this.get('__ready') || !screenWidth) { return; }
+
+				let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
+
+				let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
+					if (type === 'bandwidth') {
+						result.push(_.formatBytesWithUnit(rawValue, 'TB'));
+					} else {
+						if (screenWidth < 768) {
+							result.push(_.formatToShortNumber(rawValue, ' '));
+						} else {
+							result.push(_.formatNumber(Math.round(rawValue)));
+						}
+					}
+
+					return result;
+				}, []);
+
+				this.set('legendAxisTicks', legendAxisTicks);
+
+				svg.selectAll('*').remove();
+
+				let mapSvgWidth = parseInt(svg.style('width').replace('px', ''));
+				let mapSvgHeight = parseInt(svg.style('height').replace('px', ''));
+
+				let colorScale = d3.scaleLinear()
+					.domain(mapValuesRangeSteps)
+					.range(legendColorRange)
+					.clamp(true)
+					.unknown('#ccc');
+
+				// Map and projection
+				let projection = d3.geoMercator()
+					.scale(mapSvgWidth / 2.5 / Math.PI)
+					.center([ 0, 20 ])
+					.translate(screenWidth < 768 ? [ mapSvgWidth / 2, mapSvgHeight / 2 ] : [ mapSvgWidth / 2, mapSvgHeight / 2 + 50 ]);
+
+				// Draw the map
+				svg.append('g')
+					.selectAll('path')
+					.data(geoData.features)
+					.join('path')
+					// draw each country
+					.attr('d', d3.geoPath().projection(projection))
+					// set the color of each country
+					.attr('fill', (d) => {
+						let countryCode = d.id;
+
+						return colorScale(dataByCountries[countryCode] ? dataByCountries[countryCode].total : null);
+					})
+					.attr('stroke', 'white')
+					.attr('stroke-width', '1px')
+					.on('mouseover click', (event, d) => this.showTooltip(event, d))
+					.on('mouseout', () => this.hideTooltip());
+
+				function filter (event) {
+					switch (event.type) {
+						case 'wheel':
+							if (event.ctrlKey) {
+								event.preventDefault();
+								return true;
+							}
+
+							break;
+
+						case 'touchstart':
+						case 'click':
+						case 'mousedown':
+							return true;
+
+						default:
+							return false;
+					}
+				}
+
+				function wheelDelta (event) {
+					return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+				}
+
+				let zoom = d3.zoom()
+					.scaleExtent([ 1, 8 ])
+					.filter(filter)
+					.wheelDelta(wheelDelta)
+					.on('zoom', (event) => {
+						svg.selectAll('g')
+							.attr('transform', event.transform);
+					});
+
+				svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+			}, { init: false });
+
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		calcRatio (hits, bandwidth) {
+			return hits ? _.formatBytesWithUnit(bandwidth / hits) : 0;
+		},
+		hideTooltip () {
+			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
+			let mapOverlayEl = document.querySelector('.map-block_map-wrapper_overlay');
+
+			tooltipEl.style.opacity = 0;
+			tooltipEl.style.zIndex = -1;
+			mapOverlayEl.style.opacity = 0;
+			mapOverlayEl.style.zIndex = -1;
+			this.set('tooltipData', {});
+			this.set('currentCountryId', null);
+		},
+		handleMapZoom (zoomDirection = 'in', scale = 1.4, duration = 750) {
+			let mapSvg = d3.select('#hits-map');
+			let zoom = d3.zoom()
+				.scaleExtent([ 1, 8 ])
+				.on('zoom', (event) => {
+					mapSvg.selectAll('g')
+						.attr('transform', event.transform);
+				});
+
+			if (zoomDirection === 'out') {
+				scale = 0.6;
+			}
+
+			zoom.scaleBy(mapSvg.transition().duration(duration), scale);
+		},
+		showTooltip (event, data) {
+			let currentCountryId = this.get('currentCountryId');
+			let mapDataType = this.get('type');
+
+			if (currentCountryId === data.id) { return; }
+
+			this.set('currentCountryId', data.id);
+
+			let { dataByCountries, switchList } = this.get('preparedMapData');
+			let { layerX, layerY, type: eventType } = event;
+			let { properties: { name: countryName }, id: countryId } = data;
+			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
+			let tooltipData = {
+				countryName,
+				providersData: [],
+			};
+
+			tooltipEl.style.opacity = 1;
+			tooltipEl.style.zIndex = 2;
+
+			if (eventType === 'click') {
+				let mapOverlayEl = document.querySelector('.map-block_map-wrapper_overlay');
+
+				mapOverlayEl.style.opacity = 0.6;
+				mapOverlayEl.style.zIndex = 1;
+
+				tooltipEl.style.top = '50%';
+				tooltipEl.style.left = '50%';
+				tooltipEl.style.transform = 'translate(-50%, -50%)';
+			} else {
+				let svgMapEl = document.querySelector('#hits-map');
+				let { clientWidth: svgElWidth, clientHeight: svgElHeight } = svgMapEl;
+
+				if (layerY > svgElHeight / 2) {
+					tooltipEl.style.bottom = `${svgElHeight - layerY > 0 ? svgElHeight - layerY + 20 : 30}px`;
+					tooltipEl.style.top = 'auto';
+				} else {
+					tooltipEl.style.top = `${layerY + 10}px`;
+					tooltipEl.style.bottom = 'auto';
+				}
+
+				if (layerX + tooltipEl.clientWidth > svgElWidth && layerX - tooltipEl.clientWidth - 10 > 0) {
+					tooltipEl.style.left = `${layerX - tooltipEl.clientWidth - 10}px`;
+				} else {
+					tooltipEl.style.left = `${layerX + 10}px`;
+				}
+
+				tooltipEl.style.transform = 'none';
+			}
+
+			switchList.forEach((provider) => {
+				if (!provider.active) { return; }
+
+				let statsValueRaw = dataByCountries[countryId]?.providers.find(i => i.code === provider.shortName)?.total || 0;
+				let statsInfo = mapDataType === 'hits' ? _.formatNumberWithSpace(statsValueRaw) : _.formatBytesWithUnit(statsValueRaw);
+				let ratio = dataByCountries[countryId] ? dataByCountries[countryId].ratio[provider.name] : 0;
+				let providerBoxColor = providersJson[provider.shortName].color;
+
+				tooltipData.providersData.push({
+					statsInfo,
+					provider,
+					ratio,
+					providerBoxColor,
+					statsValueRaw,
+				});
+			});
+
+			tooltipData.providersData.sort((a, b) => b.statsValueRaw - a.statsValueRaw);
+
+			this.set('tooltipData', tooltipData);
+		},
+	};
+</script>

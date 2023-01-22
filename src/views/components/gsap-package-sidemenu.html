@@ -1,0 +1,249 @@
+<div class="c-gsap-package-sidemenu">
+	<div class="package-stats">
+		<div class="sidemenu-title">
+			<span>Statistics</span>
+
+			<div class="btn-group">
+				<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span>{{periodKey}}</span>
+					<i class="fa fa-angle-down" aria-hidden="true"></i>
+				</button>
+
+				<ul class="dropdown-menu">
+					{{#each periodsList}}
+						<li>
+							<a on-click="@this.set('periodKey', key)" class="{{#if key === periodKey}}current{{/if}}">
+								{{@key}}
+							</a>
+						</li>
+					{{/each}}
+				</ul>
+			</div>
+		</div>
+
+		<div class="chart-block">
+			<div class="chart-header">
+				<span>Requests Served</span>
+				<span>{{ _.formatNumber(packageTotal) }}</span>
+			</div>
+
+			<div class="requests-chart-wrapper">
+				<canvas id="requests-chart"></canvas>
+			</div>
+		</div>
+
+		<div class="chart-block">
+			<div class="chart-header">
+				<span>Bandwidth</span>
+				<span>{{ _.formatNumber(bandwidthTotal) }} GB</span>
+			</div>
+
+			<div class="bandwidth-chart-wrapper">
+				<canvas id="bandwidth-chart"></canvas>
+			</div>
+		</div>
+
+		<div class="top-version-block">
+			<span>Top version {{ topVersion ? '- ' + topVersion : '' }}</span>
+			<span>{{ _.formatNumber(topVersionHits) + ' hits' }}</span>
+		</div>
+
+		<div class="banner">
+			<a href="/network/infographic" class="banner_learn-more">Learn more</a>
+
+			<div class="banner_check">
+				Check what makes us
+				<br/>
+				production ready
+			</div>
+
+			<div class="banner_img">
+				<img class="banner_img_front" width="196" height="175" src="{{@shared.assetsHost}}/img/gsap/banner-front.svg">
+				<img class="banner_img_back" width="196" height="135" src="{{@shared.assetsHost}}/img/gsap/banner-back.svg">
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+	const _ = require('../../public/js/_');
+	const clipboard = require('../../public/js/decorators/clipboard');
+	const tooltip = require('../../public/js/decorators/tooltip');
+	const http = require('../../public/js/utils/http');
+	const stats = require('../../public/js/utils/stats');
+	const createBarChart = require('../../public/js/utils/create-bar-chart');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+				periodsList: stats.periods,
+				periodKey: 'month',
+				packageTotal: 0,
+				bandwidthTotal: 0,
+				topVersion: '',
+				topVersionHits: 0,
+			};
+		},
+		decorators: {
+			clipboard,
+			tooltip,
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('periodKey', () => {
+					if (this.get('periodKey')) {
+						let type = this.get('type');
+						let name = this.get('name');
+						let period = this.get('periodKey');
+
+						// get overall GSAP stats (data for charts, rank)
+						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+
+							this.set('packageDateStats', response.hits);
+							this.animate('packageTotal', response.hits.total, { duration: 1000 });
+
+							this.set('packageBandwidthStats', response.bandwidth);
+							this.animate('bandwidthTotal', _.convertBytesToUnits(response.bandwidth.total), { duration: 1000 });
+						});
+
+						// get GSAP top version stats
+						http.fetchPackageVersionsStats(type, name, period, 'hits').then((response) => {
+							this.animate('topVersion', response[0].version, { duration: 1000 });
+							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
+						});
+					}
+				});
+
+				this.observe('packageDateStats', () => {
+					let requestsChart = this.get('requestsChart');
+					let packageDateStats = this.get('packageDateStats');
+
+					if (!packageDateStats) {
+						return null;
+					}
+
+					let array = Object.entries(packageDateStats.dates);
+
+					if (requestsChart) {
+						requestsChart.destroy();
+						requestsChart = null;
+						this.set('requestsChart', null);
+					}
+
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => item[1]);
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#requests-chart');
+
+						let chartData = {
+							labels,
+							datasets: [{
+								data,
+								borderWidth: 0,
+								barThickness: 4,
+								hoverBackgroundColor: '#57922a',
+								borderRadius: 1,
+							}],
+						};
+						let chartSettings = {
+							onHoverNotActiveBarsBGColor: '#ecf7e3',
+							useExternalTooltip: true,
+							externalTooltipId: 'gsapRequestsChartTooltip',
+							externalTooltipVerticalOffset: 40,
+						};
+						let chartConfig = {
+							options: {
+								elements: {
+									bar: {
+										backgroundColor: '#6fb936',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
+
+						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+
+						this.set('requestsChart', requestsChart);
+					}, 100);
+				});
+
+				this.observe('packageBandwidthStats', () => {
+					let bandwidthChart = this.get('bandwidthChart');
+					let packageBandwidthStats = this.get('packageBandwidthStats');
+
+					if (!packageBandwidthStats) {
+						return null;
+					}
+
+					let array = Object.entries(packageBandwidthStats.dates);
+
+					if (bandwidthChart) {
+						bandwidthChart.destroy();
+						bandwidthChart = null;
+						this.set('bandwidthChart', null);
+					}
+
+					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+					let data = array.map(item => _.convertBytesToUnits(item[1]));
+
+					// temp solution to fix chart recreation after switching from stats tab
+					setTimeout(() => {
+						let chartEl = this.find('#bandwidth-chart');
+
+						let chartData = {
+							labels,
+							datasets: [{
+								data,
+								borderWidth: 0,
+								barThickness: 4,
+								hoverBackgroundColor: '#57922a',
+								borderRadius: 1,
+							}],
+						};
+						let chartSettings = {
+							onHoverNotActiveBarsBGColor: '#ecf7e3',
+							useExternalTooltip: true,
+							externalTooltipId: 'gsapBandwidthChartTooltip',
+							externalTooltipVerticalOffset: 40,
+							valueUnits: ' GB',
+						};
+						let chartConfig = {
+							options: {
+								elements: {
+									bar: {
+										backgroundColor: '#6fb936',
+									},
+								},
+								scales: {
+									x: {
+										display: false,
+									},
+									y: {
+										display: false,
+									},
+								},
+							},
+						};
+
+						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+
+						this.set('bandwidthChart', bandwidthChart);
+					}, 100);
+				});
+			}
+		},
+	};
+</script>
