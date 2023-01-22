@@ -357,7 +357,9 @@
 						this.set('isGuessedFile', isGuessedFile);
 						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
 
-						if (Object.values(data.entrypoints).every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1) {
+						let entrypointValues = Object.values(data.entrypoints);
+
+						if (!entrypointValues.length || (entrypointValues.every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1)) {
 							this.set('isDefaultPackage', false);
 							this.set('isDefaultPackageTmp', false);
 						} else {
