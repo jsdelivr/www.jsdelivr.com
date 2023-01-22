@@ -43,16 +43,26 @@
 				});
 
 				// if page URL has a hash then scroll page to the anchor
-				this.observeOnce('text', () => {
-					let anchor = app.router.uri.hash;
-					let el = anchor ? this.find(anchor) : null;
+		  	this.observeOnce('text', () => {
+			  	let anchor = app.router.uri.hash;
+			  	let el = anchor ? this.find(anchor) : null;
 
-					if (el) {
-						el.scrollIntoView({
-							behavior: 'smooth',
-						});
-					}
-				}, { init: false, defer: true });
+				  if (el) {
+					  if (document.visibilityState === 'visible') {
+						  el.scrollIntoView({
+							  behavior: 'smooth',
+					  	});
+					  } else {
+						  document.addEventListener('visibilitychange', function listener () {
+							  el.scrollIntoView({
+								  behavior: 'smooth',
+						  	});
+
+							  document.removeEventListener('visibilitychange', listener);
+						  });
+					  }
+				  }
+			  }, { init: false, defer: true });
 			}
 		},
 	};

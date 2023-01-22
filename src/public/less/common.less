@@ -347,6 +347,7 @@ body.noscroll {
 	line-height: 16px;
 	letter-spacing: .2px;
 	color: #fff;
+	z-index: 2;
 
 	&-bottom:before, &-top:before, &-left:before, &-right:before {
 		content: "";
@@ -430,5 +431,79 @@ body.noscroll {
 
 	&_number {
 		color: #549711;
+	}
+}
+
+// styles of tooltip used with ClipboardJS
+.tooltip.in {
+	opacity: 1;
+
+	>div {
+		&.tooltip-arrow {
+			display: none;
+		}
+
+		&.tooltip-inner {
+			position: relative;
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+			background: rgba(17, 26, 44, .9);
+			padding: 6px;
+			border-radius: 4px;
+			font-family: Lexend, sans-serif;
+			-webkit-font-smoothing: antialiased;
+			font-style: normal;
+			font-weight: 600;
+			font-size: 12px;
+			line-height: 16px;
+			letter-spacing: .2px;
+			color: #fff;
+		}
+	}
+
+	&.bottom > div.tooltip-inner:before,
+	&.top > div.tooltip-inner:before,
+	&.left > div.tooltip-inner:before,
+	&.right > div.tooltip-inner:before {
+		content: "";
+		position: absolute;
+		display: block;
+		width: 0;
+		border: 5px solid transparent;
+	}
+
+	&.top > div.tooltip-inner:before {
+		left: calc(50% - 5px);
+		bottom: 0;
+		border-bottom: 0;
+		border-top: 5px solid rgba(17, 26, 44, .9);
+		transform: translate(-50%, 100%);
+	}
+
+	&.bottom > div.tooltip-inner:before {
+		left: calc(50% - 5px);
+		top: 0;
+		border-top: 0;
+		border-bottom: 5px solid rgba(17, 26, 44, .9);
+		transform: translate(-50%, -100%);
+	}
+
+	&.right > div.tooltip-inner:before {
+		left: 0;
+		top: 50%;
+		border-left: 0;
+		border-right: 5px solid rgba(17, 26, 44, .9);
+		transform: translate(-100%, -50%);
+	}
+
+	&.left > div.tooltip-inner:before {
+		right: 0;
+		top: 50%;
+		border-right: 0;
+		border-left: 5px solid rgba(17, 26, 44, .9);
+		transform: translate(100%, -50%);
 	}
 }
