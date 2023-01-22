@@ -2,7 +2,7 @@
 	<nav class="navbar navbar-default {{!actualPath || withFullWhiteLogoRoutes.includes(actualPath) ? 'navbar-filled' : ''}}">
 		<div class="container-fluid container-mw">
 			<div class="navbar-header">
-				<a href="/">
+				<span on-click="@this.handleLogoClick()">
 					<!--
 						Looking for the logo?
 						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
@@ -18,7 +18,7 @@
 					{{elseif actualPath}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg" title="jsDelivr">
 					{{/if}}
-				</a>
+				</span>
 
 				{{#if actualPath && actualPath.includes('/package/npm')}}
 					{{yield}}
@@ -116,6 +116,9 @@
 			} else {
 				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
 			}
+		},
+		handleLogoClick () {
+			app.router.dispatch('/', { noHistory: true, qs: { query: '' } });
 		},
 	};
 </script>
