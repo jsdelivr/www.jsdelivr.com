@@ -70,8 +70,8 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/', cIndex, { qs: [ 'docs', 'limit', 'page', 'query', 'type', 'style' ] });
 app.router.addRoute('/esm', cEsm);
 app.router.addRoute('/about', cAbout);
-app.router.addRoute('/rawgit', () => { location.pathname = '/'; });
-app.router.addRoute('/features', () => { location.pathname = '/'; });
+app.router.addRoute('/rawgit', () => { location.href = '/'; });
+app.router.addRoute('/features', () => { location.href = '/'; });
 app.router.addRoute('/github', cGithub);
 app.router.addRoute('/foundationcdn', cFoundationCdn);
 app.router.addRoute('/unpkg', cUnpkg);
@@ -95,7 +95,7 @@ app.router.addRoute('/esmsh', cEsmsh);
 app.router.addRoute('/oss-cdn', cCustomCdnOss);
 app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
-app.router.addRoute('/(.*)', () => { location.pathname = '/'; });
+app.router.addRoute('/(.*)', () => { location.href = '/'; });
 
 _.onDocumentReady(() => {
 	let state = {};

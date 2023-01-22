@@ -34,6 +34,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 };
 
 app.router.addRoute('/docs/data.jsdelivr.com', cDocsData);
+app.router.addRoute('/(.*)', () => { location.href = '/'; });
 
 _.onDocumentReady(() => {
 	let state = {};
