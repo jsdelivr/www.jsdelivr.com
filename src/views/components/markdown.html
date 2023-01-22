@@ -3,11 +3,23 @@
 </div>
 
 <script>
+	const _ = require('../../public/js/_.js');
 	const ID_PREFIX = 'id-';
 
 	component.exports = {
 		data () {
+			return {
+				_,
+				text: '',
+				markdown (md) {
+					return !Ractive.isServer ? DOMPurify.sanitize(marked.parse(md)) : '';
+				},
+			};
+		},
+		oninit () {
 			if (!Ractive.isServer) {
+				let _this = this;
+
 				marked.setOptions({
 					langPrefix: 'hljs language-',
 					headerIds: true,
@@ -17,48 +29,41 @@
 					},
 				});
 
-				let renderer = {
-					link (href, title, text) {
-						return `
-							<a href="${href}" target="_blank" rel="noopener noreferrer nofollow">
-								${text}
-							</a>
-						`;
-					},
-				};
+				DOMPurify.removeAllHooks();
 
-				marked.use({ renderer });
-			}
-
-			return {
-				text: '',
-				markdown (md) {
-					return !Ractive.isServer ? marked.parse(md) : '';
-				},
-			};
-		},
-		oninit () {
-			// if page URL has a hash then scroll page to the anchor
-			this.observeOnce('text', () => {
-				let anchor = app.router.uri.hash;
-				let el = anchor ? this.find(anchor) : null;
-
-				if (el) {
-					if (document.visibilityState === 'visible') {
-						el.scrollIntoView({
-							behavior: 'smooth',
-						});
-					} else {
-						document.addEventListener('visibilitychange', function listener () {
-							el.scrollIntoView({
-								behavior: 'smooth',
-							});
-
-							document.removeEventListener('visibilitychange', listener);
-						});
+				DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+					if ('target' in node) {
+						node.setAttribute('rel', 'nofollow noopener noreferrer');
+						node.setAttribute('target', '_blank');
 					}
-				}
-			}, { init: false, defer: true });
+
+					if (node.hasAttribute('src')) {
+						node.setAttribute('src', _.makeLinksOptimized(node.getAttribute('src'), _this.get('github')));
+					}
+				});
+
+				// if page URL has a hash then scroll page to the anchor
+		  	this.observeOnce('text', () => {
+			  	let anchor = app.router.uri.hash;
+			  	let el = anchor ? this.find(anchor) : null;
+
+				  if (el) {
+					  if (document.visibilityState === 'visible') {
+						  el.scrollIntoView({
+							  behavior: 'smooth',
+					  	});
+					  } else {
+						  document.addEventListener('visibilitychange', function listener () {
+							  el.scrollIntoView({
+								  behavior: 'smooth',
+						  	});
+
+							  document.removeEventListener('visibilitychange', listener);
+						  });
+					  }
+				  }
+			  }, { init: false, defer: true });
+			}
 		},
 	};
 </script>
