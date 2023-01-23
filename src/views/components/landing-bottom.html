@@ -133,7 +133,7 @@
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg" />
 								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(requestsPerSecond) }}</span>
+									<span>{{ Math.round(netStatsToAnimate.requestsPerSecond) }}</span>
 									<span>requests per second</span>
 								</div>
 							</div>
@@ -141,7 +141,7 @@
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" />
 								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(bandwidth) }} Mbps</span>
+									<span>{{ Math.round(netStatsToAnimate.bandwidth) }} Mbps</span>
 									<span>bandwidth</span>
 								</div>
 							</div>
@@ -917,32 +917,32 @@
 
 				// Load network stats for the previous day
 				http.fetchNetworkStats('month').then((data) => {
-					this.set(
-						'baseRequestsPerSecond',
-						data.hits.total / 30 / 24 / 60 / 60
-					);
-
+					this.set('baseRequestsPerSecond', data.hits.total / 30 / 24 / 60 / 60);
 					this.set('baseBandwidth', data.bandwidth.total / 30 / 24 / 60 / 60 / 1e6);
 				});
 
-
-				let animationConfig = {
-					duration: 4,
-					easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
-				};
-
 				setInterval(() => {
-					let requestsPerSecond = (this.getRandom(97, 102) / 100) * this.get('baseRequestsPerSecond');
-					let bandwidth = (this.getRandom(97, 102) / 100) * this.get('baseBandwidth');
+					let max = 102;
+					let min = 97;
+					let multiplier = this.get('multiplier');
+					let newMultiplier = this.checkIfMultiplierNew(min, max, multiplier);
 
-					this.animate(
-						'requestsPerSecond',
-						requestsPerSecond,
-						animationConfig
-					);
+					this.set('multiplier', newMultiplier);
+				}, 1400);
 
-					this.animate('bandwidth', bandwidth, animationConfig);
-				}, 800);
+
+				this.observe('multiplier', (multiplier) => {
+					let animationConfig = {
+						easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
+					};
+
+					let netStatsToAnimate = {
+						requestsPerSecond: multiplier * this.get('baseRequestsPerSecond'),
+						bandwidth: multiplier * this.get('baseBandwidth'),
+					};
+
+					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
+				});
 			}
 		},
 		oncomplete () {
@@ -951,8 +951,17 @@
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
 			}
 		},
-		getRandom (min, max) {
-			return Math.floor(Math.random() * (max - min + 1) + min);
+		getRandomMultiplier (min, max) {
+			return Math.floor(Math.random() * (max - min + 1) + min) / 100;
+		},
+		checkIfMultiplierNew (min, max, prevMultiplier) {
+			let multiplier = this.getRandomMultiplier(min, max);
+
+			if (multiplier === prevMultiplier) {
+				return this.checkIfMultiplierNew(min, max, multiplier);
+			}
+
+			return multiplier;
 		},
 		runEsmDemo (e) {
 			performance.clearResourceTimings();
