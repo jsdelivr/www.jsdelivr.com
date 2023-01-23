@@ -129,4 +129,17 @@ _.onDocumentReady(() => {
 		.watchState();
 });
 
+app.injectGlobalStyle = (href) => {
+	for (let link of document.getElementsByTagName('link')) {
+		if (link.href === href) {
+			return;
+		}
+	}
+
+	let link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.href = href;
+	document.head.appendChild(link);
+};
+
 module.exports = app;
