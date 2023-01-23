@@ -40,13 +40,21 @@
 					DOMPurify.removeAllHooks();
 
 					DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-						if ('target' in node) {
-							node.setAttribute('rel', 'nofollow noopener noreferrer');
-							node.setAttribute('target', '_blank');
+						if (node.hasAttribute('href')) {
+							node.setAttribute('href', _.normalizeHref(node.getAttribute('href'), ID_PREFIX));
 						}
 
 						if (node.hasAttribute('src')) {
-							node.setAttribute('src', _.makeLinksOptimized(node.getAttribute('src'), _this.get('github')));
+							node.setAttribute('src', _.optimizeSrc(node.getAttribute('src'), _this.get('github')));
+						}
+
+						if ('target' in node) {
+							if (_.isExternalLink(node.getAttribute('href'))) {
+								node.setAttribute('target', '_blank');
+							}
+
+							node.setAttribute('rel', 'nofollow noopener noreferrer');
+							node.classList.add('router-ignore');
 						}
 					});
 

@@ -1033,7 +1033,7 @@ module.exports = {
 		}
 	},
 
-	makeLinksOptimized (url, github) {
+	optimizeSrc (url, github) {
 		let { newHost, hosts } = optimizedHosts;
 		let parsed = new URL(url.replace(/^\/+/, ''), github ? `https://cdn.jsdelivr.net/gh/${github.user}/${github.project}@${github.head}/` : location.href);
 
@@ -1043,6 +1043,32 @@ module.exports = {
 		}
 
 		return parsed.toString();
+	},
+
+	normalizeHref (url, idPrefix) {
+		try {
+			let parsed = new URL(url.replace(/^\/+/, ''), location.href);
+
+			if (parsed.origin === location.origin && parsed.pathname === location.pathname) {
+				if (parsed.hash) {
+					parsed.hash = `#${idPrefix}${parsed.hash.substr(1)}`;
+				}
+			}
+
+			return parsed.toString();
+		} catch (e) {
+			return url;
+		}
+	},
+
+	isExternalLink (url) {
+		try {
+			let parsed = new URL(url.replace(/^\/+/, ''), location.href);
+
+			return parsed.hostname !== location.hostname;
+		} catch (e) {
+			return false;
+		}
 	},
 
 	packageToImportName (name) {
