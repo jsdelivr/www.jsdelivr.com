@@ -7,6 +7,7 @@ const got = require('got');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
+const entities = require('entities');
 const FontsProcessor = require('./fonts');
 const algoliaNode = require('../../lib/algolia-node');
 
@@ -69,7 +70,7 @@ const fetchLogo = async (url) => {
  * @returns {string}
  */
 const cleanString = (input) => {
-	return input.replace(/\p{Cc}/gu, '');
+	return entities.decodeHTML(input).replace(/\p{Cc}/gu, '');
 };
 
 /**
