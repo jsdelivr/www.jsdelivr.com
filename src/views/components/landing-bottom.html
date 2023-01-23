@@ -116,34 +116,42 @@
 						<div class="network-data_stats">
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/1.svg" />
-								<div class="network-data_stats_item_green">
-									<span>1 mil+</span>
-									<span>active oss projects served</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_green">
+										<span>1 mil+</span>
+										<span>active oss projects served</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/2.svg" />
-								<div class="network-data_stats_item_green">
-									<span>99.46%</span>
-									<span>cache hit ratio</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_green">
+										<span>99.46%</span>
+										<span>cache hit ratio</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg" />
-								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(netStatsToAnimate.requestsPerSecond) }}</span>
-									<span>requests per second</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_regular">
+										<span>{{ Math.round(netStatsToAnimate.requestsPerSecond) }}</span>
+										<span>requests per second</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" />
-								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(netStatsToAnimate.bandwidth) }} Mbps</span>
-									<span>bandwidth</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_regular">
+										<span>{{ Math.round(netStatsToAnimate.bandwidth) }} Mbps</span>
+										<span>bandwidth</span>
+									</div>
+								{{/if}}
 							</div>
 						</div>
 
@@ -937,8 +945,8 @@
 					};
 
 					let netStatsToAnimate = {
-						requestsPerSecond: multiplier * this.get('baseRequestsPerSecond'),
-						bandwidth: multiplier * this.get('baseBandwidth'),
+						requestsPerSecond: multiplier * this.get('baseRequestsPerSecond') || 0,
+						bandwidth: multiplier * this.get('baseBandwidth') || 0,
 					};
 
 					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
