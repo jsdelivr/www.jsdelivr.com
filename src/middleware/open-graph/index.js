@@ -64,6 +64,15 @@ const fetchLogo = async (url) => {
 };
 
 /**
+ *
+ * @param {string} input
+ * @returns {string}
+ */
+const cleanString = (input) => {
+	return input.replace(/\p{Cc}/gu, '');
+};
+
+/**
  * @param {string} input
  * @param {string} fontFamily
  * @param {number} fontSize
@@ -89,7 +98,7 @@ const truncateString = (input, fontFamily, fontSize, maxWidth, letterSpacing = 0
 		return { text: str + '...', width: strWidth + dotsWidth };
 	};
 
-	return truncate(input);
+	return truncate(cleanString(input));
 };
 
 const processDescription = (description) => {
@@ -99,7 +108,7 @@ const processDescription = (description) => {
 	let fontSize = 30;
 	let letterSpacing = -0.6;
 
-	let lines = fontsProcessor.wrap(description, 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
+	let lines = fontsProcessor.wrap(cleanString(description), 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
