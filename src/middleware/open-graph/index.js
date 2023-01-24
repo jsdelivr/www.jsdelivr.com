@@ -7,6 +7,7 @@ const got = require('got');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
+const entities = require('entities');
 const FontsProcessor = require('./fonts');
 const algoliaNode = require('../../lib/algolia-node');
 
@@ -64,6 +65,15 @@ const fetchLogo = async (url) => {
 };
 
 /**
+ *
+ * @param {string} input
+ * @returns {string}
+ */
+const cleanString = (input) => {
+	return entities.decodeHTML(input).replace(/\p{Cc}/gu, '');
+};
+
+/**
  * @param {string} input
  * @param {string} fontFamily
  * @param {number} fontSize
@@ -89,7 +99,7 @@ const truncateString = (input, fontFamily, fontSize, maxWidth, letterSpacing = 0
 		return { text: str + '...', width: strWidth + dotsWidth };
 	};
 
-	return truncate(input);
+	return truncate(cleanString(input));
 };
 
 const processDescription = (description) => {
@@ -99,7 +109,7 @@ const processDescription = (description) => {
 	let fontSize = 30;
 	let letterSpacing = -0.6;
 
-	let lines = fontsProcessor.wrap(description, 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
+	let lines = fontsProcessor.wrap(cleanString(description), 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
@@ -208,7 +218,7 @@ module.exports = async (ctx) => {
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
 	} catch (error) {
-		if (error?.statusCode === 404) {
+		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
 			return; // 404 response
 		}
 
