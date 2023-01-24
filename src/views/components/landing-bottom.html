@@ -928,21 +928,22 @@
 				setInterval(() => {
 					let max = 102;
 					let min = 97;
-					let multiplier = this.get('multiplier');
-					let newMultiplier = this.checkIfMultiplierNew(min, max, multiplier);
+					let { reqMultiplier, bandwMultiplier } = this.get('multipliers') || {};
+					let newReqMultiplier = this.checkIfMultiplierNew(min, max, reqMultiplier);
+					let newBandwMultiplier = this.checkIfMultiplierNew(min, max, bandwMultiplier);
 
-					this.set('multiplier', newMultiplier);
+					this.set('multipliers', { reqMultiplier: newReqMultiplier, bandwMultiplier: newBandwMultiplier });
 				}, 1400);
 
 
-				this.observe('multiplier', (multiplier) => {
+				this.observe('multipliers', ({ reqMultiplier, bandwMultiplier }) => {
 					let animationConfig = {
 						easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
 					};
 
 					let netStatsToAnimate = {
-						requestsPerSecond: multiplier * this.get('baseRequestsPerSecond') || 0,
-						bandwidth: multiplier * this.get('baseBandwidth') || 0,
+						requestsPerSecond: reqMultiplier * this.get('baseRequestsPerSecond') || 0,
+						bandwidth: bandwMultiplier * this.get('baseBandwidth') || 0,
 					};
 
 					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
