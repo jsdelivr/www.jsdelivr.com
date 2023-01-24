@@ -887,6 +887,10 @@
 				esmDemoLoadTime: null,
 				esmDemoRunning: false,
 				fireworks: null,
+				netStatsAnimData: {
+					reqMultiplier: 0,
+					bandwMultiplier: 0,
+				},
 			};
 		},
 		oninit () {
@@ -928,15 +932,15 @@
 				setInterval(() => {
 					let max = 102;
 					let min = 97;
-					let { reqMultiplier, bandwMultiplier } = this.get('multipliers') || {};
-					let newReqMultiplier = this.checkIfMultiplierNew(min, max, reqMultiplier);
-					let newBandwMultiplier = this.checkIfMultiplierNew(min, max, bandwMultiplier);
+					let { reqMultiplier, bandwMultiplier } = this.get('netStatsAnimData');
+					let newReqMultiplier = this.getNewMultiplier(min, max, reqMultiplier);
+					let newBandwMultiplier = this.getNewMultiplier(min, max, bandwMultiplier);
 
-					this.set('multipliers', { reqMultiplier: newReqMultiplier, bandwMultiplier: newBandwMultiplier });
+					this.set('netStatsAnimData', { reqMultiplier: newReqMultiplier, bandwMultiplier: newBandwMultiplier });
 				}, 1400);
 
 
-				this.observe('multipliers', ({ reqMultiplier, bandwMultiplier }) => {
+				this.observe('netStatsAnimData', ({ reqMultiplier, bandwMultiplier }) => {
 					let animationConfig = {
 						easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
 					};
@@ -947,7 +951,7 @@
 					};
 
 					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
-				});
+				}, { init: false });
 			}
 		},
 		oncomplete () {
@@ -959,11 +963,11 @@
 		getRandomMultiplier (min, max) {
 			return (Math.random() * (max - min + 1) + min) / 100;
 		},
-		checkIfMultiplierNew (min, max, prevMultiplier) {
+		getNewMultiplier (min, max, prevMultiplier) {
 			let multiplier = this.getRandomMultiplier(min, max);
 
 			if (multiplier === prevMultiplier) {
-				return this.checkIfMultiplierNew(min, max, multiplier);
+				return this.getNewMultiplier(min, max, multiplier);
 			}
 
 			return multiplier;
