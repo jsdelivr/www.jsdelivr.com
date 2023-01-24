@@ -7,14 +7,15 @@ const got = require('got');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
+const entities = require('entities');
 const FontsProcessor = require('./fonts');
 const algoliaNode = require('../../lib/algolia-node');
 
 const API_HOST = 'https://data.jsdelivr.com';
-const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
+const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
-const http = got.extend({ cache });
+const http = got.extend();
 
 const fontsProcessor = new FontsProcessor();
 fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
@@ -64,6 +65,15 @@ const fetchLogo = async (url) => {
 };
 
 /**
+ *
+ * @param {string} input
+ * @returns {string}
+ */
+const cleanString = (input) => {
+	return entities.decodeHTML(input).replace(/\p{Cc}/gu, '');
+};
+
+/**
  * @param {string} input
  * @param {string} fontFamily
  * @param {number} fontSize
@@ -89,7 +99,7 @@ const truncateString = (input, fontFamily, fontSize, maxWidth, letterSpacing = 0
 		return { text: str + '...', width: strWidth + dotsWidth };
 	};
 
-	return truncate(input);
+	return truncate(cleanString(input));
 };
 
 const processDescription = (description) => {
@@ -99,7 +109,7 @@ const processDescription = (description) => {
 	let fontSize = 30;
 	let letterSpacing = -0.6;
 
-	let lines = fontsProcessor.wrap(description, 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
+	let lines = fontsProcessor.wrap(cleanString(description), 'Lexend Regular', fontSize, maxLineWidth, letterSpacing);
 
 	if (lines.length > 2) {
 		lines = lines.slice(0, 2);
@@ -152,6 +162,12 @@ const prepareMetadata = async (pkg) => {
 };
 
 const prepareStats = async (name) => {
+	let cacheKey = `stats::${name}`;
+
+	if (cache.has(cacheKey)) {
+		return cache.get(cacheKey);
+	}
+
 	let { requests, bandwidth } = await fetchStats(name);
 
 	let formatRequests = num => num.toLocaleString().replace(/,/g, ' ');
@@ -172,10 +188,14 @@ const prepareStats = async (name) => {
 		};
 	};
 
-	return {
+	let result = {
 		requests: requests ? processStats(requests, 88, formatRequests) : undefined,
 		bandwidth: bandwidth ? processStats(bandwidth, 550, formatBytes) : undefined,
 	};
+
+	cache.set(cacheKey, result);
+
+	return result;
 };
 
 const composeTemplate = async (name, scope = null) => {
@@ -208,7 +228,7 @@ module.exports = async (ctx) => {
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
 	} catch (error) {
-		if (error?.statusCode === 404) {
+		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
 			return; // 404 response
 		}
 
