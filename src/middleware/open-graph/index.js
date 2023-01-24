@@ -12,7 +12,7 @@ const FontsProcessor = require('./fonts');
 const algoliaNode = require('../../lib/algolia-node');
 
 const API_HOST = 'https://data.jsdelivr.com';
-const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
+const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
 const http = got.extend();
