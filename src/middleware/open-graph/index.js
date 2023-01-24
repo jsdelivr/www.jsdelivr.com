@@ -15,7 +15,7 @@ const API_HOST = 'https://data.jsdelivr.com';
 const LOGO_MAX_SIZE = 2 ** 20; // 1MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
-const http = got.extend({ cache });
+const http = got.extend();
 
 const fontsProcessor = new FontsProcessor();
 fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
@@ -162,6 +162,12 @@ const prepareMetadata = async (pkg) => {
 };
 
 const prepareStats = async (name) => {
+	let cacheKey = `stats::${name}`;
+
+	if (cache.has(cacheKey)) {
+		return cache.get(cacheKey);
+	}
+
 	let { requests, bandwidth } = await fetchStats(name);
 
 	let formatRequests = num => num.toLocaleString().replace(/,/g, ' ');
@@ -182,10 +188,14 @@ const prepareStats = async (name) => {
 		};
 	};
 
-	return {
+	let result = {
 		requests: requests ? processStats(requests, 88, formatRequests) : undefined,
 		bandwidth: bandwidth ? processStats(bandwidth, 550, formatBytes) : undefined,
 	};
+
+	cache.set(cacheKey, result);
+
+	return result;
 };
 
 const composeTemplate = async (name, scope = null) => {
