@@ -116,34 +116,42 @@
 						<div class="network-data_stats">
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/1.svg" />
-								<div class="network-data_stats_item_green">
-									<span>1 mil+</span>
-									<span>active oss projects served</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_green">
+										<span>1 mil+</span>
+										<span>active oss projects served</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/2.svg" />
-								<div class="network-data_stats_item_green">
-									<span>99.46%</span>
-									<span>cache hit ratio</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_green">
+										<span>99.46%</span>
+										<span>cache hit ratio</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg" />
-								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(requestsPerSecond) }}</span>
-									<span>requests per second</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_regular">
+										<span>{{ Math.round(netStatsToAnimate.requestsPerSecond) }}</span>
+										<span>requests per second</span>
+									</div>
+								{{/if}}
 							</div>
 
 							<div class="network-data_stats_item">
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" />
-								<div class="network-data_stats_item_regular">
-									<span>{{ Math.round(bandwidth) }} Mbps</span>
-									<span>bandwidth</span>
-								</div>
+								{{#if netStatsToAnimate}}
+									<div class="network-data_stats_item_regular">
+										<span>{{ Math.round(netStatsToAnimate.bandwidth) }} Mbps</span>
+										<span>bandwidth</span>
+									</div>
+								{{/if}}
 							</div>
 						</div>
 
@@ -732,7 +740,6 @@
 			<div class="endpoints_list_wrapper">
 				<c-proxy-data-card
 					name="cocoa"
-					linkHref="https://www.cocoapods.org"
 					period="month"
 					bandwidthUnit="GB"
 					imgName="endpoint1"
@@ -742,7 +749,6 @@
 
 				<c-proxy-data-card
 					name="ghost"
-					linkHref="https://ghost.org"
 					period="month"
 					bandwidthUnit="GB"
 					imgName="endpoint4"
@@ -752,7 +758,6 @@
 
 				<c-proxy-data-card
 					name="pyodide"
-					linkHref="https://pyodide.org"
 					period="month"
 					bandwidthUnit="GB"
 					imgName="endpoint2"
@@ -762,7 +767,6 @@
 
 				<c-proxy-data-card
 					name="musescore"
-					linkHref="https://musescore.org"
 					period="month"
 					bandwidthUnit="GB"
 					imgName="endpoint3"
@@ -883,6 +887,10 @@
 				esmDemoLoadTime: null,
 				esmDemoRunning: false,
 				fireworks: null,
+				netStatsAnimData: {
+					reqMultiplier: 0,
+					bandwMultiplier: 0,
+				},
 			};
 		},
 		oninit () {
@@ -894,25 +902,21 @@
 			);
 
 			if (!Ractive.isServer) {
-				this.observe(
-					'activeTab',
-					(newValue) => {
-						document.querySelector('.code-slider .c-slider').scrollTop = 0;
+				this.observe('activeTab', (newValue) => {
+					document.querySelector('.code-slider .c-slider').scrollTop = 0;
 
-						this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
+					this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
 
-						let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
-						this.set('activeTabLineData', [
-							activeTabLink.offsetLeft,
-							activeTabLink.clientWidth,
-						]);
+					let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
+					this.set('activeTabLineData', [
+						activeTabLink.offsetLeft,
+						activeTabLink.clientWidth,
+					]);
 
-						setTimeout(() => {
-							createLineNums(`.api_code .${newValue} .code-wrapper`, `.api_code .${newValue} .code-wrapper div`, `.api_code .${newValue} .code-lines-counter`);
-						}, 100);
-					},
-					{ init: false }
-				);
+					setTimeout(() => {
+						createLineNums(`.api_code .${newValue} .code-wrapper`, `.api_code .${newValue} .code-wrapper div`, `.api_code .${newValue} .code-lines-counter`);
+					}, 100);
+				}, { init: false });
 
 				// Load top packages.
 				http.fetchTopPackages().then((data) => {
@@ -921,32 +925,33 @@
 
 				// Load network stats for the previous day
 				http.fetchNetworkStats('month').then((data) => {
-					this.set(
-						'baseRequestsPerSecond',
-						data.hits.total / 30 / 24 / 60 / 60
-					);
-
+					this.set('baseRequestsPerSecond', data.hits.total / 30 / 24 / 60 / 60);
 					this.set('baseBandwidth', data.bandwidth.total / 30 / 24 / 60 / 60 / 1e6);
 				});
 
-
-				let animationConfig = {
-					duration: 4,
-					easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
-				};
-
 				setInterval(() => {
-					let requestsPerSecond = (this.getRandom(97, 102) / 100) * this.get('baseRequestsPerSecond');
-					let bandwidth = (this.getRandom(97, 102) / 100) * this.get('baseBandwidth');
+					let max = 102;
+					let min = 97;
+					let { reqMultiplier, bandwMultiplier } = this.get('netStatsAnimData');
+					let newReqMultiplier = this.getNewMultiplier(min, max, reqMultiplier);
+					let newBandwMultiplier = this.getNewMultiplier(min, max, bandwMultiplier);
 
-					this.animate(
-						'requestsPerSecond',
-						requestsPerSecond,
-						animationConfig
-					);
+					this.set('netStatsAnimData', { reqMultiplier: newReqMultiplier, bandwMultiplier: newBandwMultiplier });
+				}, 1400);
 
-					this.animate('bandwidth', bandwidth, animationConfig);
-				}, 800);
+
+				this.observe('netStatsAnimData', ({ reqMultiplier, bandwMultiplier }) => {
+					let animationConfig = {
+						easing: x => 1 - Math.sqrt(1 - Math.pow(x, 2)),
+					};
+
+					let netStatsToAnimate = {
+						requestsPerSecond: reqMultiplier * this.get('baseRequestsPerSecond') || 0,
+						bandwidth: bandwMultiplier * this.get('baseBandwidth') || 0,
+					};
+
+					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
+				}, { init: false });
 			}
 		},
 		oncomplete () {
@@ -955,8 +960,17 @@
 				createLineNums('.api_code .entrypoints .code-wrapper', '.api_code .entrypoints .code-wrapper div', '.api_code .entrypoints .code-lines-counter');
 			}
 		},
-		getRandom (min, max) {
-			return Math.floor(Math.random() * (max - min + 1) + min);
+		getRandomMultiplier (min, max) {
+			return (Math.random() * (max - min + 1) + min) / 100;
+		},
+		getNewMultiplier (min, max, prevMultiplier) {
+			let multiplier = this.getRandomMultiplier(min, max);
+
+			if (multiplier === prevMultiplier) {
+				return this.getNewMultiplier(min, max, multiplier);
+			}
+
+			return multiplier;
 		},
 		runEsmDemo (e) {
 			performance.clearResourceTimings();

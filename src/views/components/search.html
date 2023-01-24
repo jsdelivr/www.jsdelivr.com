@@ -111,8 +111,11 @@
 		onrender () {
 			if (!this.isServer) {
 				let offsetTop = scrollY;
+
+				this.find('.search-input').focus({ preventScroll: true });
 				this.find('.search-input').focus();
-				window.scrollTo(0, offsetTop); // Restore scroll position after focusing the input.
+				// Restore scroll position after focusing the input.
+				window.scrollTo(0, offsetTop);
 				setTimeout(() => window.scrollTo(0, offsetTop), 0);
 
 				if (this.get('caretPosition')) {
@@ -165,6 +168,10 @@
 				this.observe('query', (value) => {
 					if (typeof value !== 'string') {
 						this.set('query', String(value));
+					}
+
+					if (value) {
+						this.scrollToSearch();
 					}
 				});
 
