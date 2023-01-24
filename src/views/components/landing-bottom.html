@@ -898,25 +898,21 @@
 			);
 
 			if (!Ractive.isServer) {
-				this.observe(
-					'activeTab',
-					(newValue) => {
-						document.querySelector('.code-slider .c-slider').scrollTop = 0;
+				this.observe('activeTab', (newValue) => {
+					document.querySelector('.code-slider .c-slider').scrollTop = 0;
 
-						this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
+					this.findComponent('c-slider').show(codeTabs.indexOf(newValue) !== -1 ? codeTabs.indexOf(newValue) : 0);
 
-						let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
-						this.set('activeTabLineData', [
-							activeTabLink.offsetLeft,
-							activeTabLink.clientWidth,
-						]);
+					let activeTabLink = document.querySelectorAll('.code-tabs a')[this.get('activeSlide') || 0];
+					this.set('activeTabLineData', [
+						activeTabLink.offsetLeft,
+						activeTabLink.clientWidth,
+					]);
 
-						setTimeout(() => {
-							createLineNums(`.api_code .${newValue} .code-wrapper`, `.api_code .${newValue} .code-wrapper div`, `.api_code .${newValue} .code-lines-counter`);
-						}, 100);
-					},
-					{ init: false }
-				);
+					setTimeout(() => {
+						createLineNums(`.api_code .${newValue} .code-wrapper`, `.api_code .${newValue} .code-wrapper div`, `.api_code .${newValue} .code-lines-counter`);
+					}, 100);
+				}, { init: false });
 
 				// Load top packages.
 				http.fetchTopPackages().then((data) => {
