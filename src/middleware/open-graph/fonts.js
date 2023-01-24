@@ -103,7 +103,7 @@ module.exports = class FontsProcessor {
 		let curLine = [];
 		let curLineWidth = 0;
 
-		while (chunks.length > 0) {
+		while (chunks && chunks.length > 0) {
 			let word = chunks.shift();
 			let wordWidth = this.computeWidth(word, fontFamily, fontSize, letterSpacing);
 
