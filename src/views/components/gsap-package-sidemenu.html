@@ -119,7 +119,6 @@
 
 				initCharts().then(({ createBarChart }) => {
 					this.observe('packageDateStats', () => {
-						let requestsChart = this.get('requestsChart');
 						let packageDateStats = this.get('packageDateStats');
 
 						if (!packageDateStats) {
@@ -128,17 +127,18 @@
 
 						let array = Object.entries(packageDateStats.dates);
 
-						if (requestsChart) {
-							requestsChart.destroy();
-							requestsChart = null;
-							this.set('requestsChart', null);
-						}
-
 						let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
 						let data = array.map(item => item[1]);
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
+							let requestsChart = this.get('requestsChart');
+
+							if (requestsChart) {
+								requestsChart.destroy();
+								this.set('requestsChart', null);
+							}
+
 							let chartEl = this.find('#requests-chart');
 
 							let chartData = {
@@ -182,7 +182,6 @@
 					});
 
 					this.observe('packageBandwidthStats', () => {
-						let bandwidthChart = this.get('bandwidthChart');
 						let packageBandwidthStats = this.get('packageBandwidthStats');
 
 						if (!packageBandwidthStats) {
@@ -191,17 +190,18 @@
 
 						let array = Object.entries(packageBandwidthStats.dates);
 
-						if (bandwidthChart) {
-							bandwidthChart.destroy();
-							bandwidthChart = null;
-							this.set('bandwidthChart', null);
-						}
-
 						let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
 						let data = array.map(item => _.convertBytesToUnits(item[1]));
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
+							let bandwidthChart = this.get('bandwidthChart');
+
+							if (bandwidthChart) {
+								bandwidthChart.destroy();
+								this.set('bandwidthChart', null);
+							}
+
 							let chartEl = this.find('#bandwidth-chart');
 
 							let chartData = {

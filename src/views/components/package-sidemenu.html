@@ -220,17 +220,10 @@
 							return null;
 						}
 
-						let requestsChart = this.get('requestsChart');
 						let packageDateStats = this.get('packageDateStats');
 
 						if (!packageDateStats) {
 							return null;
-						}
-
-						if (requestsChart) {
-							requestsChart.destroy();
-							requestsChart = null;
-							this.set('requestsChart', null);
 						}
 
 						let {
@@ -241,6 +234,13 @@
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
+							let requestsChart = this.get('requestsChart');
+
+							if (requestsChart) {
+								requestsChart.destroy();
+								this.set('requestsChart', null);
+							}
+
 							let chartEl = this.find('#requests-chart');
 							let chartData = {
 								labels,
@@ -282,17 +282,10 @@
 							return null;
 						}
 
-						let bandwidthChart = this.get('bandwidthChart');
 						let packageBandwidthStats = this.get('packageBandwidthStats');
 
 						if (!packageBandwidthStats) {
 							return null;
-						}
-
-						if (bandwidthChart) {
-							bandwidthChart.destroy();
-							bandwidthChart = null;
-							this.set('bandwidthChart', null);
 						}
 
 						let {
@@ -303,6 +296,13 @@
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
+							let bandwidthChart = this.get('bandwidthChart');
+
+							if (bandwidthChart) {
+								bandwidthChart.destroy();
+								this.set('bandwidthChart', null);
+							}
+
 							let chartEl = this.find('#bandwidth-chart');
 							let chartData = {
 								labels,
