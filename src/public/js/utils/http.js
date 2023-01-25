@@ -13,8 +13,8 @@ module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
 	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}${flat ? '?structure=flat' : ''}` });
 };
 
-module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by } });
+module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits', limit = undefined) => {
+	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by, limit } });
 };
 
 module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {

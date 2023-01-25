@@ -339,11 +339,11 @@
 					let type = this.get('type');
 					let name = this.get('name');
 
-					http.fetchPackageFileStats(type, name, version, period, dataType).then((response) => {
+					http.fetchPackageFileStats(type, name, version, period, dataType, '5').then((response) => {
 						let filesStats = response.map(statsPerFile => ({
 							file: statsPerFile.name,
 							hits: statsPerFile[dataType].total,
-						})).slice(0, 5);
+						}));
 
 						this.set('fileStatsFormatterOptions', { data: filesStats, showChartBandwidth });
 						this.animate('filesStats', filesStats);
