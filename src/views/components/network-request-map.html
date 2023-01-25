@@ -103,7 +103,6 @@
 <script>
 	const http = require('../../public/js/utils/http.js');
 	const _ = require('../../public/js/_.js');
-	const geoData = require('../../public/json/geodata.json');
 	const providersJson = require('../../public/json/net-providers.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
@@ -260,7 +259,9 @@
 				Promise.all([
 					// eslint-disable-next-line node/no-missing-import
 					import('https://cdn.jsdelivr.net/npm/d3@7.8.2/+esm'),
-				]).then(([ d3 ]) => {
+					// eslint-disable-next-line node/no-missing-import
+					fetch('/json/geodata.json').then(r => r.json()),
+				]).then(([ d3, geoData ]) => {
 					this.set({ d3 });
 
 					// draw the Map and the Legend

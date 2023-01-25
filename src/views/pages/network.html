@@ -141,7 +141,6 @@
 
 <script>
 	const styles = require('../../public/js/map/styles.json');
-	const locations = require('../../public/js/map/map.json').sort((a, b) => a.title > b.title ? -1 : a.title < b.title);
 	const providers = Object.values(require('../../public/json/net-providers.json')).filter(provider => provider.enabled);
 	const xIndexes = { GCore: 1, Cloudflare: 2, Fastly: 3, Bunny: 4 };
 	const getProvider = location => providers.find(provider => location.title.startsWith(provider.name));
@@ -152,7 +151,7 @@
 	component.exports = {
 		computed: {
 			locations () {
-				return locations.filter((location) => {
+				return this.get('allLocations').filter((location) => {
 					let p = getProvider(location);
 
 					return providers.some((provider, index) => {
@@ -167,7 +166,16 @@
 				enabled: providers.map(() => true),
 				title: 'Our network - jsDelivr',
 				description: 'jsDelivr uses Cloudflare, Fastly, Bunny, and Gcore, as well as custom servers in locations where CDNs have little or no presence.',
+				allLocations: [],
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				fetch('/js/map/map.json').then(r => r.json())
+					.then((locations) => {
+						this.set('allLocations', locations.sort((a, b) => a.title > b.title ? -1 : a.title < b.title));
+					});
+			}
 		},
 		initMap () {
 			infoWindows.splice(0);
@@ -190,7 +198,7 @@
 				map.setZoom(2.14);
 			}
 
-			this.observe('enabled', () => {
+			this.observe('locations', () => {
 				this.updateMarkers();
 			});
 		},
