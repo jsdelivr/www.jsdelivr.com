@@ -256,105 +256,114 @@
 			}
 		},
 		onrender () {
-			// draw the Map and the Legend
-			this.observe('preparedMapData screenWidth', () => {
-				let legendColorRange = [ '#a2ecf6', '#65d69e', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
-				let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
-				let svg = d3.select('#hits-map');
+			if (!Ractive.isServer) {
+				Promise.all([
+					// eslint-disable-next-line node/no-missing-import
+					import('https://cdn.jsdelivr.net/npm/d3@7.8.2/+esm'),
+				]).then(([ d3 ]) => {
+					this.set({ d3 });
 
-				if (!svg || !this.get('__ready') || !screenWidth) { return; }
+					// draw the Map and the Legend
+					this.observe('preparedMapData screenWidth', () => {
+						let legendColorRange = [ '#a2ecf6', '#65d69e', '#90eb9d', '#ffff8c', '#f9d057', '#f29e2e', '#e76818', '#d7191c' ];
+						let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+						let svg = d3.select('#hits-map');
 
-				let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
+						if (!svg || !this.get('__ready') || !screenWidth || !this.get('preparedMapData')) { return; }
 
-				let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
-					if (type === 'bandwidth') {
-						result.push(_.formatBytesWithUnit(rawValue, 'TB'));
-					} else {
-						if (screenWidth < 768) {
-							result.push(_.formatToShortNumber(rawValue, ' '));
-						} else {
-							result.push(_.formatNumber(Math.round(rawValue)));
-						}
-					}
+						let { dataByCountries, mapValuesRangeSteps, legendValuesRangeSteps, type } = this.get('preparedMapData');
 
-					return result;
-				}, []);
-
-				this.set('legendAxisTicks', legendAxisTicks);
-
-				svg.selectAll('*').remove();
-
-				let mapSvgWidth = parseInt(svg.style('width').replace('px', ''));
-				let mapSvgHeight = parseInt(svg.style('height').replace('px', ''));
-
-				let colorScale = d3.scaleLinear()
-					.domain(mapValuesRangeSteps)
-					.range(legendColorRange)
-					.clamp(true)
-					.unknown('#ccc');
-
-				// Map and projection
-				let projection = d3.geoMercator()
-					.scale(mapSvgWidth / 2.5 / Math.PI)
-					.center([ 0, 20 ])
-					.translate(screenWidth < 768 ? [ mapSvgWidth / 2, mapSvgHeight / 2 ] : [ mapSvgWidth / 2, mapSvgHeight / 2 + 50 ]);
-
-				// Draw the map
-				svg.append('g')
-					.selectAll('path')
-					.data(geoData.features)
-					.join('path')
-					// draw each country
-					.attr('d', d3.geoPath().projection(projection))
-					// set the color of each country
-					.attr('fill', (d) => {
-						let countryCode = d.id;
-
-						return colorScale(dataByCountries[countryCode] ? dataByCountries[countryCode].total : null);
-					})
-					.attr('stroke', 'white')
-					.attr('stroke-width', '1px')
-					.on('mouseover click', (event, d) => this.showTooltip(event, d))
-					.on('mouseout', () => this.hideTooltip());
-
-				function filter (event) {
-					switch (event.type) {
-						case 'wheel':
-							if (event.ctrlKey) {
-								event.preventDefault();
-								return true;
+						let legendAxisTicks = legendValuesRangeSteps.reduce((result, rawValue) => {
+							if (type === 'bandwidth') {
+								result.push(_.formatBytesWithUnit(rawValue, 'TB'));
+							} else {
+								if (screenWidth < 768) {
+									result.push(_.formatToShortNumber(rawValue, ' '));
+								} else {
+									result.push(_.formatNumber(Math.round(rawValue)));
+								}
 							}
 
-							break;
+							return result;
+						}, []);
 
-						case 'touchstart':
-						case 'click':
-						case 'mousedown':
-							return true;
+						this.set('legendAxisTicks', legendAxisTicks);
 
-						default:
-							return false;
-					}
-				}
+						svg.selectAll('*').remove();
 
-				function wheelDelta (event) {
-					return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
-				}
+						let mapSvgWidth = parseInt(svg.style('width').replace('px', ''));
+						let mapSvgHeight = parseInt(svg.style('height').replace('px', ''));
 
-				let zoom = d3.zoom()
-					.scaleExtent([ 1, 8 ])
-					.filter(filter)
-					.wheelDelta(wheelDelta)
-					.on('zoom', (event) => {
-						svg.selectAll('g')
-							.attr('transform', event.transform);
+						let colorScale = d3.scaleLinear()
+							.domain(mapValuesRangeSteps)
+							.range(legendColorRange)
+							.clamp(true)
+							.unknown('#ccc');
+
+						// Map and projection
+						let projection = d3.geoMercator()
+							.scale(mapSvgWidth / 2.5 / Math.PI)
+							.center([ 0, 20 ])
+							.translate(screenWidth < 768 ? [ mapSvgWidth / 2, mapSvgHeight / 2 ] : [ mapSvgWidth / 2, mapSvgHeight / 2 + 50 ]);
+
+						// Draw the map
+						svg.append('g')
+							.selectAll('path')
+							.data(geoData.features)
+							.join('path')
+							// draw each country
+							.attr('d', d3.geoPath().projection(projection))
+							// set the color of each country
+							.attr('fill', (d) => {
+								let countryCode = d.id;
+
+								return colorScale(dataByCountries[countryCode] ? dataByCountries[countryCode].total : null);
+							})
+							.attr('stroke', 'white')
+							.attr('stroke-width', '1px')
+							.on('mouseover click', (event, d) => this.showTooltip(event, d))
+							.on('mouseout', () => this.hideTooltip());
+
+						function filter (event) {
+							switch (event.type) {
+								case 'wheel':
+									if (event.ctrlKey) {
+										event.preventDefault();
+										return true;
+									}
+
+									break;
+
+								case 'touchstart':
+								case 'click':
+								case 'mousedown':
+									return true;
+
+								default:
+									return false;
+							}
+						}
+
+						function wheelDelta (event) {
+							return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+						}
+
+						let zoom = d3.zoom()
+							.scaleExtent([ 1, 8 ])
+							.filter(filter)
+							.wheelDelta(wheelDelta)
+							.on('zoom', (event) => {
+								svg.selectAll('g')
+									.attr('transform', event.transform);
+							});
+
+						svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
 					});
 
-				svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
-			}, { init: false });
-
-			// detect window resize
-			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+					// detect window resize
+					window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+				});
+			}
 		},
 		calcRatio (hits, bandwidth) {
 			return hits ? _.formatBytesWithUnit(bandwidth / hits) : 0;
@@ -371,8 +380,8 @@
 			this.set('currentCountryId', null);
 		},
 		handleMapZoom (zoomDirection = 'in', scale = 1.4, duration = 750) {
-			let mapSvg = d3.select('#hits-map');
-			let zoom = d3.zoom()
+			let mapSvg = this.get('d3').select('#hits-map');
+			let zoom = this.get('d3').zoom()
 				.scaleExtent([ 1, 8 ])
 				.on('zoom', (event) => {
 					mapSvg.selectAll('g')
