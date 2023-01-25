@@ -252,8 +252,7 @@
 	const throttle = require('../../public/js/utils/throttle');
 	const clipboard = require('../../public/js/decorators/clipboard');
 	const tooltip = require('../../public/js/decorators/tooltip');
-	const createBarChart = require('../../public/js/utils/create-bar-chart');
-	const createLineChart = require('../../public/js/utils/create-line-chart');
+	const initCharts = require('../../public/js/utils/charts');
 	const NAV_MENU_SHORT_TITLES = {
 		readmeTabTitle: 'Readme',
 		configTabTitle: 'Files',
@@ -539,209 +538,215 @@
 				let statsChart;
 				let hitsChart;
 
-				// create barChart
-				this.observe('preparedStatsChartData', (preparedStatsChartData) => {
-					let {
-						labels,
-						maxRangeValue,
-						data,
-						showChartBandwidth,
-						barThickness,
-						useYAxisBorderPlugin,
-						yAxisPadding,
-						labelsStartEndPeriods,
-						valueUnits,
-						usageChartGroupBy,
-					} = preparedStatsChartData;
-					let statsChartCanvasEl = this.find('#stats-chart');
+				initCharts().then(({ createBarChart, createLineChart }) => {
+					// create barChart
+					this.observe('preparedStatsChartData', (preparedStatsChartData) => {
+						if (!preparedStatsChartData) { return; }
 
-					if (!preparedStatsChartData || !statsChartCanvasEl) { return; }
-
-					if (statsChart) {
-						statsChart.destroy();
-						statsChart = null;
-					}
-
-					let chartData = {
-						labels,
-						datasets: [{
+						let {
+							labels,
+							maxRangeValue,
 							data,
-							borderWidth: 0,
+							showChartBandwidth,
 							barThickness,
-							hoverBackgroundColor: '#F65128',
-						}],
-						labelsStartEndPeriods,
-						valueUnits,
-						usageChartGroupBy,
-					};
-					let chartSettings = {
-						useYAxisBorderPlugin,
-						useExternalTooltip: true,
-						useImprovedTooltip: true,
-						externalTooltipVerticalOffset: 40,
-					};
-					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
-					let chartConfig = {
-						options: {
-							scales: {
-								x: {
-									display: true,
-									ticks: {
-										color: '#5C667A',
-										font: {
-											size: 12,
-											family: 'Lexend, sans-serif',
-											lineHeight: 2,
-										},
-										// return nothing when labelValue array is empty
-										// this way we will not get italicized text when all ticks can't be displayed at once normally
-										callback (value) {
-											let labelValue = this.getLabelForValue(value);
+							useYAxisBorderPlugin,
+							yAxisPadding,
+							labelsStartEndPeriods,
+							valueUnits,
+							usageChartGroupBy,
+						} = preparedStatsChartData;
+						let statsChartCanvasEl = this.find('#stats-chart');
 
-											if (labelValue.length) {
-												return labelValue;
-											}
-										},
-									},
-									grid: {
-										display: false,
-										drawBorder: false,
-									},
-								},
-								y: {
-									display: true,
-									min: 0,
-									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
-									ticks: {
-										padding: yAxisPadding,
-										count: 9,
-										color: '#5C667A',
-										crossAlign: 'near',
-										font: {
-											size: 12,
-											family: 'Lexend, sans-serif',
-										},
-										callback (value) {
-											let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+						if (!preparedStatsChartData || !statsChartCanvasEl) { return; }
 
-											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
-											}
+						if (statsChart) {
+							statsChart.destroy();
+							statsChart = null;
+						}
 
-											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
-										},
-									},
-									grid: {
-										display: false,
-										drawBorder: false,
-									},
-								},
-							},
-						},
-					};
-
-					statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-				}, { init: false });
-
-				// create lineChart
-				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
-					let {
-						datasets,
-						labels,
-						maxRangeValue,
-						useYAxisBorderPlugin,
-						showChartBandwidth,
-						yAxisPadding,
-						labelsStartEndPeriods,
-						valueUnits,
-						usageChartGroupBy,
-					} = preparedHitsChartData;
-					let hitsChartCanvasEl = this.find('#hits-chart');
-
-					if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
-
-					if (hitsChart) {
-						hitsChart.destroy();
-						hitsChart = null;
-					}
-
-					let chartData = {
-						labels,
-						datasets,
-						labelsStartEndPeriods,
-						valueUnits,
-						usageChartGroupBy,
-					};
-					let chartSettings = {
-						useYAxisBorderPlugin,
-						useExternalTooltip: true,
-						useImprovedTooltip: true,
-						plugins: {
+						let chartData = {
+							labels,
+							datasets: [{
+								data,
+								borderWidth: 0,
+								barThickness,
+								hoverBackgroundColor: '#F65128',
+							}],
+							labelsStartEndPeriods,
+							valueUnits,
+							usageChartGroupBy,
+						};
+						let chartSettings = {
+							useYAxisBorderPlugin,
 							useExternalTooltip: true,
-						},
-					};
-					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
-					let chartConfig = {
-						options: {
-							scales: {
-								x: {
-									display: true,
-									ticks: {
-										autoSkip: false,
-										color: '#5C667A',
-										font: {
-											size: 12,
-											family: 'Lexend, sans-serif',
-											lineHeight: 2,
-										},
-										callback (value) {
-											let labelValue = this.getLabelForValue(value);
+							useImprovedTooltip: true,
+							externalTooltipVerticalOffset: 40,
+						};
+						let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: true,
+										ticks: {
+											color: '#5C667A',
+											font: {
+												size: 12,
+												family: 'Lexend, sans-serif',
+												lineHeight: 2,
+											},
+											// return nothing when labelValue array is empty
+											// this way we will not get italicized text when all ticks can't be displayed at once normally
+											callback (value) {
+												let labelValue = this.getLabelForValue(value);
 
-											if (labelValue.length) {
-												return labelValue;
-											}
+												if (labelValue.length) {
+													return labelValue;
+												}
+											},
+										},
+										grid: {
+											display: false,
+											drawBorder: false,
 										},
 									},
-									grid: {
-										display: false,
-										drawBorder: false,
-									},
-								},
-								y: {
-									display: true,
-									min: 0,
-									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
-									ticks: {
-										padding: yAxisPadding,
-										count: 9,
-										color: '#5C667A',
-										crossAlign: 'near',
-										font: {
-											size: 12,
-											family: 'Lexend, sans-serif',
-										},
-										callback (value) {
-											let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+									y: {
+										display: true,
+										min: 0,
+										suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
+										ticks: {
+											padding: yAxisPadding,
+											count: 9,
+											color: '#5C667A',
+											crossAlign: 'near',
+											font: {
+												size: 12,
+												family: 'Lexend, sans-serif',
+											},
+											callback (value) {
+												let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
 
-											if (_.isMobileScreen()) {
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
-											}
+												if (_.isMobileScreen()) {
+													return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+												}
 
-											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+											},
 										},
-									},
-									grid: {
-										drawBorder: false,
-										color: '#CFD6DD',
-										tickLength: 0,
+										grid: {
+											display: false,
+											drawBorder: false,
+										},
 									},
 								},
 							},
-						},
-					};
+						};
 
-					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-				}, { init: false });
+						statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
+					});
+
+					// create lineChart
+					this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+						if (!preparedHitsChartData) { return; }
+
+						let {
+							datasets,
+							labels,
+							maxRangeValue,
+							useYAxisBorderPlugin,
+							showChartBandwidth,
+							yAxisPadding,
+							labelsStartEndPeriods,
+							valueUnits,
+							usageChartGroupBy,
+						} = preparedHitsChartData;
+						let hitsChartCanvasEl = this.find('#hits-chart');
+
+						if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
+
+						if (hitsChart) {
+							hitsChart.destroy();
+							hitsChart = null;
+						}
+
+						let chartData = {
+							labels,
+							datasets,
+							labelsStartEndPeriods,
+							valueUnits,
+							usageChartGroupBy,
+						};
+						let chartSettings = {
+							useYAxisBorderPlugin,
+							useExternalTooltip: true,
+							useImprovedTooltip: true,
+							plugins: {
+								useExternalTooltip: true,
+							},
+						};
+						let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
+						let chartConfig = {
+							options: {
+								scales: {
+									x: {
+										display: true,
+										ticks: {
+											autoSkip: false,
+											color: '#5C667A',
+											font: {
+												size: 12,
+												family: 'Lexend, sans-serif',
+												lineHeight: 2,
+											},
+											callback (value) {
+												let labelValue = this.getLabelForValue(value);
+
+												if (labelValue.length) {
+													return labelValue;
+												}
+											},
+										},
+										grid: {
+											display: false,
+											drawBorder: false,
+										},
+									},
+									y: {
+										display: true,
+										min: 0,
+										suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
+										ticks: {
+											padding: yAxisPadding,
+											count: 9,
+											color: '#5C667A',
+											crossAlign: 'near',
+											font: {
+												size: 12,
+												family: 'Lexend, sans-serif',
+											},
+											callback (value) {
+												let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+
+												if (_.isMobileScreen()) {
+													return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+												}
+
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+											},
+										},
+										grid: {
+											drawBorder: false,
+											color: '#CFD6DD',
+											tickLength: 0,
+										},
+									},
+								},
+							},
+						};
+
+						hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+					});
+				});
 
 				// detect window resize
 				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));

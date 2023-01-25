@@ -7,12 +7,12 @@ const _ = require('../_');
 //	chartSettings.useExternalTooltip - use custom external tooltip instead of default one
 // chartConfig - config of the chart(chartjs lib config)
 
-function createLineChart (
+const createLineChart = Chart => (
 	chartEl,
 	chartData = {},
 	chartSettings = { useExternalTooltip: false },
 	chartConfig = {}
-) {
+) => {
 	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
 	let prevTooltipInstance = document.getElementById('lineChart-tooltip');
 
@@ -279,7 +279,6 @@ function createLineChart (
 
 	// create chart instance
 	return new Chart(chartEl, defaultConfig);
-}
-
+};
 
 module.exports = createLineChart;

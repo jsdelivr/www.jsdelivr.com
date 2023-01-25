@@ -9,12 +9,12 @@ const _ = require('../_');
 // 	chartSettings.externalTooltipId - if there are more than one barChart on the page you should set different ids for tooltips
 // chartConfig - config of the chart(chartjs lib config)
 
-function createBarChart (
+const createBarChart = Chart => (
 	chartEl,
 	chartData = {},
 	chartSettings = {},
 	chartConfig = {}
-) {
+) => {
 	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
 	let prevTooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');
 
@@ -240,7 +240,6 @@ function createBarChart (
 
 	// create chart instance
 	return new Chart(chartEl, defaultConfig);
-}
-
+};
 
 module.exports = createBarChart;

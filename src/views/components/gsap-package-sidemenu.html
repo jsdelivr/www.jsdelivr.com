@@ -72,7 +72,7 @@
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const http = require('../../public/js/utils/http');
 	const stats = require('../../public/js/utils/stats');
-	const createBarChart = require('../../public/js/utils/create-bar-chart');
+	const initCharts = require('../../public/js/utils/charts');
 
 	component.exports = {
 		data () {
@@ -117,131 +117,133 @@
 					}
 				});
 
-				this.observe('packageDateStats', () => {
-					let requestsChart = this.get('requestsChart');
-					let packageDateStats = this.get('packageDateStats');
+				initCharts().then(({ createBarChart }) => {
+					this.observe('packageDateStats', () => {
+						let requestsChart = this.get('requestsChart');
+						let packageDateStats = this.get('packageDateStats');
 
-					if (!packageDateStats) {
-						return null;
-					}
+						if (!packageDateStats) {
+							return null;
+						}
 
-					let array = Object.entries(packageDateStats.dates);
+						let array = Object.entries(packageDateStats.dates);
 
-					if (requestsChart) {
-						requestsChart.destroy();
-						requestsChart = null;
-						this.set('requestsChart', null);
-					}
+						if (requestsChart) {
+							requestsChart.destroy();
+							requestsChart = null;
+							this.set('requestsChart', null);
+						}
 
-					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
-					let data = array.map(item => item[1]);
+						let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+						let data = array.map(item => item[1]);
 
-					// temp solution to fix chart recreation after switching from stats tab
-					setTimeout(() => {
-						let chartEl = this.find('#requests-chart');
+						// temp solution to fix chart recreation after switching from stats tab
+						setTimeout(() => {
+							let chartEl = this.find('#requests-chart');
 
-						let chartData = {
-							labels,
-							datasets: [{
-								data,
-								borderWidth: 0,
-								barThickness: 4,
-								hoverBackgroundColor: '#57922a',
-								borderRadius: 1,
-							}],
-						};
-						let chartSettings = {
-							onHoverNotActiveBarsBGColor: '#ecf7e3',
-							useExternalTooltip: true,
-							externalTooltipId: 'gsapRequestsChartTooltip',
-							externalTooltipVerticalOffset: 40,
-						};
-						let chartConfig = {
-							options: {
-								elements: {
-									bar: {
-										backgroundColor: '#6fb936',
+							let chartData = {
+								labels,
+								datasets: [{
+									data,
+									borderWidth: 0,
+									barThickness: 4,
+									hoverBackgroundColor: '#57922a',
+									borderRadius: 1,
+								}],
+							};
+							let chartSettings = {
+								onHoverNotActiveBarsBGColor: '#ecf7e3',
+								useExternalTooltip: true,
+								externalTooltipId: 'gsapRequestsChartTooltip',
+								externalTooltipVerticalOffset: 40,
+							};
+							let chartConfig = {
+								options: {
+									elements: {
+										bar: {
+											backgroundColor: '#6fb936',
+										},
+									},
+									scales: {
+										x: {
+											display: false,
+										},
+										y: {
+											display: false,
+										},
 									},
 								},
-								scales: {
-									x: {
-										display: false,
+							};
+
+							requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+
+							this.set('requestsChart', requestsChart);
+						}, 100);
+					});
+
+					this.observe('packageBandwidthStats', () => {
+						let bandwidthChart = this.get('bandwidthChart');
+						let packageBandwidthStats = this.get('packageBandwidthStats');
+
+						if (!packageBandwidthStats) {
+							return null;
+						}
+
+						let array = Object.entries(packageBandwidthStats.dates);
+
+						if (bandwidthChart) {
+							bandwidthChart.destroy();
+							bandwidthChart = null;
+							this.set('bandwidthChart', null);
+						}
+
+						let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
+						let data = array.map(item => _.convertBytesToUnits(item[1]));
+
+						// temp solution to fix chart recreation after switching from stats tab
+						setTimeout(() => {
+							let chartEl = this.find('#bandwidth-chart');
+
+							let chartData = {
+								labels,
+								datasets: [{
+									data,
+									borderWidth: 0,
+									barThickness: 4,
+									hoverBackgroundColor: '#57922a',
+									borderRadius: 1,
+								}],
+							};
+							let chartSettings = {
+								onHoverNotActiveBarsBGColor: '#ecf7e3',
+								useExternalTooltip: true,
+								externalTooltipId: 'gsapBandwidthChartTooltip',
+								externalTooltipVerticalOffset: 40,
+								valueUnits: ' GB',
+							};
+							let chartConfig = {
+								options: {
+									elements: {
+										bar: {
+											backgroundColor: '#6fb936',
+										},
 									},
-									y: {
-										display: false,
-									},
-								},
-							},
-						};
-
-						requestsChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
-
-						this.set('requestsChart', requestsChart);
-					}, 100);
-				});
-
-				this.observe('packageBandwidthStats', () => {
-					let bandwidthChart = this.get('bandwidthChart');
-					let packageBandwidthStats = this.get('packageBandwidthStats');
-
-					if (!packageBandwidthStats) {
-						return null;
-					}
-
-					let array = Object.entries(packageBandwidthStats.dates);
-
-					if (bandwidthChart) {
-						bandwidthChart.destroy();
-						bandwidthChart = null;
-						this.set('bandwidthChart', null);
-					}
-
-					let labels = array.map(item => _.formatDate(new Date(item[0])).toUpperCase());
-					let data = array.map(item => _.convertBytesToUnits(item[1]));
-
-					// temp solution to fix chart recreation after switching from stats tab
-					setTimeout(() => {
-						let chartEl = this.find('#bandwidth-chart');
-
-						let chartData = {
-							labels,
-							datasets: [{
-								data,
-								borderWidth: 0,
-								barThickness: 4,
-								hoverBackgroundColor: '#57922a',
-								borderRadius: 1,
-							}],
-						};
-						let chartSettings = {
-							onHoverNotActiveBarsBGColor: '#ecf7e3',
-							useExternalTooltip: true,
-							externalTooltipId: 'gsapBandwidthChartTooltip',
-							externalTooltipVerticalOffset: 40,
-							valueUnits: ' GB',
-						};
-						let chartConfig = {
-							options: {
-								elements: {
-									bar: {
-										backgroundColor: '#6fb936',
-									},
-								},
-								scales: {
-									x: {
-										display: false,
-									},
-									y: {
-										display: false,
+									scales: {
+										x: {
+											display: false,
+										},
+										y: {
+											display: false,
+										},
 									},
 								},
-							},
-						};
+							};
 
-						bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
+							bandwidthChart = createBarChart(chartEl, chartData, chartSettings, chartConfig);
 
-						this.set('bandwidthChart', bandwidthChart);
-					}, 100);
+							this.set('bandwidthChart', bandwidthChart);
+						}, 100);
+					});
 				});
 			}
 		},

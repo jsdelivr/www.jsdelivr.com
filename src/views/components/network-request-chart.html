@@ -63,7 +63,7 @@
 <script>
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
-	const createLineChart = require('../../public/js/utils/create-line-chart');
+	const initCharts = require('../../public/js/utils/charts');
 	const providersJson = require('../../public/json/net-providers.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
@@ -213,103 +213,107 @@
 		onrender () {
 			let hitsChart;
 
-			// create hits chart
-			this.observe('preparedHitsChartData', (preparedHitsChartData) => {
-				let {
-					datasets,
-					labels,
-					maxRangeValue,
-					showChartBandwidth,
-					yAxisPadding,
-					labelsStartEndPeriods,
-					valueUnits,
-					usageChartGroupBy,
-				} = preparedHitsChartData;
-				let hitsChartCanvasEl = this.find('#hits-chart');
+			initCharts().then(({ createLineChart }) => {
+				// create hits chart
+				this.observe('preparedHitsChartData', (preparedHitsChartData) => {
+					if (!preparedHitsChartData) { return; }
 
-				if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
+					let {
+						datasets,
+						labels,
+						maxRangeValue,
+						showChartBandwidth,
+						yAxisPadding,
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
+					} = preparedHitsChartData;
+					let hitsChartCanvasEl = this.find('#hits-chart');
 
-				if (hitsChart) {
-					hitsChart.destroy();
-					hitsChart = null;
-				}
+					if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
 
-				let chartData = {
-					labels,
-					datasets,
-					labelsStartEndPeriods,
-					valueUnits,
-					usageChartGroupBy,
-				};
-				let chartSettings = {
-					useExternalTooltip: true,
-					useImprovedTooltip: true,
-					plugins: {
+					if (hitsChart) {
+						hitsChart.destroy();
+						hitsChart = null;
+					}
+
+					let chartData = {
+						labels,
+						datasets,
+						labelsStartEndPeriods,
+						valueUnits,
+						usageChartGroupBy,
+					};
+					let chartSettings = {
 						useExternalTooltip: true,
-					},
-				};
-				let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
-				let chartConfig = {
-					options: {
-						scales: {
-							x: {
-								display: true,
-								ticks: {
-									autoSkip: false,
-									color: '#5C667A',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-										lineHeight: 2,
-									},
-									callback (value) {
-										let labelValue = this.getLabelForValue(value);
+						useImprovedTooltip: true,
+						plugins: {
+							useExternalTooltip: true,
+						},
+					};
+					let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
+					let chartConfig = {
+						options: {
+							scales: {
+								x: {
+									display: true,
+									ticks: {
+										autoSkip: false,
+										color: '#5C667A',
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+											lineHeight: 2,
+										},
+										callback (value) {
+											let labelValue = this.getLabelForValue(value);
 
-										if (labelValue.length) {
-											return labelValue;
-										}
+											if (labelValue.length) {
+												return labelValue;
+											}
+										},
+									},
+									grid: {
+										display: false,
+										drawBorder: false,
 									},
 								},
-								grid: {
-									display: false,
-									drawBorder: false,
-								},
-							},
-							y: {
-								display: true,
-								min: 0,
-								suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
-								ticks: {
-									padding: yAxisPadding,
-									count: 9,
-									color: '#5C667A',
-									crossAlign: 'near',
-									font: {
-										size: 12,
-										family: 'Lexend, sans-serif',
-									},
-									callback (value) {
-										let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
+								y: {
+									display: true,
+									min: 0,
+									suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
+									ticks: {
+										padding: yAxisPadding,
+										count: 9,
+										color: '#5C667A',
+										crossAlign: 'near',
+										font: {
+											size: 12,
+											family: 'Lexend, sans-serif',
+										},
+										callback (value) {
+											let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
 
-										if (_.isMobileScreen()) {
-											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
-										}
+											if (_.isMobileScreen()) {
+												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
+											}
 
-										return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+											return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
+										},
 									},
-								},
-								grid: {
-									drawBorder: false,
-									color: '#CFD6DD',
-									tickLength: 0,
+									grid: {
+										drawBorder: false,
+										color: '#CFD6DD',
+										tickLength: 0,
+									},
 								},
 							},
 						},
-					},
-				};
+					};
 
-				hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-			}, { init: false });
+					hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
+				});
+			});
 
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
