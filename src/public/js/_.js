@@ -1082,4 +1082,29 @@ module.exports = {
 
 		return name || 'm';
 	},
+
+	filterListStatPeriods (rawListStatPeriods, filterFor) {
+		if (!filterFor) { return rawListStatPeriods; }
+
+		return rawListStatPeriods.reduce((res, item) => {
+			if (Object.hasOwn(item.links, 'filterFor')) {
+				res.push(item);
+			}
+
+			return res;
+		}, []);
+	},
+
+	prepareFilteredStatPeriods (listStatPeriods) {
+		console.log('++++ listStatPeriods 2', listStatPeriods);
+		console.log('________________________');
+
+		return listStatPeriods;
+	},
+
+	getPreparedListStatPeriods (rawListStatPeriods, filterFor) {
+		let filteredStatPeriods = this.filterListStatPeriods(rawListStatPeriods, filterFor);
+
+		return this.prepareFilteredStatPeriods(filteredStatPeriods);
+	},
 };

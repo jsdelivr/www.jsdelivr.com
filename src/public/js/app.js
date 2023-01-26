@@ -1,5 +1,7 @@
 require('./polyfills');
 
+const http = require('./utils/http');
+
 const _ = require('./_');
 const has = require('./utils/has');
 const cAbout = require('../../views/pages/about.html');
@@ -117,6 +119,10 @@ _.onDocumentReady(() => {
 				ractive.set(`@shared.${key}`, shared[key]);
 			});
 		}
+
+		http.fetchListStatPeriods().then((response) => {
+			ractive.set('@shared.rawListStatPeriods', response);
+		});
 	} catch (e) {}
 
 	try {
