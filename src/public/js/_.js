@@ -1095,11 +1095,32 @@ module.exports = {
 		}, []);
 	},
 
-	prepareFilteredStatPeriods (listStatPeriods) {
-		console.log('++++ listStatPeriods 2', listStatPeriods);
-		console.log('________________________');
+	prepareFilteredStatPeriods (rawPeriods) {
+		return rawPeriods.reduce((res, rawItem) => {
+			let yearText = '';
+			let monthQuarterText = '';
+			let { period, periodType } = rawItem;
+			let [ year, monthOrQuarter ] = period.split('-');
+			let currentYear = new Date().getFullYear();
 
-		return listStatPeriods;
+			if (String(year) === String(currentYear)) {
+				yearText = 'year';
+			} else {
+				yearText = year;
+			}
+
+			if (monthOrQuarter) {
+				monthQuarterText = isNaN(Number(monthOrQuarter)) ? monthOrQuarter : MONTHS_FULL_NAMES_LIST[Number(monthOrQuarter) - 1];
+			}
+
+			res.push({
+				periodType,
+				periodText: `${monthQuarterText} ${yearText}`.trim(),
+				periodValue: period,
+			});
+
+			return res;
+		}, []);
 	},
 
 	getPreparedListStatPeriods (rawListStatPeriods, filterFor) {
