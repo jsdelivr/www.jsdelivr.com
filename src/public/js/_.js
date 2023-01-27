@@ -1096,18 +1096,10 @@ module.exports = {
 	},
 
 	prepareFilteredStatPeriods (rawPeriods) {
-		return rawPeriods.reduce((res, rawItem) => {
-			let yearText = '';
+		let prepPeriods = rawPeriods.reduce((res, rawItem) => {
 			let monthQuarterText = '';
 			let { period, periodType } = rawItem;
 			let [ year, monthOrQuarter ] = period.split('-');
-			let currentYear = new Date().getFullYear();
-
-			if (String(year) === String(currentYear)) {
-				yearText = 'year';
-			} else {
-				yearText = year;
-			}
 
 			if (monthOrQuarter) {
 				monthQuarterText = isNaN(Number(monthOrQuarter)) ? monthOrQuarter : MONTHS_FULL_NAMES_LIST[Number(monthOrQuarter) - 1];
@@ -1115,12 +1107,32 @@ module.exports = {
 
 			res.push({
 				periodType,
-				periodText: `${monthQuarterText} ${yearText}`.trim(),
+				periodText: `${monthQuarterText} ${year}`.trim(),
 				periodValue: period,
 			});
 
 			return res;
 		}, []);
+
+		let defaultPeriods = [
+			{
+				periodType: 's-month',
+				periodText: 'month',
+				periodValue: 'month',
+			},
+			{
+				periodType: 's-quarter',
+				periodText: 'quarter',
+				periodValue: 'quarter',
+			},
+			{
+				periodType: 's-year',
+				periodText: 'year',
+				periodValue: 'year',
+			},
+		];
+
+		return defaultPeriods.concat(prepPeriods);
 	},
 
 	getPreparedListStatPeriods (rawListStatPeriods, filterFor) {
