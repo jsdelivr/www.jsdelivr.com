@@ -1,22 +1,24 @@
 <div class="c-periods-dropdown">
-	<div class="btn-group">
-		<button
-			type="button"
-			class="btn dropdown-toggle"
-			data-toggle="dropdown"
-			aria-haspopup="true"
-			aria-expanded="false">
-			<span>{{selectedValue}}</span>
+	{{#if periodToDisplay}}
+		<div class="btn-group">
+			<button
+				type="button"
+				class="btn dropdown-toggle"
+				data-toggle="dropdown"
+				aria-haspopup="true"
+				aria-expanded="false">
+				<span>{{periodToDisplay}}</span>
 
-			<i class="fa fa-angle-down" aria-hidden="true"></i>
-		</button>
+				<i class="fa fa-angle-down" aria-hidden="true"></i>
+			</button>
 
-		<ul class="dropdown-menu">
-			{{#each prepStatPeriods}}
-				<li><a on-click="@this.handleClick(periodValue)">{{periodText}}</a></li>
-			{{/each}}
-		</ul>
-	</div>
+			<ul class="dropdown-menu">
+				{{#each prepStatPeriods}}
+					<li><a on-click="@this.handleClick(periodValue)">{{periodText}}</a></li>
+				{{/each}}
+			</ul>
+		</div>
+	{{/if}}
 </div>
 
 <script>
@@ -25,6 +27,7 @@
 	component.exports = {
 		data () {
 			return {
+				periodToDisplay: null,
 				prepStatPeriods: [],
 			};
 		},
@@ -34,6 +37,19 @@
 					let prepStatPeriods = _.getPreparedListStatPeriods(rawListStatPeriods);
 
 					this.set('prepStatPeriods', prepStatPeriods);
+				}, { init: false });
+
+				this.observe('selectedValue prepStatPeriods', () => {
+					let selectedValue = this.get('selectedValue');
+					let prepStatPeriods = this.get('prepStatPeriods');
+
+					if (selectedValue && prepStatPeriods && prepStatPeriods.length) {
+						prepStatPeriods.forEach((prepPeriod) => {
+							if (prepPeriod.periodValue === selectedValue) {
+								this.set('periodToDisplay', prepPeriod.periodText);
+							}
+						});
+					}
 				}, { init: false });
 			}
 		},
