@@ -1,3 +1,5 @@
+<link rel="ractive" href="./periods-dropdown.html" name="c-periods-dropdown">
+
 <div class="c-package-sidemenu">
 	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
 		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
@@ -7,7 +9,8 @@
 				<span>Statistics</span>
 
 				<!-- TODO: task 460 use listStatPeriods instead of statsPeriods -->
-				<div class="btn-group">
+				<c-periods-dropdown selectedValue="{{statsPeriod}}" selectHandler="{{@this.handlePeriodSelecting()}}"></c-periods-dropdown>
+				<!-- <div class="btn-group">
 					<button
 						type="button"
 						class="btn dropdown-toggle"
@@ -24,7 +27,7 @@
 							<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
 						{{/each}}
 					</ul>
-				</div>
+				</div> -->
 			</div>
 
 			<div class="horizontal-divider"></div>
@@ -347,6 +350,9 @@
 					});
 				});
 			}
+		},
+		handlePeriodSelecting () {
+			return period => this.set('statsPeriod', period);
 		},
 	};
 </script>
