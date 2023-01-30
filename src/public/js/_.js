@@ -869,14 +869,18 @@ module.exports = {
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
+			case 'week':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
 				break;
-			case 'month':
+			case '-smonth':
+			case 'month':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
-			case 'quarter':
-			case 'year':
+			case 's-quarter':
+			case 's-year':
+			case 'quarter':// TODO: 460 -  remove after 460, temp for compatibility
+			case 'year':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}

@@ -82,7 +82,7 @@
 			if (!Ractive.isServer) {
 				this.observe('period country continent __ready', function () {
 					if (this.get('__ready')) {
-						let period = this.get('period');
+						let period = this.get('period').periodValue;
 						let country = this.get('country');
 						let continent = this.get('continent');
 
@@ -138,7 +138,7 @@
 
 					if (!rawHitsChartData || switchList.length === 0) { return; }
 
-					let chartPeriod = this.get('period');
+					let chartPeriodType = this.get('period').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let showProviderBreakdown = this.get('showProviderBreakdown');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
@@ -181,7 +181,7 @@
 						datasets,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
 
 					this.set('preparedHitsChartData', {
 						datasets,
