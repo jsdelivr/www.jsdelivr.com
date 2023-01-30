@@ -8,7 +8,7 @@
 			<div class="sidemenu-title">
 				<span>Statistics</span>
 
-				<c-periods-dropdown selectedValue="{{statsPeriod}}" selectHandler="{{@this.handlePeriodSelecting()}}"></c-periods-dropdown>
+				<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}"></c-periods-dropdown>
 			</div>
 
 			<div class="horizontal-divider"></div>
@@ -66,7 +66,7 @@
 					<a class="btn-twitter-share mt-8"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${~/statsPeriod}: ${~/link}`)}}">
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${~/periodData.periodText}: ${~/link}`)}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 						Share
 					</a>
@@ -119,11 +119,11 @@
 	component.exports = {
 		computed: {
 			barThickness () {
-				switch (this.get('statsPeriod')) {
-					case 'quarter':
+				switch (this.get('periodData').periodType) {
+					case 's-quarter':
 						return 2;
 
-					case 'year':
+					case 's-year':
 						return 1;
 
 					default:
@@ -131,7 +131,7 @@
 				}
 			},
 			usageChartGroupBy () {
-				switch (this.get('statsPeriod')) {
+				switch (this.get('periodData').periodType) {
 					default:
 						return 'day';
 				}
@@ -147,7 +147,7 @@
 			return {
 				_,
 				statsPeriods: stats.periods,
-				statsPeriod: 'month',
+				periodData: { periodText: 'month', periodValue: 'month', periodType: 's-month' },
 				noDataOfRequests: false,
 				noDataOfBandwidth: false,
 				noDataOfVersions: false,
@@ -164,14 +164,13 @@
 			if (!Ractive.isServer) {
 				this.set('link', this.get('@global.location.href'));
 
-				this.observe('statsPeriod', () => {
-					if (this.get('statsPeriod')) {
+				this.observe('periodData.periodValue', (periodValue) => {
+					if (periodValue) {
 						let type = this.get('type');
 						let name = this.get('name');
-						let period = this.get('statsPeriod');
 
 						// get overall package stats (hits-bandwidth data for charts, hits rank of package)
-						http.fetchPackageSummaryStats(type, name, period).then((response) => {
+						http.fetchPackageSummaryStats(type, name, periodValue).then((response) => {
 							this.animate('packageRank', response.hits.rank, { duration: 1000 });
 
 							if (response.hits.total) {
@@ -193,7 +192,7 @@
 						});
 
 						// get package top version stats
-						http.fetchPackageVersionsStats(type, name, period, 'hits').then((response) => {
+						http.fetchPackageVersionsStats(type, name, periodValue, 'hits').then((response) => {
 							if (!response.length) {
 								this.set('noDataOfVersions', true);
 								return;
@@ -221,7 +220,7 @@
 							values,
 							labels,
 							valueUnits,
-						} = _.getPreparedDataForBarChart(packageDateStats, this.get('usageChartGroupBy'), this.get('statsPeriod'), false);
+						} = _.getPreparedDataForBarChart(packageDateStats, this.get('usageChartGroupBy'), this.get('periodData').periodType, false);
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
@@ -283,7 +282,7 @@
 							values,
 							labels,
 							valueUnits,
-						} = _.getPreparedDataForBarChart(packageBandwidthStats, this.get('usageChartGroupBy'), this.get('statsPeriod'), true);
+						} = _.getPreparedDataForBarChart(packageBandwidthStats, this.get('usageChartGroupBy'), this.get('periodData').periodType, true);
 
 						// temp solution to fix chart recreation after switching from stats tab
 						setTimeout(() => {
@@ -333,7 +332,9 @@
 			}
 		},
 		handlePeriodSelecting () {
-			return period => this.set('statsPeriod', period);
+			return (periodData) => {
+				this.set('periodData', periodData);
+			};
 		},
 	};
 </script>
