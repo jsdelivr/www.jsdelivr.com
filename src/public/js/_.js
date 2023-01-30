@@ -787,10 +787,12 @@ module.exports = {
 		};
 
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
+			case 'week':// TODO: 460 -  remove after 460, temp for compatibility
 				return schema.wideBar;
 
-			case 'month':
+			case 's-month':
+			case 'month':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 576) { return schema.wideBar; }
@@ -803,7 +805,8 @@ module.exports = {
 
 				break;
 
-			case 'quarter':
+			case 's-quarter':
+			case 'quarter':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 768) { return schema.regularBar; }
@@ -819,7 +822,8 @@ module.exports = {
 
 				break;
 
-			case 'year':
+			case 's-year':
+			case 'year':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						return schema.thinnestBar;
@@ -948,14 +952,18 @@ module.exports = {
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
+			case 'week':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
 				break;
-			case 'month':
+			case 's-month':
+			case 'month':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
-			case 'quarter':
-			case 'year':
+			case 's-quarter':
+			case 's-year':
+			case 'quarter':// TODO: 460 -  remove after 460, temp for compatibility
+			case 'year':// TODO: 460 -  remove after 460, temp for compatibility
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}

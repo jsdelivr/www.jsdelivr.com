@@ -7,20 +7,35 @@ module.exports = {
 		year: 365,
 	},
 	groupByOptions: {
-		month: {
+		'month': { // TODO: 460 -  remove after 460, temp for compatibility
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: false },
 		},
-		quarter: {
+		's-month': {
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: false },
 		},
-		year: {
+		'quarter': { // TODO: 460 -  remove after 460, temp for compatibility
+			day: { value: 'day', isAvailable: true },
+			week: { value: 'week', isAvailable: true },
+			month: { value: 'month', isAvailable: false },
+		},
+		's-quarter': {
+			day: { value: 'day', isAvailable: true },
+			week: { value: 'week', isAvailable: true },
+			month: { value: 'month', isAvailable: false },
+		},
+		'year': { // TODO: 460 -  remove after 460, temp for compatibility
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: true },
+		},
+		's-year': {
+			day: { value: 'day', isAvailable: true },
+			week: { value: 'week', isAvailable: true },
+			month: { value: 'month', isAvailable: false },
 		},
 	},
 	growthPeriods: {
