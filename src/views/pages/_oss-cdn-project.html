@@ -5,6 +5,7 @@
 <link rel="ractive" href="../components/proxy-head.html" name="c-proxy-head">
 <link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
 <link rel="ractive" href="../components/proxy-request-bandwidth-stats.html" name="c-proxy-request-bandwidth-stats">
+<link rel="ractive" href="../components/periods-dropdown.html" name="c-periods-dropdown">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
@@ -59,7 +60,8 @@
 						<span>Data range:</span>
 
 						<!-- TODO: task 460 use listStatPeriods instead of statsPeriods -->
-						<div class="btn-group">
+						<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}"></c-periods-dropdown>
+						<!-- <div class="btn-group">
 							<button
 								type="button"
 								class="btn dropdown-toggle"
@@ -76,12 +78,12 @@
 									<li><a on-click="@this.set('statsPeriod', @key)">{{@key}}</a></li>
 								{{/each}}
 							</ul>
-						</div>
+						</div> -->
 					</div>
 				</div>
 			</div>
 
-			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{statsPeriod}}"></c-proxy-request-bandwidth-stats>
+			<c-proxy-request-bandwidth-stats name="{{name}}" period="{{periodData.periodValue}}"></c-proxy-request-bandwidth-stats>
 
 			{{#if noPackageStatsData}}
 				<div class="no-data-wrapper">
@@ -91,7 +93,7 @@
 				</div>
 			{{else}}
 				<div class="chart-ctrls">
-					<div class="chart-ctrls-title">Stats for last {{~/statsPeriod}}</div>
+					<div class="chart-ctrls-title">Stats for last {{~/periodData.periodText}}</div>
 					<div class="chart-ctrls-group-by">
 						<span>
 							Group by:
@@ -160,13 +162,12 @@
 				return `A free, fast, and reliable CDN for ${this.get('projectTitle')}. ${this.get('projectDescr')}`;
 			},
 			usageChartGroupByValues () {
-				return stats.groupByOptions[this.get('statsPeriod')];
+				return stats.groupByOptions[this.get('periodData').periodType];
 			},
 		},
 		data () {
 			return {
-				statsPeriods: stats.periods,
-				statsPeriod: 'quarter',
+				periodData: { periodText: 'quarter', periodValue: 'quarter', periodType: 's-quarter' },
 				showChartBandwidth: false,
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
@@ -228,8 +229,8 @@
 
 			if (!Ractive.isServer) {
 				// handle chart period changes by updating groupBy options and chart data fetching
-				this.observe('statsPeriod', (newStatsPeriod) => {
-					let period = newStatsPeriod;
+				this.observe('periodData', (periodData) => {
+					let period = periodData.periodValue;
 					let name = this.get('name');
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
@@ -252,7 +253,7 @@
 				// screenWidth to observe when screen width is resized to recreate chart
 				this.observe('rawStatsData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsData = this.get('rawStatsData');
-					let chartPeriod = this.get('statsPeriod');
+					let chartPeriodType = this.get('periodData').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
@@ -265,10 +266,10 @@
 						labelsStartEndPeriods,
 						maxRangeValue,
 						valueUnits,
-					} = _.getPreparedDataForBarChart(rawStatsData[dataType], usageChartGroupBy, chartPeriod, showChartBandwidth);
+					} = _.getPreparedDataForBarChart(rawStatsData[dataType], usageChartGroupBy, chartPeriodType, showChartBandwidth);
 
-					// get bat thickness of the chart depending on screen resolution, chartPeriod and groupBy
-					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriod, usageChartGroupBy);
+					// get bat thickness of the chart depending on screen resolution, chartPeriodType and groupBy
+					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriodType, usageChartGroupBy);
 
 					// set prepared data for chart
 					this.set('preparedStatsData', {
@@ -277,7 +278,6 @@
 						labelsStartEndPeriods,
 						maxRangeValue,
 						showChartBandwidth,
-						chartPeriod,
 						barThickness: chartBarThickness,
 						useYAxisBorderPlugin: screenWidth >= 768,
 						yAxisPadding: screenWidth >= 768 ? 20 : 8,
@@ -398,6 +398,11 @@
 
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		handlePeriodSelecting () {
+			return (periodData) => {
+				this.set('periodData', periodData);
+			};
 		},
 	};
 </script>
