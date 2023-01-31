@@ -1130,6 +1130,9 @@ module.exports = {
 				periodText: 'year',
 				periodValue: 'year',
 			},
+			{
+				periodType: 'separator',
+			},
 		];
 
 		return defaultPeriods.concat(prepPeriods);
