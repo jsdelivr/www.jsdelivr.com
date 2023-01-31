@@ -25,18 +25,22 @@
 				requestsGrowthPercent: 0,
 				bandwidthGrowthPercent: 0,
 				growthPeriods: stats.growthPeriods,
-				growthPeriod: 'monthly',
+				growthPeriod: 'quarterly',
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period', (period) => {
+				this.observe('periodData', ({ periodValue, periodText }) => {
 					let name = this.get('name');
 					let type = this.get('type');
 					let bandwidthUnit = this.get('bandwidthUnit');
-					this.set('growthPeriod', this.get('growthPeriods')[period]);
 
-					http.fetchPackageSummaryStats(type, name, period).then(({ hits, bandwidth }) => {
+
+					let growthPeriod = this.get('growthPeriods')[periodValue] ? this.get('growthPeriods')[periodValue] : `per ${periodText}, `;
+
+					this.set('growthPeriod', growthPeriod);
+
+					http.fetchPackageSummaryStats(type, name, periodValue).then(({ hits, bandwidth }) => {
 						if (hits.total >= 0) {
 							this.animate('requestsAmount', hits.total, { duration: 1000 });
 							this.animate('requestsGrowthPercent', _.calculateGrowth(hits.total, hits.prev.total), { duration: 1000 });
