@@ -26,8 +26,8 @@ module.exports = {
 	growthPeriods: {
 		// day: 'daily',
 		// week: 'weekly',
-		month: 'monthly',
-		quarter: 'quarterly',
-		year: 'yearly',
+		's-month': 'monthly',
+		's-quarter': 'quarterly',
+		's-year': 'yearly',
 	},
 };
