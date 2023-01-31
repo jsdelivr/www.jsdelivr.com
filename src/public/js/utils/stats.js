@@ -20,7 +20,7 @@ module.exports = {
 		's-year': {
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
-			month: { value: 'month', isAvailable: false },
+			month: { value: 'month', isAvailable: true },
 		},
 	},
 	growthPeriods: {
