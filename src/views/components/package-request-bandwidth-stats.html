@@ -30,13 +30,11 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('periodData', ({ periodValue, periodText }) => {
+				this.observe('periodData', ({ periodValue, periodType }) => {
 					let name = this.get('name');
 					let type = this.get('type');
 					let bandwidthUnit = this.get('bandwidthUnit');
-
-
-					let growthPeriod = this.get('growthPeriods')[periodValue] ? this.get('growthPeriods')[periodValue] : `per ${periodText}, `;
+					let growthPeriod = this.get('growthPeriods')[periodType];
 
 					this.set('growthPeriod', growthPeriod);
 
