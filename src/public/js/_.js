@@ -784,11 +784,9 @@ module.exports = {
 
 		switch (chartPeriod) {
 			case 's-week':
-			case 'week':// TODO: 460 -  remove after 460, temp for compatibility
 				return schema.wideBar;
 
 			case 's-month':
-			case 'month':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 576) { return schema.wideBar; }
@@ -802,7 +800,6 @@ module.exports = {
 				break;
 
 			case 's-quarter':
-			case 'quarter':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 768) { return schema.regularBar; }
@@ -819,7 +816,6 @@ module.exports = {
 				break;
 
 			case 's-year':
-			case 'year':// TODO: 460 -  remove after 460, temp for compatibility
 				switch (usageChartGroupBy) {
 					case 'day':
 						return schema.thinnestBar;
