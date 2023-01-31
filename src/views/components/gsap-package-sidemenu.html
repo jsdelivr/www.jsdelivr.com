@@ -65,6 +65,20 @@
 	const initCharts = require('../../public/js/utils/charts');
 
 	component.exports = {
+		computed: {
+			barThickness () {
+				switch (this.get('periodData').periodType) {
+					case 's-quarter':
+						return 2;
+
+					case 's-year':
+						return 1;
+
+					default:
+						return 4;
+				}
+			},
+		},
 		data () {
 			return {
 				_,
@@ -135,7 +149,7 @@
 								datasets: [{
 									data,
 									borderWidth: 0,
-									barThickness: 4,
+									barThickness: this.get('barThickness'),
 									hoverBackgroundColor: '#57922a',
 									borderRadius: 1,
 								}],
@@ -198,7 +212,7 @@
 								datasets: [{
 									data,
 									borderWidth: 0,
-									barThickness: 4,
+									barThickness: this.get('barThickness'),
 									hoverBackgroundColor: '#57922a',
 									borderRadius: 1,
 								}],
