@@ -66,7 +66,7 @@
 					<a class="btn-twitter-share mt-8"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits in the last ${~/periodData.periodText}: ${~/link}`)}}">
+						href="https://twitter.com/intent/tweet?text={{encodeURIComponent(`${name} is the ${_.nth(packageRank)} most popular package on @jsDelivr CDN, with ${_.formatNumber(requestsTotal)} hits ${twitterPeriodPartText}: ${~/link}`)}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/twitter-white.svg">
 						Share
 					</a>
@@ -152,6 +152,7 @@
 				topVersionHits: 0,
 				bandwidthTotal: 0,
 				requestsTotal: 0,
+				twitterPeriodPartText: '',
 			};
 		},
 		decorators: {
@@ -200,6 +201,18 @@
 							this.animate('topVersionHits', response[0].hits.total, { duration: 1000 });
 						});
 					}
+				});
+
+				this.observe('periodData.periodText', (periodText) => {
+					let twitterPeriodPartText = 'in the ';
+
+					if (periodText === 'month' || periodText === 'quarter' || periodText === 'year') {
+						twitterPeriodPartText += 'last ';
+					}
+
+					twitterPeriodPartText += periodText;
+
+					this.set('twitterPeriodPartText', twitterPeriodPartText);
 				});
 
 				initCharts().then(({ createBarChart }) => {
