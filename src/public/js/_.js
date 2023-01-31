@@ -1096,7 +1096,7 @@ module.exports = {
 	},
 
 	prepareFilteredStatPeriods (rawPeriods) {
-		let prepPeriods = rawPeriods.reduce((res, rawItem) => {
+		let { prepPeriods } = rawPeriods.reduce((res, rawItem, rawItemIdx) => {
 			let monthQuarterText = '';
 			let { period, periodType } = rawItem;
 			let [ year, monthOrQuarter ] = period.split('-');
@@ -1105,14 +1105,25 @@ module.exports = {
 				monthQuarterText = isNaN(Number(monthOrQuarter)) ? monthOrQuarter : MONTHS_FULL_NAMES_LIST[Number(monthOrQuarter) - 1];
 			}
 
-			res.push({
+			res.prepPeriods.push({
 				periodType,
 				periodText: `${monthQuarterText} ${year}`.trim(),
 				periodValue: period,
 			});
 
+			if (res.yearPointer !== year) {
+				res.yearPointer = year;
+			}
+
+			// check if next item has different year form current, if so - add separator
+			if (rawPeriods[rawItemIdx + 1] && rawPeriods[rawItemIdx + 1].period.split('-')[0] !== year) {
+				res.prepPeriods.push({
+					periodType: 'separator',
+				});
+			}
+
 			return res;
-		}, []);
+		}, { prepPeriods: [], yearPointer: null });
 
 		let defaultPeriods = [
 			{
