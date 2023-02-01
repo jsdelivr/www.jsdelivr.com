@@ -121,7 +121,7 @@
 			{{else}}
 				<div class="chart-stats-per-period">
 					<div class="package-usage">
-						<div class="small-headline">Stats for past {{~/periodData.periodText}}</div>
+						<div class="small-headline">{{chartTitlePeriodText}} {{~/periodData.periodText}}</div>
 
 						<div class="chart-type-ctrl">
 							<span>Show numbers of</span>
@@ -280,6 +280,7 @@
 				noPackageStatsData: false,
 				navMenuTitles: NAV_MENU_SHORT_TITLES,
 				NAV_MENU_TABS,
+				chartTitlePeriodText: 'Stats for past',
 			};
 		},
 		decorators: {
@@ -518,6 +519,19 @@
 
 					this.set('hitsChartLegendVersions', hitsChartLegendVersions);
 				}, { init: false });
+
+				// set Chart text based on periodData
+				this.observe('periodData', ({ periodValue }) => {
+					switch(periodValue) {
+						case 'month':
+						case 'quarter':
+						case 'year':
+							this.set('chartTitlePeriodText', 'Stats for past');
+							break;
+						default:
+							this.set('chartTitlePeriodText', 'Stats for');
+					}
+				});
 			}
 		},
 		onrender () {
