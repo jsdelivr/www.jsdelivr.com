@@ -19,7 +19,7 @@
 						</span>
 					</div>
 
-					<span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
+					<span>{{growthPeriod}} {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
@@ -68,7 +68,7 @@
 						</span>
 					</div>
 
-					<span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
+					<span>{{growthPeriod}} {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
@@ -127,6 +127,7 @@
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const providersJson = require('../../public/json/net-providers.json');
+	const stats = require('../../public/js/utils/stats');
 
 	component.exports = {
 		data () {
@@ -143,12 +144,16 @@
 					statsList: [],
 				},
 				providersToDisplay: [],
+				growthPeriods: stats.growthPeriods,
+				growthPeriod: 'monthly',
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period', (period) => {
-					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
+				this.observe('periodData', ({ periodValue, periodType }) => {
+					this.set('growthPeriod', this.get('growthPeriods')[periodType]);
+
+					http.fetchNetworkProviderStats(periodValue).then(({ hits, bandwidth }) => {
 						this.animate('requestsData', this.processStats(hits));
 						this.animate('bandwidthData', this.processStats(bandwidth));
 						this.set('providersCodes', hits.providers.map(p => p.code));
