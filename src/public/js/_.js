@@ -1022,14 +1022,16 @@ module.exports = {
 		return lineColors;
 	},
 
-	translatePeriodsToSNotation (period) {
-		switch (period) {
+	translatePeriodsToSNotation (periodValue) {
+		switch (periodValue) {
 			case 'month':
 				return 's-month';
 			case 'quarter':
 				return 's-quarter';
 			case 'year':
 				return 's-year';
+			default:
+				return periodValue;
 		}
 	},
 
