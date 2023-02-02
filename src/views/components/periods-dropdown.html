@@ -48,9 +48,11 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('@shared.rawListStatPeriods', (rawListStatPeriods) => {
-					let prepStatPeriods = _.getPreparedListStatPeriods(rawListStatPeriods);
+					if (rawListStatPeriods) {
+						let prepStatPeriods = _.getPreparedListStatPeriods(rawListStatPeriods);
 
-					this.set('prepStatPeriods', prepStatPeriods);
+						this.set('prepStatPeriods', prepStatPeriods);
+					}
 				});
 
 				this.observe('selectedValue prepStatPeriods', () => {
