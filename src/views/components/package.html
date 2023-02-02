@@ -407,6 +407,7 @@
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
 						if (!response.hits.total || !response.bandwidth.total) {
 							this.set('noPackageStatsData', true);
+							this.set('rawStatsChartData', null);
 							return;
 						}
 
@@ -420,6 +421,7 @@
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						if (!response.length) {
 							this.set('noPackageStatsData', true);
+							this.set('rawHitsChartData', null);
 							return;
 						}
 
@@ -440,6 +442,7 @@
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						if (!response.length) {
 							this.set('noPackageStatsData', true);
+							this.set('rawHitsChartData', null);
 							return;
 						}
 
@@ -452,6 +455,9 @@
 				// screenWidth to observe when screen width is resized to recreate stats chart
 				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsChartData = this.get('rawStatsChartData');
+
+					if (!rawStatsChartData) return;
+
 					let chartPeriodType = this.get('periodData').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
@@ -488,6 +494,9 @@
 				// handle raw HitsChart data and prepare it for HitsChart
 				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawHitsChartData = this.get('rawHitsChartData');
+
+					if (!rawHitsChartData) return;
+
 					let chartPeriodType = this.get('periodData').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
