@@ -100,7 +100,15 @@
 	<div class="hit-rate">
 		<h3>Cache hit rate</h3>
 
-		{{#if providersToDisplay.length}}
+		{{#if noProvidersToDisplay}}
+			<div class="hit-rate_no-data">
+				<img
+					width="270"
+					height="148"
+					src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+				<span>No data</span>
+			</div>
+		{{else}}
 			<div class="rate-row {{#if providersToDisplay.length % 2}}rate-row_odd{{else}}rate-row_even{{/if}}">
 				{{#each providersToDisplay}}
 					<div class="row-item">
@@ -144,6 +152,7 @@
 					statsList: [],
 				},
 				providersToDisplay: [],
+				noProvidersToDisplay: null,
 				growthPeriods: stats.growthPeriods,
 				growthPeriod: 'monthly',
 			};
@@ -161,6 +170,12 @@
 				});
 
 				this.observe('providersCodes', (providersCodes) => {
+					if (providersCodes.length) {
+						this.set('noProvidersToDisplay', false);
+					} else {
+						this.set('noProvidersToDisplay', true);
+					}
+
 					this.set('providersToDisplay', providersCodes.map(code => providersJson[code]));
 				}, { init: false });
 			}
