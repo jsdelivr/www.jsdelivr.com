@@ -14,90 +14,102 @@
 	<div class="map-header">
 		<h3>Requests served by country</h3>
 
-		<div class="map-header_switch">
-			<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
-			<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
-		</div>
+		{{#unless noMapData}}
+			<div class="map-header_switch">
+				<button class="button {{ type === 'hits' && 'selected' }}" on-click="@this.set('type', 'hits')">Requests</button>
+				<button class="button {{ type === 'bandwidth' && 'selected' }}" on-click="@this.set('type', 'bandwidth')">Bandwidth</button>
+			</div>
+		{{/unless}}
 	</div>
 
-	<div class="map-wrapper">
-		<div class="switchers-block">
-			{{#each switchList:index}}
-				<div class="switchers-block_item {{#if switchList[index].disabled}}disabled{{/if}}">
-					<label class="switchers-block_item_switch">
-						<input
-							class="{{name}}"
-							type="checkbox"
-							on-click="@this.set('switchList['+@index+'].active', !active)"
-							disabled="{{switchList[index].disabled}}"
-							checked>
-						<span class="slider round"></span>
-						</label>
-						<span class="switchers-block_item_name">{{name}}</span>
-				</div>
-			{{/each}}
+	{{#if noMapData}}
+		<div class="map-no-data">
+			<img
+				width="270"
+				height="148"
+				src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+			<span>No data</span>
 		</div>
-
-		<div class="map-block">
-			<div class="map-block_map-wrapper">
-				<svg id="hits-map" class="map-block_map-wrapper_map" xmlns="http://www.w3.org/2000/svg"></svg>
-
-				<div class="map-block_map-wrapper_overlay"></div>
-
-				<div class="map-block_map-wrapper_tooltip">
-					<div class="map-block_map-wrapper_tooltip_head">
-						<span class="map-block_map-wrapper_tooltip_head_name">{{tooltipData.countryName}}</span>
-						<img on-click="@this.hideTooltip()"
-							width="20"
-							height="20"
-							src="{{@shared.assetsHost}}/img/statistics/close.white.svg">
+	{{else}}
+		<div class="map-wrapper">
+			<div class="switchers-block">
+				{{#each switchList:index}}
+					<div class="switchers-block_item {{#if switchList[index].disabled}}disabled{{/if}}">
+						<label class="switchers-block_item_switch">
+							<input
+								class="{{name}}"
+								type="checkbox"
+								on-click="@this.set('switchList['+@index+'].active', !active)"
+								disabled="{{switchList[index].disabled}}"
+								checked>
+							<span class="slider round"></span>
+							</label>
+							<span class="switchers-block_item_name">{{name}}</span>
 					</div>
+				{{/each}}
+			</div>
 
-					<div class="map-block_map-wrapper_tooltip_body">
-						{{#each tooltipData.providersData}}
-							<div class="map-block_map-wrapper_tooltip_body_row">
-								<div class="map-block_map-wrapper_tooltip_body_row_box" style="background: {{this.providerBoxColor}}"></div>
+			<div class="map-block">
+				<div class="map-block_map-wrapper">
+					<svg id="hits-map" class="map-block_map-wrapper_map" xmlns="http://www.w3.org/2000/svg"></svg>
 
-								<div class="map-block_map-wrapper_tooltip_body_row_content">
-									<div class="map-block_map-wrapper_tooltip_body_row_content_main-data">
-										<span>{{ this.provider.name }}</span>
-										<span>{{ this.statsInfo }}</span>
-									</div>
+					<div class="map-block_map-wrapper_overlay"></div>
 
-									<div class="map-block_map-wrapper_tooltip_body_row_content_file-size">
-										<span>Average file size</span>
-										<span>{{ this.ratio }}</span>
+					<div class="map-block_map-wrapper_tooltip">
+						<div class="map-block_map-wrapper_tooltip_head">
+							<span class="map-block_map-wrapper_tooltip_head_name">{{tooltipData.countryName}}</span>
+							<img on-click="@this.hideTooltip()"
+								width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/statistics/close.white.svg">
+						</div>
+
+						<div class="map-block_map-wrapper_tooltip_body">
+							{{#each tooltipData.providersData}}
+								<div class="map-block_map-wrapper_tooltip_body_row">
+									<div class="map-block_map-wrapper_tooltip_body_row_box" style="background: {{this.providerBoxColor}}"></div>
+
+									<div class="map-block_map-wrapper_tooltip_body_row_content">
+										<div class="map-block_map-wrapper_tooltip_body_row_content_main-data">
+											<span>{{ this.provider.name }}</span>
+											<span>{{ this.statsInfo }}</span>
+										</div>
+
+										<div class="map-block_map-wrapper_tooltip_body_row_content_file-size">
+											<span>Average file size</span>
+											<span>{{ this.ratio }}</span>
+										</div>
 									</div>
 								</div>
-							</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<div class="map-block_legend">
+					{{#if legendAxisTicks.length}}
+						<div class="map-block_legend_bar"></div>
+					{{/if}}
+
+					<div class="map-block_legend_axis">
+						{{#each legendAxisTicks}}
+							<div class="map-block_legend_axis_tick">{{this}}</div>
 						{{/each}}
 					</div>
 				</div>
-			</div>
 
-			<div class="map-block_legend">
-				{{#if legendAxisTicks.length}}
-					<div class="map-block_legend_bar"></div>
-				{{/if}}
+				<div class="map-block_ctrls">
+					<div class="map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
+						<img src="{{@shared.assetsHost}}/img/statistics/plus.svg">
+					</div>
 
-				<div class="map-block_legend_axis">
-					{{#each legendAxisTicks}}
-						<div class="map-block_legend_axis_tick">{{this}}</div>
-					{{/each}}
-				</div>
-			</div>
-
-			<div class="map-block_ctrls">
-				<div class="map-block_ctrls_plus" on-click="@this.handleMapZoom('in')">
-					<img src="{{@shared.assetsHost}}/img/statistics/plus.svg">
-				</div>
-
-				<div class="map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
-					<img src="{{@shared.assetsHost}}/img/statistics/minus.svg">
+					<div class="map-block_ctrls_minus" on-click="@this.handleMapZoom('out')">
+						<img src="{{@shared.assetsHost}}/img/statistics/minus.svg">
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	{{/if}}
 </div>
 
 <script>
@@ -118,6 +130,7 @@
 				tooltipData: {},
 				currentCountryId: null,
 				providersJson,
+				noMapData: null,
 			};
 		},
 		oninit () {
@@ -128,7 +141,13 @@
 						let period = this.get('period');
 
 						http.fetchNetworkProviderStatsByCountry(period).then((response) => {
-							if (response.hits.countries.length === 0) { return; }
+							if (!response.hits.total && !response.bandwidth.total) {
+								this.set('noMapData', true);
+								this.set('switchList', []);
+								this.set('providerStatsByCountry', {});
+
+								return;
+							}
 
 							let providers = Object.values(response.hits.countries)[0].providers;
 							let oldSwitchList = this.get('switchList');
@@ -138,6 +157,7 @@
 								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
 							});
 
+							this.set('noMapData', false);
 							this.set('switchList', newSwitchList);
 							this.set('providerStatsByCountry', response);
 						});
