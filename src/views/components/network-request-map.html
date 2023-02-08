@@ -125,7 +125,7 @@
 			return {
 				type: 'hits',
 				switchList: [],
-				providerStatsByCountry: {},
+				providerStatsByCountry: null,
 				legendAxisTicks: [],
 				tooltipData: {},
 				currentCountryId: null,
@@ -144,7 +144,7 @@
 							if (!response.hits.total && !response.bandwidth.total) {
 								this.set('noMapData', true);
 								this.set('switchList', []);
-								this.set('providerStatsByCountry', {});
+								this.set('providerStatsByCountry', null);
 
 								return;
 							}
@@ -193,13 +193,15 @@
 
 				// prepare data for the Map
 				this.observe('providerStatsByCountry type switchList', () => {
+					let providerStatsByCountry = this.get('providerStatsByCountry');
+
+					if (!providerStatsByCountry) { return; }
+
 					let preparedMapData = {
 						dataByCountries: {},
 						switchList: [],
 					};
-					let { hits: hitsData, bandwidth: bandwidthData } = this.get('providerStatsByCountry');
-
-					if (!hitsData || !bandwidthData) { return; }
+					let { hits: hitsData, bandwidth: bandwidthData } = providerStatsByCountry;
 
 					let switchList = this.get('switchList');
 					let type = this.get('type');
