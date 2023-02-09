@@ -164,9 +164,13 @@
 						</div>
 					</div>
 
-					<div class="stats-chart-wrapper">
-						<canvas id="stats-chart"></canvas>
-					</div>
+					{{#if noStatsChartData}}
+						<div class="stats-chart-no-data">NO STATS CHART DATA</div>
+					{{else}}
+						<div class="stats-chart-wrapper">
+							<canvas id="stats-chart"></canvas>
+						</div>
+					{{/if}}
 				</div>
 
 				<div class="horizontal-divider"></div>
@@ -177,8 +181,7 @@
 							title="Top 5 versions"
 							data="{{~/topFiveVersions}}"
 							version="{{~/fileStatsVersion}}"
-							formatterOptions="{{~/versionStatsFormatterOptions}}"
-						>
+							formatterOptions="{{~/versionStatsFormatterOptions}}">
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -188,8 +191,7 @@
 							data="{{~/filesStats}}"
 							version="{{~/fileStatsVersion}}"
 							versions="{{~/packageVersionsList}}"
-							formatterOptions="{{~/fileStatsFormatterOptions}}"
-						>
+							formatterOptions="{{~/fileStatsFormatterOptions}}">
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -211,18 +213,22 @@
 						<div class="small-headline">{{#if showChartBandwidth}}Bandwidth{{else}}Requests{{/if}} per {{~/periodData.periodText}} per version</div>
 					</div>
 
-					<div class="hits-chart-wrapper">
-						<canvas id="hits-chart"></canvas>
-					</div>
+					{{#if noHitsChartData}}
+						<div class="hits-chart-no-data">NO HITS CHART DATA</div>
+					{{else}}
+						<div class="hits-chart-wrapper">
+							<canvas id="hits-chart"></canvas>
+						</div>
 
-					<div class="hits-chart-legend">
-						{{#each hitsChartLegendVersions}}
-							<div class="legend-item">
-								<div></div>
-								{{version}}
-							</div>
-						{{/each}}
-					</div>
+						<div class="hits-chart-legend">
+							{{#each hitsChartLegendVersions}}
+								<div class="legend-item">
+									<div></div>
+									{{version}}
+								</div>
+							{{/each}}
+						</div>
+					{{/if}}
 				</div>
 			{{/if}}
 		</div>
@@ -388,6 +394,7 @@
 					this.set('versionP', this.get('package.version'));
 				}
 
+				// TODO 460
 				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
 				this.observe('periodData', () => {
 					let period = this.get('periodData').periodValue;
@@ -400,13 +407,13 @@
 
 					// get data for barChart
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
-						if (!response.hits.total || !response.bandwidth.total) {
-							this.set('noPackageStatsData', true);
+						if (!response.hits.total && !response.bandwidth.total) {
+							this.set('noStatsChartData', true);
 							this.set('rawStatsChartData', null);
 							return;
 						}
 
-						this.set('noPackageStatsData', false);
+						this.set('noStatsChartData', false);
 						// once new data fetched we should set groupBy to default value before raw data set
 						this.set('usageChartGroupBy', 'day');
 						this.set('rawStatsChartData', response);
@@ -415,18 +422,19 @@
 					// get data for lineChart
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						if (!response.length) {
-							this.set('noPackageStatsData', true);
+							this.set('noHitsChartData', true);
 							this.set('rawHitsChartData', null);
 							return;
 						}
 
-						this.set('noPackageStatsData', false);
+						this.set('noHitsChartData', false);
 						// once new data fetched we should set groupBy to default value before raw data set
 						this.set('usageChartGroupBy', 'day');
 						this.set('rawHitsChartData', response);
 					});
 				});
 
+				// TODO 460
 				// get data for lineChart when Request/Bandwidth switch clicked (since it is sorting on the server)
 				this.observe('showChartBandwidth', (showChartBandwidth) => {
 					let period = this.get('periodData').periodValue;
@@ -436,12 +444,12 @@
 
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						if (!response.length) {
-							this.set('noPackageStatsData', true);
+							this.set('noHitsChartData', true);
 							this.set('rawHitsChartData', null);
 							return;
 						}
 
-						this.set('noPackageStatsData', false);
+						this.set('noHitsChartData', false);
 						this.set('rawHitsChartData', response);
 					});
 				}, { init: false });
@@ -534,6 +542,16 @@
 							break;
 						default:
 							this.set('chartTitlePeriodText', 'Stats for');
+					}
+				});
+
+				// TODO 460 handle case when no data for package at all
+				this.observe('noStatsChartData noHitsChartData', () => {
+					let noStatsChartData = this.get('noStatsChartData');
+					let noHitsChartData = this.get('noHitsChartData');
+
+					if (noStatsChartData || noHitsChartData) {
+						this.set('noPackageStatsData', true);
 					}
 				});
 			}
