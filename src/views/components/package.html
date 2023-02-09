@@ -164,7 +164,7 @@
 						</div>
 					</div>
 
-					{{#if (noStatsHitsData && !showChartBandwidth) || (noStatsBandwidthData && showChartBandwidth)}}
+					{{#if (noStatsChartHitsData && !showChartBandwidth) || (noStatsChartBandData && showChartBandwidth)}}
 						<div class="stats-chart-no-data">
 							<img
 								width="270"
@@ -414,18 +414,18 @@
 					// get data for barChart
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
 						if (!response.hits.total && !response.bandwidth.total) {
-							this.set('noStatsHitsData', true);
-							this.set('noStatsBandwidthData', true);
+							this.set('noStatsChartHitsData', true);
+							this.set('noStatsChartBandData', true);
 							this.set('rawStatsChartData', null);
 
 							return;
 						} else if (!response.hits.total) {
-							this.set('noStatsHitsData', true);
+							this.set('noStatsChartHitsData', true);
 						} else if (!response.bandwidth.total) {
-							this.set('noStatsBandwidthData', true);
+							this.set('noStatsChartBandData', true);
 						} else {
-							this.set('noStatsHitsData', false);
-							this.set('noStatsBandwidthData', false);
+							this.set('noStatsChartHitsData', false);
+							this.set('noStatsChartBandData', false);
 						}
 
 						// once new data fetched we should set groupBy to default value before raw data set
@@ -567,12 +567,12 @@
 				});
 
 				// TODO 460 handle case when no data for package at all
-				this.observe('noStatsHitsData noStatsBandwidthData noHitsChartData', () => {
-					let noStatsHitsData = this.get('noStatsHitsData');
-					let noStatsBandwidthData = this.get('noStatsBandwidthData');
+				this.observe('noStatsChartHitsData noStatsChartBandData noHitsChartData', () => {
+					let noStatsChartHitsData = this.get('noStatsChartHitsData');
+					let noStatsChartBandData = this.get('noStatsChartBandData');
 					let noHitsChartData = this.get('noHitsChartData');
 
-					if ((noStatsHitsData && noStatsBandwidthData) || noHitsChartData) {
+					if ((noStatsChartHitsData && noStatsChartBandData) || noHitsChartData) {
 						this.set('noPackageStatsData', true);
 					}
 				});
