@@ -164,8 +164,14 @@
 						</div>
 					</div>
 
-					{{#if noStatsChartData}}
-						<div class="stats-chart-no-data">NO STATS CHART DATA</div>
+					{{#if (noStatsHitsData && !showChartBandwidth) || (noStatsBandwidthData && showChartBandwidth)}}
+						<div class="stats-chart-no-data">
+							<img
+								width="270"
+								height="148"
+								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+							<span>No data</span>
+						</div>
 					{{else}}
 						<div class="stats-chart-wrapper">
 							<canvas id="stats-chart"></canvas>
@@ -177,7 +183,7 @@
 
 				<div class="chart-tops">
 					{{#if ~/topFiveVersions}}
-						<c-top-stats-table
+						<!-- <c-top-stats-table
 							title="Top 5 versions"
 							data="{{~/topFiveVersions}}"
 							version="{{~/fileStatsVersion}}"
@@ -185,9 +191,9 @@
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
-						</c-top-stats-table>
+						</c-top-stats-table> -->
 
-						<c-top-stats-table
+						<!-- <c-top-stats-table
 							data="{{~/filesStats}}"
 							version="{{~/fileStatsVersion}}"
 							versions="{{~/packageVersionsList}}"
@@ -202,7 +208,7 @@
 									{{file}}
 								</a>
 							{{/partial}}
-						</c-top-stats-table>
+						</c-top-stats-table> -->
 					{{/if}}
 				</div>
 
@@ -408,12 +414,20 @@
 					// get data for barChart
 					http.fetchPackageSummaryStats(type, name, period).then((response) => {
 						if (!response.hits.total && !response.bandwidth.total) {
-							this.set('noStatsChartData', true);
+							this.set('noStatsHitsData', true);
+							this.set('noStatsBandwidthData', true);
 							this.set('rawStatsChartData', null);
+
 							return;
+						} else if (!response.hits.total) {
+							this.set('noStatsHitsData', true);
+						} else if (!response.bandwidth.total) {
+							this.set('noStatsBandwidthData', true);
+						} else {
+							this.set('noStatsHitsData', false);
+							this.set('noStatsBandwidthData', false);
 						}
 
-						this.set('noStatsChartData', false);
 						// once new data fetched we should set groupBy to default value before raw data set
 						this.set('usageChartGroupBy', 'day');
 						this.set('rawStatsChartData', response);
@@ -424,6 +438,7 @@
 						if (!response.length) {
 							this.set('noHitsChartData', true);
 							this.set('rawHitsChartData', null);
+
 							return;
 						}
 
@@ -454,15 +469,20 @@
 					});
 				}, { init: false });
 
+				// TODO 460
 				// handle raw StatsChart data and prepare it for StatsChart
 				// screenWidth to observe when screen width is resized to recreate stats chart
 				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
 					let rawStatsChartData = this.get('rawStatsChartData');
+					let showChartBandwidth = this.get('showChartBandwidth');
 
-					if (!rawStatsChartData) { return; }
+					if (
+						(!rawStatsChartData.hits.total && !showChartBandwidth)
+						|| (!rawStatsChartData.bandwidth.total && showChartBandwidth)
+						|| (!rawStatsChartData.hits.total && !rawStatsChartData.bandwidth.total)
+					) { return; }
 
 					let chartPeriodType = this.get('periodData').periodType;
-					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
@@ -492,45 +512,46 @@
 						valueUnits,
 						usageChartGroupBy,
 					});
-				}, { init: false });
+				}, { init: false, defer: true });
 
+				// TODO 460
 				// handle raw HitsChart data and prepare it for HitsChart
-				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
-					let rawHitsChartData = this.get('rawHitsChartData');
+				// this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
+				// 	let rawHitsChartData = this.get('rawHitsChartData');
 
-					if (!rawHitsChartData) { return; }
+				// 	if (!rawHitsChartData) { return; }
 
-					let chartPeriodType = this.get('periodData').periodType;
-					let showChartBandwidth = this.get('showChartBandwidth');
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+				// 	let chartPeriodType = this.get('periodData').periodType;
+				// 	let showChartBandwidth = this.get('showChartBandwidth');
+				// 	let usageChartGroupBy = this.get('usageChartGroupBy');
+				// 	let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
 
-					// collect versions for hitsChart Legend element
-					let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
+				// 	// collect versions for hitsChart Legend element
+				// 	let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
 
-					// collect X-Axis dates, group data by period, get
-					let {
-						labels,
-						maxRangeValue,
-						datasets,
-						labelsStartEndPeriods,
-						valueUnits,
-					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
+				// 	// collect X-Axis dates, group data by period, get
+				// 	let {
+				// 		labels,
+				// 		maxRangeValue,
+				// 		datasets,
+				// 		labelsStartEndPeriods,
+				// 		valueUnits,
+				// 	} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
 
-					this.set('preparedHitsChartData', {
-						datasets,
-						labels,
-						labelsStartEndPeriods,
-						maxRangeValue,
-						showChartBandwidth,
-						useYAxisBorderPlugin: screenWidth >= 768,
-						yAxisPadding: screenWidth >= 768 ? 30 : 18,
-						valueUnits,
-						usageChartGroupBy,
-					});
+				// 	this.set('preparedHitsChartData', {
+				// 		datasets,
+				// 		labels,
+				// 		labelsStartEndPeriods,
+				// 		maxRangeValue,
+				// 		showChartBandwidth,
+				// 		useYAxisBorderPlugin: screenWidth >= 768,
+				// 		yAxisPadding: screenWidth >= 768 ? 30 : 18,
+				// 		valueUnits,
+				// 		usageChartGroupBy,
+				// 	});
 
-					this.set('hitsChartLegendVersions', hitsChartLegendVersions);
-				}, { init: false });
+				// 	this.set('hitsChartLegendVersions', hitsChartLegendVersions);
+				// }, { init: false });
 
 				// set Chart text based on periodData
 				this.observe('periodData', ({ periodValue }) => {
@@ -546,11 +567,12 @@
 				});
 
 				// TODO 460 handle case when no data for package at all
-				this.observe('noStatsChartData noHitsChartData', () => {
-					let noStatsChartData = this.get('noStatsChartData');
+				this.observe('noStatsHitsData noStatsBandwidthData noHitsChartData', () => {
+					let noStatsHitsData = this.get('noStatsHitsData');
+					let noStatsBandwidthData = this.get('noStatsBandwidthData');
 					let noHitsChartData = this.get('noHitsChartData');
 
-					if (noStatsChartData || noHitsChartData) {
+					if ((noStatsHitsData && noStatsBandwidthData) || noHitsChartData) {
 						this.set('noPackageStatsData', true);
 					}
 				});
