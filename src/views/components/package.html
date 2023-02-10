@@ -195,7 +195,7 @@
 							title="Top 5 versions"
 							data="{{~/topFiveVersions}}"
 							version="{{~/fileStatsVersion}}"
-							formatterOptions="{{~/versionStatsFormatterOptions}}">
+							isBandwidth="{{~/showChartBandwidth}}">
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
@@ -205,7 +205,7 @@
 							data="{{~/filesStats}}"
 							version="{{~/fileStatsVersion}}"
 							versions="{{~/packageVersionsList}}"
-							formatterOptions="{{~/fileStatsFormatterOptions}}">
+							isBandwidth="{{~/showChartBandwidth}}">
 							{{#partial header}}
 								Top 5 files in version
 								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -356,7 +356,6 @@
 							hits: statsPerFile[dataType].total,
 						}));
 
-						this.set('fileStatsFormatterOptions', { data: filesStats, showChartBandwidth });
 						this.animate('filesStats', filesStats);
 					});
 				});
@@ -382,7 +381,6 @@
 
 						if (noTopFiveHitsData && noTopFiveBandData) {
 							this.set('fileStatsVersion', null);
-							this.set('versionStatsFormatterOptions', null);
 							this.animate('topFiveVersions', null);
 
 							return;
@@ -403,7 +401,6 @@
 							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
-						this.set('versionStatsFormatterOptions', { data: versionsStats, showChartBandwidth });
 						this.animate('topFiveVersions', versionsStats);
 					});
 				});
