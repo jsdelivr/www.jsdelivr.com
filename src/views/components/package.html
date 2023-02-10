@@ -182,8 +182,16 @@
 				<div class="horizontal-divider"></div>
 
 				<div class="chart-tops">
-					{{#if ~/topFiveVersions}}
-						<!-- <c-top-stats-table
+					{{#if (noTopFiveHitsData && !showChartBandwidth) || (noTopFiveBandData && showChartBandwidth)}}
+						<div class="chart-tops-no-data">
+							<img
+								width="270"
+								height="148"
+								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+							<span>No data for Top 5 versions</span>
+						</div>
+					{{else}}
+						<c-top-stats-table
 							title="Top 5 versions"
 							data="{{~/topFiveVersions}}"
 							version="{{~/fileStatsVersion}}"
@@ -191,9 +199,9 @@
 							{{#partial column1}}
 								<a on-click="@this.set('version', version)">{{version}}</a>
 							{{/partial}}
-						</c-top-stats-table> -->
+						</c-top-stats-table>
 
-						<!-- <c-top-stats-table
+						<c-top-stats-table
 							data="{{~/filesStats}}"
 							version="{{~/fileStatsVersion}}"
 							versions="{{~/packageVersionsList}}"
@@ -208,7 +216,7 @@
 									{{file}}
 								</a>
 							{{/partial}}
-						</c-top-stats-table> -->
+						</c-top-stats-table>
 					{{/if}}
 				</div>
 
@@ -364,6 +372,22 @@
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+						let {
+							noHitsData: noTopFiveHitsData,
+							noBandwidthData: noTopFiveBandData,
+						} = this.checkPackageVersionsDataStatus(response);
+
+						this.set('noTopFiveHitsData', noTopFiveHitsData);
+						this.set('noTopFiveBandData', noTopFiveBandData);
+
+						if (noTopFiveHitsData && noTopFiveBandData) {
+							this.set('rawHitsChartData', null);
+							this.set('versionStatsFormatterOptions', null);
+							this.animate('topFiveVersions', null);
+
+							return;
+						}
+
 						let versionsStats = response.map(statsPerVersion => ({
 							version: statsPerVersion.version,
 							hits: statsPerVersion[dataType].total,
@@ -442,7 +466,7 @@
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						let {
 							noHitsData: noHitsChartHitsData,
-							noBandwidthData: noHitsChartBandData
+							noBandwidthData: noHitsChartBandData,
 						} = this.checkPackageVersionsDataStatus(response);
 
 						this.set('noHitsChartHitsData', noHitsChartHitsData);
@@ -470,7 +494,7 @@
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
 						let {
 							noHitsData: noHitsChartHitsData,
-							noBandwidthData: noHitsChartBandData
+							noBandwidthData: noHitsChartBandData,
 						} = this.checkPackageVersionsDataStatus(response);
 
 						this.set('noHitsChartHitsData', noHitsChartHitsData);
@@ -588,13 +612,22 @@
 				});
 
 				// TODO 460 handle case when no data for package at all
-				this.observe('noStatsChartHitsData noStatsChartBandData noHitsChartHitsData noHitsChartBandData', () => {
+				this.observe('noStatsChartHitsData noStatsChartBandData noHitsChartHitsData noHitsChartBandData noTopFiveHitsData noTopFiveBandData', () => {
 					let noStatsChartHitsData = this.get('noStatsChartHitsData');
 					let noStatsChartBandData = this.get('noStatsChartBandData');
 					let noHitsChartHitsData = this.get('noHitsChartHitsData');
 					let noHitsChartBandData = this.get('noHitsChartBandData');
+					let noTopFiveHitsData = this.get('noTopFiveHitsData');
+					let noTopFiveBandData = this.get('noTopFiveBandData');
 
-					if (noStatsChartHitsData && noStatsChartBandData && noHitsChartHitsData && noHitsChartBandData) {
+					if (
+						noStatsChartHitsData
+						&& noStatsChartBandData
+						&& noHitsChartHitsData
+						&& noHitsChartBandData
+						&& noTopFiveHitsData
+						&& noTopFiveBandData
+					) {
 						this.set('noPackageStatsData', true);
 					}
 				});
