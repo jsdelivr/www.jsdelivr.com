@@ -381,7 +381,7 @@
 						this.set('noTopFiveBandData', noTopFiveBandData);
 
 						if (noTopFiveHitsData && noTopFiveBandData) {
-							this.set('rawHitsChartData', null);
+							this.set('fileStatsVersion', null);
 							this.set('versionStatsFormatterOptions', null);
 							this.animate('topFiveVersions', null);
 
@@ -393,7 +393,13 @@
 							hits: statsPerVersion[dataType].total,
 						}));
 
-						if (versionsStats[0]) {
+						if (
+							versionsStats[0] && (
+								(!noTopFiveHitsData && !noTopFiveBandData)
+								|| (!noTopFiveHitsData && !showChartBandwidth)
+								|| (!noTopFiveBandData && showChartBandwidth)
+							)
+						) {
 							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
