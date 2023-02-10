@@ -440,7 +440,10 @@
 
 					// get data for lineChart
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
-						let { noHitsChartHitsData, noHitsChartBandData } = this.checkHitsChartDataStatus(response);
+						let {
+							noHitsData: noHitsChartHitsData,
+							noBandwidthData: noHitsChartBandData
+						} = this.checkPackageVersionsDataStatus(response);
 
 						this.set('noHitsChartHitsData', noHitsChartHitsData);
 						this.set('noHitsChartBandData', noHitsChartBandData);
@@ -465,7 +468,10 @@
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
-						let { noHitsChartHitsData, noHitsChartBandData } = this.checkHitsChartDataStatus(response);
+						let {
+							noHitsData: noHitsChartHitsData,
+							noBandwidthData: noHitsChartBandData
+						} = this.checkPackageVersionsDataStatus(response);
 
 						this.set('noHitsChartHitsData', noHitsChartHitsData);
 						this.set('noHitsChartBandData', noHitsChartBandData);
@@ -818,18 +824,18 @@
 				this.set('periodData', periodData);
 			};
 		},
-		checkHitsChartDataStatus (response) {
+		checkPackageVersionsDataStatus (response) {
 			return response.reduce((res, data) => {
 				if (data.hits.total) {
-					res.noHitsChartHitsData = false;
+					res.noHitsData = false;
 				}
 
 				if (data.bandwidth.total) {
-					res.noHitsChartBandData = false;
+					res.noBandwidthData = false;
 				}
 
 				return res;
-			}, { noHitsChartHitsData: true, noHitsChartBandData: true });
+			}, { noHitsData: true, noBandwidthData: true });
 		},
 	};
 </script>
