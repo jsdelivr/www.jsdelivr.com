@@ -169,5 +169,5 @@ module.exports.fetchNumberOfResources = () => {
 
 
 module.exports.fetchListStatPeriods = () => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/periods` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/periods` });
 };
