@@ -1,36 +1,36 @@
 
 const _ = require('../_');
-const STAGING_API_HOST = 'https://data-jsdelivr-com-preview.onrender.com';
+const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 
 module.exports.fetchNetworkStats = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/content?period=${period}` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/content?period=${period}` });
 };
 
 module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}${flat ? '?structure=flat' : ''}` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}${flat ? '?structure=flat' : ''}` });
 };
 
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits', limit = undefined) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by, limit } });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, body: { period, by, limit } });
 };
 
 module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}`, body: { period } });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages/${type}/${name}`, body: { period } });
 };
 
 module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = 'hits', limit = '5') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages/${type}/${name}/versions`, body: { period, by, limit } });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages/${type}/${name}/versions`, body: { period, by, limit } });
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/packages/${type}/${name}` });
 };
 
 module.exports.fetchTopPackages = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages?type=npm&period=${period}` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages?type=npm&period=${period}` });
 };
 
 module.exports.fetchProjectCommits = (owner, repo) => {
@@ -51,7 +51,7 @@ module.exports.fetchPackageVulnerabilities = (name, version) => {
 };
 
 module.exports.fetchPackageEntrypoints = (type, name, version) => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}/entrypoints` });
 };
 
 module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packageGitHead = 'HEAD') => {
@@ -75,7 +75,7 @@ module.exports.getGHUserContentPackageReadme = (packageOwner, packageName, packa
 };
 
 module.exports.fetchCdnOssStats = (name, period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/proxies/${name}`, body: { period } });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/proxies/${name}`, body: { period } });
 };
 
 module.exports.fetchNetworkProviderStats = (period, country = '', continent = '') => {
@@ -84,11 +84,11 @@ module.exports.fetchNetworkProviderStats = (period, country = '', continent = ''
 	};
 	country && (body.country = country);
 	continent && (body.continent = continent);
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network`, body });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network`, body });
 };
 
 module.exports.fetchNetworkProviderStatsByCountry = (period = 'month') => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network/countries`, body: { period } });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network/countries`, body: { period } });
 };
 
 /** *
@@ -112,7 +112,7 @@ module.exports.fetchTopPlatformBrowserStats = (
 	limit = 10
 ) => {
 	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
-	let url = dataType === 'platform' ? `${STAGING_API_HOST}/v1/stats/platforms` : `${STAGING_API_HOST}/v1/stats/browsers`;
+	let url = dataType === 'platform' ? `${API_HOST}/v1/stats/platforms` : `${API_HOST}/v1/stats/browsers`;
 	let body = {
 		period: _.translatePeriodsToSNotation(period),
 		page,
@@ -153,18 +153,18 @@ module.exports.fetchProjectStats = (type, period, sortBy = 'hits', page = 1, lim
 		body.type = type;
 	}
 
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
 module.exports.fetchNetworkWideStats = () => {
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/network` });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/network` });
 };
 
 module.exports.fetchNumberOfResources = () => {
 	let responseHeadersToGet = [ 'x-total-count' ];
 	let body = { limit: 1 };
 
-	return _.makeHTTPRequest({ url: `${STAGING_API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
 

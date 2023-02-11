@@ -22,9 +22,8 @@ fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../f
 fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
-	let [ requests, bandwidth ] = await Promise.all([
-		http.get(`${API_HOST}/v1/package/${type}/${name}/stats/date/${period}`).json().catch(() => {}),
-		http.get(`${API_HOST}/v1/package/${type}/${name}/stats/bandwidth/date/${period}`).json().catch(() => {}),
+	let [{ hits: requests, bandwidth }] = await Promise.all([
+		http.get(`${API_HOST}/v1/stats/packages/${type}/${name}`, { searchParams: { period } }).json().catch(() => {}),
 	]);
 
 	return { requests, bandwidth };
@@ -176,9 +175,9 @@ const prepareStats = async (name) => {
 	let processStats = (data, chartOffset, totalFormatter) => {
 		let max = 0;
 
-		let records = Object.values(data.dates).map((stats) => {
-			max = Math.max(max, stats.total);
-			return { total: stats.total };
+		let records = Object.values(data.dates).map((total) => {
+			max = Math.max(max, total);
+			return { total };
 		});
 
 		return {
