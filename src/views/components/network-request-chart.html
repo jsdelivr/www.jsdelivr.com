@@ -14,50 +14,63 @@
 	<div class="chart-header">
 		<h3>Requests served over time</h3>
 
-		<div class="chart-header_switch">
-			<button class="button {{ showChartBandwidth ? '' : 'selected' }}" on-click="@this.set('showChartBandwidth', false)">Requests</button>
-			<button class="button {{ showChartBandwidth ? 'selected' : '' }}" on-click="@this.set('showChartBandwidth', true)">Bandwidth</button>
-		</div>
+		{{#unless noChartData}}
+			<div class="chart-header_switch">
+				<button class="button {{ showChartBandwidth ? '' : 'selected' }}" on-click="@this.set('showChartBandwidth', false)">Requests</button>
+				<button class="button {{ showChartBandwidth ? 'selected' : '' }}" on-click="@this.set('showChartBandwidth', true)">Bandwidth</button>
+			</div>
+		{{/unless}}
 	</div>
 
-	<div class="hits-chart-block">
-		<div class="hits-chart-block_switchers">
-			<div class="hits-chart-block_switchers_breakdown">
-				<div class="hits-chart-block_switchers_item">
-					<label class="hits-chart-block_switchers_item_switch">
-						<input
-							type="checkbox"
-							on-click="@this.toggle('showProviderBreakdown')"
-							checked>
-						<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
-						</label>
-						<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
+
+	{{#if noChartData}}
+		<div class="hits-chart-no-data">
+			<img
+				width="270"
+				height="148"
+				src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+			<span>No data</span>
+		</div>
+	{{else}}
+		<div class="hits-chart-block">
+			<div class="hits-chart-block_switchers">
+				<div class="hits-chart-block_switchers_breakdown">
+					<div class="hits-chart-block_switchers_item">
+						<label class="hits-chart-block_switchers_item_switch">
+							<input
+								type="checkbox"
+								on-click="@this.toggle('showProviderBreakdown')"
+								checked>
+							<span class="slider round provider-breakdown {{#unless showProviderBreakdown}}provider-breakdown_turned-off{{/unless}}"></span>
+							</label>
+							<span class="hits-chart-block_switchers_item_name">Show provider breakdown</span>
+					</div>
+				</div>
+
+
+				<div class="hits-chart-block_switchers_wrapper">
+					{{#each switchList:index}}
+						<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
+							<label class="hits-chart-block_switchers_item_switch">
+								<input
+									class="{{name}}"
+									type="checkbox"
+									on-click="@this.set('switchList['+@index+'].active', !active)"
+									disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
+									checked="{{switchList[index].active}}">
+								<span class="slider round"></span>
+								</label>
+								<span class="hits-chart-block_switchers_item_name">{{name}}</span>
+						</div>
+					{{/each}}
 				</div>
 			</div>
 
-
-			<div class="hits-chart-block_switchers_wrapper">
-				{{#each switchList:index}}
-					<div class="hits-chart-block_switchers_item {{#if switchList[index].disabled || !showProviderBreakdown}}disabled{{/if}}">
-						<label class="hits-chart-block_switchers_item_switch">
-							<input
-								class="{{name}}"
-								type="checkbox"
-								on-click="@this.set('switchList['+@index+'].active', !active)"
-								disabled="{{switchList[index].disabled || !showProviderBreakdown}}"
-								checked="{{switchList[index].active}}">
-							<span class="slider round"></span>
-							</label>
-							<span class="hits-chart-block_switchers_item_name">{{name}}</span>
-					</div>
-				{{/each}}
+			<div class="hits-chart-block_chart-wrapper">
+				<canvas id="hits-chart"></canvas>
 			</div>
 		</div>
-
-		<div class="hits-chart-block_chart-wrapper">
-			<canvas id="hits-chart"></canvas>
-		</div>
-	</div>
+	{{/if}}
 </div>
 
 <script>
@@ -76,13 +89,14 @@
 				rawHitsChartData: '',
 				providersJson,
 				showProviderBreakdown: true,
+				noChartData: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('period country continent __ready', function () {
 					if (this.get('__ready')) {
-						let period = this.get('period');
+						let period = this.get('period').periodValue;
 						let country = this.get('country');
 						let continent = this.get('continent');
 
@@ -91,6 +105,14 @@
 						if (continent === null) { continent = ''; }
 
 						http.fetchNetworkProviderStats(period, country, continent).then((response) => {
+							if (!response.hits.total && !response.bandwidth.total) {
+								this.set('noChartData', true);
+								this.set('switchList', []);
+								this.set('rawHitsChartData', '');
+
+								return;
+							}
+
 							let { providers: respProviders } = response.hits;
 
 							let oldSwitchList = this.get('switchList');
@@ -100,6 +122,7 @@
 								return oldOne.length ? oldOne[0] : { name: providersJson[provider.code].name, active: true, shortName: provider.code };
 							});
 
+							this.set('noChartData', false);
 							this.set('switchList', newSwitchList);
 							this.set('rawHitsChartData', response);
 						});
@@ -138,7 +161,7 @@
 
 					if (!rawHitsChartData || switchList.length === 0) { return; }
 
-					let chartPeriod = this.get('period');
+					let chartPeriodType = this.get('period').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let showProviderBreakdown = this.get('showProviderBreakdown');
 					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
@@ -181,7 +204,7 @@
 						datasets,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriod, showChartBandwidth);
+					} = _.getPreparedProvidersDataForLineChart(filteredHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
 
 					this.set('preparedHitsChartData', {
 						datasets,

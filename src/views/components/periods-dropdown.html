@@ -1,0 +1,78 @@
+<div class="c-periods-dropdown">
+	{{#if periodToDisplay}}
+		<div class="btn-group">
+			{{#if pinnedLabel}}
+				{{>pinnedLabel}}
+			{{/if}}
+
+			<button
+				type="button"
+				class="btn dropdown-toggle"
+				data-toggle="dropdown"
+				aria-haspopup="true"
+				aria-expanded="false">
+				<span>{{periodToDisplay}}</span>
+
+				<i class="fa fa-angle-down" aria-hidden="true"></i>
+			</button>
+
+			<ul class="dropdown-menu">
+				{{#each prepStatPeriods}}
+					{{#if periodType === 'separator'}}
+						<li role="separator" class="divider"></li>
+					{{else}}
+						<li>
+							<a
+								on-click="@this.handleClick(this)"
+								class="{{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}}">
+								{{periodText}}
+							</a>
+						</li>
+					{{/if}}
+				{{/each}}
+			</ul>
+		</div>
+	{{/if}}
+</div>
+
+<script>
+	const _ = require('../../public/js/_');
+
+	component.exports = {
+		data () {
+			return {
+				periodToDisplay: null,
+				prepStatPeriods: [],
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('@shared.rawListStatPeriods', (rawListStatPeriods) => {
+					if (rawListStatPeriods) {
+						let prepStatPeriods = _.getPreparedListStatPeriods(rawListStatPeriods);
+
+						this.set('prepStatPeriods', prepStatPeriods);
+					}
+				});
+
+				this.observe('selectedValue prepStatPeriods', () => {
+					let selectedValue = this.get('selectedValue');
+					let prepStatPeriods = this.get('prepStatPeriods');
+
+					if (selectedValue && prepStatPeriods && prepStatPeriods.length) {
+						prepStatPeriods.forEach((prepPeriod) => {
+							if (prepPeriod.periodValue === selectedValue) {
+								this.set('periodToDisplay', prepPeriod.periodText);
+							}
+						});
+					}
+				});
+			}
+		},
+		handleClick (periodData) {
+			let selectHandler = this.get('selectHandler');
+
+			selectHandler(periodData);
+		},
+	};
+</script>

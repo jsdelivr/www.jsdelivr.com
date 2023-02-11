@@ -4,7 +4,7 @@
 
 		<div class="switch-block">
 			<label class="switch">
-				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" disabled='{{selectedItem}}' checked>
+				<input type="checkbox" on-click="@this.set('isVersionGrouped', !isVersionGrouped)" disabled='{{selectedItem || (!topList || !topList.length)}}' checked>
 				<span class="slider round"></span>
 			</label>
 			<span class="name">Group {{ tableDataType }} versions</span>
@@ -140,12 +140,12 @@
 					<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 				</button>
 
-				<div class="table-wrapper_pagination_ctrls_limit">
+				<div class="table-wrapper_pagination_ctrls_limit {{#if topList && !topList.length}}table-wrapper_pagination_ctrls_limit_disabled{{/if}}">
 					<span>Show:</span>
 
 					<div class="btn-group">
 						<button type="button"
-							class="btn dropdown-toggle"
+							class="btn dropdown-toggle {{#if topList && !topList.length}}disabled{{/if}}"
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
@@ -363,12 +363,20 @@
 			}
 		},
 		prevPage () {
+			let topList = this.get('topList');
+
+			if (!topList || !topList.length) { return; }
+
 			let page = this.get('page');
 			let value = page.value > 1 ? page.value - 1 : page.value;
 
 			this.set('page', { value });
 		},
 		nextPage () {
+			let topList = this.get('topList');
+
+			if (!topList || !topList.length) { return; }
+
 			let page = this.get('page');
 			let xTotalPages = this.get('xTotalPages');
 			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;

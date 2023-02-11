@@ -166,3 +166,8 @@ module.exports.fetchNumberOfResources = () => {
 
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
+
+
+module.exports.fetchListStatPeriods = () => {
+	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/periods` });
+};

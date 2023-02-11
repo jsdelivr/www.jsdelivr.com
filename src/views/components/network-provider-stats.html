@@ -19,7 +19,7 @@
 						</span>
 					</div>
 
-					<span>{{period}}ly {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
+					<span>{{growthPeriod}} {{requestsData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
@@ -68,7 +68,7 @@
 						</span>
 					</div>
 
-					<span>{{period}}ly {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
+					<span>{{growthPeriod}} {{bandwidthData.growth < 0 ? 'decline' : 'growth'}}</span>
 				</div>
 			</div>
 
@@ -100,7 +100,15 @@
 	<div class="hit-rate">
 		<h3>Cache hit rate</h3>
 
-		{{#if providersToDisplay.length}}
+		{{#if noProvidersToDisplay}}
+			<div class="hit-rate_no-data">
+				<img
+					width="270"
+					height="148"
+					src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
+				<span>No data</span>
+			</div>
+		{{else}}
 			<div class="rate-row {{#if providersToDisplay.length % 2}}rate-row_odd{{else}}rate-row_even{{/if}}">
 				{{#each providersToDisplay}}
 					<div class="row-item">
@@ -127,6 +135,7 @@
 	const _ = require('../../public/js/_');
 	const http = require('../../public/js/utils/http');
 	const providersJson = require('../../public/json/net-providers.json');
+	const stats = require('../../public/js/utils/stats');
 
 	component.exports = {
 		data () {
@@ -143,12 +152,17 @@
 					statsList: [],
 				},
 				providersToDisplay: [],
+				noProvidersToDisplay: null,
+				growthPeriods: stats.growthPeriods,
+				growthPeriod: 'monthly',
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('period', (period) => {
-					http.fetchNetworkProviderStats(period).then(({ hits, bandwidth }) => {
+				this.observe('periodData', ({ periodValue, periodType }) => {
+					this.set('growthPeriod', this.get('growthPeriods')[periodType]);
+
+					http.fetchNetworkProviderStats(periodValue).then(({ hits, bandwidth }) => {
 						this.animate('requestsData', this.processStats(hits));
 						this.animate('bandwidthData', this.processStats(bandwidth));
 						this.set('providersCodes', hits.providers.map(p => p.code));
@@ -156,6 +170,12 @@
 				});
 
 				this.observe('providersCodes', (providersCodes) => {
+					if (providersCodes.length) {
+						this.set('noProvidersToDisplay', false);
+					} else {
+						this.set('noProvidersToDisplay', true);
+					}
+
 					this.set('providersToDisplay', providersCodes.map(code => providersJson[code]));
 				}, { init: false });
 			}
@@ -195,6 +215,10 @@
 			return result;
 		},
 		calcGrowth (cur, prev) {
+			if (cur === 0 && prev === 0) {
+				return 0;
+			}
+
 			return prev ? (cur - prev) * 100 / prev : 100;
 		},
 		calcPercentage (provTotal, overallTotal) {

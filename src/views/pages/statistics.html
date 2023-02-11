@@ -1,5 +1,4 @@
 <link rel="ractive" href="../r-page.html">
-<link rel="ractive" href="../components/coming-soon.html" name="c-coming-soon">
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
@@ -10,6 +9,7 @@
 <link rel="ractive" href="../components/network-request-map.html" name="c-network-request-map">
 <link rel="ractive" href="../components/top-platform-browser.html" name="c-top-platform-browser">
 <link rel="ractive" href="../components/statistics-project-table.html" name="c-statistics-project-table">
+<link rel="ractive" href="../components/periods-dropdown.html" name="c-periods-dropdown">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -49,25 +49,11 @@
 					</div>
 
 					<div class="data-range-ctrl {{ #if showGlobalStickyMenu }}global-data_visible{{ /if }}">
-						<div class="btn-group">
-							<span class="label-for-pinned">Data range</span>
-							<button
-								type="button"
-								class="btn dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{ globalStatsPeriod }}</span>
-
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
-
-							<ul class="dropdown-menu">
-								{{#each statsPeriods}}
-									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
-								{{/each}}
-							</ul>
-						</div>
+						<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}">
+							{{#partial pinnedLabel}}
+								<span class="label-for-pinned">Data range</span>
+							{{/partial}}
+						</c-periods-dropdown>
 					</div>
 
 					<div class="horizontal-divider"></div>
@@ -75,7 +61,7 @@
 			</div>
 
 			<div class="container">
-				<c-network-provider-stats period="{{ globalStatsPeriod }}"></c-network-provider-stats>
+				<c-network-provider-stats periodData="{{ periodData }}"></c-network-provider-stats>
 			</div>
 		</div>
 
@@ -113,25 +99,11 @@
 						</div>
 
 						<div class="data-range-ctrl">
-							<div class="btn-group">
-								<span class="label-for-pinned">Data range</span>
-								<button
-									type="button"
-									class="btn dropdown-toggle"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<span>{{ globalStatsPeriod }}</span>
-
-									<i class="fa fa-angle-down" aria-hidden="true"></i>
-								</button>
-
-								<ul class="dropdown-menu">
-									{{#each statsPeriods}}
-										<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
-									{{/each}}
-								</ul>
-							</div>
+							<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}">
+								{{#partial pinnedLabel}}
+									<span class="label-for-pinned">Data range</span>
+								{{/partial}}
+							</c-periods-dropdown>
 						</div>
 					</div>
 
@@ -142,12 +114,12 @@
 			<div class="container">
 				<c-network-request-chart
 					__ready="{{ __ready }}"
-					period="{{ globalStatsPeriod }}"
+					period="{{ periodData }}"
 					country="{{ selectedCountry }}"
 					continent="{{ selectedContinent }}">
 				</c-network-request-chart>
 
-				<c-network-request-map __ready="{{ __ready }}" period="{{ globalStatsPeriod }}"></c-network-request-map>
+				<c-network-request-map __ready="{{ __ready }}" period="{{ periodData.periodValue }}"></c-network-request-map>
 
 				<div class="tops">
 					<c-top-platform-browser
@@ -155,7 +127,7 @@
 						tableDataType="platform"
 						country="{{ selectedCountry }}"
 						continent="{{ selectedContinent }}"
-						period="{{ globalStatsPeriod }}">
+						period="{{ periodData.periodValue }}">
 					</c-top-platform-browser>
 
 					<c-top-platform-browser
@@ -163,7 +135,7 @@
 						tableDataType="browser"
 						country="{{ selectedCountry }}"
 						continent="{{selectedContinent}}"
-						period="{{globalStatsPeriod}}">
+						period="{{periodData.periodValue}}">
 					</c-top-platform-browser>
 				</div>
 			</div>
@@ -188,25 +160,11 @@
 					</div>
 
 					<div class="data-range-ctrl {{ #if showProjectsStickyMenu }}projects-data_visible{{ /if }}">
-						<div class="btn-group">
-							<span class="label-for-pinned">Data range</span>
-							<button
-								type="button"
-								class="btn dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{ globalStatsPeriod }}</span>
-
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
-
-							<ul class="dropdown-menu">
-								{{#each statsPeriods}}
-									<li><a on-click="@this.set('globalStatsPeriod', @key)">{{@key}}</a></li>
-								{{/each}}
-							</ul>
-						</div>
+						<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}">
+							{{#partial pinnedLabel}}
+								<span class="label-for-pinned">Data range</span>
+							{{/partial}}
+						</c-periods-dropdown>
 					</div>
 
 					<div class="horizontal-divider"></div>
@@ -217,14 +175,14 @@
 				<c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Most popular projects"
-					period="{{ globalStatsPeriod }}">
+					period="{{ periodData.periodValue }}">
 				</c-statistics-project-table>
 
 				<!-- <c-statistics-project-table
 					__ready="{{ __ready }}"
 					title="Trending projects"
 					dataType="trending"
-					period="{{ globalStatsPeriod }}">
+					period="{{ periodData.periodValue }}">
 				</c-statistics-project-table> -->
 			</div>
 		</div>
@@ -234,13 +192,11 @@
 
 <script>
 	const _ = require('../../public/js/_');
-	const stats = require('../../public/js/utils/stats');
 	const tooltip = require('../../public/js/decorators/tooltip');
 	const countries = require('../../public/json/countries.json');
 	const continents = require('../../public/json/continents.json');
 	const debounce = require('../../public/js/utils/debounce');
 	const throttle = require('../../public/js/utils/throttle');
-	const DEFAULT_PERIOD_KEY = 'month';
 	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
 	const NO_RESULTS_SEARCH_ITEM_TYPE = 'no-results';
 	const COUNTRY_SEARCH_ITEM_TYPE = 'country';
@@ -256,8 +212,7 @@
 				title: 'Usage statistics - jsDelivr',
 				name: 'd3',
 				description: 'Load modern JavaScript packages built for you on-demand. Works in modern web browsers, node.js, and deno.',
-				statsPeriods: stats.periods,
-				globalStatsPeriod: DEFAULT_PERIOD_KEY,
+				periodData: { periodText: 'month', periodValue: 'month', periodType: 's-month' },
 				showGlobalStickyMenu: false,
 				selectedCountry: null,
 				selectedContinent: null,
@@ -458,6 +413,11 @@
 			);
 
 			observer.observe(el);
+		},
+		handlePeriodSelecting () {
+			return (periodData) => {
+				this.set('periodData', periodData);
+			};
 		},
 	};
 </script>

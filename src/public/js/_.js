@@ -758,14 +758,14 @@ module.exports = {
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
 				results.labels = this.createWeekPeriodChartLabels(results.labels);
 				break;
-			case 'month':
+			case 's-month':
 				results.labels = this.createMonthPeriodChartLabels(results.labels, groupBy);
 				break;
-			case 'quarter':
-			case 'year':
+			case 's-quarter':
+			case 's-year':
 				results.labels = this.createYearPeriodChartLabels(results.labels, groupBy);
 				break;
 		}
@@ -783,10 +783,10 @@ module.exports = {
 		};
 
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
 				return schema.wideBar;
 
-			case 'month':
+			case 's-month':
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 576) { return schema.wideBar; }
@@ -799,7 +799,7 @@ module.exports = {
 
 				break;
 
-			case 'quarter':
+			case 's-quarter':
 				switch (usageChartGroupBy) {
 					case 'day':
 						if (sreenWidth >= 768) { return schema.regularBar; }
@@ -815,7 +815,7 @@ module.exports = {
 
 				break;
 
-			case 'year':
+			case 's-year':
 				switch (usageChartGroupBy) {
 					case 'day':
 						return schema.thinnestBar;
@@ -861,14 +861,14 @@ module.exports = {
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
 				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
 				break;
-			case 'month':
+			case 's-month':
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
-			case 'quarter':
-			case 'year':
+			case 's-quarter':
+			case 's-year':
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}
@@ -944,14 +944,14 @@ module.exports = {
 
 		// create labels depending on chartPeriod, Screen size, groupBy
 		switch (chartPeriod) {
-			case 'week':
+			case 's-week':
 				labelsData.labels = this.createWeekPeriodChartLabels(labelsData.labels);
 				break;
-			case 'month':
+			case 's-month':
 				labelsData.labels = this.createMonthPeriodChartLabels(labelsData.labels, groupBy);
 				break;
-			case 'quarter':
-			case 'year':
+			case 's-quarter':
+			case 's-year':
 				labelsData.labels = this.createYearPeriodChartLabels(labelsData.labels, groupBy);
 				break;
 		}
@@ -1022,14 +1022,16 @@ module.exports = {
 		return lineColors;
 	},
 
-	translatePeriodsToSNotation (period) {
-		switch (period) {
+	translatePeriodsToSNotation (periodValue) {
+		switch (periodValue) {
 			case 'month':
 				return 's-month';
 			case 'quarter':
 				return 's-quarter';
 			case 'year':
 				return 's-year';
+			default:
+				return periodValue;
 		}
 	},
 
@@ -1081,5 +1083,77 @@ module.exports = {
 		}
 
 		return name || 'm';
+	},
+
+	filterListStatPeriods (rawListStatPeriods, filterFor) {
+		if (!filterFor) { return rawListStatPeriods; }
+
+		return rawListStatPeriods.reduce((res, item) => {
+			if (Object.hasOwn(item.links, 'filterFor')) {
+				res.push(item);
+			}
+
+			return res;
+		}, []);
+	},
+
+	prepareFilteredStatPeriods (rawPeriods) {
+		let { prepPeriods } = rawPeriods.reduce((res, rawItem, rawItemIdx) => {
+			let monthQuarterText = '';
+			let { period, periodType } = rawItem;
+			let [ year, monthOrQuarter ] = period.split('-');
+
+			if (monthOrQuarter) {
+				monthQuarterText = isNaN(Number(monthOrQuarter)) ? monthOrQuarter : MONTHS_FULL_NAMES_LIST[Number(monthOrQuarter) - 1];
+			}
+
+			res.prepPeriods.push({
+				periodType,
+				periodText: `${monthQuarterText} ${year}`.trim(),
+				periodValue: period,
+			});
+
+			if (res.yearPointer !== year) {
+				res.yearPointer = year;
+			}
+
+			// check if next item has different year form current, if so - add separator
+			if (rawPeriods[rawItemIdx + 1] && rawPeriods[rawItemIdx + 1].period.split('-')[0] !== year) {
+				res.prepPeriods.push({
+					periodType: 'separator',
+				});
+			}
+
+			return res;
+		}, { prepPeriods: [], yearPointer: null });
+
+		let defaultPeriods = [
+			{
+				periodType: 's-month',
+				periodText: 'month',
+				periodValue: 'month',
+			},
+			{
+				periodType: 's-quarter',
+				periodText: 'quarter',
+				periodValue: 'quarter',
+			},
+			{
+				periodType: 's-year',
+				periodText: 'year',
+				periodValue: 'year',
+			},
+			{
+				periodType: 'separator',
+			},
+		];
+
+		return defaultPeriods.concat(prepPeriods);
+	},
+
+	getPreparedListStatPeriods (rawListStatPeriods, filterFor) {
+		let filteredStatPeriods = this.filterListStatPeriods(rawListStatPeriods, filterFor);
+
+		return this.prepareFilteredStatPeriods(filteredStatPeriods);
 	},
 };

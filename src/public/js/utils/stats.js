@@ -7,17 +7,17 @@ module.exports = {
 		year: 365,
 	},
 	groupByOptions: {
-		month: {
+		's-month': {
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: false },
 		},
-		quarter: {
+		's-quarter': {
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: false },
 		},
-		year: {
+		's-year': {
 			day: { value: 'day', isAvailable: true },
 			week: { value: 'week', isAvailable: true },
 			month: { value: 'month', isAvailable: true },
@@ -26,8 +26,8 @@ module.exports = {
 	growthPeriods: {
 		// day: 'daily',
 		// week: 'weekly',
-		month: 'monthly',
-		quarter: 'quarterly',
-		year: 'yearly',
+		's-month': 'monthly',
+		's-quarter': 'quarterly',
+		's-year': 'yearly',
 	},
 };
