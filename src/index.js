@@ -186,7 +186,7 @@ app.use(render({
 			: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`
 		: '',
 	apiDocHost: app.env === 'production'
-		? 'https://data-jsdelivr-com-preview.onrender.com'
+		? 'https://data.jsdelivr.com'
 		: 'http://localhost:4454',
 	assetsVersion,
 }, app));
