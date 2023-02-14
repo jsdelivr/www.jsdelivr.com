@@ -426,6 +426,10 @@
 
 					if (!readme || readme === 'ERROR: No README data found!') {
 						this.set('navRoute', NAV_MENU_TABS.config);
+
+						let url = new URL(window.location);
+						url.searchParams.set('nav', NAV_MENU_TABS.config);
+						app.router.history.replaceState(app.router.history.state, '', url);
 					}
 				});
 
