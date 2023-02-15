@@ -209,12 +209,25 @@
 			console.log(this.get('filterStyle'));
 		},
 		scrollToSearch () {
+			let startLocation = location.href.replace(location.search, '');
+			let page = $('html, body');
+			let searchInputEl = $('.search-input');
+			let scrollToPos = Math.floor(searchInputEl.offset().top / 100) * 100;
+
 			if (app.config.animateScrolling) {
-				$('html, body').animate({
-					scrollTop: Math.floor($('.search-input').offset().top / 100) * 100,
+				page.animate({
+					scrollTop: scrollToPos,
+				}, {
+					step () {
+						let currLocation = location.href.replace(location.search, '');
+
+						if (startLocation !== currLocation) {
+							page.stop();
+						}
+					}
 				});
 			} else {
-				scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
+				scrollTo(0, scrollToPos);
 				app.config.animateScrolling = true;
 			}
 		},
