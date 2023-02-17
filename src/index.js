@@ -47,6 +47,7 @@ const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const ogImage = require('./middleware/open-graph');
+const debugHandler = require('./routes/debug');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
@@ -370,6 +371,12 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
+
+/**
+ * Debug endpoints.
+ */
+router.get('/debug/' + serverConfig.debugToken, debugHandler);
+router.get('/debug/status/:status/:maxAge?/:delay?', debugHandler.status);
 
 /**
  * All other pages.
