@@ -184,11 +184,9 @@ app.use(render({
 	assetsHost: app.env === 'production'
 		? isRenderPreview
 			? process.env.RENDER_EXTERNAL_URL
-			: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`
+			: serverConfig.assetsHost
 		: '',
-	apiDocHost: app.env === 'production'
-		? 'https://data.jsdelivr.com'
-		: 'http://localhost:4454',
+	apiDocHost: serverConfig.apiDocHost,
 	assetsVersion,
 }, app));
 
