@@ -160,7 +160,7 @@ app.use(render({
 		: '',
 	assetsHost: app.env === 'production'
 		? isRenderPreview
-			? process.env.RENDER_EXTERNAL_URL
+			? `${process.env.RENDER_EXTERNAL_URL}/${assetsVersion}`
 			: serverConfig.assetsHost
 		: `/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
