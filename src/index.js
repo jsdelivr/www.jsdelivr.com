@@ -186,7 +186,7 @@ app.use(render({
 			? process.env.RENDER_EXTERNAL_URL
 			: serverConfig.assetsHost
 		: '',
-	apiDocHost: serverConfig.apiDocHost,
+	apiDocsHost: serverConfig.apiDocsHost,
 	assetsVersion,
 }, app));
 
