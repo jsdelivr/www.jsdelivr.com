@@ -138,7 +138,7 @@
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/3.svg" />
 								{{#if netStatsToAnimate}}
 									<div class="network-data_stats_item_regular">
-										<span>{{ Math.round(netStatsToAnimate.requestsPerSecond) }}</span>
+										<span>{{ _.formatNumber(netStatsToAnimate.requestsPerSecond) }}</span>
 										<span>requests per second</span>
 									</div>
 								{{/if}}
@@ -148,7 +148,7 @@
 								<img width="80" height="80" src="{{@shared.assetsHost}}/img/landing/new/map-icons/4.svg" />
 								{{#if netStatsToAnimate}}
 									<div class="network-data_stats_item_regular">
-										<span>{{ Math.round(netStatsToAnimate.bandwidth) }} Mbps</span>
+										<span>{{ _.formatNumber(netStatsToAnimate.bandwidth) }} Mbps</span>
 										<span>bandwidth</span>
 									</div>
 								{{/if}}
@@ -944,7 +944,7 @@
 
 					let netStatsToAnimate = {
 						requestsPerSecond: reqMultiplier * this.get('baseRequestsPerSecond') || 0,
-						bandwidth: bandwMultiplier * this.get('baseBandwidth') || 0,
+						bandwidth: bandwMultiplier * this.get('baseBandwidth') * 8 || 0,
 					};
 
 					this.animate('netStatsToAnimate', netStatsToAnimate, animationConfig);
