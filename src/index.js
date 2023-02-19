@@ -220,6 +220,11 @@ router.use(
 	}
 );
 
+router.use(async (ctx, next) => {
+	ctx.res.allowCaching = ctx.res.allowCaching || (app.env === 'production' && !ctx.query.v);
+	return next();
+});
+
 /**
  * Redirect old URLs #2.
  */
