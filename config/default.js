@@ -5,7 +5,7 @@ module.exports = {
 		port: 4400,
 		host: 'https://www.jsdelivr.com',
 		blogHost: 'https://jsdelivr-blog.ghost.io',
-		assetsHost: `https://cdn.jsdelivr.net/www.jsdelivr.com/${assetsVersion}`,
+		assetsHost: `/${assetsVersion}`,
 		apiDocsHost: 'https://data.jsdelivr.com',
 		blogRewrite: {
 			'/2015/10/new-website-and-sri-support.html': '/blog/jsdelivr-reloaded-2017/',
