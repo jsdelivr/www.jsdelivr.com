@@ -171,7 +171,7 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				fetch('/js/map/map.json').then(r => r.json())
+				fetch(`${this.get('@shared.assetsHost')}/js/map/map.json`).then(r => r.json())
 					.then((locations) => {
 						this.set('allLocations', locations.sort((a, b) => a.title > b.title ? -1 : a.title < b.title));
 					});
@@ -247,7 +247,7 @@
 
 				let marker = new google.maps.Marker({
 					map,
-					icon: `/img/features/map-${getProvider(location).name.toLowerCase()}.svg`,
+					icon: `${this.get('@shared.assetsHost')}/img/features/map-${getProvider(location).name.toLowerCase()}.svg`,
 					position: new google.maps.LatLng(location.latitude, location.longitude),
 					title: location.title,
 					optimized: false,

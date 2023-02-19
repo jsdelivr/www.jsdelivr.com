@@ -125,29 +125,6 @@ if (app.env === 'development') {
 }
 
 /**
- * Static files.
- */
-app.use(async (ctx, next) => {
-	if (app.env === 'production' && (isRenderPreview || !ctx.query.v || ctx.query.v === assetsVersion)) {
-		ctx.res.allowCaching = true;
-	}
-
-	return next();
-});
-
-app.use(koaStatic(__dirname + '/../dist', {
-	index: false,
-	maxage: 365 * 24 * 60 * 60 * 1000,
-	setHeaders (res) {
-		if (res.allowCaching) {
-			res.set('Cache-Control', 'public, max-age=31536000');
-		} else {
-			res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-		}
-	},
-}));
-
-/**
  * Normalize URLs.
  */
 app.use(stripTrailingSlash());
@@ -185,7 +162,7 @@ app.use(render({
 		? isRenderPreview
 			? process.env.RENDER_EXTERNAL_URL
 			: serverConfig.assetsHost
-		: '',
+		: `/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
 	assetsVersion,
 }, app));
@@ -210,6 +187,38 @@ app.use(async (ctx, next) => {
  * More accurate APM route names.
  */
 router.use(koaElasticUtils.middleware(global.apmClient));
+
+/**
+ * Static files.
+ */
+router.use(
+	'/:v',
+	async (ctx, next) => {
+		ctx.originalPath = ctx.path;
+		ctx.path = ctx.path.replace(/^\/[^/]+/, '') || '/';
+
+		if (app.env === 'production' && ctx.params.v === assetsVersion) {
+			ctx.res.allowCaching = true;
+		}
+
+		return next();
+	},
+	koaStatic(__dirname + '/../dist', {
+		index: false,
+		maxage: 365 * 24 * 60 * 60 * 1000,
+		setHeaders (res) {
+			if (res.allowCaching) {
+				res.set('Cache-Control', 'public, max-age=31536000');
+			} else {
+				res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+			}
+		},
+	}),
+	async (ctx, next) => {
+		ctx.path = ctx.originalPath;
+		return next();
+	}
+);
 
 /**
  * Redirect old URLs #2.
