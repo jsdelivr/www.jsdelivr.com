@@ -271,7 +271,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/terms.html', data);
-		ctx.maxAge = 10 * 60;
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
@@ -345,7 +345,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/_package.html', data);
-		ctx.maxAge = 10 * 60;
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
@@ -369,7 +369,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
-		ctx.maxAge = 10 * 60;
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
@@ -403,7 +403,7 @@ koaElasticUtils.addRoutes(router, [
 
 	try {
 		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
-		ctx.maxAge = 10 * 60;
+		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
