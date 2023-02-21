@@ -55,20 +55,6 @@
 							<span class="sub-info_package sub-info_package_deprecated" title="Deprecated">deprecated</span>
 						{{/if}}
 
-						{{#if ~/packageVersionsNotFound}}
-							<div class="text-center package-no-release">
-								This package doesn't have any release on GitHub.<br>
-								Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
-								to use jsDelivr CDN.<br>
-
-								{{#if ~/latestCommitSha}}
-									Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
-										href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific
-										git commit hash</a>.
-								{{/if}}
-							</div>
-						{{/if}}
-
 						{{#if showSearchElements}}
 							{{#if version}}
 								<span class="sub-info_package sub-info_package_neutral" title="{{version}}">
@@ -314,13 +300,6 @@
 	const http = require('../../public/js/utils/http');
 
 	component.exports = {
-		computed: {
-			issueReleaseRequest () {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=No package release on GitHub`
-					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
-			},
-		},
 		data () {
 			return {
 				_,
@@ -341,14 +320,6 @@
 						}
 					});
 				}
-
-				this.observe('packageVersionsNotFound', (newValue) => {
-					if (newValue) {
-						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-							this.set('latestCommitSha', data[0] && data[0].sha);
-						});
-					}
-				});
 			}
 		},
 		setTypeFilter (filterBy) {

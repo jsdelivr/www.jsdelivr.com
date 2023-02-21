@@ -16,9 +16,22 @@
 					package="{{package}}"
 					type="{{type}}"
 					name="{{name}}"
-					version="{{versionP}}"
-					packageVersionsNotFound="{{packageVersionsNotFound}}">
+					version="{{versionP}}">
 				</c-package-header>
+
+				{{#if ~/packageVersionsNotFound}}
+					<div class="text-center package-no-release">
+						This package doesn't have any release on GitHub.<br>
+						Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
+						to use jsDelivr CDN.<br>
+
+						{{#if ~/latestCommitSha}}
+							Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
+							href="https://cdn.jsdelivr.net/gh/{{package.githubRepo.user}}/{{package.githubRepo.project}}@{{~/latestCommitSha}}/">specific
+							git commit hash</a>.
+						{{/if}}
+					</div>
+				{{/if}}
 
 				<c-package-install-block
 					package="{{package}}"
@@ -39,12 +52,14 @@
 						</a>
 					{{/if}}
 
-					<a id="navRouteConfig"
-						on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
-						class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
-						<span>{{navMenuTitles.configTabTitle}}</span>
-					</a>
+					{{#if @shared.isServer || package.version}}
+						<a id="navRouteConfig"
+							on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
+							class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
+							<span>{{navMenuTitles.configTabTitle}}</span>
+						</a>
+					{{/if}}
 
 					<a id="navRouteStats"
 						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
@@ -284,6 +299,11 @@
 
 	component.exports = {
 		computed: {
+			issueReleaseRequest () {
+				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+					+ `?title=No package release on GitHub`
+					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
+			},
 			usageChartGroupByValues () {
 				return stats.groupByOptions[this.get('periodData').periodType];
 			},
@@ -317,6 +337,10 @@
 					// This can only happen for GitHub packages.
 					if (response.versions.length === 0) {
 						this.set({ packageVersionsNotFound: true });
+
+						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
+							this.set('latestCommitSha', data[0] && data[0].sha);
+						});
 
 						return;
 					}
