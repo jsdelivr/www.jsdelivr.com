@@ -335,7 +335,11 @@ koaElasticUtils.addRoutes(router, [
 	try {
 		let packageFullName = data.scope ? `${data.scope}/${data.name}` : data.name;
 
-		data.package = await algoliaNode.getObjectWithCache(packageFullName);
+		if (data.type === 'npm') {
+			data.package = await algoliaNode.getObjectWithCache(packageFullName);
+		} else {
+			data.package = Object.assign({}, ctx.params, { owner: { name: data.user, avatar: data.user } });
+		}
 
 		if (data.package) {
 			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description}`;

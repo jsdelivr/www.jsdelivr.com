@@ -161,6 +161,22 @@
 				}
 			});
 
+			if (this.get('type') !== 'npm') {
+				this.set({
+					package: {
+						githubRepo: {
+							user: this.get('user'),
+							project: this.get('repo'),
+						},
+						owner: {
+							link: `https://github.com/${this.get('user')}/`,
+							avatar: `https://github.com/${this.get('user')}.png`,
+							name: this.get('user'),
+						},
+					},
+				});
+			}
+
 			if (!Ractive.isServer) {
 				if (this.get('type') === 'npm') {
 					// Load package metadata.
@@ -191,20 +207,6 @@
 					}).catch((error) => {
 						this.set({ packageNotFound: true });
 						console.error(`Package ${this.get('name')} not found.`, error);
-					});
-				} else {
-					this.set({
-						package: {
-							githubRepo: {
-								user: this.get('user'),
-								project: this.get('repo'),
-							},
-							owner: {
-								link: `https://github.com/${this.get('user')}/`,
-								avatar: `https://github.com/${this.get('user')}.png`,
-								name: this.get('user'),
-							},
-						},
 					});
 				}
 
