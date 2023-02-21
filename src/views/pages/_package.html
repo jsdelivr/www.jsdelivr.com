@@ -174,7 +174,7 @@
 							name: this.get('user'),
 						},
 					},
-				});
+				}, { deep: true });
 			}
 
 			if (!Ractive.isServer) {
@@ -207,6 +207,12 @@
 					}).catch((error) => {
 						this.set({ packageNotFound: true });
 						console.error(`Package ${this.get('name')} not found.`, error);
+					});
+				} else {
+					http.getGHUserContentPackageReadme(this.get('user'), this.get('repo')).then((response) => {
+						this.set('package.readme', response);
+					}).catch(() => {
+						this.set('package.readme', '');
 					});
 				}
 
