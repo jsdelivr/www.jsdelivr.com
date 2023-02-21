@@ -211,9 +211,11 @@
 					let packageType = this.get('type');
 					let packageName = this.get('name');
 
-					http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
-						this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
-					});
+					if (packageType === 'npm') {
+						http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
+							this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
+						});
+					}
 
 					// Load package files.
 					http.fetchPackageFiles(packageType, packageName, version).then((data) => {

@@ -1,4 +1,5 @@
-<div class="c-package-install-block">
+<div class="c-package-install-block {{#unless type === 'npm'}}block-empty{{/unless}}">
+	{{#if type === 'npm'}}
 	<div class="package-install-wrapper">
 		<div class="install-settings">
 			<div>INSTALL</div>
@@ -250,6 +251,7 @@
 			</div>
 		{{/if}}
 	</div>
+	{{/if}}
 </div>
 
 
@@ -301,6 +303,10 @@
 			};
 		},
 		oninit () {
+			if (this.get('type') !== 'npm') {
+				return;
+			}
+
 			if (!Ractive.isServer) {
 				this.observe('isDefaultPackage name', () => {
 					let isDefaultPackage = this.get('isDefaultPackage');
