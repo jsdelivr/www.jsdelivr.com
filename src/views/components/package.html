@@ -337,6 +337,7 @@
 					// This can only happen for GitHub packages.
 					if (response.versions.length === 0) {
 						this.set({ packageVersionsNotFound: true });
+						this.set('package.githubRepo.head', 'HEAD');
 
 						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
 							this.set('latestCommitSha', data[0] && data[0].sha);
@@ -350,6 +351,7 @@
 					// Set version for GitHub packages.
 					if (!this.get('package.version')) {
 						this.set('package.version', response.versions[0].version);
+						this.set('package.githubRepo.head', response.versions[0].version);
 					}
 
 					// Set version for GitHub packages or when an invalid version is selected.
