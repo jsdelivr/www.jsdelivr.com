@@ -300,6 +300,7 @@
 				buildHtml,
 				mobileSettingsVisible: false,
 				learnMoreHref: null,
+				entrypoints: {},
 			};
 		},
 		oninit () {
@@ -361,17 +362,7 @@
 						}
 
 						this.set('isGuessedFile', isGuessedFile);
-						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
-
-						let entrypointValues = Object.values(data.entrypoints);
-
-						if (!entrypointValues.length || (entrypointValues.every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1)) {
-							this.set('isDefaultPackage', false);
-							this.set('isDefaultPackageTmp', false);
-						} else {
-							this.set('isDefaultPackage', true);
-							this.set('isDefaultPackageTmp', true);
-						}
+						this.set('entrypoints', data.entrypoints);
 
 						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
 							if (packageJsEntrypoint) {
@@ -390,7 +381,18 @@
 								});
 							}
 						});
-					});
+					}).finally(() => {
+						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
+						let entrypointValues = Object.values(this.get('entrypoints'));
+
+						if (!entrypointValues.length || (entrypointValues.every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1)) {
+							this.set('isDefaultPackage', false);
+							this.set('isDefaultPackageTmp', false);
+						} else {
+							this.set('isDefaultPackage', true);
+							this.set('isDefaultPackageTmp', true);
+						}
+					}).catch(() => {});
 				});
 
 				this.observe('mobileSettingsVisible', (newValue) => {
