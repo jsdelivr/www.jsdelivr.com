@@ -2,7 +2,9 @@
 
 <div class="c-package-sidemenu">
 	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
+		{{#unless navRoute === 'stats' && type !== 'npm'}}
 		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
+		{{/unless}}
 
 		<div style="position: relative; z-index: 1;{{#unless navRoute !== 'stats'}}display: none;{{/unless}}">
 			<div class="sidemenu-title">
@@ -26,6 +28,7 @@
 				{{/if}}
 			</div>
 
+			{{#if navRoute === 'readme' || type === 'npm'}}
 			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
@@ -42,20 +45,26 @@
 			</div>
 
 			<div class="horizontal-divider"></div>
+			{{/if}}
 		</div>
 
+		{{#if navRoute === 'readme' || type === 'npm'}}
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
 			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
 			<span>{{#if noDataOfVersions}}No data{{else}}{{_.formatNumber(topVersionHits)}}{{/if}}</span>
 		</div>
+		{{/if}}
 
 		{{#if navRoute !== "config"}}
+			{{#if navRoute === 'readme' || type === 'npm'}}
 			<a on-click="@this.set('navRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
-
+			{{/if}}
 
 			{{#unless noDataOfVersions}}
+				{{#if navRoute === 'readme' || type === 'npm'}}
 				<div class="horizontal-divider"></div>
+				{{/if}}
 
 				<div class="twitter-share">
 					<div>
