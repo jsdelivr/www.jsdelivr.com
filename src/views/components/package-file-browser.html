@@ -223,14 +223,14 @@
 					}).catch((error) => {
 						let defaultError = 'Failed to load the file listing.';
 
-						if (error.responseJSON && error.responseJSON.message) {
-							let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+						if (error.message) {
+							let errorHtml = defaultError + '<br>' + error.message;
 
-							if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
+							if (error.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 								http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 									errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
-								}).always(() => {
-									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+								}).finally(() => {
+									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 									this.set('filesLoadingMessage', errorHtml);
 								});
 							}

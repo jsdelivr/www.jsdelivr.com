@@ -384,10 +384,18 @@ module.exports = {
 				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
 			}
 
-			xhr.onload = () => {
-				if (xhr.status >= 200 && xhr.status < 300) {
-					let response = rawResponse ? xhr.response : JSON.parse(xhr.response);
+			xhr.onerror = xhr.onload = () => {
+				let response = xhr.response;
 
+				if (!rawResponse) {
+					try {
+						response = JSON.parse(response);
+					} catch (e) {
+						console.error(e);
+					}
+				}
+
+				if (xhr.status >= 200 && xhr.status < 300) {
 					if (responseHeadersToGet && responseHeadersToGet.length) {
 						let responseHeaders = responseHeadersToGet.reduce((headerValuePairs, headerName) => {
 							headerValuePairs[headerName] = xhr.getResponseHeader(headerName);
@@ -403,11 +411,10 @@ module.exports = {
 						resolve(response);
 					}
 				} else {
-					reject(xhr.statusText);
+					reject(response);
 				}
 			};
 
-			xhr.onerror = () => reject(xhr.statusText);
 			xhr.send(body);
 		});
 	},
