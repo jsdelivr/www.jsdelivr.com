@@ -985,7 +985,7 @@ module.exports = {
 			}
 
 			let dataset = {
-				label: `v${versionData.version}`,
+				label: this.truncate(versionData.version, 20),
 				data: groupedByValues,
 				...module.exports.getLineColorsFromMask(idx),
 			};
@@ -1162,5 +1162,13 @@ module.exports = {
 		let filteredStatPeriods = this.filterListStatPeriods(rawListStatPeriods, filterFor);
 
 		return this.prepareFilteredStatPeriods(filteredStatPeriods);
+	},
+
+	truncate (text, length) {
+		if (text.length <= length) {
+			return text;
+		}
+
+		return `${text.substr(0, length - 3)}...`;
 	},
 };

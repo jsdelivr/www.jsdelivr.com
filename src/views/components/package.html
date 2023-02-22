@@ -16,7 +16,8 @@
 					package="{{package}}"
 					type="{{type}}"
 					name="{{name}}"
-					version="{{versionP}}">
+					version="{{versionP}}"
+					packageVersionsNotFound="{{packageVersionsNotFound}}">
 				</c-package-header>
 
 				{{#if ~/packageVersionsNotFound}}
@@ -52,14 +53,14 @@
 						</a>
 					{{/if}}
 
-					{{#if @shared.isServer || package.version}}
+					{{#unless packageVersionsNotFound}}
 						<a id="navRouteConfig"
 							on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
 							class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
 							<span>{{navMenuTitles.configTabTitle}}</span>
 						</a>
-					{{/if}}
+					{{/unless}}
 
 					<a id="navRouteStats"
 						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
@@ -336,11 +337,16 @@
 
 					// This can only happen for GitHub packages.
 					if (response.versions.length === 0) {
-						this.set({ packageVersionsNotFound: true });
-						this.set('package.githubRepo.head', 'HEAD');
-
 						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-							this.set('latestCommitSha', data[0] && data[0].sha);
+							let sha = data[0].sha; // if there are no commits this will throw and trigger the catch() block, which is intended
+							this.set('packageVersionsList', [ sha ]);
+							this.set('package.githubRepo.head', sha);
+							this.set('package.version', sha);
+							this.set('versionP', sha);
+						}).catch((error) => {
+							this.set({ packageVersionsNotFound: true });
+							this.set('package.githubRepo.head', 'HEAD');
+							console.error(`Commits not found.`, error);
 						});
 
 						return;
@@ -451,7 +457,7 @@
 					let readme = this.get('package').readme;
 
 					if ((!readme || readme === 'ERROR: No README data found!') && this.get('navRoute') === 'readme') {
-						this.set('navRoute', NAV_MENU_TABS.config);
+						this.set('navRoute', this.get('packageVersionsNotFound') ? NAV_MENU_TABS.stats : NAV_MENU_TABS.config);
 
 						let url = new URL(window.location);
 						url.searchParams.set('nav', NAV_MENU_TABS.config);
