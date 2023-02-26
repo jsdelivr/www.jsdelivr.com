@@ -141,7 +141,7 @@ app.use(async (ctx, next) => {
 	}
 
 	if (ctx.maxAge) {
-		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, stale-while-revalidate=600, stale-if-error=86400`);
+		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, must-revalidate, stale-while-revalidate=600, stale-if-error=86400`);
 	} else if (ctx.expires) {
 		ctx.set('Cache-Control', `public`);
 		ctx.set('Expires', ctx.expires);
