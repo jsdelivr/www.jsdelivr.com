@@ -22,8 +22,39 @@ module.exports.fetchNetworkStats = (period = 'month') => {
 	return getWithCache(`${API_HOST}/v1/stats/network/content?period=${period}`);
 };
 
-module.exports.fetchPackageFiles = (type, name, version, flat = false) => {
-	return getWithCache(`${API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}${flat ? '?structure=flat' : ''}`);
+module.exports.fetchPackageFiles = (type, name, version) => {
+	return getWithCache(`${API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}`);
+};
+
+module.exports.fetchPackageFilesFlat = (type, name, version) => {
+	let flatten = (items) => {
+		return items.reduce((acc, item) => {
+			if (item.type === 'file') {
+				acc.push({
+					...item,
+					name: `/${item.name}`,
+				});
+
+				return acc;
+			}
+
+			return flatten(item.files).reduce((acc, file) => {
+				acc.push({
+					...file,
+					name: `/${item.name}${file.name}`,
+				});
+
+				return acc;
+			}, acc);
+		}, []);
+	};
+
+	return getWithCache(`${API_HOST}/v1/packages/${type}/${name}@${encodeURIComponent(version)}`).then((response) => {
+		return {
+			...response,
+			files: flatten(response.files),
+		};
+	});
 };
 
 module.exports.fetchPackageFileStats = (type, name, version, period = 'month', by = 'hits', limit = undefined) => {
