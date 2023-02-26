@@ -420,7 +420,13 @@ module.exports = {
 	},
 
 	createQueryString (params) {
-		return '?' + Object.keys(params).filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
+		let keys = Object.keys(params);
+
+		if (!keys.length) {
+			return '';
+		}
+
+		return '?' + keys.filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
 	},
 
 	deepExtend (out = {}, ...rest) {
