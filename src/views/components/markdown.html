@@ -1,5 +1,7 @@
+<link rel="ractive" href="./html.html" name="c-html">
+
 <div class="c-markdown">
-	{{{markdown}}}
+	<c-html html="{{html}}"></c-html>
 </div>
 
 <script>
@@ -10,24 +12,20 @@
 		data () {
 			return {
 				_,
-				text: '',
+				html: '',
 				markdown: '',
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				app.injectGlobalStyle('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css');
+				app.injectGlobalStyle('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css');
 
 				Promise.all([
 					// eslint-disable-next-line node/no-missing-import
 					import('https://cdn.jsdelivr.net/npm/marked@4.2.12/+esm'),
 					// eslint-disable-next-line node/no-missing-import
-					import('https://cdn.jsdelivr.net/npm/dompurify@2.4.3/+esm'),
-					// eslint-disable-next-line node/no-missing-import
 					import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.7.0/es/highlight.min.js'),
-				]).then(([{ marked }, { default: DOMPurify }, { default: hljs }]) => {
-					let _this = this;
-
+				]).then(([{ marked }, { default: hljs }]) => {
 					marked.setOptions({
 						langPrefix: 'hljs language-',
 						headerIds: true,
@@ -37,52 +35,8 @@
 						},
 					});
 
-					DOMPurify.removeAllHooks();
-
-					DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-						if (node.hasAttribute('href')) {
-							node.setAttribute('href', _.normalizeHref(node.getAttribute('href'), ID_PREFIX));
-						}
-
-						if (node.hasAttribute('src')) {
-							node.setAttribute('src', _.optimizeSrc(node.getAttribute('src'), _this.get('github')));
-							node.setAttribute('loading', 'lazy');
-						}
-
-						if ('target' in node) {
-							if (_.isExternalLink(node.getAttribute('href'))) {
-								node.setAttribute('target', '_blank');
-							}
-
-							node.setAttribute('rel', 'nofollow noopener noreferrer');
-							node.classList.add('router-ignore');
-						}
-					});
-
-					// if page URL has a hash then scroll page to the anchor
-					this.observeOnce('markdown', () => {
-						let anchor = app.router.uri.hash;
-						let el = anchor ? this.find(anchor) : null;
-
-						if (el) {
-							if (document.visibilityState === 'visible') {
-								el.scrollIntoView({
-									behavior: 'smooth',
-								});
-							} else {
-								document.addEventListener('visibilitychange', function listener () {
-									el.scrollIntoView({
-										behavior: 'smooth',
-									});
-
-									document.removeEventListener('visibilitychange', listener);
-								});
-							}
-						}
-					}, { init: false, defer: true });
-
-					this.observe('text', (md) => {
-						this.set('markdown', DOMPurify.sanitize(marked.parse(md)));
+					this.observe('markdown', (md) => {
+						this.set('html', marked.parse(md));
 					});
 				});
 			}

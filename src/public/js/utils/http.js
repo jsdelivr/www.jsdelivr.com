@@ -18,6 +18,10 @@ const getWithCache = (url, params = {}) => {
 	return request;
 };
 
+module.exports.fetchPackageReadme = (type, name) => {
+	return _.makeHTTPRequest({ url: `/readme/${type}/${name}`, rawResponse: true });
+};
+
 module.exports.fetchNetworkStats = (period = 'month') => {
 	return getWithCache(`${API_HOST}/v1/stats/network/content?period=${period}`);
 };

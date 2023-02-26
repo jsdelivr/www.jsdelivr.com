@@ -47,6 +47,7 @@ const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const ogImage = require('./middleware/open-graph');
+const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
@@ -344,7 +345,7 @@ koaElasticUtils.addRoutes(router, [
 
 		if (data.package) {
 			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description || ''}`;
-			data.package.readme = data.package.readme || ' ';
+			data.package.readme = ' ';
 		}
 	} catch {}
 
@@ -388,6 +389,11 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
+
+koaElasticUtils.addRoutes(router, [
+	[ '/readme/npm/:name', '/readme/:type(npm)/:scope?/:name' ],
+	[ '/readme/gh/:user/:repo', '/readme/:type(gh)/:user/:repo' ],
+], readme);
 
 /**
  * Debug endpoints.
