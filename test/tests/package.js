@@ -95,6 +95,7 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.sleep(4000);
 		await browser.findElement({ css: '.c-package-file-browser .show-more-toggle a' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.c-package-file-browser .files-list > div:nth-child(12) .file-item .file-path' }).getText()).to.eventually.contain('README.md');
@@ -104,6 +105,7 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/slick-carousel?version=1.8.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'navRouteStats' }).click();
+		await browser.sleep(4000);
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
