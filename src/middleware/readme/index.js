@@ -27,6 +27,10 @@ const fetchFromGitHub = async (user, repo, version = 'HEAD') => {
 
 	let request = got(`${RAW_GH_USER_CONTENT_HOST}/${path}/README.md`, { resolveBodyOnly: true }).catch(() => {
 		return got(`${RAW_GH_USER_CONTENT_HOST}/${path}/README.markdown`, { resolveBodyOnly: true });
+	}).catch((error) => {
+		console.error(error);
+		cache.set(path, request, 60 * 1000);
+		return '';
 	});
 
 	cache.set(path, request);
@@ -47,14 +51,16 @@ module.exports = async (ctx) => {
 
 			if (meta.githubRepo) {
 				readme = await fetchFromGitHub(meta.githubRepo.user, meta.githubRepo.project);
-			} else if (readme && readme !== 'ERROR: No README data found!') {
+			}
+
+			if (!readme && meta.readme && meta.readme !== 'ERROR: No README data found!') {
 				readme = meta.readme;
 			}
 		}
 
 		ctx.body = marked.parse(readme);
 		ctx.type = 'text/plain';
-		ctx.maxAge = 24 * 60 * 60;
+		ctx.maxAge = readme ? 24 * 60 * 60 : 60;
 	} catch (error) {
 		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
 			return; // 404 response
