@@ -82,8 +82,8 @@ app.router.addRoute('/become-a-sponsor', cBecomeASponsor);
 app.router.addRoute('/network', cNetwork);
 app.router.addRoute('/network/infographic', cNetworkInfographic);
 app.router.addRoute('/new-jsdelivr', cNewJsdelivr);
-app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
-app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version', 'nav' ] });
+app.router.addRoute('/package/:type(npm)/:scope?/:name', cPackage, { qs: [ 'path', 'tab', 'version', 'slide' ] });
+app.router.addRoute('/package/:type(gh)/:user/:repo', cPackage, { qs: [ 'path', 'tab', 'version', 'slide' ] });
 app.router.addRoute('/sponsors', cSponsors);
 app.router.addRoute('/statistics', cStatistics);
 app.router.addRoute('/tools/purge', cPurge);
@@ -130,7 +130,7 @@ _.onDocumentReady(() => {
 	} catch (e) {}
 
 	app.router
-		.init({ noScroll: true, state })
+		.init({ noScroll: true, state: { ...state, ...app.router.data() } })
 		.watchLinks()
 		.watchState();
 });
