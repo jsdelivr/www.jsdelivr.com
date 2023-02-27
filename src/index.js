@@ -235,7 +235,7 @@ router.use(async (ctx, next) => {
  * Canonical links
  */
 router.use(async (ctx, next) => {
-	ctx.append('Link', `<${serverConfig.host}${ctx.url}>; rel="canonical"`);
+	ctx.append('Link', `<${serverConfig.host}${ctx.path}>; rel="canonical"`);
 	return next();
 });
 
