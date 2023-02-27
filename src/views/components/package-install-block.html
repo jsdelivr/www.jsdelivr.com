@@ -81,7 +81,7 @@
 
 		<div class="horizontal-divider-19"></div>
 
-		<div class="install-script">
+		<div class="install-script {{#if isDefaultPackage === null && !package.moduleTypes.includes('none') && !package.styleTypes.includes('none')}}install-script-2{{/if}}">
 			{{#if isDefaultPackage === true}}
 				{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
@@ -224,7 +224,7 @@
 
 		<div class="horizontal-divider-19"></div>
 
-		{{#if isGuessedFile}}
+		{{#if isGuessedFile && isDefaultPackage}}
 			<div class="install-default-warning">
 				{{#if Object.values(entrypoints) > 1}}The URLs are{{else}}The URL is{{/if}} guessed and might not be correct.
 				You can always <a on-click="@this.set('navRoute', 'config')">browse all package files</a> to find the correct one.
