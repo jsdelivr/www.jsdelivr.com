@@ -232,6 +232,14 @@ router.use(async (ctx, next) => {
 });
 
 /**
+ * Canonical links
+ */
+router.use(async (ctx, next) => {
+	ctx.append('Link', `<${serverConfig.host}${ctx.url}>; rel="canonical"`);
+	return next();
+});
+
+/**
  * Redirect old URLs #2.
  */
 koaElasticUtils.addRoutes(router, [
@@ -335,7 +343,7 @@ koaElasticUtils.addRoutes(router, [
 		repo: ctx.params.repo,
 		scope: ctx.params.scope,
 		actualPath: ctx.path,
-		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'nav' ]),
+		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'slide' ]),
 	};
 
 	try {
