@@ -85,12 +85,14 @@
 			{{#if isDefaultPackage === true}}
 				{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
-						<span class="script-tag">&#60;script src="</span>
-						<span class="script-text">
-							<a target="_blank" href="{{~/installScriptSrc}}">{{~/installScriptSrc}}</a>
-						</span>
+						<div class="code-wrapper">
+							<span class="script-tag">&#60;script src="</span>
+							<span class="script-text">
+								<a target="_blank" href="{{~/installScriptSrc}}">{{~/installScriptSrc}}</a>
+							</span>
 
-						<span class="script-tag">"&#62;&#60;/script&#62;</span>
+							<span class="script-tag">"&#62;&#60;/script&#62;</span>
+						</div>
 
 						<div class="btn-group btn-group_copy-dropdown">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -138,11 +140,13 @@
 
 				{{#if ~/packageCssEntrypoint}}
 					<div class="script-wrapper-default">
-						<span class="script-tag">&#60;link href="</span>
-						<span class="script-text">
-							<a target="_blank" href="{{~/installLinkHref}}">{{~/installLinkHref}}</a>
-						</span>
-						<span class="script-tag">" rel="stylesheet"&#62;</span>
+						<div class="code-wrapper">
+							<span class="script-tag">&#60;link href="</span>
+							<span class="script-text">
+								<a target="_blank" href="{{~/installLinkHref}}">{{~/installLinkHref}}</a>
+							</span>
+							<span class="script-tag">" rel="stylesheet"&#62;</span>
+						</div>
 
 						<div class="btn-group btn-group_copy-dropdown">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -189,12 +193,14 @@
 				{{/if}}
 			{{elseif isDefaultPackage === false}}
 				<div class="script-wrapper-esm">
-					<span class="script-tag">&#60;script type="module"&#62;</span>
-					<span class="script-text">
-						<span>import {{_.packageToImportName(name)}} from</span>
-						<span>'<a target="_blank" href="{{~/installEsmSrc}}">{{~/installEsmSrc}}</a>'</span>
-					</span>
-					<span class="script-tag">&#60;/script&#62;</span>
+					<div class="code-wrapper">
+						<span class="script-tag">&#60;script type="module"&#62;</span>
+						<span class="script-text">
+							<span>import {{_.packageToImportName(name)}} from</span>
+							<span>'<a target="_blank" href="{{~/installEsmSrc}}">{{~/installEsmSrc}}</a>'</span>
+						</span>
+						<span class="script-tag">&#60;/script&#62;</span>
+					</div>
 
 					<div class="btn-group btn-group_copy-dropdown">
 						<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -315,7 +321,7 @@
 					}
 				});
 
-				this.observe('selectedVersion', () => {
+				this.observe('version selectedVersion', () => {
 					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
