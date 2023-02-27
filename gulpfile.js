@@ -18,8 +18,10 @@ const buffer = require('vinyl-buffer');
 const source = require('vinyl-source-stream');
 
 const srcDir = './src';
-const srcAssetsDir = `${srcDir}/public`;
-const dstDir = './dist';
+const srcAssetsDir = `${srcDir}/assets`;
+const srcPublicDir = `${srcDir}/public`;
+const dstAssetsDir = './dist/assets';
+const dstPublicDir = './dist';
 let cache;
 
 const getRollupStream = file => rollupStream({
@@ -49,14 +51,17 @@ const getRollupStream = file => rollupStream({
 });
 
 gulp.task('clean', () => {
-	return del([ dstDir ]);
+	return del([ dstPublicDir ]);
 });
 
-gulp.task('copy', () => {
-	return gulp.src(`${srcAssetsDir}/**/*.!(js|less)`, { base: srcAssetsDir, since: gulp.lastRun('copy') })
-		.pipe(gulp.dest(dstDir))
-		.pipe(livereload());
-});
+gulp.task('copy', gulp.parallel(
+	() => gulp.src(`${srcAssetsDir}/**/*.!(js|less)`, { base: srcAssetsDir, since: gulp.lastRun('copy') })
+		.pipe(gulp.dest(dstAssetsDir))
+		.pipe(livereload()),
+	() => gulp.src(`${srcPublicDir}/**/*.!(js|less)`, { base: srcPublicDir, since: gulp.lastRun('copy') })
+		.pipe(gulp.dest(dstPublicDir))
+		.pipe(livereload())
+));
 
 gulp.task('less', () => {
 	return gulp.src([ `${srcAssetsDir}/less/app.less` ])
@@ -64,7 +69,7 @@ gulp.task('less', () => {
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/css`))
+		.pipe(gulp.dest(`${dstAssetsDir}/css`))
 		.pipe(livereload());
 });
 
@@ -75,7 +80,7 @@ gulp.task('less:prod', () => {
 		.pipe(autoprefixer())
 		.pipe(minifyCss())
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/css`));
+		.pipe(gulp.dest(`${dstAssetsDir}/css`));
 });
 
 gulp.task('js', gulp.parallel(
@@ -85,7 +90,7 @@ gulp.task('js', gulp.parallel(
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/js`))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`))
 		.pipe(livereload()),
 	() => getRollupStream('app-docs.js')
 		.pipe(plumber())
@@ -93,7 +98,7 @@ gulp.task('js', gulp.parallel(
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/js`))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`))
 		.pipe(livereload())
 ));
 
@@ -104,14 +109,14 @@ gulp.task('js:prod', gulp.parallel(
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/js`)),
+		.pipe(gulp.dest(`${dstAssetsDir}/js`)),
 	() => getRollupStream('app-docs.js')
 		.pipe(source(`app-docs.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstDir}/js`))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`))
 ));
 
 gulp.task('build', gulp.series('clean', 'copy', 'less:prod', 'js:prod'));
@@ -126,7 +131,7 @@ gulp.task('watch', () => {
 	livereload.listen();
 
 	gulp.watch([
-		`${srcAssetsDir}/**/*.!(html|js|less)`,
+		`${srcPublicDir}/**/*.!(html|js|less)`,
 	], gulp.series('copy'));
 
 	gulp.watch([

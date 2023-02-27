@@ -1,5 +1,5 @@
-const providersJson = require('../../public/json/net-providers.json');
-const optimizedHosts = require('../../public/json/optimized-hosts.json');
+const providersJson = require('../json/net-providers.json');
+const optimizedHosts = require('../json/optimized-hosts.json');
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };

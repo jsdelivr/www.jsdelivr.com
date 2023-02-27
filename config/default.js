@@ -6,7 +6,7 @@ module.exports = {
 		port: 4400,
 		host: 'https://www.jsdelivr.com',
 		blogHost: 'https://jsdelivr-blog.ghost.io',
-		assetsHost: `/${assetsVersion}`,
+		assetsHost: `/assets/${assetsVersion}`,
 		apiDocsHost: 'https://data.jsdelivr.com',
 		userAgent: `www.jsdelivr.com/${version} (https://github.com/jsdelivr/www.jsdelivr.com)`,
 		blogRewrite: {

@@ -161,9 +161,9 @@ app.use(render({
 		: '',
 	assetsHost: app.env === 'production'
 		? isRenderPreview
-			? `${process.env.RENDER_EXTERNAL_URL}/${assetsVersion}`
+			? `${process.env.RENDER_EXTERNAL_URL}/assets/${assetsVersion}`
 			: serverConfig.assetsHost
-		: `/${assetsVersion}`,
+		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
 	assetsVersion,
 }, app));
@@ -193,10 +193,10 @@ router.use(koaElasticUtils.middleware(global.apmClient));
  * Static files.
  */
 router.use(
-	'/:v',
+	'/assets/:v',
 	async (ctx, next) => {
 		ctx.originalPath = ctx.path;
-		ctx.path = ctx.path.replace(/^\/[^/]+/, '') || '/';
+		ctx.path = ctx.path.replace(/^\/[^/]+\/[^/]+/, '') || '/';
 
 		if (app.env === 'production' && ctx.params.v === assetsVersion) {
 			ctx.res.allowCaching = true;
@@ -204,7 +204,7 @@ router.use(
 
 		return next();
 	},
-	koaStatic(__dirname + '/../dist', {
+	koaStatic(__dirname + '/../dist/assets', {
 		index: false,
 		maxage: 365 * 24 * 60 * 60 * 1000,
 		setHeaders (res) {
@@ -215,11 +215,16 @@ router.use(
 			}
 		},
 	}),
-	async (ctx, next) => {
+	async (ctx) => {
 		ctx.path = ctx.originalPath;
-		return next();
+		// return next();
 	}
 );
+
+router.use(koaStatic(__dirname + '/../dist', {
+	index: false,
+	maxage: 60 * 60 * 1000,
+}));
 
 router.use(async (ctx, next) => {
 	ctx.res.allowCaching = ctx.res.allowCaching || (app.env === 'production' && !ctx.query.v);

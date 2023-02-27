@@ -1,5 +1,5 @@
 const { npmIndex } = require('../../../lib/algolia');
-const _ = require('../../../public/js/_');
+const _ = require('../_');
 
 module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 	return Promise.resolve().then(() => {
