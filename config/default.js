@@ -9,6 +9,11 @@ module.exports = {
 		assetsHost: `/assets/${assetsVersion}`,
 		apiDocsHost: 'https://data.jsdelivr.com',
 		userAgent: `www.jsdelivr.com/${version} (https://github.com/jsdelivr/www.jsdelivr.com)`,
+		headers: {
+			'Cache-Control': 'no-cache, no-store, must-revalidate',
+			'Vary': 'Accept-Encoding',
+			'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+		},
 		blogRewrite: {
 			'/2015/10/new-website-and-sri-support.html': '/blog/jsdelivr-reloaded-2017/',
 			'/2015/01/keycdn-joins-jsdelivr.html': '/blog/keycdn-joins-jsdelivr/',
