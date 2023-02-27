@@ -1050,7 +1050,13 @@ module.exports = {
 
 	optimizeSrc (url, github) {
 		let { newHost, hosts } = optimizedHosts;
-		let parsed = new URL(url.replace(/^\/+/, ''), github ? `https://cdn.jsdelivr.net/gh/${github.user}/${github.project}@${github.head}/` : location.href);
+		let base = github
+			? `https://cdn.jsdelivr.net/gh/${github.user}/${github.project}@${github.head}/`
+			: typeof location !== 'undefined'
+				? location.href
+				: undefined;
+
+		let parsed = new URL(url.replace(/^\/+/, ''), base);
 
 		if (hosts.includes(parsed.hostname)) {
 			parsed.pathname = parsed.hostname + parsed.pathname;
