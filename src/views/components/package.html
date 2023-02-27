@@ -37,43 +37,46 @@
 					type="{{type}}"
 					name="{{name}}"
 					version="{{versionP}}"
-					navRoute="{{navRoute}}"
+					tabRoute="{{tabRoute}}"
 				>
 				</c-package-install-block>
 
 				<div class="package-nav">
 					{{#if package.readme}}
-						<a id="navRouteReadme"
-							on-click="@this.set('navRoute', NAV_MENU_TABS.readme)"
-							class="package-nav_route {{navRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
+						<a id="tabRouteReadme"
+							href="{{@shared.app.router.uri.path}}"
+							on-click="@this.set('tabRoute', NAV_MENU_TABS.readme), false"
+							class="package-nav_route {{tabRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg">
 							<span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
 
 					{{#unless packageVersionsNotFound}}
-						<a id="navRouteConfig"
-							on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
-							class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
+						<a id="tabRouteFiles"
+							href="?tab={{NAV_MENU_TABS.files}}"
+							on-click="@this.set('tabRoute', NAV_MENU_TABS.files), false"
+							class="package-nav_route {{tabRoute === NAV_MENU_TABS.files ? 'package-nav_route_active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
-							<span>{{navMenuTitles.configTabTitle}}</span>
+							<span>{{navMenuTitles.filesTabTitle}}</span>
 						</a>
 					{{/unless}}
 
-					<a id="navRouteStats"
-						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
-						class="package-nav_route {{navRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
+					<a id="tabRouteStats"
+						href="?tab={{NAV_MENU_TABS.stats}}"
+						on-click="@this.set('tabRoute', NAV_MENU_TABS.stats), false"
+						class="package-nav_route {{tabRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg">
 						<span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
 
-					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
+					<a id="tabRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
 						<span>{{navMenuTitles.browseCdnTitle}}</span>
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
-				{{#if navRoute === NAV_MENU_TABS.readme && package.readme}}
+				{{#if tabRoute === NAV_MENU_TABS.readme && package.readme}}
 					<div class="package-readme">
 						<c-html html="{{package.readme}}" github="{{package.githubRepo}}"></c-html>
 					</div>
@@ -82,7 +85,7 @@
 
 			<div class="side-content">
 				<c-package-sidemenu
-					navRoute="{{navRoute}}"
+					tabRoute="{{tabRoute}}"
 					name="{{name}}"
 					type="{{type}}"
 					package="{{package}}">
@@ -90,8 +93,8 @@
 			</div>
 		</div>
 
-		{{#if navRoute === NAV_MENU_TABS.config}}
-			<div class="package-config full-width-content">
+		{{#if tabRoute === NAV_MENU_TABS.files}}
+			<div class="package-files full-width-content">
 				<c-package-file-browser
 					type="{{type}}"
 					name="{{name}}"
@@ -106,9 +109,9 @@
 			</div>
 		{{/if}}
 
-		{{#if navRoute === NAV_MENU_TABS.stats}}
+		{{#if tabRoute === NAV_MENU_TABS.stats}}
 			<div
-				style="visibility: {{#if navRoute === NAV_MENU_TABS.stats}}visible; height: auto;{{else}}hidden; height: 0;{{/if}}"
+				style="visibility: {{#if tabRoute === NAV_MENU_TABS.stats}}visible; height: auto;{{else}}hidden; height: 0;{{/if}}"
 				class="package-statistics full-width-content">
 				<c-package-stats
 					type="{{type}}"
@@ -127,21 +130,21 @@
 
 	const NAV_MENU_SHORT_TITLES = {
 		readmeTabTitle: 'Readme',
-		configTabTitle: 'Files',
+		filesTabTitle: 'Files',
 		statsTabTitle: 'Statistics',
 		browseCdnTitle: 'Browse CDN',
 	};
 
 	const NAV_MENU_FULL_TITLES = {
 		readmeTabTitle: 'Readme',
-		configTabTitle: 'Files',
+		filesTabTitle: 'Files',
 		statsTabTitle: 'Statistics',
 		browseCdnTitle: 'Browse CDN',
 	};
 
 	const NAV_MENU_TABS = {
 		readme: 'readme',
-		config: 'config',
+		files: 'files',
 		stats: 'stats',
 	};
 
@@ -158,7 +161,7 @@
 				_,
 				collection: [],
 				packageVersionsList: [],
-				navRoute: NAV_MENU_TABS.readme,
+				tabRoute: NAV_MENU_TABS.readme,
 				navMenuTitles: NAV_MENU_SHORT_TITLES,
 				NAV_MENU_TABS,
 			};
@@ -204,7 +207,7 @@
 				});
 
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
-				// switch tab to readme after resizing (if it was Config tab)
+				// switch tab to readme after resizing (if it was Files tab)
 				this.observe('screenWidth', (newScreenWidth) => {
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : innerWidth;
 
@@ -217,16 +220,16 @@
 				});
 
 				// check if Package has readme (if algolia has no Readme, we try to fetch it from https://raw.githubusercontent.com, getGHUserContentPackageReadme)
-				// if readme still absent we show ConfigTab as default
+				// if readme still absent we show FilesTab as default
 				this.observe('package', () => {
 					// package.readme
 					let readme = this.get('package').readme;
 
-					if ((!readme || readme === 'ERROR: No README data found!') && this.get('navRoute') === 'readme') {
-						this.set('navRoute', this.get('packageVersionsNotFound') ? NAV_MENU_TABS.stats : NAV_MENU_TABS.config);
+					if ((!readme || readme === 'ERROR: No README data found!') && this.get('tabRoute') === NAV_MENU_TABS.files) {
+						this.set('tabRoute', this.get('packageVersionsNotFound') ? NAV_MENU_TABS.stats : NAV_MENU_TABS.files);
 
 						let url = new URL(window.location);
-						url.searchParams.set('nav', NAV_MENU_TABS.config);
+						url.searchParams.set('nav', NAV_MENU_TABS.files);
 						app.router.history.replaceState(app.router.history.state, '', url);
 					}
 				});

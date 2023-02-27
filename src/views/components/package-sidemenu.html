@@ -1,12 +1,12 @@
 <link rel="ractive" href="./periods-dropdown.html" name="c-periods-dropdown">
 
 <div class="c-package-sidemenu">
-	<div class="package-stats {{navRoute === 'stats' ? 'move-top' : ''}}">
-		{{#unless navRoute === 'stats' && type !== 'npm'}}
-		<div class="block-shadow {{navRoute === 'config' ? 'bottom' : navRoute === 'stats' ? 'top' : ''}}"></div>
+	<div class="package-stats {{tabRoute === 'stats' ? 'move-top' : ''}}">
+		{{#unless tabRoute === 'stats' && type !== 'npm'}}
+		<div class="block-shadow {{tabRoute === 'files' ? 'bottom' : tabRoute === 'stats' ? 'top' : ''}}"></div>
 		{{/unless}}
 
-		<div style="position: relative; z-index: 1;{{#unless navRoute !== 'stats'}}display: none;{{/unless}}">
+		<div style="position: relative; z-index: 1;{{#unless tabRoute !== 'stats'}}display: none;{{/unless}}">
 			<div class="sidemenu-title">
 				<span>Statistics</span>
 
@@ -28,7 +28,7 @@
 				{{/if}}
 			</div>
 
-			{{#if navRoute === 'readme' || type === 'npm'}}
+			{{#if tabRoute === 'readme' || type === 'npm'}}
 			<div class="horizontal-divider"></div>
 
 			<div class="stats-section mb-18">
@@ -48,7 +48,7 @@
 			{{/if}}
 		</div>
 
-		{{#if navRoute === 'readme' || type === 'npm'}}
+		{{#if tabRoute === 'readme' || type === 'npm'}}
 		<div class="stats-section mb-24">
 			<!-- show package version if no data of top versions -->
 			<span>Top version - {{noDataOfVersions ? package.version : topVersion}}</span>
@@ -56,13 +56,13 @@
 		</div>
 		{{/if}}
 
-		{{#if navRoute !== "config"}}
-			{{#if navRoute === 'readme' || type === 'npm'}}
-			<a on-click="@this.set('navRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
+		{{#if tabRoute !== "files"}}
+			{{#if tabRoute === 'readme' || type === 'npm'}}
+			<a on-click="@this.set('tabRoute', 'stats')" class="btn-secondary">Full {{name}} Download Stats</a>
 			{{/if}}
 
 			{{#unless noDataOfVersions}}
-				{{#if navRoute === 'readme' || type === 'npm'}}
+				{{#if tabRoute === 'readme' || type === 'npm'}}
 				<div class="horizontal-divider"></div>
 				{{/if}}
 
@@ -85,7 +85,7 @@
 			{{#if package.keywords}}
 				<div class="stats-keywords mt-32">
 					<div class="stats-keywords-header">Keywords</div>
-					<div class="stats-keywords-badges {{#if navRoute === 'stats'}}shortened{{/if}}">
+					<div class="stats-keywords-badges {{#if tabRoute === 'stats'}}shortened{{/if}}">
 						{{#each package.keywords}}
 							<div class="keyword-badge">{{this}}</div>
 						{{/each}}
@@ -98,7 +98,7 @@
 		{{/if}}
 	</div>
 
-	{{#if navRoute !== "config"}}
+	{{#if tabRoute !== "files"}}
 		<div class="box-badge mt-32 mb-32">
 			<div class="box-title">Get a badge for your package</div>
 			<img src="https://data.jsdelivr.com/v1/package/{{~/type || 'npm'}}/{{name}}/badge{{#if ~/badgeAltStyle}}?style=rounded{{/if}}">
@@ -225,8 +225,8 @@
 				});
 
 				initCharts().then(({ createBarChart }) => {
-					this.observe('packageDateStats navRoute', () => {
-						if (this.get('navRoute') === 'stats') {
+					this.observe('packageDateStats tabRoute', () => {
+						if (this.get('tabRoute') === 'stats') {
 							return null;
 						}
 
@@ -289,8 +289,8 @@
 						}, 100);
 					});
 
-					this.observe('packageBandwidthStats navRoute', () => {
-						if (this.get('navRoute') === 'stats') {
+					this.observe('packageBandwidthStats tabRoute', () => {
+						if (this.get('tabRoute') === 'stats') {
 							return null;
 						}
 
