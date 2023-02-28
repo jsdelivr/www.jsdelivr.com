@@ -139,15 +139,22 @@
 
 			<div class="gp-cli_quick-start_content">
 				<div class="gp-cli_quick-start_content_header">
-					<div class="gp-cli_quick-start_content_header_item">ping from Germany</div>
-					<div class="gp-cli_quick-start_content_header_item">traceroute from USA</div>
-					<div class="gp-cli_quick-start_content_header_item active">HTTP GET from AWS</div>
-					<div class="gp-cli_quick-start_content_header_item">resolve from India</div>
-					<div class="gp-cli_quick-start_content_header_item">MTR from World</div>
+					<div class="gp-cli_quick-start_content_header_item {{#if qsTabName === 'GER'}}active{{/if}}"
+						on-click="@this.set('qsTabName', 'GER')">ping from Germany</div>
+					<div class="gp-cli_quick-start_content_header_item {{#if qsTabName === 'USA'}}active{{/if}}"
+						on-click="@this.set('qsTabName', 'USA')">traceroute from USA</div>
+					<div class="gp-cli_quick-start_content_header_item {{#if qsTabName === 'AWS'}}active{{/if}}"
+						on-click="@this.set('qsTabName', 'AWS')">HTTP GET from AWS</div>
+					<div class="gp-cli_quick-start_content_header_item {{#if qsTabName === 'IND'}}active{{/if}}"
+						on-click="@this.set('qsTabName', 'IND')">resolve from India</div>
+					<div class="gp-cli_quick-start_content_header_item {{#if qsTabName === 'WW'}}active{{/if}}"
+						on-click="@this.set('qsTabName', 'WW')">MTR from World</div>
 				</div>
 
 				<div class="gp-cli_quick-start_content_body">
-					<div class="gp-cli_quick-start_content_body_item">
+					<div class="gp-cli_quick-start_content_body_item {{#if qsTabName === 'GER'}}active{{/if}}">TODO: some other temp content 0</div>
+					<div class="gp-cli_quick-start_content_body_item {{#if qsTabName === 'USA'}}active{{/if}}">TODO: some other temp content 1</div>
+					<div class="gp-cli_quick-start_content_body_item {{#if qsTabName === 'AWS'}}active{{/if}}">
 						#globalping ping --from Germany jsdelivr.com --limit 2
 						Berlin, DE, EU, AS2934
 						PING google.com (172.217.16.14) 56(84) bytes of data.
@@ -197,11 +204,10 @@
 						6  51.158.8.177 (51.158.8.177)  0.605 ms  0.870 ms  1.086 ms
 						7  62.210.0.131 (62.210.0.131)  1.360 ms 62.210.0.159 (62.210.0.159)  1.251 ms 62.210.0.157 (62.210.0.157)  1.233 ms
 						8  dedibox-par.cdn77.com (185.229.189.14)  1.170 ms  1.240 ms  0.897 ms
-						9  unn-185-93-2-243.datapacket.com (185.93.2.243)  0.992 ms  1.002 ms  0.995 ms</div>
-					<div class="gp-cli_quick-start_content_body_item active"></div>
-					<div class="gp-cli_quick-start_content_body_item">some other content 1</div>
-					<div class="gp-cli_quick-start_content_body_item">some other content 2</div>
-					<div class="gp-cli_quick-start_content_body_item">some other content 3</div>
+						9  unn-185-93-2-243.datapacket.com (185.93.2.243)  0.992 ms  1.002 ms  0.995 ms
+					</div>
+					<div class="gp-cli_quick-start_content_body_item {{#if qsTabName === 'IND'}}active{{/if}}">TODO: some other temp content 2</div>
+					<div class="gp-cli_quick-start_content_body_item {{#if qsTabName === 'WW'}}active{{/if}}">TODO: some other temp content 3</div>
 				</div>
 			</div>
 		</div>
@@ -266,6 +272,7 @@ Options:
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
+				qsTabName: 'AWS',
 			};
 		},
 	};
