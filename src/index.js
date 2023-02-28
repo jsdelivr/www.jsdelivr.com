@@ -215,6 +215,9 @@ router.use(
 router.use(koaStatic(__dirname + '/../dist', {
 	index: false,
 	maxage: 60 * 60 * 1000,
+	setHeaders (res) {
+		res.set('Cache-Control', 'public, max-age=3600');
+	},
 }));
 
 router.use(async (ctx, next) => {
