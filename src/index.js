@@ -18,7 +18,6 @@ global.apmClient.addTransactionFilter(require('elastic-apm-utils').apm.transacti
 require('./lib/startup');
 
 const _ = require('lodash');
-const fs = require('fs-extra');
 const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
@@ -36,26 +35,18 @@ const koaETag = require('koa-etag');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
-
-const Handlebars = require('handlebars');
-const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
-const readDirRecursive = require('recursive-readdir');
-const path = require('path');
 
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
+const sitemap = require('./middleware/sitemap');
 const ogImage = require('./middleware/open-graph');
 const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
-
-let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
-let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
-let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
 
 let app = new Koa();
 let router = new KoaRouter();
@@ -301,33 +292,7 @@ koaElasticUtils.addRoutes(router, [
  */
 koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
-], async (ctx) => {
-	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
-	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
-	let maxPage = Math.ceil(packages.length / 50000);
-	let page = Number(ctx.params.page);
-
-	pages.push(
-		'oss-cdn/cocoa',
-		'oss-cdn/ghost',
-		'oss-cdn/musescore',
-		'oss-cdn/pyodide'
-	);
-
-	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
-	} else if (page > 0 && page <= maxPage) {
-		ctx.body = siteMapTemplate({ packages: packages.slice((page - 1) * 50000, page * 50000) });
-	} else if (page === 0) {
-		ctx.body = siteMap0Template({ pages });
-	} else {
-		ctx.status = 404;
-	}
-
-	ctx.type = 'xml';
-	ctx.maxAge = 24 * 60 * 60;
-});
+], sitemap);
 
 /**
  * Package pages.
