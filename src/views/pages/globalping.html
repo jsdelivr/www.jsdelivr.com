@@ -71,10 +71,26 @@
 			<div class="gp_map-block_map"></div>
 
 			<div class="gp_map-block_ctrls">
-				<label class="gp_map-block_ctrls_type">
+				<div class="gp_dropdown">
 					<span>Test type</span>
-					<input placeholder="">
-				</label>
+
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{~/selectedTestType}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/testTypeList}}
+								<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
 
 				<label class="gp_map-block_ctrls_target">
 					<span>Target</span>
@@ -480,6 +496,8 @@
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping description',
+				selectedTestType: 'ping',
+				testTypeList: [ 'ping', 'DNS' ],
 			};
 		},
 	};
