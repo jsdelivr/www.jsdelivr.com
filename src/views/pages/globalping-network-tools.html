@@ -31,7 +31,31 @@
 		<div class="gp-nettools_main-info">
 			<h1>Ping from multiple locations in</h1>
 			<span>Europe, <span class="gp-nettools_green-text">World</span></span>
-			<div>TODO: Run a Free ping test</div>
+
+			<div class="gp-nettools_main-info_input-block">
+				<span>Run a Free</span>
+
+				<div class="gp_dropdown">
+					<div class="btn-group">
+						<button type="button"
+							class="btn dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{~/selectedTestType}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/testTypesList}}
+								<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<span>test</span>
+			</div>
 		</div>
 
 		<div class="gp-nettools_demo-tools">
@@ -99,6 +123,8 @@
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping Network Tools description',
+				selectedTestType: 'ping',
+				testTypesList: [ 'ping', 'DNS' ],  // TODO: check the list content
 			};
 		},
 	};
