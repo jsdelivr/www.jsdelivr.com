@@ -118,7 +118,76 @@
 							</button>
 
 							<div>
-								test
+								<div class="rows">
+									<div class="rows_row-one">
+										<label class="port-input">
+											<span>Port</span>
+											<input value="53" placeholder="80">
+										</label>
+
+										<div class="gp_dropdown">
+											<span>Protocol</span>
+
+											<div class="btn-group">
+												<button type="button"
+													class="btn dropdown-toggle"
+													data-toggle="dropdown"
+													aria-haspopup="true"
+													aria-expanded="false">
+													<span>{{~/selectedOptProtocol}}</span>
+													<i class="fa fa-angle-down" aria-hidden="true"></i>
+												</button>
+
+												<div class="dropdown-menu">
+													{{#each ~/optProtocolsList}}
+														<div on-click="@this.set('selectedOptProtocol', this)">{{this}}</div>
+													{{/each}}
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="rows_row-two">
+										<div class="gp_dropdown">
+											<span>Type</span>
+
+											<div class="btn-group">
+												<button type="button"
+													class="btn dropdown-toggle"
+													data-toggle="dropdown"
+													aria-haspopup="true"
+													aria-expanded="false">
+													<span>{{~/selectedOptType}}</span>
+													<i class="fa fa-angle-down" aria-hidden="true"></i>
+												</button>
+
+												<div class="dropdown-menu">
+													{{#each ~/optTypesList}}
+														<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
+													{{/each}}
+												</div>
+											</div>
+										</div>
+
+										<div class="rows_row-two_switch-block">
+											<label class="gp_switch">
+												<input type="checkbox" on-click="@this.set('optTraceOn', !optTraceOn)" checked>
+												<span class="slider round"></span>
+											</label>
+
+											<span>Trace</span>
+										</div>
+									</div>
+								</div>
+
+								<label class="resolver-input">
+									<span>Resolver</span>
+									<input placeholder="IP address">
+								</label>
+
+								<button class="gp_btn_green">
+									Apply
+								</button>
 							</div>
 						</div>
 
@@ -518,9 +587,13 @@
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping description',
 				selectedTestType: 'ping',
-				testTypeList: [ 'ping', 'DNS' ],
+				testTypeList: [ 'ping', 'DNS' ], // TODO: check the list content
 				mapSwitch: true,
 				showAddSettings: false,
+				selectedOptProtocol: 'UDP',
+				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content
+				selectedOptType: 'A',
+				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content
 			};
 		},
 	};
