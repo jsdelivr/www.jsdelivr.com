@@ -18,7 +18,6 @@ global.apmClient.addTransactionFilter(require('elastic-apm-utils').apm.transacti
 require('./lib/startup');
 
 const _ = require('lodash');
-const fs = require('fs-extra');
 const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
@@ -36,25 +35,18 @@ const koaETag = require('koa-etag');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
-
-const Handlebars = require('handlebars');
-const pathToPackages = require.resolve('all-the-package-names');
 const assetsVersion = require('./lib/assets').version;
-const readDirRecursive = require('recursive-readdir');
-const path = require('path');
 
 const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
+const sitemap = require('./middleware/sitemap');
 const ogImage = require('./middleware/open-graph');
+const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
 const algoliaNode = require('./lib/algolia-node');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
-
-let siteMapTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap.xml', 'utf8'));
-let siteMap0Template = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-0.xml', 'utf8'));
-let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(__dirname + '/views/sitemap-index.xml', 'utf8'));
 
 let app = new Koa();
 let router = new KoaRouter();
@@ -140,7 +132,7 @@ app.use(async (ctx, next) => {
 	}
 
 	if (ctx.maxAge) {
-		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, stale-while-revalidate=600, stale-if-error=86400`);
+		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, must-revalidate, stale-while-revalidate=600, stale-if-error=86400`);
 	} else if (ctx.expires) {
 		ctx.set('Cache-Control', `public`);
 		ctx.set('Expires', ctx.expires);
@@ -160,9 +152,9 @@ app.use(render({
 		: '',
 	assetsHost: app.env === 'production'
 		? isRenderPreview
-			? `${process.env.RENDER_EXTERNAL_URL}/${assetsVersion}`
+			? `${process.env.RENDER_EXTERNAL_URL}/assets/${assetsVersion}`
 			: serverConfig.assetsHost
-		: `/${assetsVersion}`,
+		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
 	assetsVersion,
 }, app));
@@ -192,10 +184,10 @@ router.use(koaElasticUtils.middleware(global.apmClient));
  * Static files.
  */
 router.use(
-	'/:v',
+	'/assets/:v',
 	async (ctx, next) => {
 		ctx.originalPath = ctx.path;
-		ctx.path = ctx.path.replace(/^\/[^/]+/, '') || '/';
+		ctx.path = ctx.path.replace(/^\/[^/]+\/[^/]+/, '') || '/';
 
 		if (app.env === 'production' && ctx.params.v === assetsVersion) {
 			ctx.res.allowCaching = true;
@@ -203,7 +195,7 @@ router.use(
 
 		return next();
 	},
-	koaStatic(__dirname + '/../dist', {
+	koaStatic(__dirname + '/../dist/assets', {
 		index: false,
 		maxage: 365 * 24 * 60 * 60 * 1000,
 		setHeaders (res) {
@@ -214,14 +206,30 @@ router.use(
 			}
 		},
 	}),
-	async (ctx, next) => {
+	async (ctx) => {
 		ctx.path = ctx.originalPath;
-		return next();
+		// return next();
 	}
 );
 
+router.use(koaStatic(__dirname + '/../dist', {
+	index: false,
+	maxage: 60 * 60 * 1000,
+	setHeaders (res) {
+		res.set('Cache-Control', 'public, max-age=3600');
+	},
+}));
+
 router.use(async (ctx, next) => {
 	ctx.res.allowCaching = ctx.res.allowCaching || (app.env === 'production' && !ctx.query.v);
+	return next();
+});
+
+/**
+ * Canonical links
+ */
+router.use(async (ctx, next) => {
+	ctx.append('Link', `<${serverConfig.host}${ctx.path}>; rel="canonical"`);
 	return next();
 });
 
@@ -287,33 +295,7 @@ koaElasticUtils.addRoutes(router, [
  */
 koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
-], async (ctx) => {
-	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let packages = JSON.parse(await fs.readFile(pathToPackages, 'utf8'));
-	let pages = (await readDirRecursive(__dirname + '/views/pages', [ '_*' ])).map(p => path.relative(__dirname + '/views/pages', p).replace(/\\/g, '/').slice(0, -5));
-	let maxPage = Math.ceil(packages.length / 50000);
-	let page = Number(ctx.params.page);
-
-	pages.push(
-		'oss-cdn/cocoa',
-		'oss-cdn/ghost',
-		'oss-cdn/musescore',
-		'oss-cdn/pyodide'
-	);
-
-	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
-	} else if (page > 0 && page <= maxPage) {
-		ctx.body = siteMapTemplate({ packages: packages.slice((page - 1) * 50000, page * 50000) });
-	} else if (page === 0) {
-		ctx.body = siteMap0Template({ pages });
-	} else {
-		ctx.status = 404;
-	}
-
-	ctx.type = 'xml';
-	ctx.maxAge = 24 * 60 * 60;
-});
+], sitemap);
 
 /**
  * Package pages.
@@ -329,17 +311,22 @@ koaElasticUtils.addRoutes(router, [
 		repo: ctx.params.repo,
 		scope: ctx.params.scope,
 		actualPath: ctx.path,
-		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'nav' ]),
+		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'slide' ]),
 	};
 
 	try {
 		let packageFullName = data.scope ? `${data.scope}/${data.name}` : data.name;
 
-		data.package = await algoliaNode.getObjectWithCache(packageFullName);
+		if (data.type === 'npm') {
+			data.package = await algoliaNode.getObjectWithCache(packageFullName);
+		} else {
+			data.package = Object.assign({}, ctx.params, { owner: { name: data.user, avatar: data.user } });
+			packageFullName = `${data.user}/${data.repo}`;
+		}
 
 		if (data.package) {
-			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description}`;
-			data.package.readme = data.package.readme || ' ';
+			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description || ''}`;
+			data.package.readme = ' ';
 		}
 	} catch {}
 
@@ -383,6 +370,11 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
+
+koaElasticUtils.addRoutes(router, [
+	[ '/readme/npm/:name', '/readme/:type(npm)/:scope?/:name' ],
+	[ '/readme/gh/:user/:repo', '/readme/:type(gh)/:user/:repo' ],
+], readme);
 
 /**
  * Debug endpoints.

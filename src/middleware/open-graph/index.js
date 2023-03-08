@@ -3,19 +3,18 @@
 process.env.FONTCONFIG_PATH = 'fonts';
 
 const path = require('path');
-const got = require('got');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
 const entities = require('entities');
 const FontsProcessor = require('./fonts');
 const algoliaNode = require('../../lib/algolia-node');
+const got = require('../../lib/got');
 
 const API_HOST = 'https://data.jsdelivr.com';
 const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
-const http = got.extend();
 
 const fontsProcessor = new FontsProcessor();
 fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
@@ -23,7 +22,7 @@ fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
 	let [{ hits: requests, bandwidth }] = await Promise.all([
-		http.get(`${API_HOST}/v1/stats/packages/${type}/${name}`, { searchParams: { period } }).json().catch(() => {}),
+		got.get(`${API_HOST}/v1/stats/packages/${type}/${name}`, { searchParams: { period } }).json().catch(() => {}),
 	]);
 
 	return { requests, bandwidth };
@@ -31,7 +30,7 @@ const fetchStats = async (name, type = 'npm', period = 'month') => {
 
 const fetchLogo = async (url) => {
 	return new Promise((resolve, reject) => {
-		let stream = http.stream.get(url);
+		let stream = got.stream.get(url);
 
 		let size = 0;
 		let mime = 'image/png';

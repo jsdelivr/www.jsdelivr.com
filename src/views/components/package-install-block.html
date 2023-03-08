@@ -1,4 +1,5 @@
-<div class="c-package-install-block">
+<div class="c-package-install-block {{#unless type === 'npm'}}block-empty{{/unless}}">
+	{{#if type === 'npm'}}
 	<div class="package-install-wrapper">
 		<div class="install-settings">
 			<div>INSTALL</div>
@@ -80,16 +81,18 @@
 
 		<div class="horizontal-divider-19"></div>
 
-		<div class="install-script">
+		<div class="install-script {{#if isDefaultPackage === null && !package.moduleTypes.includes('none') && !package.styleTypes.includes('none')}}install-script-2{{/if}}">
 			{{#if isDefaultPackage === true}}
 				{{#if ~/packageJsEntrypoint}}
 					<div class="script-wrapper-default">
-						<span class="script-tag">&#60;script src="</span>
-						<span class="script-text">
-							<a target="_blank" href="{{~/installScriptSrc}}">{{~/installScriptSrc}}</a>
-						</span>
+						<div class="code-wrapper">
+							<span class="script-tag">&#60;script src="</span>
+							<span class="script-text">
+								<a target="_blank" href="{{~/installScriptSrc}}">{{~/installScriptSrc}}</a>
+							</span>
 
-						<span class="script-tag">"&#62;&#60;/script&#62;</span>
+							<span class="script-tag">"&#62;&#60;/script&#62;</span>
+						</div>
 
 						<div class="btn-group btn-group_copy-dropdown">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -137,11 +140,13 @@
 
 				{{#if ~/packageCssEntrypoint}}
 					<div class="script-wrapper-default">
-						<span class="script-tag">&#60;link href="</span>
-						<span class="script-text">
-							<a target="_blank" href="{{~/installLinkHref}}">{{~/installLinkHref}}</a>
-						</span>
-						<span class="script-tag">" rel="stylesheet"&#62;</span>
+						<div class="code-wrapper">
+							<span class="script-tag">&#60;link href="</span>
+							<span class="script-text">
+								<a target="_blank" href="{{~/installLinkHref}}">{{~/installLinkHref}}</a>
+							</span>
+							<span class="script-tag">" rel="stylesheet"&#62;</span>
+						</div>
 
 						<div class="btn-group btn-group_copy-dropdown">
 							<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -188,12 +193,14 @@
 				{{/if}}
 			{{elseif isDefaultPackage === false}}
 				<div class="script-wrapper-esm">
-					<span class="script-tag">&#60;script type="module"&#62;</span>
-					<span class="script-text">
-						<span>import {{_.packageToImportName(name)}} from</span>
-						<span>'<a target="_blank" href="{{~/installEsmSrc}}">{{~/installEsmSrc}}</a>'</span>
-					</span>
-					<span class="script-tag">&#60;/script&#62;</span>
+					<div class="code-wrapper">
+						<span class="script-tag">&#60;script type="module"&#62;</span>
+						<span class="script-text">
+							<span>import {{_.packageToImportName(name)}} from</span>
+							<span>'<a target="_blank" href="{{~/installEsmSrc}}">{{~/installEsmSrc}}</a>'</span>
+						</span>
+						<span class="script-tag">&#60;/script&#62;</span>
+					</div>
 
 					<div class="btn-group btn-group_copy-dropdown">
 						<button title="Copy to Clipboard" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
@@ -223,14 +230,10 @@
 
 		<div class="horizontal-divider-19"></div>
 
-		{{#if isGuessedFile}}
+		{{#if isGuessedFile && isDefaultPackage}}
 			<div class="install-default-warning">
-				URL is guessed and might not be correct.
-				<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/">Browse the NPM
-					package
-				</a>
-				to find the correct one or use our
-				<a on-click="@this.set('navRoute', 'config')">configurator to combine files and generate SRI</a>
+				{{#if Object.values(entrypoints) > 1}}The URLs are{{else}}The URL is{{/if}} guessed and might not be correct.
+				You can always <a on-click="@this.set('tabRoute', 'files')">browse all package files</a> to find the correct one.
 			</div>
 		{{else}}
 			<div class="install-esm-ctrls">
@@ -250,14 +253,15 @@
 			</div>
 		{{/if}}
 	</div>
+	{{/if}}
 </div>
 
 
 <script>
-	const _ = require('../../public/js/_');
-	const http = require('../../public/js/utils/http');
-	const clipboard = require('../../public/js/decorators/clipboard');
-	const { buildIntegrity, canBuildHtml, buildHtml } = require('../../public/js/utils/build-links');
+	const _ = require('../../assets/js/_');
+	const http = require('../../assets/js/utils/http');
+	const clipboard = require('../../assets/js/decorators/clipboard');
+	const { buildIntegrity, canBuildHtml, buildHtml } = require('../../assets/js/utils/build-links');
 
 	component.exports = {
 		computed: {
@@ -298,9 +302,14 @@
 				buildHtml,
 				mobileSettingsVisible: false,
 				learnMoreHref: null,
+				entrypoints: {},
 			};
 		},
 		oninit () {
+			if (this.get('type') !== 'npm') {
+				return;
+			}
+
 			if (!Ractive.isServer) {
 				this.observe('isDefaultPackage name', () => {
 					let isDefaultPackage = this.get('isDefaultPackage');
@@ -312,7 +321,7 @@
 					}
 				});
 
-				this.observe('selectedVersion', () => {
+				this.observe('version selectedVersion', () => {
 					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
@@ -355,19 +364,9 @@
 						}
 
 						this.set('isGuessedFile', isGuessedFile);
-						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
+						this.set('entrypoints', data.entrypoints);
 
-						let entrypointValues = Object.values(data.entrypoints);
-
-						if (!entrypointValues.length || (entrypointValues.every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1)) {
-							this.set('isDefaultPackage', false);
-							this.set('isDefaultPackageTmp', false);
-						} else {
-							this.set('isDefaultPackage', true);
-							this.set('isDefaultPackageTmp', true);
-						}
-
-						http.fetchPackageFiles(packageType, packageName, packageVersion, 'flat').then((data) => {
+						http.fetchPackageFilesFlat(packageType, packageName, packageVersion).then((data) => {
 							if (packageJsEntrypoint) {
 								data.files.forEach((file) => {
 									if (file.name === this.get('packageJsEntrypoint')) {
@@ -384,7 +383,18 @@
 								});
 							}
 						});
-					});
+					}).finally(() => {
+						this.set('installEsmSrc', `https://cdn.jsdelivr.net/npm/${packageName}${installPackageVersion}/+esm`);
+						let entrypointValues = Object.values(this.get('entrypoints'));
+
+						if (!entrypointValues.length || (entrypointValues.every(e => e.guessed) && this.get('package.moduleTypes').indexOf('esm') !== -1)) {
+							this.set('isDefaultPackage', false);
+							this.set('isDefaultPackageTmp', false);
+						} else {
+							this.set('isDefaultPackage', true);
+							this.set('isDefaultPackageTmp', true);
+						}
+					}).catch(() => {});
 				});
 
 				this.observe('mobileSettingsVisible', (newValue) => {

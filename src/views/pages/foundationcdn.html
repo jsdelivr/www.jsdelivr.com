@@ -263,9 +263,9 @@
 </r-page>
 
 <script>
-	const http = require('../../public/js/utils/http');
-	const { buildLinks } = require('../../public/js/utils/build-links');
-	const clipboard = require('../../public/js/decorators/clipboard');
+	const http = require('../../assets/js/utils/http');
+	const { buildLinks } = require('../../assets/js/utils/build-links');
+	const clipboard = require('../../assets/js/decorators/clipboard');
 
 	component.exports = {
 		data () {
@@ -430,7 +430,7 @@
 			this.updateFiles();
 		},
 		updateFiles () {
-			return http.fetchPackageFiles('npm', 'foundation-sites', this.get('selectedVersion'), true).then((files) => {
+			return http.fetchPackageFilesFlat('npm', 'foundation-sites', this.get('selectedVersion')).then((files) => {
 				let distFiles = [];
 				this.set('toggleAll', false);
 

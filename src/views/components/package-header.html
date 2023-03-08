@@ -20,12 +20,12 @@
 				<div class="package-info">
 					{{#if ~/type === 'gh'}}
 						<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{owner.name}}" class="package-owner">
-							<img width="20" height="20" src="{{owner.avatar}}?s=20">
+							<img width="20" height="20" src="{{_.optimizeSrc(owner.avatar)}}">
 							<span>{{owner.name}}</span>
 						</a>
 					{{else}}
 						<a href="/?query=author%3A%20{{owner.name}}" class="package-owner">
-							<img width="20" height="20" src="{{owner.avatar}}?s=20" loading="lazy">
+							<img width="20" height="20" src="{{_.optimizeSrc(owner.avatar)}}" loading="lazy">
 							<span>{{owner.name}}</span>
 						</a>
 					{{/if}}
@@ -55,27 +55,13 @@
 							<span class="sub-info_package sub-info_package_deprecated" title="Deprecated">deprecated</span>
 						{{/if}}
 
-						{{#if ~/packageVersionsNotFound}}
-							<div class="text-center package-no-release">
-								This package doesn't have any release on GitHub.<br>
-								Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
-								to use jsDelivr CDN.<br>
-
-								{{#if ~/latestCommitSha}}
-									Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
-										href="https://cdn.jsdelivr.net/gh/{{githubRepo.user}}/{{githubRepo.project}}@{{~/latestCommitSha}}/">specific
-										git commit hash</a>.
-								{{/if}}
-							</div>
-						{{/if}}
-
 						{{#if showSearchElements}}
-							{{#if version}}
+							{{#unless packageVersionsNotFound}}
 								<span class="sub-info_package sub-info_package_neutral" title="{{version}}">
 									<span>Version</span>
 									<span>{{version}}</span>
 								</span>
-							{{/if}}
+							{{/unless}}
 
 							{{#if license}}
 								<span class="sub-info_package sub-info_package_neutral" title="{{_.unescapeHtml(license)}}">
@@ -176,12 +162,12 @@
 		<div class="package-header-bottom">
 			<div class="horizontal-divider-16"></div>
 			<div class="col-xs-12">
-				{{#if version}}
+				{{#unless packageVersionsNotFound}}
 					<span title="{{version}}">
 						Version
 						<span>{{version}}</span>
 					</span>
-				{{/if}}
+				{{/unless}}
 
 				{{#if license}}
 					<span title="{{_.unescapeHtml(license)}}">
@@ -310,17 +296,10 @@
 </div>
 
 <script>
-	const _ = require('../../public/js/_');
-	const http = require('../../public/js/utils/http');
+	const _ = require('../../assets/js/_');
+	const http = require('../../assets/js/utils/http');
 
 	component.exports = {
-		computed: {
-			issueReleaseRequest () {
-				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
-					+ `?title=No package release on GitHub`
-					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
-			},
-		},
 		data () {
 			return {
 				_,
@@ -341,14 +320,6 @@
 						}
 					});
 				}
-
-				this.observe('packageVersionsNotFound', (newValue) => {
-					if (newValue) {
-						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-							this.set('latestCommitSha', data[0] && data[0].sha);
-						});
-					}
-				});
 			}
 		},
 		setTypeFilter (filterBy) {

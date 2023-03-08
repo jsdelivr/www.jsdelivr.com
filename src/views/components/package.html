@@ -2,11 +2,9 @@
 <link rel="ractive" href="./package-file-browser.html" name="c-package-file-browser">
 <link rel="ractive" href="./package-header.html" name="c-package-header">
 <link rel="ractive" href="./package-install-block.html" name="c-package-install-block">
-<link rel="ractive" href="./top-stats-table.html" name="c-top-stats-table">
 <link rel="ractive" href="./package-sidemenu.html" name="c-package-sidemenu">
-<link rel="ractive" href="./markdown.html" name="c-markdown">
-<link rel="ractive" href="./package-request-bandwidth-stats.html" name="c-package-request-bandwidth-stats">
-<link rel="ractive" href="./periods-dropdown.html" name="c-periods-dropdown">
+<link rel="ractive" href="./package-stats.html" name="c-package-stats">
+<link rel="ractive" href="./html.html" name="c-html">
 
 <div class="c-package">
 	<div class="page-content">
@@ -20,55 +18,74 @@
 					packageVersionsNotFound="{{packageVersionsNotFound}}">
 				</c-package-header>
 
+				{{#if ~/packageVersionsNotFound}}
+					<div class="text-center package-no-release">
+						This package doesn't have any release on GitHub.<br>
+						Please <a target="_blank" href="{{issueReleaseRequest}}">ask the author</a> to make a GitHub release in order
+						to use jsDelivr CDN.<br>
+
+						{{#if ~/latestCommitSha}}
+							Alternatively, you can use a <a target="_blank" rel="noopener noreferrer"
+							href="https://cdn.jsdelivr.net/gh/{{package.githubRepo.user}}/{{package.githubRepo.project}}@{{~/latestCommitSha}}/">specific
+							git commit hash</a>.
+						{{/if}}
+					</div>
+				{{/if}}
+
 				<c-package-install-block
 					package="{{package}}"
 					type="{{type}}"
 					name="{{name}}"
 					version="{{versionP}}"
-					navRoute="{{navRoute}}"
+					tabRoute="{{tabRoute}}"
 				>
 				</c-package-install-block>
 
 				<div class="package-nav">
 					{{#if package.readme}}
-						<a id="navRouteReadme"
-							on-click="@this.set('navRoute', NAV_MENU_TABS.readme)"
-							class="package-nav_route {{navRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
+						<a id="tabRouteReadme"
+							href="{{@shared.app.router.uri.path}}"
+							on-click="@this.set('tabRoute', NAV_MENU_TABS.readme), false"
+							class="package-nav_route {{tabRoute === NAV_MENU_TABS.readme ? 'package-nav_route_active' : ''}}">
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/book.svg">
 							<span>{{navMenuTitles.readmeTabTitle}}</span>
 						</a>
 					{{/if}}
 
-					<a id="navRouteConfig"
-						on-click="@this.set('navRoute', NAV_MENU_TABS.config)"
-						class="package-nav_route {{navRoute === NAV_MENU_TABS.config ? 'package-nav_route_active' : ''}}">
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
-						<span>{{navMenuTitles.configTabTitle}}</span>
-					</a>
+					{{#unless packageVersionsNotFound}}
+						<a id="tabRouteFiles"
+							href="?tab={{NAV_MENU_TABS.files}}"
+							on-click="@this.set('tabRoute', NAV_MENU_TABS.files), false"
+							class="package-nav_route {{tabRoute === NAV_MENU_TABS.files ? 'package-nav_route_active' : ''}}">
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/settings.svg">
+							<span>{{navMenuTitles.filesTabTitle}}</span>
+						</a>
+					{{/unless}}
 
-					<a id="navRouteStats"
-						on-click="@this.set('navRoute', NAV_MENU_TABS.stats)"
-						class="package-nav_route {{navRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
+					<a id="tabRouteStats"
+						href="?tab={{NAV_MENU_TABS.stats}}"
+						on-click="@this.set('tabRoute', NAV_MENU_TABS.stats), false"
+						class="package-nav_route {{tabRoute === NAV_MENU_TABS.stats ? 'package-nav_route_active' : ''}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/statistics.svg">
 						<span>{{navMenuTitles.statsTabTitle}}</span>
 					</a>
 
-					<a id="navRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/npm/{{name}}/" class="package-nav_route">
+					<a id="tabRouteCdn" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{type}}/{{name}}/" class="package-nav_route">
 						<span>{{navMenuTitles.browseCdnTitle}}</span>
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/external-link.svg">
 					</a>
 				</div>
 
-				{{#if navRoute === NAV_MENU_TABS.readme && package.readme}}
+				{{#if tabRoute === NAV_MENU_TABS.readme && package.readme}}
 					<div class="package-readme">
-						<c-markdown text="{{package.readme}}" github="{{package.githubRepo}}"></c-markdown>
+						<c-html html="{{package.readme}}" github="{{package.githubRepo}}"></c-html>
 					</div>
 				{{/if}}
 			</div>
 
 			<div class="side-content">
 				<c-package-sidemenu
-					navRoute="{{navRoute}}"
+					tabRoute="{{tabRoute}}"
 					name="{{name}}"
 					type="{{type}}"
 					package="{{package}}">
@@ -76,237 +93,78 @@
 			</div>
 		</div>
 
-		<div style="display: {{#if navRoute === NAV_MENU_TABS.config}}flex{{else}}none{{/if}};" class="package-config full-width-content">
-			<c-package-file-browser
-				type="{{type}}"
-				name="{{name}}"
-				github="{{package.githubRepo}}"
-				version="{{versionP}}"
-				versions="{{packageVersionsList}}"
-				path="{{path}}"
-				collection="{{collection}}">
-			</c-package-file-browser>
-
-			<c-collection-box collection="{{collection}}"></c-collection-box>
-		</div>
-
-		<div
-			style="visibility: {{#if navRoute === NAV_MENU_TABS.stats}}visible; height: auto;{{else}}hidden; height: 0;{{/if}}"
-			class="package-statistics full-width-content">
-			<div class="header">
-				<div class="header-title">Statistics</div>
-				<div class="header-ctrls">
-					<div class="data-range-ctrl">
-						<span>Data range:</span>
-
-						<c-periods-dropdown selectedValue="{{periodData.periodValue}}" selectHandler="{{@this.handlePeriodSelecting()}}"></c-periods-dropdown>
-					</div>
-				</div>
-			</div>
-
-			{{#if navRoute === NAV_MENU_TABS.stats}}
-				<c-package-request-bandwidth-stats
-					name="{{name}}"
+		{{#if tabRoute === NAV_MENU_TABS.files}}
+			<div class="package-files full-width-content">
+				<c-package-file-browser
 					type="{{type}}"
-					periodData="{{periodData}}">
-				</c-package-request-bandwidth-stats>
-			{{/if}}
+					name="{{name}}"
+					github="{{package.githubRepo}}"
+					version="{{versionP}}"
+					versions="{{packageVersionsList}}"
+					path="{{path}}"
+					collection="{{collection}}">
+				</c-package-file-browser>
 
-			{{#if noPackageStatsData}}
-				<div class="no-data-wrapper">
-					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
-					<span>No statistics yet</span>
-					<span>This is probably not a very popular package :(</span>
-				</div>
-			{{else}}
-				<div class="chart-stats-per-period">
-					<div class="package-usage">
-						<div class="small-headline">{{chartTitlePeriodText}} {{~/periodData.periodText}}</div>
+				<c-collection-box collection="{{collection}}"></c-collection-box>
+			</div>
+		{{/if}}
 
-						<div class="chart-type-ctrl">
-							<span>Show numbers of</span>
-
-							<input id="chart-switch"
-								type="checkbox"
-								class="chart-type-switch {{#if showChartBandwidth}}checked{{/if}}"
-								twoway="false">
-
-							<label for="chart-switch" on-click="@this.set('showChartBandwidth', !showChartBandwidth)">
-								<span>Requests</span>
-								<span>Bandwidth</span>
-								<div class="slide-select">
-									<div class="selected"></div>
-								</div>
-							</label>
-						</div>
-
-						<div class="group-by-ctrl">
-							<span>
-								Group by:
-							</span>
-
-							<div class="btn-group">
-								<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<span>{{~/usageChartGroupByValues[usageChartGroupBy].value}}</span>
-									<i class="fa fa-angle-down" aria-hidden="true"></i>
-								</button>
-
-								<ul class="dropdown-menu">
-									{{#each ~/usageChartGroupByValues}}
-										<li>
-											{{#if this.isAvailable}}
-												<a on-click="@this.set('usageChartGroupBy', @key)">{{this.value}}</a>
-											{{/if}}
-										</li>
-									{{/each}}
-								</ul>
-							</div>
-						</div>
-					</div>
-
-					{{#if (noStatsChartHitsData && !showChartBandwidth) || (noStatsChartBandData && showChartBandwidth)}}
-						<div class="stats-chart-no-data">
-							<img
-								width="270"
-								height="148"
-								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-							<span>No data</span>
-						</div>
-					{{else}}
-						<div class="stats-chart-wrapper">
-							<canvas id="stats-chart"></canvas>
-						</div>
-					{{/if}}
-				</div>
-
-				<div class="horizontal-divider"></div>
-
-				<div class="chart-tops">
-					{{#if (noTopFiveHitsData && !showChartBandwidth) || (noTopFiveBandData && showChartBandwidth)}}
-						<div class="chart-tops-no-data">
-							<img
-								width="270"
-								height="148"
-								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-							<span>No data for Top 5 versions</span>
-						</div>
-					{{else}}
-						<c-top-stats-table
-							title="Top 5 versions"
-							data="{{~/topFiveVersions}}"
-							version="{{~/fileStatsVersion}}"
-							isBandwidth="{{~/showChartBandwidth}}">
-							{{#partial column1}}
-								<a on-click="@this.set('version', version)">{{version}}</a>
-							{{/partial}}
-						</c-top-stats-table>
-
-						<c-top-stats-table
-							data="{{~/filesStats}}"
-							version="{{~/fileStatsVersion}}"
-							versions="{{~/packageVersionsList}}"
-							isBandwidth="{{~/showChartBandwidth}}">
-							{{#partial header}}
-								Top 5 files in version
-								<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
-							{{/partial}}
-
-							{{#partial column1}}
-								<a title="{{file}}" target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{file}}">
-									{{file}}
-								</a>
-							{{/partial}}
-						</c-top-stats-table>
-					{{/if}}
-				</div>
-
-				<div class="horizontal-divider"></div>
-
-				<div class="chart-hits-per-period">
-					<div class="package-usage">
-						<div class="small-headline">{{#if showChartBandwidth}}Bandwidth{{else}}Requests{{/if}} per {{~/periodData.periodText}} per version</div>
-					</div>
-
-					{{#if (noHitsChartHitsData && !showChartBandwidth) || (noHitsChartBandData && showChartBandwidth)}}
-						<div class="hits-chart-no-data">
-							<img
-								width="270"
-								height="148"
-								src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-							<span>No data</span>
-						</div>
-					{{else}}
-						<div class="hits-chart-wrapper">
-							<canvas id="hits-chart"></canvas>
-						</div>
-
-						<div class="hits-chart-legend">
-							{{#each hitsChartLegendVersions}}
-								<div class="legend-item">
-									<div></div>
-									{{version}}
-								</div>
-							{{/each}}
-						</div>
-					{{/if}}
-				</div>
-			{{/if}}
-		</div>
+		{{#if tabRoute === NAV_MENU_TABS.stats}}
+			<div
+				style="visibility: {{#if tabRoute === NAV_MENU_TABS.stats}}visible; height: auto;{{else}}hidden; height: 0;{{/if}}"
+				class="package-statistics full-width-content">
+				<c-package-stats
+					type="{{type}}"
+					name="{{name}}"
+					versionP="{{versionP}}"
+					packageVersionsList="{{packageVersionsList}}"
+				></c-package-stats>
+			</div>
+		{{/if}}
 	</div>
 </div>
 
 <script>
-	const _ = require('../../public/js/_');
-	const http = require('../../public/js/utils/http');
-	const stats = require('../../public/js/utils/stats');
-	const debounce = require('../../public/js/utils/debounce');
-	const throttle = require('../../public/js/utils/throttle');
-	const clipboard = require('../../public/js/decorators/clipboard');
-	const tooltip = require('../../public/js/decorators/tooltip');
-	const initCharts = require('../../public/js/utils/charts');
+	const _ = require('../../assets/js/_');
+	const http = require('../../assets/js/utils/http');
+
 	const NAV_MENU_SHORT_TITLES = {
 		readmeTabTitle: 'Readme',
-		configTabTitle: 'Files',
+		filesTabTitle: 'Files',
 		statsTabTitle: 'Statistics',
-		browseCdnTitle: 'CDN',
+		browseCdnTitle: 'Browse CDN',
 	};
+
 	const NAV_MENU_FULL_TITLES = {
 		readmeTabTitle: 'Readme',
-		configTabTitle: 'Show/Configure Files',
+		filesTabTitle: 'Files',
 		statsTabTitle: 'Statistics',
-		browseCdnTitle: 'Browse CDN Files',
+		browseCdnTitle: 'Browse CDN',
 	};
+
 	const NAV_MENU_TABS = {
 		readme: 'readme',
-		config: 'config',
+		files: 'files',
 		stats: 'stats',
 	};
 
 	component.exports = {
 		computed: {
-			usageChartGroupByValues () {
-				return stats.groupByOptions[this.get('periodData').periodType];
+			issueReleaseRequest () {
+				return `https://github.com/${this.get('package.githubRepo.user')}/${this.get('package.githubRepo.project')}/issues/new/`
+					+ `?title=No package release on GitHub`
+					+ `&body=[This package](${this.get('@global.location.href')}) doesn't have any [GitHub release](https://help.github.com/articles/about-releases/). Could you please create one, so that people can use this project from jsDelivr CDN?`;
 			},
 		},
 		data () {
 			return {
 				_,
 				collection: [],
-				periodData: { periodText: 'quarter', periodValue: 'quarter', periodType: 's-quarter' },
 				packageVersionsList: [],
-				navRoute: NAV_MENU_TABS.readme,
-				showChartBandwidth: false,
-				usageChartGroupByValues: stats.groupByOptions['s-quarter'],
-				usageChartGroupBy: 'day',
-				noPackageStatsData: false,
+				tabRoute: NAV_MENU_TABS.readme,
 				navMenuTitles: NAV_MENU_SHORT_TITLES,
 				NAV_MENU_TABS,
-				chartTitlePeriodText: 'Stats for past',
 			};
-		},
-		decorators: {
-			clipboard,
-			tooltip,
 		},
 		oninit () {
 			if (!Ractive.isServer) {
@@ -316,7 +174,17 @@
 
 					// This can only happen for GitHub packages.
 					if (response.versions.length === 0) {
-						this.set({ packageVersionsNotFound: true });
+						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
+							let sha = data[0].sha; // if there are no commits this will throw and trigger the catch() block, which is intended
+							this.set('packageVersionsList', [ sha ]);
+							this.set('package.githubRepo.head', sha);
+							this.set('package.version', sha);
+							this.set('versionP', sha);
+						}).catch((error) => {
+							this.set({ packageVersionsNotFound: true });
+							this.set('package.githubRepo.head', 'HEAD');
+							console.error(`Commits not found.`, error);
+						});
 
 						return;
 					}
@@ -326,6 +194,7 @@
 					// Set version for GitHub packages.
 					if (!this.get('package.version')) {
 						this.set('package.version', response.versions[0].version);
+						this.set('package.githubRepo.head', response.versions[0].version);
 					}
 
 					// Set version for GitHub packages or when an invalid version is selected.
@@ -337,76 +206,8 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-				// fetch Package Version File Stats for Top-5-file-per-package-version
-				this.observe('periodData fileStatsVersion showChartBandwidth', () => {
-					if (!this.get('periodData') || !this.get('fileStatsVersion')) {
-						return;
-					}
-
-					let version = this.get('fileStatsVersion');
-					let period = this.get('periodData').periodValue;
-					let showChartBandwidth = this.get('showChartBandwidth');
-					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let type = this.get('type');
-					let name = this.get('name');
-
-					http.fetchPackageFileStats(type, name, version, period, dataType, '5').then((response) => {
-						let filesStats = response.map(statsPerFile => ({
-							file: statsPerFile.name,
-							hits: statsPerFile[dataType].total,
-						}));
-
-						this.animate('filesStats', filesStats);
-					});
-				});
-
-				// get Package Version Stats for Top-5-package-versions
-				this.observe('periodData versionP showChartBandwidth', () => {
-					if (!this.get('periodData') || !this.get('versionP')) { return; }
-
-					let type = this.get('type');
-					let name = this.get('name');
-					let period = this.get('periodData').periodValue;
-					let showChartBandwidth = this.get('showChartBandwidth');
-					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
-						let {
-							noHitsData: noTopFiveHitsData,
-							noBandwidthData: noTopFiveBandData,
-						} = this.checkPackageVersionsDataStatus(response);
-
-						this.set('noTopFiveHitsData', noTopFiveHitsData);
-						this.set('noTopFiveBandData', noTopFiveBandData);
-
-						if (noTopFiveHitsData && noTopFiveBandData) {
-							this.set('fileStatsVersion', null);
-							this.animate('topFiveVersions', null);
-
-							return;
-						}
-
-						let versionsStats = response.map(statsPerVersion => ({
-							version: statsPerVersion.version,
-							hits: statsPerVersion[dataType].total,
-						}));
-
-						if (
-							versionsStats[0] && (
-								(!noTopFiveHitsData && !noTopFiveBandData)
-								|| (!noTopFiveHitsData && !showChartBandwidth)
-								|| (!noTopFiveBandData && showChartBandwidth)
-							)
-						) {
-							this.set('fileStatsVersion', versionsStats[0].version);
-						}
-
-						this.animate('topFiveVersions', versionsStats);
-					});
-				});
-
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
-				// switch tab to readme after resizing (if it was Config tab)
+				// switch tab to readme after resizing (if it was Files tab)
 				this.observe('screenWidth', (newScreenWidth) => {
 					let actualScreenWidth = newScreenWidth ? newScreenWidth : innerWidth;
 
@@ -419,16 +220,16 @@
 				});
 
 				// check if Package has readme (if algolia has no Readme, we try to fetch it from https://raw.githubusercontent.com, getGHUserContentPackageReadme)
-				// if readme still absent we show ConfigTab as default
+				// if readme still absent we show FilesTab as default
 				this.observe('package', () => {
 					// package.readme
 					let readme = this.get('package').readme;
 
-					if (!readme || readme === 'ERROR: No README data found!') {
-						this.set('navRoute', NAV_MENU_TABS.config);
+					if ((!readme || readme === 'ERROR: No README data found!') && this.get('tabRoute') === NAV_MENU_TABS.files) {
+						this.set('tabRoute', this.get('packageVersionsNotFound') ? NAV_MENU_TABS.stats : NAV_MENU_TABS.files);
 
 						let url = new URL(window.location);
-						url.searchParams.set('nav', NAV_MENU_TABS.config);
+						url.searchParams.set('nav', NAV_MENU_TABS.files);
 						app.router.history.replaceState(app.router.history.state, '', url);
 					}
 				});
@@ -436,451 +237,7 @@
 				if (!this.get('versionP')) {
 					this.set('versionP', this.get('package.version'));
 				}
-
-				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
-				this.observe('periodData', () => {
-					let period = this.get('periodData').periodValue;
-					let type = this.get('type');
-					let name = this.get('name');
-					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
-
-					// prevent chart data fetching from the back when period is DAY, left it as it was prev
-					if (period === 'day') { return; }
-
-					// get data for barChart
-					http.fetchPackageSummaryStats(type, name, period).then((response) => {
-						if (!response.hits.total && !response.bandwidth.total) {
-							this.set('noStatsChartHitsData', true);
-							this.set('noStatsChartBandData', true);
-							this.set('rawStatsChartData', null);
-
-							return;
-						} else if (!response.hits.total) {
-							this.set('noStatsChartHitsData', true);
-						} else if (!response.bandwidth.total) {
-							this.set('noStatsChartBandData', true);
-						} else {
-							this.set('noStatsChartHitsData', false);
-							this.set('noStatsChartBandData', false);
-						}
-
-						// once new data fetched we should set groupBy to default value before raw data set
-						this.set('usageChartGroupBy', 'day');
-						this.set('rawStatsChartData', response);
-					});
-
-					// get data for lineChart
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
-						let {
-							noHitsData: noHitsChartHitsData,
-							noBandwidthData: noHitsChartBandData,
-						} = this.checkPackageVersionsDataStatus(response);
-
-						this.set('noHitsChartHitsData', noHitsChartHitsData);
-						this.set('noHitsChartBandData', noHitsChartBandData);
-
-						if (noHitsChartHitsData && noHitsChartBandData) {
-							this.set('rawHitsChartData', null);
-
-							return;
-						}
-
-						// once new data fetched we should set groupBy to default value before raw data set
-						this.set('usageChartGroupBy', 'day');
-						this.set('rawHitsChartData', response);
-					});
-				});
-
-				// get data for lineChart when Request/Bandwidth switch clicked (since it is sorting on the server)
-				this.observe('showChartBandwidth', (showChartBandwidth) => {
-					let period = this.get('periodData').periodValue;
-					let type = this.get('type');
-					let name = this.get('name');
-					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
-						let {
-							noHitsData: noHitsChartHitsData,
-							noBandwidthData: noHitsChartBandData,
-						} = this.checkPackageVersionsDataStatus(response);
-
-						this.set('noHitsChartHitsData', noHitsChartHitsData);
-						this.set('noHitsChartBandData', noHitsChartBandData);
-
-						if (noHitsChartHitsData && noHitsChartBandData) {
-							this.set('rawHitsChartData', null);
-
-							return;
-						}
-
-						this.set('rawHitsChartData', response);
-					});
-				}, { init: false });
-
-				// handle raw StatsChart data and prepare it for StatsChart
-				// screenWidth to observe when screen width is resized to recreate stats chart
-				this.observe('rawStatsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
-					let rawStatsChartData = this.get('rawStatsChartData');
-					let showChartBandwidth = this.get('showChartBandwidth');
-
-					if (
-						!rawStatsChartData
-						|| (!rawStatsChartData.hits.total && !showChartBandwidth)
-						|| (!rawStatsChartData.bandwidth.total && showChartBandwidth)
-						|| (!rawStatsChartData.hits.total && !rawStatsChartData.bandwidth.total)
-					) { return; }
-
-					let chartPeriodType = this.get('periodData').periodType;
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
-					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-
-					// collect X-Axis dates, group data by period, get
-					let {
-						values,
-						labels,
-						labelsStartEndPeriods,
-						maxRangeValue,
-						valueUnits,
-					} = _.getPreparedDataForBarChart(rawStatsChartData[dataType], usageChartGroupBy, chartPeriodType, showChartBandwidth);
-
-					// get bat thickness of the chart depending on screen resolution, chartPeriodType and groupBy
-					let chartBarThickness = _.calcChartBarThicknessByResolution(chartPeriodType, usageChartGroupBy);
-
-					// set prepared data for chart
-					this.set('preparedStatsChartData', {
-						data: values,
-						labels,
-						labelsStartEndPeriods,
-						maxRangeValue,
-						showChartBandwidth,
-						barThickness: chartBarThickness,
-						useYAxisBorderPlugin: screenWidth >= 768,
-						yAxisPadding: screenWidth >= 768 ? 20 : 8,
-						valueUnits,
-						usageChartGroupBy,
-					});
-				}, { init: false, defer: true });
-
-				// handle raw HitsChart data and prepare it for HitsChart
-				this.observe('rawHitsChartData showChartBandwidth usageChartGroupBy screenWidth', () => {
-					let rawHitsChartData = this.get('rawHitsChartData');
-					let noHitsChartHitsData = this.get('noHitsChartHitsData');
-					let noHitsChartBandData = this.get('noHitsChartBandData');
-					let showChartBandwidth = this.get('showChartBandwidth');
-
-					if (
-						!rawHitsChartData
-						|| (noHitsChartHitsData && !showChartBandwidth)
-						|| (noHitsChartBandData && showChartBandwidth)
-						|| (noHitsChartHitsData && noHitsChartBandData)
-					) { return; }
-
-					let chartPeriodType = this.get('periodData').periodType;
-					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
-
-					// collect versions for hitsChart Legend element
-					let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
-
-					// collect X-Axis dates, group data by period, get
-					let {
-						labels,
-						maxRangeValue,
-						datasets,
-						labelsStartEndPeriods,
-						valueUnits,
-					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
-
-					this.set('preparedHitsChartData', {
-						datasets,
-						labels,
-						labelsStartEndPeriods,
-						maxRangeValue,
-						showChartBandwidth,
-						useYAxisBorderPlugin: screenWidth >= 768,
-						yAxisPadding: screenWidth >= 768 ? 30 : 18,
-						valueUnits,
-						usageChartGroupBy,
-					});
-
-					this.set('hitsChartLegendVersions', hitsChartLegendVersions);
-				}, { init: false, defer: true });
-
-				// set Chart text based on periodData
-				this.observe('periodData', ({ periodValue }) => {
-					switch (periodValue) {
-						case 'month':
-						case 'quarter':
-						case 'year':
-							this.set('chartTitlePeriodText', 'Stats for past');
-							break;
-						default:
-							this.set('chartTitlePeriodText', 'Stats for');
-					}
-				});
-
-				// handle case when no data for the Package at all
-				this.observe('noStatsChartHitsData noStatsChartBandData noHitsChartHitsData noHitsChartBandData noTopFiveHitsData noTopFiveBandData', () => {
-					let noStatsChartHitsData = this.get('noStatsChartHitsData');
-					let noStatsChartBandData = this.get('noStatsChartBandData');
-					let noHitsChartHitsData = this.get('noHitsChartHitsData');
-					let noHitsChartBandData = this.get('noHitsChartBandData');
-					let noTopFiveHitsData = this.get('noTopFiveHitsData');
-					let noTopFiveBandData = this.get('noTopFiveBandData');
-
-					if (
-						noStatsChartHitsData
-						&& noStatsChartBandData
-						&& noHitsChartHitsData
-						&& noHitsChartBandData
-						&& noTopFiveHitsData
-						&& noTopFiveBandData
-					) {
-						this.set('showChartBandwidth', false);
-						this.set('noPackageStatsData', true);
-					} else {
-						this.set('noPackageStatsData', false);
-					}
-				});
 			}
-		},
-		onrender () {
-			if (!Ractive.isServer) {
-				let statsChart;
-				let hitsChart;
-
-				initCharts().then(({ createBarChart, createLineChart }) => {
-					// create barChart
-					this.observe('preparedStatsChartData', (preparedStatsChartData) => {
-						if (!preparedStatsChartData) { return; }
-
-						let {
-							labels,
-							maxRangeValue,
-							data,
-							showChartBandwidth,
-							barThickness,
-							useYAxisBorderPlugin,
-							yAxisPadding,
-							labelsStartEndPeriods,
-							valueUnits,
-							usageChartGroupBy,
-						} = preparedStatsChartData;
-						let statsChartCanvasEl = this.find('#stats-chart');
-
-						if (!preparedStatsChartData || !statsChartCanvasEl) { return; }
-
-						if (statsChart) {
-							statsChart.destroy();
-							statsChart = null;
-						}
-
-						let chartData = {
-							labels,
-							datasets: [{
-								data,
-								borderWidth: 0,
-								barThickness,
-								hoverBackgroundColor: '#F65128',
-							}],
-							labelsStartEndPeriods,
-							valueUnits,
-							usageChartGroupBy,
-						};
-						let chartSettings = {
-							useYAxisBorderPlugin,
-							useExternalTooltip: true,
-							useImprovedTooltip: true,
-							externalTooltipVerticalOffset: 40,
-						};
-						let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
-						let chartConfig = {
-							options: {
-								scales: {
-									x: {
-										display: true,
-										ticks: {
-											color: '#5C667A',
-											font: {
-												size: 12,
-												family: 'Lexend, sans-serif',
-												lineHeight: 2,
-											},
-											// return nothing when labelValue array is empty
-											// this way we will not get italicized text when all ticks can't be displayed at once normally
-											callback (value) {
-												let labelValue = this.getLabelForValue(value);
-
-												if (labelValue.length) {
-													return labelValue;
-												}
-											},
-										},
-										grid: {
-											display: false,
-											drawBorder: false,
-										},
-									},
-									y: {
-										display: true,
-										min: 0,
-										suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
-										ticks: {
-											padding: yAxisPadding,
-											count: 9,
-											color: '#5C667A',
-											crossAlign: 'near',
-											font: {
-												size: 12,
-												family: 'Lexend, sans-serif',
-											},
-											callback (value) {
-												let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
-
-												if (_.isMobileScreen()) {
-													return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
-												}
-
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
-											},
-										},
-										grid: {
-											display: false,
-											drawBorder: false,
-										},
-									},
-								},
-							},
-						};
-
-						statsChart = createBarChart(statsChartCanvasEl, chartData, chartSettings, chartConfig);
-					});
-
-					// create lineChart
-					this.observe('preparedHitsChartData', (preparedHitsChartData) => {
-						if (!preparedHitsChartData) { return; }
-
-						let {
-							datasets,
-							labels,
-							maxRangeValue,
-							useYAxisBorderPlugin,
-							showChartBandwidth,
-							yAxisPadding,
-							labelsStartEndPeriods,
-							valueUnits,
-							usageChartGroupBy,
-						} = preparedHitsChartData;
-						let hitsChartCanvasEl = this.find('#hits-chart');
-
-						if (!preparedHitsChartData || !hitsChartCanvasEl) { return; }
-
-						if (hitsChart) {
-							hitsChart.destroy();
-							hitsChart = null;
-						}
-
-						let chartData = {
-							labels,
-							datasets,
-							labelsStartEndPeriods,
-							valueUnits,
-							usageChartGroupBy,
-						};
-						let chartSettings = {
-							useYAxisBorderPlugin,
-							useExternalTooltip: true,
-							useImprovedTooltip: true,
-							plugins: {
-								useExternalTooltip: true,
-							},
-						};
-						let maxRangeMagnitude = Math.floor(Math.log10(maxRangeValue));
-						let chartConfig = {
-							options: {
-								scales: {
-									x: {
-										display: true,
-										ticks: {
-											autoSkip: false,
-											color: '#5C667A',
-											font: {
-												size: 12,
-												family: 'Lexend, sans-serif',
-												lineHeight: 2,
-											},
-											callback (value) {
-												let labelValue = this.getLabelForValue(value);
-
-												if (labelValue.length) {
-													return labelValue;
-												}
-											},
-										},
-										grid: {
-											display: false,
-											drawBorder: false,
-										},
-									},
-									y: {
-										display: true,
-										min: 0,
-										suggestedMax: Math.ceil(maxRangeValue / Math.pow(10, maxRangeMagnitude)) * Math.pow(10, maxRangeMagnitude),
-										ticks: {
-											padding: yAxisPadding,
-											count: 9,
-											color: '#5C667A',
-											crossAlign: 'near',
-											font: {
-												size: 12,
-												family: 'Lexend, sans-serif',
-											},
-											callback (value) {
-												let valueByMagnitude = _.getValueByMagnitude(Math.round(value), 'round', 1, false);
-
-												if (_.isMobileScreen()) {
-													return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatToShortNumber(valueByMagnitude);
-												}
-
-												return showChartBandwidth ? `${_.formatNumber(valueByMagnitude)} ${valueUnits}` : _.formatNumber(valueByMagnitude);
-											},
-										},
-										grid: {
-											drawBorder: false,
-											color: '#CFD6DD',
-											tickLength: 0,
-										},
-									},
-								},
-							},
-						};
-
-						hitsChart = createLineChart(hitsChartCanvasEl, chartData, chartSettings, chartConfig);
-					});
-				});
-
-				// detect window resize
-				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
-			}
-		},
-		handlePeriodSelecting () {
-			return (periodData) => {
-				this.set('periodData', periodData);
-			};
-		},
-		checkPackageVersionsDataStatus (response) {
-			return response.reduce((res, data) => {
-				if (data.hits.total) {
-					res.noHitsData = false;
-				}
-
-				if (data.bandwidth.total) {
-					res.noBandwidthData = false;
-				}
-
-				return res;
-			}, { noHitsData: true, noBandwidthData: true });
 		},
 	};
 </script>

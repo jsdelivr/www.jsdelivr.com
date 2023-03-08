@@ -63,16 +63,23 @@
 				</div>
 			{{/if}}
 
+			{{#if !files.length}}
+				<div class="text-center files-loading-msg">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
+			{{/if}}
+
 			<div class="files-list">
-				<div class="all-files-header">All files</div>
-				{{#if files && path.length}}
-					<div class="files-list-back">
-						<a on-click="@this.pop('path')">
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/back.svg" loading="lazy"/>
-							<span class="path-divider-small">/</span>
-							<span class="file-path">{{pathS}}...</span>
-						</a>
-					</div>
+				{{#if files}}
+					<div class="all-files-header">All files</div>
+
+					{{#if path.length}}
+						<div class="files-list-back">
+							<a on-click="@this.pop('path')">
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/back.svg" loading="lazy"/>
+								<span class="path-divider-small">/</span>
+								<span class="file-path">{{pathS}}...</span>
+							</a>
+						</div>
+					{{/if}}
 				{{/if}}
 
 				{{#partial fileLink}}
@@ -139,10 +146,6 @@
 			</div>
 		</div>
 
-		{{#if !files.length}}
-			<div class="text-center files-loading-msg">{{{filesLoadingMessage || 'Files are loading...'}}}</div>
-		{{/if}}
-
 		{{#if _.listFiles(~/files, path).length > filesLimit}}
 			<div class="show-more-toggle">
 				{{#if showMoreFiles}}
@@ -156,9 +159,9 @@
 </div>
 
 <script>
-	const _ = require('../../public/js/_');
-	const http = require('../../public/js/utils/http');
-	const tooltip = require('../../public/js/decorators/tooltip');
+	const _ = require('../../assets/js/_');
+	const http = require('../../assets/js/utils/http');
+	const tooltip = require('../../assets/js/decorators/tooltip');
 
 	component.exports = {
 		computed: {
@@ -211,9 +214,11 @@
 					let packageType = this.get('type');
 					let packageName = this.get('name');
 
-					http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
-						this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
-					});
+					if (packageType === 'npm') {
+						http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
+							this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
+						}).catch(() => {});
+					}
 
 					// Load package files.
 					http.fetchPackageFiles(packageType, packageName, version).then((data) => {
@@ -221,14 +226,14 @@
 					}).catch((error) => {
 						let defaultError = 'Failed to load the file listing.';
 
-						if (error.responseJSON && error.responseJSON.message) {
-							let errorHtml = defaultError + '<br>' + error.responseJSON.message;
+						if (error.message) {
+							let errorHtml = defaultError + '<br>' + error.message;
 
-							if (error.responseJSON.message.indexOf('size exceeded') !== -1 && this.get('github')) {
+							if (error.message.indexOf('size exceeded') !== -1 && this.get('github')) {
 								http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 									errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
-								}).always(() => {
-									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/features#gh">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+								}).finally(() => {
+									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 									this.set('filesLoadingMessage', errorHtml);
 								});
 							}

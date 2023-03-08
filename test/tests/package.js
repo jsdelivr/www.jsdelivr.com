@@ -9,14 +9,14 @@ describe('package', () => {
 	it('displays default file', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('index.min.js');
 	});
 
 	it('opening directories works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
 		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('demos/api_demo.js');
 	});
@@ -24,7 +24,7 @@ describe('package', () => {
 	it('going up in directories works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2&path=demos`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .files-list-back a' }).click();
 		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(2) > a .file-path' }).getText()).to.eventually.equal('demos');
 	});
@@ -32,7 +32,7 @@ describe('package', () => {
 	it('opening files works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2&path=demos`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(4) > a' }).click();
 		let tabs = await browser.getAllWindowHandles();
 		await browser.switchTo().window(tabs[1]);
@@ -44,7 +44,7 @@ describe('package', () => {
 	it('changing versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.version-dropdown-selected-version' }).click();
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.dropdown-menu-right li:last-of-type a' }).click();
@@ -55,7 +55,7 @@ describe('package', () => {
 	it('copying url works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .c-copy-dropdown span' }).click();
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .dropdown-menu a' }).click();
@@ -70,7 +70,7 @@ describe('package', () => {
 	it('adding files to collection works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(8) label' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(9) label' }).click();
 		await browser.sleep(1000);
@@ -82,7 +82,7 @@ describe('package', () => {
 	it('removing all files from collection works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(5) label' }).click();
 		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(6) label' }).click();
 		await browser.sleep(1000);
@@ -94,7 +94,8 @@ describe('package', () => {
 	it('show all files works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteConfig' }).click();
+		await browser.findElement({ id: 'tabRouteFiles' }).click();
+		await browser.sleep(4000);
 		await browser.findElement({ css: '.c-package-file-browser .show-more-toggle a' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.c-package-file-browser .files-list > div:nth-child(12) .file-item .file-path' }).getText()).to.eventually.contain('README.md');
@@ -103,7 +104,8 @@ describe('package', () => {
 	it('top files switching versions works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/slick-carousel?version=1.8.1`);
 		await browser.sleep(4000);
-		await browser.findElement({ id: 'navRouteStats' }).click();
+		await browser.findElement({ id: 'tabRouteStats' }).click();
+		await browser.sleep(4000);
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
