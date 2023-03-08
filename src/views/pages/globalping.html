@@ -329,14 +329,14 @@
 
 			<div class="gp_join-network_docker">
 				<span class="gp_join-network_docker_command">
-					docker run -d --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe
+					{{netDockerCmdText}}
 				</span>
 
-				<span class="gp_join-network_docker_btn gp_btn_green">
+				<button class="gp_join-network_docker_btn gp_btn_green" as-clipboard data-clipboard-text="{{netDockerCmdText}}">
 					<img width="20"
 						height="20"
 						src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-				</span>
+				</button>
 			</div>
 
 			<span class="gp_join-network_descr">
@@ -581,7 +581,12 @@
 </r-page>
 
 <script>
+	const clipboard = require('../../public/js/decorators/clipboard');
+
 	component.exports = {
+		decorators: {
+			clipboard,
+		},
 		data () {
 			return {
 				title: 'Globalping - jsDelivr',
@@ -593,7 +598,8 @@
 				selectedOptProtocol: 'UDP',
 				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content
 				selectedOptType: 'A',
-				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content
+				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content,
+				netDockerCmdText: 'docker run -d --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe',
 			};
 		},
 	};
