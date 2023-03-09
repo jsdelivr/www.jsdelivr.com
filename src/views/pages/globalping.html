@@ -36,27 +36,33 @@
 
 			<div class="gp_main-info_stats">
 				<div class="gp_main-info_stats_item">
-					<span class="gp_main-info_stats_item_number">
-						400
-						<span></span>
-					</span>
-					<span class="gp_main-info_stats_item_text">connected probes</span>
+					{{#if totalProbes}}
+						<span class="gp_main-info_stats_item_number">
+							{{ Math.floor(totalProbes) }}
+							<span></span>
+						</span>
+						<span class="gp_main-info_stats_item_text">connected probes</span>
+					{{/if}}
 				</div>
 
 				<div class="gp_main-info_stats_item">
-					<span class="gp_main-info_stats_item_number">
-						200
-						<span></span>
-					</span>
-					<span class="gp_main-info_stats_item_text">different cities</span>
+					{{#if totalCities}}
+						<span class="gp_main-info_stats_item_number">
+							{{ Math.floor(totalCities) }}
+							<span></span>
+						</span>
+						<span class="gp_main-info_stats_item_text">different cities</span>
+					{{/if}}
 				</div>
 
 				<div class="gp_main-info_stats_item">
-					<span class="gp_main-info_stats_item_number">
-						50
-						<span></span>
-					</span>
-					<span class="gp_main-info_stats_item_text">different countries</span>
+					{{#if totalCountries}}
+						<span class="gp_main-info_stats_item_number">
+							{{ Math.floor(totalCountries) }}
+							<span></span>
+						</span>
+						<span class="gp_main-info_stats_item_text">different countries</span>
+					{{/if}}
 				</div>
 			</div>
 		</div>
@@ -580,7 +586,9 @@
 </r-page>
 
 <script>
+	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
+	const http = require('../../assets/js/utils/http');
 
 	component.exports = {
 		decorators: {
@@ -588,6 +596,7 @@
 		},
 		data () {
 			return {
+				_,
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping description',
 				selectedTestType: 'ping',
@@ -599,7 +608,34 @@
 				selectedOptType: 'A',
 				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content,
 				netDockerCmdText: 'docker run -d --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+				totalProbes: 0,
+				totalCities: 0,
+				totalCountries: 0,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchGlobalpingProbes().then((response) => {
+					let { totalCities, totalCountries } = response.reduce((res, item) => {
+						if (!res.citiesList.includes(item.location.city)) {
+							res.citiesList.push(item.location.city);
+						}
+
+						if (!res.countriesList.includes(item.location.country)) {
+							res.countriesList.push(item.location.country);
+						}
+
+						res.totalCities = res.citiesList.length;
+						res.totalCountries = res.countriesList.length;
+
+						return res;
+					}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+
+					this.animate('totalProbes', response.length, { duration: 2000 });
+					this.animate('totalCities', totalCities, { duration: 2000 });
+					this.animate('totalCountries', totalCountries, { duration: 2000 });
+				});
+			}
 		},
 	};
 </script>
