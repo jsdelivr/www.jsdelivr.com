@@ -3,6 +3,7 @@ const API_HOST = 'https://data.jsdelivr.com';
 const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
+const GLOBALPING_HOST = 'https://api.globalping.io';
 const HTTP_CACHE = new Map();
 
 const getWithCache = (url, params = {}) => {
@@ -215,7 +216,10 @@ module.exports.fetchNumberOfResources = () => {
 	return _.makeHTTPRequest({ url: `${API_HOST}/v1/stats/packages`, body, responseHeadersToGet });
 };
 
-
 module.exports.fetchListStatPeriods = () => {
 	return getWithCache(`${API_HOST}/v1/stats/periods`);
+};
+
+module.exports.fetchGlobalpingProbes = () => {
+	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/probes` });
 };
