@@ -223,3 +223,7 @@ module.exports.fetchListStatPeriods = () => {
 module.exports.fetchGlobalpingProbes = () => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/probes` });
 };
+
+module.exports.postGlobalpingMeasurement = (opts) => {
+	return _.makeHTTPRequest({ method: 'POST', url: `${GLOBALPING_HOST}/v1/measurements`, body: opts });
+};
