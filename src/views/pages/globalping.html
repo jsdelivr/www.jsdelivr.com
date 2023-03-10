@@ -105,7 +105,7 @@
 					<div class="gp_map-block_demo-tools_settings_grouped">
 						<label class="gp_map-block_demo-tools_settings_limit gp_input">
 							<span>Limit</span>
-							<input type="text" value="2" placeholder="0">
+							<input value="{{testLimit}}" type="text" placeholder="0">
 						</label>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
@@ -612,6 +612,7 @@
 				testType: 'ping',
 				testTarget: '',
 				testLocation: '',
+				testLimit: '',
 				mapSwitch: true,
 				showMeasurementOpts: false,
 				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
@@ -654,15 +655,24 @@
 			let testOpts = this.get(`${testType}Opts`);
 			let testTarget = this.get('testTarget');
 			let testLocation = this.get('testLocation');
+			let testLimit = this.get('testLimit');
 
 			let reqParams = {
 				type: testType,
 				target: testTarget,
 				measurementOptions: { ...testOpts },
-				locations: [],
 			};
 
+			if (!testLocation) {
+				reqParams.limit = testLimit;
+			} else {
+				reqParams.locations = [{ ...testLocation, limit: testLimit }];
+			}
+
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
+				if (response) {
+					this.set('measurementData', response);
+				}
 			});
 		},
 	};
