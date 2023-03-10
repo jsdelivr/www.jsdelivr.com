@@ -381,7 +381,7 @@ module.exports = {
 			xhr.open(method || 'GET', method === 'GET' && body ? url + this.createQueryString(body) : url);
 
 			if (method === 'POST') {
-				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 			}
 
 			if (headers) {
