@@ -80,13 +80,13 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{~/selectedTestType}}</span>
+								<span>{{~/testType}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<div class="dropdown-menu">
-								{{#each ~/testTypeList}}
-									<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+								{{#each ~/testTypesList}}
+									<div on-click="@this.set('testType', this)">{{this}}</div>
 								{{/each}}
 							</div>
 						</div>
@@ -94,12 +94,12 @@
 
 					<label class="gp_map-block_demo-tools_settings_target gp_input">
 						<span>Target</span>
-						<input type="text" placeholder="e.g. IP or domain">
+						<input value="{{testTarget}}" type="text" placeholder="e.g. IP or domain">
 					</label>
 
 					<label class="gp_map-block_demo-tools_settings_location gp_input">
 						<span>Location</span>
-						<input type="text" value="World" placeholder="Enter location">
+						<input value="{{testLocation}}" type="text" placeholder="Enter location">
 					</label>
 
 					<div class="gp_map-block_demo-tools_settings_grouped">
@@ -109,85 +109,100 @@
 						</label>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
-							<button class="{{#if showAddSettings}}active{{/if}}"
-								on-click="@this.set('showAddSettings', !showAddSettings)">
+							<button class="{{#if showMeasurementOpts}}active{{/if}}"
+								on-click="@this.set('showMeasurementOpts', !showMeasurementOpts)">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 							</button>
 
-							<div>
-								<div class="rows">
-									<div class="rows_row-one">
-										<label class="port-input gp_input">
-											<span>Port</span>
-											<input type="text" value="53" placeholder="80">
-										</label>
+							{{#if testType === 'ping' }}
+								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typePing">
+									<label class="gp_input">
+										<span>Packets</span>
+										<input value="{{pingOpts.packets}}" type="text" placeholder="Amount of packets">
+									</label>
 
-										<div class="gp_dropdown_reg">
-											<span>Protocol</span>
+									<button class="gp_btn_green" on-click="@this.proceedToTest()">
+										Apply
+									</button>
+								</div>
+							{{/if}}
 
-											<div class="btn-group">
-												<button type="button"
-													class="dropdown-toggle"
-													data-toggle="dropdown"
-													aria-haspopup="true"
-													aria-expanded="false">
-													<span>{{~/selectedOptProtocol}}</span>
-													<i class="fa fa-angle-down" aria-hidden="true"></i>
-												</button>
-
-												<div class="dropdown-menu">
-													{{#each ~/optProtocolsList}}
-														<div on-click="@this.set('selectedOptProtocol', this)">{{this}}</div>
-													{{/each}}
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<div class="rows_row-two">
-										<div class="gp_dropdown_reg">
-											<span>Type</span>
-
-											<div class="btn-group">
-												<button type="button"
-													class="dropdown-toggle"
-													data-toggle="dropdown"
-													aria-haspopup="true"
-													aria-expanded="false">
-													<span>{{~/selectedOptType}}</span>
-													<i class="fa fa-angle-down" aria-hidden="true"></i>
-												</button>
-
-												<div class="dropdown-menu">
-													{{#each ~/optTypesList}}
-														<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
-													{{/each}}
-												</div>
-											</div>
-										</div>
-
-										<div class="rows_row-two_switch-block">
-											<label class="gp_switch">
-												<input type="checkbox" on-click="@this.set('optTraceOn', !optTraceOn)" checked>
-												<span class="slider round"></span>
+							{{#if testType === 'DNS'}}
+								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typeDNS">
+									<div class="rows">
+										<div class="rows_row-one">
+											<label class="port-input gp_input">
+												<span>Port</span>
+												<input type="text" value="53" placeholder="80">
 											</label>
 
-											<span>Trace</span>
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/selectedOptProtocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														{{#each ~/optProtocolsList}}
+															<div on-click="@this.set('selectedOptProtocol', this)">{{this}}</div>
+														{{/each}}
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class="rows_row-two">
+											<div class="gp_dropdown_reg">
+												<span>Type</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/selectedOptType}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														{{#each ~/optTypesList}}
+															<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
+														{{/each}}
+													</div>
+												</div>
+											</div>
+
+											<div class="rows_row-two_switch-block">
+												<label class="gp_switch">
+													<input type="checkbox" on-click="@this.set('optTraceOn', !optTraceOn)" checked>
+													<span class="slider round"></span>
+												</label>
+
+												<span>Trace</span>
+											</div>
 										</div>
 									</div>
+
+									<label class="resolver-input gp_input">
+										<span>Resolver</span>
+										<input type="text" placeholder="IP address">
+									</label>
+
+									<button class="gp_btn_green">
+										Apply
+									</button>
 								</div>
-
-								<label class="resolver-input gp_input">
-									<span>Resolver</span>
-									<input type="text" placeholder="IP address">
-								</label>
-
-								<button class="gp_btn_green">
-									Apply
-								</button>
-							</div>
+							{{/if}}
 						</div>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_switch-block">
@@ -593,18 +608,21 @@
 				_,
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping description',
-				selectedTestType: 'ping',
-				testTypeList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				testType: 'ping',
+				testTarget: '',
+				testLocation: '',
 				mapSwitch: true,
-				showAddSettings: false,
-				selectedOptProtocol: 'UDP',
-				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content
-				selectedOptType: 'A',
-				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content,
+				showMeasurementOpts: false,
+				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
+				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
+				selectedOptType: 'A', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
+				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				netDockerCmdText: 'docker run -d --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe',
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
+				pingOpts: {},
 			};
 		},
 		oninit () {
@@ -630,6 +648,22 @@
 					this.animate('totalCountries', totalCountries, { duration: 2000 });
 				});
 			}
+		},
+		proceedToTest () {
+			let testType = this.get('testType');
+			let testOpts = this.get(`${testType}Opts`);
+			let testTarget = this.get('testTarget');
+			let testLocation = this.get('testLocation');
+
+			let reqParams = {
+				type: testType,
+				target: testTarget,
+				measurementOptions: { ...testOpts },
+				locations: [],
+			};
+
+			http.postGlobalpingMeasurement(reqParams).then((response) => {
+			});
 		},
 	};
 </script>
