@@ -380,6 +380,10 @@ module.exports = {
 			let xhr = new XMLHttpRequest();
 			xhr.open(method || 'GET', method === 'GET' && body ? url + this.createQueryString(body) : url);
 
+			if (method === 'POST') {
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			}
+
 			if (headers) {
 				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
 			}
@@ -415,7 +419,11 @@ module.exports = {
 				}
 			};
 
-			xhr.send(body);
+			if (method === 'GET') {
+				xhr.send();
+			} else if (method === 'POST') {
+				xhr.send(JSON.stringify(body));
+			}
 		});
 	},
 
