@@ -80,13 +80,13 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{~/testType}}</span>
+								<span>{{~/mainOptions.type}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<div class="dropdown-menu">
 								{{#each ~/testTypesList}}
-									<div on-click="@this.set('testType', this)">{{this}}</div>
+									<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
 								{{/each}}
 							</div>
 						</div>
@@ -94,18 +94,18 @@
 
 					<label class="gp_map-block_demo-tools_settings_target gp_input">
 						<span>Target</span>
-						<input value="{{testTarget}}" type="text" placeholder="e.g. IP or domain">
+						<input value="{{mainOptions.target}}" type="text" placeholder="e.g. IP or domain">
 					</label>
 
 					<label class="gp_map-block_demo-tools_settings_location gp_input">
 						<span>Location</span>
-						<input value="{{testLocation}}" type="text" placeholder="Enter location">
+						<input value="{{mainOptions.location}}" type="text" placeholder="Enter location">
 					</label>
 
 					<div class="gp_map-block_demo-tools_settings_grouped">
 						<label class="gp_map-block_demo-tools_settings_limit gp_input">
 							<span>Limit</span>
-							<input value="{{testLimit}}" type="text" placeholder="0">
+							<input value="{{mainOptions.limit}}" type="text" placeholder="0">
 						</label>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
@@ -116,7 +116,7 @@
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 							</button>
 
-							{{#if testType === 'ping' }}
+							{{#if mainOptions.type === 'ping' }}
 								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typePing">
 									<label class="gp_input">
 										<span>Packets</span>
@@ -129,7 +129,7 @@
 								</div>
 							{{/if}}
 
-							{{#if testType === 'DNS'}}
+							{{#if mainOptions.type === 'DNS'}}
 								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typeDNS">
 									<div class="rows">
 										<div class="rows_row-one">
@@ -609,10 +609,12 @@
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping description',
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
-				testType: 'ping',
-				testTarget: '',
-				testLocation: '',
-				testLimit: '',
+				mainOptions: {
+					type: 'ping',
+					target: '',
+					location: '',
+					limit: '',
+				},
 				mapSwitch: true,
 				showMeasurementOpts: false,
 				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
@@ -651,22 +653,19 @@
 			}
 		},
 		proceedToTest () {
-			let testType = this.get('testType');
-			let testOpts = this.get(`${testType}Opts`);
-			let testTarget = this.get('testTarget');
-			let testLocation = this.get('testLocation');
-			let testLimit = this.get('testLimit');
+			let { type, target, location, limit } = this.get('mainOptions');
+			let testOpts = this.get(`${type}Opts`);
 
 			let reqParams = {
-				type: testType,
-				target: testTarget,
+				type,
+				target,
 				measurementOptions: { ...testOpts },
 			};
 
-			if (!testLocation) {
-				reqParams.limit = testLimit;
+			if (!location) {
+				reqParams.limit = limit;
 			} else {
-				reqParams.locations = [{ ...testLocation, limit: testLimit }];
+				reqParams.locations = [{ ...location, limit }];
 			}
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
