@@ -1,0 +1,39 @@
+<label class="c-controlled-input {{classList}}">
+	<span class="c-controlled-input_label">{{spanText}}</span>
+
+	<input value="{{value}}"
+		type="text"
+		placeholder="{{placeholder}}"
+		class="{{#if error}}has-error{{/if}}">
+
+	{{#if error}}
+		<span class="c-controlled-input_errorMsg">{{spanText + ' ' + error}}</span>
+	{{/if}}
+</label>
+
+<script>
+
+	component.exports = {
+		data () {
+			return {
+				invalidValue: null,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observeOnce('error', () => {
+					this.set('invalidValue', this.get('value'));
+				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
+			}
+		},
+	};
+</script>
