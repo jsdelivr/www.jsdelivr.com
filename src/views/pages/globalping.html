@@ -626,6 +626,7 @@
 				totalCities: 0,
 				totalCountries: 0,
 				pingOpts: {},
+				inputErrors: {},
 			};
 		},
 		oninit () {
@@ -656,10 +657,32 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let testOpts = this.get(`${type}Opts`);
 
+			// check if data in place
+			let inputErrors = {};
+
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			}
+
+			if (!limit) {
+				inputErrors.target = 'Limit is required';
+			}
+
+			Object.keys(testOpts).forEach((key) => {
+				if (!testOpts[key]) {
+					inputErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+				}
+			});
+
+			if (Object.keys(inputErrors).length) {
+				this.set('inputErrors', inputErrors);
+
+				return;
+			}
+
 			let reqParams = {
 				type,
 				target,
-				measurementOptions: { ...testOpts },
 			};
 
 			if (!location) {
