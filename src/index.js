@@ -131,6 +131,10 @@ app.use(async (ctx, next) => {
 		return;
 	}
 
+	if (!ctx.maxAge && ctx.status === 301) {
+		ctx.maxAge = 24 * 60 * 60;
+	}
+
 	if (ctx.maxAge) {
 		ctx.set('Cache-Control', `public, max-age=${ctx.maxAge}, must-revalidate, stale-while-revalidate=600, stale-if-error=86400`);
 	} else if (ctx.expires) {
@@ -229,8 +233,11 @@ router.use(async (ctx, next) => {
  * Canonical links
  */
 router.use(async (ctx, next) => {
-	ctx.append('Link', `<${serverConfig.host}${ctx.path}>; rel="canonical"`);
-	return next();
+	await next();
+
+	if (ctx.status < 300) {
+		ctx.append('Link', `<${serverConfig.host}${ctx.path}>; rel="canonical"`);
+	}
 });
 
 /**
