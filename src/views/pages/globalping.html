@@ -2,6 +2,7 @@
 <link rel="ractive" href="../components/header.html" name="c-header">
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -92,21 +93,30 @@
 						</div>
 					</div>
 
-					<label class="gp_map-block_demo-tools_settings_target gp_input">
-						<span>Target</span>
-						<input value="{{mainOptions.target}}" type="text" placeholder="e.g. IP or domain">
-					</label>
+					<c-controlled-input
+						value="{{mainOptions.target}}"
+						error="{{inputErrors.target}}"
+						placeholder="e.g. IP or domain"
+						spanText="Target"
+						classList="gp_map-block_demo-tools_settings_target gp_input">
+					</c-controlled-input>
 
-					<label class="gp_map-block_demo-tools_settings_location gp_input">
-						<span>Location</span>
-						<input value="{{mainOptions.location}}" type="text" placeholder="Enter location">
-					</label>
+					<c-controlled-input
+						value="{{mainOptions.location}}"
+						error="{{inputErrors.location}}"
+						placeholder="Enter location"
+						spanText="Location"
+						classList="gp_map-block_demo-tools_settings_location gp_input">
+					</c-controlled-input>
 
 					<div class="gp_map-block_demo-tools_settings_grouped">
-						<label class="gp_map-block_demo-tools_settings_limit gp_input">
-							<span>Limit</span>
-							<input value="{{mainOptions.limit}}" type="text" placeholder="0">
-						</label>
+						<c-controlled-input
+							value="{{mainOptions.limit}}"
+							error="{{inputErrors.limit}}"
+							placeholder="0"
+							spanText="Limit"
+							classList="gp_map-block_demo-tools_settings_limit gp_input">
+						</c-controlled-input>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
 							<button class="{{#if showMeasurementOpts}}active{{/if}}"
@@ -118,10 +128,13 @@
 
 							{{#if mainOptions.type === 'ping' }}
 								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typePing">
-									<label class="gp_input">
-										<span>Packets</span>
-										<input value="{{pingOpts.packets}}" type="text" placeholder="Amount of packets">
-									</label>
+									<c-controlled-input
+										value="{{pingOpts.packets}}"
+										error="{{inputErrors.packets}}"
+										placeholder="Amount of packets"
+										spanText="Packets"
+										classList="gp_input">
+									</c-controlled-input>
 
 									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
 										Apply
@@ -133,10 +146,13 @@
 								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typeDNS">
 									<div class="rows">
 										<div class="rows_row-one">
-											<label class="port-input gp_input">
-												<span>Port</span>
-												<input type="text" value="53" placeholder="80">
-											</label>
+											<c-controlled-input
+												value="{{53}}"
+												error="TODO"
+												placeholder="53"
+												spanText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
 
 											<div class="gp_dropdown_reg">
 												<span>Protocol</span>
@@ -193,10 +209,13 @@
 										</div>
 									</div>
 
-									<label class="resolver-input gp_input">
-										<span>Resolver</span>
-										<input type="text" placeholder="IP address">
-									</label>
+									<c-controlled-input
+										value="127.0.0.1"
+										error="TODO"
+										placeholder="IP address"
+										spanText="Resolver"
+										classList="resolver-input gp_input">
+									</c-controlled-input>
 
 									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
 										Apply
@@ -661,16 +680,17 @@
 			let inputErrors = {};
 
 			if (!target) {
-				inputErrors.target = 'Target is required';
+				inputErrors.target = 'is required';
 			}
 
 			if (!limit) {
-				inputErrors.target = 'Limit is required';
+				inputErrors.limit = 'is required';
 			}
 
 			Object.keys(testOpts).forEach((key) => {
 				if (!testOpts[key]) {
-					inputErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+					// inputErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+					inputErrors[key] = `is required`;
 				}
 			});
 
