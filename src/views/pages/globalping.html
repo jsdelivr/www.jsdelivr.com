@@ -293,6 +293,93 @@
 									</div>
 								{{/if}}
 
+								{{#if mainOptions.type === 'HTTP'}}
+									<div class="typeHTTP">
+										<c-controlled-input
+											value="{{httpOpts.request.host}}"
+											error="{{inputErrors.request.host}}"
+											placeholder="Host"
+											spanText="Host"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<c-controlled-input
+											value="{{httpOpts.request.path}}"
+											error="{{inputErrors.request.path}}"
+											placeholder="Path"
+											spanText="Path"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<c-controlled-input
+											value="{{httpOpts.request.query}}"
+											error="{{inputErrors.request.query}}"
+											placeholder="Query"
+											spanText="Query"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<div class="pair">
+											<c-controlled-input
+												value="{{httpOpts.port}}"
+												error="{{inputErrors.port}}"
+												placeholder="53"
+												spanText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
+
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/httpOpts.protocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
+														<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
+														<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class="gp_dropdown_reg">
+											<span>Method</span>
+
+											<div class="btn-group">
+												<button type="button"
+													class="dropdown-toggle"
+													data-toggle="dropdown"
+													aria-haspopup="true"
+													aria-expanded="false">
+													<span>{{~/httpOpts.request.method}}</span>
+													<i class="fa fa-angle-down" aria-hidden="true"></i>
+												</button>
+
+												<div class="dropdown-menu">
+													<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
+													<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{httpOpts.resolver}}"
+											error="{{inputErrors.resolver}}"
+											placeholder="Resolver"
+											spanText="Resolver"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
 								<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
 									Apply
 								</button>
@@ -706,6 +793,12 @@
 	const DEFAULT_MTR_OPTS = {
 		protocol: 'ICMP',
 	};
+	const DEFAULT_HTTP_OPTS = {
+		protocol: 'HTTP',
+		request: {
+			method: 'GET',
+		},
+	};
 
 	component.exports = {
 		decorators: {
@@ -737,6 +830,7 @@
 				tracerouteOpts: DEFAULT_TRACEROUTE_OPTS,
 				dnsOpts: DEFAULT_DNS_OPTS,
 				mtrOpts: DEFAULT_MTR_OPTS,
+				httpOpts: DEFAULT_HTTP_OPTS,
 				inputErrors: {},
 			};
 		},
