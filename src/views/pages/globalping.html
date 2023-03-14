@@ -119,8 +119,8 @@
 						</c-controlled-input>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
-							<button class="{{#if showMeasurementOpts}}active{{/if}}"
-								on-click="@this.toggle('showMeasurementOpts')">
+							<button class="{{#if showMeasurementOptions}}active{{/if}}"
+								on-click="@this.toggle('showMeasurementOptions')">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
@@ -129,14 +129,14 @@
 							{{#if mainOptions.type === 'ping' }}
 								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typePing">
 									<c-controlled-input
-										value="{{pingOpts.packets}}"
+										value="{{measurementOptions.packets}}"
 										error="{{inputErrors.packets}}"
 										placeholder="Amount of packets"
 										spanText="Packets"
 										classList="gp_input">
 									</c-controlled-input>
 
-									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
+									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOptions')">
 										Apply
 									</button>
 								</div>
@@ -147,8 +147,8 @@
 									<div class="rows">
 										<div class="rows_row-one">
 											<c-controlled-input
-												value="{{53}}"
-												error="TODO"
+												value="{{measurementOptions.port}}"
+												error="{{inputErrors.port}}"
 												placeholder="53"
 												spanText="Port"
 												classList="port-input gp_input">
@@ -210,14 +210,14 @@
 									</div>
 
 									<c-controlled-input
-										value="127.0.0.1"
-										error="TODO"
+										value="{{measurementOptions.resolver}}"
+										error="{{inputErrors.resolver}}"
 										placeholder="IP address"
 										spanText="Resolver"
 										classList="resolver-input gp_input">
 									</c-controlled-input>
 
-									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
+									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOptions')">
 										Apply
 									</button>
 								</div>
@@ -635,7 +635,7 @@
 					limit: '',
 				},
 				mapSwitch: true,
-				showMeasurementOpts: false,
+				showMeasurementOptions: false,
 				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				selectedOptType: 'A', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
@@ -644,7 +644,7 @@
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
-				pingOpts: {},
+				measurementOptions: {},
 				inputErrors: {},
 			};
 		},
@@ -674,7 +674,7 @@
 		},
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
-			let testOpts = this.get(`${type}Opts`);
+			let measurementOptions = this.get('measurementOptions');
 
 			// check if data in place
 			let inputErrors = {};
@@ -687,9 +687,8 @@
 				inputErrors.limit = 'is required';
 			}
 
-			Object.keys(testOpts).forEach((key) => {
-				if (!testOpts[key]) {
-					// inputErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+			Object.keys(measurementOptions).forEach((key) => {
+				if (!measurementOptions[key]) {
 					inputErrors[key] = `is required`;
 				}
 			});
@@ -703,9 +702,7 @@
 			let reqParams = {
 				type,
 				target,
-				measurementOptions: {
-					...testOpts,
-				},
+				measurementOptions,
 			};
 
 			if (!location) {
