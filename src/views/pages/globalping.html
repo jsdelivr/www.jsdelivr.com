@@ -250,6 +250,49 @@
 									</div>
 								{{/if}}
 
+								{{#if mainOptions.type === 'MTR'}}
+									<div class="typeMTR">
+										<div class="pair">
+											<c-controlled-input
+												value="{{mtrOpts.port}}"
+												error="{{inputErrors.port}}"
+												placeholder="53"
+												spanText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
+
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/mtrOpts.protocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
+														<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
+														<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{mtrOpts.packets}}"
+											error="{{inputErrors.packets}}"
+											placeholder="Amount of packets"
+											spanText="Packets"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
 								<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
 									Apply
 								</button>
@@ -660,6 +703,9 @@
 		},
 		trace: true,
 	};
+	const DEFAULT_MTR_OPTS = {
+		protocol: 'ICMP',
+	};
 
 	component.exports = {
 		decorators: {
@@ -690,6 +736,7 @@
 				pingOpts: DEFAULT_PING_OPTS,
 				tracerouteOpts: DEFAULT_TRACEROUTE_OPTS,
 				dnsOpts: DEFAULT_DNS_OPTS,
+				mtrOpts: DEFAULT_MTR_OPTS,
 				inputErrors: {},
 			};
 		},
