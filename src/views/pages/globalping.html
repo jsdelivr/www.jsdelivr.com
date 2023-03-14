@@ -217,12 +217,12 @@
 															data-toggle="dropdown"
 															aria-haspopup="true"
 															aria-expanded="false">
-															<span>{{~/selectedOptType}}</span>
+															<span>{{~/dnsOpts.query.type}}</span>
 															<i class="fa fa-angle-down" aria-hidden="true"></i>
 														</button>
 
 														<div class="dropdown-menu">
-															{{#each ~/optTypesList}}
+															{{#each ~/dnsTypesList}}
 																<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
 															{{/each}}
 														</div>
@@ -649,6 +649,16 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
+	const DEFAULT_PING_OPTS = {};
+	const DEFAULT_TRACEROUTE_OPTS = {
+		protocol: 'ICMP',
+	};
+	const DEFAULT_DNS_OPTS = {
+		protocol: 'UDP',
+		query: {
+			type: 'A',
+		},
+	};
 
 	component.exports = {
 		decorators: {
@@ -671,14 +681,14 @@
 				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				selectedOptType: 'A', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
-				optTypesList: [ 'A', 'B', 'C', 'D' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
+				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
 				netDockerCmdText: 'docker run -d --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe',
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
-				pingOpts: {},
-				tracerouteOpts: {},
-				dnsOpts: {},
+				pingOpts: DEFAULT_PING_OPTS,
+				tracerouteOpts: DEFAULT_TRACEROUTE_OPTS,
+				dnsOpts: DEFAULT_DNS_OPTS,
 				inputErrors: {},
 			};
 		},
@@ -708,9 +718,9 @@
 				this.observe('mainOptions.type', () => {
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('pingOpts', {});
-					this.set('tracerouteOpts', {});
-					this.set('dnsOpts', {});
+					this.set('pingOpts', DEFAULT_PING_OPTS);
+					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
+					this.set('dnsOpts', DEFAULT_DNS_OPTS);
 				}, { init: false });
 			}
 		},
