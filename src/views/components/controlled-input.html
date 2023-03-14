@@ -1,22 +1,28 @@
 <label class="c-controlled-input {{classList}}">
-	<span class="c-controlled-input_label">{{spanText}}</span>
+	<div class="c-controlled-input_info">
+		<span class="c-controlled-input_info_label">{{spanText}}</span>
+		{{#if error}}
+			<span class="c-controlled-input_info_errorMsg">
+				{{errMsgTopPos ? '' + error : spanText + ' ' + error}}
+			</span>
+		{{/if}}
+	</div>
 
 	<input value="{{value}}"
 		type="text"
 		placeholder="{{placeholder}}"
 		class="{{#if error}}has-error{{/if}}">
-
-	{{#if error}}
-		<span class="c-controlled-input_errorMsg">{{spanText + ' ' + error}}</span>
-	{{/if}}
 </label>
 
 <script>
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
 
 	component.exports = {
 		data () {
 			return {
 				invalidValue: null,
+				errMsgTopPos: false,
 			};
 		},
 		oninit () {
@@ -33,7 +39,19 @@
 						this.set('error', undefined);
 					}
 				});
+
+				this.observe('screenWidth', (screenWidth) => {
+					if ((screenWidth || innerWidth) < 768) {
+						this.set('errMsgTopPos', true);
+					} else {
+						this.set('errMsgTopPos', false);
+					}
+				});
 			}
+		},
+		onrender () {
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 		},
 	};
 </script>
