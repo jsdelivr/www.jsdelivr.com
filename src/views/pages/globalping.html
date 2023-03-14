@@ -119,35 +119,31 @@
 						</c-controlled-input>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_options-block">
-							<button class="{{#if showMeasurementOptions}}active{{/if}}"
-								on-click="@this.toggle('showMeasurementOptions')">
+							<button class="{{#if showMeasurementOpts}}active{{/if}}"
+								on-click="@this.toggle('showMeasurementOpts')">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 							</button>
 
-							{{#if mainOptions.type === 'ping' }}
-								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typePing">
-									<c-controlled-input
-										value="{{measurementOptions.packets}}"
-										error="{{inputErrors.packets}}"
-										placeholder="Amount of packets"
-										spanText="Packets"
-										classList="gp_input">
-									</c-controlled-input>
+							<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set">
+								{{#if mainOptions.type === 'ping'}}
+									<div class="typePing">
+										<c-controlled-input
+											value="{{pingOpts.packets}}"
+											error="{{inputErrors.packets}}"
+											placeholder="Amount of packets"
+											spanText="Packets"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
 
-									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOptions')">
-										Apply
-									</button>
-								</div>
-							{{/if}}
-
-							{{#if mainOptions.type === 'DNS'}}
-								<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set typeDNS">
-									<div class="rows">
-										<div class="rows_row-one">
+								{{#if mainOptions.type === 'traceroute'}}
+									<div class="typeTraceroute">
+										<div class="pair">
 											<c-controlled-input
-												value="{{measurementOptions.port}}"
+												value="{{tracerouteOpts.port}}"
 												error="{{inputErrors.port}}"
 												placeholder="53"
 												spanText="Port"
@@ -163,65 +159,101 @@
 														data-toggle="dropdown"
 														aria-haspopup="true"
 														aria-expanded="false">
-														<span>{{~/selectedOptProtocol}}</span>
+														<span>{{~/tracerouteOpts.protocol}}</span>
 														<i class="fa fa-angle-down" aria-hidden="true"></i>
 													</button>
 
 													<div class="dropdown-menu">
-														{{#each ~/optProtocolsList}}
-															<div on-click="@this.set('selectedOptProtocol', this)">{{this}}</div>
-														{{/each}}
+														<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
+														<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
+														<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
 													</div>
 												</div>
-											</div>
-										</div>
-
-										<div class="rows_row-two">
-											<div class="gp_dropdown_reg">
-												<span>Type</span>
-
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/selectedOptType}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
-
-													<div class="dropdown-menu">
-														{{#each ~/optTypesList}}
-															<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
-														{{/each}}
-													</div>
-												</div>
-											</div>
-
-											<div class="rows_row-two_switch-block">
-												<label class="gp_switch">
-													<input type="checkbox" on-click="@this.set('optTraceOn', !optTraceOn)" checked>
-													<span class="slider round"></span>
-												</label>
-
-												<span>Trace</span>
 											</div>
 										</div>
 									</div>
+								{{/if}}
 
-									<c-controlled-input
-										value="{{measurementOptions.resolver}}"
-										error="{{inputErrors.resolver}}"
-										placeholder="IP address"
-										spanText="Resolver"
-										classList="resolver-input gp_input">
-									</c-controlled-input>
+								{{#if mainOptions.type === 'DNS'}}
+									<div class="typeDNS">
+										<div class="rows">
+											<div class="rows_row-one">
+												<c-controlled-input
+													value="{{dnsOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													spanText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
 
-									<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOptions')">
-										Apply
-									</button>
-								</div>
-							{{/if}}
+												<div class="gp_dropdown_reg">
+													<span>Protocol</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/dnsOpts.protocol}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div class="rows_row-two">
+												<div class="gp_dropdown_reg">
+													<span>Type</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/selectedOptType}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															{{#each ~/optTypesList}}
+																<div on-click="@this.set('selectedOptType', this)">{{this}}</div>
+															{{/each}}
+														</div>
+													</div>
+												</div>
+
+												<div class="rows_row-two_switch-block">
+													<label class="gp_switch">
+														<input type="checkbox" on-click="@this.set('optTraceOn', !optTraceOn)" checked>
+														<span class="slider round"></span>
+													</label>
+
+													<span>Trace</span>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{dnsOpts.resolver}}"
+											error="{{inputErrors.resolver}}"
+											placeholder="IP address"
+											spanText="Resolver"
+											classList="resolver-input gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
+								<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
+									Apply
+								</button>
+							</div>
 						</div>
 
 						<div class="gp_map-block_demo-tools_settings_grouped_switch-block">
@@ -635,7 +667,7 @@
 					limit: '',
 				},
 				mapSwitch: true,
-				showMeasurementOptions: false,
+				showMeasurementOpts: false,
 				selectedOptProtocol: 'UDP', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				optProtocolsList: [ 'TCP', 'UPD' ], // TODO: check the list content, revisit this, should be a part of DNS object of measurement options, just like with ping etc.
 				selectedOptType: 'A', // TODO: revisit this, should be a part of DNS object of measurement options, just like with ping etc.
@@ -644,7 +676,9 @@
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
-				measurementOptions: {},
+				pingOpts: {},
+				tracerouteOpts: {},
+				dnsOpts: {},
 				inputErrors: {},
 			};
 		},
@@ -670,26 +704,34 @@
 					this.animate('totalCities', totalCities, { duration: 2000 });
 					this.animate('totalCountries', totalCountries, { duration: 2000 });
 				});
+
+				this.observe('mainOptions.type', () => {
+					this.set('showMeasurementOpts', false);
+					this.set('inputErrors', {});
+					this.set('pingOpts', {});
+					this.set('tracerouteOpts', {});
+					this.set('dnsOpts', {});
+				}, { init: false });
 			}
 		},
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
-			let measurementOptions = this.get('measurementOptions');
+			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
 
 			// check if data in place
 			let inputErrors = {};
 
 			if (!target) {
-				inputErrors.target = 'is required';
+				inputErrors.target = ' is required';
 			}
 
 			if (!limit) {
-				inputErrors.limit = 'is required';
+				inputErrors.limit = ' is required';
 			}
 
-			Object.keys(measurementOptions).forEach((key) => {
-				if (!measurementOptions[key]) {
-					inputErrors[key] = `is required`;
+			Object.keys(measurementOpts).forEach((key) => {
+				if (!measurementOpts[key]) {
+					inputErrors[key] = ` is required`;
 				}
 			});
 
@@ -702,7 +744,9 @@
 			let reqParams = {
 				type,
 				target,
-				measurementOptions,
+				measurementOptions: {
+					...measurementOpts,
+				},
 			};
 
 			if (!location) {
