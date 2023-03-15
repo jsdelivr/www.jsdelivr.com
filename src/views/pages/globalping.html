@@ -884,6 +884,14 @@
 			Object.keys(measurementOpts).forEach((key) => {
 				if (!measurementOpts[key]) {
 					inputErrors[key] = 'is required';
+				} else if (typeof measurementOpts[key] === 'object') {
+					inputErrors[key] = {};
+
+					Object.keys(measurementOpts[key]).forEach((moKey) => {
+						if (!measurementOpts[key][moKey]) {
+							inputErrors[key][moKey] = 'is required';
+						}
+					});
 				}
 			});
 
