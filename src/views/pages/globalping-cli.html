@@ -63,16 +63,17 @@
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash</span>
+						<span>{{debCmds.cmd1}}</span>
 						<br>
-						<span>yum install globalping -y</span>
+						<span>{{debCmds.cmd2}}</span>
 						<br>
-						<span>globalping --help</span>
-						<span class="gp-cli_how-install_list_item_body_btn gp_btn_green">
+						<span>{{debCmds.cmd3}}</span>
+						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
+							as-clipboard data-clipboard-text="{{debCmds.cmd1 + '\n' + debCmds.cmd2 + '\n' + debCmds.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</span>
+						</button>
 					</div>
 				</div>
 
@@ -89,16 +90,17 @@
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash</span>
+						<span>{{rpmCmds.cmd1}}</span>
 						<br>
-						<span>yum install globalping -y</span>
+						<span>{{rpmCmds.cmd2}}</span>
 						<br>
-						<span>globalping --help</span>
-						<span class="gp-cli_how-install_list_item_body_btn gp_btn_green">
+						<span>{{rpmCmds.cmd3}}</span>
+						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
+							as-clipboard data-clipboard-text="{{rpmCmds.cmd1 + '\n' + rpmCmds.cmd2 + '\n' + rpmCmds.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</span>
+						</button>
 					</div>
 				</div>
 
@@ -115,16 +117,17 @@
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash</span>
+						<span>{{homebrewCmds.cmd1}}</span>
 						<br>
-						<span>yum install globalping -y</span>
+						<span>{{homebrewCmds.cmd2}}</span>
 						<br>
-						<span>globalping --help</span>
-						<span class="gp-cli_how-install_list_item_body_btn gp_btn_green">
+						<span>{{homebrewCmds.cmd3}}</span>
+						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
+							as-clipboard data-clipboard-text="{{homebrewCmds.cmd1 + '\n' + homebrewCmds.cmd2 + '\n' + homebrewCmds.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</span>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -268,12 +271,35 @@ Options:
 </r-page>
 
 <script>
+	const clipboard = require('../../assets/js/decorators/clipboard');
+	const DEB_CMD_LIST = {
+		cmd1: 'curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash',
+		cmd2: 'yum install globalping -y',
+		cmd3: 'globalping --help',
+	};
+	const RPM_CMD_LIST = {
+		cmd1: 'curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash',
+		cmd2: 'yum install globalping -y',
+		cmd3: 'globalping --help',
+	};
+	const HOMEBREW_CMD_LIST = {
+		cmd1: 'curl -s https://packagecloud.io/install/repositories/p1/globalping/script.rpm.sh | sudo bash',
+		cmd2: 'yum install globalping -y',
+		cmd3: 'globalping --help',
+	};
+
 	component.exports = {
+		decorators: {
+			clipboard,
+		},
 		data () {
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
 				qsTabName: 'AWS',
+				debCmds: DEB_CMD_LIST,
+				rpmCmds: RPM_CMD_LIST,
+				homebrewCmds: HOMEBREW_CMD_LIST,
 			};
 		},
 	};
