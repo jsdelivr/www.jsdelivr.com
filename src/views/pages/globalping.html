@@ -402,8 +402,16 @@
 						</div>
 					</div>
 
-					<button on-click="@this.proceedToTest()" class="gp_map-block_demo-tools_settings_btn gp_btn_green">
-						Run test
+					<button on-click="@this.proceedToTest()"
+						class="gp_map-block_demo-tools_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}">
+						{{#if testInProgress}}
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+						{{else}}
+							Run test
+						{{/if}}
 					</button>
 				</div>
 
@@ -851,6 +859,7 @@
 				httpOpts: DEFAULT_HTTP_OPTS,
 				inputErrors: {},
 				testFailed: false,
+				testInProgress: false,
 			};
 		},
 		oninit () {
@@ -934,7 +943,11 @@
 				reqParams.locations = [{ ...location, limit }];
 			}
 
+			this.set('testInProgress', true);
+
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
+				this.set('testInProgress', false);
+
 				if (response) {
 					this.set('measurementData', response);
 				}
