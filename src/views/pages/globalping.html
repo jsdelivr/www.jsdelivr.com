@@ -68,6 +68,7 @@
 				<span></span>
 				<span></span>
 			</div>
+
 			<div class="gp_map-block_map"></div>
 
 			<div class="gp_map-block_demo-tools">
@@ -406,16 +407,28 @@
 					</button>
 				</div>
 
-				<div class="gp_map-block_demo-tools_info">
-					<img width="56"
-						height="56"
-						src="{{@shared.assetsHost}}/img/globalping/gp-nettools/TODO-broken-bulb.svg">
+				{{#if testFailed}}
+					<div class="gp_map-block_demo-tools_fail-msg">
+						<img width="56"
+							height="56"
+							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
-					<p>
-						This tool is only a small example of the cool things you can build using the Globalping platform.
-						Feel free to use it to test your systems, compare providers and debug your network.
-					</p>
-				</div>
+						<p>
+							All tests failed. Maybe you specified a non existing endpoint?
+						</p>
+					</div>
+				{{else}}
+					<div class="gp_map-block_demo-tools_info">
+						<img width="56"
+							height="56"
+							src="{{@shared.assetsHost}}/img/globalping/gp-nettools/TODO-broken-bulb.svg">
+
+						<p>
+							This tool is only a small example of the cool things you can build using the Globalping platform.
+							Feel free to use it to test your systems, compare providers and debug your network.
+						</p>
+					</div>
+				{{/if}}
 			</div>
 		</div>
 
@@ -425,7 +438,7 @@
 					<img width="48"
 						height="48"
 						src="{{@shared.assetsHost}}/img/globalping/globalping-opensource-icon.svg">
-					</span>
+				</span>
 				<span class="gp_features_item_name">
 					Fully open source and free
 				</span>
@@ -837,6 +850,7 @@
 				mtrOpts: DEFAULT_MTR_OPTS,
 				httpOpts: DEFAULT_HTTP_OPTS,
 				inputErrors: {},
+				testFailed: false,
 			};
 		},
 		oninit () {
