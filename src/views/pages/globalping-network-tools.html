@@ -85,8 +85,16 @@
 					classList="gp-nettools_demo-tools_ctrls_probes gp_input">
 				</c-controlled-input>
 
-				<button class="gp-nettools_demo-tools_ctrls_btn gp_btn_green">
-					Run {{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} Test
+				<button on-click="@this.proceedToTest()"
+					class="gp-nettools_demo-tools_ctrls_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}">
+					{{#if testInProgress}}
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					{{else}}
+						Run {{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} Test
+					{{/if}}
 				</button>
 			</div>
 
@@ -139,7 +147,15 @@
 					probes: 2,
 				},
 				inputErrors: {},
+				testInProgress: false,
 			};
+		},
+		proceedToTest () {
+			this.set('testInProgress', true);
+
+			setTimeout(() => {
+				this.set('testInProgress', false);
+			}, 2000);
 		},
 	};
 </script>
