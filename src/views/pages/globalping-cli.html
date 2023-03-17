@@ -57,19 +57,19 @@
 							src="{{@shared.assetsHost}}/img/globalping/gp-cli/deb-icon.svg">
 
 						<div class="gp-cli_how-install_list_item_header_text">
-							<span>DEB</span>
-							<span>Debian, UbuntuDEB, Ubuntu</span>
+							<span>{{debData.name}}</span>
+							<span>{{debData.descr}}</span>
 						</div>
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>{{debCmds.cmd1}}</span>
+						<span>{{debData.cmd1}}</span>
 						<br>
-						<span>{{debCmds.cmd2}}</span>
+						<span>{{debData.cmd2}}</span>
 						<br>
-						<span>{{debCmds.cmd3}}</span>
+						<span>{{debData.cmd3}}</span>
 						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{debCmds.cmd1 + '\n' + debCmds.cmd2 + '\n' + debCmds.cmd3}}">
+							as-clipboard data-clipboard-text="{{debData.cmd1 + '\n' + debData.cmd2 + '\n' + debData.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
@@ -84,19 +84,19 @@
 							src="{{@shared.assetsHost}}/img/globalping/gp-cli/rpm-icon.svg">
 
 						<div class="gp-cli_how-install_list_item_header_text">
-							<span>RPM</span>
-							<span>CentOS, RHEL, Fedora</span>
+							<span>{{rpmData.name}}</span>
+							<span>{{rpmData.descr}}</span>
 						</div>
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>{{rpmCmds.cmd1}}</span>
+						<span>{{rpmData.cmd1}}</span>
 						<br>
-						<span>{{rpmCmds.cmd2}}</span>
+						<span>{{rpmData.cmd2}}</span>
 						<br>
-						<span>{{rpmCmds.cmd3}}</span>
+						<span>{{rpmData.cmd3}}</span>
 						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{rpmCmds.cmd1 + '\n' + rpmCmds.cmd2 + '\n' + rpmCmds.cmd3}}">
+							as-clipboard data-clipboard-text="{{rpmData.cmd1 + '\n' + rpmData.cmd2 + '\n' + rpmData.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
@@ -111,19 +111,19 @@
 							src="{{@shared.assetsHost}}/img/globalping/gp-cli/homebrew-icon.svg">
 
 						<div class="gp-cli_how-install_list_item_header_text">
-							<span>Homebrew</span>
-							<span>MacOS</span>
+							<span>{{homebrewData.name}}</span>
+							<span>{{homebrewData.descr}}</span>
 						</div>
 					</div>
 
 					<div class="gp-cli_how-install_list_item_body">
-						<span>{{homebrewCmds.cmd1}}</span>
+						<span>{{homebrewData.cmd1}}</span>
 						<br>
-						<span>{{homebrewCmds.cmd2}}</span>
+						<span>{{homebrewData.cmd2}}</span>
 						<br>
-						<span>{{homebrewCmds.cmd3}}</span>
+						<span>{{homebrewData.cmd3}}</span>
 						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{homebrewCmds.cmd1 + '\n' + homebrewCmds.cmd2 + '\n' + homebrewCmds.cmd3}}">
+							as-clipboard data-clipboard-text="{{homebrewData.cmd1 + '\n' + homebrewData.cmd2 + '\n' + homebrewData.cmd3}}">
 							<img width="20"
 								height="20"
 								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
@@ -272,17 +272,23 @@ Options:
 
 <script>
 	const clipboard = require('../../assets/js/decorators/clipboard');
-	const DEB_CMD_LIST = {
+	const DEB_DATA = {
+		name: 'DEB',
+		descr: 'Debian, UbuntuDEB, Ubuntu',
 		cmd1: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.deb.sh | sudo bash',
 		cmd2: 'apt install globalping',
 		cmd3: 'globalping --help',
 	};
-	const RPM_CMD_LIST = {
+	const RPM_DATA = {
+		name: 'RPM',
+		descr: 'CentOS, RHEL, Fedora',
 		cmd1: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.rpm.sh | sudo bash',
 		cmd2: 'dnf install globalping',
 		cmd3: 'globalping --help',
 	};
-	const HOMEBREW_CMD_LIST = {
+	const HOMEBREW_DATA = {
+		name: 'Homebrew',
+		descr: 'MacOS',
 		cmd1: 'brew tap jsdelivr/globalping',
 		cmd2: 'brew install globalping',
 		cmd3: 'globalping --help',
@@ -297,9 +303,9 @@ Options:
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
 				qsTabName: 'AWS',
-				debCmds: DEB_CMD_LIST,
-				rpmCmds: RPM_CMD_LIST,
-				homebrewCmds: HOMEBREW_CMD_LIST,
+				debData: DEB_DATA,
+				rpmData: RPM_DATA,
+				homebrewData: HOMEBREW_DATA,
 			};
 		},
 	};
