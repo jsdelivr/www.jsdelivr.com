@@ -130,6 +130,7 @@
 
 			@media (min-width: @screen-sm-min) {
 				align-items: center;
+				width: calc(100% - 48px);
 				max-width: 1016px;
 				padding: 48px;
 				margin: 0 24px;
@@ -178,11 +179,23 @@
 				@media (min-width: @screen-sm-min) {
 					margin-top: 48px;
 					width: 100%;
+					border: 1.5px solid #e7e7ee;
+					border-radius: 8px;
+					row-gap: 0;
 				}
 
 				&_item {
 					border: 1.5px solid #e7e7ee;
 					border-radius: 8px;
+
+					@media (min-width: @screen-sm-min) {
+						display: none;
+						border: none;
+
+						&.active {
+							display: block;
+						}
+					}
 
 					&_header {
 						display: flex;
@@ -193,6 +206,10 @@
 						background: #f3f5f7;
 						border-radius: 8px 8px 0 0;
 						height: 83px;
+
+						@media (min-width: @screen-sm-min) {
+							display: none;
+						}
 
 						&_text {
 							display: flex;
@@ -231,6 +248,63 @@
 							bottom: 32px;
 							width: 40px;
 							height: 40px;
+						}
+					}
+				}
+
+				&_desktop-header {
+					display: none;
+					background: #f3f5f7;
+					border-radius: 8px 8px 0 0;
+					user-select: none;
+					width: 100%;
+
+					@media (min-width: @screen-sm-min) {
+						display: flex;
+					}
+
+					&_item {
+						position: relative;
+						display: flex;
+						align-items: center;
+						justify-content: flex-start;
+						flex-grow: 1;
+						flex-basis: 0;
+						column-gap: 10px;
+						background: #f3f5f7;
+						border-radius: 8px 8px 0 0;
+						padding: 16px;
+						width: 100%;
+						cursor: pointer;
+
+						.active-tab-line {
+							position: absolute;
+							left: 0;
+							bottom: 0;
+							height: 2px;
+							background: #17d4a7;
+							width: 100%;
+						}
+
+						&_text {
+							display: flex;
+							flex-direction: column;
+							align-items: flex-start;
+
+							span {
+								color: #17233a;
+
+								&:nth-child(1) {
+									font-weight: 600;
+									font-size: 18px;
+									line-height: 32px;
+								}
+
+								&:nth-child(2) {
+									font-size: 14px;
+									line-height: 20px;
+								}
+							}
 						}
 					}
 				}

@@ -50,8 +50,28 @@
 			<span class="gp-cli_how-install_descr">Install the correct repo for your OS to make sure you get the latest updated we release.</span>
 
 			<div class="gp-cli_how-install_list">
+				<div class="gp-cli_how-install_list_desktop-header">
+					{{#each osDataList}}
+						<div on-click="@this.set('selectedOsTab', this.name)"
+							class="gp-cli_how-install_list_desktop-header_item">
+							<img width="auto"
+								height="32"
+								src="{{@shared.assetsHost}}/img/globalping/gp-cli/deb-icon.svg">
+
+							<div class="gp-cli_how-install_list_desktop-header_item_text">
+								<span>{{this.name}}</span>
+								<span>{{this.descr}}</span>
+							</div>
+
+							{{#if selectedOsTab === this.name}}
+								<div class="active-tab-line"></div>
+							{{/if}}
+						</div>
+					{{/each}}
+				</div>
+
 				{{#each osDataList}}
-					<div class="gp-cli_how-install_list_item">
+					<div class="gp-cli_how-install_list_item {{#if selectedOsTab === this.name}}active{{/if}}">
 						<div class="gp-cli_how-install_list_item_header">
 							<img width="auto"
 								height="32"
@@ -252,6 +272,7 @@ Options:
 				description: 'TODO: add Globalping CLI description',
 				qsTabName: 'AWS',
 				osDataList: [ DEB_DATA, RPM_DATA, HOMEBREW_DATA ],
+				selectedOsTab: DEB_DATA.name,
 			};
 		},
 	};
