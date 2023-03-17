@@ -50,86 +50,34 @@
 			<span class="gp-cli_how-install_descr">Install the correct repo for your OS to make sure you get the latest updated we release.</span>
 
 			<div class="gp-cli_how-install_list">
-				<div class="gp-cli_how-install_list_item">
-					<div class="gp-cli_how-install_list_item_header">
-						<img width="auto"
-							height="32"
-							src="{{@shared.assetsHost}}/img/globalping/gp-cli/deb-icon.svg">
+				{{#each osDataList}}
+					<div class="gp-cli_how-install_list_item">
+						<div class="gp-cli_how-install_list_item_header">
+							<img width="auto"
+								height="32"
+								src="{{@shared.assetsHost}}/img/globalping/gp-cli/deb-icon.svg">
 
-						<div class="gp-cli_how-install_list_item_header_text">
-							<span>{{debData.name}}</span>
-							<span>{{debData.descr}}</span>
+							<div class="gp-cli_how-install_list_item_header_text">
+								<span>{{this.name}}</span>
+								<span>{{this.descr}}</span>
+							</div>
+						</div>
+
+						<div class="gp-cli_how-install_list_item_body">
+							<span>{{this.cmd1}}</span>
+							<br>
+							<span>{{this.cmd2}}</span>
+							<br>
+							<span>{{this.cmd3}}</span>
+							<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
+								as-clipboard data-clipboard-text="{{this.cmd1 + '\n' + this.cmd2 + '\n' + this.cmd3}}">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
+							</button>
 						</div>
 					</div>
-
-					<div class="gp-cli_how-install_list_item_body">
-						<span>{{debData.cmd1}}</span>
-						<br>
-						<span>{{debData.cmd2}}</span>
-						<br>
-						<span>{{debData.cmd3}}</span>
-						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{debData.cmd1 + '\n' + debData.cmd2 + '\n' + debData.cmd3}}">
-							<img width="20"
-								height="20"
-								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</button>
-					</div>
-				</div>
-
-				<div class="gp-cli_how-install_list_item">
-					<div class="gp-cli_how-install_list_item_header">
-						<img width="auto"
-							height="32"
-							src="{{@shared.assetsHost}}/img/globalping/gp-cli/rpm-icon.svg">
-
-						<div class="gp-cli_how-install_list_item_header_text">
-							<span>{{rpmData.name}}</span>
-							<span>{{rpmData.descr}}</span>
-						</div>
-					</div>
-
-					<div class="gp-cli_how-install_list_item_body">
-						<span>{{rpmData.cmd1}}</span>
-						<br>
-						<span>{{rpmData.cmd2}}</span>
-						<br>
-						<span>{{rpmData.cmd3}}</span>
-						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{rpmData.cmd1 + '\n' + rpmData.cmd2 + '\n' + rpmData.cmd3}}">
-							<img width="20"
-								height="20"
-								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</button>
-					</div>
-				</div>
-
-				<div class="gp-cli_how-install_list_item">
-					<div class="gp-cli_how-install_list_item_header">
-						<img width="auto"
-							height="32"
-							src="{{@shared.assetsHost}}/img/globalping/gp-cli/homebrew-icon.svg">
-
-						<div class="gp-cli_how-install_list_item_header_text">
-							<span>{{homebrewData.name}}</span>
-							<span>{{homebrewData.descr}}</span>
-						</div>
-					</div>
-
-					<div class="gp-cli_how-install_list_item_body">
-						<span>{{homebrewData.cmd1}}</span>
-						<br>
-						<span>{{homebrewData.cmd2}}</span>
-						<br>
-						<span>{{homebrewData.cmd3}}</span>
-						<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-							as-clipboard data-clipboard-text="{{homebrewData.cmd1 + '\n' + homebrewData.cmd2 + '\n' + homebrewData.cmd3}}">
-							<img width="20"
-								height="20"
-								src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
-						</button>
-					</div>
-				</div>
+				{{/each}}
 			</div>
 		</div>
 
@@ -303,9 +251,7 @@ Options:
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
 				qsTabName: 'AWS',
-				debData: DEB_DATA,
-				rpmData: RPM_DATA,
-				homebrewData: HOMEBREW_DATA,
+				osDataList: [ DEB_DATA, RPM_DATA, HOMEBREW_DATA ],
 			};
 		},
 	};
