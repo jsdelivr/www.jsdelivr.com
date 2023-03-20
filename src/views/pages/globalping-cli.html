@@ -285,7 +285,9 @@ Options:
 					let reqParams = quickStartData[qsTabName].reqParams;
 
 					http.postGlobalpingMeasurement(reqParams).then((response) => {
-						this.set('testResults', response);
+						http.getGlobalpingMeasurement(response.id).then((measRes) => {
+							this.set('testResults', measRes);
+						});
 					}).catch((err) => {
 						this.set('testResults', err.error.message);
 					});
