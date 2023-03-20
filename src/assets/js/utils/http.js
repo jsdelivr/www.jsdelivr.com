@@ -227,3 +227,7 @@ module.exports.fetchGlobalpingProbes = () => {
 module.exports.postGlobalpingMeasurement = (opts) => {
 	return _.makeHTTPRequest({ method: 'POST', url: `${GLOBALPING_HOST}/v1/measurements`, body: opts });
 };
+
+module.exports.getGlobalpingMeasurement = (id) => {
+	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}` });
+};
