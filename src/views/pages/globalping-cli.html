@@ -120,11 +120,9 @@
 				</div>
 
 				<div class="gp-cli_quick-start_content_body">
-					<div class="gp-cli_quick-start_content_body_item">
-						{{#each testResults}}
-							<div>{{this}}</div>
-						{{/each}}
-					</div>
+					{{#each testResults}}
+						<pre>{{this}}</pre>
+					{{/each}}
 				</div>
 			</div>
 		</div>
@@ -229,8 +227,13 @@ Options:
 			reqParams: {
 				type: 'traceroute',
 				target: 'jsdelivr.com',
-				measurementOptions: {},
-				locations: [],
+				measurementOptions: {
+					protocol: 'ICMP',
+				},
+				locations: [{
+					country: 'us',
+					limit: 1,
+				}],
 			},
 		},
 		http: {
@@ -273,7 +276,7 @@ Options:
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
-				qsTabName: QUICK_START_DATA.ping.name,
+				qsTabName: QUICK_START_DATA.traceroute.name,
 				osDataList: [ DEB_DATA, RPM_DATA, HOMEBREW_DATA ],
 				selectedOsTab: DEB_DATA.name,
 				testResults: null,
