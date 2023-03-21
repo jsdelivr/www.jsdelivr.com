@@ -242,8 +242,16 @@ Options:
 			reqParams: {
 				type: 'http',
 				target: 'jsdelivr.com',
-				measurementOptions: {},
-				locations: [],
+				measurementOptions: {
+					protocol: 'HTTP',
+					request: {
+						method: 'GET',
+					},
+				},
+				locations: [{
+					magic: 'aws',
+					limit: 1,
+				}],
 			},
 		},
 		dns: {
@@ -276,7 +284,7 @@ Options:
 			return {
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping CLI description',
-				qsTabName: QUICK_START_DATA.traceroute.name,
+				qsTabName: QUICK_START_DATA.http.name,
 				osDataList: [ DEB_DATA, RPM_DATA, HOMEBREW_DATA ],
 				selectedOsTab: DEB_DATA.name,
 				testResults: null,
@@ -308,6 +316,7 @@ Options:
 										return res.result.rawOutput;
 									});
 
+									// TODO: HTTP from AWS: request past and status is finished, all data is present, except that is no value for rawOutput
 									this.set('testResults', rawOutputs);
 								}
 							}).catch(() => {
