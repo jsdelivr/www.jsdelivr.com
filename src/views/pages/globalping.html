@@ -857,6 +857,7 @@
 				inputErrors: {},
 				testFailed: false,
 				testInProgress: false,
+				testReqInterval: null,
 			};
 		},
 		oninit () {
@@ -941,13 +942,32 @@
 			}
 
 			this.set('testInProgress', true);
+			let testReqInterval = this.get('testReqInterval');
+
+			if (testReqInterval) {
+				clearInterval(testReqInterval);
+			}
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.set('testInProgress', false);
 
-				if (response) {
-					this.set('measurementData', response);
-				}
+				testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(response.id).then((measRes) => {
+						if (measRes.status !== 'in-progress') {
+							clearInterval(testReqInterval);
+
+							let rawOutputs = measRes.results.map((res) => {
+								return res.result.rawOutput;
+							});
+
+							this.set('testResults', rawOutputs);
+						}
+					}).catch(() => {
+						clearInterval(testReqInterval);
+					});
+				}, 1000);
+
+				this.set('testReqInterval', testReqInterval);
 			});
 		},
 	};
