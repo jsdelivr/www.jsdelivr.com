@@ -121,7 +121,9 @@
 
 				<div class="gp-cli_quick-start_content_body">
 					<div class="gp-cli_quick-start_content_body_item">
-						{{ testResults }}
+						{{#each testResults}}
+							<div>{{this}}</div>
+						{{/each}}
 					</div>
 				</div>
 			</div>
@@ -276,20 +278,43 @@ Options:
 				selectedOsTab: DEB_DATA.name,
 				testResults: null,
 				quickStartData: QUICK_START_DATA,
+				testReqInterval: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('qsTabName', (qsTabName) => {
+					this.set('testResults', null);
+
+					let testReqInterval = this.get('testReqInterval');
+
+					if (testReqInterval) {
+						clearInterval(testReqInterval);
+					}
+
 					let quickStartData = this.get('quickStartData');
 					let reqParams = quickStartData[qsTabName].reqParams;
 
 					http.postGlobalpingMeasurement(reqParams).then((response) => {
-						http.getGlobalpingMeasurement(response.id).then((measRes) => {
-							this.set('testResults', measRes);
-						});
+						testReqInterval = setInterval(() => {
+							http.getGlobalpingMeasurement(response.id).then((measRes) => {
+								if (measRes.status !== 'in-progress') {
+									clearInterval(testReqInterval);
+
+									let rawOutputs = measRes.results.map((res) => {
+										return res.result.rawOutput;
+									});
+
+									this.set('testResults', rawOutputs);
+								}
+							}).catch(() => {
+								clearInterval(testReqInterval);
+							});
+						}, 1000);
+
+						this.set('testReqInterval', testReqInterval);
 					}).catch((err) => {
-						this.set('testResults', err.error.message);
+						this.set('testResults', [ err.error.message ]);
 					});
 				});
 			}
