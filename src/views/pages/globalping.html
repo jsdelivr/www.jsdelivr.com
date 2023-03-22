@@ -954,6 +954,10 @@
 				return;
 			}
 
+			// after the successfull validation clear results from the previous measurement
+			this.set('testResultsOutput', null);
+			this.set('testResultsLink', null);
+
 			let reqParams = {
 				type,
 				target,
@@ -969,6 +973,8 @@
 			}
 
 			this.set('testInProgress', true);
+
+			// get test interval and clear it when new test is started
 			let testReqInterval = this.get('testReqInterval');
 
 			if (testReqInterval) {
