@@ -425,16 +425,16 @@
 							All tests failed. Maybe you specified a non existing endpoint?
 						</p>
 					</div>
-				{{elseif testResults}}
+				{{elseif testResultsOutput}}
 					<div class="gp_map-block_demo-tools_results">
-						<pre>{{testResults}}</pre>
+						<pre>{{testResultsOutput}}</pre>
 
 						<div class="gp_map-block_demo-tools_results_share">
 							<span>Share your results:</span>
 
-							<div>TODO:http://www.jsdelivr.com/dns-speed-benchmark?id=c716oiml2sp1oip</div>
+							<div>{{testResultsLink}}</div>
 
-							<button as-clipboard data-clipboard-text="TODO:http://www.jsdelivr.com/dns-speed-benchmark?id=c716oiml2sp1oip">
+							<button as-clipboard data-clipboard-text="{{testResultsLink}}">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
@@ -874,6 +874,8 @@
 				testFailed: false,
 				testInProgress: false,
 				testReqInterval: null,
+				testResultsOutput: null,
+				testResultsLink: null,
 			};
 		},
 		oninit () {
@@ -905,6 +907,15 @@
 					this.set('pingOpts', DEFAULT_PING_OPTS);
 					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
 					this.set('dnsOpts', DEFAULT_DNS_OPTS);
+				}, { init: false });
+
+				this.observe('testResults', (testResults) => {
+					let rawOutputs = testResults.results.map((res) => {
+						return res.result.rawOutput;
+					});
+
+					this.set('testResultsOutput', rawOutputs);
+					this.set('testResultsLink', `http://www.jsdelivr.com/dns-speed-benchmark?id=${testResults.id}`); // TODO: is this a correct link?
 				}, { init: false });
 			}
 		},
@@ -968,15 +979,11 @@
 				this.set('testInProgress', false);
 
 				testReqInterval = setInterval(() => {
-					http.getGlobalpingMeasurement(response.id).then((measRes) => {
-						if (measRes.status !== 'in-progress') {
+					http.getGlobalpingMeasurement(response.id).then((testRes) => {
+						if (testRes.status !== 'in-progress') {
 							clearInterval(testReqInterval);
 
-							let rawOutputs = measRes.results.map((res) => {
-								return res.result.rawOutput;
-							});
-
-							this.set('testResults', rawOutputs);
+							this.set('testResults', testRes);
 						}
 					}).catch(() => {
 						clearInterval(testReqInterval);
