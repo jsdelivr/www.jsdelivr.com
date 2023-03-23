@@ -1,0 +1,73 @@
+<div class="c-gp-test-results">
+	<div class="c-gp-test-results_list">
+		{{#each resultsList:idx}}
+			<div class="c-gp-test-results_list_item">
+				<div class="c-gp-test-results_list_item_header">
+					<span>
+						<img width="28"
+							height="20"
+							src="{{@shared.assetsHost}}/img/globalping/TODO_temp_flag.svg">
+							Riga, LV, EU - BT3789
+					</span>
+
+					<img width="4"
+						height="4"
+						src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
+
+					<span>
+						<img width="20"
+							height="20"
+							src="{{@shared.assetsHost}}/img/globalping/check-circle-icon.svg">
+							Time: 20ms
+					</span>
+
+					<img on-click="@this.hideShowTestResult(idx)"
+						class="{{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+						width="24"
+						height="24"
+						src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
+				</div>
+
+				<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{resultsList}}</pre>
+			</div>
+		{{/each}}
+	</div>
+
+	<div class="c-gp-test-results_share">
+		<span>Share your results:</span>
+
+		<div>{{resultsLink}}</div>
+
+		<button as-clipboard data-clipboard-text="{{resultsLink}}">
+			<img width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
+		</button>
+	</div>
+</div>
+
+<script>
+	const clipboard = require('../../assets/js/decorators/clipboard');
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				hiddenTestResults: [],
+			};
+		},
+		hideShowTestResult (idx) {
+			let hiddenTestResults = this.get('hiddenTestResults');
+
+			if (hiddenTestResults.includes(idx)) {
+				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
+			} else {
+				hiddenTestResults.push(idx);
+			}
+
+			this.set('hiddenTestResults', hiddenTestResults);
+		},
+	};
+</script>

@@ -3,6 +3,7 @@
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
 <link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -426,53 +427,7 @@
 						</p>
 					</div>
 				{{elseif testResultsOutput && testResultsOutput.length}}
-					<div class="gp_map-block_demo-tools_results">
-						<div class="gp_map-block_demo-tools_results_list">
-							{{#each testResultsOutput:idx}}
-								<div class="gp_map-block_demo-tools_results_list_item">
-									<div class="gp_map-block_demo-tools_results_list_item_header">
-										<span>
-											<img width="28"
-												height="20"
-												src="{{@shared.assetsHost}}/img/globalping/TODO_temp_flag.svg">
-												Riga, LV, EU - BT3789
-										</span>
-
-										<img width="4"
-											height="4"
-											src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
-
-										<span>
-											<img width="20"
-												height="20"
-												src="{{@shared.assetsHost}}/img/globalping/check-circle-icon.svg">
-												Time: 20ms
-										</span>
-
-										<img on-click="@this.hideShowTestResult(idx)"
-											class="{{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
-											width="24"
-											height="24"
-											src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
-									</div>
-
-									<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{testResultsOutput}}</pre>
-								</div>
-							{{/each}}
-						</div>
-
-						<div class="gp_map-block_demo-tools_results_share">
-							<span>Share your results:</span>
-
-							<div>{{testResultsLink}}</div>
-
-							<button as-clipboard data-clipboard-text="{{testResultsLink}}">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
-							</button>
-						</div>
-					</div>
+					<c-gp-test-results resultsList="{{testResultsOutput}}" resultsLink="{{testResultsLink}}"></c-gp-test-results>
 				{{else}}
 					<div class="gp_map-block_demo-tools_info">
 						<img width="56"
@@ -908,7 +863,6 @@
 				testReqInterval: null,
 				testResultsOutput: null,
 				testResultsLink: null,
-				hiddenTestResults: [],
 			};
 		},
 		oninit () {
@@ -1031,17 +985,6 @@
 
 				this.set('testReqInterval', testReqInterval);
 			});
-		},
-		hideShowTestResult (idx) {
-			let hiddenTestResults = this.get('hiddenTestResults');
-
-			if (hiddenTestResults.includes(idx)) {
-				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
-			} else {
-				hiddenTestResults.push(idx);
-			}
-
-			this.set('hiddenTestResults', hiddenTestResults);
 		},
 	};
 </script>
