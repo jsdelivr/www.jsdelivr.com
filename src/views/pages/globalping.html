@@ -428,7 +428,7 @@
 				{{elseif testResultsOutput && testResultsOutput.length}}
 					<div class="gp_map-block_demo-tools_results">
 						<div class="gp_map-block_demo-tools_results_list">
-							{{#each testResultsOutput}}
+							{{#each testResultsOutput:idx}}
 								<div class="gp_map-block_demo-tools_results_list_item">
 									<div class="gp_map-block_demo-tools_results_list_item_header">
 										<span>
@@ -448,9 +448,15 @@
 												src="{{@shared.assetsHost}}/img/globalping/check-circle-icon.svg">
 												Time: 20ms
 										</span>
+
+										<img on-click="@this.hideShowTestResult(idx)"
+											class="{{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+											width="24"
+											height="24"
+											src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
 									</div>
 
-									<pre>{{testResultsOutput}}</pre>
+									<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{testResultsOutput}}</pre>
 								</div>
 							{{/each}}
 						</div>
@@ -902,6 +908,7 @@
 				testReqInterval: null,
 				testResultsOutput: null,
 				testResultsLink: null,
+				hiddenTestResults: [],
 			};
 		},
 		oninit () {
@@ -1024,6 +1031,17 @@
 
 				this.set('testReqInterval', testReqInterval);
 			});
+		},
+		hideShowTestResult (idx) {
+			let hiddenTestResults = this.get('hiddenTestResults');
+
+			if (hiddenTestResults.includes(idx)) {
+				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
+			} else {
+				hiddenTestResults.push(idx);
+			}
+
+			this.set('hiddenTestResults', hiddenTestResults);
 		},
 	};
 </script>

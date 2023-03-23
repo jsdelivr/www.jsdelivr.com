@@ -538,6 +538,7 @@
 							}
 
 							&_header {
+								position: relative;
 								display: flex;
 								flex-direction: column;
 								row-gap: 8px;
@@ -551,10 +552,23 @@
 								}
 
 								>img {
-									display: none;
+									&:nth-child(2) {
+										display: none;
 
-									@media (min-width: @screen-sm-min) {
-										display: inline-flex;
+										@media (min-width: @screen-sm-min) {
+											display: inline-flex;
+										}
+									}
+
+									&:nth-child(4) {
+										position: absolute;
+										right: 0;
+										top: 0;
+										cursor: pointer;
+
+										&.upside-down {
+											transform: rotate(180deg);
+										}
 									}
 								}
 
@@ -589,6 +603,10 @@
 								line-height: 24px;
 								color: #17233a;
 								background: transparent;
+
+								&.hidden {
+									height: 0;
+								}
 							}
 						}
 					}
