@@ -915,18 +915,22 @@
 			this.set('testResultsOutput', null);
 			this.set('testResultsLink', null);
 
-			let reqParams = {
-				type,
-				target,
-				measurementOptions: {
-					...measurementOpts,
-				},
-			};
+			let reqParams = { type };
+
+			if (target) {
+				reqParams.target = target;
+			}
 
 			if (!location) {
-				reqParams.limit = limit;
+				if (limit) {
+					reqParams.limit = limit;
+				}
 			} else {
 				reqParams.locations = [{ ...location, limit }];
+			}
+
+			if (Object.keys(measurementOpts).length) {
+				reqParams.measurementOptions = measurementOpts;
 			}
 
 			this.set('testInProgress', true);
