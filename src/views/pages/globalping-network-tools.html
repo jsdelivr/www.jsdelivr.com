@@ -3,6 +3,7 @@
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
 <link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -98,12 +99,26 @@
 				</button>
 			</div>
 
-			<div class="gp-nettools_demo-tools_descr">
-				<img width="56"
-					height="56"
-					src="{{@shared.assetsHost}}/img/globalping/TODO-broken-bulb.svg">
-				<span>Run a global ping latency test to debug and troubleshoot your network, CDN or website from multiple locations in Europe.</span>
-			</div>
+			{{#if testFailed}}
+				<div class="gp_map-block_demo-tools_fail-msg">
+					<img width="56"
+						height="56"
+						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
+
+					<p>
+						All tests failed. Maybe you specified a non existing endpoint?
+					</p>
+				</div>
+			{{elseif testResultsOutput && testResultsOutput.length}}
+				<c-gp-test-results resultsList="{{testResultsOutput}}" resultsLink="{{testResultsLink}}"></c-gp-test-results>
+			{{else}}
+				<div class="gp-nettools_demo-tools_descr">
+					<img width="56"
+						height="56"
+						src="{{@shared.assetsHost}}/img/globalping/TODO-broken-bulb.svg">
+					<span>Run a global ping latency test to debug and troubleshoot your network, CDN or website from multiple locations in Europe.</span>
+				</div>
+			{{/if}}
 		</div>
 
 		<div class="gp-nettools_learn-how">
@@ -135,6 +150,8 @@
 </r-page>
 
 <script>
+	const http = require('../../assets/js/utils/http');
+
 	component.exports = {
 		data () {
 			return {
@@ -148,14 +165,61 @@
 				},
 				inputErrors: {},
 				testInProgress: false,
+				testResultsOutput: null,
+				testResultsLink: null,
+				testReqInterval: null,
 			};
 		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('testResults', (testResults) => {
+					let rawOutputs = testResults.results.map((res) => {
+						return res.result.rawOutput;
+					});
+
+					this.set('testResultsOutput', rawOutputs);
+					this.set('testResultsLink', `http://www.jsdelivr.com/dns-speed-benchmark?id=${testResults.id}`); // TODO: is this a correct link?
+				}, { init: false });
+			}
+		},
 		proceedToTest () {
+			let tempReqParams = {
+				type: 'ping',
+				target: 'jsdelivr.com',
+				measurementOptions: {},
+				locations: [],
+				limit: 2,
+			};
+
+			this.set('testResultsOutput', null);
+			this.set('testResultsLink', null);
+
 			this.set('testInProgress', true);
 
-			setTimeout(() => {
+			// get test interval and clear it when new test is started
+			let testReqInterval = this.get('testReqInterval');
+
+			if (testReqInterval) {
+				clearInterval(testReqInterval);
+			}
+
+			http.postGlobalpingMeasurement(tempReqParams).then((response) => {
 				this.set('testInProgress', false);
-			}, 2000);
+
+				testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(response.id).then((testRes) => {
+						if (testRes.status !== 'in-progress') {
+							clearInterval(testReqInterval);
+
+							this.set('testResults', testRes);
+						}
+					}).catch(() => {
+						clearInterval(testReqInterval);
+					});
+				}, 1000);
+
+				this.set('testReqInterval', testReqInterval);
+			});
 		},
 	};
 </script>
