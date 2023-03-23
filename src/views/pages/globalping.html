@@ -138,7 +138,7 @@
 									<div class="typePing">
 										<c-controlled-input
 											value="{{pingOpts.packets}}"
-											error="{{inputErrors.packets}}"
+											error="{{inputErrors['measurementOptions.packets']}}"
 											placeholder="Amount of packets"
 											labelText="Packets"
 											classList="gp_input">
@@ -151,7 +151,7 @@
 										<div class="pair">
 											<c-controlled-input
 												value="{{tracerouteOpts.port}}"
-												error="{{inputErrors.port}}"
+												error="{{inputErrors['measurementOptions.port']}}"
 												placeholder="53"
 												labelText="Port"
 												classList="port-input gp_input">
@@ -187,7 +187,7 @@
 											<div class="rows_row-one">
 												<c-controlled-input
 													value="{{dnsOpts.port}}"
-													error="{{inputErrors.port}}"
+													error="{{inputErrors['measurementOptions.port']}}"
 													placeholder="53"
 													labelText="Port"
 													classList="port-input gp_input">
@@ -249,7 +249,7 @@
 
 										<c-controlled-input
 											value="{{dnsOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
+											error="{{inputErrors['measurementOptions.resolver']}}"
 											placeholder="IP address"
 											labelText="Resolver"
 											classList="resolver-input gp_input">
@@ -262,7 +262,7 @@
 										<div class="pair">
 											<c-controlled-input
 												value="{{mtrOpts.port}}"
-												error="{{inputErrors.port}}"
+												error="{{inputErrors['measurementOptions.port']}}"
 												placeholder="53"
 												labelText="Port"
 												classList="port-input gp_input">
@@ -292,7 +292,7 @@
 
 										<c-controlled-input
 											value="{{mtrOpts.packets}}"
-											error="{{inputErrors.packets}}"
+											error="{{inputErrors['measurementOptions.packets']}}"
 											placeholder="Amount of packets"
 											labelText="Packets"
 											classList="gp_input">
@@ -379,7 +379,7 @@
 
 										<c-controlled-input
 											value="{{httpOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
+											error="{{inputErrors['measurementOptions.resolver']}}"
 											placeholder="Resolver"
 											labelText="Resolver"
 											classList="gp_input">
@@ -910,38 +910,6 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
 
-			// check if data in place
-			let inputErrors = {};
-
-			if (!target) {
-				inputErrors.target = 'is required';
-			}
-
-			if (!limit) {
-				inputErrors.limit = 'is required';
-			}
-
-			Object.keys(measurementOpts).forEach((key) => {
-				if (!measurementOpts[key]) {
-					inputErrors[key] = 'is required';
-				} else if (typeof measurementOpts[key] === 'object') {
-					inputErrors[key] = {};
-
-					Object.keys(measurementOpts[key]).forEach((moKey) => {
-						if (!measurementOpts[key][moKey]) {
-							inputErrors[key][moKey] = 'is required';
-						}
-					});
-				}
-			});
-
-			if (Object.keys(inputErrors).length) {
-				this.set('inputErrors', inputErrors);
-
-				return;
-			}
-
-			// after the successfull validation clear results from the previous measurement
 			this.set('testResultsOutput', null);
 			this.set('testResultsLink', null);
 
@@ -984,6 +952,11 @@
 				}, 1000);
 
 				this.set('testReqInterval', testReqInterval);
+			}).catch((err) => {
+				if (err.error.type === 'validation_error') {
+					this.set('testInProgress', false);
+					this.set('inputErrors', err.error.params);
+				}
 			});
 		},
 	};
