@@ -137,7 +137,7 @@
 								{{#if mainOptions.type === 'ping'}}
 									<div class="typePing">
 										<c-controlled-input
-											value="{{pingOpts.packets}}"
+											value="{{notAppliedOpts.packets}}"
 											error="{{inputErrors['measurementOptions.packets']}}"
 											placeholder="Amount of packets"
 											labelText="Packets"
@@ -150,7 +150,7 @@
 									<div class="typeTraceroute">
 										<div class="pair">
 											<c-controlled-input
-												value="{{tracerouteOpts.port}}"
+												value="{{notAppliedOpts.port}}"
 												error="{{inputErrors['measurementOptions.port']}}"
 												placeholder="53"
 												labelText="Port"
@@ -186,7 +186,7 @@
 										<div class="rows">
 											<div class="rows_row-one">
 												<c-controlled-input
-													value="{{dnsOpts.port}}"
+													value="{{notAppliedOpts.port}}"
 													error="{{inputErrors['measurementOptions.port']}}"
 													placeholder="53"
 													labelText="Port"
@@ -248,7 +248,7 @@
 										</div>
 
 										<c-controlled-input
-											value="{{dnsOpts.resolver}}"
+											value="{{notAppliedOpts.resolver}}"
 											error="{{inputErrors['measurementOptions.resolver']}}"
 											placeholder="IP address"
 											labelText="Resolver"
@@ -261,7 +261,7 @@
 									<div class="typeMTR">
 										<div class="pair">
 											<c-controlled-input
-												value="{{mtrOpts.port}}"
+												value="{{notAppliedOpts.port}}"
 												error="{{inputErrors['measurementOptions.port']}}"
 												placeholder="53"
 												labelText="Port"
@@ -291,7 +291,7 @@
 										</div>
 
 										<c-controlled-input
-											value="{{mtrOpts.packets}}"
+											value="{{notAppliedOpts.packets}}"
 											error="{{inputErrors['measurementOptions.packets']}}"
 											placeholder="Amount of packets"
 											labelText="Packets"
@@ -303,7 +303,7 @@
 								{{#if mainOptions.type === 'HTTP'}}
 									<div class="typeHTTP">
 										<c-controlled-input
-											value="{{httpOpts.request.host}}"
+											value="{{notAppliedOpts.host}}"
 											error="{{inputErrors['measurementOptions.request.host']}}"
 											placeholder="Host"
 											labelText="Host"
@@ -311,7 +311,7 @@
 										</c-controlled-input>
 
 										<c-controlled-input
-											value="{{httpOpts.request.path}}"
+											value="{{notAppliedOpts.path}}"
 											error="{{inputErrors['measurementOptions.request.path']}}"
 											placeholder="Path"
 											labelText="Path"
@@ -319,7 +319,7 @@
 										</c-controlled-input>
 
 										<c-controlled-input
-											value="{{httpOpts.request.query}}"
+											value="{{notAppliedOpts.query}}"
 											error="{{inputErrors['measurementOptions.request.query']}}"
 											placeholder="Query"
 											labelText="Query"
@@ -328,7 +328,7 @@
 
 										<div class="pair">
 											<c-controlled-input
-												value="{{httpOpts.port}}"
+												value="{{notAppliedOpts.port}}"
 												error="{{inputErrors.port}}"
 												placeholder="53"
 												labelText="Port"
@@ -378,7 +378,7 @@
 										</div>
 
 										<c-controlled-input
-											value="{{httpOpts.resolver}}"
+											value="{{notAppliedOpts.resolver}}"
 											error="{{inputErrors['measurementOptions.resolver']}}"
 											placeholder="Resolver"
 											labelText="Resolver"
@@ -387,7 +387,7 @@
 									</div>
 								{{/if}}
 
-								<button class="gp_btn_green" on-click="@this.toggle('showMeasurementOpts')">
+								<button class="gp_btn_green" on-click="@this.applyOptions()">
 									Apply
 								</button>
 							</div>
@@ -863,6 +863,7 @@
 				testReqInterval: null,
 				testResultsOutput: null,
 				testResultsLink: null,
+				notAppliedOpts: {},
 			};
 		},
 		oninit () {
@@ -894,6 +895,7 @@
 					this.set('pingOpts', DEFAULT_PING_OPTS);
 					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
 					this.set('dnsOpts', DEFAULT_DNS_OPTS);
+					this.set('notAppliedOpts', {});
 				}, { init: false });
 
 				this.observe('testResults', (testResults) => {
@@ -958,6 +960,43 @@
 					this.set('inputErrors', err.error.params);
 				}
 			});
+		},
+		applyOptions () {
+			let notAppliedOpts = this.get('notAppliedOpts');
+			let { type } = this.get('mainOptions');
+			let currOptsName = `${type}Opts`;
+			let opts = this.get(currOptsName);
+
+			switch (type.toLowerCase()) {
+				case 'ping':
+					opts.packets = notAppliedOpts.packets;
+					break;
+
+				case 'traceroute':
+					opts.port = notAppliedOpts.port;
+					break;
+
+				case 'dns':
+					opts.port = notAppliedOpts.port;
+					opts.resolver = notAppliedOpts.resolver;
+					break;
+
+				case 'mtr':
+					opts.port = notAppliedOpts.port;
+					opts.packets = notAppliedOpts.packets;
+					break;
+
+				case 'http':
+					opts.port = notAppliedOpts.port;
+					opts.resolver = notAppliedOpts.resolver;
+					opts.request.host = notAppliedOpts.host;
+					opts.request.path = notAppliedOpts.path;
+					opts.request.query = notAppliedOpts.query;
+					break;
+			}
+
+			this.set(currOptsName, opts);
+			this.set('showMeasurementOpts', false);
 		},
 	};
 </script>
