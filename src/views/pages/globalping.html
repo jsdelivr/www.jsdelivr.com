@@ -922,9 +922,7 @@
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
-
-			this.set('testResultsOutput', null);
-			this.set('testResultsLink', null);
+			let notAppliedOpts = this.get('notAppliedOpts');
 
 			let reqParams = { type };
 
@@ -944,14 +942,43 @@
 				reqParams.measurementOptions = measurementOpts;
 			}
 
-			this.set('testInProgress', true);
-
 			// get test interval and clear it when new test is started
 			let testReqInterval = this.get('testReqInterval');
 
 			if (testReqInterval) {
 				clearInterval(testReqInterval);
 			}
+
+			// TODO: temp validation, just to check if every single input is filled
+			let inputErrors = {};
+
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			}
+
+			if (!limit) {
+				inputErrors.limit = 'Limit is required';
+			}
+
+			Object.keys(notAppliedOpts).forEach((key) => {
+				if (!notAppliedOpts[key]) {
+					if (key === 'host' || key === 'path' || key === 'query') {
+						inputErrors[`request.${key}`] = `${key} is required`;
+					} else {
+						inputErrors[`measurementOptions.${key}`] = `${key} is required`;
+					}
+				}
+			});
+
+			if (Object.keys(inputErrors).length) {
+				this.set('inputErrors', inputErrors);
+
+				return;
+			}
+
+			this.set('testResultsOutput', null);
+			this.set('testResultsLink', null);
+			this.set('testInProgress', true);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.set('testInProgress', false);
