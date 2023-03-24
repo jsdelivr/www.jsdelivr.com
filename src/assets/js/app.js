@@ -29,9 +29,9 @@ const cCustomCdnOss = require('../../views/pages/oss-cdn.html');
 const cCustomCdnOssProject = require('../../views/pages/_oss-cdn-project.html');
 const cDocumentation = require('../../views/pages/documentation.html');
 const cGlobalping = require('../../views/pages/globalping.html');
-const cGlobalpingCli = require('../../views/pages/globalping-cli.html');
-const cGlobalpingSlack = require('../../views/pages/globalping-slack.html');
-const cGlobalpingNetworkTools = require('../../views/pages/globalping-network-tools.html');
+const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
+const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
+const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
