@@ -102,9 +102,9 @@ app.router.addRoute('/oss-cdn', cCustomCdnOss);
 app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
 app.router.addRoute('/globalping', cGlobalping);
-app.router.addRoute('/globalping-cli', cGlobalpingCli);
-app.router.addRoute('/globalping-slack', cGlobalpingSlack);
-app.router.addRoute('/globalping-network-tools', cGlobalpingNetworkTools);
+app.router.addRoute('/globalping/cli', cGlobalpingCli);
+app.router.addRoute('/globalping/slack', cGlobalpingSlack);
+app.router.addRoute('/globalping/network-tools', cGlobalpingNetworkTools);
 app.router.addRoute('/(.*)', () => { location.href = '/'; });
 
 _.onDocumentReady(() => {
