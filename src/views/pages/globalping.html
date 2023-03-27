@@ -120,7 +120,7 @@
 						<c-controlled-input
 							value="{{mainOptions.limit}}"
 							error="{{inputErrors.limit}}"
-							placeholder="0"
+							placeholder="{{defaultLimit}}"
 							labelText="Limit"
 							classList="gp_map-block_demo-tools_settings_limit gp_input">
 						</c-controlled-input>
@@ -139,7 +139,7 @@
 										<c-controlled-input
 											value="{{notAppliedOpts.packets}}"
 											error="{{inputErrors['measurementOptions.packets']}}"
-											placeholder="Amount of packets"
+											placeholder="{{defaultPacketsAmount}}"
 											labelText="Packets"
 											classList="gp_input">
 										</c-controlled-input>
@@ -293,7 +293,7 @@
 										<c-controlled-input
 											value="{{notAppliedOpts.packets}}"
 											error="{{inputErrors['measurementOptions.packets']}}"
-											placeholder="Amount of packets"
+											placeholder="{{defaultPacketsAmount}}"
 											labelText="Packets"
 											classList="gp_input">
 										</c-controlled-input>
@@ -839,6 +839,8 @@
 			method: 'GET',
 		},
 	};
+	const DEFAULT_PACKETS_AMOUNT = 3;
+	const DEFAULT_LIMIT = 1;
 
 	component.exports = {
 		decorators: {
@@ -875,6 +877,8 @@
 				testResultsOutput: null,
 				testResultsLink: null,
 				notAppliedOpts: {},
+				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
+				defaultLimit: DEFAULT_LIMIT,
 			};
 		},
 		oninit () {
@@ -931,15 +935,21 @@
 			}
 
 			if (!location) {
-				if (limit) {
-					reqParams.limit = limit;
-				}
+				reqParams.limit = limit || DEFAULT_LIMIT;
 			} else {
 				reqParams.locations = [{ ...location, limit }];
 			}
 
+			reqParams.measurementOptions = {
+				// set default values in case if user did not set them manually
+				packets: DEFAULT_PACKETS_AMOUNT,
+			};
+
 			if (Object.keys(measurementOpts).length) {
-				reqParams.measurementOptions = measurementOpts;
+				reqParams.measurementOptions = {
+					...reqParams.measurementOptions,
+					...measurementOpts,
+				};
 			}
 
 			// get test interval and clear it when new test is started
@@ -949,26 +959,7 @@
 				clearInterval(testReqInterval);
 			}
 
-			// TODO: temp validation, just to check if every single input is filled
-			let inputErrors = {};
-
-			if (!target) {
-				inputErrors.target = 'Target is required';
-			}
-
-			if (!limit) {
-				inputErrors.limit = 'Limit is required';
-			}
-
-			Object.keys(notAppliedOpts).forEach((key) => {
-				if (!notAppliedOpts[key]) {
-					if (key === 'host' || key === 'path' || key === 'query') {
-						inputErrors[`request.${key}`] = `${key} is required`;
-					} else {
-						inputErrors[`measurementOptions.${key}`] = `${key} is required`;
-					}
-				}
-			});
+			let inputErrors = this.validateDataForRequest(target, notAppliedOpts);
 
 			if (Object.keys(inputErrors).length) {
 				this.set('inputErrors', inputErrors);
@@ -1006,7 +997,7 @@
 		applyOptions () {
 			let notAppliedOpts = this.get('notAppliedOpts');
 			let { type } = this.get('mainOptions');
-			let currOptsName = `${type}Opts`;
+			let currOptsName = `${type.toLowerCase()}Opts`;
 			let opts = this.get(currOptsName);
 
 			switch (type.toLowerCase()) {
@@ -1037,8 +1028,49 @@
 					break;
 			}
 
-			this.set(currOptsName, opts);
+			// filter opts from empty values
+			let filteredOpts = Object.keys(opts).reduce((res, key) => {
+				if (typeof opts[key] === 'object') {
+					res[key] = Object.keys(opts[key]).reduce((secRes, secKey) => {
+						if (opts[key][secKey] !== '') {
+							secRes[secKey] = opts[key][secKey];
+						}
+
+						return secRes;
+					}, {});
+				} else if (opts[key] !== '') {
+					res[key] = opts[key];
+				}
+
+				return res;
+			}, {});
+
+			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
+		},
+		validateDataForRequest (target, notAppliedOpts) {
+			// TODO: temp validation, just to check if every single input is filled
+			let inputErrors = {};
+
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			}
+
+			Object.keys(notAppliedOpts).forEach((key) => {
+				if (key === 'packets') {
+					return;
+				}
+
+				if (!notAppliedOpts[key]) {
+					if (key === 'host' || key === 'path' || key === 'query') {
+						inputErrors[`request.${key}`] = `${key} is required`;
+					} else {
+						inputErrors[`measurementOptions.${key}`] = `${key} is required`;
+					}
+				}
+			});
+
+			return inputErrors;
 		},
 	};
 </script>
