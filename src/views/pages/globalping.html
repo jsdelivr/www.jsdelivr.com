@@ -131,6 +131,8 @@
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
+
+								<div class="additional-opts-total">{{mainOptions.additionalOptsTotal}}</div>
 							</button>
 
 							<div class="gp_map-block_demo-tools_settings_grouped_options-block_specific-set">
@@ -819,9 +821,12 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
-	const DEFAULT_PING_OPTS = {};
+	const DEFAULT_PING_OPTS = {
+		additionalOptsTotal: 1,
+	};
 	const DEFAULT_TRACEROUTE_OPTS = {
 		protocol: 'ICMP',
+		additionalOptsTotal: 2,
 	};
 	const DEFAULT_DNS_OPTS = {
 		protocol: 'UDP',
@@ -829,15 +834,18 @@
 			type: 'A',
 		},
 		trace: true,
+		additionalOptsTotal: 5,
 	};
 	const DEFAULT_MTR_OPTS = {
 		protocol: 'ICMP',
+		additionalOptsTotal: 3,
 	};
 	const DEFAULT_HTTP_OPTS = {
 		protocol: 'HTTP',
 		request: {
 			method: 'GET',
 		},
+		additionalOptsTotal: 7,
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
@@ -857,6 +865,7 @@
 					target: '',
 					location: '',
 					limit: '',
+					additionalOptsTotal: DEFAULT_PING_OPTS.additionalOptsTotal,
 				},
 				mapSwitch: true,
 				showMeasurementOpts: false,
@@ -904,13 +913,16 @@
 					this.animate('totalCountries', totalCountries, { duration: 2000 });
 				});
 
-				this.observe('mainOptions.type', () => {
+				this.observe('mainOptions.type', (type) => {
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
 					this.set('pingOpts', DEFAULT_PING_OPTS);
 					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
 					this.set('dnsOpts', DEFAULT_DNS_OPTS);
+					this.set('mtrOpts', DEFAULT_MTR_OPTS);
+					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
+					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
 
 				this.observe('testResults', (testResults) => {
