@@ -1013,7 +1013,8 @@
 		applyOptions () {
 			let notAppliedOpts = this.get('notAppliedOpts');
 			let { type } = this.get('mainOptions');
-			let opts = this.get(`${type.toLowerCase()}Opts`);
+			let currOptsName = `${type.toLowerCase()}Opts`;
+			let opts = this.get(currOptsName);
 
 			switch (type.toLowerCase()) {
 				case 'ping':
@@ -1063,8 +1064,9 @@
 			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
 		},
-		validateDataForRequest (target, notAppliedOpts) {
-			// TODO: temp validation, just to check if every single input is filled
+		// TODO: temp validation, just to check if every single input is filled
+		// validateDataForRequest (target, notAppliedOpts) {
+		validateDataForRequest (target) {
 			let inputErrors = {};
 
 			if (!target) {
