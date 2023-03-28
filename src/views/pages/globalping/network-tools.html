@@ -79,15 +79,16 @@
 				</c-controlled-input>
 
 				<c-controlled-input
-					value="{{testOpts.probes}}"
-					error="{{inputErrors.probes}}"
-					placeholder="0"
+					value="{{testOpts.limit}}"
+					error="{{inputErrors.limit}}"
+					placeholder="{{defaultProbesAmount}}"
 					spanText="Probes"
 					classList="gp-nettools_demo-tools_ctrls_probes gp_input">
 				</c-controlled-input>
 
 				<button on-click="@this.proceedToTest()"
-					class="gp-nettools_demo-tools_ctrls_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}">
+					class="gp-nettools_demo-tools_ctrls_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+					disabled="{{testInProgress}}">
 					{{#if testInProgress}}
 						<div></div>
 						<div></div>
@@ -151,6 +152,12 @@
 
 <script>
 	const http = require('../../../assets/js/utils/http');
+	const DEFAULT_PROBES_AMOUNT = 3;
+	const PING_PARAMS = {};
+	const TRACEROUTE_PARAMS = {};
+	const DNS_PARAMS = {};
+	const MTR_PARAMS = {};
+	const HTTP_PARAMS = {};
 
 	component.exports = {
 		data () {
@@ -161,13 +168,14 @@
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				testOpts: {
 					target: '',
-					probes: 2,
+					limit: '',
 				},
 				inputErrors: {},
 				testInProgress: false,
 				testResultsOutput: null,
 				testResultsLink: null,
 				testReqInterval: null,
+				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 			};
 		},
 		oninit () {
@@ -183,17 +191,43 @@
 			}
 		},
 		proceedToTest () {
-			let tempReqParams = {
-				type: 'ping',
-				target: 'jsdelivr.com',
-				measurementOptions: {},
-				locations: [],
-				limit: 2,
+			let type = this.get('selectedTestType');
+			let testOpts = this.get('testOpts');
+			let reqParams = {
+				type,
+				...testOpts
 			};
+
+			if (!testOpts.target) {
+				this.set('inputErrors.target', 'Target is required');
+
+				return;
+			}
+
+			if (!reqParams.limit) {
+				reqParams.limit = DEFAULT_PROBES_AMOUNT;
+			}
+
+			switch (type.toLowerCase()) {
+				case 'ping':
+					reqParams = { ...reqParams, ...PING_PARAMS };
+					break;
+				case 'traceroute':
+					reqParams = { ...reqParams, ...TRACEROUTE_PARAMS };
+					break;
+				case 'dns':
+					reqParams = { ...reqParams, ...DNS_PARAMS };
+					break;
+				case 'mtr':
+					reqParams = { ...reqParams, ...MTR_PARAMS };
+					break;
+				case 'http':
+					reqParams = { ...reqParams, ...HTTP_PARAMS };
+					break;
+			}
 
 			this.set('testResultsOutput', null);
 			this.set('testResultsLink', null);
-
 			this.set('testInProgress', true);
 
 			// get test interval and clear it when new test is started
@@ -203,14 +237,13 @@
 				clearInterval(testReqInterval);
 			}
 
-			http.postGlobalpingMeasurement(tempReqParams).then((response) => {
-				this.set('testInProgress', false);
-
+			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(response.id).then((testRes) => {
 						if (testRes.status !== 'in-progress') {
 							clearInterval(testReqInterval);
 
+							this.set('testInProgress', false);
 							this.set('testResults', testRes);
 						}
 					}).catch(() => {
@@ -219,6 +252,12 @@
 				}, 1000);
 
 				this.set('testReqInterval', testReqInterval);
+			}).catch((err) => {
+				if (err.error.type === 'validation_error') {
+					this.set('testInProgress', false);
+					// TODO: add proper errors handling, the same as for the globalping page
+					this.set('inputErrors', err.error.params);
+				}
 			});
 		},
 	};
