@@ -922,6 +922,8 @@
 					this.set('mtrOpts', DEFAULT_MTR_OPTS);
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
+					this.set('testResultsOutput', null);
+					this.set('testResultsLink', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
 
@@ -939,6 +941,8 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
 			let notAppliedOpts = this.get('notAppliedOpts');
+
+			delete measurementOpts.additionalOptsTotal;
 
 			let reqParams = { type };
 
@@ -1009,8 +1013,7 @@
 		applyOptions () {
 			let notAppliedOpts = this.get('notAppliedOpts');
 			let { type } = this.get('mainOptions');
-			let currOptsName = `${type.toLowerCase()}Opts`;
-			let opts = this.get(currOptsName);
+			let opts = this.get(`${type.toLowerCase()}Opts`);
 
 			switch (type.toLowerCase()) {
 				case 'ping':
@@ -1068,19 +1071,19 @@
 				inputErrors.target = 'Target is required';
 			}
 
-			Object.keys(notAppliedOpts).forEach((key) => {
-				if (key === 'packets') {
-					return;
-				}
+			// Object.keys(notAppliedOpts).forEach((key) => {
+			// 	if (key === 'packets') {
+			// 		return;
+			// 	}
 
-				if (!notAppliedOpts[key]) {
-					if (key === 'host' || key === 'path' || key === 'query') {
-						inputErrors[`request.${key}`] = `${key} is required`;
-					} else {
-						inputErrors[`measurementOptions.${key}`] = `${key} is required`;
-					}
-				}
-			});
+			// 	if (!notAppliedOpts[key]) {
+			// 		if (key === 'host' || key === 'path' || key === 'query') {
+			// 			inputErrors[`request.${key}`] = `${key} is required`;
+			// 		} else {
+			// 			inputErrors[`measurementOptions.${key}`] = `${key} is required`;
+			// 		}
+			// 	}
+			// });
 
 			return inputErrors;
 		},
