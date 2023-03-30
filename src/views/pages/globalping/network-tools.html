@@ -106,8 +106,8 @@
 						All tests failed. Maybe you specified a non existing endpoint?
 					</p>
 				</div>
-			{{elseif testResultsOutput && testResultsOutput.length}}
-				<c-gp-test-results resultsList="{{testResultsOutput}}" resultsLink="{{testResultsLink}}"></c-gp-test-results>
+			{{elseif testResults}}
+				<c-gp-test-results testResults="{{testResults}}"></c-gp-test-results>
 			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
 					<img width="56"
@@ -168,28 +168,17 @@
 					limit: '',
 				},
 				inputErrors: {},
+				testResults: null,
 				testInProgress: false,
-				testResultsOutput: null,
-				testResultsLink: null,
 				testReqInterval: null,
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('testResults', (testResults) => {
-					let rawOutputs = testResults.results.map((res) => {
-						return res.result.rawOutput;
-					});
-
-					this.set('testResultsOutput', rawOutputs);
-					this.set('testResultsLink', `http://www.jsdelivr.com/globalping?id=${testResults.id}`);
-				}, { init: false });
-
 				this.observe('selectedTestType', () => {
 					this.set('inputErrors', {});
-					this.set('testResultsOutput', null);
-					this.set('testResultsLink', null);
+					this.set('testResults', null);
 				}, { init: false });
 			}
 		},
@@ -229,8 +218,7 @@
 					break;
 			}
 
-			this.set('testResultsOutput', null);
-			this.set('testResultsLink', null);
+			this.set('testResults', null);
 			this.set('testInProgress', true);
 
 			// get test interval and clear it when new test is started
