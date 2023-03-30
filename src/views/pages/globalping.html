@@ -1012,8 +1012,16 @@
 			}).catch((err) => {
 				if (err.error.type === 'validation_error') {
 					this.set('testInProgress', false);
-					// TODO: add proper errors handling
-					this.set('inputErrors', err.error.params);
+					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+						let fieldName = key.split('.')[key.split('.').length - 1];
+						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+						res[key] = errMsg;
+
+						return res;
+					}, {});
+
+					this.set('inputErrors', inputErrors);
 				}
 			});
 		},
