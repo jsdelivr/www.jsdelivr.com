@@ -1,13 +1,13 @@
 <div class="c-gp-test-results">
 	<div class="c-gp-test-results_list">
-		{{#each resultsList:idx}}
+		{{#each testResults.results:idx}}
 			<div class="c-gp-test-results_list_item">
 				<div class="c-gp-test-results_list_item_header">
 					<span>
 						<img width="28"
 							height="20"
 							src="{{@shared.assetsHost}}/img/globalping/TODO_temp_flag.svg">
-							Riga, LV, EU - BT3789
+							{{this.probe.city}}, {{this.probe.country}}, {{this.probe.region}} - {{this.probe.network}} ({{this.probe.continent}}{{this.probe.asn}})
 					</span>
 
 					<img width="4"
@@ -18,7 +18,7 @@
 						<img width="20"
 							height="20"
 							src="{{@shared.assetsHost}}/img/globalping/check-circle-icon.svg">
-							Time: 20ms
+							Time: {{this.result.stats.avg}}ms
 					</span>
 
 					<img on-click="@this.hideShowTestResult(idx)"
@@ -28,7 +28,7 @@
 						src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
 				</div>
 
-				<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{resultsList}}</pre>
+				<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
 			</div>
 		{{/each}}
 	</div>
@@ -36,7 +36,7 @@
 	<div class="c-gp-test-results_share">
 		<span>Share your results:</span>
 
-		<div>{{resultsLink}}</div>
+		<div>{{`http://www.jsdelivr.com/globalping?id=${testResults.id}`}}</div>
 
 		<button as-clipboard data-clipboard-text="{{resultsLink}}">
 			<img width="20"
