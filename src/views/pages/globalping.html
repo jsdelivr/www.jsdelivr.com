@@ -425,8 +425,8 @@
 							All tests failed. Maybe you specified a non existing endpoint?
 						</p>
 					</div>
-				{{elseif testResultsOutput && testResultsOutput.length}}
-					<c-gp-test-results resultsList="{{testResultsOutput}}" resultsLink="{{testResultsLink}}"></c-gp-test-results>
+				{{elseif testResults}}
+					<c-gp-test-results testResults="{{testResults}}"></c-gp-test-results>
 				{{else}}
 					<div class="gp_map-block_demo-tools_info">
 						<img width="56"
@@ -887,11 +887,10 @@
 				mtrOpts: DEFAULT_MTR_OPTS,
 				httpOpts: DEFAULT_HTTP_OPTS,
 				inputErrors: {},
+				testResults: null,
 				testFailed: false,
 				testInProgress: false,
 				testReqInterval: null,
-				testResultsOutput: null,
-				testResultsLink: null,
 				notAppliedOpts: {},
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
@@ -929,18 +928,8 @@
 					this.set('mtrOpts', DEFAULT_MTR_OPTS);
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
-					this.set('testResultsOutput', null);
-					this.set('testResultsLink', null);
+					this.set('testResults', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
-				}, { init: false });
-
-				this.observe('testResults', (testResults) => {
-					let rawOutputs = testResults.results.map((res) => {
-						return res.result.rawOutput;
-					});
-
-					this.set('testResultsOutput', rawOutputs);
-					this.set('testResultsLink', `http://www.jsdelivr.com/globalping?id=${testResults.id}`);
 				}, { init: false });
 			}
 		},
@@ -990,8 +979,7 @@
 				return;
 			}
 
-			this.set('testResultsOutput', null);
-			this.set('testResultsLink', null);
+			this.set('testResults', null);
 			this.set('testInProgress', true);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
