@@ -828,6 +828,8 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
+	const validateURL = require('../../assets/js/utils/validate-url');
+	const validateIP = require('../../assets/js/utils/validate-ip');
 	const DEFAULT_PING_OPTS = {
 		additionalOptsTotal: 1,
 	};
@@ -1067,28 +1069,20 @@
 			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
 		},
-		// TODO: temp validation, just to check if every single input is filled
-		// validateDataForRequest (target, notAppliedOpts) {
 		validateDataForRequest (target) {
 			let inputErrors = {};
 
+			// validate Target field
 			if (!target) {
 				inputErrors.target = 'Target is required';
+			} else {
+				let isValidUrl = validateURL.test(target);
+				let isValidIP = validateIP.test(target);
+
+				if (!isValidUrl && !isValidIP) {
+					inputErrors.target = 'Target is invalid';
+				}
 			}
-
-			// Object.keys(notAppliedOpts).forEach((key) => {
-			// 	if (key === 'packets') {
-			// 		return;
-			// 	}
-
-			// 	if (!notAppliedOpts[key]) {
-			// 		if (key === 'host' || key === 'path' || key === 'query') {
-			// 			inputErrors[`request.${key}`] = `${key} is required`;
-			// 		} else {
-			// 			inputErrors[`measurementOptions.${key}`] = `${key} is required`;
-			// 		}
-			// 	}
-			// });
 
 			return inputErrors;
 		},
