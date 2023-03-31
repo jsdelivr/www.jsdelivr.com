@@ -866,6 +866,12 @@
 				errMsg: 'Limit must be an integer number',
 			},
 		],
+		location: [
+			{
+				pattern: '^([a-zA-Z]{2}){1}(\\+[a-zA-Z]{2})*$',
+				errMsg: 'Location must be in a valid format',
+			},
+		],
 	};
 
 	component.exports = {
@@ -982,7 +988,7 @@
 				clearInterval(testReqInterval);
 			}
 
-			let inputErrors = this.validateDataForRequest(target, limit, notAppliedOpts);
+			let inputErrors = this.validateDataForRequest(target, location, limit, notAppliedOpts);
 
 			if (Object.keys(inputErrors).length) {
 				this.set('inputErrors', inputErrors);
@@ -1078,7 +1084,7 @@
 			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
 		},
-		validateDataForRequest (target, limit) {
+		validateDataForRequest (target, location, limit) {
 			let inputErrors = {};
 
 			// validate Target field
@@ -1090,6 +1096,26 @@
 
 				if (!isValidUrl && !isValidIP) {
 					inputErrors.target = 'Target is invalid';
+				}
+			}
+
+			// validate Location field
+			if (location) {
+				let result = VALIDATION_PATTERNS_MAP.location.reduce((res, data) => {
+					let isValid = validateByPattern.test(location, data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.location = result.errMsg;
 				}
 			}
 
