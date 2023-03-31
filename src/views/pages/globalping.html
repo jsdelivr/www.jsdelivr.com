@@ -830,6 +830,7 @@
 	const http = require('../../assets/js/utils/http');
 	const validateURL = require('../../assets/js/utils/validate-url');
 	const validateIP = require('../../assets/js/utils/validate-ip');
+	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
 	const DEFAULT_PING_OPTS = {
 		additionalOptsTotal: 1,
 	};
@@ -858,6 +859,14 @@
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
+	const VALIDATION_PATTERNS_MAP = {
+		limit: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Limit must be an integer number',
+			},
+		],
+	};
 
 	component.exports = {
 		decorators: {
@@ -973,7 +982,7 @@
 				clearInterval(testReqInterval);
 			}
 
-			let inputErrors = this.validateDataForRequest(target, notAppliedOpts);
+			let inputErrors = this.validateDataForRequest(target, limit, notAppliedOpts);
 
 			if (Object.keys(inputErrors).length) {
 				this.set('inputErrors', inputErrors);
@@ -1069,7 +1078,7 @@
 			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
 		},
-		validateDataForRequest (target) {
+		validateDataForRequest (target, limit) {
 			let inputErrors = {};
 
 			// validate Target field
@@ -1081,6 +1090,28 @@
 
 				if (!isValidUrl && !isValidIP) {
 					inputErrors.target = 'Target is invalid';
+				}
+			}
+
+			// validate Limit field
+			if (limit) {
+				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.limit = result.errMsg;
+				} else if (limit > 16 || limit < 1) {
+					inputErrors.limit = 'Limit must be between 1 to 16 inclusive';
 				}
 			}
 
