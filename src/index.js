@@ -214,7 +214,7 @@ router.use(
 	async (ctx) => {
 		ctx.path = ctx.originalPath;
 		// return next();
-	}
+	},
 );
 
 router.use(koaStatic(__dirname + '/../dist', {

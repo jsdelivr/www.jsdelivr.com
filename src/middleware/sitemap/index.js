@@ -22,7 +22,7 @@ module.exports = async (ctx) => {
 		'oss-cdn/cocoa',
 		'oss-cdn/ghost',
 		'oss-cdn/musescore',
-		'oss-cdn/pyodide'
+		'oss-cdn/pyodide',
 	);
 
 	if (ctx.params.page === 'index') {

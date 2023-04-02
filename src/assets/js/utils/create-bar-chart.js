@@ -13,7 +13,7 @@ const createBarChart = Chart => (
 	chartEl,
 	chartData = {},
 	chartSettings = {},
-	chartConfig = {}
+	chartConfig = {},
 ) => {
 	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
 	let prevTooltipInstance = document.getElementById(chartSettings.externalTooltipId || 'barChart-tooltip');

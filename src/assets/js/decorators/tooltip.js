@@ -5,7 +5,7 @@ let tooltipDecorator = (
 	elementName = 'div',
 	className,
 	offsetX,
-	offsetY
+	offsetY,
 ) => {
 	let tooltip, handlers, eventName;
 	let getPositionClass = (position) => {

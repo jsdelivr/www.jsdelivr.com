@@ -157,7 +157,7 @@ module.exports.fetchTopPlatformBrowserStats = (
 	country,
 	continent,
 	page = 1,
-	limit = 10
+	limit = 10,
 ) => {
 	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 	let url = dataType === 'platform' ? `${API_HOST}/v1/stats/platforms` : `${API_HOST}/v1/stats/browsers`;
