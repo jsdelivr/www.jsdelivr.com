@@ -968,11 +968,6 @@
 
 			delete measurementOpts.additionalOptsTotal;
 
-			// since packets field default value is present only for ping type
-			if (type !== 'ping') {
-				delete measurementOpts.packets;
-			}
-
 			let reqParams = { type };
 
 			if (target) {
@@ -988,10 +983,15 @@
 				}));
 			}
 
-			reqParams.measurementOptions = {
-				// set default values in case if user did not set them manually
-				packets: DEFAULT_PACKETS_AMOUNT,
-			};
+			// since packets field default value is present only for Ping and MTR type
+			if (type.toLowerCase() === 'ping' || type.toLowerCase() === 'mtr') {
+				reqParams.measurementOptions = {
+					// set default values in case if user did not set them manually
+					packets: DEFAULT_PACKETS_AMOUNT,
+				};
+			} else {
+				delete measurementOpts.packets;
+			}
 
 			if (Object.keys(measurementOpts).length) {
 				reqParams.measurementOptions = {
