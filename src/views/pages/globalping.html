@@ -872,6 +872,12 @@
 				errMsg: 'Location must be in a valid format',
 			},
 		],
+		packets: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Packets must be an integer number',
+			},
+		],
 	};
 
 	component.exports = {
@@ -953,7 +959,6 @@
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
-			let notAppliedOpts = this.get('notAppliedOpts');
 
 			delete measurementOpts.additionalOptsTotal;
 
@@ -991,7 +996,7 @@
 				clearInterval(testReqInterval);
 			}
 
-			let inputErrors = this.validateDataForRequest(target, location, limit, notAppliedOpts);
+			let inputErrors = this.validateDataForRequest(target, location, limit, measurementOpts);
 
 			if (Object.keys(inputErrors).length) {
 				this.set('inputErrors', inputErrors);
@@ -1087,7 +1092,7 @@
 			this.set(currOptsName, filteredOpts);
 			this.set('showMeasurementOpts', false);
 		},
-		validateDataForRequest (target, location, limit) {
+		validateDataForRequest (target, location, limit, measurementOpts) {
 			let inputErrors = {};
 
 			// validate Target field
@@ -1139,8 +1144,30 @@
 
 				if (!result.isValid) {
 					inputErrors.limit = result.errMsg;
-				} else if (limit > 16 || limit < 1) {
-					inputErrors.limit = 'Limit must be between 1 to 16 inclusive';
+				} else if (limit > 500 || limit < 1) {
+					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
+				}
+			}
+
+			// validate Measurement Options
+			if (measurementOpts.packets) {
+				let result = VALIDATION_PATTERNS_MAP.packets.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(measurementOpts.packets), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors['measurementOptions.packets'] = result.errMsg;
+				} else if (measurementOpts.packets > 16 || measurementOpts.packets < 1) {
+					inputErrors['measurementOptions.packets'] = 'Limit must be from 1 to 16 inclusive';
 				}
 			}
 
