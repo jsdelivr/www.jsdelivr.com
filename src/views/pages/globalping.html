@@ -828,7 +828,7 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
-	const validateURL = require('../../assets/js/utils/validate-url');
+	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
 	const validateIP = require('../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
 	const DEFAULT_PING_OPTS = {
@@ -1105,11 +1105,11 @@
 			if (!target) {
 				inputErrors.target = 'Target is required';
 			} else {
-				let isValidUrl = validateURL.test(target);
+				let isValidDomainName = validateDomainName.test(target);
 				let isValidIP = validateIP.test(target);
 
-				if (!isValidUrl && !isValidIP) {
-					inputErrors.target = 'Target is invalid';
+				if (!isValidDomainName && !isValidIP) {
+					inputErrors.target = 'Target does not match any of the allowed formats';
 				}
 			}
 
@@ -1195,6 +1195,15 @@
 					inputErrors['measurementOptions.port'] = result.errMsg;
 				} else if (measurementOpts.port > 65535 || measurementOpts.port < 1) {
 					inputErrors['measurementOptions.port'] = 'Port must be from 1 to 65535 inclusive';
+				}
+			}
+
+			if (measurementOpts.resolver) {
+				let isValidDomainName = validateDomainName.test(measurementOpts.resolver);
+				let isValidIP = validateIP.test(measurementOpts.resolver);
+
+				if (!isValidDomainName && !isValidIP) {
+					inputErrors['measurementOptions.resolver'] = 'Resolver does not match any of the allowed formats';
 				}
 			}
 
