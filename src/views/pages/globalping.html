@@ -1199,11 +1199,10 @@
 			}
 
 			if (measurementOpts.resolver) {
-				let isValidDomainName = validateDomainName.test(measurementOpts.resolver);
 				let isValidIP = validateIP.test(measurementOpts.resolver);
 
-				if (!isValidDomainName && !isValidIP) {
-					inputErrors['measurementOptions.resolver'] = 'Resolver does not match any of the allowed formats';
+				if (!isValidIP) {
+					inputErrors['measurementOptions.resolver'] = 'Resolver must be a valid ip address of one of the following versions [ipv4] with a forbidden CIDR';
 				}
 			}
 
