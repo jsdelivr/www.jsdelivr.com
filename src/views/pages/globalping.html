@@ -878,6 +878,12 @@
 				errMsg: 'Packets must be an integer number',
 			},
 		],
+		port: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Port must be an integer number',
+			},
+		],
 	};
 
 	component.exports = {
@@ -1167,7 +1173,28 @@
 				if (!result.isValid) {
 					inputErrors['measurementOptions.packets'] = result.errMsg;
 				} else if (measurementOpts.packets > 16 || measurementOpts.packets < 1) {
-					inputErrors['measurementOptions.packets'] = 'Limit must be from 1 to 16 inclusive';
+					inputErrors['measurementOptions.packets'] = 'Packets must be from 1 to 16 inclusive';
+				}
+			}
+
+			if (measurementOpts.port) {
+				let result = VALIDATION_PATTERNS_MAP.port.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(measurementOpts.port), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors['measurementOptions.port'] = result.errMsg;
+				} else if (measurementOpts.port > 65535 || measurementOpts.port < 1) {
+					inputErrors['measurementOptions.port'] = 'Port must be from 1 to 65535 inclusive';
 				}
 			}
 
