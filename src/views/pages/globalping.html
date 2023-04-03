@@ -1206,6 +1206,14 @@
 				}
 			}
 
+			if (measurementOpts?.request?.host) {
+				let isValidDomainName = validateDomainName.test(measurementOpts.request.host);
+
+				if (!isValidDomainName) {
+					inputErrors['measurementOptions.request.host'] = 'Host must contain a valid domain name';
+				}
+			}
+
 			return inputErrors;
 		},
 	};
