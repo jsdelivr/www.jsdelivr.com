@@ -966,7 +966,10 @@
 			if (!location) {
 				reqParams.limit = limit || DEFAULT_LIMIT;
 			} else {
-				reqParams.locations = [{ ...location, limit }];
+				reqParams.locations = location.split('+').map(loc => ({
+					magic: loc,
+					limit: limit || DEFAULT_LIMIT,
+				}));
 			}
 
 			reqParams.measurementOptions = {
