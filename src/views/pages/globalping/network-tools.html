@@ -148,6 +148,9 @@
 
 <script>
 	const http = require('../../../assets/js/utils/http');
+	const validateDomainName = require('../../../assets/js/utils/validate-domain-name');
+	const validateIP = require('../../../assets/js/utils/validate-ip');
+	const validateByPattern = require('../../../assets/js/utils/validate-by-pattern');
 	const DEFAULT_PROBES_AMOUNT = 3;
 	// TODO: do we need additional options for different types of request
 	const PING_PARAMS = {};
@@ -155,6 +158,14 @@
 	const DNS_PARAMS = {};
 	const MTR_PARAMS = {};
 	const HTTP_PARAMS = {};
+	const VALIDATION_PATTERNS_MAP = {
+		limit: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Limit must be an integer number',
+			},
+		],
+	};
 
 	component.exports = {
 		data () {
@@ -190,12 +201,6 @@
 				...testOpts,
 			};
 
-			if (!testOpts.target) {
-				this.set('inputErrors.target', 'Target is required');
-
-				return;
-			}
-
 			if (!reqParams.limit) {
 				reqParams.limit = DEFAULT_PROBES_AMOUNT;
 			}
@@ -216,6 +221,14 @@
 				case 'http':
 					reqParams = { ...reqParams, ...HTTP_PARAMS };
 					break;
+			}
+
+			let inputErrors = this.validateDataForRequest(testOpts);
+
+			if (Object.keys(inputErrors).length) {
+				this.set('inputErrors', inputErrors);
+
+				return;
 			}
 
 			this.set('testResults', null);
@@ -259,6 +272,45 @@
 					this.set('inputErrors', inputErrors);
 				}
 			});
+		},
+		validateDataForRequest ({ target, limit }) {
+			let inputErrors = {};
+
+			// validate Target field
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			} else {
+				let isValidDomainName = validateDomainName.test(target);
+				let isValidIP = validateIP.test(target);
+
+				if (!isValidDomainName && !isValidIP) {
+					inputErrors.target = 'Target does not match any of the allowed formats';
+				}
+			}
+
+			// validate Limit field
+			if (limit) {
+				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.limit = result.errMsg;
+				} else if (limit > 500 || limit < 1) {
+					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
+				}
+			}
+
+			return inputErrors;
 		},
 	};
 </script>
