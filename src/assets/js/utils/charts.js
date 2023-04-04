@@ -56,7 +56,7 @@ module.exports = () => {
 			Filler,
 			Legend,
 			Title,
-			Tooltip
+			Tooltip,
 		);
 
 		return {

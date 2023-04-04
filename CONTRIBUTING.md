@@ -14,7 +14,7 @@ The website uses [Ractive.js](https://ractive.js.org/), [ractive-route](https://
 
 ## Repo Setup
 
-To get started, you need to have Node.js 16 with NPM 8 installed. Then run the following commands:
+To get started, you need to have Node.js with NPM installed. Then run the following commands:
 
 ```bash
 npm install

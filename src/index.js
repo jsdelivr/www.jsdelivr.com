@@ -22,6 +22,7 @@ const config = require('config');
 const signalExit = require('signal-exit');
 const isSafePath = require('is-safe-path');
 const express = require('express');
+const zlib = require('zlib');
 
 const Koa = require('koa');
 const koaStatic = require('koa-static');
@@ -90,7 +91,7 @@ app.use(koaResponseTime());
 /**
  * Gzip compression.
  */
-app.use(koaCompress());
+app.use(koaCompress({ br: { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } } }));
 
 /**
  * ETag support.
@@ -213,7 +214,7 @@ router.use(
 	async (ctx) => {
 		ctx.path = ctx.originalPath;
 		// return next();
-	}
+	},
 );
 
 router.use(koaStatic(__dirname + '/../dist', {

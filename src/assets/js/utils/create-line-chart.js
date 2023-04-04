@@ -11,7 +11,7 @@ const createLineChart = Chart => (
 	chartEl,
 	chartData = {},
 	chartSettings = { useExternalTooltip: false },
-	chartConfig = {}
+	chartConfig = {},
 ) => {
 	// remove tooltip elem if chart was recreated (e.g. after screen resizing)
 	let prevTooltipInstance = document.getElementById('lineChart-tooltip');

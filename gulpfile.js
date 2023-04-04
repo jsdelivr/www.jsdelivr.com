@@ -60,7 +60,7 @@ gulp.task('copy', gulp.parallel(
 		.pipe(livereload()),
 	() => gulp.src(`${srcPublicDir}/**/*.!(js|less)`, { base: srcPublicDir, since: gulp.lastRun('copy') })
 		.pipe(gulp.dest(dstPublicDir))
-		.pipe(livereload())
+		.pipe(livereload()),
 ));
 
 gulp.task('less', () => {
@@ -99,7 +99,7 @@ gulp.task('js', gulp.parallel(
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(`${dstAssetsDir}/js`))
-		.pipe(livereload())
+		.pipe(livereload()),
 ));
 
 gulp.task('js:prod', gulp.parallel(
@@ -116,7 +116,7 @@ gulp.task('js:prod', gulp.parallel(
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(`${dstAssetsDir}/js`))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`)),
 ));
 
 gulp.task('build', gulp.series('clean', 'copy', 'less:prod', 'js:prod'));
