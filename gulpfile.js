@@ -146,6 +146,7 @@ gulp.task('watch', () => {
 	livereload.listen();
 
 	gulp.watch([
+		`${srcAssetsDir}/**/*.!(html|js|less)`,
 		`${srcPublicDir}/**/*.!(html|js|less)`,
 	], gulp.series('copy'));
 
