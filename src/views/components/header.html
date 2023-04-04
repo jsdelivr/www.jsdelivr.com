@@ -2,7 +2,7 @@
 	<nav class="navbar navbar-default {{!actualPath || withFullWhiteLogoRoutes.includes(actualPath) ? 'navbar-filled' : ''}}">
 		<div class="container-fluid container-mw">
 			<div class="navbar-header">
-				<span class="main-logo" on-click="@this.handleLogoClick()">
+				<a class="main-logo" href="{{actualPath && actualPath.startsWith('/globalping') ? '/globalping' : '/'}}" on-click="@this.fire('main-logo-click')">
 					<!--
 						Looking for the logo?
 						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
@@ -17,11 +17,14 @@
 						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
 					{{elseif actualPath && actualPath.startsWith('/globalping')}}
 						<img width="129" height="26" src="{{@shared.assetsHost}}/img/globalping/globalping.svg" title="Globalping">
-						<span class="main-logo_text globalping">by jsDelivr</span>
 					{{elseif actualPath}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg" title="jsDelivr">
 					{{/if}}
-				</span>
+				</a>
+
+				{{#if actualPath && actualPath.startsWith('/globalping')}}
+					<a class="main-logo_text globalping" href="/">by jsDelivr</a>
+				{{/if}}
 
 				{{#if actualPath && actualPath.includes('/package/')}}
 					{{yield}}
@@ -128,10 +131,6 @@
 			} else {
 				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
 			}
-		},
-		handleLogoClick () {
-			// TODO: Globalping -> when on globalping pages where should it lead?
-			app.router.dispatch('/', { noHistory: true, qs: { query: '' }, hash: {} });
 		},
 	};
 </script>
