@@ -8,28 +8,8 @@
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
-	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
-		<script>
-			function onDocumentReady (fn) {
-				if (document.readyState !== 'loading') {
-					fn();
-				} else {
-					document.addEventListener('DOMContentLoaded', fn);
-				}
-			}
-			/* eslint-disable */
-			function initMap () {
-				onDocumentReady(function () {
-					app.loaded = true;
-
-					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
-						app.router.route.view.initMap();
-					}
-				});
-			}
-		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
-	{{/if}}
+	<script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+	<link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
 
 	<c-notification></c-notification>
 
@@ -80,7 +60,7 @@
 				<span></span>
 			</div>
 
-			<div class="gp_map-block_map"></div>
+			<div id='gp-map' class="gp_map-block_map"></div>
 
 			<div class="gp_map-block_demo-tools">
 				<div class="gp_map-block_demo-tools_settings">
@@ -868,7 +848,6 @@
 	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
 	const validateIP = require('../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
-	const styles = require('../../assets/js/map/styles.json');
 	const DEFAULT_PING_OPTS = {
 		additionalOptsTotal: 1,
 	};
@@ -923,7 +902,7 @@
 			},
 		],
 	};
-	let map;
+	const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoicm9iemV0OTAiLCJhIjoiY2syeWo4aWZtMDhwbzNkbnoyZXdzZnpwOSJ9.L837CYxJk5HRNyZ0pekEYw';
 
 	component.exports = {
 		decorators: {
@@ -964,6 +943,11 @@
 				defaultLimit: DEFAULT_LIMIT,
 			};
 		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.setupGpMap();
+			}
+		},
 		oninit () {
 			if (!Ractive.isServer) {
 				http.fetchGlobalpingProbes().then((response) => {
@@ -999,13 +983,6 @@
 					this.set('testResults', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
-			}
-		},
-		onrender () {
-			this.set('@shared.googleMapsLoaded', true);
-
-			if (app.loaded) {
-				this.initMap();
 			}
 		},
 		proceedToTest () {
@@ -1267,24 +1244,25 @@
 
 			return inputErrors;
 		},
-		initMap () {
-			let mq = window.matchMedia('(min-width: 768px)');
-			let CENTER = { lat: 48, lng: 16 };
-			map = new google.maps.Map(this.find('.gp_map-block_map'), {
-				styles,
-				zoom: 3.74,
-				center: CENTER,
-				mapTypeId: 'roadmap',
-				draggableCursor: 'default',
-				mapTypeControl: false,
-				streetViewControl: false,
-				fullscreenControl: false,
+		setupGpMap () {
+			// eslint-disable-next-line no-undef
+			mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+			// eslint-disable-next-line no-undef
+			let map = new mapboxgl.Map({
+				container: 'gp-map',
+				style: 'mapbox://styles/mapbox/light-v10',
+				center: [ 0, 0 ],
+				zoom: -1,
 			});
 
-			if (mq.matches) {
-				CENTER = { lat: 30, lng: 18 };
-				map.setZoom(2.14);
-			}
+			map.addControl(
+			// eslint-disable-next-line no-undef
+				new mapboxgl.NavigationControl({
+					showCompass: false,
+				}),
+				'bottom-right',
+			);
 		},
 	};
 </script>
