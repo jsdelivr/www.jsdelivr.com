@@ -1193,7 +1193,7 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpProbeTiming (testType, probeData, units) {
+	calculateGpProbeTiming (testType, probeData, units = '') {
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
