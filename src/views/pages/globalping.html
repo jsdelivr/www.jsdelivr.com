@@ -988,11 +988,13 @@
 					if (!testResults) { return; }
 
 					let mapInstance = this.get('mapInstance');
+					let testType = this.get('mainOptions.type');
 					// collect all probes timings to create a scale
 					let allMapTimings = [];
 					let markersData = testResults.results.map((res) => {
-						// TODO: timing should be calc differently for different types of test
-						allMapTimings.push(res.result.stats.avg);
+						let avrgTiming = this.calculateGpProbeTiming(testType, res);
+
+						allMapTimings.push(avrgTiming);
 
 						return {
 							lat: res.probe.latitude,
@@ -1000,8 +1002,7 @@
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
-							// TODO: timing should be calc differently for different types of test
-							timing: res.result.stats.avg,
+							timing: avrgTiming,
 						};
 					});
 
@@ -1292,6 +1293,36 @@
 			);
 
 			this.set('mapInstance', map);
+		},
+		calculateGpProbeTiming (testType, probeData) {
+			if (testType.toLowerCase() === 'ping') {
+				return probeData.result.stats.avg;
+			} else if (testType.toLowerCase() === 'traceroute') {
+				let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
+
+				if (timings && timings.length) {
+					let timingsCalc = timings.reduce((res, timing) => {
+						if (typeof timing.rtt === 'number') {
+							return {
+								sum: res.sum + Number(timing.rtt),
+								cnt: res.cnt + 1,
+							};
+						}
+
+						return res;
+					}, { sum: 0, cnt: 0 });
+
+					return timingsCalc.cnt ? (timingsCalc.sum / timingsCalc.cnt).toFixed(3) : 'time out';
+				}
+
+				return 'time out';
+			} else if (testType.toLowerCase() === 'dns') {
+				return probeData.result.stats.avg;
+			} else if (testType.toLowerCase() === 'mtr') {
+				return probeData.result.stats.avg;
+			} else if (testType.toLowerCase() === 'http') {
+				return probeData.result.stats.avg;
+			}
 		},
 	};
 </script>
