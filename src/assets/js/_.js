@@ -1193,11 +1193,12 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpProbeTiming (testType, probeData, units = '', dnsTraceEnabled) {
+	calculateGpProbeTiming (testType, probeData,  dnsTraceEnabled = false, units = 'ms') {
+		let probeTiming;
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
-			return typeof probeData.result.stats.avg === 'number' ? probeData.result.stats.avg + units : NO_PROBE_TIMING_VALUE;
+			probeTiming = probeData.result.stats.avg;
 		} else if (lowCaseTestName === 'traceroute') {
 			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
 
@@ -1213,24 +1214,55 @@ module.exports = {
 					return res;
 				}, { sum: 0, cnt: 0 });
 
-				return timingsCalc.cnt ? `${(timingsCalc.sum / timingsCalc.cnt).toFixed(3)}${units} (average)` : NO_PROBE_TIMING_VALUE;
+				if (timingsCalc.cnt) {
+					probeTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
+				}
 			}
-
-			return NO_PROBE_TIMING_VALUE;
 		} else if (lowCaseTestName === 'dns') {
 			if (dnsTraceEnabled) {
 				let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
 
-				return typeof lastHop.timings.total === 'number' ? `${lastHop.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
+				if (lastHop) {
+					probeTiming = lastHop.timings.total;
+				}
+			} else {
+				probeTiming = probeData.result.timings.total;
 			}
-
-			return typeof probeData.result.timings.total === 'number' ? `${probeData.result.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
 		} else if (lowCaseTestName === 'mtr') {
 			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
 
-			return typeof lastHop.stats.avg === 'number' ? `${lastHop.stats.avg}${units} (average)` : NO_PROBE_TIMING_VALUE;
+			if (lastHop) {
+				probeTiming = lastHop.stats.avg;
+			}
 		} else if (lowCaseTestName === 'http') {
-			return typeof probeData.result.timings.total === 'number' ? `${probeData.result.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
+			probeTiming = probeData.result.timings.total;
+		}
+
+		if (typeof probeTiming === 'number') {
+			let note = '';
+
+			switch (lowCaseTestName) {
+				case 'traceroute':
+				case 'mtr':
+					note = '(average)';
+					break;
+				case 'dns':
+				case 'http':
+					note = '(total)';
+					break;
+			}
+
+			return {
+				value: probeTiming,
+				units,
+				note,
+				fullText: note ? `${probeTiming}${units} ${note}` : `${probeTiming}${units}`,
+			};
+		} else {
+			return {
+				value: NO_PROBE_TIMING_VALUE,
+				fullText: NO_PROBE_TIMING_VALUE,
+			};
 		}
 	},
 };
