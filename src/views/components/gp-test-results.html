@@ -23,7 +23,7 @@
 						<img width="20"
 							height="20"
 							src="{{@shared.assetsHost}}/img/globalping/check-circle-icon.svg">
-							Time: {{this.result.stats.avg}}ms
+							Time: {{_.calculateGpProbeTiming(testType, this, 'ms')}}
 					</span>
 
 					<img on-click="@this.hideShowTestResult(idx)"
@@ -52,6 +52,7 @@
 </div>
 
 <script>
+	const _ = require('../../assets/js/_');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 
 	component.exports = {
@@ -60,6 +61,7 @@
 		},
 		data () {
 			return {
+				_,
 				hiddenTestResults: [],
 			};
 		},

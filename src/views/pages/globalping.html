@@ -421,7 +421,7 @@
 						</p>
 					</div>
 				{{elseif testResults}}
-					<c-gp-test-results testResults="{{testResults}}"></c-gp-test-results>
+					<c-gp-test-results testType="{{mainOptions.type}}" testResults="{{testResults}}"></c-gp-test-results>
 				{{else}}
 					<div class="gp_map-block_demo-tools_info">
 						<img width="56"
@@ -992,7 +992,7 @@
 					// collect all probes timings to create a scale
 					let allMapTimings = [];
 					let markersData = testResults.results.map((res) => {
-						let avrgTiming = this.calculateGpProbeTiming(testType, res);
+						let avrgTiming = _.calculateGpProbeTiming(testType, res);
 
 						allMapTimings.push(avrgTiming);
 
@@ -1293,36 +1293,6 @@
 			);
 
 			this.set('mapInstance', map);
-		},
-		calculateGpProbeTiming (testType, probeData) {
-			if (testType.toLowerCase() === 'ping') {
-				return probeData.result.stats.avg;
-			} else if (testType.toLowerCase() === 'traceroute') {
-				let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
-
-				if (timings && timings.length) {
-					let timingsCalc = timings.reduce((res, timing) => {
-						if (typeof timing.rtt === 'number') {
-							return {
-								sum: res.sum + Number(timing.rtt),
-								cnt: res.cnt + 1,
-							};
-						}
-
-						return res;
-					}, { sum: 0, cnt: 0 });
-
-					return timingsCalc.cnt ? (timingsCalc.sum / timingsCalc.cnt).toFixed(3) : 'time out';
-				}
-
-				return 'time out';
-			} else if (testType.toLowerCase() === 'dns') {
-				return probeData.result.stats.avg;
-			} else if (testType.toLowerCase() === 'mtr') {
-				return probeData.result.stats.avg;
-			} else if (testType.toLowerCase() === 'http') {
-				return probeData.result.stats.avg;
-			}
 		},
 	};
 </script>
