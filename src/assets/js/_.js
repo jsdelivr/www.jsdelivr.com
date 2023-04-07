@@ -1220,7 +1220,9 @@ module.exports = {
 		} else if (lowCaseTestName === 'dns') {
 			return probeData.result.stats.avg + units;
 		} else if (lowCaseTestName === 'mtr') {
-			return probeData.result.stats.avg + units;
+			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+
+			return typeof lastHop.stats.avg === 'number' ? `${lastHop.stats.avg}${units} (average)` : NO_PROBE_TIMING_VALUE;
 		} else if (lowCaseTestName === 'http') {
 			return typeof probeData.result.timings.total === 'number' ? `${probeData.result.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
 		}
