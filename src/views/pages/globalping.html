@@ -60,7 +60,17 @@
 				<span></span>
 			</div>
 
-			<div id='gp-map' class="gp_map-block_map"></div>
+			<div class="gp_map-block_map-wrapper">
+				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
+
+				{{#if probesMinMaxTimings}}
+					<div class="gp_map-block_map-wrapper_timings-scale">
+						<span class="value">{{probesMinMaxTimings.max}}ms</span>
+						<div class="gradient"></div>
+						<span class="value">{{probesMinMaxTimings.min}}ms</span>
+					</div>
+				{{/if}}
+			</div>
 
 			<div class="gp_map-block_demo-tools">
 				<div class="gp_map-block_demo-tools_settings">
@@ -941,6 +951,7 @@
 				notAppliedOpts: {},
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
+				probesMinMaxTimings: null,
 			};
 		},
 		onrender () {
@@ -981,6 +992,7 @@
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
+					this.set('probesMinMaxTimings', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
 
@@ -991,12 +1003,12 @@
 					let mapInstance = this.get('mapInstance');
 					let testType = this.get('mainOptions.type');
 					// collect all probes timings to create a scale
-					let allMapTimings = [];
+					let allProbesTimings = [];
 					let markersData = testResults.results.map((res) => {
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
 						if (typeof probeTiming.value === 'number') {
-							allMapTimings.push(probeTiming.value);
+							allProbesTimings.push(probeTiming.value);
 						}
 
 						return {
@@ -1008,6 +1020,13 @@
 							timing: `${probeTiming.value}${probeTiming.units}`,
 						};
 					});
+
+					if (allProbesTimings.length) {
+						this.set('probesMinMaxTimings', {
+							max: Math.max(...allProbesTimings),
+							min: Math.min(...allProbesTimings),
+						});
+					}
 
 					markersData.forEach((marker) => {
 						// eslint-disable-next-line no-undef
