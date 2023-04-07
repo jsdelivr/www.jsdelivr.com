@@ -1193,7 +1193,7 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpProbeTiming (testType, probeData,  dnsTraceEnabled = false, units = 'ms') {
+	calculateGpProbeTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
 		let probeTiming;
 		let lowCaseTestName = testType.toLowerCase();
 
@@ -1258,11 +1258,11 @@ module.exports = {
 				note,
 				fullText: note ? `${probeTiming}${units} ${note}` : `${probeTiming}${units}`,
 			};
-		} else {
-			return {
-				value: NO_PROBE_TIMING_VALUE,
-				fullText: NO_PROBE_TIMING_VALUE,
-			};
 		}
+
+		return {
+			value: NO_PROBE_TIMING_VALUE,
+			fullText: NO_PROBE_TIMING_VALUE,
+		};
 	},
 };
