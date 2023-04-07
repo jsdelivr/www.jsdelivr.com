@@ -987,14 +987,17 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
+					let dnsOpts = this.get('dnsOpts');
 					let mapInstance = this.get('mapInstance');
 					let testType = this.get('mainOptions.type');
 					// collect all probes timings to create a scale
 					let allMapTimings = [];
 					let markersData = testResults.results.map((res) => {
-						let avrgTiming = _.calculateGpProbeTiming(testType, res);
+						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
-						allMapTimings.push(avrgTiming);
+						if (typeof probeTiming.value === 'number') {
+							allMapTimings.push(probeTiming.value);
+						}
 
 						return {
 							lat: res.probe.latitude,
@@ -1002,7 +1005,7 @@
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
-							timing: avrgTiming,
+							timing: `${probeTiming.value}${probeTiming.units}`,
 						};
 					});
 
