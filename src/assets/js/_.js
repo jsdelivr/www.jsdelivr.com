@@ -1222,7 +1222,7 @@ module.exports = {
 		} else if (lowCaseTestName === 'mtr') {
 			return probeData.result.stats.avg + units;
 		} else if (lowCaseTestName === 'http') {
-			return probeData.result.stats.avg + units;
+			return typeof probeData.result.timings.total === 'number' ? `${probeData.result.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
 		}
 	},
 };
