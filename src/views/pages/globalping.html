@@ -421,7 +421,7 @@
 						</p>
 					</div>
 				{{elseif testResults}}
-					<c-gp-test-results testType="{{mainOptions.type}}" testResults="{{testResults}}" dnsTraceEnabled="{{dnsOpts.trace}}"></c-gp-test-results>
+					<c-gp-test-results testType="{{mainOptions.type}}" testResults="{{testResults}}" dnsTraceEnabled="{{dnsTraceEnabled}}"></c-gp-test-results>
 				{{else}}
 					<div class="gp_map-block_demo-tools_info">
 						<img width="56"
@@ -1061,6 +1061,7 @@
 				clearInterval(testReqInterval);
 			}
 
+			// validate fields
 			let inputErrors = this.validateDataForRequest(target, location, limit, measurementOpts);
 
 			if (Object.keys(inputErrors).length) {
@@ -1071,6 +1072,9 @@
 
 			this.set('testResults', null);
 			this.set('testInProgress', true);
+
+			// set if dnsTraceEnabled
+			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				testReqInterval = setInterval(() => {
