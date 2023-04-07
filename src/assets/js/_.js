@@ -14,6 +14,7 @@ const screenType = {
 	lgDesktop: 1200,
 	xlDesktop: 1400,
 };
+const NO_PROBE_TIMING_VALUE = 'time out';
 
 module.exports = {
 	screenType,
@@ -1190,5 +1191,38 @@ module.exports = {
 		}
 
 		return `${text.substr(0, length - 3)}...`;
+	},
+
+	calculateGpProbeTiming (testType, probeData, units) {
+		let lowCaseTestName = testType.toLowerCase();
+
+		if (lowCaseTestName === 'ping') {
+			return typeof probeData.result.stats.avg === 'number' ? probeData.result.stats.avg + units : NO_PROBE_TIMING_VALUE;
+		} else if (lowCaseTestName === 'traceroute') {
+			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
+
+			if (timings && timings.length) {
+				let timingsCalc = timings.reduce((res, timing) => {
+					if (typeof timing.rtt === 'number') {
+						return {
+							sum: res.sum + Number(timing.rtt),
+							cnt: res.cnt + 1,
+						};
+					}
+
+					return res;
+				}, { sum: 0, cnt: 0 });
+
+				return timingsCalc.cnt ? (timingsCalc.sum / timingsCalc.cnt).toFixed(3) + units : NO_PROBE_TIMING_VALUE;
+			}
+
+			return NO_PROBE_TIMING_VALUE;
+		} else if (lowCaseTestName === 'dns') {
+			return probeData.result.stats.avg + units;
+		} else if (lowCaseTestName === 'mtr') {
+			return probeData.result.stats.avg + units;
+		} else if (lowCaseTestName === 'http') {
+			return probeData.result.stats.avg + units;
+		}
 	},
 };
