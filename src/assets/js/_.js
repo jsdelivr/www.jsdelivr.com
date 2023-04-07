@@ -1193,7 +1193,7 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpProbeTiming (testType, probeData, units = '') {
+	calculateGpProbeTiming (testType, probeData, units = '', dnsTraceEnabled) {
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
@@ -1213,12 +1213,18 @@ module.exports = {
 					return res;
 				}, { sum: 0, cnt: 0 });
 
-				return timingsCalc.cnt ? (timingsCalc.sum / timingsCalc.cnt).toFixed(3) + units : NO_PROBE_TIMING_VALUE;
+				return timingsCalc.cnt ? `${(timingsCalc.sum / timingsCalc.cnt).toFixed(3)}${units} (average)` : NO_PROBE_TIMING_VALUE;
 			}
 
 			return NO_PROBE_TIMING_VALUE;
 		} else if (lowCaseTestName === 'dns') {
-			return probeData.result.stats.avg + units;
+			if (dnsTraceEnabled) {
+				let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+
+				return typeof lastHop.timings.total === 'number' ? `${lastHop.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
+			}
+
+			return typeof probeData.result.timings.total === 'number' ? `${probeData.result.timings.total}${units} (total)` : NO_PROBE_TIMING_VALUE;
 		} else if (lowCaseTestName === 'mtr') {
 			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
 
