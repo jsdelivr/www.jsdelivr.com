@@ -983,6 +983,33 @@
 					this.set('testResults', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
+
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					let mapInstance = this.get('mapInstance');
+					// collect all probes timings to create a scale
+					let allMapTimings = [];
+					let markersData = testResults.results.map((res) => {
+						// TODO: timing should be calc differently for different types of test
+						allMapTimings.push(res.result.stats.avg);
+
+						return {
+							lat: res.probe.latitude,
+							lng: res.probe.longitude,
+							network: res.probe.network,
+							city: res.probe.city,
+							country: res.probe.country,
+							// TODO: timing should be calc differently for different types of test
+							timing: res.result.stats.avg,
+						};
+					});
+
+					markersData.forEach((marker) => {
+						// eslint-disable-next-line no-undef
+						new mapboxgl.Marker().setLngLat([ marker.lng, marker.lat ]).addTo(mapInstance);
+					});
+				}, { init: false });
 			}
 		},
 		proceedToTest () {
@@ -1263,6 +1290,8 @@
 				}),
 				'bottom-right',
 			);
+
+			this.set('mapInstance', map);
 		},
 	};
 </script>
