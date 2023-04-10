@@ -1198,7 +1198,7 @@ module.exports = {
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
-			probeTiming = probeData.result.stats.avg;
+			probeTiming = probeData.result?.stats?.avg;
 		} else if (lowCaseTestName === 'traceroute') {
 			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
 
