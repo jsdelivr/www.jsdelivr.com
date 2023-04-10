@@ -1002,11 +1002,23 @@
 					if (!testResults) { return; }
 
 					let dnsOpts = this.get('dnsOpts');
-					let mapInstance = this.get('mapInstance');
 					let testType = this.get('mainOptions.type');
 					// collect all probes timings to create a scale
 					let allProbesTimings = [];
-					let markersData = testResults.results.map((res) => {
+
+					// create Markers geojson as source for the Map
+					let markersSource = {
+						type: 'geojson',
+						cluster: true,
+						clusterMaxZoom: 14,
+						clusterRadius: 50,
+						data: {
+							type: 'FeatureCollection',
+							features: [],
+						},
+					};
+
+					markersSource.data.features = testResults.results.map((res) => {
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
 						if (typeof probeTiming.value === 'number') {
@@ -1014,12 +1026,20 @@
 						}
 
 						return {
-							lat: res.probe.latitude,
-							lng: res.probe.longitude,
-							network: res.probe.network,
-							city: res.probe.city,
-							country: res.probe.country,
-							timing: `${probeTiming.value}${probeTiming.units}`,
+							type: 'Feature',
+							properties: {
+								network: res.probe.network,
+								city: res.probe.city,
+								country: res.probe.country,
+								timing: `${probeTiming.value}${probeTiming.units}`,
+							},
+							geometry: {
+								type: 'Point',
+								coordinates: [
+									res.probe.longitude,
+									res.probe.latitude,
+								],
+							},
 						};
 					});
 
@@ -1030,9 +1050,107 @@
 						});
 					}
 
-					markersData.forEach((marker) => {
+
+					this.set('markersSource', markersSource);
+				}, { init: false });
+
+				this.observe('markersSource', (markersSource) => {
+					let mapInstance = this.get('mapInstance');
+
+					mapInstance.addSource('probesList', markersSource);
+
+					mapInstance.addLayer({
+						id: 'clusters',
+						type: 'circle',
+						source: 'probesList',
+						filter: [ 'has', 'point_count' ],
+						paint: {
+							'circle-color': [
+								'step',
+								[ 'get', 'point_count' ],
+								'#51bbd6',
+								100,
+								'#f1f075',
+								750,
+								'#f28cb1',
+							],
+							'circle-radius': [
+								'step',
+								[ 'get', 'point_count' ],
+								20,
+								100,
+								30,
+								750,
+								40,
+							],
+						},
+					});
+
+					mapInstance.addLayer({
+						id: 'cluster-count',
+						type: 'symbol',
+						source: 'probesList',
+						filter: [ 'has', 'point_count' ],
+						layout: {
+							'text-field': [ 'get', 'point_count_abbreviated' ],
+							'text-font': [ 'DIN Offc Pro Medium', 'Arial Unicode MS Bold' ],
+							'text-size': 12,
+						},
+					});
+
+					mapInstance.addLayer({
+						id: 'unclustered-point',
+						type: 'circle',
+						source: 'probesList',
+						filter: [ '!', [ 'has', 'point_count' ] ],
+						paint: {
+							'circle-color': '#11b4da',
+							'circle-radius': 4,
+							'circle-stroke-width': 1,
+							'circle-stroke-color': '#fff',
+						},
+					});
+
+					mapInstance.on('click', 'clusters', (e) => {
+						let features = mapInstance.queryRenderedFeatures(e.point, {
+							layers: [ 'clusters' ],
+						});
+						let clusterId = features[0].properties.cluster_id;
+
+						mapInstance.getSource('probesList').getClusterExpansionZoom(
+							clusterId,
+							(err, zoom) => {
+								if (err) { return; }
+
+								mapInstance.easeTo({
+									center: features[0].geometry.coordinates,
+									zoom,
+								});
+							},
+						);
+					});
+
+					mapInstance.on('click', 'unclustered-point', (e) => {
+						let coordinates = e.features[0].geometry.coordinates.slice();
+						let { network, city, country, timing } = e.features[0].properties;
+
+						while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+							coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+						}
+
 						// eslint-disable-next-line no-undef
-						new mapboxgl.Marker().setLngLat([ marker.lng, marker.lat ]).addTo(mapInstance);
+						new mapboxgl.Popup()
+							.setLngLat(coordinates)
+							.setHTML(`<div>${timing}</div><div>${network} (${city}, ${country})</div>`)
+							.addTo(mapInstance);
+					});
+
+					mapInstance.on('mouseenter', 'clusters', () => {
+						mapInstance.getCanvas().style.cursor = 'pointer';
+					});
+
+					mapInstance.on('mouseleave', 'clusters', () => {
+						mapInstance.getCanvas().style.cursor = '';
 					});
 				}, { init: false });
 			}
