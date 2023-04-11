@@ -1055,6 +1055,8 @@
 				}, { init: false });
 
 				this.observe('markersSource', (markersSource) => {
+					if (!markersSource) { return; }
+
 					let mapInstance = this.get('mapInstance');
 
 					mapInstance.addSource('probesList', markersSource);
@@ -1093,8 +1095,10 @@
 						filter: [ 'has', 'point_count' ],
 						layout: {
 							'text-field': [ 'get', 'point_count_abbreviated' ],
-							'text-font': [ 'DIN Offc Pro Medium', 'Arial Unicode MS Bold' ],
-							'text-size': 12,
+							// 'text-font': [ 'Lexend' ], // TODO: no such font in the mapbox fonts list, how could we add em?
+							'text-size': 16,
+							// 'text-color': '#ffffff',// TODO: for some reason it cause an error
+							'text-line-height': 24,
 						},
 					});
 
@@ -1212,6 +1216,20 @@
 			}
 
 			this.set('testResults', null);
+
+			// if we have a source then we have already made a request and must clear the Map data before new request
+			if (this.get('markersSource')) {
+				this.set('markersSource', null);
+
+				let mapInstance = this.get('mapInstance');
+
+				mapInstance.removeLayer('clusters');
+				mapInstance.removeLayer('cluster-count');
+				mapInstance.removeLayer('unclustered-point');
+				mapInstance.removeSource('probesList');
+			}
+
+			this.set('probesMinMaxTimings', null);
 			this.set('testInProgress', true);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
