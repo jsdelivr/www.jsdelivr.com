@@ -1022,7 +1022,7 @@
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
 						if (typeof probeTiming.value === 'number') {
-							allProbesTimings.push(probeTiming.value);
+							allProbesTimings.push(Math.round(probeTiming.value));
 						}
 
 						return {
@@ -1031,7 +1031,7 @@
 								network: res.probe.network,
 								city: res.probe.city,
 								country: res.probe.country,
-								timing: `${probeTiming.value}${probeTiming.units}`,
+								timing: `${Math.round(probeTiming.value)}${probeTiming.units}`,
 							},
 							geometry: {
 								type: 'Point',
@@ -1139,9 +1139,11 @@
 						}
 
 						// eslint-disable-next-line no-undef
-						new mapboxgl.Popup()
+						new mapboxgl.Popup({ className: 'gp_mapbox_popup', closeButton: false, maxWidth: 'none', offset: 10 })
 							.setLngLat(coordinates)
-							.setHTML(`<div>${timing}</div><div>${network} (${city}, ${country})</div>`)
+							.setHTML(`<div class='gp_mapbox_popup_timing'>${timing}</div>`
+								+ `<div class='gp_mapbox_popup_info'>${network} (${city}, ${country})</div>`
+								+ `<div class='gp_mapbox_popup_see-results'>See results</div>`)
 							.addTo(mapInstance);
 					});
 
