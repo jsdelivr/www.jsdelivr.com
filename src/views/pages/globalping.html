@@ -1030,7 +1030,7 @@
 					// collect all probes timings to create a scale
 					let allProbesTimings = [];
 
-					let markers = testResults.results.map((res) => {
+					let markersData = testResults.results.map((res) => {
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
 						if (typeof probeTiming.value === 'number') {
@@ -1054,16 +1054,16 @@
 						});
 					}
 
-					this.set('markers', markers);
+					this.set('markersData', markersData);
 				}, { init: false });
 
 
-				this.observe('markers', (markers) => {
-					markers.forEach((marker) => {
+				this.observe('markersData', (markersData) => {
+					markersData.forEach(({ lat, lng, network, city, country, timing }) => {
 						new google.maps.Marker({
-							position: { lat: marker.lat, lng: marker.lng },
+							position: { lat, lng },
 							map,
-							title: 'Test title',
+							title: `${network} (${city}, ${country}) - ${timing}`,
 						});
 					});
 				}, { init: false });
