@@ -8,9 +8,6 @@
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
-	<script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
-	<link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
-
 	<c-notification></c-notification>
 
 	<c-header additionalClasses="header-with-globalping-bg"></c-header>
@@ -914,7 +911,6 @@
 			},
 		],
 	};
-	const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiamltYWVrIiwiYSI6ImNrZzZ2b29weDAxZXYycW40YmRvZTY3aWkifQ.osESkOA-XJ11sphOFzJiHA';
 
 	component.exports = {
 		decorators: {
@@ -958,7 +954,7 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				this.setupGpMap();
+				this.setupMap();
 			}
 		},
 		oninit () {
@@ -1006,19 +1002,7 @@
 					// collect all probes timings to create a scale
 					let allProbesTimings = [];
 
-					// create Markers geojson as source for the Map
-					let markersSource = {
-						type: 'geojson',
-						cluster: true,
-						clusterMaxZoom: 14,
-						clusterRadius: 50,
-						data: {
-							type: 'FeatureCollection',
-							features: [],
-						},
-					};
-
-					markersSource.data.features = testResults.results.map((res) => {
+					let markers = testResults.results.map((res) => {
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
 						if (typeof probeTiming.value === 'number') {
@@ -1026,20 +1010,12 @@
 						}
 
 						return {
-							type: 'Feature',
-							properties: {
-								network: res.probe.network,
-								city: res.probe.city,
-								country: res.probe.country,
-								timing: `${Math.round(probeTiming.value)}${probeTiming.units}`,
-							},
-							geometry: {
-								type: 'Point',
-								coordinates: [
-									res.probe.longitude,
-									res.probe.latitude,
-								],
-							},
+							network: res.probe.network,
+							city: res.probe.city,
+							country: res.probe.country,
+							timing: `${Math.round(probeTiming.value)}${probeTiming.units}`,
+							long: res.probe.longitude,
+							lat: res.probe.latitude,
 						};
 					});
 
@@ -1050,108 +1026,7 @@
 						});
 					}
 
-
-					this.set('markersSource', markersSource);
-				}, { init: false });
-
-				this.observe('markersSource', (markersSource) => {
-					if (!markersSource) { return; }
-
-					let mapInstance = this.get('mapInstance');
-
-					mapInstance.addSource('probesList', markersSource);
-
-					mapInstance.addLayer({
-						id: 'clusters',
-						type: 'circle',
-						source: 'probesList',
-						filter: [ 'has', 'point_count' ],
-						paint: {
-							'circle-color': [
-								'step',
-								[ 'get', 'point_count' ],
-								'#51bbd6',
-								100,
-								'#f1f075',
-								750,
-								'#f28cb1',
-							],
-							'circle-radius': 48,
-						},
-					});
-
-					mapInstance.addLayer({
-						id: 'cluster-count',
-						type: 'symbol',
-						source: 'probesList',
-						filter: [ 'has', 'point_count' ],
-						paint: {
-							'text-color': '#ffffff',
-						},
-						layout: {
-							'text-field': [ 'get', 'point_count_abbreviated' ],
-							'text-size': 16,
-							'text-line-height': 24,
-							// 'text-font': [ 'Lexend' ], // TODO: no such font in the mapbox fonts list, how could we add em?
-						},
-					});
-
-					mapInstance.addLayer({
-						id: 'unclustered-point',
-						type: 'circle',
-						source: 'probesList',
-						filter: [ '!', [ 'has', 'point_count' ] ],
-						paint: {
-							'circle-color': '#17d4a7',
-							'circle-radius': 8,
-							'circle-stroke-width': 2,
-							'circle-stroke-color': '#fff',
-						},
-					});
-
-					mapInstance.on('click', 'clusters', (e) => {
-						let features = mapInstance.queryRenderedFeatures(e.point, {
-							layers: [ 'clusters' ],
-						});
-						let clusterId = features[0].properties.cluster_id;
-
-						mapInstance.getSource('probesList').getClusterExpansionZoom(
-							clusterId,
-							(err, zoom) => {
-								if (err) { return; }
-
-								mapInstance.easeTo({
-									center: features[0].geometry.coordinates,
-									zoom,
-								});
-							},
-						);
-					});
-
-					mapInstance.on('click', 'unclustered-point', (e) => {
-						let coordinates = e.features[0].geometry.coordinates.slice();
-						let { network, city, country, timing } = e.features[0].properties;
-
-						while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-							coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-						}
-
-						// eslint-disable-next-line no-undef
-						new mapboxgl.Popup({ className: 'gp_mapbox_popup', closeButton: false, maxWidth: 'none', offset: 10 })
-							.setLngLat(coordinates)
-							.setHTML(`<div class='gp_mapbox_popup_timing'>${timing}</div>`
-								+ `<div class='gp_mapbox_popup_info'>${network} (${city}, ${country})</div>`
-								+ `<div class='gp_mapbox_popup_see-results'>See results</div>`)
-							.addTo(mapInstance);
-					});
-
-					mapInstance.on('mouseenter', 'clusters', () => {
-						mapInstance.getCanvas().style.cursor = 'pointer';
-					});
-
-					mapInstance.on('mouseleave', 'clusters', () => {
-						mapInstance.getCanvas().style.cursor = '';
-					});
+					this.set('markers', markers);
 				}, { init: false });
 			}
 		},
@@ -1210,19 +1085,6 @@
 			}
 
 			this.set('testResults', null);
-
-			// if we have a source then we have already made a request and must clear the Map data before new request
-			if (this.get('markersSource')) {
-				this.set('markersSource', null);
-
-				let mapInstance = this.get('mapInstance');
-
-				mapInstance.removeLayer('clusters');
-				mapInstance.removeLayer('cluster-count');
-				mapInstance.removeLayer('unclustered-point');
-				mapInstance.removeSource('probesList');
-			}
-
 			this.set('probesMinMaxTimings', null);
 			this.set('testInProgress', true);
 
@@ -1432,27 +1294,8 @@
 
 			return inputErrors;
 		},
-		setupGpMap () {
-			// eslint-disable-next-line no-undef
-			let map = new mapboxgl.Map({
-				accessToken: MAPBOX_ACCESS_TOKEN,
-				container: 'gp-map',
-				style: 'mapbox://styles/jimaek/clg7spzm7009l01mmsgaifc92',
-				center: [ 0, 0 ],
-				zoom: -1,
-				cooperativeGestures: true,
-				attributionControl: false,
-			});
+		setupMap () {
 
-			map.addControl(
-			// eslint-disable-next-line no-undef
-				new mapboxgl.NavigationControl({
-					showCompass: false,
-				}),
-				'bottom-right',
-			);
-
-			this.set('mapInstance', map);
 		},
 	};
 </script>
