@@ -8,6 +8,29 @@
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
+		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			}
+			/* eslint-disable */
+			function initMap () {
+				onDocumentReady(function () {
+					app.loaded = true;
+
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
+	{{/if}}
+
 	<c-notification></c-notification>
 
 	<c-header additionalClasses="header-with-globalping-bg"></c-header>
@@ -911,6 +934,7 @@
 			},
 		],
 	};
+	let map;
 
 	component.exports = {
 		decorators: {
@@ -954,7 +978,11 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				this.setupMap();
+				this.set('@shared.googleMapsLoaded', true);
+
+				if (app.loaded) {
+					this.initMap();
+				}
 			}
 		},
 		oninit () {
@@ -1294,8 +1322,24 @@
 
 			return inputErrors;
 		},
-		setupMap () {
+		initMap () {
+			let mq = window.matchMedia('(min-width: 768px)');
+			let CENTER = { lat: 48, lng: 16 };
 
+			map = new google.maps.Map(this.find('#gp-map'), {
+				zoom: 3.74,
+				center: CENTER,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
+			});
+
+			if (mq.matches) {
+				CENTER = { lat: 30, lng: 18 };
+				map.setZoom(2.14);
+			}
 		},
 	};
 </script>
