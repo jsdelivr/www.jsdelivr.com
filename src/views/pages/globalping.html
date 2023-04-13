@@ -1042,8 +1042,8 @@
 							city: res.probe.city,
 							country: res.probe.country,
 							timing: `${Math.round(probeTiming.value)}${probeTiming.units}`,
-							long: res.probe.longitude,
 							lat: res.probe.latitude,
+							lng: res.probe.longitude,
 						};
 					});
 
@@ -1055,6 +1055,17 @@
 					}
 
 					this.set('markers', markers);
+				}, { init: false });
+
+
+				this.observe('markers', (markers) => {
+					markers.forEach((marker) => {
+						new google.maps.Marker({
+							position: { lat: marker.lat, lng: marker.lng },
+							map,
+							title: 'Test title',
+						});
+					});
 				}, { init: false });
 			}
 		},
