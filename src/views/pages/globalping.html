@@ -1394,7 +1394,22 @@
 				infoWindows.push(infoWindow);
 				mapMarkers.push(marker);
 
-				new markerClusterer.MarkerClusterer({ markers: mapMarkers, map });
+				new markerClusterer.MarkerClusterer({
+					markers: mapMarkers,
+					map,
+					renderer: {
+						render: ({ markers, _position: position }) => {
+							return new google.maps.Marker({
+								position: {
+									lat: position.lat(),
+									lng: position.lng(),
+								},
+								icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
+								label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+							});
+						},
+					},
+				});
 			});
 		},
 	};
