@@ -936,6 +936,8 @@
 		],
 	};
 	let map;
+	let infoWindows = [];
+	let mapMarkers = [];
 
 	component.exports = {
 		decorators: {
@@ -1043,7 +1045,7 @@
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
-							timing: `${Math.round(probeTiming.value)}${probeTiming.units}`,
+							timing: typeof probeTiming.value === 'number' ? `${Math.round(probeTiming.value)}${probeTiming.units}` : probeTiming.value,
 							lat: res.probe.latitude,
 							lng: res.probe.longitude,
 						};
@@ -1057,17 +1059,6 @@
 					}
 
 					this.set('markersData', markersData);
-				}, { init: false });
-
-				// create Markers for the map and draw them
-				this.observe('markersData', (markersData) => {
-					markersData.forEach(({ lat, lng, network, city, country, timing }) => {
-						new google.maps.Marker({
-							position: { lat, lng },
-							map,
-							title: `${network} (${city}, ${country}) - ${timing}`,
-						});
-					});
 				}, { init: false });
 			}
 		},
@@ -1127,6 +1118,7 @@
 
 			this.set('testResults', null);
 			this.set('probesMinMaxTimings', null);
+			this.set('markersData', null);
 			this.set('testInProgress', true);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
@@ -1354,6 +1346,53 @@
 				CENTER = { lat: 30, lng: 18 };
 				map.setZoom(2.14);
 			}
+
+			this.observe('markersData', (markersData) => {
+				this.updateMarkers(markersData);
+			}, { init: false });
+		},
+		updateMarkers (markersData) {
+			// clear the Map from Markers and InfoWindows on new request
+			if (markersData === null) {
+				infoWindows.forEach(iw => iw.close());
+				mapMarkers.forEach(mm => mm.setMap(null));
+
+				return;
+			}
+
+			markersData.forEach((markerData) => {
+				// create Popup element
+				let infoWindow = new google.maps.InfoWindow({
+					content: `<div class="gp-map_popup">
+							<div class="gp-map_popup_header">${markerData.timing}</div>
+							<div class="gp-map_popup_descr">${markerData.network} (${markerData.city}, ${markerData.country})</div>
+							<div class="gp-map_popup_see-results">
+								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+								<span>See results</span>
+							</div>
+						</div>`,
+				});
+
+				// create Marker
+				let marker = new google.maps.Marker({
+					map,
+					icon: `${this.get('@shared.assetsHost')}/img/globalping/TODO-temp-map-icon.svg`,
+					position: { lat: markerData.lat, lng: markerData.lng },
+					optimized: false,
+				});
+
+				google.maps.event.addListener(marker, 'click', () => {
+					infoWindows.forEach(iw => iw.close());
+					infoWindow.open(map, marker);
+				});
+
+				google.maps.event.addListener(map, 'click', () => {
+					infoWindow.close();
+				});
+
+				infoWindows.push(infoWindow);
+				mapMarkers.push(marker);
+			});
 		},
 	};
 </script>
