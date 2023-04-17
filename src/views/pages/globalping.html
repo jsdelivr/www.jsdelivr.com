@@ -624,28 +624,41 @@
 			</div>
 
 			<div class="gp_join-network_docker">
-				<span class="gp_join-network_docker_command">
-					{{netDockerCmdText}}
-				</span>
+				<div class="gp_join-network_docker_command {{#if showCommandsBlock}}opened{{/if}}">
+					{{#if showCommandsBlock}}
+						{{#each netDockerCmdTextFull:idx}}
+							<div class="gp_join-network_docker_command_row">
+								<span>{{idx + 1}}</span>
+								<span>{{this.cmd}}</span>
+								{{#if this.comment}}
+									<span>&#92; {{this.comment}}</span>
+								{{/if}}
+							</div>
+						{{/each}}
+					{{else}}
+						{{netDockerCmdText}}
+					{{/if}}
+				</div>
 
-				<button class="gp_join-network_docker_btn gp_btn_green" as-clipboard data-clipboard-text="{{netDockerCmdText}}">
+				<button class="gp_join-network_docker_btn gp_btn_green"
+					as-clipboard data-clipboard-text="{{showCommandsBlock ? netDockerCmdTextFull : netDockerCmdText}}">
 					<img width="20"
 						height="20"
 						src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
 				</button>
+
+				<div class="gp_join-network_docker_open-btn {{#if showCommandsBlock}}active{{/if}}"
+					on-click="@this.toggle('showCommandsBlock')">
+					<img width="9"
+						height="6"
+						src="{{@shared.assetsHost}}/img/globalping/chevron.svg">
+				</div>
 			</div>
 
 			<span class="gp_join-network_descr">
 				Once you connect you will become part of the global community that powers the Globalping Platform.
 				The container will work on both x86 and ARM architectures.
 			</span>
-
-			<a target="_blank"
-				rel="noopener noreferrer"
-				href="https://github.com/jsdelivr/globalping-probe"
-				class="gp_join-network_btn gp_btn_green">
-				Learn more
-			</a>
 		</div>
 
 		<div class="gp_join-community">
@@ -993,6 +1006,29 @@
 			},
 		],
 	};
+	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const DOCKER_CMD_CONTENT_FULL = [
+		{
+			cmd: 'docker run -d',
+			comment: ' # Make sure the container runs on boot',
+		},
+		{
+			cmd: '--lo-driver local',
+			comment: ' # Use the modern logging driver to ensure old logs are deleted',
+		},
+		{
+			cmd: '--network host',
+			comment: ' # Bypass overlay and mesh networking to ensure they dont impact latency tests',
+		},
+		{
+			cmd: '--restart=always',
+			comment: ' # Restart the container in case it crashes',
+		},
+		{
+			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			comment: '',
+		},
+	];
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -1017,7 +1053,8 @@
 				showMap: true,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
-				netDockerCmdText: 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+				netDockerCmdText: DOCKER_CMD_CONTENT,
+				netDockerCmdTextFull: DOCKER_CMD_CONTENT_FULL,
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
@@ -1036,6 +1073,7 @@
 				defaultLimit: DEFAULT_LIMIT,
 				probesMinMaxTimings: null,
 				joinNetSwitchValue: 'docker',
+				showCommandsBlock: false,
 			};
 		},
 		onrender () {
