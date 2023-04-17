@@ -610,6 +610,19 @@
 				To join the Globalping probe network all you have to do is run our container.
 			</span>
 
+			<div class="gp_join-network_switch-wrapper">
+				<span class="gp_join-network_switch">
+					<span class="{{#if joinNetSwitchValue === 'docker'}}active{{/if}}"
+						on-click="@this.set('joinNetSwitchValue', 'docker')">
+						Docker
+					</span>
+					<span class="{{#if joinNetSwitchValue === 'podman'}}active{{/if}}"
+						on-click="@this.set('joinNetSwitchValue', 'podman')">
+						Podman
+					</span>
+				</span>
+			</div>
+
 			<div class="gp_join-network_docker">
 				<span class="gp_join-network_docker_command">
 					{{netDockerCmdText}}
@@ -1022,6 +1035,7 @@
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
 				probesMinMaxTimings: null,
+				joinNetSwitchValue: 'docker',
 			};
 		},
 		onrender () {
