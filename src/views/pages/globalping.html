@@ -1535,11 +1535,17 @@
 							</div>
 						</div>`,
 				});
+				const svg = window.btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none">
+					<circle cx="7" cy="7" r="7" fill="#17D4A7" opacity=".32"/>
+					<circle cx="7" cy="7" r="4.5" fill="#17D4A7" stroke="#fff"/>
+				</svg>`);
 
 				// create Marker
 				let marker = new google.maps.Marker({
 					map,
-					icon: `${this.get('@shared.assetsHost')}/img/globalping/TODO-temp-map-icon.svg`,
+					icon: {
+						url: `data:image/svg+xml;base64,${svg}`,
+					},
 					position: { lat: markerData.lat, lng: markerData.lng },
 					optimized: false,
 				});
