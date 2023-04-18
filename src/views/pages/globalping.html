@@ -626,7 +626,7 @@
 			<div class="gp_join-network_docker">
 				<div class="gp_join-network_docker_command {{#if showCommandsBlock}}opened{{/if}}">
 					{{#if showCommandsBlock}}
-						{{#each netDockerCmdTextFull:idx}}
+						{{#each netCmdTextFull:idx}}
 							<div class="gp_join-network_docker_command_row">
 								<span>{{idx + 1}}</span>
 								<span>{{this.cmd}}</span>
@@ -636,12 +636,12 @@
 							</div>
 						{{/each}}
 					{{else}}
-						{{netDockerCmdText}}
+						{{netCmdText}}
 					{{/if}}
 				</div>
 
 				<button class="gp_join-network_docker_btn gp_btn_green"
-					as-clipboard data-clipboard-text="{{showCommandsBlock ? netDockerCmdTextFull : netDockerCmdText}}">
+					as-clipboard data-clipboard-text="{{showCommandsBlock ? netCmdTextFullClipboard : netCmdText}}">
 					<img width="20"
 						height="20"
 						src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
@@ -1178,6 +1178,38 @@
 
 					this.set('markersData', markersData);
 				}, { init: false });
+
+				// handle join-network switch and commands content
+				this.observe('joinNetSwitchValue', (joinNetSwitchValue) => {
+					let netCmdText;
+					let netCmdTextFull;
+
+					switch (joinNetSwitchValue) {
+						case 'podman':
+							netCmdText = this.get('netPodmanCmdText');;
+							netCmdTextFull = this.get('netPodmanCmdTextFull');;
+							break;
+						case 'docker':
+						default:
+						netCmdText = this.get('netDockerCmdText');
+						netCmdTextFull = this.get('netDockerCmdTextFull');
+					}
+
+					this.set('netCmdText', netCmdText);
+					this.set('netCmdTextFull', netCmdTextFull);
+
+					let clipboardValue = netCmdTextFull.reduce((res, part, idx) => {
+						if (idx !== 0) {
+							res += '\n'
+						}
+
+						res += `${part.cmd} ${part.comment}`;
+
+						return res;
+					}, '');
+
+					this.set('netCmdTextFullClipboard', clipboardValue);
+				});
 			}
 		},
 		proceedToTest () {
