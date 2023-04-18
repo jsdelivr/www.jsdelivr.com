@@ -623,11 +623,11 @@
 				</span>
 			</div>
 
-			<div class="gp_join-network_docker">
-				<div class="gp_join-network_docker_command {{#if showCommandsBlock}}opened{{/if}}">
+			<div class="gp_join-network_cmd-block">
+				<div class="gp_join-network_cmd-block_command {{#if showCommandsBlock}}opened{{/if}}">
 					{{#if showCommandsBlock}}
 						{{#each netCmdTextFull:idx}}
-							<div class="gp_join-network_docker_command_row">
+							<div class="gp_join-network_cmd-block_command_row">
 								<span>{{idx + 1}}</span>
 								<span>{{this.cmd}}</span>
 								{{#if this.comment}}
@@ -640,14 +640,14 @@
 					{{/if}}
 				</div>
 
-				<button class="gp_join-network_docker_btn gp_btn_green"
+				<button class="gp_join-network_cmd-block_btn gp_btn_green"
 					as-clipboard data-clipboard-text="{{showCommandsBlock ? netCmdTextFullClipboard : netCmdText}}">
 					<img width="20"
 						height="20"
 						src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
 				</button>
 
-				<div class="gp_join-network_docker_open-btn {{#if showCommandsBlock}}active{{/if}}"
+				<div class="gp_join-network_cmd-block_open-btn {{#if showCommandsBlock}}active{{/if}}"
 					on-click="@this.toggle('showCommandsBlock')">
 					<img width="9"
 						height="6"
@@ -1572,7 +1572,7 @@
 			});
 		},
 		collapseCmdBlock () {
-			let element = document.querySelector('.gp_join-network_docker_command');
+			let element = document.querySelector('.gp_join-network_cmd-block_command');
 
 			requestAnimationFrame(() => {
 				element.style.height = `${element.scrollHeight}px`;
@@ -1583,7 +1583,7 @@
 			});
 		},
 		expandCmdBlock () {
-			let element = document.querySelector('.gp_join-network_docker_command');
+			let element = document.querySelector('.gp_join-network_cmd-block_command');
 
 			requestAnimationFrame(() => {
 				element.style.height = '56px';
