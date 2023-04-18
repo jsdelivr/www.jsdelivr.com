@@ -32,6 +32,12 @@
 						{{#each ~/versionsList}}
 							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
 						{{/each}}
+
+						<li class="divider" role="separator"></li>
+
+						{{#each ~/packageVersionsList}}
+							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+						{{/each}}
 					</ul>
 				</div>
 			</div>
@@ -68,6 +74,12 @@
 							<ul class="dropdown-menu">
 								{{#each ~/versionsList}}
 									<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
+								{{/each}}
+
+								<li class="divider" role="separator"></li>
+
+								{{#each ~/packageVersionsList}}
+								<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -288,9 +300,9 @@
 				_,
 				versionsList: [
 					'Static',
-					'Minor',
-					'Major',
-					'Latest',
+					'Latest Patch',
+					'Latest Minor',
+					'Latest Major',
 				],
 				isDefaultPackage: null,
 				isDefaultPackageTmp: null,
@@ -330,12 +342,14 @@
 
 					if (selectedVersion === 'Static') {
 						installPackageVersion += packageVersion;
-					} else if (selectedVersion === 'Major') {
-						installPackageVersion += packageVersion.split('.')[0];
-					} else if (selectedVersion === 'Minor') {
+					} else if (selectedVersion === 'Latest Patch') {
 						installPackageVersion += packageVersion.split('.').slice(0, 2).join('.');
-					} else {
+					} else if (selectedVersion === 'Latest Minor') {
+						installPackageVersion += packageVersion.split('.')[0];
+					} else if (selectedVersion === 'Latest Major') {
 						installPackageVersion = '';
+					} else {
+						installPackageVersion += selectedVersion;
 					}
 
 					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {

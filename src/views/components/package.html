@@ -34,6 +34,7 @@
 
 				<c-package-install-block
 					package="{{package}}"
+					packageVersionsList="{{packageVersionsList}}"
 					type="{{type}}"
 					name="{{name}}"
 					version="{{versionP}}"
@@ -126,7 +127,6 @@
 
 <script>
 	const _ = require('../../assets/js/_');
-	const http = require('../../assets/js/utils/http');
 
 	const NAV_MENU_SHORT_TITLES = {
 		readmeTabTitle: 'Readme',
@@ -168,44 +168,6 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// load Package Versions List (ShowFilesTab, Top-5-files-per-version dropdown-menu)
-				http.fetchPackageVersions(this.get('type'), this.get('name')).then((response) => {
-					let versionsArr = response.versions.map(item => item.version);
-
-					// This can only happen for GitHub packages.
-					if (response.versions.length === 0) {
-						http.fetchProjectCommits(this.get('package.githubRepo.user'), this.get('package.githubRepo.project')).then((data) => {
-							let sha = data[0].sha; // if there are no commits this will throw and trigger the catch() block, which is intended
-							this.set('packageVersionsList', [ sha ]);
-							this.set('package.githubRepo.head', sha);
-							this.set('package.version', sha);
-							this.set('versionP', sha);
-						}).catch((error) => {
-							this.set({ packageVersionsNotFound: true });
-							this.set('package.githubRepo.head', 'HEAD');
-							console.error(`Commits not found.`, error);
-						});
-
-						return;
-					}
-
-					this.set('packageVersionsList', versionsArr);
-
-					// Set version for GitHub packages.
-					if (!this.get('package.version')) {
-						this.set('package.version', response.versions[0].version);
-						this.set('package.githubRepo.head', response.versions[0].version);
-					}
-
-					// Set version for GitHub packages or when an invalid version is selected.
-					if (!this.get('versionP') || versionsArr.indexOf(this.get('versionP')) === -1) {
-						this.set('versionP', response.versions[0].version);
-					}
-				}).catch((error) => {
-					this.set({ packageNotFound: true });
-					console.error(`Package versions not found.`, error);
-				});
-
 				// change Nav Menu titles depending on the screen size (also on the resize of the page)
 				// switch tab to readme after resizing (if it was Files tab)
 				this.observe('screenWidth', (newScreenWidth) => {
