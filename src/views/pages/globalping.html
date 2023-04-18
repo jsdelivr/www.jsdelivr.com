@@ -1537,7 +1537,7 @@
 				});
 
 				// create svg to use as a Marker icon
-				let svgFillColor = '#17D4A7';
+				let svgFillColor = this.pickMarkerColor(markerData.timing);
 				let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
@@ -1620,5 +1620,20 @@
 				});
 			});
 		},
+		pickMarkerColor (timing) {
+			if (timing === _.getProbeTimeOutValue()) {
+				return '#17233A';
+			}
+
+			let pureTimingValue = parseInt(timing);
+
+			console.log('++++ pureTimingValue', pureTimingValue);
+			console.log('++++ NO_PROBE_TIMING_VALUE', _.getProbeTimeOutValue());
+			console.log('___________________________');
+
+			// actual gradient to pick color from
+			// background: linear-gradient(to right, #17d4a7, #507bfd);
+			return '#17D4A7';
+		}
 	};
 </script>

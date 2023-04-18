@@ -1265,4 +1265,8 @@ module.exports = {
 			fullText: NO_PROBE_TIMING_VALUE,
 		};
 	},
+
+	getProbeTimeOutValue () {
+		return NO_PROBE_TIMING_VALUE;
+	},
 };
