@@ -1210,6 +1210,15 @@
 
 					this.set('netCmdTextFullClipboard', clipboardValue);
 				});
+
+				// handle show-hide full join-network command
+				this.observe('showCommandsBlock', (showCommandsBlock) => {
+					if (showCommandsBlock) {
+						this.expandCmdBlock();
+					} else {
+						this.collapseCmdBlock();
+					}
+				}, { init: false, defer: true });
 			}
 		},
 		proceedToTest () {
@@ -1559,6 +1568,28 @@
 							});
 						},
 					},
+				});
+			});
+		},
+		collapseCmdBlock () {
+			let element = document.querySelector('.gp_join-network_docker_command');
+
+			requestAnimationFrame(() => {
+				element.style.height = `${element.scrollHeight}px`;
+
+				requestAnimationFrame(() => {
+					element.style.height = '56px';
+				});
+			});
+		},
+		expandCmdBlock () {
+			let element = document.querySelector('.gp_join-network_docker_command');
+
+			requestAnimationFrame(() => {
+				element.style.height = '56px';
+
+				requestAnimationFrame(() => {
+					element.style.height = `${element.scrollHeight}px`;
 				});
 			});
 		},
