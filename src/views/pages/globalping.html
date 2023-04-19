@@ -1621,19 +1621,34 @@
 			});
 		},
 		pickMarkerColor (timing) {
+			// return default color for timed out probe
 			if (timing === _.getProbeTimeOutValue()) {
 				return '#17233A';
 			}
 
+			function getColorFromGradient (quotient, start, middle, end) {
+				return quotient >= 0.5 ? linear(middle, end, (quotient - .5) * 2) : linear(start, middle, quotient * 2);
+			}
+
+			function linear (startColor, endColor, quotient) {
+				let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
+				let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
+				let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
+
+				return `#${redColor}${greenColor}${blueColor}`;
+			}
+
+			function byteLinear (partOne, partTwo, quotient) {
+				let color = (('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient) || 0;
+
+				return color.toString(16).padStart(2, '0');
+			}
+
+			let { max, min } = this.get('probesMinMaxTimings');
 			let pureTimingValue = parseInt(timing);
 
-			console.log('++++ pureTimingValue', pureTimingValue);
-			console.log('++++ NO_PROBE_TIMING_VALUE', _.getProbeTimeOutValue());
-			console.log('___________________________');
-
-			// actual gradient to pick color from
-			// background: linear-gradient(to right, #17d4a7, #507bfd);
-			return '#17D4A7';
-		}
+			// these colors are used for timings scale on the map
+			return getColorFromGradient(pureTimingValue / (max - min), '#17d4a7', '#ffb800', '#e64e3d');
+		},
 	};
 </script>
