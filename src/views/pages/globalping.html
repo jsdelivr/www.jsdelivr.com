@@ -1511,18 +1511,14 @@
 			}
 
 			this.observe('markersData', (markersData) => {
-				this.updateMarkers(markersData);
+				if (markersData === null) {
+					this.clearMapElements();
+				} else {
+					this.updateMarkers(markersData);
+				}
 			}, { init: false });
 		},
 		updateMarkers (markersData) {
-			// clear the Map from Markers and InfoWindows on new request
-			if (markersData === null) {
-				infoWindows.forEach(iw => iw.close());
-				mapMarkers.forEach(mm => mm.setMap(null));
-
-				return;
-			}
-
 			markersData.forEach((markerData) => {
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow({
@@ -1598,6 +1594,12 @@
 				});
 			});
 		},
+		clearMapElements () {
+			infoWindows.forEach(iw => iw.close());
+			mapMarkers.forEach(mm => mm.setMap(null));
+			infoWindows = [];
+			mapMarkers = [];
+		},
 		collapseCmdBlock () {
 			let element = document.querySelector('.gp_join-network_cmd-block_command');
 
@@ -1647,8 +1649,17 @@
 			let { max, min } = this.get('probesMinMaxTimings');
 			let pureTimingValue = parseInt(timing);
 
-			// these colors are used for timings scale on the map
-			return getColorFromGradient(pureTimingValue / (max - min), '#17d4a7', '#ffb800', '#e64e3d');
+
+			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
+			if (pureTimingValue === min) {
+				return '#17d4a7';
+			}
+
+			if (pureTimingValue === max) {
+				return '#e64e3d';
+			}
+
+			return getColorFromGradient(pureTimingValue / max, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 	};
 </script>
