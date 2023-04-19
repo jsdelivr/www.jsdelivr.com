@@ -1627,7 +1627,7 @@
 			}
 
 			function getColorFromGradient (quotient, start, middle, end) {
-				return quotient >= 0.5 ? linear(middle, end, (quotient - .5) * 2) : linear(start, middle, quotient * 2);
+				return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
 			}
 
 			function linear (startColor, endColor, quotient) {
@@ -1639,7 +1639,7 @@
 			}
 
 			function byteLinear (partOne, partTwo, quotient) {
-				let color = (('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient) || 0;
+				let color = (('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient) | 0;
 
 				return color.toString(16).padStart(2, '0');
 			}
