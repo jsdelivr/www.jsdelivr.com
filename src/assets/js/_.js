@@ -1256,7 +1256,7 @@ module.exports = {
 				value: probeTiming,
 				units,
 				note,
-				fullText: note ? `${probeTiming}${units} ${note}` : `${probeTiming}${units}`,
+				fullText: note ? `${Math.round(probeTiming)}${units} ${note}` : `${Math.round(probeTiming)}${units}`,
 			};
 		}
 
