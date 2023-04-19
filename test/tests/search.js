@@ -19,9 +19,9 @@ describe('search', () => {
 				if (elText === 'jsdelivr') {
 					await expect(elements[key].getText()).to.eventually.contain('jsdelivr');
 					await expect(elements[key].getAttribute('href')).to.eventually.match(/.*(package\/npm\/jsdelivr)$/);
-					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(2)` }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
-					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(3)` }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
-					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(4)` }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(1)` }).getAttribute('href')).to.eventually.contain('https://github.com/jsdelivr/npm-jsdelivr/');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(2)` }).getAttribute('href')).to.eventually.contain('https://www.npmjs.com/package/jsdelivr');
+					await expect(browser.findElement({ css: `.c-package-header:nth-of-type(${Number(key) + 1}) .package-buttons .button:nth-of-type(3)` }).getAttribute('href')).to.eventually.contain('https://registry.npmjs.org/jsdelivr/-/jsdelivr-0.1.2.tgz');
 				}
 			}
 		}
