@@ -1051,6 +1051,7 @@
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
+	let mapMarkersClusters = [];
 
 	component.exports = {
 		decorators: {
@@ -1572,11 +1573,8 @@
 					infoWindow.close();
 				});
 
-				infoWindows.push(infoWindow);
-				mapMarkers.push(marker);
-
 				// eslint-disable-next-line no-undef
-				new markerClusterer.MarkerClusterer({
+				let markersCluster = new markerClusterer.MarkerClusterer({
 					markers: mapMarkers,
 					map,
 					renderer: {
@@ -1592,13 +1590,19 @@
 						},
 					},
 				});
+
+				infoWindows.push(infoWindow);
+				mapMarkers.push(marker);
+				mapMarkersClusters.push(markersCluster);
 			});
 		},
 		clearMapElements () {
 			infoWindows.forEach(iw => iw.close());
 			mapMarkers.forEach(mm => mm.setMap(null));
+			mapMarkersClusters.forEach(mc => mc.setMap(null));
 			infoWindows = [];
 			mapMarkers = [];
+			mapMarkersClusters = [];
 		},
 		collapseCmdBlock () {
 			let element = document.querySelector('.gp_join-network_cmd-block_command');
