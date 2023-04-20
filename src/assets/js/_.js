@@ -1263,6 +1263,7 @@ module.exports = {
 		return {
 			value: NO_PROBE_TIMING_VALUE,
 			fullText: NO_PROBE_TIMING_VALUE,
+			isFailed: true,
 		};
 	},
 
