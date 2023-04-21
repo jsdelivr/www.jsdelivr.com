@@ -433,11 +433,11 @@
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
-				{{#if probesMinMaxTimings}}
+				{{#if testResults}}
 					<div class="gp_map-block_map-wrapper_timings-scale">
-						<span class="value">{{probesMinMaxTimings.max}}ms</span>
+						<span class="value">{{probesMaxTiming}}ms</span>
 						<div class="gradient"></div>
-						<span class="value">{{probesMinMaxTimings.min}}ms</span>
+						<span class="value">{{probesMinTiming}}ms</span>
 					</div>
 				{{/if}}
 			</div>
@@ -1110,7 +1110,8 @@
 				notAppliedOpts: {},
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
-				probesMinMaxTimings: null,
+				probesMaxTiming: 200,
+				probesMinTiming: 5,
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
 			};
@@ -1157,7 +1158,6 @@
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
-					this.set('probesMinMaxTimings', null);
 					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
 				}, { init: false });
 
@@ -1173,10 +1173,6 @@
 					let markersData = testResults.results.map((res) => {
 						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
 
-						if (typeof probeTiming.value === 'number') {
-							allProbesTimings.push(Math.round(probeTiming.value));
-						}
-
 						return {
 							network: res.probe.network,
 							city: res.probe.city,
@@ -1186,13 +1182,6 @@
 							lng: res.probe.longitude,
 						};
 					});
-
-					if (allProbesTimings.length) {
-						this.set('probesMinMaxTimings', {
-							max: Math.max(...allProbesTimings),
-							min: Math.min(...allProbesTimings),
-						});
-					}
 
 					this.set('markersData', markersData);
 				}, { init: false });
@@ -1298,7 +1287,6 @@
 			}
 
 			this.set('testResults', null);
-			this.set('probesMinMaxTimings', null);
 			this.set('markersData', null);
 			this.set('testInProgress', true);
 
@@ -1667,20 +1655,21 @@
 				return color.toString(16).padStart(2, '0');
 			}
 
-			let { max, min } = this.get('probesMinMaxTimings');
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 			let pureTimingValue = parseInt(timing);
 
 
 			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
-			if (pureTimingValue === min) {
+			if (pureTimingValue <= probesMinTiming) {
 				return '#17d4a7';
 			}
 
-			if (pureTimingValue === max) {
+			if (pureTimingValue >= probesMaxTiming) {
 				return '#e64e3d';
 			}
 
-			return getColorFromGradient(pureTimingValue / max, '#17d4a7', '#ffb800', '#e64e3d');
+			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 	};
 </script>
