@@ -17,7 +17,11 @@
 
 		<div class="gp-cli_main-info">
 			<h1 class="gp-cli_main-info_title">
-				Run network commands on a <span class="gp-cli_green-text">global network of 500+ probes</span> to test, debug and benchmark your infrastructure, routing and web services.
+				Run network commands on a
+				<span class="gp-cli_green-text">
+					global network of {{ Math.floor(roundedTotalProbes) }}+ probes
+				</span>
+				to test, debug and benchmark your infrastructure, routing and web services.
 			</h1>
 
 			<span class="gp-cli_main-info_descr">
@@ -171,6 +175,7 @@ Use "globalping [command] --help" for more information about a command.
 </r-page>
 
 <script>
+	const http = require('../../../assets/js/utils/http');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const DEB_DATA = {
 		name: 'DEB',
@@ -350,7 +355,17 @@ Host                                                             Loss% Drop Rcv 
 				osDataList: [ DEB_DATA, RPM_DATA, HOMEBREW_DATA ],
 				selectedOsTab: DEB_DATA.name,
 				quickStartData: QUICK_START_DATA,
+				roundedTotalProbes: 0,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchGlobalpingProbes().then((response) => {
+					let roundedTotalProbes = Math.round(response.length / 100) * 100;
+
+					this.animate('roundedTotalProbes', roundedTotalProbes, { duration: 2000 });
+				});
+			}
 		},
 	};
 </script>
