@@ -1030,7 +1030,7 @@
 			comment: ' # Make sure the container runs on boot',
 		},
 		{
-			cmd: '--lo-driver local',
+			cmd: '--log-driver local',
 			comment: ' # Use the modern logging driver to ensure old logs are deleted',
 		},
 		{
@@ -1046,23 +1046,27 @@
 			comment: '',
 		},
 	];
-	const PODMAN_CMD_CONTENT = 'TODO: add Podman comand here';
+	const PODMAN_CMD_CONTENT = 'podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const PODMAN_CMD_CONTENT_FULL = [
 		{
-			cmd: 'TODO: command 1',
-			comment: 'TODO: comment 1',
+			cmd: 'podman run -d',
+			comment: ' # The container will NOT start on boot. You need to create a systemd service first.',
 		},
 		{
-			cmd: 'TODO: command 2',
-			comment: 'TODO: comment 2',
+			cmd: '--cap-add=NET_RAW',
+			comment: ' # Network permissions to run ping',
 		},
 		{
-			cmd: 'TODO: command 3',
-			comment: 'TODO: comment 3',
+			cmd: '--network host',
+			comment: '# Bypass overlay and mesh networking to ensure they dont impact latency tests',
 		},
 		{
-			cmd: 'TODO: command 4',
-			comment: 'TODO: comment 4',
+			cmd: '--restart=always',
+			comment: ' # Restart the container in case it crashes',
+		},
+		{
+			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			comment: '',
 		},
 	];
 	let map;
