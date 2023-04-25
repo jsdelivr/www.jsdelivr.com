@@ -65,6 +65,15 @@
 				hiddenTestResults: [],
 			};
 		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.observe('testResults', (testResults) => {
+					if (testResults.results.length) {
+						this.setResultsBlockHeight(testResults);
+					}
+				}, { defer: true });
+			}
+		},
 		hideShowTestResult (idx) {
 			let hiddenTestResults = this.get('hiddenTestResults');
 
@@ -75,6 +84,21 @@
 			}
 
 			this.set('hiddenTestResults', hiddenTestResults);
+		},
+		setResultsBlockHeight (testResults) {
+			requestAnimationFrame(() => {
+				let listEl = document.querySelector('.c-gp-test-results_list');
+				let itemsAmount = testResults.results.length;
+				let lestElScrollHeight = listEl.scrollHeight;
+				let avgItemElHeight = Math.round(lestElScrollHeight / itemsAmount);
+
+				// listEl.style.height = `${avgItemElHeight}px`;
+				listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+
+				// requestAnimationFrame(() => {
+				// 	listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+				// });
+			});
 		},
 	};
 </script>
