@@ -1046,8 +1046,12 @@
 			comment: '',
 		},
 	];
-	const PODMAN_CMD_CONTENT = 'podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const PODMAN_CMD_CONTENT = 'sudo podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const PODMAN_CMD_CONTENT_FULL = [
+		{
+			cmd: 'sudo',
+			comment: ' # Allows the --cap-add=NET_RAW option to work properly',
+		},
 		{
 			cmd: 'podman run -d',
 			comment: ' # The container will NOT start on boot. You need to create a systemd service first.',
