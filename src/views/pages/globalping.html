@@ -105,6 +105,7 @@
 					</div>
 
 					<c-controlled-input
+						id="targetInput"
 						value="{{mainOptions.target}}"
 						error="{{inputErrors.target}}"
 						placeholder="e.g. IP or domain"
@@ -113,6 +114,7 @@
 					</c-controlled-input>
 
 					<c-controlled-input
+						id="locationInput"
 						value="{{mainOptions.location}}"
 						error="{{inputErrors.location}}"
 						placeholder="Enter location"
@@ -128,6 +130,7 @@
 
 					<div class="gp_map-block_settings-wrapper_settings_grouped">
 						<c-controlled-input
+							id="limitInput"
 							value="{{mainOptions.limit}}"
 							error="{{inputErrors.limit}}"
 							placeholder="{{defaultLimit}}"
@@ -1244,6 +1247,25 @@
 						this.collapseCmdBlock();
 					}
 				}, { init: false, defer: true });
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// run the test if user is pressed Enter inside of any of main options inputs
+				let targetInput = this.find('#targetInput');
+				let locationInput = this.find('#locationInput');
+				let limitInput = this.find('#limitInput');
+
+				let handleEnterBtn = (event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						this.proceedToTest();
+					}
+				};
+
+				targetInput.addEventListener('keypress', handleEnterBtn);
+				locationInput.addEventListener('keypress', handleEnterBtn);
+				limitInput.addEventListener('keypress', handleEnterBtn);
 			}
 		},
 		proceedToTest () {
