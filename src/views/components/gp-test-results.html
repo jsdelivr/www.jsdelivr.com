@@ -68,9 +68,9 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				this.observe('testResults', (testResults) => {
-					if (testResults.results.length) {
-						this.setResultsBlockHeight(testResults);
-					}
+					if (!testResults) { return; }
+
+					this.setResultsBlockHeight(testResults);
 				}, { defer: true });
 			}
 		},
