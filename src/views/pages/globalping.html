@@ -142,7 +142,11 @@
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-								<div class="additional-opts-total">{{mainOptions.additionalOptsTotal}}</div>
+								{{#if mainOptions.requiredAdditionalOptsCnt}}
+									<div class="additional-opts-total">
+										{{mainOptions.requiredAdditionalOptsCnt}}
+									</div>
+								{{/if}}
 							</button>
 
 							<div class="gp_map-block_settings-wrapper_settings_grouped_options-block_specific-set">
@@ -970,11 +974,11 @@
 	const validateIP = require('../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
 	const DEFAULT_PING_OPTS = {
-		additionalOptsTotal: 1,
+		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_TRACEROUTE_OPTS = {
 		protocol: 'ICMP',
-		additionalOptsTotal: 2,
+		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_DNS_OPTS = {
 		protocol: 'UDP',
@@ -982,18 +986,18 @@
 			type: 'A',
 		},
 		trace: true,
-		additionalOptsTotal: 5,
+		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_MTR_OPTS = {
 		protocol: 'ICMP',
-		additionalOptsTotal: 3,
+		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_HTTP_OPTS = {
 		protocol: 'HTTP',
 		request: {
 			method: 'GET',
 		},
-		additionalOptsTotal: 7,
+		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
@@ -1093,7 +1097,7 @@
 					target: '',
 					location: '',
 					limit: '',
-					additionalOptsTotal: DEFAULT_PING_OPTS.additionalOptsTotal,
+					requiredAdditionalOptsCnt: DEFAULT_PING_OPTS.requiredAdditionalOptsCnt,
 				},
 				showMap: true,
 				showMeasurementOpts: false,
@@ -1166,7 +1170,7 @@
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
-					this.set('mainOptions.additionalOptsTotal', this.get(`${type.toLowerCase()}Opts`).additionalOptsTotal);
+					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
 				}, { init: false });
 
 				// prepare data for Markers of the map, timings for the map scale
@@ -1242,7 +1246,7 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
 
-			delete measurementOpts.additionalOptsTotal;
+			delete measurementOpts.requiredAdditionalOptsCnt;
 
 			let reqParams = { type };
 
