@@ -1563,13 +1563,13 @@
 			}, { init: false });
 		},
 		updateMarkers (markersData) {
-			markersData.forEach((markerData) => {
+			markersData.forEach((markerData, mDataIdx) => {
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow({
 					content: `<div class="gp-map_popup">
 							<div class="gp-map_popup_header">${markerData.timing}</div>
 							<div class="gp-map_popup_descr">${markerData.network} (${markerData.city}, ${markerData.country})</div>
-							<div class="gp-map_popup_see-results">
+							<div class="gp-map_popup_see-results" id="iw-${mDataIdx}">
 								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
 								<span>See results</span>
 							</div>
@@ -1614,6 +1614,18 @@
 
 				google.maps.event.addListener(map, 'click', () => {
 					infoWindow.close();
+				});
+
+				google.maps.event.addListener(infoWindow, 'domready', () => {
+					let clickableEl = document.getElementById(`iw-${mDataIdx}`);
+					let hasListener = clickableEl.dataset.hasListener;
+
+					if (!hasListener) {
+						clickableEl.addEventListener('click', () => {
+							this.handleSeeResults(mDataIdx);
+							clickableEl.dataset.hasListener = true;
+						});
+					}
 				});
 
 				// eslint-disable-next-line no-undef
@@ -1708,6 +1720,15 @@
 			}
 
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
+		},
+		handleSeeResults (resIdx) {
+			let testResults = this.get('testResults');
+			console.log('++++ resIdx', resIdx);
+			console.log('++++ RES', testResults.results[resIdx]);
+			console.log('________________________');
+			// here we should handle and show specific result to user
+			// first we need to check how many results, if more than 3 then we should firsly scroll our result to top position of the parent element
+			// if less then 3 then just scroll parent so high that our specific result was on the top of the page
 		},
 	};
 </script>
