@@ -1722,13 +1722,9 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		handleSeeResults (resIdx) {
-			let testResults = this.get('testResults');
-			console.log('++++ resIdx', resIdx);
-			console.log('++++ RES', testResults.results[resIdx]);
-			console.log('________________________');
-			// here we should handle and show specific result to user
-			// first we need to check how many results, if more than 3 then we should firsly scroll our result to top position of the parent element
-			// if less then 3 then just scroll parent so high that our specific result was on the top of the page
+			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item:nth-child(${resIdx + 1})`);
+
+			el.scrollIntoView({ behvior: 'smooth' });
 		},
 	};
 </script>
