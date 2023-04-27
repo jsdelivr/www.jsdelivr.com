@@ -72,6 +72,20 @@
 
 					this.setResultsBlockHeight(testResults);
 				}, { defer: true });
+
+
+				// open result under specific index when scrool to this element from the parent called
+				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
+					if (scrolledToResIdx === null) { return; }
+
+					let hiddenTestResults = this.get('hiddenTestResults');
+
+					if (hiddenTestResults.includes(scrolledToResIdx)) {
+						this.hideShowTestResult(scrolledToResIdx);
+					}
+
+					this.set('scrolledToResIdx', null);
+				}, { init: false });
 			}
 		},
 		hideShowTestResult (idx) {

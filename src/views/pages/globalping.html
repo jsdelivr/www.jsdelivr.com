@@ -461,7 +461,12 @@
 						</p>
 					</div>
 				{{elseif testResults}}
-					<c-gp-test-results testType="{{mainOptions.type}}" testResults="{{testResults}}" dnsTraceEnabled="{{dnsTraceEnabled}}"></c-gp-test-results>
+					<c-gp-test-results
+						testType="{{mainOptions.type}}"
+						testResults="{{testResults}}"
+						dnsTraceEnabled="{{dnsTraceEnabled}}"
+						scrolledToResIdx="{{scrolledToResIdx}}">
+					</c-gp-test-results>
 				{{else}}
 					<div class="gp_map-block_test-output_info">
 						<img width="56"
@@ -1132,6 +1137,7 @@
 				probesMinTiming: 5,
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
+				scrolledToResIdx: null,
 			};
 		},
 		onrender () {
@@ -1723,6 +1729,9 @@
 		},
 		handleSeeResults (resIdx) {
 			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item:nth-child(${resIdx + 1})`);
+
+			// this prop will be passed to c-gp-test-results in order for it to show the specific result element if it was hidden
+			this.set('scrolledToResIdx', resIdx);
 
 			el.scrollIntoView({ behvior: 'smooth' });
 		},
