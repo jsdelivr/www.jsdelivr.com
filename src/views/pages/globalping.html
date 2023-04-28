@@ -1095,7 +1095,8 @@
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
-	let mapMarkersClusters = [];
+	let probesMarkers = [];
+	let mapProbesClusters = [];
 
 	component.exports = {
 		decorators: {
@@ -1159,6 +1160,9 @@
 						response = JSON.parse(response);
 					}
 
+					// TODO: for test purpose, rm after
+					response = response.slice(0, 50);
+
 					let { totalCities, totalCountries } = response.reduce((res, item) => {
 						if (!res.citiesList.includes(item.location.city)) {
 							res.citiesList.push(item.location.city);
@@ -1177,6 +1181,7 @@
 					this.animate('totalProbes', response.length, { duration: 2000 });
 					this.animate('totalCities', totalCities, { duration: 2000 });
 					this.animate('totalCountries', totalCountries, { duration: 2000 });
+					this.set('probesResponse', response);
 				};
 
 				if (has.sessionStorage()) {
@@ -1350,6 +1355,7 @@
 			// clear all data from the previous test, close additional options menu, show spinner
 			this.set('testResults', null);
 			this.set('markersData', null);
+			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
 
@@ -1579,9 +1585,19 @@
 				map.setZoom(2.14);
 			}
 
+			// draw probes Clusers or clear the map from them
+			this.observe('probesResponse', (probesResponse) => {
+				if (probesResponse === null) {
+					this.clearProbesClusters();
+				} else {
+					this.updateClusters(probesResponse);
+				}
+			});
+
+			// draw test response  markers and Clusers or clear the map from them
 			this.observe('markersData', (markersData) => {
 				if (markersData === null) {
-					this.clearMapElements();
+					this.clearTestResponseMarkers();
 				} else {
 					this.updateMarkers(markersData);
 				}
@@ -1653,9 +1669,43 @@
 					}
 				});
 
+				infoWindows.push(infoWindow);
+				mapMarkers.push(marker);
+			});
+		},
+		updateClusters (probes) {
+			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g filter="url(#filter0_d_6106_3045)">
+				<circle cx="12" cy="10" r="6" fill="#17D4A7"/>
+				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+				</g>
+				<defs>
+				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+				<feOffset dy="2"/>
+				<feGaussianBlur stdDeviation="2"/>
+				<feComposite in2="hardAlpha" operator="out"/>
+				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+				</filter>
+				</defs>
+				</svg>`);
+
+			probes.forEach((probe) => {
+				let probeMarker = new google.maps.Marker({
+					map,
+					icon: { url: `data:image/svg+xml;base64,${svg}` },
+					position: { lat: probe.location.latitude, lng: probe.location.longitude },
+					optimized: false,
+				});
+
+				probesMarkers.push(probeMarker);
+
 				// eslint-disable-next-line no-undef
-				let markersCluster = new markerClusterer.MarkerClusterer({
-					markers: mapMarkers,
+				let probeCluster = new markerClusterer.MarkerClusterer({
+					markers: probesMarkers,
 					map,
 					renderer: {
 						render: ({ markers, _position: position }) => {
@@ -1671,18 +1721,19 @@
 					},
 				});
 
-				infoWindows.push(infoWindow);
-				mapMarkers.push(marker);
-				mapMarkersClusters.push(markersCluster);
+				mapProbesClusters.push(probeCluster);
 			});
 		},
-		clearMapElements () {
+		clearTestResponseMarkers () {
 			infoWindows.forEach(iw => iw.close());
 			mapMarkers.forEach(mm => mm.setMap(null));
-			mapMarkersClusters.forEach(mc => mc.setMap(null));
 			infoWindows = [];
 			mapMarkers = [];
-			mapMarkersClusters = [];
+		},
+		clearProbesClusters () {
+			mapProbesClusters.forEach(pc => pc.setMap(null));
+			probesMarkers = [];
+			mapProbesClusters = [];
 		},
 		collapseCmdBlock () {
 			let element = document.querySelector('.gp_join-network_cmd-block_command');
