@@ -981,6 +981,7 @@
 	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
 	const validateIP = require('../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
+	const has = require('../../assets/js/utils/has');
 	const DEFAULT_PING_OPTS = {
 		requiredAdditionalOptsCnt: 0,
 	};
@@ -1151,7 +1152,13 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchGlobalpingProbes().then((response) => {
+				let handleProbesResponse = isStored => (response) => {
+					if (!isStored) {
+						sessionStorage.setItem('probesResponse', JSON.stringify(response));
+					} else {
+						response = JSON.parse(response);
+					}
+
 					let { totalCities, totalCountries } = response.reduce((res, item) => {
 						if (!res.citiesList.includes(item.location.city)) {
 							res.citiesList.push(item.location.city);
@@ -1170,7 +1177,19 @@
 					this.animate('totalProbes', response.length, { duration: 2000 });
 					this.animate('totalCities', totalCities, { duration: 2000 });
 					this.animate('totalCountries', totalCountries, { duration: 2000 });
-				});
+				};
+
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
+
+					if (probesResponse) {
+						handleProbesResponse(true)(probesResponse);
+					} else {
+						http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+					}
+				} else {
+					http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+				}
 
 				this.observe('mainOptions.type', (type) => {
 					this.set('showMeasurementOpts', false);
