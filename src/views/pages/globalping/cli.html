@@ -176,6 +176,7 @@ Use "globalping [command] --help" for more information about a command.
 
 <script>
 	const http = require('../../../assets/js/utils/http');
+	const has = require('../../../assets/js/utils/has');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const DEB_DATA = {
 		name: 'DEB',
@@ -360,11 +361,29 @@ Host                                                             Loss% Drop Rcv 
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchGlobalpingProbes().then((response) => {
+				let handleProbesResponse = isStored => (response) => {
+					if (!isStored) {
+						sessionStorage.setItem('probesResponse', JSON.stringify(response));
+					} else {
+						response = JSON.parse(response);
+					}
+
 					let roundedTotalProbes = Math.round(response.length / 100) * 100;
 
 					this.animate('roundedTotalProbes', roundedTotalProbes, { duration: 2000 });
-				});
+				};
+
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
+
+					if (probesResponse) {
+						handleProbesResponse(true)(probesResponse);
+					} else {
+						http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+					}
+				} else {
+					http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+				}
 			}
 		},
 	};
