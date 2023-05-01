@@ -1,0 +1,307 @@
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/header.html" name="c-header">
+<link rel="ractive" href="../../components/footer.html" name="c-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/gp-test-results.html" name="c-gp-test-results">
+<link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
+<link rel="ractive" href="../../components/gp-jumbotron.html" name="c-gp-jumbotron">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-notification></c-notification>
+
+	<c-header additionalClasses="header-with-globalping-bg"></c-header>
+
+	<div class="p-globalping-network-tools">
+		<c-gp-top-navigation currentName="globalping-network-tools"></c-gp-top-navigation>
+
+		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
+
+		<div class="gp-nettools_main-info">
+			<h1>{{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} from multiple locations in</h1>
+			<span>Europe, <span class="gp-nettools_green-text">World</span></span>
+
+			<div class="gp-nettools_main-info_input-block">
+				<span>Run a Free</span>
+
+				<div class="gp_dropdown_alt">
+					<div class="btn-group">
+						<button type="button"
+							class="dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{~/selectedTestType}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/testTypesList}}
+								{{#if this !== selectedTestType}}
+									<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+								{{/if}}
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<span>test</span>
+			</div>
+		</div>
+
+		<div class="gp-nettools_demo-tools">
+			<div class="gp-nettools_demo-tools_head">
+				<span></span>
+				<span></span>
+				<span></span>
+			</div>
+
+			<div class="gp-nettools_demo-tools_ctrls">
+				<c-controlled-input
+					value="{{testOpts.target}}"
+					error="{{inputErrors.target}}"
+					placeholder="IP or host"
+					labelText="Target"
+					classList="gp-nettools_demo-tools_ctrls_target gp_input">
+				</c-controlled-input>
+
+				<c-controlled-input
+					value="{{testOpts.limit}}"
+					error="{{inputErrors.limit}}"
+					placeholder="{{defaultProbesAmount}}"
+					labelText="Probes"
+					classList="gp-nettools_demo-tools_ctrls_probes gp_input">
+				</c-controlled-input>
+
+				<button on-click="@this.proceedToTest()"
+					class="gp-nettools_demo-tools_ctrls_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+					disabled="{{testInProgress}}">
+					{{#if testInProgress}}
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					{{else}}
+						Run {{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} Test
+					{{/if}}
+				</button>
+			</div>
+
+			{{#if testFailed}}
+				<div class="gp_map-block_demo-tools_fail-msg">
+					<img width="56"
+						height="56"
+						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
+
+					<p>
+						All tests failed. Maybe you specified a non existing endpoint?
+					</p>
+				</div>
+			{{elseif testResults}}
+				<c-gp-test-results testType="{{selectedTestType}}" testResults="{{testResults}}" dnsTraceEnabled="{{false}}"></c-gp-test-results>
+			{{else}}
+				<div class="gp-nettools_demo-tools_descr">
+					<img width="56"
+						height="56"
+						src="{{@shared.assetsHost}}/img/globalping/bulb-icon.svg">
+					<span>Run a global ping latency test to debug and troubleshoot your network, CDN or website from multiple locations in Europe.</span>
+				</div>
+			{{/if}}
+		</div>
+
+		<div class="gp-nettools_learn-how">
+			<span class="gp-nettools_learn-how_title">
+				Learn more about how Globalping makes global network tests and benchmarking possible and free for all.
+			</span>
+
+			<span class="gp-nettools_learn-how_descr">
+				Debug your web services and servers, understand and fix your routing, simply by running network commands from Europe or any other specific location like a country or city.
+			</span>
+
+			<a href="/globalping" class="gp-nettools_learn-how_btn gp_btn_green">
+				Learn more
+			</a>
+		</div>
+
+		<div class="gp-nettools_ping">
+			<span class="gp-nettools_ping_title">
+				What is ping?
+			</span>
+
+			<span class="gp-nettools_ping_descr">
+				Ping is a tool that sends ICMP packets to an IP address (hostname is also accepted but will be first resolved to an IP) to understand the latency to the target or if the target server or website exist and are working. Since website and server response times are very important, Ping is a very simple way to quickly and easily check and understand the network delay in milliseconds between the sender and receiver. It's basically how long it takes for  data to travel across the internet to the destination and then back to the sender.  A low latency is always better and will result in a faster website and fewer issues. Methods to improve the latency include moving the server closer to the users, using a CDN or for advanced users improving peering and BGP routing.
+			</span>
+		</div>
+	</div>
+
+	<c-footer></c-footer>
+</r-page>
+
+<script>
+	const http = require('../../../assets/js/utils/http');
+	const validateDomainName = require('../../../assets/js/utils/validate-domain-name');
+	const validateIP = require('../../../assets/js/utils/validate-ip');
+	const validateByPattern = require('../../../assets/js/utils/validate-by-pattern');
+	const DEFAULT_PROBES_AMOUNT = 3;
+	// TODO: do we need additional options for different types of request
+	const PING_PARAMS = {};
+	const TRACEROUTE_PARAMS = {};
+	const DNS_PARAMS = {};
+	const MTR_PARAMS = {};
+	const HTTP_PARAMS = {};
+	const VALIDATION_PATTERNS_MAP = {
+		limit: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Limit must be an integer number',
+			},
+		],
+	};
+
+	component.exports = {
+		data () {
+			return {
+				title: 'Globalping - jsDelivr',
+				description: 'TODO: add Globalping Network Tools description',
+				selectedTestType: 'ping',
+				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				testOpts: {
+					target: '',
+					limit: '',
+				},
+				inputErrors: {},
+				testResults: null,
+				testInProgress: false,
+				testReqInterval: null,
+				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('selectedTestType', () => {
+					this.set('inputErrors', {});
+					this.set('testResults', null);
+				}, { init: false });
+			}
+		},
+		proceedToTest () {
+			let type = this.get('selectedTestType');
+			let testOpts = this.get('testOpts');
+			let reqParams = {
+				type,
+				...testOpts,
+			};
+
+			if (!reqParams.limit) {
+				reqParams.limit = DEFAULT_PROBES_AMOUNT;
+			}
+
+			switch (type.toLowerCase()) {
+				case 'ping':
+					reqParams = { ...reqParams, ...PING_PARAMS };
+					break;
+				case 'traceroute':
+					reqParams = { ...reqParams, ...TRACEROUTE_PARAMS };
+					break;
+				case 'dns':
+					reqParams = { ...reqParams, ...DNS_PARAMS };
+					break;
+				case 'mtr':
+					reqParams = { ...reqParams, ...MTR_PARAMS };
+					break;
+				case 'http':
+					reqParams = { ...reqParams, ...HTTP_PARAMS };
+					break;
+			}
+
+			let inputErrors = this.validateDataForRequest(testOpts);
+
+			if (Object.keys(inputErrors).length) {
+				this.set('inputErrors', inputErrors);
+
+				return;
+			}
+
+			this.set('testResults', null);
+			this.set('testInProgress', true);
+
+			// get test interval and clear it when new test is started
+			let testReqInterval = this.get('testReqInterval');
+
+			if (testReqInterval) {
+				clearInterval(testReqInterval);
+			}
+
+			http.postGlobalpingMeasurement(reqParams).then((response) => {
+				testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(response.id).then((testRes) => {
+						if (testRes.status !== 'in-progress') {
+							clearInterval(testReqInterval);
+
+							this.set('testInProgress', false);
+							this.set('testResults', testRes);
+						}
+					}).catch(() => {
+						clearInterval(testReqInterval);
+					});
+				}, 1000);
+
+				this.set('testReqInterval', testReqInterval);
+			}).catch((err) => {
+				if (err.error.type === 'validation_error') {
+					this.set('testInProgress', false);
+
+					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+						let fieldName = key.split('.')[key.split('.').length - 1];
+						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+						res[key] = errMsg;
+
+						return res;
+					}, {});
+
+					this.set('inputErrors', inputErrors);
+				}
+			});
+		},
+		validateDataForRequest ({ target, limit }) {
+			let inputErrors = {};
+
+			// validate Target field
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			} else {
+				let isValidDomainName = validateDomainName.test(target);
+				let isValidIP = validateIP.test(target);
+
+				if (!isValidDomainName && !isValidIP) {
+					inputErrors.target = 'Target does not match any of the allowed formats';
+				}
+			}
+
+			// validate Limit field
+			if (limit) {
+				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.limit = result.errMsg;
+				} else if (limit > 500 || limit < 1) {
+					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
+				}
+			}
+
+			return inputErrors;
+		},
+	};
+</script>

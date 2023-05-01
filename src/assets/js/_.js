@@ -14,6 +14,7 @@ const screenType = {
 	lgDesktop: 1200,
 	xlDesktop: 1400,
 };
+const NO_PROBE_TIMING_VALUE = 'time out';
 
 module.exports = {
 	screenType,
@@ -380,6 +381,10 @@ module.exports = {
 			let xhr = new XMLHttpRequest();
 			xhr.open(method || 'GET', method === 'GET' && body ? url + this.createQueryString(body) : url);
 
+			if (method === 'POST') {
+				xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+			}
+
 			if (headers) {
 				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
 			}
@@ -415,7 +420,11 @@ module.exports = {
 				}
 			};
 
-			xhr.send(body);
+			if (method === 'GET') {
+				xhr.send();
+			} else if (method === 'POST') {
+				xhr.send(JSON.stringify(body));
+			}
 		});
 	},
 
@@ -1182,5 +1191,83 @@ module.exports = {
 		}
 
 		return `${text.substr(0, length - 3)}...`;
+	},
+
+	calculateGpProbeTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
+		let probeTiming;
+		let lowCaseTestName = testType.toLowerCase();
+
+		if (lowCaseTestName === 'ping') {
+			probeTiming = probeData.result?.stats?.avg;
+		} else if (lowCaseTestName === 'traceroute') {
+			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
+
+			if (timings && timings.length) {
+				let timingsCalc = timings.reduce((res, timing) => {
+					if (typeof timing.rtt === 'number') {
+						return {
+							sum: res.sum + Number(timing.rtt),
+							cnt: res.cnt + 1,
+						};
+					}
+
+					return res;
+				}, { sum: 0, cnt: 0 });
+
+				if (timingsCalc.cnt) {
+					probeTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
+				}
+			}
+		} else if (lowCaseTestName === 'dns') {
+			if (dnsTraceEnabled) {
+				let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+
+				if (lastHop) {
+					probeTiming = lastHop.timings.total;
+				}
+			} else {
+				probeTiming = probeData.result.timings.total;
+			}
+		} else if (lowCaseTestName === 'mtr') {
+			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+
+			if (lastHop) {
+				probeTiming = lastHop.stats.avg;
+			}
+		} else if (lowCaseTestName === 'http') {
+			probeTiming = probeData.result.timings.total;
+		}
+
+		if (typeof probeTiming === 'number') {
+			let note = '';
+
+			switch (lowCaseTestName) {
+				case 'traceroute':
+				case 'mtr':
+					note = '(average)';
+					break;
+				case 'dns':
+				case 'http':
+					note = '(total)';
+					break;
+			}
+
+			return {
+				value: probeTiming,
+				units,
+				note,
+				fullText: note ? `${Math.round(probeTiming)}${units} ${note}` : `${Math.round(probeTiming)}${units}`,
+			};
+		}
+
+		return {
+			value: NO_PROBE_TIMING_VALUE,
+			fullText: NO_PROBE_TIMING_VALUE,
+			isFailed: true,
+		};
+	},
+
+	getProbeTimeOutValue () {
+		return NO_PROBE_TIMING_VALUE;
 	},
 };

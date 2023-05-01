@@ -97,7 +97,6 @@ app.router.addRoute('/esmsh', cEsmsh);
 app.router.addRoute('/oss-cdn', cCustomCdnOss);
 app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
-app.router.addRoute('/(.*)', () => { location.href = '/'; });
 
 _.onDocumentReady(() => {
 	let state = {};

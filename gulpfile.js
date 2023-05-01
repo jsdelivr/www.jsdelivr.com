@@ -64,7 +64,10 @@ gulp.task('copy', gulp.parallel(
 ));
 
 gulp.task('less', () => {
-	return gulp.src([ `${srcAssetsDir}/less/app.less` ])
+	return gulp.src([
+		`${srcAssetsDir}/less/app.less`,
+		`${srcAssetsDir}/less/app-globalping.less`,
+	])
 		.pipe(plumber())
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
@@ -74,7 +77,10 @@ gulp.task('less', () => {
 });
 
 gulp.task('less:prod', () => {
-	return gulp.src([ `${srcAssetsDir}/less/app.less` ])
+	return gulp.src([
+		`${srcAssetsDir}/less/app.less`,
+		`${srcAssetsDir}/less/app-globalping.less`,
+	])
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
 		.pipe(autoprefixer())
@@ -100,6 +106,14 @@ gulp.task('js', gulp.parallel(
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(`${dstAssetsDir}/js`))
 		.pipe(livereload()),
+	() => getRollupStream('app-globalping.js')
+		.pipe(plumber())
+		.pipe(source(`app-globalping.js`, srcAssetsDir))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`))
+		.pipe(livereload()),
 ));
 
 gulp.task('js:prod', gulp.parallel(
@@ -112,6 +126,13 @@ gulp.task('js:prod', gulp.parallel(
 		.pipe(gulp.dest(`${dstAssetsDir}/js`)),
 	() => getRollupStream('app-docs.js')
 		.pipe(source(`app-docs.js`, srcAssetsDir))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(terser({ sourceMap: { includeSources: true } }))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(`${dstAssetsDir}/js`)),
+	() => getRollupStream('app-globalping.js')
+		.pipe(source(`app-globalping.js`, srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
@@ -131,6 +152,7 @@ gulp.task('watch', () => {
 	livereload.listen();
 
 	gulp.watch([
+		`${srcAssetsDir}/**/*.!(html|js|less)`,
 		`${srcPublicDir}/**/*.!(html|js|less)`,
 	], gulp.series('copy'));
 

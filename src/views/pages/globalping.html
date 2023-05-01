@@ -1,0 +1,1739 @@
+<link rel="ractive" href="../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../components/header.html" name="c-header">
+<link rel="ractive" href="../components/footer.html" name="c-footer">
+<link rel="ractive" href="../components/notification.html" name="c-notification">
+<link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
+<link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
+<link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
+		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			}
+			/* eslint-disable */
+			function initMap () {
+				onDocumentReady(function () {
+					app.loaded = true;
+
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.0.15/dist/index.umd.min.js"></script>
+	{{/if}}
+
+	<c-notification></c-notification>
+
+	<c-header additionalClasses="header-with-globalping-bg"></c-header>
+
+	<div class="p-globalping">
+		<c-gp-top-navigation useDarkBg="true" currentName="globalping"></c-gp-top-navigation>
+
+		<c-gp-jumbotron className="main"></c-gp-jumbotron>
+
+		<div class="gp_main-info">
+			<div class="gp_main-info_descr">
+				<span class="gp_main-info_descr_green">Monitor, debug and benchmark</span>
+				<span>your internet infrastructure from a globally distributed network of probes.</span>
+			</div>
+
+			<div class="gp_main-info_stats">
+				<div class="gp_main-info_stats_item">
+					<span class="gp_main-info_stats_item_number">
+						{{ Math.floor(totalProbes) }}
+						<span></span>
+					</span>
+					<span class="gp_main-info_stats_item_text">connected probes</span>
+				</div>
+
+				<div class="gp_main-info_stats_item">
+					<span class="gp_main-info_stats_item_number">
+						{{ Math.floor(totalCities) }}
+						<span></span>
+					</span>
+					<span class="gp_main-info_stats_item_text">different cities</span>
+				</div>
+
+				<div class="gp_main-info_stats_item">
+					<span class="gp_main-info_stats_item_number">
+						{{ Math.floor(totalCountries) }}
+						<span></span>
+					</span>
+					<span class="gp_main-info_stats_item_text">different countries</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="gp_map-block">
+			<div class="gp_map-block_header">
+				<span></span>
+				<span></span>
+				<span></span>
+			</div>
+
+			<div class="gp_map-block_settings-wrapper">
+				<div class="gp_map-block_settings-wrapper_settings">
+					<div class="gp_dropdown_reg">
+						<span>Test type</span>
+
+						<div class="btn-group">
+							<button type="button"
+								class="dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{~/mainOptions.type}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
+
+							<div class="dropdown-menu">
+								{{#each ~/testTypesList}}
+									<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
+								{{/each}}
+							</div>
+						</div>
+					</div>
+
+					<c-controlled-input
+						id="targetInput"
+						value="{{mainOptions.target}}"
+						error="{{inputErrors.target}}"
+						placeholder="e.g. IP or domain"
+						labelText="Target"
+						classList="gp_map-block_settings-wrapper_settings_target gp_input">
+					</c-controlled-input>
+
+					<c-controlled-input
+						id="locationInput"
+						value="{{mainOptions.location}}"
+						error="{{inputErrors.location}}"
+						placeholder="Enter location"
+						labelText="Location"
+						classList="gp_map-block_settings-wrapper_settings_location gp_input">
+						{{#partial labelIcon}}
+							<img as-tooltip="'TODO: how to use location'"
+								width="14"
+								height="14"
+								src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+						{{/partial}}
+					</c-controlled-input>
+
+					<div class="gp_map-block_settings-wrapper_settings_grouped">
+						<c-controlled-input
+							id="limitInput"
+							value="{{mainOptions.limit}}"
+							error="{{inputErrors.limit}}"
+							placeholder="{{defaultLimit}}"
+							labelText="Limit"
+							classList="gp_map-block_settings-wrapper_settings_limit gp_input">
+						</c-controlled-input>
+
+						<div class="gp_map-block_settings-wrapper_settings_grouped_options-block">
+							<button class="{{#if showMeasurementOpts}}active{{/if}}"
+								on-click="@this.toggle('showMeasurementOpts')">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
+
+								{{#if mainOptions.requiredAdditionalOptsCnt}}
+									<div class="additional-opts-total">
+										{{mainOptions.requiredAdditionalOptsCnt}}
+									</div>
+								{{/if}}
+							</button>
+
+							<div class="gp_map-block_settings-wrapper_settings_grouped_options-block_specific-set">
+								{{#if mainOptions.type === 'ping'}}
+									<div class="typePing">
+										<c-controlled-input
+											value="{{notAppliedOpts.packets}}"
+											error="{{inputErrors['measurementOptions.packets']}}"
+											placeholder="{{defaultPacketsAmount}}"
+											labelText="Packets"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
+								{{#if mainOptions.type === 'traceroute'}}
+									<div class="typeTraceroute">
+										<div class="pair">
+											<c-controlled-input
+												value="{{notAppliedOpts.port}}"
+												error="{{inputErrors['measurementOptions.port']}}"
+												placeholder="53"
+												labelText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
+
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/tracerouteOpts.protocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
+														<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
+														<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{{/if}}
+
+								{{#if mainOptions.type === 'DNS'}}
+									<div class="typeDNS">
+										<div class="rows">
+											<div class="rows_row-one">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors['measurementOptions.port']}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
+												<div class="gp_dropdown_reg">
+													<span>Protocol</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/dnsOpts.protocol}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div class="rows_row-two">
+												<div class="gp_dropdown_reg">
+													<span>Type</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/dnsOpts.query.type}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															{{#each ~/dnsTypesList}}
+																<div on-click="@this.set('dnsOpts.query.type', this)">{{this}}</div>
+															{{/each}}
+														</div>
+													</div>
+												</div>
+
+												<div class="rows_row-two_switch-block">
+													<label class="gp_switch">
+														<input type="checkbox" on-click="@this.set('dnsOpts.trace', !dnsOpts.trace)" checked="{{dnsOpts.trace}}">
+														<span class="slider round"></span>
+													</label>
+
+													<span>Trace</span>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{notAppliedOpts.resolver}}"
+											error="{{inputErrors['measurementOptions.resolver']}}"
+											placeholder="IP address"
+											labelText="Resolver"
+											classList="resolver-input gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
+								{{#if mainOptions.type === 'MTR'}}
+									<div class="typeMTR">
+										<div class="pair">
+											<c-controlled-input
+												value="{{notAppliedOpts.port}}"
+												error="{{inputErrors['measurementOptions.port']}}"
+												placeholder="53"
+												labelText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
+
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/mtrOpts.protocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
+														<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
+														<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{notAppliedOpts.packets}}"
+											error="{{inputErrors['measurementOptions.packets']}}"
+											placeholder="{{defaultPacketsAmount}}"
+											labelText="Packets"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
+								{{#if mainOptions.type === 'HTTP'}}
+									<div class="typeHTTP">
+										<c-controlled-input
+											value="{{notAppliedOpts.host}}"
+											error="{{inputErrors['measurementOptions.request.host']}}"
+											placeholder="Host"
+											labelText="Host"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<c-controlled-input
+											value="{{notAppliedOpts.path}}"
+											error="{{inputErrors['measurementOptions.request.path']}}"
+											placeholder="Path"
+											labelText="Path"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<c-controlled-input
+											value="{{notAppliedOpts.query}}"
+											error="{{inputErrors['measurementOptions.request.query']}}"
+											placeholder="Query"
+											labelText="Query"
+											classList="gp_input">
+										</c-controlled-input>
+
+										<div class="pair">
+											<c-controlled-input
+												value="{{notAppliedOpts.port}}"
+												error="{{inputErrors.port}}"
+												placeholder="53"
+												labelText="Port"
+												classList="port-input gp_input">
+											</c-controlled-input>
+
+											<div class="gp_dropdown_reg">
+												<span>Protocol</span>
+
+												<div class="btn-group">
+													<button type="button"
+														class="dropdown-toggle"
+														data-toggle="dropdown"
+														aria-haspopup="true"
+														aria-expanded="false">
+														<span>{{~/httpOpts.protocol}}</span>
+														<i class="fa fa-angle-down" aria-hidden="true"></i>
+													</button>
+
+													<div class="dropdown-menu">
+														<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
+														<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
+														<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class="gp_dropdown_reg">
+											<span>Method</span>
+
+											<div class="btn-group">
+												<button type="button"
+													class="dropdown-toggle"
+													data-toggle="dropdown"
+													aria-haspopup="true"
+													aria-expanded="false">
+													<span>{{~/httpOpts.request.method}}</span>
+													<i class="fa fa-angle-down" aria-hidden="true"></i>
+												</button>
+
+												<div class="dropdown-menu">
+													<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
+													<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
+												</div>
+											</div>
+										</div>
+
+										<c-controlled-input
+											value="{{notAppliedOpts.resolver}}"
+											error="{{inputErrors['measurementOptions.resolver']}}"
+											placeholder="Resolver"
+											labelText="Resolver"
+											classList="gp_input">
+										</c-controlled-input>
+									</div>
+								{{/if}}
+
+								<button class="gp_btn_green" on-click="@this.applyOptions()">
+									Apply
+								</button>
+							</div>
+						</div>
+
+						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
+							<label class="gp_switch">
+								<input type="checkbox" on-click="@this.set('showMap', !showMap)" checked>
+								<span class="slider round"></span>
+							</label>
+
+							<span>Map</span>
+						</div>
+					</div>
+
+					<button on-click="@this.proceedToTest()"
+						class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+						disabled="{{testInProgress}}">
+						{{#if testInProgress}}
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+						{{else}}
+							Run test
+						{{/if}}
+					</button>
+				</div>
+			</div>
+
+			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
+				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
+
+				{{#if testResults}}
+					<div class="gp_map-block_map-wrapper_timings-scale">
+						<span class="value">{{probesMaxTiming}}ms</span>
+						<div class="gradient"></div>
+						<span class="value">{{probesMinTiming}}ms</span>
+					</div>
+				{{/if}}
+			</div>
+
+			<div class="gp_map-block_test-output">
+				{{#if testFailed}}
+					<div class="gp_map-block_test-output_fail-msg">
+						<img width="56"
+							height="56"
+							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
+
+						<p>
+							All tests failed. Maybe you specified a non existing endpoint?
+						</p>
+					</div>
+				{{elseif testResults}}
+					<c-gp-test-results
+						testType="{{mainOptions.type}}"
+						testResults="{{testResults}}"
+						dnsTraceEnabled="{{dnsTraceEnabled}}"
+						scrolledToResIdx="{{scrolledToResIdx}}">
+					</c-gp-test-results>
+				{{else}}
+					<div class="gp_map-block_test-output_info">
+						<img width="56"
+							height="56"
+							src="{{@shared.assetsHost}}/img/globalping/bulb-icon.svg">
+
+						<p>
+							Run a global latency test! Benchmark your CDN provider and understand how the network performs!
+							Compare DNS providers to find the fastest one globally or in your region.
+							Run network tests globally or from specific locations and regions.
+							Debug and troubleshoot your networking problems and share the test results with others!
+						</p>
+					</div>
+				{{/if}}
+			</div>
+		</div>
+
+		<div class="gp_detalization">
+			<div class="gp_detalization_platform">
+				<div class="gp_detalization_platform_title">The Globalping platform</div>
+				<div class="gp_detalization_platform_descr">
+					Globalping is a platform that allows anyone to run networking commands such as ping, traceroute,
+					dig, curl and mtr on probes distributed all around the world. Our goal is to provide a free and simple
+					service for everyone out there to make the internet faster. You can use it to optimize your anycast
+					network, monitor your latency, debug routing issues and even check for censorship in different countries.
+				</div>
+				<img class="gp_detalization_platform_img"
+					width="363"
+					height="288"
+					src="{{@shared.assetsHost}}/img/globalping/polygons_1.svg">
+			</div>
+
+			<div class="gp_detalization_magic">
+				<div class="gp_detalization_magic_title">Test from anywhere with <span class="text-magic-color">magic</span></div>
+				<div class="gp_detalization_magic_descr">
+					All Globalping integrations and tools including the CLI use the magic API field to set the location of a test.
+					This means that you can write anything that makes sense to you as the input and we will do our best to select the
+					most appropriate probes. Valid inputs include countries, continents, cities, US states, regions
+					(Western Europe), ASNs, ISP names and cloud region names (us-east-2).
+				</div>
+				<img class="gp_detalization_magic_img"
+					width="510"
+					height="289"
+					src="{{@shared.assetsHost}}/img/globalping/polygons_2.svg">
+			</div>
+		</div>
+
+		<div class="gp_features">
+			<div class="gp_features_item">
+				<span class="gp_features_item_icon">
+					<img width="48"
+						height="48"
+						src="{{@shared.assetsHost}}/img/globalping/globalping-opensource-icon.svg">
+				</span>
+				<span class="gp_features_item_name">
+					Open source and free
+				</span>
+				<span class="gp_features_item_descr">
+					Every component of Globalping is open source and is being actively developed on GitHub with the help of our community and users. We offer generous free limits with higher limits for GitHub Sponsors.
+				</span>
+			</div>
+
+			<div class="gp_features_item">
+				<span class="gp_features_item_icon">
+					<img width="48"
+						height="48"
+						src="{{@shared.assetsHost}}/img/globalping/globalping-nonprofit-icon.svg">
+					</span>
+				<span class="gp_features_item_name">
+					Developed by jsDelivr
+				</span>
+				<span class="gp_features_item_descr">
+					The Globalping platform is developed by the jsDelivr team who has more than 10 years of experience maintaining the jsDelivr CDN which is being used by millions of websites around the globe.
+				</span>
+			</div>
+
+			<div class="gp_features_item">
+				<span class="gp_features_item_icon">
+					<img width="48"
+						height="48"
+						src="{{@shared.assetsHost}}/img/globalping/globalping-community-icon.svg">
+					</span>
+				<span class="gp_features_item_name">
+					Powered by community and sponsors
+				</span>
+				<span class="gp_features_item_descr">
+					The jsDelivr organization and all projects including Globalping rely on our corporate and individual sponsors. Consider joining them to help us release new features even faster!
+				</span>
+			</div>
+
+			<div class="gp_features_item">
+				<span class="gp_features_item_icon">
+					<img width="48"
+						height="48"
+						src="{{@shared.assetsHost}}/img/globalping/globalping-security-icon.svg">
+				</span>
+				<span class="gp_features_item_name">
+					Secure and private
+				</span>
+				<span class="gp_features_item_descr">
+					The security of our systems and privacy of our users are of the utmost importance for us. We minimize the public information that our probes expose and block harmful and abusive domains and IPs.
+				</span>
+			</div>
+		</div>
+
+		<div class="gp_installation">
+			<a href="/globalping/cli" class="gp_installation_item">
+				<img width="61"
+					height="53"
+					src="{{@shared.assetsHost}}/img/globalping/cli-icon.svg">
+
+				<span class="gp_installation_item_title">
+					Install the Globalping CLI
+				</span>
+
+				<span class="gp_installation_item_descr">
+					Run and script network tests from all over the world without ever leaving your terminal
+				</span>
+			</a>
+
+			<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/globalping#globalping-rest-api" class="gp_installation_item">
+				<img width="61"
+					height="53"
+					src="{{@shared.assetsHost}}/img/globalping/rest-api-icon.svg">
+
+				<span class="gp_installation_item_title">
+					Integrate the Globalping REST API
+				</span>
+
+				<span class="gp_installation_item_descr">
+					Use our free API to build your own tools, automated your tests and integrate Globalping into your existing flow
+				</span>
+			</a>
+
+			<a href="/globalping/slack" class="gp_installation_item">
+				<img width="61"
+					height="53"
+					src="{{@shared.assetsHost}}/img/globalping/slack-icon.svg">
+
+				<span class="gp_installation_item_title">
+					Install the Globalping Slack App
+				</span>
+
+				<span class="gp_installation_item_descr">
+					Install the app into your Slack organization to allow all of your members to run global tests in any channel
+				</span>
+			</a>
+		</div>
+
+		<div class="gp_join-network">
+			<span class="gp_join-network_title">Join the network</span>
+			<span class="gp_join-network_subtitle">
+				To join the Globalping probe network all you have to do is run our container.
+			</span>
+
+			<div class="gp_join-network_switch-wrapper">
+				<span class="gp_join-network_switch">
+					<span class="{{#if joinNetSwitchValue === 'docker'}}active{{/if}}"
+						on-click="@this.set('joinNetSwitchValue', 'docker')">
+						Docker
+					</span>
+					<span class="{{#if joinNetSwitchValue === 'podman'}}active{{/if}}"
+						on-click="@this.set('joinNetSwitchValue', 'podman')">
+						Podman
+					</span>
+				</span>
+			</div>
+
+			<div class="gp_join-network_cmd-block">
+				<div class="gp_join-network_cmd-block_command {{#if showCommandsBlock}}opened{{/if}}">
+					{{#if showCommandsBlock}}
+						{{#each netCmdTextFull:idx}}
+							<div class="gp_join-network_cmd-block_command_row">
+								<span>{{idx + 1}}</span>
+								<span>{{this.cmd}}</span>
+								{{#if this.comment}}
+									<span>&#92; {{this.comment}}</span>
+								{{/if}}
+							</div>
+						{{/each}}
+					{{else}}
+						{{netCmdText}}
+					{{/if}}
+				</div>
+
+				<button class="gp_join-network_cmd-block_btn gp_btn_green"
+					as-clipboard data-clipboard-text="{{showCommandsBlock ? netCmdTextFullClipboard : netCmdText}}">
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
+				</button>
+
+				<div class="gp_join-network_cmd-block_open-btn {{#if showCommandsBlock}}active{{/if}}"
+					on-click="@this.toggle('showCommandsBlock')">
+					<img width="9"
+						height="6"
+						src="{{@shared.assetsHost}}/img/globalping/chevron.svg">
+				</div>
+			</div>
+
+			<span class="gp_join-network_descr">
+				Once you connect you will become part of the global community that powers the Globalping Platform.
+				The container will work on both x86 and ARM architectures.
+			</span>
+		</div>
+
+		<div class="gp_join-community">
+			<div class="gp_join-community_content">
+				<span class="gp_join-community_content_title">
+					We invite everyone to join our community and help us develop our projects.
+				</span>
+
+				<ul class="gp_join-community_content_list">
+					<li>We promise a friendly discussion in our issues and code reviews</li>
+					<li>We appreciate your work and will review your PRs in a timely manner</li>
+					<li>We are open to new ideas and technologies</li>
+					<li>You don't have to be a developer to help</li>
+					<li>Copyrighters, community moderators, dev relations, media relations... are all equally important</li>
+				</ul>
+			</div>
+
+			<img class="gp_join-community_img"
+				width="363"
+				height="416"
+				src="{{@shared.assetsHost}}/img/globalping/polygons_3.svg">
+		</div>
+
+		<div class="gp_gh-links">
+			<div class="gp_gh-links_header">
+				<span class="gp_gh-links_header_title">Become an open source contributor!</span>
+
+				<img width="64"
+					height="64"
+					src="{{@shared.assetsHost}}/img/globalping/github.svg">
+			</div>
+
+			<div class="gp_gh-links_content">
+				<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/globalping" class="gp_gh-links_content_item">
+					<span class="gp_gh-links_content_item_title">
+						Globalping API
+					</span>
+
+					<span class="gp_gh-links_content_item_descr">
+						Learn more about the project, the API, tools and become a contributor
+					</span>
+				</a>
+
+				<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/globalping-cli" class="gp_gh-links_content_item">
+					<span class="gp_gh-links_content_item_title">
+						Globalping CLI
+					</span>
+
+					<span class="gp_gh-links_content_item_descr">
+						Our simple to use CLI is also open source and awaits for your feedback.
+					</span>
+				</a>
+
+				<a target="_blank" rel="noopener noreferrer" href="https://github.com/jsdelivr/globalping-probe" class="gp_gh-links_content_item">
+					<span class="gp_gh-links_content_item_title">
+						Globalping Probe
+					</span>
+
+					<span class="gp_gh-links_content_item_descr">
+						Explore the codebase of our software probes and firmware for hardware probes as well
+					</span>
+				</a>
+			</div>
+		</div>
+
+		<div class="gp_probe">
+			<div class="gp_probe_promo">
+				<img width="198"
+					height="198"
+					src="{{@shared.assetsHost}}/img/globalping/probe.png"
+					srcset="{{@shared.assetsHost}}/img/globalping/probe@2x.png 2x">
+
+				<div class="gp_probe_promo_content">
+					<span class="gp_probe_promo_content_title">
+						Get a hardware probe
+					</span>
+
+					<span class="gp_probe_promo_content_descr">
+						Become a GitHub sponsor for $10/month or more and get your own hardware probe to install in your home or office network.
+					</span>
+
+					<a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/jsdelivr" class="gp_probe_promo_content_btn gp_btn_green">
+						<img width="20"
+							height="20"
+							src="{{@shared.assetsHost}}/img/globalping/github.small.svg">
+
+						Become a GitHub Sponsor
+					</a>
+				</div>
+			</div>
+
+			<div class="gp_probe_get-probe">
+				<div class="gp_probe_get-probe_header">
+					How to get a probe?
+				</div>
+
+				<div class="gp_probe_get-probe_list">
+					<div class="gp_probe_get-probe_list_item">
+						<div class="gp_probe_get-probe_list_item_progress">
+							<img width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/circle-icon.svg">
+
+							<span></span>
+						</div>
+
+						<div class="gp_probe_get-probe_list_item_content">
+							<span>Become a sponsor</span>
+							<span>Become a GitHub Sponsor for $10+/month.</span>
+						</div>
+					</div>
+
+					<div class="gp_probe_get-probe_list_item">
+						<div class="gp_probe_get-probe_list_item_progress">
+							<img width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/circle-icon.svg">
+
+							<span></span>
+						</div>
+
+						<div class="gp_probe_get-probe_list_item_content">
+							<span>
+								<a target="_blank" rel="noopener noreferrer" href="https://forms.gle/9jSzytJpTDYJmS2W8">Fill the form</a>
+							</span>
+							<span>Fill out this form with your details.</span>
+						</div>
+					</div>
+
+					<div class="gp_probe_get-probe_list_item">
+						<div class="gp_probe_get-probe_list_item_progress">
+							<img width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/circle-icon.svg">
+						</div>
+
+						<div class="gp_probe_get-probe_list_item_content">
+							<span>Probe arrives</span>
+							<span>Wait for the probe to arrive.</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="gp_probe_how-it-works">
+				<div class="gp_probe_how-it-works_header">How it works?</div>
+				<div class="gp_probe_how-it-works_text">
+					<span>
+						Installing our hardware probe simplifies the whole process and <b>removes the need of having a computer running 24/7.</b>
+						Just connect the probe to your switch or router via an ethernet cable and you are done!
+					</span>
+					<span>
+						Our hardware probes are fully secure. <b>They don't allow any kind of access to your LAN</b>, they block all malicious and abusive endpoints,
+						don't open any ports whatsoever and the firmware itself is fully open source.
+					</span>
+				</div>
+
+				<div class="gp_probe_how-it-works_btns">
+					<a target="_blank"
+						rel="noopener noreferrer"
+						href="https://github.com/jsdelivr/globalping-hwprobe"
+						class="gp_probe_how-it-works_btns_learn-more gp_btn_black">
+						Learn more
+					</a>
+
+					<a target="_blank"
+						rel="noopener noreferrer"
+						href="https://github.com/sponsors/jsdelivr"
+						class="gp_probe_how-it-works_btns_sponsor gp_btn_green">
+						<img width="20"
+							height="20"
+							src="{{@shared.assetsHost}}/img/globalping/github.small.svg">
+
+						Become a GitHub Sponsor
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="gp_sponsors">
+			<div class="gp_sponsors_info">
+				<span class="gp_sponsors_info_title">Globalping sponsors</span>
+
+				<span class="gp_sponsors_info_descr">
+					We thank everyone who decided to help our project by either running multiple globally distributed probes or donating to our cause.
+				</span>
+			</div>
+
+			<div class="gp_sponsors_list">
+				<div class="gp_sponsors_list_tier-one">
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://gcore.com">
+							<img title="Sponsored by GCore"
+								width="120"
+								height="34"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/gcore.svg">
+						</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://xtom.com">
+							<img title="Sponsored by xTom"
+								width="101"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/xtom.svg">
+						</a>
+					</div>
+
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://dedipath.com">
+							<img title="Sponsored by DediPath"
+								width="151"
+								height="34"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/dedipath.png">
+						</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://looking.house">
+							<img title="Sponsored by Looking.house"
+								width="151"
+								height="34"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/looking-house.svg">
+						</a>
+					</div>
+
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://www.ip2location.io/">
+							<img title="Sponsored by IP2Location"
+								width="169"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/ip2location.svg">
+						</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://terrahost.com">
+							<img title="Sponsored by Terrahost"
+								width="139"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/terrahost.png">
+						</a>
+					</div>
+
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://www.fdcservers.net">
+							<img title="Sponsored by FDCServers"
+								width="95"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/fdc.svg">
+						</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://www.starrydns.com">
+							<img title="Sponsored by StarryDNS"
+								width="160"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/starry.png">
+						</a>
+					</div>
+
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://www.exoscale.com">
+							<img title="Sponsored by Exoscale"
+								width="210"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/exoscale.svg">
+						</a>
+						<a target="_blank" rel="noopener noreferrer" href="https://ipinfo.io/">
+							<img title="Sponsored by IPInfo"
+								width="93"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/ipinfo.svg">
+						</a>
+					</div>
+
+					<div class="gp_sponsors_list_tier-one_row">
+						<a target="_blank" rel="noopener noreferrer" href="https://zappiehost.com">
+							<img title="Sponsored by Zappie Host"
+								width="97"
+								height="28"
+								src="{{@shared.assetsHost}}/img/globalping/sponsors/zappiehost.png">
+						</a>
+					</div>
+				</div>
+
+<!--				<div class="gp_sponsors_list_tier-two">-->
+<!--					<div class="gp_sponsors_list_tier-two_row">-->
+<!--						<div class="gp_person-sponsor">Robert  Kowalski</div>-->
+
+<!--						<img width="57"-->
+<!--							height="19"-->
+<!--							src="{{@shared.assetsHost}}/img/globalping/sponsors/dell.svg">-->
+
+<!--						<div class="gp_person-sponsor">Magdalene Tabhita</div>-->
+<!--					</div>-->
+<!--				</div>-->
+			</div>
+
+			<a href="mailto:dak@prospectone.io" class="gp_sponsors_btn gp_btn_green">
+				Get in Contact
+			</a>
+
+			<img class="gp_sponsors_img"
+				width="289"
+				height="288"
+				src="{{@shared.assetsHost}}/img/globalping/polygons_4.svg">
+		</div>
+	</div>
+
+	<c-footer></c-footer>
+</r-page>
+
+<script>
+	const styles = require('../../assets/js/map/styles.json');
+	const _ = require('../../assets/js/_.js');
+	const clipboard = require('../../assets/js/decorators/clipboard');
+	const http = require('../../assets/js/utils/http');
+	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
+	const validateIP = require('../../assets/js/utils/validate-ip');
+	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
+	const DEFAULT_PING_OPTS = {
+		requiredAdditionalOptsCnt: 0,
+	};
+	const DEFAULT_TRACEROUTE_OPTS = {
+		protocol: 'ICMP',
+		requiredAdditionalOptsCnt: 0,
+	};
+	const DEFAULT_DNS_OPTS = {
+		protocol: 'UDP',
+		query: {
+			type: 'A',
+		},
+		trace: true,
+		requiredAdditionalOptsCnt: 0,
+	};
+	const DEFAULT_MTR_OPTS = {
+		protocol: 'ICMP',
+		requiredAdditionalOptsCnt: 0,
+	};
+	const DEFAULT_HTTP_OPTS = {
+		protocol: 'HTTP',
+		request: {
+			method: 'GET',
+		},
+		requiredAdditionalOptsCnt: 0,
+	};
+	const DEFAULT_PACKETS_AMOUNT = 3;
+	const DEFAULT_LIMIT = 1;
+	const VALIDATION_PATTERNS_MAP = {
+		limit: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Limit must be an integer number',
+			},
+		],
+		location: [
+			{
+				pattern: '^([a-zA-Z]{2}){1}(\\+[a-zA-Z]{2})*$',
+				errMsg: 'Location must be in a valid format',
+			},
+		],
+		packets: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Packets must be an integer number',
+			},
+		],
+		port: [
+			{
+				pattern: '^[0-9]+$',
+				errMsg: 'Port must be an integer number',
+			},
+		],
+	};
+	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const DOCKER_CMD_CONTENT_FULL = [
+		{
+			cmd: 'docker run -d',
+			comment: ' # Make sure the container runs on boot',
+		},
+		{
+			cmd: '--log-driver local',
+			comment: ' # Use the modern logging driver to ensure old logs are deleted',
+		},
+		{
+			cmd: '--network host',
+			comment: ' # Bypass overlay and mesh networking to ensure they dont impact latency tests',
+		},
+		{
+			cmd: '--restart=always',
+			comment: ' # Restart the container in case it crashes',
+		},
+		{
+			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			comment: '',
+		},
+	];
+	const PODMAN_CMD_CONTENT = 'sudo podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const PODMAN_CMD_CONTENT_FULL = [
+		{
+			cmd: 'sudo',
+			comment: ' # Allows the --cap-add=NET_RAW option to work properly',
+		},
+		{
+			cmd: 'podman run -d',
+			comment: ' # The container will NOT start on boot. You need to create a systemd service first.',
+		},
+		{
+			cmd: '--cap-add=NET_RAW',
+			comment: ' # Network permissions to run ping',
+		},
+		{
+			cmd: '--network host',
+			comment: '# Bypass overlay and mesh networking to ensure they dont impact latency tests',
+		},
+		{
+			cmd: '--restart=always',
+			comment: ' # Restart the container in case it crashes',
+		},
+		{
+			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			comment: '',
+		},
+	];
+	const INITIAL_MAIN_OPTS_VALUES = {
+		type: 'ping',
+		target: 'cdn.jsdelivr.net',
+		location: 'World',
+		limit: '3',
+	};
+	let map;
+	let infoWindows = [];
+	let mapMarkers = [];
+	let mapMarkersClusters = [];
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				_,
+				title: 'Globalping - Internet and web infrastructure monitoring and benchmarking ',
+				description: 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide',
+				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				mainOptions: {
+					...INITIAL_MAIN_OPTS_VALUES,
+					requiredAdditionalOptsCnt: DEFAULT_PING_OPTS.requiredAdditionalOptsCnt,
+				},
+				showMap: true,
+				showMeasurementOpts: false,
+				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
+				netDockerCmdText: DOCKER_CMD_CONTENT,
+				netDockerCmdTextFull: DOCKER_CMD_CONTENT_FULL,
+				netPodmanCmdText: PODMAN_CMD_CONTENT,
+				netPodmanCmdTextFull: PODMAN_CMD_CONTENT_FULL,
+				totalProbes: 0,
+				totalCities: 0,
+				totalCountries: 0,
+				pingOpts: DEFAULT_PING_OPTS,
+				tracerouteOpts: DEFAULT_TRACEROUTE_OPTS,
+				dnsOpts: DEFAULT_DNS_OPTS,
+				mtrOpts: DEFAULT_MTR_OPTS,
+				httpOpts: DEFAULT_HTTP_OPTS,
+				inputErrors: {},
+				testResults: null,
+				testFailed: false,
+				testInProgress: false,
+				testReqInterval: null,
+				notAppliedOpts: {},
+				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
+				defaultLimit: DEFAULT_LIMIT,
+				probesMaxTiming: 200,
+				probesMinTiming: 5,
+				joinNetSwitchValue: 'docker',
+				showCommandsBlock: false,
+				scrolledToResIdx: null,
+			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.set('@shared.googleMapsLoaded', true);
+
+				if (app.loaded) {
+					this.initMap();
+				}
+			}
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				http.fetchGlobalpingProbes().then((response) => {
+					let { totalCities, totalCountries } = response.reduce((res, item) => {
+						if (!res.citiesList.includes(item.location.city)) {
+							res.citiesList.push(item.location.city);
+						}
+
+						if (!res.countriesList.includes(item.location.country)) {
+							res.countriesList.push(item.location.country);
+						}
+
+						res.totalCities = res.citiesList.length;
+						res.totalCountries = res.countriesList.length;
+
+						return res;
+					}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+
+					this.animate('totalProbes', response.length, { duration: 2000 });
+					this.animate('totalCities', totalCities, { duration: 2000 });
+					this.animate('totalCountries', totalCountries, { duration: 2000 });
+				});
+
+				this.observe('mainOptions.type', (type) => {
+					this.set('showMeasurementOpts', false);
+					this.set('inputErrors', {});
+					this.set('pingOpts', DEFAULT_PING_OPTS);
+					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
+					this.set('dnsOpts', DEFAULT_DNS_OPTS);
+					this.set('mtrOpts', DEFAULT_MTR_OPTS);
+					this.set('httpOpts', DEFAULT_HTTP_OPTS);
+					this.set('notAppliedOpts', {});
+					this.set('testResults', null);
+					this.set('markersData', null);
+					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
+				}, { init: false });
+
+				// prepare data for Markers of the map, timings for the map scale
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					let dnsOpts = this.get('dnsOpts');
+					let testType = this.get('mainOptions.type');
+
+					let markersData = testResults.results.map((res) => {
+						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
+
+						return {
+							network: res.probe.network,
+							city: res.probe.city,
+							country: res.probe.country,
+							timing: typeof probeTiming.value === 'number' ? `${Math.round(probeTiming.value)}${probeTiming.units}` : probeTiming.value,
+							lat: res.probe.latitude,
+							lng: res.probe.longitude,
+						};
+					});
+
+					this.set('markersData', markersData);
+				}, { init: false });
+
+				// handle join-network switch and commands content
+				this.observe('joinNetSwitchValue', (joinNetSwitchValue) => {
+					let netCmdText;
+					let netCmdTextFull;
+
+					switch (joinNetSwitchValue) {
+						case 'podman':
+							netCmdText = this.get('netPodmanCmdText');
+							netCmdTextFull = this.get('netPodmanCmdTextFull');
+							break;
+						case 'docker':
+						default:
+							netCmdText = this.get('netDockerCmdText');
+							netCmdTextFull = this.get('netDockerCmdTextFull');
+					}
+
+					this.set('netCmdText', netCmdText);
+					this.set('netCmdTextFull', netCmdTextFull);
+
+					let clipboardValue = netCmdTextFull.reduce((res, part, idx) => {
+						if (idx !== 0) {
+							res += '\n';
+						}
+
+						res += `${part.cmd} ${part.comment}`;
+
+						return res;
+					}, '');
+
+					this.set('netCmdTextFullClipboard', clipboardValue);
+
+					if (this.get('showCommandsBlock')) {
+						this.set('showCommandsBlock', false);
+					}
+				});
+
+				// handle show-hide full join-network command
+				this.observe('showCommandsBlock', (showCommandsBlock) => {
+					if (showCommandsBlock) {
+						this.expandCmdBlock();
+					} else {
+						this.collapseCmdBlock();
+					}
+				}, { init: false, defer: true });
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// run the test if user is pressed Enter inside of any of main options inputs
+				let targetInput = this.find('#targetInput');
+				let locationInput = this.find('#locationInput');
+				let limitInput = this.find('#limitInput');
+
+				let handleEnterBtn = (event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						this.proceedToTest();
+					}
+				};
+
+				targetInput.addEventListener('keypress', handleEnterBtn);
+				locationInput.addEventListener('keypress', handleEnterBtn);
+				limitInput.addEventListener('keypress', handleEnterBtn);
+			}
+		},
+		proceedToTest () {
+			let { type, target, location, limit } = this.get('mainOptions');
+			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
+
+			delete measurementOpts.requiredAdditionalOptsCnt;
+
+			let reqParams = { type };
+
+			if (target) {
+				reqParams.target = target;
+			}
+
+			if (!location) {
+				reqParams.limit = limit || DEFAULT_LIMIT;
+			} else {
+				reqParams.locations = location.split('+').map(loc => ({
+					magic: loc,
+					limit: limit || DEFAULT_LIMIT,
+				}));
+			}
+
+			// since packets field default value is present only for Ping and MTR type
+			if (type.toLowerCase() === 'ping' || type.toLowerCase() === 'mtr') {
+				reqParams.measurementOptions = {
+					// set default values in case if user did not set them manually
+					packets: DEFAULT_PACKETS_AMOUNT,
+				};
+			} else {
+				delete measurementOpts.packets;
+			}
+
+			if (Object.keys(measurementOpts).length) {
+				reqParams.measurementOptions = {
+					...reqParams.measurementOptions,
+					...measurementOpts,
+				};
+			}
+
+			// get test interval and clear it when new test is started
+			let testReqInterval = this.get('testReqInterval');
+
+			if (testReqInterval) {
+				clearInterval(testReqInterval);
+			}
+
+			// validate fields
+			let inputErrors = this.validateDataForRequest(target, location, limit, measurementOpts);
+
+			if (Object.keys(inputErrors).length) {
+				this.set('inputErrors', inputErrors);
+
+				return;
+			}
+
+			// clear all data from the previous test, close additional options menu, show spinner
+			this.set('testResults', null);
+			this.set('markersData', null);
+			this.set('showMeasurementOpts', false);
+			this.set('testInProgress', true);
+
+			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
+			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
+
+			http.postGlobalpingMeasurement(reqParams).then((response) => {
+				testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(response.id).then((testRes) => {
+						if (testRes.status !== 'in-progress') {
+							clearInterval(testReqInterval);
+
+							this.set('testInProgress', false);
+							this.set('testResults', testRes);
+						}
+					}).catch(() => {
+						clearInterval(testReqInterval);
+					});
+				}, 1000);
+
+				this.set('testReqInterval', testReqInterval);
+			}).catch((err) => {
+				if (err.error.type === 'validation_error') {
+					this.set('testInProgress', false);
+					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+						let fieldName = key.split('.')[key.split('.').length - 1];
+						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+						res[key] = errMsg;
+
+						return res;
+					}, {});
+
+					this.set('inputErrors', inputErrors);
+				}
+			});
+		},
+		applyOptions () {
+			let notAppliedOpts = this.get('notAppliedOpts');
+			let { type } = this.get('mainOptions');
+			let currOptsName = `${type.toLowerCase()}Opts`;
+			let opts = this.get(currOptsName);
+
+			switch (type.toLowerCase()) {
+				case 'ping':
+					opts.packets = notAppliedOpts.packets;
+					break;
+
+				case 'traceroute':
+					opts.port = notAppliedOpts.port;
+					break;
+
+				case 'dns':
+					opts.port = notAppliedOpts.port;
+					opts.resolver = notAppliedOpts.resolver;
+					break;
+
+				case 'mtr':
+					opts.port = notAppliedOpts.port;
+					opts.packets = notAppliedOpts.packets;
+					break;
+
+				case 'http':
+					opts.port = notAppliedOpts.port;
+					opts.resolver = notAppliedOpts.resolver;
+					opts.request.host = notAppliedOpts.host;
+					opts.request.path = notAppliedOpts.path;
+					opts.request.query = notAppliedOpts.query;
+					break;
+			}
+
+			// filter opts from empty values
+			let filteredOpts = Object.keys(opts).reduce((res, key) => {
+				if (typeof opts[key] === 'object') {
+					res[key] = Object.keys(opts[key]).reduce((secRes, secKey) => {
+						if (opts[key][secKey] !== '') {
+							secRes[secKey] = opts[key][secKey];
+						}
+
+						return secRes;
+					}, {});
+				} else if (opts[key] !== '') {
+					res[key] = opts[key];
+				}
+
+				return res;
+			}, {});
+
+			this.set(currOptsName, filteredOpts);
+			this.set('showMeasurementOpts', false);
+		},
+		validateDataForRequest (target, location, limit, measurementOpts) {
+			let inputErrors = {};
+
+			// validate Target field
+			if (!target) {
+				inputErrors.target = 'Target is required';
+			} else {
+				let isValidDomainName = validateDomainName.test(target);
+				let isValidIP = validateIP.test(target);
+
+				if (!isValidDomainName && !isValidIP) {
+					inputErrors.target = 'Target does not match any of the allowed formats';
+				}
+			}
+
+			// validate Location field
+			if (location && location.toLowerCase() !== INITIAL_MAIN_OPTS_VALUES.location.toLowerCase()) {
+				let result = VALIDATION_PATTERNS_MAP.location.reduce((res, data) => {
+					let isValid = validateByPattern.test(location, data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.location = result.errMsg;
+				}
+			}
+
+			// validate Limit field
+			if (limit) {
+				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors.limit = result.errMsg;
+				} else if (limit > 500 || limit < 1) {
+					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
+				}
+			}
+
+			// validate Measurement Options
+			if (measurementOpts.packets) {
+				let result = VALIDATION_PATTERNS_MAP.packets.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(measurementOpts.packets), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors['measurementOptions.packets'] = result.errMsg;
+				} else if (measurementOpts.packets > 16 || measurementOpts.packets < 1) {
+					inputErrors['measurementOptions.packets'] = 'Packets must be from 1 to 16 inclusive';
+				}
+			}
+
+			if (measurementOpts.port) {
+				let result = VALIDATION_PATTERNS_MAP.port.reduce((res, data) => {
+					let isValid = validateByPattern.test(Math.abs(measurementOpts.port), data.pattern);
+
+					if (res.isValid && !isValid) {
+						return {
+							isValid: false,
+							errMsg: data.errMsg,
+						};
+					}
+
+					return res;
+				}, { isValid: true, errMsg: '' });
+
+				if (!result.isValid) {
+					inputErrors['measurementOptions.port'] = result.errMsg;
+				} else if (measurementOpts.port > 65535 || measurementOpts.port < 1) {
+					inputErrors['measurementOptions.port'] = 'Port must be from 1 to 65535 inclusive';
+				}
+			}
+
+			if (measurementOpts.resolver) {
+				let isValidIP = validateIP.test(measurementOpts.resolver);
+
+				if (!isValidIP) {
+					inputErrors['measurementOptions.resolver'] = 'Resolver must be a valid ip address of one of the following versions [ipv4] with a forbidden CIDR';
+				}
+			}
+
+			if (measurementOpts?.request?.host) {
+				let isValidDomainName = validateDomainName.test(measurementOpts.request.host);
+
+				if (!isValidDomainName) {
+					inputErrors['measurementOptions.request.host'] = 'Host must contain a valid domain name';
+				}
+			}
+
+			return inputErrors;
+		},
+		initMap () {
+			let mq = window.matchMedia('(min-width: 768px)');
+			let CENTER = { lat: 48, lng: 16 };
+
+			map = new google.maps.Map(this.find('#gp-map'), {
+				styles,
+				zoom: 3.74,
+				center: CENTER,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
+			});
+
+			if (mq.matches) {
+				CENTER = { lat: 30, lng: 18 };
+				map.setZoom(2.14);
+			}
+
+			this.observe('markersData', (markersData) => {
+				if (markersData === null) {
+					this.clearMapElements();
+				} else {
+					this.updateMarkers(markersData);
+				}
+			}, { init: false });
+		},
+		updateMarkers (markersData) {
+			markersData.forEach((markerData, mDataIdx) => {
+				// create Popup element
+				let infoWindow = new google.maps.InfoWindow({
+					content: `<div class="gp-map_popup">
+							<div class="gp-map_popup_header">${markerData.timing}</div>
+							<div class="gp-map_popup_descr">${markerData.network} (${markerData.city}, ${markerData.country})</div>
+							<div class="gp-map_popup_see-results" id="iw-${mDataIdx}">
+								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+								<span>See results</span>
+							</div>
+						</div>`,
+				});
+
+				// create svg to use as a Marker icon
+				let svgFillColor = this.pickMarkerColor(markerData.timing);
+				let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
+					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+					</g>
+					<defs>
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+					<feOffset dy="2"/>
+					<feGaussianBlur stdDeviation="2"/>
+					<feComposite in2="hardAlpha" operator="out"/>
+					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+					</filter>
+					</defs>
+					</svg>`);
+
+				// create Marker
+				let marker = new google.maps.Marker({
+					map,
+					icon: {
+						url: `data:image/svg+xml;base64,${svg}`,
+					},
+					position: { lat: markerData.lat, lng: markerData.lng },
+					optimized: false,
+				});
+
+				google.maps.event.addListener(marker, 'click', () => {
+					infoWindows.forEach(iw => iw.close());
+					infoWindow.open(map, marker);
+				});
+
+				google.maps.event.addListener(map, 'click', () => {
+					infoWindow.close();
+				});
+
+				google.maps.event.addListener(infoWindow, 'domready', () => {
+					let clickableEl = document.getElementById(`iw-${mDataIdx}`);
+					let hasListener = clickableEl.dataset.hasListener;
+
+					if (!hasListener) {
+						clickableEl.addEventListener('click', () => {
+							this.handleSeeResults(mDataIdx);
+							clickableEl.dataset.hasListener = true;
+						});
+					}
+				});
+
+				// eslint-disable-next-line no-undef
+				let markersCluster = new markerClusterer.MarkerClusterer({
+					markers: mapMarkers,
+					map,
+					renderer: {
+						render: ({ markers, _position: position }) => {
+							return new google.maps.Marker({
+								position: {
+									lat: position.lat(),
+									lng: position.lng(),
+								},
+								icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
+								label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+							});
+						},
+					},
+				});
+
+				infoWindows.push(infoWindow);
+				mapMarkers.push(marker);
+				mapMarkersClusters.push(markersCluster);
+			});
+		},
+		clearMapElements () {
+			infoWindows.forEach(iw => iw.close());
+			mapMarkers.forEach(mm => mm.setMap(null));
+			mapMarkersClusters.forEach(mc => mc.setMap(null));
+			infoWindows = [];
+			mapMarkers = [];
+			mapMarkersClusters = [];
+		},
+		collapseCmdBlock () {
+			let element = document.querySelector('.gp_join-network_cmd-block_command');
+
+			requestAnimationFrame(() => {
+				element.style.height = `${element.scrollHeight}px`;
+
+				requestAnimationFrame(() => {
+					element.style.height = '56px';
+				});
+			});
+		},
+		expandCmdBlock () {
+			let element = document.querySelector('.gp_join-network_cmd-block_command');
+
+			requestAnimationFrame(() => {
+				element.style.height = '56px';
+
+				requestAnimationFrame(() => {
+					element.style.height = `${element.scrollHeight}px`;
+				});
+			});
+		},
+		pickMarkerColor (timing) {
+			// return default color for timed out probe
+			if (timing === _.getProbeTimeOutValue()) {
+				return '#17233A';
+			}
+
+			function getColorFromGradient (quotient, start, middle, end) {
+				return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
+			}
+
+			function linear (startColor, endColor, quotient) {
+				let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
+				let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
+				let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
+
+				return `#${redColor}${greenColor}${blueColor}`;
+			}
+
+			function byteLinear (partOne, partTwo, quotient) {
+				let color = Math.floor(('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient);
+
+				return color.toString(16).padStart(2, '0');
+			}
+
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
+			let pureTimingValue = parseInt(timing);
+
+
+			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
+			if (pureTimingValue <= probesMinTiming) {
+				return '#17d4a7';
+			}
+
+			if (pureTimingValue >= probesMaxTiming) {
+				return '#e64e3d';
+			}
+
+			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
+		},
+		handleSeeResults (resIdx) {
+			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item:nth-child(${resIdx + 1})`);
+
+			// this prop will be passed to c-gp-test-results in order for it to show the specific result element if it was hidden
+			this.set('scrolledToResIdx', resIdx);
+
+			el.scrollIntoView({ behvior: 'smooth' });
+		},
+	};
+</script>
