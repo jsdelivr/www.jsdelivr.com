@@ -19,10 +19,12 @@
 						height="4"
 						src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
 
-					<span class="c-gp-test-results_list_item_header_time">
+					{{#if testResultsTimings[idx]}}
+						<span class="c-gp-test-results_list_item_header_time">
 							<span>Time:</span>
-							<span class="c-gp-test-results_list_item_header_time_value">{{_.calcGpTestResTiming(testType, this, dnsTraceEnabled).fullText}}</span>
-					</span>
+							<span class="c-gp-test-results_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
+						</span>
+					{{/if}}
 
 					<img on-click="@this.hideShowTestResult(idx)"
 						class="c-gp-test-results_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
@@ -63,6 +65,7 @@
 			return {
 				_,
 				hiddenTestResults: [],
+				testResultsTimings: [],
 			};
 		},
 		onrender () {
@@ -70,6 +73,19 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
+					// calculate timings for each test result
+					let testType = this.get('testType');
+					let dnsTraceEnabled = this.get('dnsTraceEnabled');
+
+					let testResultsTimings = testResults.results.reduce((timingValues, result) => {
+						timingValues.push(_.calcGpTestResTiming(testType, result, dnsTraceEnabled).fullText);
+
+						return timingValues;
+					}, []);
+
+					this.set('testResultsTimings', testResultsTimings);
+
+					// calculate results block height
 					this.setResultsBlockHeight(testResults);
 				}, { defer: true });
 
