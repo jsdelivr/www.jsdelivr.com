@@ -1193,7 +1193,7 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpTestResultTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
+	calcGpTestResTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
 		let probeTiming;
 		let lowCaseTestName = testType.toLowerCase();
 
