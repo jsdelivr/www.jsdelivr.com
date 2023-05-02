@@ -1193,14 +1193,14 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calcGpTestResTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
+	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = 'ms') {
 		let probeTiming;
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
-			probeTiming = probeData.result?.stats?.avg;
+			probeTiming = testResData.result?.stats?.avg;
 		} else if (lowCaseTestName === 'traceroute') {
-			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
+			let { timings } = testResData.result.hops[testResData.result.hops.length - 1];
 
 			if (timings && timings.length) {
 				let timingsCalc = timings.reduce((res, timing) => {
@@ -1220,22 +1220,22 @@ module.exports = {
 			}
 		} else if (lowCaseTestName === 'dns') {
 			if (dnsTraceEnabled) {
-				let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+				let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 				if (lastHop) {
 					probeTiming = lastHop.timings.total;
 				}
 			} else {
-				probeTiming = probeData.result.timings.total;
+				probeTiming = testResData.result.timings.total;
 			}
 		} else if (lowCaseTestName === 'mtr') {
-			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+			let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 			if (lastHop) {
 				probeTiming = lastHop.stats.avg;
 			}
 		} else if (lowCaseTestName === 'http') {
-			probeTiming = probeData.result.timings.total;
+			probeTiming = testResData.result.timings.total;
 		}
 
 		if (typeof probeTiming === 'number') {
