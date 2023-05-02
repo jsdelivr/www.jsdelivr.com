@@ -147,6 +147,7 @@ app.use(render({
 			: serverConfig.assetsHost
 		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
+	globalpingApiDocsHost: serverConfig.globalpingApiDocsHost,
 	assetsVersion,
 }, app));
 
