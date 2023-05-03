@@ -26,6 +26,15 @@
 						</span>
 					{{/if}}
 
+					{{#if testResultsExtra[idx]}}
+						{{#each testResultsExtra[idx]}}
+							<span class="c-gp-test-results_list_item_header_time">
+								<span>{{this.text}}:</span>
+								<span class="c-gp-test-results_list_item_header_time_value">{{this.value}}ms</span>
+							</span>
+						{{/each}}
+					{{/if}}
+
 					<img on-click="@this.hideShowTestResult(idx)"
 						class="c-gp-test-results_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
 						width="24"
@@ -66,6 +75,7 @@
 				_,
 				hiddenTestResults: [],
 				testResultsTimings: [],
+				testResultsExtra: {},
 			};
 		},
 		onrender () {
@@ -73,25 +83,28 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
-					// calculate timings for each test result
-					// calculate additional timings info for each test result
+					// set timings and extra timings for each test result
 					let testType = this.get('testType');
 					let dnsTraceEnabled = this.get('dnsTraceEnabled');
 
-					let timings = testResults.results.reduce((timingValues, result) => {
-						timingValues.mainTimingValues.push(_.calcGpTestResTiming(testType, result, dnsTraceEnabled).fullText);
+					let timings = testResults.results.reduce((timingValues, result, idx) => {
+						let { fullText, extraValues } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
+
+						timingValues.mainTimingValues.push(fullText);
+						timingValues.extraValues[idx] = extraValues;
 
 						return timingValues;
 					}, {
 						mainTimingValues: [],
+						extraValues: {},
 					});
 
 					this.set('testResultsTimings', timings.mainTimingValues);
+					this.set('testResultsExtra', timings.extraValues);
 
-					// calculate results block height
+					// set results block height based on content
 					this.setResultsBlockHeight(testResults);
 				}, { defer: true });
-
 
 				// open result under specific index when scrool to this element from the parent called
 				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
