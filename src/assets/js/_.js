@@ -1195,10 +1195,18 @@ module.exports = {
 
 	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = 'ms') {
 		let resTiming;
+		let extraValues = {};
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
 			resTiming = testResData.result?.stats?.avg;
+
+			if (typeof testResData.result?.stats?.loss === 'number') {
+				extraValues.loss = {
+					text: 'LOSS',
+					value: testResData.result?.stats?.loss,
+				};
+			}
 		} else if (lowCaseTestName === 'traceroute') {
 			let { timings } = testResData.result.hops[testResData.result.hops.length - 1];
 
@@ -1236,6 +1244,34 @@ module.exports = {
 			}
 		} else if (lowCaseTestName === 'http') {
 			resTiming = testResData.result.timings.total;
+
+			if (typeof testResData.result.timings.dns === 'number') {
+				extraValues.dns = {
+					text: 'DNS',
+					value: testResData.result.timings.dns,
+				};
+			}
+
+			if (typeof testResData.result.timings.tls === 'number') {
+				extraValues.tls = {
+					text: 'TLS',
+					value: testResData.result.timings.tls,
+				};
+			}
+
+			if (typeof testResData.result.timings.firstByte === 'number') {
+				extraValues.firstByte = {
+					text: 'TTFB',
+					value: testResData.result.timings.firstByte,
+				};
+			}
+
+			if (typeof testResData.result.timings.download === 'number') {
+				extraValues.download = {
+					text: 'DOWN',
+					value: testResData.result.timings.download,
+				};
+			}
 		}
 
 		if (typeof resTiming === 'number') {
@@ -1254,6 +1290,7 @@ module.exports = {
 
 			return {
 				value: resTiming,
+				extraValues,
 				units,
 				note,
 				fullText: note ? `${Math.round(resTiming)}${units} ${note}` : `${Math.round(resTiming)}${units}`,
@@ -1262,6 +1299,7 @@ module.exports = {
 
 		return {
 			value: NO_PROBE_TIMING_VALUE,
+			extraValues,
 			fullText: NO_PROBE_TIMING_VALUE,
 			isFailed: true,
 		};
