@@ -74,16 +74,19 @@
 					if (!testResults) { return; }
 
 					// calculate timings for each test result
+					// calculate additional timings info for each test result
 					let testType = this.get('testType');
 					let dnsTraceEnabled = this.get('dnsTraceEnabled');
 
-					let testResultsTimings = testResults.results.reduce((timingValues, result) => {
-						timingValues.push(_.calcGpTestResTiming(testType, result, dnsTraceEnabled).fullText);
+					let timings = testResults.results.reduce((timingValues, result) => {
+						timingValues.mainTimingValues.push(_.calcGpTestResTiming(testType, result, dnsTraceEnabled).fullText);
 
 						return timingValues;
-					}, []);
+					}, {
+						mainTimingValues: [],
+					});
 
-					this.set('testResultsTimings', testResultsTimings);
+					this.set('testResultsTimings', timings.mainTimingValues);
 
 					// calculate results block height
 					this.setResultsBlockHeight(testResults);

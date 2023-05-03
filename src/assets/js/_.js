@@ -1194,11 +1194,11 @@ module.exports = {
 	},
 
 	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = 'ms') {
-		let probeTiming;
+		let resTiming;
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
-			probeTiming = testResData.result?.stats?.avg;
+			resTiming = testResData.result?.stats?.avg;
 		} else if (lowCaseTestName === 'traceroute') {
 			let { timings } = testResData.result.hops[testResData.result.hops.length - 1];
 
@@ -1215,7 +1215,7 @@ module.exports = {
 				}, { sum: 0, cnt: 0 });
 
 				if (timingsCalc.cnt) {
-					probeTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
+					resTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
 				}
 			}
 		} else if (lowCaseTestName === 'dns') {
@@ -1223,22 +1223,22 @@ module.exports = {
 				let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 				if (lastHop) {
-					probeTiming = lastHop.timings.total;
+					resTiming = lastHop.timings.total;
 				}
 			} else {
-				probeTiming = testResData.result.timings.total;
+				resTiming = testResData.result.timings.total;
 			}
 		} else if (lowCaseTestName === 'mtr') {
 			let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 			if (lastHop) {
-				probeTiming = lastHop.stats.avg;
+				resTiming = lastHop.stats.avg;
 			}
 		} else if (lowCaseTestName === 'http') {
-			probeTiming = testResData.result.timings.total;
+			resTiming = testResData.result.timings.total;
 		}
 
-		if (typeof probeTiming === 'number') {
+		if (typeof resTiming === 'number') {
 			let note = '';
 
 			switch (lowCaseTestName) {
@@ -1253,10 +1253,10 @@ module.exports = {
 			}
 
 			return {
-				value: probeTiming,
+				value: resTiming,
 				units,
 				note,
-				fullText: note ? `${Math.round(probeTiming)}${units} ${note}` : `${Math.round(probeTiming)}${units}`,
+				fullText: note ? `${Math.round(resTiming)}${units} ${note}` : `${Math.round(resTiming)}${units}`,
 			};
 		}
 
