@@ -1252,6 +1252,13 @@ module.exports = {
 				};
 			}
 
+			if (typeof testResData.result.timings.tcp === 'number') {
+				extraValues.tcp = {
+					text: 'TCP',
+					value: testResData.result.timings.tcp,
+				};
+			}
+
 			if (typeof testResData.result.timings.tls === 'number') {
 				extraValues.tls = {
 					text: 'TLS',
