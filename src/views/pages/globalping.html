@@ -463,6 +463,7 @@
 				{{elseif testResults}}
 					<c-gp-test-results
 						testType="{{mainOptions.type}}"
+						testResultsId="{{testResultsId}}"
 						testResults="{{testResults}}"
 						dnsTraceEnabled="{{dnsTraceEnabled}}"
 						scrolledToResIdx="{{scrolledToResIdx}}">
@@ -1133,6 +1134,7 @@
 				mtrOpts: DEFAULT_MTR_OPTS,
 				httpOpts: DEFAULT_HTTP_OPTS,
 				inputErrors: {},
+				testResultsId: null,
 				testResults: null,
 				testFailed: false,
 				testInProgress: false,
@@ -1211,31 +1213,9 @@
 					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
+					this.set('testResultsId', null);
 					this.set('markersData', null);
 					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
-				}, { init: false });
-
-				// prepare data for Markers of the map, timings for the map scale
-				this.observe('testResults', (testResults) => {
-					if (!testResults) { return; }
-
-					let dnsOpts = this.get('dnsOpts');
-					let testType = this.get('mainOptions.type');
-
-					let markersData = testResults.results.map((res) => {
-						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
-
-						return {
-							network: res.probe.network,
-							city: res.probe.city,
-							country: res.probe.country,
-							timing: typeof resTiming.value === 'number' ? `${Math.round(resTiming.value)}${resTiming.units}` : resTiming.value,
-							lat: res.probe.latitude,
-							lng: res.probe.longitude,
-						};
-					});
-
-					this.set('markersData', markersData);
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -1282,6 +1262,46 @@
 						this.collapseCmdBlock();
 					}
 				}, { init: false, defer: true });
+
+				// handle test results in real time
+				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (realTimeTestResResponse.status === 'finished') {
+						clearInterval(this.get('testReqInterval'));
+						this.set('testInProgress', false);
+						this.set('testResultsId', realTimeTestResResponse.id);
+					}
+
+					let testResults = realTimeTestResResponse.results.filter((res) => {
+						if (res.result.status === 'finished') { return true; }
+
+						return false;
+					});
+
+					this.set('testResults', testResults);
+				});
+
+				// prepare data for Markers of the map, timings for the map scale
+				this.observe('testResults', (testResults) => {
+					if (!testResults || !testResults.length) { return; }
+
+					let dnsOpts = this.get('dnsOpts');
+					let testType = this.get('mainOptions.type');
+
+					let markersData = testResults.map((res) => {
+						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+
+						return {
+							network: res.probe.network,
+							city: res.probe.city,
+							country: res.probe.country,
+							timing: typeof resTiming.value === 'number' ? `${Math.round(resTiming.value)}${resTiming.units}` : resTiming.value,
+							lat: res.probe.latitude,
+							lng: res.probe.longitude,
+						};
+					});
+
+					this.set('markersData', markersData);
+				}, { init: false });
 			}
 		},
 		oncomplete () {
@@ -1363,6 +1383,7 @@
 
 			// clear all data from the previous test, close additional options menu, show spinner
 			this.set('testResults', null);
+			this.set('testResultsId', null);
 			this.set('markersData', null);
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
@@ -1374,12 +1395,7 @@
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(response.id).then((testRes) => {
-						if (testRes.status !== 'in-progress') {
-							clearInterval(testReqInterval);
-
-							this.set('testInProgress', false);
-							this.set('testResults', testRes);
-						}
+						this.set('realTimeTestResResponse', testRes);
 					}).catch(() => {
 						clearInterval(testReqInterval);
 					});
