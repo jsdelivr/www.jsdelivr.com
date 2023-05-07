@@ -98,7 +98,12 @@
 					</p>
 				</div>
 			{{elseif testResults}}
-				<c-gp-test-results testType="{{selectedTestType}}" testResults="{{testResults}}" dnsTraceEnabled="{{false}}"></c-gp-test-results>
+				<c-gp-test-results
+					testType="{{selectedTestType}}"
+					testResultsId="{{testResultsId}}"
+					testResults="{{testResults}}"
+					dnsTraceEnabled="{{false}}">
+				</c-gp-test-results>
 			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
 					<img width="56"
@@ -170,6 +175,7 @@
 					limit: '',
 				},
 				inputErrors: {},
+				testResultsId: null,
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
@@ -180,6 +186,7 @@
 			if (!Ractive.isServer) {
 				this.observe('selectedTestType', () => {
 					this.set('inputErrors', {});
+					this.set('testResultsId', null);
 					this.set('testResults', null);
 				}, { init: false });
 			}
@@ -222,6 +229,7 @@
 				return;
 			}
 
+			this.set('testResultsId', null);
 			this.set('testResults', null);
 			this.set('testInProgress', true);
 
@@ -239,6 +247,7 @@
 							clearInterval(testReqInterval);
 
 							this.set('testInProgress', false);
+							this.set('testResultsId', testRes.id);
 							this.set('testResults', testRes);
 						}
 					}).catch(() => {
