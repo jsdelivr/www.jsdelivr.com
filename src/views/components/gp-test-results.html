@@ -1,6 +1,6 @@
 <div class="c-gp-test-results">
 	<div class="c-gp-test-results_list">
-		{{#each testResults.results:idx}}
+		{{#each testResults:idx}}
 			<div class="c-gp-test-results_list_item">
 				<div class="c-gp-test-results_list_item_header">
 					<span class="c-gp-test-results_list_item_header_info">
@@ -49,17 +49,19 @@
 		{{/each}}
 	</div>
 
-	<div class="c-gp-test-results_share">
-		<span>Share your results:</span>
+	{{#if testResultsId}}
+		<div class="c-gp-test-results_share">
+			<span>Share your results:</span>
 
-		<div>{{`http://www.jsdelivr.com/globalping?id=${testResults.id}`}}</div>
+			<div>{{`http://www.jsdelivr.com/globalping?id=${testResultsId}`}}</div>
 
-		<button as-clipboard data-clipboard-text="{{`http://www.jsdelivr.com/globalping?id=${testResults.id}`}}">
-			<img width="20"
-				height="20"
-				src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
-		</button>
-	</div>
+			<button as-clipboard data-clipboard-text="{{`http://www.jsdelivr.com/globalping?id=${testResultsId}`}}">
+				<img width="20"
+					height="20"
+					src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
+			</button>
+		</div>
+	{{/if}}
 </div>
 
 <script>
@@ -87,7 +89,7 @@
 					let testType = this.get('testType');
 					let dnsTraceEnabled = this.get('dnsTraceEnabled');
 
-					let timings = testResults.results.reduce((timingValues, result, idx) => {
+					let timings = testResults.reduce((timingValues, result, idx) => {
 						let { fullText, extraValues } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
 
 						timingValues.mainTimingValues.push(fullText);
@@ -134,7 +136,7 @@
 		setResultsBlockHeight (testResults) {
 			requestAnimationFrame(() => {
 				let listEl = document.querySelector('.c-gp-test-results_list');
-				let itemsAmount = testResults.results.length;
+				let itemsAmount = testResults.length;
 				let lestElScrollHeight = listEl.scrollHeight;
 				let avgItemElHeight = Math.round(lestElScrollHeight / itemsAmount);
 
