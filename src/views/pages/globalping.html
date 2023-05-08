@@ -986,9 +986,6 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
-	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
-	const validateIP = require('../../assets/js/utils/validate-ip');
-	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
 	const has = require('../../assets/js/utils/has');
 	const DEFAULT_PING_OPTS = {
 		requiredAdditionalOptsCnt: 0,
@@ -1018,32 +1015,6 @@
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
-	const VALIDATION_PATTERNS_MAP = {
-		limit: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Limit must be an integer number',
-			},
-		],
-		location: [
-			{
-				pattern: '^([a-zA-Z]{2}){1}(\\+[a-zA-Z]{2})*$',
-				errMsg: 'Location must be in a valid format',
-			},
-		],
-		packets: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Packets must be an integer number',
-			},
-		],
-		port: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Port must be an integer number',
-			},
-		],
-	};
 	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const DOCKER_CMD_CONTENT_FULL = [
 		{
