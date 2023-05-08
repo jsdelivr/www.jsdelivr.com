@@ -1252,7 +1252,8 @@
 					}
 
 					let testResults = realTimeTestResResponse.results.filter((res) => {
-						if (res.result.status === 'finished') { return true; }
+						// if it is no in-progress then it is already finished or failed and we could draw a marker
+						if (res.result.status !== 'in-progress') { return true; }
 
 						return false;
 					});
