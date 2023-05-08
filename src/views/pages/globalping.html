@@ -457,7 +457,7 @@
 							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
 						<p>
-							All tests failed. Maybe you specified a non existing endpoint?
+							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
 						</p>
 					</div>
 				{{elseif testResults}}
@@ -1187,6 +1187,7 @@
 					this.set('testResultsId', null);
 					this.set('markersData', null);
 					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
+					this.set('testFailed', false);
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -1350,6 +1351,7 @@
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
+			this.set('testFailed', false);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
 			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
@@ -1366,6 +1368,7 @@
 				this.set('testReqInterval', testReqInterval);
 			}).catch((err) => {
 				this.set('testInProgress', false);
+				this.set('testFailed', true);
 
 				if (err.error.type === 'validation_error') {
 					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
@@ -1378,6 +1381,10 @@
 					}, {});
 
 					this.set('inputErrors', inputErrors);
+				} else if (err.error.type === 'no_probes_found') {
+					this.set('inputErrors', {
+						noProbesFound: err.error.message,
+					});
 				}
 			});
 		},
