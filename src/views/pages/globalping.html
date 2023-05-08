@@ -1480,11 +1480,20 @@
 			});
 
 			// draw test response  markers and Clusers or clear the map from them
-			this.observe('markersData', (markersData) => {
+			this.observe('markersData', (markersData, prevMarkersData) => {
 				if (markersData === null) {
 					this.clearTestResponseMarkers();
 				} else {
-					this.updateMarkers(markersData);
+					let markersDataToDraw;
+
+					// if the data was already drawn on the map we should filter it out
+					if (prevMarkersData) {
+						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
+					} else {
+						markersDataToDraw = markersData;
+					}
+
+					this.updateMarkers(markersDataToDraw);
 				}
 			}, { init: false });
 		},
