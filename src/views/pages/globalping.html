@@ -1394,13 +1394,14 @@
 
 				this.set('testReqInterval', testReqInterval);
 			}).catch((err) => {
+				this.set('testInProgress', false);
+
 				if (err.error.type === 'validation_error') {
-					this.set('testInProgress', false);
 					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
 						let fieldName = key.split('.')[key.split('.').length - 1];
 						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
-						res[key] = errMsg;
+						res[fieldName] = errMsg;
 
 						return res;
 					}, {});
