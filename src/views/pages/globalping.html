@@ -1240,6 +1240,14 @@
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
+
+						// check if all probes failed
+						if (realTimeTestResResponse.results.every(res => res.result.status === 'failed')) {
+							this.set('testFailed', true);
+
+							return;
+						}
+
 						this.set('testResultsId', realTimeTestResResponse.id);
 					}
 
