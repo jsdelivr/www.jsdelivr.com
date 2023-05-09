@@ -1131,49 +1131,28 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				let handleProbesResponse = isStored => (response) => {
-					if (!isStored) {
-						sessionStorage.setItem('probesResponse', JSON.stringify(response));
-					} else {
-						response = JSON.parse(response);
-					}
+				// check if id is present in query string
+				// if so - should be a share-results logic implemented
+				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
+				let { id: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
 
-					// TODO: for test purpose, rm after
-					response = response.slice(0, 20);
-
-					let { totalCities, totalCountries } = response.reduce((res, item) => {
-						if (!res.citiesList.includes(item.location.city)) {
-							res.citiesList.push(item.location.city);
-						}
-
-						if (!res.countriesList.includes(item.location.country)) {
-							res.countriesList.push(item.location.country);
-						}
-
-						res.totalCities = res.citiesList.length;
-						res.totalCountries = res.countriesList.length;
-
-						return res;
-					}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
-
-					this.animate('totalProbes', response.length, { duration: 2000 });
-					this.animate('totalCities', totalCities, { duration: 2000 });
-					this.animate('totalCountries', totalCountries, { duration: 2000 });
-					this.set('probesResponse', response);
-				};
-
-				if (has.sessionStorage()) {
-					let probesResponse = sessionStorage.getItem('probesResponse');
-
-					if (probesResponse) {
-						handleProbesResponse(true)(probesResponse);
-					} else {
-						http.fetchGlobalpingProbes().then(handleProbesResponse(false));
-					}
+				if (measurementId) {
+					this.getTestMeasurementById(measurementId);
 				} else {
-					http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+					if (has.sessionStorage()) {
+						let probesResponse = sessionStorage.getItem('probesResponse');
+
+						if (probesResponse) {
+							this.handleProbesResponse(true)(probesResponse);
+						} else {
+							http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+						}
+					} else {
+						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+					}
 				}
 
+				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
@@ -1347,11 +1326,12 @@
 			}
 
 			// get test interval and clear it when new test is started
-			let testReqInterval = this.get('testReqInterval');
+			// TODO: DO WE NEED THIS?
+			// let testReqInterval = this.get('testReqInterval');
 
-			if (testReqInterval) {
-				clearInterval(testReqInterval);
-			}
+			// if (testReqInterval) {
+			// 	clearInterval(testReqInterval);
+			// }
 
 			// clear all data from the previous test, close additional options menu, show spinner
 			this.set('testResults', null);
@@ -1366,15 +1346,7 @@
 			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				testReqInterval = setInterval(() => {
-					http.getGlobalpingMeasurement(response.id).then((testRes) => {
-						this.set('realTimeTestResResponse', testRes);
-					}).catch(() => {
-						clearInterval(testReqInterval);
-					});
-				}, 1000);
-
-				this.set('testReqInterval', testReqInterval);
+				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
 				this.set('testInProgress', false);
 				this.set('testFailed', true);
@@ -1699,6 +1671,49 @@
 			this.set('scrolledToResIdx', resIdx);
 
 			el.scrollIntoView({ behvior: 'smooth' });
+		},
+		getTestMeasurementById (measurementId) {
+			let testReqInterval = setInterval(() => {
+				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+					this.set('realTimeTestResResponse', testRes);
+				}).catch(() => {
+					clearInterval(testReqInterval);
+				});
+			}, 1000);
+
+			this.set('testReqInterval', testReqInterval);
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				// TODO: for test purpose, rm after
+				response = response.slice(0, 20);
+
+				let { totalCities, totalCountries } = response.reduce((res, item) => {
+					if (!res.citiesList.includes(item.location.city)) {
+						res.citiesList.push(item.location.city);
+					}
+
+					if (!res.countriesList.includes(item.location.country)) {
+						res.countriesList.push(item.location.country);
+					}
+
+					res.totalCities = res.citiesList.length;
+					res.totalCountries = res.countriesList.length;
+
+					return res;
+				}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+
+				this.animate('totalProbes', response.length, { duration: 2000 });
+				this.animate('totalCities', totalCities, { duration: 2000 });
+				this.animate('totalCountries', totalCountries, { duration: 2000 });
+				this.set('probesResponse', response);
+			};
 		},
 	};
 </script>
