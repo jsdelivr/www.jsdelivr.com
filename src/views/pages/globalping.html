@@ -1702,8 +1702,10 @@
 						}
 
 						// set Measurement Options from the response
-						this.set('notAppliedOpts', testRes.measurementOptions);
-						this.set(`${testRes.type.toLowerCase()}Opts`, testRes.measurementOptions);
+						if (testRes.measurementOptions) {
+							this.set('notAppliedOpts', testRes.measurementOptions);
+							this.set(`${testRes.type.toLowerCase()}Opts`, testRes.measurementOptions);
+						}
 
 						// clear measurementId so the mainOptions.type observer could work now
 						this.set('measurementId', null);
