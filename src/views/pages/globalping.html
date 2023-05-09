@@ -1118,6 +1118,7 @@
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
+				measurementId: null,
 			};
 		},
 		onrender () {
@@ -1137,19 +1138,20 @@
 				let { id: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
 
 				if (measurementId) {
+					this.set('measurementId', measurementId);
 					this.getTestMeasurementById(measurementId);
-				} else {
-					if (has.sessionStorage()) {
-						let probesResponse = sessionStorage.getItem('probesResponse');
+				}
 
-						if (probesResponse) {
-							this.handleProbesResponse(true)(probesResponse);
-						} else {
-							http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-						}
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
+
+					if (probesResponse) {
+						this.handleProbesResponse(true)(probesResponse);
 					} else {
 						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 					}
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
 
 				// handle test type switch
@@ -1447,7 +1449,9 @@
 			this.observe('probesResponse', (probesResponse) => {
 				if (probesResponse === null) {
 					this.clearProbesClusters();
-				} else if (probesResponse) {
+				// check if there is no measurementId so it is not a share-results case
+				// we do need to draw probes Clusters for share-results case
+				} else if (probesResponse && this.get('measurementId') === null) {
 					this.updateClusters(probesResponse);
 				}
 			});
