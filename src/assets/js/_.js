@@ -1205,6 +1205,7 @@ module.exports = {
 				extraValues.loss = {
 					text: 'LOSS',
 					value: testResData.result?.stats?.loss,
+					units: '%',
 				};
 			}
 		} else if (lowCaseTestName === 'traceroute') {
@@ -1249,6 +1250,7 @@ module.exports = {
 				extraValues.dns = {
 					text: 'DNS',
 					value: testResData.result.timings.dns,
+					units: 'ms',
 				};
 			}
 
@@ -1256,6 +1258,7 @@ module.exports = {
 				extraValues.tcp = {
 					text: 'TCP',
 					value: testResData.result.timings.tcp,
+					units: 'ms',
 				};
 			}
 
@@ -1263,6 +1266,7 @@ module.exports = {
 				extraValues.tls = {
 					text: 'TLS',
 					value: testResData.result.timings.tls,
+					units: 'ms',
 				};
 			}
 
@@ -1270,6 +1274,7 @@ module.exports = {
 				extraValues.firstByte = {
 					text: 'TTFB',
 					value: testResData.result.timings.firstByte,
+					units: 'ms',
 				};
 			}
 
@@ -1277,6 +1282,7 @@ module.exports = {
 				extraValues.download = {
 					text: 'DOWN',
 					value: testResData.result.timings.download,
+					units: 'ms',
 				};
 			}
 		}
