@@ -1139,7 +1139,7 @@
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
-					this.getTestMeasurementById(measurementId);
+					this.getTestMeasurementById(measurementId, true);
 				}
 
 				if (has.sessionStorage()) {
@@ -1156,6 +1156,11 @@
 
 				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
+					// if measurementId - share-results flow, so type would be set, we should ignore this case
+					if (this.get('measurementId')) {
+						return;
+					}
+
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
 					this.set('pingOpts', DEFAULT_PING_OPTS);
@@ -1676,10 +1681,33 @@
 
 			el.scrollIntoView({ behvior: 'smooth' });
 		},
-		getTestMeasurementById (measurementId) {
+		getTestMeasurementById (measurementId, isShareResCase = false) {
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					this.set('realTimeTestResResponse', testRes);
+
+					if (isShareResCase) {
+						this.set('mainOptions.type', testRes.type); // observer will cause troubles
+						this.set('mainOptions.target', testRes.target);
+
+						// if location presents then limit was sent not on the top level of options but as a part of locations
+						if (testRes.locations[0].limit) {
+							this.set('mainOptions.limit', testRes.locations[0].limit);
+						} else {
+							this.set('mainOptions.limit', testRes.limit);
+						}
+
+						if (testRes.locations[0].magic) {
+							this.set('mainOptions.location', testRes.locations[0].magic);
+						}
+
+						// set Measurement Options from the response
+						this.set('notAppliedOpts', testRes.measurementOptions);
+						this.set(`${testRes.type.toLowerCase()}Opts`, testRes.measurementOptions);
+
+						// clear measurementId so the mainOptions.type observer could work now
+						this.set('measurementId', null);
+					}
 				}).catch(() => {
 					clearInterval(testReqInterval);
 				});
