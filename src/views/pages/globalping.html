@@ -1360,16 +1360,28 @@
 				this.set('testFailed', true);
 
 				if (err.error.type === 'validation_error') {
+					let measurementOptsErr = false;
 					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let fieldName = key.split('.')[key.split('.').length - 1];
+						let splittedKeyName = key.split('.');
+						let splittedKeyNameLength = splittedKeyName.length;
+						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
 						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
 						res[fieldName] = errMsg;
+
+						if (splittedKeyName[splittedKeyNameLength - 2] === 'measurementOptions') {
+							measurementOptsErr = true;
+						}
 
 						return res;
 					}, {});
 
 					this.set('inputErrors', inputErrors);
+
+					// open measurement options menu if it contains errors
+					if (measurementOptsErr) {
+						this.set('showMeasurementOpts', true);
+					}
 				} else if (err.error.type === 'no_probes_found') {
 					this.set('inputErrors', {
 						noProbesFound: err.error.message,
