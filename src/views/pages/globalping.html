@@ -1700,7 +1700,7 @@
 					this.set('realTimeTestResResponse', testRes);
 
 					if (isShareResCase) {
-						this.set('mainOptions.type', testRes.type); // observer will cause troubles
+						this.set('mainOptions.type', this.translateTestTypeName(testRes.type)); // observer will cause troubles
 						this.set('mainOptions.target', testRes.target);
 
 						// if location presents then limit was sent not on the top level of options but as a part of locations
@@ -1761,6 +1761,17 @@
 				this.animate('totalCountries', totalCountries, { duration: 2000 });
 				this.set('probesResponse', response);
 			};
+		},
+		translateTestTypeName (name) {
+			switch (name.toLowerCase()) {
+				case 'ping':
+				case 'traceroute':
+					return name.toLowerCase();
+				case 'dns':
+				case 'mtr':
+				case 'http':
+					return name.toUpperCase();
+			}
 		},
 	};
 </script>
