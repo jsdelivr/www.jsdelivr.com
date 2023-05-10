@@ -1717,7 +1717,11 @@
 						// set Measurement Options from the response
 						if (testRes.measurementOptions) {
 							this.set('notAppliedOpts', testRes.measurementOptions);
-							this.set(`${testRes.type.toLowerCase()}Opts`, testRes.measurementOptions);
+
+							this.set(`${testRes.type.toLowerCase()}Opts`, {
+								...this.getDefaultMeasOptsByTestName(testRes.type),
+								...testRes.measurementOptions,
+							});
 						}
 
 						// clear measurementId so the mainOptions.type observer could work now
@@ -1771,6 +1775,20 @@
 				case 'mtr':
 				case 'http':
 					return name.toUpperCase();
+			}
+		},
+		getDefaultMeasOptsByTestName (name) {
+			switch (name.toLowerCase()) {
+				case 'ping':
+					return DEFAULT_PING_OPTS;
+				case 'traceroute':
+					return DEFAULT_TRACEROUTE_OPTS;
+				case 'dns':
+					return DEFAULT_DNS_OPTS;
+				case 'mtr':
+					return DEFAULT_MTR_OPTS;
+				case 'http':
+					return DEFAULT_HTTP_OPTS;
 			}
 		},
 	};
