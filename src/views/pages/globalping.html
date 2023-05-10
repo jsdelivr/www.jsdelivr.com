@@ -1227,14 +1227,6 @@
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
-
-						// check if all probes failed
-						if (realTimeTestResResponse.results.every(res => res.result.status === 'failed')) {
-							this.set('testFailed', true);
-
-							return;
-						}
-
 						this.set('testResultsId', realTimeTestResResponse.id);
 					}
 
@@ -1350,7 +1342,7 @@
 			this.set('testInProgress', true);
 			this.set('testFailed', false);
 
-			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
+			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
 			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
