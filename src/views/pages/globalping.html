@@ -1000,7 +1000,7 @@
 		query: {
 			type: 'A',
 		},
-		trace: true,
+		trace: false,
 		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_MTR_OPTS = {
@@ -1708,19 +1708,17 @@
 							this.set('mainOptions.limit', testRes.limit);
 						}
 
-						if (testRes.locations[0].magic) {
+						if (testRes.locations[0].magic) {// TODO: could be more then one object in the locaion if there is a few magic types - pl+de e.g.
 							this.set('mainOptions.location', testRes.locations[0].magic);
 						}
 
-						// set Measurement Options from the response
-						if (testRes.measurementOptions) {
-							this.set('notAppliedOpts', testRes.measurementOptions);
+						// set MeasurementOptions and specific TestOptionss from the response (returns non-default values)
+							this.set('notAppliedOpts', testRes.measurementOptions || {});
 
 							this.set(`${testRes.type.toLowerCase()}Opts`, {
 								...this.getDefaultMeasOptsByTestName(testRes.type),
-								...testRes.measurementOptions,
+								...(testRes.measurementOptions || {}),
 							});
-						}
 
 						// clear measurementId so the mainOptions.type observer could work now
 						this.set('measurementId', null);
