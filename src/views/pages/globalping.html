@@ -1700,9 +1700,17 @@
 							this.set('mainOptions.limit', testRes.limit);
 						}
 
-						if (testRes.locations[0].magic) { // TODO: could be more then one object in the locaion if there is a few magic types - pl+de e.g.
-							this.set('mainOptions.location', testRes.locations[0].magic);
-						}
+						let magicValue = testRes.locations.reduce((res, loc) => {
+							if (loc.magic) {
+								res += res.length ? `+${loc.magic}` : loc.magic;
+
+								return res
+							}
+
+							return res;
+						}, '');
+
+						this.set('mainOptions.location', magicValue);
 
 						// set MeasurementOptions and specific TestOptionss from the response (returns non-default values)
 						this.set('notAppliedOpts', testRes.measurementOptions || {});
