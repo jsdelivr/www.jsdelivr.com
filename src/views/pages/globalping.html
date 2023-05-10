@@ -1697,8 +1697,6 @@
 		getTestMeasurementById (measurementId, isShareResCase = false) {
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
-					this.set('realTimeTestResResponse', testRes);
-
 					if (isShareResCase) {
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type)); // observer will cause troubles
 						this.set('mainOptions.target', testRes.target);
@@ -1723,6 +1721,9 @@
 								...testRes.measurementOptions,
 							});
 						}
+
+						// should be after the mainOptions.type was set
+						this.set('realTimeTestResResponse', testRes);
 
 						// clear measurementId so the mainOptions.type observer could work now
 						this.set('measurementId', null);
