@@ -140,7 +140,7 @@
 
 						<div class="gp_map-block_settings-wrapper_settings_grouped_options-block">
 							<button class="{{#if showMeasurementOpts}}active{{/if}}"
-								on-click="@this.toggle('showMeasurementOpts')">
+								on-click="@this.handleToggleMeasOpts()">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
@@ -1114,6 +1114,7 @@
 				scrolledToResIdx: null,
 				measurementId: null,
 				nonDefaultMeasOptsCnt: 4, // TOOD: mock for now (should show number of MeasOpts values which is not default)
+				appliedMeasOpts: {},
 			};
 		},
 		onrender () {
@@ -1158,11 +1159,12 @@
 
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
 					this.set('testResultsId', null);
 					this.set('markersData', null);
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultMeasOptsByTestName(type));
+					this.set('appliedMeasOpts', {});
+					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
 				}, { init: false });
 
@@ -1274,7 +1276,8 @@
 		},
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
-			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
+			let appliedMeasOpts = this.get('appliedMeasOpts');
+			let measurementOpts = { ...appliedMeasOpts.initPresetOpts, ...appliedMeasOpts.notPresetOpts };
 
 			let reqParams = {
 				type,
@@ -1366,41 +1369,8 @@
 			});
 		},
 		applyOptions () {
-			let notAppliedOpts = this.get('notAppliedOpts');
-			let { type } = this.get('mainOptions');
-			let currOptsName = `${type.toLowerCase()}Opts`;
-			let opts = this.get(currOptsName);
-
-			switch (type.toLowerCase()) {
-				case 'ping':
-					opts.packets = notAppliedOpts.packets;
-					break;
-
-				case 'traceroute':
-					opts.port = notAppliedOpts.port;
-					break;
-
-				case 'dns':
-					opts.port = notAppliedOpts.port;
-					opts.resolver = notAppliedOpts.resolver;
-					break;
-
-				case 'mtr':
-					opts.port = notAppliedOpts.port;
-					opts.packets = notAppliedOpts.packets;
-					break;
-
-				case 'http':
-					opts.port = notAppliedOpts.port;
-					opts.resolver = notAppliedOpts.resolver;
-					opts.request.host = notAppliedOpts.host;
-					opts.request.path = notAppliedOpts.path;
-					opts.request.query = notAppliedOpts.query;
-					break;
-			}
-
 			// filter opts from empty values
-			let filteredOpts = Object.keys(opts).reduce((res, key) => {
+			let filterOptsFromEmptyOne = opts => Object.keys(opts).reduce((res, key) => {
 				if (typeof opts[key] === 'object') {
 					res[key] = Object.keys(opts[key]).reduce((secRes, secKey) => {
 						if (opts[key][secKey] !== '') {
@@ -1416,7 +1386,14 @@
 				return res;
 			}, {});
 
-			this.set(currOptsName, filteredOpts);
+			let { type } = this.get('mainOptions');
+			let currOptsName = `${type.toLowerCase()}Opts`;
+			let opts = {
+				initPresetOpts: filterOptsFromEmptyOne(this.get(currOptsName)),
+				notPresetOpts: filterOptsFromEmptyOne(this.get('notAppliedOpts')),
+			};
+
+			this.set('appliedMeasOpts', opts);
 			this.set('showMeasurementOpts', false);
 		},
 		initMap () {
@@ -1775,6 +1752,26 @@
 
 			// create deep copy to avoid mutations
 			return JSON.parse(JSON.stringify(res));
+		},
+		handleToggleMeasOpts () {
+			let prevValue = this.get('showMeasurementOpts');
+
+			this.set('showMeasurementOpts', !prevValue);
+
+			// if opts were not applied we should em reset to default or to prev applied state on closing of MeasOpts dropdown
+			if (prevValue === true) {
+				let testType = this.get('mainOptions.type');
+				let appliedMeasOpts = this.get('appliedMeasOpts');
+				let defaultOpts = this.getDefaultMeasOptsByTestName(testType);
+
+				if (Object.keys(appliedMeasOpts).length) {
+					this.set(`${testType.toLowerCase()}Opts`, { ...appliedMeasOpts.initPresetOpts });
+					this.set('notAppliedOpts', { ...appliedMeasOpts.notPresetOpts });
+				} else {
+					this.set(`${testType.toLowerCase()}Opts`, defaultOpts);
+					this.set('notAppliedOpts', {});
+				}
+			}
 		},
 	};
 </script>
