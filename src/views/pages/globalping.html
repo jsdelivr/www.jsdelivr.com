@@ -145,9 +145,9 @@
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-								{{#if mainOptions.requiredAdditionalOptsCnt}}
+								{{#if nonDefaultMeasOptsCnt}}
 									<div class="additional-opts-total">
-										{{mainOptions.requiredAdditionalOptsCnt}}
+										{{nonDefaultMeasOptsCnt}}
 									</div>
 								{{/if}}
 							</button>
@@ -988,12 +988,9 @@
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
 	const has = require('../../assets/js/utils/has');
-	const DEFAULT_PING_OPTS = {
-		requiredAdditionalOptsCnt: 0,
-	};
+	const DEFAULT_PING_OPTS = {};
 	const DEFAULT_TRACEROUTE_OPTS = {
 		protocol: 'ICMP',
-		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_DNS_OPTS = {
 		protocol: 'UDP',
@@ -1001,18 +998,15 @@
 			type: 'A',
 		},
 		trace: false,
-		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_MTR_OPTS = {
 		protocol: 'ICMP',
-		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_HTTP_OPTS = {
 		protocol: 'HTTP',
 		request: {
 			method: 'GET',
 		},
-		requiredAdditionalOptsCnt: 0,
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
@@ -1088,7 +1082,6 @@
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				mainOptions: {
 					...INITIAL_MAIN_OPTS_VALUES,
-					requiredAdditionalOptsCnt: DEFAULT_PING_OPTS.requiredAdditionalOptsCnt,
 				},
 				showMap: true,
 				showMeasurementOpts: false,
@@ -1120,6 +1113,7 @@
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
 				measurementId: null,
+				nonDefaultMeasOptsCnt: 4, // TOOD: mock for now (should show number of MeasOpts values which is not default)
 			};
 		},
 		onrender () {
@@ -1164,16 +1158,11 @@
 
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('pingOpts', DEFAULT_PING_OPTS);
-					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
-					this.set('dnsOpts', DEFAULT_DNS_OPTS);
-					this.set('mtrOpts', DEFAULT_MTR_OPTS);
-					this.set('httpOpts', DEFAULT_HTTP_OPTS);
 					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
 					this.set('testResultsId', null);
 					this.set('markersData', null);
-					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
+					this.set(`${type.toLowerCase()}Opts`, this.getDefaultMeasOptsByTestName(type));
 					this.set('testFailed', false);
 				}, { init: false });
 
@@ -1286,8 +1275,6 @@
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
 			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
-
-			delete measurementOpts.requiredAdditionalOptsCnt;
 
 			let reqParams = {
 				type,
