@@ -145,9 +145,9 @@
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-								{{#if nonDefaultMeasOptsCnt}}
+								{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
 									<div class="additional-opts-total">
-										{{nonDefaultMeasOptsCnt}}
+										{{modifiedMeasOptsCnt}}
 									</div>
 								{{/if}}
 							</button>
@@ -1113,7 +1113,7 @@
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
 				measurementId: null,
-				nonDefaultMeasOptsCnt: 4, // TOOD: mock for now (should show number of MeasOpts values which is not default)
+				modifiedMeasOptsCnt: 4, // TOOD: mock for now (should show number of MeasOpts values which is not default)
 				appliedMeasOpts: {},
 			};
 		},
@@ -1380,13 +1380,19 @@
 
 			let { type } = this.get('mainOptions');
 			let currOptsName = `${type.toLowerCase()}Opts`;
+			let initPresetOpts = filterOptsFromEmptyOne(this.get(currOptsName));
+			let notPresetOpts = filterOptsFromEmptyOne(this.get('notAppliedOpts'));
 			let opts = {
-				initPresetOpts: filterOptsFromEmptyOne(this.get(currOptsName)),
-				notPresetOpts: filterOptsFromEmptyOne(this.get('notAppliedOpts')),
+				initPresetOpts,
+				notPresetOpts,
 			};
 
 			this.set('appliedMeasOpts', opts);
+
+			// TODO: calc modifiedMeasOptsCnt here
+
 			this.set('showMeasurementOpts', false);
+
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
@@ -1661,6 +1667,14 @@
 
 						// set MeasurementOptions and specific TestOptionss from the response (returns non-default values)
 						this.set('notAppliedOpts', testRes.measurementOptions || {});
+
+						this.set('appliedMeasOpts', {
+							initPresetOpts: {
+								...this.getDefaultMeasOptsByTestName(testRes.type),
+								...testRes.measurementOptions || {},
+							},
+							notPresetOpts: { ...testRes.measurementOptions } || {},
+						});
 
 						this.set(`${testRes.type.toLowerCase()}Opts`, {
 							...this.getDefaultMeasOptsByTestName(testRes.type),
