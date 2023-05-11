@@ -1758,18 +1758,23 @@
 			}
 		},
 		getDefaultMeasOptsByTestName (name) {
+			let res;
+
 			switch (name.toLowerCase()) {
 				case 'ping':
-					return DEFAULT_PING_OPTS;
+					res = DEFAULT_PING_OPTS; break;
 				case 'traceroute':
-					return DEFAULT_TRACEROUTE_OPTS;
+					res = DEFAULT_TRACEROUTE_OPTS; break;
 				case 'dns':
-					return DEFAULT_DNS_OPTS;
+					res = DEFAULT_DNS_OPTS; break;
 				case 'mtr':
-					return DEFAULT_MTR_OPTS;
+					res = DEFAULT_MTR_OPTS; break;
 				case 'http':
-					return DEFAULT_HTTP_OPTS;
+					res = DEFAULT_HTTP_OPTS; break;
 			}
+
+			// create deep copy to avoid mutations
+			return JSON.parse(JSON.stringify(res));
 		},
 	};
 </script>
