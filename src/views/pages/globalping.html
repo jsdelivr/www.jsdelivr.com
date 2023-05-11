@@ -1299,13 +1299,10 @@
 				reqParams.target = target;
 			}
 
-			if (!location) {
-				reqParams.limit = limit || DEFAULT_LIMIT;
-			} else {
-				reqParams.locations = location.split('+').map(loc => ({
-					magic: loc,
-					limit: limit || DEFAULT_LIMIT,
-				}));
+			reqParams.limit = limit || DEFAULT_LIMIT;
+
+			if (location) {
+				reqParams.locations = location.split('+').map(loc => ({ magic: loc }));
 			}
 
 			// since packets field default value is present only for Ping and MTR type
@@ -1692,13 +1689,7 @@
 					if (isShareResCase) {
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type)); // observer will cause troubles
 						this.set('mainOptions.target', testRes.target);
-
-						// if location presents then limit was sent not on the top level of options but as a part of locations
-						if (testRes.locations[0].limit) {
-							this.set('mainOptions.limit', testRes.locations[0].limit);
-						} else {
-							this.set('mainOptions.limit', testRes.limit);
-						}
+						this.set('mainOptions.limit', testRes.limit);
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
