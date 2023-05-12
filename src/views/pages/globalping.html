@@ -1113,7 +1113,7 @@
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
 				measurementId: null,
-				modifiedMeasOptsCnt: 4, // TOOD: mock for now (should show number of MeasOpts values which is not default)
+				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
 			};
 		},
@@ -1389,7 +1389,7 @@
 
 			this.set('appliedMeasOpts', opts);
 
-			// TODO: calc modifiedMeasOptsCnt here
+			this.countModifiedMeasurementOpts(type, initPresetOpts, notPresetOpts);
 
 			this.set('showMeasurementOpts', false);
 		},
@@ -1700,6 +1700,8 @@
 							...JSON.parse(JSON.stringify(receivedInitPresetOpts)),
 						});
 
+						this.countModifiedMeasurementOpts(testRes.type, receivedInitPresetOpts, receivedNotPresetOpts);
+
 						// clear measurementId so the mainOptions.type observer could work now
 						this.set('measurementId', null);
 					}
@@ -1797,6 +1799,24 @@
 					this.set('notAppliedOpts', {});
 				}
 			}
+		},
+		countModifiedMeasurementOpts (type, initPresetOpts, notPresetOpts) {
+			let defaultOpts = this.getDefaultMeasOptsByTestName(type);
+			let modifiedMeasOptsCnt = 0 + Object.keys(notPresetOpts).length;
+
+			Object.keys(defaultOpts).forEach((key) => {
+				if (typeof defaultOpts[key] === 'object') {
+					Object.keys(defaultOpts[key]).forEach((secKey) => {
+						if (defaultOpts[key][secKey] !== initPresetOpts[key][secKey]) {
+							modifiedMeasOptsCnt++;
+						}
+					});
+				} else if (defaultOpts[key] !== initPresetOpts[key]) {
+					modifiedMeasOptsCnt++;
+				}
+			});
+
+			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
 		},
 	};
 </script>
