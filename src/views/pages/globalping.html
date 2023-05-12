@@ -1070,6 +1070,7 @@
 	let infoWindows = [];
 	let mapMarkers = [];
 	let probesMarkers = [];
+	let probesInfoWindows = [];
 	let mapProbesClusters = [];
 
 	component.exports = {
@@ -1534,6 +1535,13 @@
 				</svg>`);
 
 			probes.forEach((probe) => {
+				let probeInfoWindow = new google.maps.InfoWindow({
+					content: `<div class="gp-map_popup">
+							<div class="gp-map_popup_descr">${probe.location.network}</div>
+							<div class="gp-map_popup_descr">(${probe.location.city}, ${probe.location.country})</div>
+						</div>`,
+				});
+
 				let probeMarker = new google.maps.Marker({
 					map,
 					icon: { url: `data:image/svg+xml;base64,${svg}` },
@@ -1541,6 +1549,16 @@
 					optimized: false,
 				});
 
+				google.maps.event.addListener(probeMarker, 'click', () => {
+					probesInfoWindows.forEach(piw => piw.close());
+					probeInfoWindow.open(map, probeMarker);
+				});
+
+				google.maps.event.addListener(map, 'click', () => {
+					probeInfoWindow.close();
+				});
+
+				probesInfoWindows.push(probeInfoWindow);
 				probesMarkers.push(probeMarker);
 
 				// eslint-disable-next-line no-undef
@@ -1571,8 +1589,10 @@
 			mapMarkers = [];
 		},
 		clearProbesClusters () {
+			probesInfoWindows.forEach(piw => piw.close());
 			mapProbesClusters.forEach(pc => pc.setMap(null));
 			probesMarkers = [];
+			probesInfoWindows = [];
 			mapProbesClusters = [];
 		},
 		collapseCmdBlock () {
