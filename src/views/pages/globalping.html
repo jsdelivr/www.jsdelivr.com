@@ -1648,7 +1648,7 @@
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
-						this.set('mainOptions.type', this.translateTestTypeName(testRes.type)); // observer will cause troubles
+						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit);
 
@@ -1664,20 +1664,40 @@
 
 						this.set('mainOptions.location', magicValue);
 
-						// set MeasurementOptions and specific TestOptionss from the response (returns non-default values)
-						this.set('notAppliedOpts', testRes.measurementOptions || {});
+						let defaultOpts = this.getDefaultMeasOptsByTestName(testRes.type);
+						let { receivedInitPresetOpts, receivedNotPresetOpts } = Object.keys(testRes.measurementOptions).reduce((res, optsKey) => {
+							let key = 'receivedNotPresetOpts';
+
+							if (Object.hasOwn(defaultOpts, optsKey)) {
+								key = 'receivedInitPresetOpts';
+							}
+
+							res[key] = {
+								...res[key],
+								[optsKey]: typeof testRes.measurementOptions[optsKey] === 'object'
+									? { ...testRes.measurementOptions[optsKey] }
+									: testRes.measurementOptions[optsKey],
+							};
+
+							return res;
+						}, {
+							receivedInitPresetOpts: {},
+							receivedNotPresetOpts: {},
+						});
 
 						this.set('appliedMeasOpts', {
 							initPresetOpts: {
 								...this.getDefaultMeasOptsByTestName(testRes.type),
-								...testRes.measurementOptions || {},
+								...JSON.parse(JSON.stringify(receivedInitPresetOpts)),
 							},
-							notPresetOpts: { ...testRes.measurementOptions } || {},
+							notPresetOpts: { ...receivedNotPresetOpts },
 						});
+
+						this.set('notAppliedOpts', { ...JSON.parse(JSON.stringify(receivedNotPresetOpts)) });
 
 						this.set(`${testRes.type.toLowerCase()}Opts`, {
 							...this.getDefaultMeasOptsByTestName(testRes.type),
-							...testRes.measurementOptions || {},
+							...JSON.parse(JSON.stringify(receivedInitPresetOpts)),
 						});
 
 						// clear measurementId so the mainOptions.type observer could work now
@@ -1770,8 +1790,8 @@
 				let defaultOpts = this.getDefaultMeasOptsByTestName(testType);
 
 				if (Object.keys(appliedMeasOpts).length) {
-					this.set(`${testType.toLowerCase()}Opts`, { ...appliedMeasOpts.initPresetOpts });
-					this.set('notAppliedOpts', { ...appliedMeasOpts.notPresetOpts });
+					this.set(`${testType.toLowerCase()}Opts`, { ...JSON.parse(JSON.stringify(appliedMeasOpts.initPresetOpts)) });
+					this.set('notAppliedOpts', { ...JSON.parse(JSON.stringify(appliedMeasOpts.notPresetOpts)) });
 				} else {
 					this.set(`${testType.toLowerCase()}Opts`, defaultOpts);
 					this.set('notAppliedOpts', {});
