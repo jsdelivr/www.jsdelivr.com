@@ -422,7 +422,7 @@
 						</div>
 					</div>
 
-					<button on-click="@this.proceedToTest()"
+					<button on-click="@this.resetMapAndRunTest()"
 						class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
 						disabled="{{testInProgress}}">
 						{{#if testInProgress}}
@@ -1270,7 +1270,7 @@
 				let handleEnterBtn = (event) => {
 					if (event.key === 'Enter') {
 						event.preventDefault();
-						this.proceedToTest();
+						this.resetMapAndRunTest();
 					}
 				};
 
@@ -1842,6 +1842,17 @@
 			});
 
 			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
+		},
+		resetMapAndRunTest () {
+			map.setCenter(MAP_CENTER_ALT);
+			map.setZoom(MAP_ZOOM_ALT);
+
+			// once zoom is ended the idle event will be fired
+			map.addListener('idle', () => {
+				this.proceedToTest();
+				// remove listener to avoid unintended test runs while zoom
+				google.maps.event.clearListeners(map, 'idle');
+			});
 		},
 	};
 </script>
