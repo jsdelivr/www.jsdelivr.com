@@ -1844,8 +1844,15 @@
 			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
 		},
 		resetMapAndRunTest () {
-			map.setCenter(MAP_CENTER_ALT);
-			map.setZoom(MAP_ZOOM_ALT);
+			let mq = window.matchMedia('(min-width: 768px)');
+
+			if (mq.matches) {
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
+			} else {
+				map.setCenter(MAP_CENTER_REG);
+				map.setZoom(MAP_ZOOM_REG);
+			}
 
 			// once zoom is ended the idle event will be fired
 			map.addListener('idle', () => {
