@@ -1564,27 +1564,30 @@
 
 				probesInfoWindows.push(probeInfoWindow);
 				probesMarkers.push(probeMarker);
-
-				// eslint-disable-next-line no-undef
-				let probeCluster = new markerClusterer.MarkerClusterer({
-					markers: probesMarkers,
-					map,
-					renderer: {
-						render: ({ markers, _position: position }) => {
-							return new google.maps.Marker({
-								position: {
-									lat: position.lat(),
-									lng: position.lng(),
-								},
-								icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
-								label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
-							});
-						},
-					},
-				});
-
-				mapProbesClusters.push(probeCluster);
 			});
+
+			// eslint-disable-next-line no-undef
+			let probeCluster = new markerClusterer.MarkerClusterer({
+				markers: probesMarkers,
+				map,
+				renderer: {
+					render: ({ markers, _position: position }) => {
+						return new google.maps.Marker({
+							position: {
+								lat: position.lat(),
+								lng: position.lng(),
+							},
+							icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
+							label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+						});
+					},
+				},
+				algorithm: new markerClusterer.SuperClusterAlgorithm({
+					radius: 200,
+				}),
+			});
+
+			mapProbesClusters.push(probeCluster);
 		},
 		clearTestResponseMarkers () {
 			infoWindows.forEach(iw => iw.close());
@@ -1750,9 +1753,6 @@
 				} else {
 					response = JSON.parse(response);
 				}
-
-				// TODO: for test purpose, rm after
-				response = response.slice(0, 20);
 
 				let { totalCities, totalCountries } = response.reduce((res, item) => {
 					if (!res.citiesList.includes(item.location.city)) {
