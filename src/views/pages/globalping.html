@@ -1003,7 +1003,7 @@
 		protocol: 'ICMP',
 	};
 	const DEFAULT_HTTP_OPTS = {
-		protocol: 'HTTP',
+		protocol: 'HTTPS',
 		request: {
 			method: 'GET',
 		},
@@ -1312,7 +1312,7 @@
 
 			if (Object.keys(measurementOpts).length) {
 				reqParams.measurementOptions = {
-					...reqParams.measurementOptions,
+					...reqParams.measurementOptions || {},
 					...measurementOpts,
 				};
 			}
@@ -1327,7 +1327,7 @@
 			this.set('testFailed', false);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
-			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
+			this.set('dnsTraceEnabled', reqParams.measurementOptions?.trace || false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
