@@ -1247,7 +1247,6 @@
 
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
-
 					let markersData = testResults.map((res) => {
 						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
 
@@ -1706,7 +1705,7 @@
 						this.set('mainOptions.location', magicValue);
 
 						let defaultOpts = this.getDefaultMeasOptsByTestName(testRes.type);
-						let { receivedInitPresetOpts, receivedNotPresetOpts } = Object.keys(testRes.measurementOptions).reduce((res, optsKey) => {
+						let { receivedInitPresetOpts, receivedNotPresetOpts } = Object.keys(testRes.measurementOptions || {}).reduce((res, optsKey) => {
 							let key = 'receivedNotPresetOpts';
 
 							if (Object.hasOwn(defaultOpts, optsKey)) {
