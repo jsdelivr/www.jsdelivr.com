@@ -1066,6 +1066,10 @@
 		location: 'World',
 		limit: '3',
 	};
+	const MAP_ZOOM_REG = 3.74;
+	const MAP_CENTER_REG = { lat: 48, lng: 16 };
+	const MAP_ZOOM_ALT = 2.14;
+	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -1396,11 +1400,11 @@
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
-			let CENTER = { lat: 48, lng: 16 };
+			let CENTER = MAP_CENTER_REG;
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				styles,
-				zoom: 3.74,
+				zoom: MAP_ZOOM_REG,
 				center: CENTER,
 				mapTypeId: 'roadmap',
 				draggableCursor: 'default',
@@ -1410,8 +1414,8 @@
 			});
 
 			if (mq.matches) {
-				CENTER = { lat: 30, lng: 18 };
-				map.setZoom(2.14);
+				CENTER = MAP_CENTER_ALT;
+				map.setZoom(MAP_ZOOM_ALT);
 			}
 
 			// draw probes Clusers or clear the map from them
