@@ -79,6 +79,9 @@
 				<span></span>
 				<span></span>
 				<span></span>
+				{{#if shareResHeaderDate}}
+					<span class="gp_map-block_header_share-res-msg">{{shareResHeaderDate}}</span>
+				{{/if}}
 			</div>
 
 			<div class="gp_map-block_settings-wrapper">
@@ -431,7 +434,7 @@
 							<div></div>
 							<div></div>
 						{{else}}
-							Run test
+							{{runTestBtnText}}
 						{{/if}}
 					</button>
 				</div>
@@ -1120,6 +1123,8 @@
 				measurementId: null,
 				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
+				shareResHeaderDate: null,
+				runTestBtnText: 'Run Test',
 			};
 		},
 		onrender () {
@@ -1325,6 +1330,7 @@
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
 			this.set('testFailed', false);
+			this.set('shareResHeaderDate', null);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
 			this.set('dnsTraceEnabled', reqParams.measurementOptions?.trace || false);
@@ -1684,6 +1690,8 @@
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit);
+						this.set('shareResHeaderDate', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+						this.set('runTestBtnText', 'Run Again');
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
