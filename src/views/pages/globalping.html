@@ -1125,6 +1125,7 @@
 				appliedMeasOpts: {},
 				shareResHeaderDate: null,
 				runTestBtnText: 'Run Test',
+				shareResultsCase: false,
 			};
 		},
 		onrender () {
@@ -1145,6 +1146,7 @@
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
+					this.set('runTestBtnText', 'Run Again');
 					this.getTestMeasurementById(measurementId, true);
 				}
 
@@ -1262,6 +1264,17 @@
 
 					this.set('markersData', markersData);
 				}, { init: false });
+
+				// scroll to the Map-block in share-res case
+				this.observe('shareResultsCase', (shareResultsCase) => {
+					if (shareResultsCase) {
+						let mapBlockEl = this.find('.gp_map-block');
+
+						mapBlockEl.scrollIntoView({
+							behavior: 'smooth',
+						});
+					}
+				});
 			}
 		},
 		oncomplete () {
@@ -1281,6 +1294,14 @@
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
+
+				// set that this is Share results case to initiate scrolling mapBlock into the view
+				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
+				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+
+				if (measurementId) {
+					this.set('shareResultsCase', true);
+				}
 			}
 		},
 		proceedToTest () {
@@ -1686,11 +1707,10 @@
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
+						this.set('shareResHeaderDate', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit);
-						this.set('shareResHeaderDate', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-						this.set('runTestBtnText', 'Run Again');
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
