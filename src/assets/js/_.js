@@ -1193,7 +1193,7 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = 'ms') {
+	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = ' ms') {
 		let resTiming;
 		let extraValues = {};
 		let lowCaseTestName = testType.toLowerCase();
@@ -1203,7 +1203,7 @@ module.exports = {
 
 			if (typeof testResData.result?.stats?.loss === 'number') {
 				extraValues.loss = {
-					text: 'LOSS',
+					text: 'Loss',
 					value: testResData.result?.stats?.loss,
 					units: '%',
 				};
@@ -1250,7 +1250,7 @@ module.exports = {
 				extraValues.dns = {
 					text: 'DNS',
 					value: testResData.result.timings.dns,
-					units: 'ms',
+					units: ' ms',
 				};
 			}
 
@@ -1258,7 +1258,7 @@ module.exports = {
 				extraValues.tcp = {
 					text: 'TCP',
 					value: testResData.result.timings.tcp,
-					units: 'ms',
+					units: ' ms',
 				};
 			}
 
@@ -1266,7 +1266,7 @@ module.exports = {
 				extraValues.tls = {
 					text: 'TLS',
 					value: testResData.result.timings.tls,
-					units: 'ms',
+					units: ' ms',
 				};
 			}
 
@@ -1274,15 +1274,15 @@ module.exports = {
 				extraValues.firstByte = {
 					text: 'TTFB',
 					value: testResData.result.timings.firstByte,
-					units: 'ms',
+					units: ' ms',
 				};
 			}
 
 			if (typeof testResData.result.timings.download === 'number') {
 				extraValues.download = {
-					text: 'DOWN',
+					text: 'Download',
 					value: testResData.result.timings.download,
-					units: 'ms',
+					units: ' ms',
 				};
 			}
 		}
