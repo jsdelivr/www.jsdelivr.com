@@ -1177,6 +1177,7 @@
 					this.set('testResultsId', null);
 					this.set('markersData', null);
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultMeasOptsByTestName(type));
+					this.set('modifiedMeasOptsCnt', 0);
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
@@ -1422,7 +1423,7 @@
 
 			this.set('appliedMeasOpts', opts);
 
-			this.countModifiedMeasurementOpts(type, initPresetOpts, notPresetOpts);
+			this.countModifiedMeasurementOpts(type, _.deepExtend({}, initPresetOpts, notPresetOpts));
 
 			this.set('showMeasurementOpts', false);
 		},
@@ -1725,6 +1726,9 @@
 
 						this.set('mainOptions.location', magicValue);
 
+						let defaultCustom = this.getCustomizedDefaultMeasOptsByTestName(testRes.type);
+						testRes.measurementOptions = _.deepExtend(defaultCustom, testRes.measurementOptions || {});
+
 						let defaultOpts = this.getDefaultMeasOptsByTestName(testRes.type);
 						let { receivedInitPresetOpts, receivedNotPresetOpts } = Object.keys(testRes.measurementOptions || {}).reduce((res, optsKey) => {
 							let key = 'receivedNotPresetOpts';
@@ -1761,7 +1765,7 @@
 							...JSON.parse(JSON.stringify(receivedInitPresetOpts)),
 						});
 
-						this.countModifiedMeasurementOpts(testRes.type, receivedInitPresetOpts, receivedNotPresetOpts);
+						this.countModifiedMeasurementOpts(testRes.type, testRes.measurementOptions);
 
 						// clear measurementId so the mainOptions.type observer could work now
 						this.set('measurementId', null);
@@ -1838,6 +1842,25 @@
 			// create deep copy to avoid mutations
 			return JSON.parse(JSON.stringify(res));
 		},
+		getCustomizedDefaultMeasOptsByTestName (name) {
+			let res;
+
+			switch (name.toLowerCase()) {
+				case 'ping':
+					res = {}; break;
+				case 'traceroute':
+					res = {}; break;
+				case 'dns':
+					res = {}; break;
+				case 'mtr':
+					res = {}; break;
+				case 'http':
+					res = { request: { method: 'HEAD' } }; break;
+			}
+
+			// create deep copy to avoid mutations
+			return JSON.parse(JSON.stringify(res));
+		},
 		handleToggleMeasOpts () {
 			let prevValue = this.get('showMeasurementOpts');
 
@@ -1858,18 +1881,18 @@
 				}
 			}
 		},
-		countModifiedMeasurementOpts (type, initPresetOpts, notPresetOpts) {
+		countModifiedMeasurementOpts (type, initPresetOpts = {}) {
 			let defaultOpts = this.getDefaultMeasOptsByTestName(type);
-			let modifiedMeasOptsCnt = 0 + Object.keys(notPresetOpts).length;
+			let modifiedMeasOptsCnt = 0;
 
-			Object.keys(defaultOpts).forEach((key) => {
-				if (typeof defaultOpts[key] === 'object') {
-					Object.keys(defaultOpts[key]).forEach((secKey) => {
-						if (defaultOpts[key][secKey] !== initPresetOpts[key][secKey]) {
+			Object.keys(initPresetOpts).forEach((key) => {
+				if (typeof initPresetOpts[key] === 'object') {
+					Object.keys(initPresetOpts[key]).forEach((secKey) => {
+						if (initPresetOpts[key][secKey] !== defaultOpts[key][secKey]) {
 							modifiedMeasOptsCnt++;
 						}
 					});
-				} else if (defaultOpts[key] !== initPresetOpts[key]) {
+				} else if (initPresetOpts[key] !== defaultOpts[key]) {
 					modifiedMeasOptsCnt++;
 				}
 			});
