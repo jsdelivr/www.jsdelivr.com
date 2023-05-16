@@ -53,7 +53,7 @@
 		<div class="c-gp-test-results_share">
 			<span>Share your results:</span>
 
-			<div>{{`https://www.jsdelivr.com/globalping?measurement=${testResultsId}`}}</div>
+			<div id="share-res-text">{{`https://www.jsdelivr.com/globalping?measurement=${testResultsId}`}}</div>
 
 			<button as-clipboard data-clipboard-text="{{`https://www.jsdelivr.com/globalping?measurement=${testResultsId}`}}">
 				<img width="20"
@@ -120,6 +120,18 @@
 
 					this.set('scrolledToResIdx', null);
 				}, { init: false });
+
+
+				// select all share-res text of link on click
+				this.observe('testResultsId', (testResultsId) => {
+					if (testResultsId) {
+						let shareResTextEl = this.find('#share-res-text');
+
+						shareResTextEl.addEventListener('click', () => {
+							window.getSelection().selectAllChildren(shareResTextEl);
+						});
+					}
+				}, { defer: true });
 			}
 		},
 		hideShowTestResult (idx) {
