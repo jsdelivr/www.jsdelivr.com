@@ -1428,12 +1428,11 @@
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
-			let CENTER = MAP_CENTER_REG;
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				styles,
 				zoom: MAP_ZOOM_REG,
-				center: CENTER,
+				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
 				draggableCursor: 'default',
 				mapTypeControl: false,
@@ -1442,7 +1441,7 @@
 			});
 
 			if (mq.matches) {
-				CENTER = MAP_CENTER_ALT;
+				map.setCenter(MAP_CENTER_ALT);
 				map.setZoom(MAP_ZOOM_ALT);
 			}
 
