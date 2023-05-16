@@ -1321,4 +1321,24 @@ module.exports = {
 	getProbeTimeOutValue () {
 		return NO_PROBE_TIMING_VALUE;
 	},
+
+	deepMergeObjects (a = {}, b = {}) {
+		let mergeFn = (a, b) => Object.keys(b).reduce((res, bKey) => {
+			if (b[bKey] && typeof b[bKey] === 'object' && typeof a[bKey] === 'object') {
+				res = {
+					...res,
+					[bKey]: mergeFn(res[bKey], b[bKey]),
+				};
+			} else {
+				res = {
+					...res,
+					[bKey]: b[bKey],
+				};
+			}
+
+			return res;
+		}, { ...a });
+
+		return mergeFn(a, b);
+	},
 };
