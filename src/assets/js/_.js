@@ -1193,14 +1193,23 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
-	calculateGpProbeTiming (testType, probeData, dnsTraceEnabled = false, units = 'ms') {
-		let probeTiming;
+	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = ' ms') {
+		let resTiming;
+		let extraValues = {};
 		let lowCaseTestName = testType.toLowerCase();
 
 		if (lowCaseTestName === 'ping') {
-			probeTiming = probeData.result?.stats?.avg;
+			resTiming = testResData.result?.stats?.avg;
+
+			if (typeof testResData.result?.stats?.loss === 'number') {
+				extraValues.loss = {
+					text: 'Loss',
+					value: testResData.result?.stats?.loss,
+					units: '%',
+				};
+			}
 		} else if (lowCaseTestName === 'traceroute') {
-			let { timings } = probeData.result.hops[probeData.result.hops.length - 1];
+			let { timings } = testResData.result.hops[testResData.result.hops.length - 1];
 
 			if (timings && timings.length) {
 				let timingsCalc = timings.reduce((res, timing) => {
@@ -1215,30 +1224,70 @@ module.exports = {
 				}, { sum: 0, cnt: 0 });
 
 				if (timingsCalc.cnt) {
-					probeTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
+					resTiming = Number((timingsCalc.sum / timingsCalc.cnt).toFixed(3));
 				}
 			}
 		} else if (lowCaseTestName === 'dns') {
 			if (dnsTraceEnabled) {
-				let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+				let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 				if (lastHop) {
-					probeTiming = lastHop.timings.total;
+					resTiming = lastHop.timings.total;
 				}
 			} else {
-				probeTiming = probeData.result.timings.total;
+				resTiming = testResData.result.timings.total;
 			}
 		} else if (lowCaseTestName === 'mtr') {
-			let lastHop = probeData.result.hops[probeData.result.hops.length - 1];
+			let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
 
 			if (lastHop) {
-				probeTiming = lastHop.stats.avg;
+				resTiming = lastHop.stats.avg;
 			}
 		} else if (lowCaseTestName === 'http') {
-			probeTiming = probeData.result.timings.total;
+			resTiming = testResData.result.timings.total;
+
+			if (typeof testResData.result.timings.dns === 'number') {
+				extraValues.dns = {
+					text: 'DNS',
+					value: testResData.result.timings.dns,
+					units: ' ms',
+				};
+			}
+
+			if (typeof testResData.result.timings.tcp === 'number') {
+				extraValues.tcp = {
+					text: 'TCP',
+					value: testResData.result.timings.tcp,
+					units: ' ms',
+				};
+			}
+
+			if (typeof testResData.result.timings.tls === 'number') {
+				extraValues.tls = {
+					text: 'TLS',
+					value: testResData.result.timings.tls,
+					units: ' ms',
+				};
+			}
+
+			if (typeof testResData.result.timings.firstByte === 'number') {
+				extraValues.firstByte = {
+					text: 'TTFB',
+					value: testResData.result.timings.firstByte,
+					units: ' ms',
+				};
+			}
+
+			if (typeof testResData.result.timings.download === 'number') {
+				extraValues.download = {
+					text: 'Download',
+					value: testResData.result.timings.download,
+					units: ' ms',
+				};
+			}
 		}
 
-		if (typeof probeTiming === 'number') {
+		if (typeof resTiming === 'number') {
 			let note = '';
 
 			switch (lowCaseTestName) {
@@ -1253,15 +1302,17 @@ module.exports = {
 			}
 
 			return {
-				value: probeTiming,
+				value: resTiming,
+				extraValues,
 				units,
 				note,
-				fullText: note ? `${Math.round(probeTiming)}${units} ${note}` : `${Math.round(probeTiming)}${units}`,
+				fullText: note ? `${Math.round(resTiming)}${units} ${note}` : `${Math.round(resTiming)}${units}`,
 			};
 		}
 
 		return {
 			value: NO_PROBE_TIMING_VALUE,
+			extraValues,
 			fullText: NO_PROBE_TIMING_VALUE,
 			isFailed: true,
 		};

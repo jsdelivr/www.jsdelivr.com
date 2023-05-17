@@ -8,6 +8,8 @@
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.0.15/dist/index.umd.min.js"></script>
+
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
 			function onDocumentReady (fn) {
@@ -29,7 +31,6 @@
 			}
 		</script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWraRnq2wVoc1ywlDtl7mvkvWlrlQSFhQ&callback=initMap"></script>
-		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.0.15/dist/index.umd.min.js"></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -79,6 +80,9 @@
 				<span></span>
 				<span></span>
 				<span></span>
+				{{#if shareResHeaderDate}}
+					<span class="gp_map-block_header_share-res-msg">{{shareResHeaderDate}}</span>
+				{{/if}}
 			</div>
 
 			<div class="gp_map-block_settings-wrapper">
@@ -121,7 +125,7 @@
 						labelText="Location"
 						classList="gp_map-block_settings-wrapper_settings_location gp_input">
 						{{#partial labelIcon}}
-							<img as-tooltip="'TODO: how to use location'"
+							<img as-tooltip="'Magic field which will select the most appropriate location based on your free input'"
 								width="14"
 								height="14"
 								src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
@@ -140,14 +144,14 @@
 
 						<div class="gp_map-block_settings-wrapper_settings_grouped_options-block">
 							<button class="{{#if showMeasurementOpts}}active{{/if}}"
-								on-click="@this.toggle('showMeasurementOpts')">
+								on-click="@this.handleToggleMeasOpts()">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-								{{#if mainOptions.requiredAdditionalOptsCnt}}
+								{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
 									<div class="additional-opts-total">
-										{{mainOptions.requiredAdditionalOptsCnt}}
+										{{modifiedMeasOptsCnt}}
 									</div>
 								{{/if}}
 							</button>
@@ -157,7 +161,7 @@
 									<div class="typePing">
 										<c-controlled-input
 											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors['measurementOptions.packets']}}"
+											error="{{inputErrors.packets}}"
 											placeholder="{{defaultPacketsAmount}}"
 											labelText="Packets"
 											classList="gp_input">
@@ -170,7 +174,7 @@
 										<div class="pair">
 											<c-controlled-input
 												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors['measurementOptions.port']}}"
+												error="{{inputErrors.port}}"
 												placeholder="53"
 												labelText="Port"
 												classList="port-input gp_input">
@@ -206,7 +210,7 @@
 											<div class="rows_row-one">
 												<c-controlled-input
 													value="{{notAppliedOpts.port}}"
-													error="{{inputErrors['measurementOptions.port']}}"
+													error="{{inputErrors.port}}"
 													placeholder="53"
 													labelText="Port"
 													classList="port-input gp_input">
@@ -268,7 +272,7 @@
 
 										<c-controlled-input
 											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors['measurementOptions.resolver']}}"
+											error="{{inputErrors.resolver}}"
 											placeholder="IP address"
 											labelText="Resolver"
 											classList="resolver-input gp_input">
@@ -281,7 +285,7 @@
 										<div class="pair">
 											<c-controlled-input
 												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors['measurementOptions.port']}}"
+												error="{{inputErrors.port}}"
 												placeholder="53"
 												labelText="Port"
 												classList="port-input gp_input">
@@ -311,7 +315,7 @@
 
 										<c-controlled-input
 											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors['measurementOptions.packets']}}"
+											error="{{inputErrors.packets}}"
 											placeholder="{{defaultPacketsAmount}}"
 											labelText="Packets"
 											classList="gp_input">
@@ -323,23 +327,23 @@
 									<div class="typeHTTP">
 										<c-controlled-input
 											value="{{notAppliedOpts.host}}"
-											error="{{inputErrors['measurementOptions.request.host']}}"
+											error="{{inputErrors.host}}"
 											placeholder="Host"
 											labelText="Host"
 											classList="gp_input">
 										</c-controlled-input>
 
 										<c-controlled-input
-											value="{{notAppliedOpts.path}}"
-											error="{{inputErrors['measurementOptions.request.path']}}"
+											value="{{notAppliedOpts.request.path}}"
+											error="{{inputErrors.path}}"
 											placeholder="Path"
 											labelText="Path"
 											classList="gp_input">
 										</c-controlled-input>
 
 										<c-controlled-input
-											value="{{notAppliedOpts.query}}"
-											error="{{inputErrors['measurementOptions.request.query']}}"
+											value="{{notAppliedOpts.request.query}}"
+											error="{{inputErrors.query}}"
 											placeholder="Query"
 											labelText="Query"
 											classList="gp_input">
@@ -398,7 +402,7 @@
 
 										<c-controlled-input
 											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors['measurementOptions.resolver']}}"
+											error="{{inputErrors.resolver}}"
 											placeholder="Resolver"
 											labelText="Resolver"
 											classList="gp_input">
@@ -422,7 +426,7 @@
 						</div>
 					</div>
 
-					<button on-click="@this.proceedToTest()"
+					<button on-click="@this.resetMapAndRunTest()"
 						class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
 						disabled="{{testInProgress}}">
 						{{#if testInProgress}}
@@ -431,7 +435,7 @@
 							<div></div>
 							<div></div>
 						{{else}}
-							Run test
+							{{runTestBtnText}}
 						{{/if}}
 					</button>
 				</div>
@@ -442,9 +446,9 @@
 
 				{{#if testResults}}
 					<div class="gp_map-block_map-wrapper_timings-scale">
-						<span class="value">{{probesMaxTiming}}ms</span>
+						<span class="value">{{probesMaxTiming}} ms</span>
 						<div class="gradient"></div>
-						<span class="value">{{probesMinTiming}}ms</span>
+						<span class="value">{{probesMinTiming}} ms</span>
 					</div>
 				{{/if}}
 			</div>
@@ -457,12 +461,13 @@
 							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
 						<p>
-							All tests failed. Maybe you specified a non existing endpoint?
+							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
 						</p>
 					</div>
 				{{elseif testResults}}
 					<c-gp-test-results
 						testType="{{mainOptions.type}}"
+						testResultsId="{{testResultsId}}"
 						testResults="{{testResults}}"
 						dnsTraceEnabled="{{dnsTraceEnabled}}"
 						scrolledToResIdx="{{scrolledToResIdx}}">
@@ -648,7 +653,9 @@
 							</div>
 						{{/each}}
 					{{else}}
-						{{netCmdText}}
+						<div class="gp_join-network_cmd-block_command_oneliner">
+							{{netCmdText}}
+						</div>
 					{{/if}}
 				</div>
 
@@ -686,12 +693,12 @@
 					<li>You don't have to be a developer to help</li>
 					<li>Copyrighters, community moderators, dev relations, media relations... are all equally important</li>
 				</ul>
-			</div>
 
-			<img class="gp_join-community_img"
-				width="363"
-				height="416"
-				src="{{@shared.assetsHost}}/img/globalping/polygons_3.svg">
+				<img class="gp_join-community_img"
+					width="363"
+					height="416"
+					src="{{@shared.assetsHost}}/img/globalping/polygons_3.svg">
+			</div>
 		</div>
 
 		<div class="gp_gh-links">
@@ -851,128 +858,130 @@
 		</div>
 
 		<div class="gp_sponsors">
-			<div class="gp_sponsors_info">
-				<span class="gp_sponsors_info_title">Globalping sponsors</span>
+			<div class="gp_sponsors_content">
+				<div class="gp_sponsors_content_info">
+					<span class="gp_sponsors_content_info_title">Globalping sponsors</span>
 
-				<span class="gp_sponsors_info_descr">
-					We thank everyone who decided to help our project by either running multiple globally distributed probes or donating to our cause.
-				</span>
-			</div>
+					<span class="gp_sponsors_content_info_descr">
+						We thank everyone who decided to help our project by either running multiple globally distributed probes or donating to our cause.
+					</span>
+				</div>
 
-			<div class="gp_sponsors_list">
-				<div class="gp_sponsors_list_tier-one">
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://gcore.com">
-							<img title="Sponsored by GCore"
-								width="120"
-								height="34"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/gcore.svg">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://xtom.com">
-							<img title="Sponsored by xTom"
-								width="101"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/xtom.svg">
-						</a>
-					</div>
+				<div class="gp_sponsors_content_list">
+					<div class="gp_sponsors_content_list_tier-one">
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://gcore.com">
+								<img title="Sponsored by GCore"
+									width="120"
+									height="34"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/gcore.svg">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://xtom.com">
+								<img title="Sponsored by xTom"
+									width="101"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/xtom.svg">
+							</a>
+						</div>
 
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://dedipath.com">
-							<img title="Sponsored by DediPath"
-								width="151"
-								height="34"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/dedipath.png">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://looking.house">
-							<img title="Sponsored by Looking.house"
-								width="151"
-								height="34"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/looking-house.svg">
-						</a>
-					</div>
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://dedipath.com">
+								<img title="Sponsored by DediPath"
+									width="151"
+									height="34"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/dedipath.png">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://looking.house">
+								<img title="Sponsored by Looking.house"
+									width="151"
+									height="34"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/looking-house.svg">
+							</a>
+						</div>
 
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://www.ip2location.io/">
-							<img title="Sponsored by IP2Location"
-								width="169"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/ip2location.svg">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://terrahost.com">
-							<img title="Sponsored by Terrahost"
-								width="139"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/terrahost.png">
-						</a>
-					</div>
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://www.ip2location.io/">
+								<img title="Sponsored by IP2Location"
+									width="169"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/ip2location.svg">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://terrahost.com">
+								<img title="Sponsored by Terrahost"
+									width="139"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/terrahost.png">
+							</a>
+						</div>
 
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://www.fdcservers.net">
-							<img title="Sponsored by FDCServers"
-								width="95"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/fdc.svg">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://www.starrydns.com">
-							<img title="Sponsored by StarryDNS"
-								width="160"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/starry.png">
-						</a>
-					</div>
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://www.fdcservers.net">
+								<img title="Sponsored by FDCServers"
+									width="95"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/fdc.svg">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://www.starrydns.com">
+								<img title="Sponsored by StarryDNS"
+									width="160"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/starry.png">
+							</a>
+						</div>
 
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://www.exoscale.com">
-							<img title="Sponsored by Exoscale"
-								width="210"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/exoscale.svg">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://ipinfo.io/">
-							<img title="Sponsored by IPInfo"
-								width="93"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/ipinfo.svg">
-						</a>
-					</div>
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://www.exoscale.com">
+								<img title="Sponsored by Exoscale"
+									width="210"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/exoscale.svg">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://ipinfo.io/">
+								<img title="Sponsored by IPInfo"
+									width="93"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/ipinfo.svg">
+							</a>
+						</div>
 
-					<div class="gp_sponsors_list_tier-one_row">
-						<a target="_blank" rel="noopener noreferrer" href="https://zappiehost.com">
-							<img title="Sponsored by Zappie Host"
-								width="97"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/zappiehost.png">
-						</a>
-						<a target="_blank" rel="noopener noreferrer" href="https://www.edisglobal.com/">
-							<img title="Sponsored by EDIS Global"
-								width="91"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/edis-global.svg">
-						</a>
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<a target="_blank" rel="noopener noreferrer" href="https://zappiehost.com">
+								<img title="Sponsored by Zappie Host"
+									width="97"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/zappiehost.png">
+							</a>
+							<a target="_blank" rel="noopener noreferrer" href="https://www.edisglobal.com/">
+								<img title="Sponsored by EDIS Global"
+									width="91"
+									height="28"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/edis-global.svg">
+							</a>
+						</div>
+
+						<!-- <div class="gp_sponsors_content_list_tier-two">
+							<div class="gp_sponsors_content_list_tier-two_row">
+								<div class="gp_person-sponsor">Robert  Kowalski</div>
+
+								<img width="57"
+									height="19"
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/dell.svg">
+
+								<div class="gp_person-sponsor">Magdalene Tabhita</div>
+							</div>
+						</div> -->
 					</div>
 				</div>
 
-<!--				<div class="gp_sponsors_list_tier-two">-->
-<!--					<div class="gp_sponsors_list_tier-two_row">-->
-<!--						<div class="gp_person-sponsor">Robert  Kowalski</div>-->
+				<a href="mailto:dak@prospectone.io" class="gp_sponsors_content_btn gp_btn_green">
+					Get in Contact
+				</a>
 
-<!--						<img width="57"-->
-<!--							height="19"-->
-<!--							src="{{@shared.assetsHost}}/img/globalping/sponsors/dell.svg">-->
-
-<!--						<div class="gp_person-sponsor">Magdalene Tabhita</div>-->
-<!--					</div>-->
-<!--				</div>-->
+				<img class="gp_sponsors_content_img"
+					width="289"
+					height="288"
+					src="{{@shared.assetsHost}}/img/globalping/polygons_4.svg">
 			</div>
-
-			<a href="mailto:dak@prospectone.io" class="gp_sponsors_btn gp_btn_green">
-				Get in Contact
-			</a>
-
-			<img class="gp_sponsors_img"
-				width="289"
-				height="288"
-				src="{{@shared.assetsHost}}/img/globalping/polygons_4.svg">
 		</div>
 	</div>
 
@@ -984,63 +993,49 @@
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
-	const validateDomainName = require('../../assets/js/utils/validate-domain-name');
-	const validateIP = require('../../assets/js/utils/validate-ip');
-	const validateByPattern = require('../../assets/js/utils/validate-by-pattern');
-	const DEFAULT_PING_OPTS = {
-		requiredAdditionalOptsCnt: 0,
-	};
-	const DEFAULT_TRACEROUTE_OPTS = {
+	const has = require('../../assets/js/utils/has');
+	const CLIENT_DEFAULT_PING_OPTS = {};
+	const API_DEFAULT_PING_OPTS = {};
+	const CLIENT_DEFAULT_TRACEROUTE_OPTS = {
 		protocol: 'ICMP',
-		requiredAdditionalOptsCnt: 0,
 	};
-	const DEFAULT_DNS_OPTS = {
+	const API_DEFAULT_TRACEROUTE_OPTS = {
+		protocol: 'ICMP',
+	};
+	const CLIENT_DEFAULT_DNS_OPTS = {
 		protocol: 'UDP',
 		query: {
 			type: 'A',
 		},
-		trace: true,
-		requiredAdditionalOptsCnt: 0,
+		trace: false,
 	};
-	const DEFAULT_MTR_OPTS = {
+	const API_DEFAULT_DNS_OPTS = {
+		protocol: 'UDP',
+		query: {
+			type: 'A',
+		},
+		trace: false,
+	};
+	const CLIENT_DEFAULT_MTR_OPTS = {
 		protocol: 'ICMP',
-		requiredAdditionalOptsCnt: 0,
 	};
-	const DEFAULT_HTTP_OPTS = {
-		protocol: 'HTTP',
+	const API_DEFAULT_MTR_OPTS = {
+		protocol: 'ICMP',
+	};
+	const CLIENT_DEFAULT_HTTP_OPTS = {
+		protocol: 'HTTPS',
 		request: {
 			method: 'GET',
 		},
-		requiredAdditionalOptsCnt: 0,
+	};
+	const API_DEFAULT_HTTP_OPTS = {
+		protocol: 'HTTPS',
+		request: {
+			method: 'HEAD',
+		},
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
-	const VALIDATION_PATTERNS_MAP = {
-		limit: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Limit must be an integer number',
-			},
-		],
-		location: [
-			{
-				pattern: '^([a-zA-Z]{2}){1}(\\+[a-zA-Z]{2})*$',
-				errMsg: 'Location must be in a valid format',
-			},
-		],
-		packets: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Packets must be an integer number',
-			},
-		],
-		port: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Port must be an integer number',
-			},
-		],
-	};
 	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const DOCKER_CMD_CONTENT_FULL = [
 		{
@@ -1095,16 +1090,27 @@
 		type: 'ping',
 		target: 'cdn.jsdelivr.net',
 		location: 'World',
-		limit: '3',
+		limit: '10',
 	};
+	const MAP_ZOOM_REG = 3.74;
+	const MAP_CENTER_REG = { lat: 48, lng: 16 };
+	const MAP_ZOOM_ALT = 2.14;
+	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
-	let mapMarkersClusters = [];
+	let probesMarkers = [];
+	let probesInfoWindows = [];
+	let mapProbesClusters = [];
 
 	component.exports = {
 		decorators: {
 			clipboard,
+		},
+		computed: {
+			probesMaxTiming () {
+				return this.get('mainOptions.type').toLowerCase() === 'http' ? 1000 : 200;
+			},
 		},
 		data () {
 			return {
@@ -1112,7 +1118,6 @@
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				mainOptions: {
 					...INITIAL_MAIN_OPTS_VALUES,
-					requiredAdditionalOptsCnt: DEFAULT_PING_OPTS.requiredAdditionalOptsCnt,
 				},
 				showMap: true,
 				showMeasurementOpts: false,
@@ -1124,12 +1129,13 @@
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
-				pingOpts: DEFAULT_PING_OPTS,
-				tracerouteOpts: DEFAULT_TRACEROUTE_OPTS,
-				dnsOpts: DEFAULT_DNS_OPTS,
-				mtrOpts: DEFAULT_MTR_OPTS,
-				httpOpts: DEFAULT_HTTP_OPTS,
+				pingOpts: CLIENT_DEFAULT_PING_OPTS,
+				tracerouteOpts: CLIENT_DEFAULT_TRACEROUTE_OPTS,
+				dnsOpts: CLIENT_DEFAULT_DNS_OPTS,
+				mtrOpts: CLIENT_DEFAULT_MTR_OPTS,
+				httpOpts: CLIENT_DEFAULT_HTTP_OPTS,
 				inputErrors: {},
+				testResultsId: null,
 				testResults: null,
 				testFailed: false,
 				testInProgress: false,
@@ -1137,11 +1143,16 @@
 				notAppliedOpts: {},
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
-				probesMaxTiming: 200,
 				probesMinTiming: 5,
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
+				measurementId: null,
+				modifiedMeasOptsCnt: 0,
+				appliedMeasOpts: {},
+				shareResHeaderDate: null,
+				runTestBtnText: 'Run Test',
+				shareResultsCase: false,
 			};
 		},
 		onrender () {
@@ -1155,62 +1166,46 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchGlobalpingProbes().then((response) => {
-					let { totalCities, totalCountries } = response.reduce((res, item) => {
-						if (!res.citiesList.includes(item.location.city)) {
-							res.citiesList.push(item.location.city);
-						}
+				// check if id is present in query string
+				// if so - should be a share-results logic implemented
+				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
+				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
 
-						if (!res.countriesList.includes(item.location.country)) {
-							res.countriesList.push(item.location.country);
-						}
+				if (measurementId) {
+					this.set('measurementId', measurementId);
+					this.set('runTestBtnText', 'Run Again');
+					this.getTestMeasurementById(measurementId, true);
+				}
 
-						res.totalCities = res.citiesList.length;
-						res.totalCountries = res.countriesList.length;
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
 
-						return res;
-					}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+					if (probesResponse) {
+						this.handleProbesResponse(true)(probesResponse);
+					} else {
+						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+					}
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
 
-					this.animate('totalProbes', response.length, { duration: 2000 });
-					this.animate('totalCities', totalCities, { duration: 2000 });
-					this.animate('totalCountries', totalCountries, { duration: 2000 });
-				});
-
+				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
+					// if measurementId - share-results flow, so type would be set, we should ignore this case
+					if (this.get('measurementId')) {
+						return;
+					}
+
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('pingOpts', DEFAULT_PING_OPTS);
-					this.set('tracerouteOpts', DEFAULT_TRACEROUTE_OPTS);
-					this.set('dnsOpts', DEFAULT_DNS_OPTS);
-					this.set('mtrOpts', DEFAULT_MTR_OPTS);
-					this.set('httpOpts', DEFAULT_HTTP_OPTS);
-					this.set('notAppliedOpts', {});
 					this.set('testResults', null);
+					this.set('testResultsId', null);
 					this.set('markersData', null);
-					this.set('mainOptions.requiredAdditionalOptsCnt', this.get(`${type.toLowerCase()}Opts`).requiredAdditionalOptsCnt);
-				}, { init: false });
-
-				// prepare data for Markers of the map, timings for the map scale
-				this.observe('testResults', (testResults) => {
-					if (!testResults) { return; }
-
-					let dnsOpts = this.get('dnsOpts');
-					let testType = this.get('mainOptions.type');
-
-					let markersData = testResults.results.map((res) => {
-						let probeTiming = _.calculateGpProbeTiming(testType, res, dnsOpts.trace);
-
-						return {
-							network: res.probe.network,
-							city: res.probe.city,
-							country: res.probe.country,
-							timing: typeof probeTiming.value === 'number' ? `${Math.round(probeTiming.value)}${probeTiming.units}` : probeTiming.value,
-							lat: res.probe.latitude,
-							lng: res.probe.longitude,
-						};
-					});
-
-					this.set('markersData', markersData);
+					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
+					this.set('appliedMeasOpts', {});
+					this.set('notAppliedOpts', {});
+					this.set('testFailed', false);
+					this.set('modifiedMeasOptsCnt', 0);
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -1257,6 +1252,63 @@
 						this.collapseCmdBlock();
 					}
 				}, { init: false, defer: true });
+
+				// handle test results in real time
+				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (realTimeTestResResponse.status === 'finished') {
+						clearInterval(this.get('testReqInterval'));
+						this.set('testInProgress', false);
+						this.set('testResultsId', realTimeTestResResponse.id);
+					}
+
+					let prevTestResults = this.get('testResults') || [];
+					let updTestResults = realTimeTestResResponse.results.filter((res) => {
+						// if it is no in-progress then it is already finished or failed and we could draw a marker
+						if (res.result.status !== 'in-progress') { return true; }
+
+						return false;
+					});
+
+					// filter out results that have already been drawn
+					let newTestResults = updTestResults.filter((updRes) => {
+						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
+					});
+
+					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
+				}, { init: false });
+
+				// prepare data for Markers of the map, timings for the map scale
+				this.observe('testResults', (testResults) => {
+					if (!testResults || !testResults.length) { return; }
+
+					let dnsOpts = this.get('dnsOpts');
+					let testType = this.get('mainOptions.type');
+					let markersData = testResults.map((res) => {
+						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+
+						return {
+							network: res.probe.network,
+							city: res.probe.city,
+							country: res.probe.country,
+							timing: typeof resTiming.value === 'number' ? `${Math.round(resTiming.value)}${resTiming.units}` : resTiming.value,
+							lat: res.probe.latitude,
+							lng: res.probe.longitude,
+						};
+					});
+
+					this.set('markersData', markersData);
+				}, { init: false });
+
+				// scroll to the Map-block in share-res case
+				this.observe('shareResultsCase', (shareResultsCase) => {
+					if (shareResultsCase) {
+						let mapBlockEl = this.find('.gp_map-block');
+
+						mapBlockEl.scrollIntoView({
+							behavior: 'smooth',
+						});
+					}
+				});
 			}
 		},
 		oncomplete () {
@@ -1269,34 +1321,42 @@
 				let handleEnterBtn = (event) => {
 					if (event.key === 'Enter') {
 						event.preventDefault();
-						this.proceedToTest();
+						this.resetMapAndRunTest();
 					}
 				};
 
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
+
+				// set that this is Share results case to initiate scrolling mapBlock into the view
+				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
+				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+
+				if (measurementId) {
+					this.set('shareResultsCase', true);
+				}
 			}
 		},
 		proceedToTest () {
 			let { type, target, location, limit } = this.get('mainOptions');
-			let measurementOpts = this.get(`${type.toLowerCase()}Opts`);
+			let appliedMeasOpts = this.get('appliedMeasOpts');
+			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 
-			delete measurementOpts.requiredAdditionalOptsCnt;
-
-			let reqParams = { type };
+			let reqParams = {
+				type,
+				// to get test results in real time
+				inProgressUpdates: true,
+			};
 
 			if (target) {
 				reqParams.target = target;
 			}
 
-			if (!location) {
-				reqParams.limit = limit || DEFAULT_LIMIT;
-			} else {
-				reqParams.locations = location.split('+').map(loc => ({
-					magic: loc,
-					limit: limit || DEFAULT_LIMIT,
-				}));
+			reqParams.limit = limit || DEFAULT_LIMIT;
+
+			if (location) {
+				reqParams.locations = location.split('+').map(loc => ({ magic: loc }));
 			}
 
 			// since packets field default value is present only for Ping and MTR type
@@ -1307,107 +1367,75 @@
 				};
 			} else {
 				delete measurementOpts.packets;
+
+				if (type.toLowerCase() === 'http') {
+					reqParams.measurementOptions = {
+						request: {
+							method: measurementOpts?.request?.method || CLIENT_DEFAULT_HTTP_OPTS.request.method,
+						},
+					};
+				}
 			}
 
 			if (Object.keys(measurementOpts).length) {
 				reqParams.measurementOptions = {
-					...reqParams.measurementOptions,
+					...reqParams.measurementOptions || {},
 					...measurementOpts,
 				};
 			}
 
-			// get test interval and clear it when new test is started
-			let testReqInterval = this.get('testReqInterval');
-
-			if (testReqInterval) {
-				clearInterval(testReqInterval);
-			}
-
-			// validate fields
-			let inputErrors = this.validateDataForRequest(target, location, limit, measurementOpts);
-
-			if (Object.keys(inputErrors).length) {
-				this.set('inputErrors', inputErrors);
-
-				return;
-			}
-
 			// clear all data from the previous test, close additional options menu, show spinner
 			this.set('testResults', null);
+			this.set('testResultsId', null);
 			this.set('markersData', null);
+			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
+			this.set('testFailed', false);
+			this.set('shareResHeaderDate', null);
 
-			// set dnsTraceEnabled value to know what it was during the request to avoid not necessary recalcs in gp-test-results
-			this.set('dnsTraceEnabled', reqParams.measurementOptions.trace || false);
+			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
+			this.set('dnsTraceEnabled', reqParams.measurementOptions?.trace || false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				testReqInterval = setInterval(() => {
-					http.getGlobalpingMeasurement(response.id).then((testRes) => {
-						if (testRes.status !== 'in-progress') {
-							clearInterval(testReqInterval);
-
-							this.set('testInProgress', false);
-							this.set('testResults', testRes);
-						}
-					}).catch(() => {
-						clearInterval(testReqInterval);
-					});
-				}, 1000);
-
-				this.set('testReqInterval', testReqInterval);
+				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
+				this.set('testInProgress', false);
+				this.set('testFailed', true);
+
 				if (err.error.type === 'validation_error') {
-					this.set('testInProgress', false);
+					let measurementOptsErr = false;
 					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let fieldName = key.split('.')[key.split('.').length - 1];
+						let splittedKeyName = key.split('.');
+						let splittedKeyNameLength = splittedKeyName.length;
+						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
 						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
-						res[key] = errMsg;
+						res[fieldName] = errMsg;
+
+						if (splittedKeyName[splittedKeyNameLength - 2] === 'measurementOptions') {
+							measurementOptsErr = true;
+						}
 
 						return res;
 					}, {});
 
 					this.set('inputErrors', inputErrors);
+
+					// open measurement options menu if it contains errors
+					if (measurementOptsErr) {
+						this.set('showMeasurementOpts', true);
+					}
+				} else if (err.error.type === 'no_probes_found') {
+					this.set('inputErrors', {
+						noProbesFound: err.error.message,
+					});
 				}
 			});
 		},
 		applyOptions () {
-			let notAppliedOpts = this.get('notAppliedOpts');
-			let { type } = this.get('mainOptions');
-			let currOptsName = `${type.toLowerCase()}Opts`;
-			let opts = this.get(currOptsName);
-
-			switch (type.toLowerCase()) {
-				case 'ping':
-					opts.packets = notAppliedOpts.packets;
-					break;
-
-				case 'traceroute':
-					opts.port = notAppliedOpts.port;
-					break;
-
-				case 'dns':
-					opts.port = notAppliedOpts.port;
-					opts.resolver = notAppliedOpts.resolver;
-					break;
-
-				case 'mtr':
-					opts.port = notAppliedOpts.port;
-					opts.packets = notAppliedOpts.packets;
-					break;
-
-				case 'http':
-					opts.port = notAppliedOpts.port;
-					opts.resolver = notAppliedOpts.resolver;
-					opts.request.host = notAppliedOpts.host;
-					opts.request.path = notAppliedOpts.path;
-					opts.request.query = notAppliedOpts.query;
-					break;
-			}
-
 			// filter opts from empty values
-			let filteredOpts = Object.keys(opts).reduce((res, key) => {
+			let filterOptsFromEmptyOne = opts => Object.keys(opts).reduce((res, key) => {
 				if (typeof opts[key] === 'object') {
 					res[key] = Object.keys(opts[key]).reduce((secRes, secKey) => {
 						if (opts[key][secKey] !== '') {
@@ -1423,135 +1451,28 @@
 				return res;
 			}, {});
 
-			this.set(currOptsName, filteredOpts);
+			let { type } = this.get('mainOptions');
+			let currOptsName = `${type.toLowerCase()}Opts`;
+			let initPresetOpts = filterOptsFromEmptyOne(this.get(currOptsName));
+			let notPresetOpts = filterOptsFromEmptyOne(this.get('notAppliedOpts'));
+			let opts = {
+				initPresetOpts,
+				notPresetOpts,
+			};
+
+			this.set('appliedMeasOpts', opts);
+
+			this.countModifiedMeasurementOpts(type, initPresetOpts, notPresetOpts);
+
 			this.set('showMeasurementOpts', false);
-		},
-		validateDataForRequest (target, location, limit, measurementOpts) {
-			let inputErrors = {};
-
-			// validate Target field
-			if (!target) {
-				inputErrors.target = 'Target is required';
-			} else {
-				let isValidDomainName = validateDomainName.test(target);
-				let isValidIP = validateIP.test(target);
-
-				if (!isValidDomainName && !isValidIP) {
-					inputErrors.target = 'Target does not match any of the allowed formats';
-				}
-			}
-
-			// validate Location field
-			if (location && location.toLowerCase() !== INITIAL_MAIN_OPTS_VALUES.location.toLowerCase()) {
-				let result = VALIDATION_PATTERNS_MAP.location.reduce((res, data) => {
-					let isValid = validateByPattern.test(location, data.pattern);
-
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
-						};
-					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors.location = result.errMsg;
-				}
-			}
-
-			// validate Limit field
-			if (limit) {
-				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
-					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
-
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
-						};
-					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors.limit = result.errMsg;
-				} else if (limit > 500 || limit < 1) {
-					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
-				}
-			}
-
-			// validate Measurement Options
-			if (measurementOpts.packets) {
-				let result = VALIDATION_PATTERNS_MAP.packets.reduce((res, data) => {
-					let isValid = validateByPattern.test(Math.abs(measurementOpts.packets), data.pattern);
-
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
-						};
-					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors['measurementOptions.packets'] = result.errMsg;
-				} else if (measurementOpts.packets > 16 || measurementOpts.packets < 1) {
-					inputErrors['measurementOptions.packets'] = 'Packets must be from 1 to 16 inclusive';
-				}
-			}
-
-			if (measurementOpts.port) {
-				let result = VALIDATION_PATTERNS_MAP.port.reduce((res, data) => {
-					let isValid = validateByPattern.test(Math.abs(measurementOpts.port), data.pattern);
-
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
-						};
-					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors['measurementOptions.port'] = result.errMsg;
-				} else if (measurementOpts.port > 65535 || measurementOpts.port < 1) {
-					inputErrors['measurementOptions.port'] = 'Port must be from 1 to 65535 inclusive';
-				}
-			}
-
-			if (measurementOpts.resolver) {
-				let isValidIP = validateIP.test(measurementOpts.resolver);
-
-				if (!isValidIP) {
-					inputErrors['measurementOptions.resolver'] = 'Resolver must be a valid ip address of one of the following versions [ipv4] with a forbidden CIDR';
-				}
-			}
-
-			if (measurementOpts?.request?.host) {
-				let isValidDomainName = validateDomainName.test(measurementOpts.request.host);
-
-				if (!isValidDomainName) {
-					inputErrors['measurementOptions.request.host'] = 'Host must contain a valid domain name';
-				}
-			}
-
-			return inputErrors;
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
-			let CENTER = { lat: 48, lng: 16 };
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				styles,
-				zoom: 3.74,
-				center: CENTER,
+				zoom: MAP_ZOOM_REG,
+				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
 				draggableCursor: 'default',
 				mapTypeControl: false,
@@ -1560,26 +1481,84 @@
 			});
 
 			if (mq.matches) {
-				CENTER = { lat: 30, lng: 18 };
-				map.setZoom(2.14);
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
 			}
 
-			this.observe('markersData', (markersData) => {
+			// while zooming handle marker positions for those with the same coordinates
+			map.addListener('zoom_changed', () => {
+				let currZoom = map.getZoom();
+				infoWindows.forEach(iw => iw.close());
+				probesInfoWindows.forEach(piw => piw.close());
+
+				if (currZoom > 16) {
+					let markersData = this.get('markersData');
+					let bounds = map.getBounds();
+					let visibleMarkers = (markersData ? mapMarkers : probesMarkers).filter(m => bounds.contains(m.getPosition()));
+					let getFixedLat = m => m.getPosition().lat().toFixed(4);
+					let getFixedLng = m => m.getPosition().lng().toFixed(4);
+
+					if (visibleMarkers.length > 1) {
+						if (visibleMarkers.every((m, index, arr) => (getFixedLat(m) === getFixedLat(arr[0])) && (getFixedLng(m) === getFixedLng(arr[0])))) {
+							for (let i = 1; i < visibleMarkers.length; i++) {
+								let existingMarker = visibleMarkers[i];
+								let pos = existingMarker.getPosition();
+								let quotient = 360 / visibleMarkers.length;
+								let newLat = pos.lat() + -.00008 * Math.cos(quotient * i);
+								let newLng = pos.lng() + -.00008 * Math.sin(quotient * i);
+
+								existingMarker.setPosition(new google.maps.LatLng(newLat, newLng));
+							}
+
+							map.setZoom(currZoom - 1);
+							map.setZoom(currZoom + 1);
+						}
+					}
+				}
+			});
+
+			// draw probes Clusers or clear the map from them
+			this.observe('probesResponse', (probesResponse) => {
+				if (probesResponse === null) {
+					this.clearProbesClusters();
+				// check if there is no measurementId so it is not a share-results case
+				// we do need to draw probes Clusters for share-results case
+				} else if (probesResponse && this.get('measurementId') === null) {
+					this.updateClusters(probesResponse);
+				}
+			});
+
+			// draw test response  markers and Clusers or clear the map from them
+			this.observe('markersData', (markersData, prevMarkersData) => {
 				if (markersData === null) {
-					this.clearMapElements();
+					this.clearTestResponseMarkers();
 				} else {
-					this.updateMarkers(markersData);
+					let markersDataToDraw;
+					// since we are drawing markers in real-time we should counting new base index
+					// so our results in gp-test-results table and infoWindows IDs have the same index
+					let newDrawBaseIdx = 0;
+
+					// if the data was already drawn on the map we should filter it out
+					if (prevMarkersData) {
+						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
+						newDrawBaseIdx += prevMarkersData.length;
+					} else {
+						markersDataToDraw = markersData;
+					}
+
+					this.updateMarkers(markersDataToDraw, newDrawBaseIdx);
 				}
 			}, { init: false });
 		},
-		updateMarkers (markersData) {
+		updateMarkers (markersData, baseDrawIdx = 0) {
 			markersData.forEach((markerData, mDataIdx) => {
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow({
 					content: `<div class="gp-map_popup">
 							<div class="gp-map_popup_header">${markerData.timing}</div>
-							<div class="gp-map_popup_descr">${markerData.network} (${markerData.city}, ${markerData.country})</div>
-							<div class="gp-map_popup_see-results" id="iw-${mDataIdx}">
+							<div class="gp-map_popup_descr">${markerData.network}</div>
+							<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+							<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
 								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
 								<span>See results</span>
 							</div>
@@ -1627,47 +1606,105 @@
 				});
 
 				google.maps.event.addListener(infoWindow, 'domready', () => {
-					let clickableEl = document.getElementById(`iw-${mDataIdx}`);
+					let clickableEl = document.getElementById(`iw-${baseDrawIdx + mDataIdx}`);
 					let hasListener = clickableEl.dataset.hasListener;
 
 					if (!hasListener) {
 						clickableEl.addEventListener('click', () => {
-							this.handleSeeResults(mDataIdx);
+							this.handleSeeResults(baseDrawIdx + mDataIdx);
 							clickableEl.dataset.hasListener = true;
 						});
 					}
 				});
 
-				// eslint-disable-next-line no-undef
-				let markersCluster = new markerClusterer.MarkerClusterer({
-					markers: mapMarkers,
-					map,
-					renderer: {
-						render: ({ markers, _position: position }) => {
-							return new google.maps.Marker({
-								position: {
-									lat: position.lat(),
-									lng: position.lng(),
-								},
-								icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
-								label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
-							});
-						},
-					},
-				});
-
 				infoWindows.push(infoWindow);
 				mapMarkers.push(marker);
-				mapMarkersClusters.push(markersCluster);
 			});
 		},
-		clearMapElements () {
+		updateClusters (probes) {
+			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g filter="url(#filter0_d_6106_3045)">
+				<circle cx="12" cy="10" r="6" fill="#17D4A7"/>
+				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+				</g>
+				<defs>
+				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+				<feOffset dy="2"/>
+				<feGaussianBlur stdDeviation="2"/>
+				<feComposite in2="hardAlpha" operator="out"/>
+				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+				</filter>
+				</defs>
+				</svg>`);
+
+			probes.forEach((probe) => {
+				let probeInfoWindow = new google.maps.InfoWindow({
+					content: `<div class="gp-map_popup">
+							<div class="gp-map_popup_descr">${probe.location.network}</div>
+							<div class="gp-map_popup_descr">(${probe.location.city}, ${probe.location.country})</div>
+						</div>`,
+				});
+
+				let probeMarker = new google.maps.Marker({
+					map,
+					icon: { url: `data:image/svg+xml;base64,${svg}` },
+					position: { lat: probe.location.latitude, lng: probe.location.longitude },
+					optimized: false,
+				});
+
+				google.maps.event.addListener(probeMarker, 'click', () => {
+					probesInfoWindows.forEach(piw => piw.close());
+					probeInfoWindow.open(map, probeMarker);
+				});
+
+				google.maps.event.addListener(map, 'click', () => {
+					probeInfoWindow.close();
+				});
+
+				probesInfoWindows.push(probeInfoWindow);
+				probesMarkers.push(probeMarker);
+			});
+
+			// eslint-disable-next-line no-undef
+			let probeCluster = new markerClusterer.MarkerClusterer({
+				markers: probesMarkers,
+				map,
+				renderer: {
+					render: ({ markers, _position: position }) => {
+						return new google.maps.Marker({
+							position: {
+								lat: position.lat(),
+								lng: position.lng(),
+							},
+							icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
+							label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+						});
+					},
+				},
+				// eslint-disable-next-line no-undef
+				algorithm: new markerClusterer.SuperClusterAlgorithm({
+					radius: 200,
+				}),
+			});
+
+			mapProbesClusters.push(probeCluster);
+		},
+		clearTestResponseMarkers () {
 			infoWindows.forEach(iw => iw.close());
 			mapMarkers.forEach(mm => mm.setMap(null));
-			mapMarkersClusters.forEach(mc => mc.setMap(null));
 			infoWindows = [];
 			mapMarkers = [];
-			mapMarkersClusters = [];
+		},
+		clearProbesClusters () {
+			probesInfoWindows.forEach(piw => piw.close());
+			mapProbesClusters.forEach(pc => pc.setMap(null));
+			probesMarkers = [];
+			probesInfoWindows = [];
+			mapProbesClusters = [];
 		},
 		collapseCmdBlock () {
 			let element = document.querySelector('.gp_join-network_cmd-block_command');
@@ -1738,6 +1775,231 @@
 			this.set('scrolledToResIdx', resIdx);
 
 			el.scrollIntoView({ behvior: 'smooth' });
+		},
+		getTestMeasurementById (measurementId, isShareResCase = false) {
+			let testReqInterval = setInterval(() => {
+				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+					if (isShareResCase) {
+						this.set('shareResHeaderDate', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+						this.set('mainOptions.target', testRes.target);
+						this.set('mainOptions.limit', testRes.limit);
+
+						let magicValue = testRes.locations.reduce((res, loc) => {
+							if (loc.magic) {
+								res += res.length ? `+${loc.magic}` : loc.magic;
+
+								return res;
+							}
+
+							return res;
+						}, '');
+
+						this.set('mainOptions.location', magicValue);
+
+						let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
+						let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
+						let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
+						let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
+
+						this.set('notAppliedOpts', receivedNotPresetOpts);
+						this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
+						this.applyOptions();
+
+						// clear measurementId so the mainOptions.type observer could work now
+						this.set('measurementId', null);
+					}
+
+					// needed for c-gp-test-results calcs
+					this.set('dnsTraceEnabled', testRes.measurementOptions?.trace || false);
+
+					// should be after the mainOptions.type was set
+					this.set('realTimeTestResResponse', testRes);
+				}).catch(() => {
+					clearInterval(testReqInterval);
+				});
+			}, 1000);
+
+			this.set('testReqInterval', testReqInterval);
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				let { totalCities, totalCountries } = response.reduce((res, item) => {
+					if (!res.citiesList.includes(item.location.city)) {
+						res.citiesList.push(item.location.city);
+					}
+
+					if (!res.countriesList.includes(item.location.country)) {
+						res.countriesList.push(item.location.country);
+					}
+
+					res.totalCities = res.citiesList.length;
+					res.totalCountries = res.countriesList.length;
+
+					return res;
+				}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+
+				this.animate('totalProbes', response.length, { duration: 2000 });
+				this.animate('totalCities', totalCities, { duration: 2000 });
+				this.animate('totalCountries', totalCountries, { duration: 2000 });
+				this.set('probesResponse', response);
+			};
+		},
+		translateTestTypeName (name) {
+			switch (name.toLowerCase()) {
+				case 'ping':
+				case 'traceroute':
+					return name.toLowerCase();
+				case 'dns':
+				case 'mtr':
+				case 'http':
+					return name.toUpperCase();
+			}
+		},
+		getDefaultClientMeasOptsByTestName (name) {
+			let res;
+
+			switch (name.toLowerCase()) {
+				case 'ping':
+					res = CLIENT_DEFAULT_PING_OPTS; break;
+				case 'traceroute':
+					res = CLIENT_DEFAULT_TRACEROUTE_OPTS; break;
+				case 'dns':
+					res = CLIENT_DEFAULT_DNS_OPTS; break;
+				case 'mtr':
+					res = CLIENT_DEFAULT_MTR_OPTS; break;
+				case 'http':
+					res = CLIENT_DEFAULT_HTTP_OPTS; break;
+			}
+
+			// create deep copy to avoid mutations
+			return JSON.parse(JSON.stringify(res));
+		},
+		getDefaultAPIMeasOptsByTestName (name) {
+			let res;
+
+			switch (name.toLowerCase()) {
+				case 'ping':
+					res = API_DEFAULT_PING_OPTS; break;
+				case 'traceroute':
+					res = API_DEFAULT_TRACEROUTE_OPTS; break;
+				case 'dns':
+					res = API_DEFAULT_DNS_OPTS; break;
+				case 'mtr':
+					res = API_DEFAULT_MTR_OPTS; break;
+				case 'http':
+					res = API_DEFAULT_HTTP_OPTS; break;
+			}
+
+			// create deep copy to avoid mutations
+			return JSON.parse(JSON.stringify(res));
+		},
+		handleToggleMeasOpts () {
+			let prevValue = this.get('showMeasurementOpts');
+
+			this.set('showMeasurementOpts', !prevValue);
+
+			// if opts were not applied we should em reset to default or to prev applied state on closing of MeasOpts dropdown
+			if (prevValue === true) {
+				let testType = this.get('mainOptions.type');
+				let appliedMeasOpts = this.get('appliedMeasOpts');
+				let defaultOpts = this.getDefaultClientMeasOptsByTestName(testType);
+
+				if (Object.keys(appliedMeasOpts).length) {
+					this.set(`${testType.toLowerCase()}Opts`, { ...JSON.parse(JSON.stringify(appliedMeasOpts.initPresetOpts)) });
+					this.set('notAppliedOpts', { ...JSON.parse(JSON.stringify(appliedMeasOpts.notPresetOpts)) });
+				} else {
+					this.set(`${testType.toLowerCase()}Opts`, defaultOpts);
+					this.set('notAppliedOpts', {});
+				}
+			}
+		},
+		countModifiedMeasurementOpts (type, initPresetOpts, notPresetOpts) {
+			let defaultOpts = this.getDefaultClientMeasOptsByTestName(type);
+			let modifiedMeasOptsCnt = Object.keys(notPresetOpts).reduce((cnt, key) => {
+				if (typeof notPresetOpts[key] === 'object') {
+					return cnt + Object.keys(notPresetOpts[key]).length;
+				}
+
+				return ++cnt;
+			}, 0);
+
+			Object.keys(defaultOpts).forEach((key) => {
+				if (typeof defaultOpts[key] === 'object') {
+					Object.keys(defaultOpts[key]).forEach((secKey) => {
+						if (defaultOpts[key][secKey] !== initPresetOpts[key][secKey]) {
+							modifiedMeasOptsCnt++;
+						}
+					});
+				} else if (defaultOpts[key] !== initPresetOpts[key]) {
+					modifiedMeasOptsCnt++;
+				}
+			});
+
+			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
+		},
+		resetMapAndRunTest () {
+			let mq = window.matchMedia('(min-width: 768px)');
+
+			if (mq.matches) {
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
+			} else {
+				map.setCenter(MAP_CENTER_REG);
+				map.setZoom(MAP_ZOOM_REG);
+			}
+
+			// once zoom is ended the idle event will be fired
+			map.addListener('idle', () => {
+				this.proceedToTest();
+				// remove listener to avoid unintended test runs while zoom
+				google.maps.event.clearListeners(map, 'idle');
+			});
+		},
+
+		filterForInitPresetOpts (defaultOpts, optionsToFilter) {
+			return Object.keys(optionsToFilter).reduce((res, key) => {
+				if (Object.hasOwn(defaultOpts, key)) {
+					if (typeof defaultOpts[key] === 'object') {
+						res = {
+							...res,
+							[key]: this.filterForInitPresetOpts(defaultOpts[key], optionsToFilter[key]),
+						};
+					} else {
+						res = {
+							...res,
+							[key]: optionsToFilter[key],
+						};
+					}
+				}
+
+				return res;
+			}, {});
+		},
+		filterForNotPresetOpts (defaultOpts, optionsToFilter) {
+			return Object.keys(optionsToFilter).reduce((res, key) => {
+				if (Object.hasOwn(defaultOpts, key)) {
+					if (typeof optionsToFilter[key] === 'object') {
+						res = {
+							...res,
+							[key]: this.filterForNotPresetOpts(defaultOpts[key], optionsToFilter[key]),
+						};
+					}
+				} else {
+					res = {
+						...res,
+						[key]: optionsToFilter[key],
+					};
+				}
+
+				return res;
+			}, {});
 		},
 	};
 </script>

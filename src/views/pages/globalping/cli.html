@@ -78,13 +78,13 @@
 						</div>
 
 						<div class="gp-cli_how-install_list_item_body">
-							<span>{{this.cmd1}}</span>
+							<span>{{{this.cmd1.html}}}</span>
 							<br>
 							<span>{{this.cmd2}}</span>
 							<br>
 							<span>{{this.cmd3}}</span>
 							<button class="gp-cli_how-install_list_item_body_btn gp_btn_green"
-								as-clipboard data-clipboard-text="{{this.cmd1 + '\n' + this.cmd2 + '\n' + this.cmd3}}">
+								as-clipboard data-clipboard-text="{{this.cmd1.clearText + '\n' + this.cmd2 + '\n' + this.cmd3}}">
 								<img width="20"
 									height="20"
 									src="{{@shared.assetsHost}}/img/globalping/copy-icon.svg">
@@ -176,12 +176,16 @@ Use "globalping [command] --help" for more information about a command.
 
 <script>
 	const http = require('../../../assets/js/utils/http');
+	const has = require('../../../assets/js/utils/has');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const DEB_DATA = {
 		name: 'DEB',
 		descr: 'Debian, UbuntuDEB, Ubuntu',
 		iconName: 'deb-icon.svg',
-		cmd1: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.deb.sh | sudo bash',
+		cmd1: {
+			html: 'curl -s https://<wbr>packagecloud.io<wbr>/install<wbr>/repositories<wbr>/jsdelivr<wbr>/globalping<wbr>/script.deb.sh<wbr> | sudo bash',
+			clearText: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.deb.sh | sudo bash',
+		},
 		cmd2: 'apt install globalping',
 		cmd3: 'globalping --help',
 	};
@@ -189,7 +193,10 @@ Use "globalping [command] --help" for more information about a command.
 		name: 'RPM',
 		descr: 'CentOS, RHEL, Fedora',
 		iconName: 'rpm-icon.svg',
-		cmd1: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.rpm.sh | sudo bash',
+		cmd1: {
+			html: 'curl -s https://<wbr>packagecloud.io<wbr>/install<wbr>/repositories<wbr>/jsdelivr<wbr>/globalping<wbr>/script.rpm.sh | sudo bash',
+			clearText: 'curl -s https://packagecloud.io/install/repositories/jsdelivr/globalping/script.rpm.sh | sudo bash',
+		},
 		cmd2: 'dnf install globalping',
 		cmd3: 'globalping --help',
 	};
@@ -197,7 +204,10 @@ Use "globalping [command] --help" for more information about a command.
 		name: 'Homebrew',
 		descr: 'MacOS',
 		iconName: 'homebrew-icon.svg',
-		cmd1: 'brew tap jsdelivr/globalping',
+		cmd1: {
+			html: 'brew tap jsdelivr<wbr>/globalping',
+			clearText: 'brew tap jsdelivr/globalping',
+		},
 		cmd2: 'brew install globalping',
 		cmd3: 'globalping --help',
 	};
@@ -360,11 +370,29 @@ Host                                                             Loss% Drop Rcv 
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.fetchGlobalpingProbes().then((response) => {
+				let handleProbesResponse = isStored => (response) => {
+					if (!isStored) {
+						sessionStorage.setItem('probesResponse', JSON.stringify(response));
+					} else {
+						response = JSON.parse(response);
+					}
+
 					let roundedTotalProbes = Math.round(response.length / 100) * 100;
 
 					this.animate('roundedTotalProbes', roundedTotalProbes, { duration: 2000 });
-				});
+				};
+
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
+
+					if (probesResponse) {
+						handleProbesResponse(true)(probesResponse);
+					} else {
+						http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+					}
+				} else {
+					http.fetchGlobalpingProbes().then(handleProbesResponse(false));
+				}
 			}
 		},
 	};
