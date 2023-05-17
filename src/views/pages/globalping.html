@@ -1478,6 +1478,8 @@
 			// while zooming handle marker positions for those with the same coordinates
 			map.addListener('zoom_changed', () => {
 				let currZoom = map.getZoom();
+				infoWindows.forEach(iw => iw.close());
+				probesInfoWindows.forEach(piw => piw.close());
 
 				if (currZoom > 16) {
 					let markersData = this.get('markersData');
@@ -1673,10 +1675,6 @@
 				algorithm: new markerClusterer.SuperClusterAlgorithm({
 					radius: 200,
 				}),
-			});
-
-			google.maps.event.addListener(probeCluster, 'click', () => {
-				probesInfoWindows.forEach(piw => piw.close());
 			});
 
 			mapProbesClusters.push(probeCluster);
