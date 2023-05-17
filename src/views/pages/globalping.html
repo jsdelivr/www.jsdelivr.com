@@ -1176,7 +1176,7 @@
 					this.set('testResults', null);
 					this.set('testResultsId', null);
 					this.set('markersData', null);
-					this.set(`${type.toLowerCase()}Opts`, this.getDefaultMeasOptsByTestName(type));
+					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
@@ -1726,7 +1726,7 @@
 
 						this.set('mainOptions.location', magicValue);
 
-						let defaultOpts = this.getDefaultMeasOptsByTestName(testRes.type);
+						let defaultOpts = this.getDefaultClientMeasOptsByTestName(testRes.type);
 						// TODO: check options properly, right now it is not working for the HTTP test hich could have request prop of MeasurementOptions
 						let { receivedInitPresetOpts, receivedNotPresetOpts } = Object.keys(testRes.measurementOptions || {}).reduce((res, optsKey) => {
 							let key = 'receivedNotPresetOpts';
@@ -1810,7 +1810,7 @@
 					return name.toUpperCase();
 			}
 		},
-		getDefaultMeasOptsByTestName (name) {
+		getDefaultClientMeasOptsByTestName (name) {
 			let res;
 
 			switch (name.toLowerCase()) {
@@ -1838,7 +1838,7 @@
 			if (prevValue === true) {
 				let testType = this.get('mainOptions.type');
 				let appliedMeasOpts = this.get('appliedMeasOpts');
-				let defaultOpts = this.getDefaultMeasOptsByTestName(testType);
+				let defaultOpts = this.getDefaultClientMeasOptsByTestName(testType);
 
 				if (Object.keys(appliedMeasOpts).length) {
 					this.set(`${testType.toLowerCase()}Opts`, { ...JSON.parse(JSON.stringify(appliedMeasOpts.initPresetOpts)) });
@@ -1850,7 +1850,7 @@
 			}
 		},
 		countModifiedMeasurementOpts (type, initPresetOpts, notPresetOpts) {
-			let defaultOpts = this.getDefaultMeasOptsByTestName(type);
+			let defaultOpts = this.getDefaultClientMeasOptsByTestName(type);
 			let modifiedMeasOptsCnt = Object.keys(notPresetOpts).reduce((cnt, key) => {
 				if (typeof notPresetOpts[key] === 'object') {
 					return cnt + Object.keys(notPresetOpts[key]).length;
