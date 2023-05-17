@@ -1356,6 +1356,14 @@
 				};
 			} else {
 				delete measurementOpts.packets;
+
+				if (type.toLowerCase() === 'http') {
+					reqParams.measurementOptions = {
+						request: {
+							method: measurementOpts?.request?.method || CLIENT_DEFAULT_HTTP_OPTS.request.method,
+						},
+					};
+				}
 			}
 
 			if (Object.keys(measurementOpts).length) {
