@@ -1107,6 +1107,11 @@
 		decorators: {
 			clipboard,
 		},
+		computed: {
+			probesMaxTiming () {
+				return this.get('mainOptions.type').toLowerCase() === 'http' ? 1000 : 200;
+			},
+		},
 		data () {
 			return {
 				_,
@@ -1138,7 +1143,6 @@
 				notAppliedOpts: {},
 				defaultPacketsAmount: DEFAULT_PACKETS_AMOUNT,
 				defaultLimit: DEFAULT_LIMIT,
-				probesMaxTiming: 200,
 				probesMinTiming: 5,
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
