@@ -1480,8 +1480,9 @@
 				let currZoom = map.getZoom();
 
 				if (currZoom > 16) {
+					let markersData = this.get('markersData');
 					let bounds = map.getBounds();
-					let visibleMarkers = probesMarkers.filter(m => bounds.contains(m.getPosition()));
+					let visibleMarkers = (markersData ? mapMarkers : probesMarkers).filter(m => bounds.contains(m.getPosition()));
 					let getFixedLat = m => m.getPosition().lat().toFixed(4);
 					let getFixedLng = m => m.getPosition().lng().toFixed(4);
 
