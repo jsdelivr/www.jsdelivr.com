@@ -1356,7 +1356,7 @@
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
 			if (location) {
-				reqParams.locations = location.split('+').map(loc => ({ magic: loc }));
+				reqParams.locations = location.split(',').map(loc => ({ magic: loc }));
 			}
 
 			// since packets field default value is present only for Ping and MTR type
@@ -1787,7 +1787,7 @@
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
-								res += res.length ? `+${loc.magic}` : loc.magic;
+								res += res.length ? `, ${loc.magic}` : loc.magic;
 
 								return res;
 							}
