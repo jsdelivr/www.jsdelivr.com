@@ -1259,6 +1259,7 @@
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
 						this.set('testResultsId', realTimeTestResResponse.id);
+						this.zoomToResults(realTimeTestResResponse.locations);
 					}
 
 					let prevTestResults = this.get('testResults') || [];
@@ -2000,6 +2001,34 @@
 
 				return res;
 			}, {});
+		},
+		zoomToResults (locations) {
+			setTimeout(() => {
+				// do not zoom if test was done for the World.
+				if (
+					locations.length === 1
+					&& (locations[0].magic.toLowerCase() === 'world' || locations[0].magic === '')
+				) {
+					return;
+				}
+
+				// limit max zoom temp to avoid unnecessary zooming
+				map.setOptions({ maxZoom: 6 });
+
+				let bounds = new google.maps.LatLngBounds();
+
+				mapMarkers.forEach((mm) => {
+					bounds.extend(mm.getPosition());
+				});
+
+				google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+					map.panTo(bounds.getCenter());
+					// restore default zoom
+					map.setOptions({ maxZoom: 22 });
+				});
+
+				map.fitBounds(bounds);
+			}, 100);
 		},
 	};
 </script>
