@@ -326,7 +326,7 @@
 								{{#if mainOptions.type === 'HTTP'}}
 									<div class="typeHTTP">
 										<c-controlled-input
-											value="{{notAppliedOpts.host}}"
+											value="{{notAppliedOpts.request.host}}"
 											error="{{inputErrors.host}}"
 											placeholder="Host"
 											labelText="Host"
@@ -1170,6 +1170,7 @@
 				// if so - should be a share-results logic implemented
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
 				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
@@ -1206,6 +1207,16 @@
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
 					this.set('modifiedMeasOptsCnt', 0);
+
+
+					// handle focus out of Target input while HTTP test
+					let targetInput = this.find('#targetInput');
+
+					if (type.toLowerCase() === 'http') {
+						targetInput.addEventListener('paste', boundHandleTargetInputPaste);
+					} else {
+						targetInput.removeEventListener('paste', boundHandleTargetInputPaste);
+					}
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -2029,6 +2040,30 @@
 
 				map.fitBounds(bounds);
 			}, 100);
+		},
+		handleTargetInputPaste (event) {
+			event.preventDefault();
+			let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
+
+			try {
+				let { protocol, pathname, hostname, search } = new URL(rawPasteContent);
+
+				this.set('mainOptions.target', hostname);
+				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
+				this.set('notAppliedOpts.request.host', hostname);
+				this.set('notAppliedOpts.request.path', pathname);
+				this.set('notAppliedOpts.request.query', search.replace('?', ''));
+			} catch (err) {
+				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
+
+				this.set('mainOptions.target', rawPasteContent);
+				this.set('httpOpts.protocol', defaultClientProtocol);
+				this.set('notAppliedOpts.request.host', '');
+				this.set('notAppliedOpts.request.path', '');
+				this.set('notAppliedOpts.request.query', '');
+			} finally {
+				this.applyOptions();
+			}
 		},
 	};
 </script>
