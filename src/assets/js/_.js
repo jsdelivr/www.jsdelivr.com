@@ -1244,9 +1244,9 @@ module.exports = {
 				resTiming = lastHop.stats.avg;
 			}
 		} else if (lowCaseTestName === 'http') {
-			resTiming = testResData.result.timings.total;
+			resTiming = testResData.result?.timings?.total;
 
-			if (typeof testResData.result.timings.dns === 'number') {
+			if (typeof testResData.result?.timings?.dns === 'number') {
 				extraValues.dns = {
 					text: 'DNS',
 					value: testResData.result.timings.dns,
@@ -1254,7 +1254,7 @@ module.exports = {
 				};
 			}
 
-			if (typeof testResData.result.timings.tcp === 'number') {
+			if (typeof testResData.result?.timings?.tcp === 'number') {
 				extraValues.tcp = {
 					text: 'TCP',
 					value: testResData.result.timings.tcp,
@@ -1262,7 +1262,7 @@ module.exports = {
 				};
 			}
 
-			if (typeof testResData.result.timings.tls === 'number') {
+			if (typeof testResData.result?.timings?.tls === 'number') {
 				extraValues.tls = {
 					text: 'TLS',
 					value: testResData.result.timings.tls,
@@ -1270,7 +1270,7 @@ module.exports = {
 				};
 			}
 
-			if (typeof testResData.result.timings.firstByte === 'number') {
+			if (typeof testResData.result?.timings?.firstByte === 'number') {
 				extraValues.firstByte = {
 					text: 'TTFB',
 					value: testResData.result.timings.firstByte,
@@ -1278,7 +1278,7 @@ module.exports = {
 				};
 			}
 
-			if (typeof testResData.result.timings.download === 'number') {
+			if (typeof testResData.result?.timings?.download === 'number') {
 				extraValues.download = {
 					text: 'Download',
 					value: testResData.result.timings.download,
