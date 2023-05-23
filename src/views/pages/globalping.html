@@ -1170,7 +1170,6 @@
 				// if so - should be a share-results logic implemented
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
 				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
-				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
@@ -1207,16 +1206,6 @@
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
 					this.set('modifiedMeasOptsCnt', 0);
-
-
-					// handle focus out of Target input while HTTP test
-					let targetInput = this.find('#targetInput');
-
-					if (type.toLowerCase() === 'http') {
-						targetInput.addEventListener('paste', boundHandleTargetInputPaste);
-					} else {
-						targetInput.removeEventListener('paste', boundHandleTargetInputPaste);
-					}
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -1348,6 +1337,9 @@
 				if (measurementId) {
 					this.set('shareResultsCase', true);
 				}
+
+				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
+				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
 			}
 		},
 		proceedToTest () {
@@ -2048,6 +2040,7 @@
 			try {
 				let { protocol, port, pathname, hostname, search } = new URL(rawPasteContent);
 
+				this.set('mainOptions.type', 'HTTP');
 				this.set('mainOptions.target', hostname);
 				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
 				this.set('notAppliedOpts.port', port);
@@ -2057,10 +2050,13 @@
 				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
 
 				this.set('mainOptions.target', rawPasteContent);
-				this.set('httpOpts.protocol', defaultClientProtocol);
-				this.set('notAppliedOpts.request.path', '');
-				this.set('notAppliedOpts.request.query', '');
-				this.set('notAppliedOpts.port', '');
+
+				if (this.get('mainOptions.type') === 'HTTP') {
+					this.set('httpOpts.protocol', defaultClientProtocol);
+					this.set('notAppliedOpts.port', '');
+					this.set('notAppliedOpts.request.path', '');
+					this.set('notAppliedOpts.request.query', '');
+				}
 			} finally {
 				this.applyOptions();
 			}
