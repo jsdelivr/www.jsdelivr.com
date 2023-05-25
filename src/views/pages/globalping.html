@@ -1486,6 +1486,7 @@
 				fullscreenControl: false,
 			});
 
+			// eslint-disable-next-line no-undef
 			oms = new OverlappingMarkerSpiderfier(map, {
 				keepSpiderfied: true,
 				markersWontMove: true,
@@ -1496,7 +1497,7 @@
 				circleStartAngle: Math.PI / 6, // default: pi / 6
 				spiralFootSeparation: 20, // default: 26
 				spiralLengthStart: 33, // default: 11
-				spiralLengthFactor: 2, //default: 4
+				spiralLengthFactor: 2, // default: 4
 				legWeight: 2, // default 1.5
 			});
 
@@ -1610,22 +1611,21 @@
 					infoWindows.forEach(iw => iw.close());
 				});
 
-				google.maps.event.addListener(marker, 'click', (e) => {
+				google.maps.event.addListener(marker, 'click', () => {
 					infoWindows.forEach(iw => iw.close());
 				});
 
 				oms.addMarker(marker, () => {
-					infoWindow.setContent(
-					`<div class="gp-map_popup">
-							<div class="gp-map_popup_header">${markerData.timing}</div>
-							<div class="gp-map_popup_descr">${markerData.network}</div>
-							<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-							<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
-								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-								<span>See results</span>
-							</div>
-						</div>`
-					);
+					infoWindow.setContent(`<div class="gp-map_popup">
+						<div class="gp-map_popup_header">${markerData.timing}</div>
+						<div class="gp-map_popup_descr">${markerData.network}</div>
+						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+						<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
+							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+							<span>See results</span>
+						</div>
+					</div>`);
+
 					infoWindow.open(map, marker);
 				});
 
