@@ -1607,10 +1607,6 @@
 					optimized: false,
 				});
 
-				google.maps.event.addListener(map, 'click', () => {
-					infoWindows.forEach(iw => iw.close());
-				});
-
 				google.maps.event.addListener(marker, 'click', () => {
 					infoWindows.forEach(iw => iw.close());
 				});
@@ -1643,6 +1639,10 @@
 
 				infoWindows.push(infoWindow);
 				mapMarkers.push(marker);
+			});
+
+			google.maps.event.addListener(map, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
 			});
 		},
 		updateClusters (probes) {
@@ -1685,10 +1685,6 @@
 					probeInfoWindow.open(map, probeMarker);
 				});
 
-				google.maps.event.addListener(map, 'click', () => {
-					probeInfoWindow.close();
-				});
-
 				probesInfoWindows.push(probeInfoWindow);
 				probesMarkers.push(probeMarker);
 			});
@@ -1716,6 +1712,10 @@
 			});
 
 			mapProbesClusters.push(probeCluster);
+
+			google.maps.event.addListener(map, 'click', () => {
+				probesInfoWindows.forEach(piw => piw.close());
+			});
 		},
 		clearTestResponseMarkers () {
 			infoWindows.forEach(iw => iw.close());
