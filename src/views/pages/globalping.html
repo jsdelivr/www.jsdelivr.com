@@ -1093,6 +1093,8 @@
 		location: 'World',
 		limit: '10',
 	};
+	const MAP_MIN_ZOOM = 2;
+	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
 	const MAP_CENTER_REG = { lat: 48, lng: 16 };
 	const MAP_ZOOM_ALT = 2.14;
@@ -1484,8 +1486,8 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				minZoom: 2,
-				maxZoom: 22,
+				minZoom: MAP_MIN_ZOOM,
+				maxZoom: MAP_MAX_ZOOM,
 			});
 
 			// eslint-disable-next-line no-undef
@@ -2052,7 +2054,7 @@
 				google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
 					map.panTo(bounds.getCenter());
 					// restore default zoom
-					map.setOptions({ maxZoom: 22 });
+					map.setOptions({ maxZoom: MAP_MAX_ZOOM });
 				});
 
 				map.fitBounds(bounds);
