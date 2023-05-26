@@ -9,6 +9,7 @@
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.0.15/dist/index.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
 
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
@@ -1092,11 +1093,14 @@
 		location: 'World',
 		limit: '10',
 	};
+	const MAP_MIN_ZOOM = 2;
+	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
 	const MAP_CENTER_REG = { lat: 48, lng: 16 };
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	let map;
+	let oms;
 	let infoWindows = [];
 	let mapMarkers = [];
 	let probesMarkers = [];
@@ -1482,6 +1486,26 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
+				minZoom: MAP_MIN_ZOOM,
+				maxZoom: MAP_MAX_ZOOM,
+			});
+
+			// eslint-disable-next-line no-undef
+			oms = new OverlappingMarkerSpiderfier(map, {
+				keepSpiderfied: true,
+				markersWontMove: true,
+				markersWontHide: true,
+				basicFormatEvents: true,
+				nearbyDistance: 24,
+				legWeight: .1,
+				legColors: {
+					usual: {
+						roadmap: 'rgba(255, 255, 255, 0)',
+					},
+					highlighted: {
+						roadmap: 'rgba(255, 255, 255, 0)',
+					},
+				},
 			});
 
 			if (mq.matches) {
@@ -1557,17 +1581,7 @@
 		updateMarkers (markersData, baseDrawIdx = 0) {
 			markersData.forEach((markerData, mDataIdx) => {
 				// create Popup element
-				let infoWindow = new google.maps.InfoWindow({
-					content: `<div class="gp-map_popup">
-							<div class="gp-map_popup_header">${markerData.timing}</div>
-							<div class="gp-map_popup_descr">${markerData.network}</div>
-							<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-							<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
-								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-								<span>See results</span>
-							</div>
-						</div>`,
-				});
+				let infoWindow = new google.maps.InfoWindow();
 
 				// create svg to use as a Marker icon
 				let svgFillColor = this.pickMarkerColor(markerData.timing);
@@ -1602,11 +1616,20 @@
 
 				google.maps.event.addListener(marker, 'click', () => {
 					infoWindows.forEach(iw => iw.close());
-					infoWindow.open(map, marker);
 				});
 
-				google.maps.event.addListener(map, 'click', () => {
-					infoWindow.close();
+				oms.addMarker(marker, () => {
+					infoWindow.setContent(`<div class="gp-map_popup">
+						<div class="gp-map_popup_header">${markerData.timing}</div>
+						<div class="gp-map_popup_descr">${markerData.network}</div>
+						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+						<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
+							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+							<span>See results</span>
+						</div>
+					</div>`);
+
+					infoWindow.open(map, marker);
 				});
 
 				google.maps.event.addListener(infoWindow, 'domready', () => {
@@ -1623,6 +1646,10 @@
 
 				infoWindows.push(infoWindow);
 				mapMarkers.push(marker);
+			});
+
+			google.maps.event.addListener(map, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
 			});
 		},
 		updateClusters (probes) {
@@ -1665,10 +1692,6 @@
 					probeInfoWindow.open(map, probeMarker);
 				});
 
-				google.maps.event.addListener(map, 'click', () => {
-					probeInfoWindow.close();
-				});
-
 				probesInfoWindows.push(probeInfoWindow);
 				probesMarkers.push(probeMarker);
 			});
@@ -1696,6 +1719,10 @@
 			});
 
 			mapProbesClusters.push(probeCluster);
+
+			google.maps.event.addListener(map, 'click', () => {
+				probesInfoWindows.forEach(piw => piw.close());
+			});
 		},
 		clearTestResponseMarkers () {
 			infoWindows.forEach(iw => iw.close());
@@ -2027,7 +2054,7 @@
 				google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
 					map.panTo(bounds.getCenter());
 					// restore default zoom
-					map.setOptions({ maxZoom: 22 });
+					map.setOptions({ maxZoom: MAP_MAX_ZOOM });
 				});
 
 				map.fitBounds(bounds);
