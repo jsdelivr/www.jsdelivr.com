@@ -42,7 +42,7 @@ Ractive.Router.prototype.dispatch = function (...args) {
 app.router.addRoute('/globalping', cGlobalping);
 app.router.addRoute('/globalping/cli', cGlobalpingCli);
 app.router.addRoute('/globalping/slack', cGlobalpingSlack);
-app.router.addRoute('/globalping/network-tools', cGlobalpingNetworkTools);
+app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
 
 _.onDocumentReady(() => {
 	let state = {};

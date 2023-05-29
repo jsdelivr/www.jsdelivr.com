@@ -372,6 +372,29 @@ koaElasticUtils.addRoutes(router, [
 ], readme);
 
 /**
+ * Globalping network-tools page
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/globalping/network-tools', '/globalping/network-tools/:params' ],
+], async (ctx) => {
+	let data = {
+		currentPolicy: ctx.params.params || '',
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		data.noYield = true;
+		ctx.body = await ctx.render('pages/_index.html', data);
+	}
+});
+
+/**
  * Debug endpoints.
  */
 router.get('/debug/' + serverConfig.debugToken, debugHandler);
