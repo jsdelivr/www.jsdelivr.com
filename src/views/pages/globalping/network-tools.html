@@ -198,9 +198,34 @@
 				});
 
 				// handle URL, get values from it and set
-				this.observe('params', (params) => {
-					console.log("+++++ params", params);
+				this.observe('params', (rawValue) => {
+					let clearValue = rawValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+					let textData = {};
+
+					if (clearValue.includes(`${clearValue}-from-`)) {
+						// from case
+					} else {
+						let testTypesList = this.get('testTypesList');
+						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
+
+						if (testType) {
+							this.set('selectedTestType', testType);
+						}
+					}
+
+					console.log("+++++ rawValue", rawValue);
+					console.log("+++++ clearValue", clearValue);
 					console.log("_________________________");
+					// support urls like /globalping/network-tools/ping /globalping/network-tools/traceroute...
+					// when visited it will open the correct page and update the text in header and footer https://dl.dropboxusercontent.com/s/vkzetacffip198q/chrome_2023-03-28_21-38-00.png
+
+					// Also need to support /globalping/network-tools/ping-from-{{LOCATION}} e.g. /globalping/network-tools/ping-from-germany
+
+					// This includes, all continents, countries, cities, ISPs and ASNs
+
+					// The header text will change depending on the selected test and region.
+					// For example for europe it says "Ping from multiple locations in Europe, World" but for a city it would say "Ping from Berlin, Europe"
+
 				});
 			}
 		},
