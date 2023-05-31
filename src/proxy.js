@@ -103,74 +103,88 @@ module.exports = (proxyTarget, host) => {
 		}
 	});
 
-	return [
-		harmon([], removeElements.map((name) => {
-			return {
-				query: name,
-				func (el) {
-					el.createStream({ outer: true }).end();
-				},
-			};
+	let harmonMiddleware = harmon([], removeElements.map((name) => {
+		return {
+			query: name,
+			func (el) {
+				el.createStream({ outer: true }).end();
+			},
+		};
 
-		/**
-		 * Rewrite links in HTML.
-		 */
-		}).concat(rewriteAttributes.map((name) => {
-			return {
-				query: `[${name}]`,
-				func (el, req) {
-					el.getAttribute(name, (value) => {
+	/**
+	 * Rewrite links in HTML.
+	 */
+	}).concat(rewriteAttributes.map((name) => {
+		return {
+			query: `[${name}]`,
+			func (el, req) {
+				el.getAttribute(name, (value) => {
+					try {
+						if (name === 'srcset') {
+							value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
+						} else if (name === 'style') {
+							value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
+								return `url("${rewrite($2 || $3, req.baseUrl)}")`;
+							});
+						} else {
+							value = rewrite(value, req.baseUrl);
+						}
+
+						el.setAttribute(name, value);
+					} catch (e) {}
+				});
+			},
+		};
+	})).concat(rewriteElements.map((name) => {
+		return {
+			query: name,
+			func (el, req) {
+				let value = '';
+				let stream = el.createStream()
+					.on('error', () => stream.end())
+					.on('data', chunk => value += chunk.toString())
+					.on('end', () => {
 						try {
-							if (name === 'srcset') {
-								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
-							} else if (name === 'style') {
-								value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
-									return `url("${rewrite($2 || $3, req.baseUrl)}")`;
-								});
-							} else {
-								value = rewrite(value, req.baseUrl);
-							}
-
-							el.setAttribute(name, value);
-						} catch (e) {}
+							stream.end(rewrite(value, req.baseUrl));
+						} catch (e) {
+							stream.end(value);
+						}
 					});
-				},
-			};
-		})).concat(rewriteElements.map((name) => {
-			return {
-				query: name,
-				func (el, req) {
-					let value = '';
-					let stream = el.createStream()
-						.on('error', () => stream.end())
-						.on('data', chunk => value += chunk.toString())
-						.on('end', () => {
-							try {
-								stream.end(rewrite(value, req.baseUrl));
-							} catch (e) {
-								stream.end(value);
-							}
-						});
-				},
-			};
-		})).concat(rewriteRegExp.map((name) => {
-			return {
-				query: name,
-				func (el, req) {
-					let value = '';
-					let stream = el.createStream()
-						.on('error', () => stream.end())
-						.on('data', chunk => value += chunk.toString())
-						.on('end', () => {
-							try {
-								stream.end(rewriteAllAbsolute(value, req.baseUrl));
-							} catch (e) {
-								stream.end(value);
-							}
-						});
-				},
-			};
-		})), false),
+			},
+		};
+	})).concat(rewriteRegExp.map((name) => {
+		return {
+			query: name,
+			func (el, req) {
+				let value = '';
+				let stream = el.createStream()
+					.on('error', () => stream.end())
+					.on('data', chunk => value += chunk.toString())
+					.on('end', () => {
+						try {
+							stream.end(rewriteAllAbsolute(value, req.baseUrl));
+						} catch (e) {
+							stream.end(value);
+						}
+					});
+			},
+		};
+	})), false)
+
+	return [
+		/**
+		 * Harmon middleware should only be applied to html and xml files.
+		 */
+		(req, res, next) => {
+			let path = req.path.toLowerCase();
+			let shouldParse = path.endsWith('/') || path.endsWith('.html') || path.endsWith('.xml');
+
+			if (!shouldParse) {
+				return next();
+			}
+
+			harmonMiddleware(req, res, next);
+		},
 
 		/**
 		 * Fix for harmon with http-proxy@1.17.0+
