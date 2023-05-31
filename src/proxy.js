@@ -15,9 +15,8 @@ module.exports = (proxyTarget, host) => {
 	let hostUrl = new URL(host);
 	let proxyTargetPattern = new RegExp(`${_.escapeRegExp(proxyTarget)}/?`, 'gi');
 	let rewriteAttributes = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
-	let rewriteElements = [ 'loc', 'image\\:loc' ];
+	let rewriteElements = [ 'loc' ];
 	let rewriteRegExp = [ 'script[type="application/ld+json"]' ];
-	let removeElements = [ 'meta[name="robots"][content="noindex"]' ];
 
 	let rewrite = (link, baseUrl) => {
 		// A relative URL without a leading slash. No transformation needed.
@@ -104,18 +103,10 @@ module.exports = (proxyTarget, host) => {
 	});
 
 	return [
-		harmon([], removeElements.map((name) => {
-			return {
-				query: name,
-				func (el) {
-					el.createStream({ outer: true }).end();
-				},
-			};
-
 		/**
 		 * Rewrite links in HTML.
 		 */
-		}).concat(rewriteAttributes.map((name) => {
+		harmon([], rewriteAttributes.map((name) => {
 			return {
 				query: `[${name}]`,
 				func (el, req) {
@@ -136,7 +127,7 @@ module.exports = (proxyTarget, host) => {
 					});
 				},
 			};
-		})).concat(rewriteElements.map((name) => {
+		}).concat(rewriteElements.map((name) => {
 			return {
 				query: name,
 				func (el, req) {
@@ -170,7 +161,7 @@ module.exports = (proxyTarget, host) => {
 						});
 				},
 			};
-		})), false),
+		})), true),
 
 		/**
 		 * Fix for harmon with http-proxy@1.17.0+
