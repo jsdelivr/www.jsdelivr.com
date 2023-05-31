@@ -169,7 +169,7 @@ module.exports = (proxyTarget, host) => {
 					});
 			},
 		};
-	})), false)
+	})), false);
 
 	return [
 		/**
