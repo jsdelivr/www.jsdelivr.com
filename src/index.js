@@ -443,6 +443,16 @@ server.use((req, res, next) => {
 	next();
 });
 
+server.use('/blog/robots.txt', (req, res) => {
+	res.set('Content-Type', 'text/plain');
+	return res.send(`User-agent: *
+Sitemap: ${serverConfig.host}/blog/sitemap.xml
+Disallow: /ghost/
+Disallow: /p/
+Disallow: /email/
+Disallow: /r/`);
+});
+
 /**
  * Redirect old blog posts.
  */
