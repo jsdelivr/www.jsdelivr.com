@@ -148,6 +148,7 @@
 	const validateDomainName = require('../../../assets/js/utils/validate-domain-name');
 	const validateIP = require('../../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../../assets/js/utils/validate-by-pattern');
+	const has = require('../../../assets/js/utils/has');
 	const DEFAULT_PROBES_AMOUNT = 3;
 	// TODO: do we need additional options for different types of request
 	const PING_PARAMS = {};
@@ -206,6 +207,19 @@
 						}
 					}
 				});
+
+				// get probes from sessionStorage or fetch them
+				if (has.sessionStorage()) {
+					let probesResponse = sessionStorage.getItem('probesResponse');
+
+					if (probesResponse) {
+						this.handleProbesResponse(true)(probesResponse);
+					} else {
+						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+					}
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
 			}
 		},
 		proceedToTest () {
@@ -281,6 +295,17 @@
 					this.set('inputErrors', inputErrors);
 				}
 			});
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				this.set('probesResponse', response);
+			};
 		},
 	};
 </script>
