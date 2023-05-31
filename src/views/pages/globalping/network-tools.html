@@ -18,7 +18,7 @@
 		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
 
 		<div class="gp-nettools_main-info">
-			<h1>{{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} from multiple locations in</h1>
+			<h1>{{capitalizedTestType}} from multiple locations in</h1>
 			<span>Europe, <span class="gp-nettools_green-text">World</span></span>
 
 			<div class="gp-nettools_main-info_input-block">
@@ -82,7 +82,7 @@
 						<div></div>
 						<div></div>
 					{{else}}
-						Run {{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} Test
+						Run {{capitalizedTestType}} Test
 					{{/if}}
 				</button>
 			</div>
@@ -143,6 +143,7 @@
 </r-page>
 
 <script>
+	const _ = require('../../../assets/js/_');
 	const http = require('../../../assets/js/utils/http');
 	const validateDomainName = require('../../../assets/js/utils/validate-domain-name');
 	const validateIP = require('../../../assets/js/utils/validate-ip');
@@ -166,9 +167,11 @@
 	component.exports = {
 		data () {
 			return {
+				_,
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping Network Tools description',
 				selectedTestType: 'ping',
+				capitalizedTestType: 'Ping',
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				testOpts: {
 					target: '',
@@ -184,11 +187,15 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('selectedTestType', () => {
+				this.observe('selectedTestType', (selectedTestType) => {
+					if (selectedTestType) {
+						this.set('capitalizedTestType', _.capitalizeFirstLetter(selectedTestType));
+					}
+
 					this.set('inputErrors', {});
 					this.set('testResultsId', null);
 					this.set('testResults', null);
-				}, { init: false });
+				});
 
 				// handle URL, get values from it and set
 				this.observe('params', (params) => {
