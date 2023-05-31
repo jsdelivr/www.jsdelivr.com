@@ -155,14 +155,6 @@
 	const DNS_PARAMS = {};
 	const MTR_PARAMS = {};
 	const HTTP_PARAMS = {};
-	const VALIDATION_PATTERNS_MAP = {
-		limit: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Limit must be an integer number',
-			},
-		],
-	};
 
 	component.exports = {
 		data () {
@@ -244,14 +236,6 @@
 					break;
 			}
 
-			let inputErrors = this.validateDataForRequest(testOpts);
-
-			if (Object.keys(inputErrors).length) {
-				this.set('inputErrors', inputErrors);
-
-				return;
-			}
-
 			this.set('testResultsId', null);
 			this.set('testResults', null);
 			this.set('testInProgress', true);
@@ -295,45 +279,6 @@
 					this.set('inputErrors', inputErrors);
 				}
 			});
-		},
-		validateDataForRequest ({ target, limit }) {
-			let inputErrors = {};
-
-			// validate Target field
-			if (!target) {
-				inputErrors.target = 'Target is required';
-			} else {
-				let isValidDomainName = validateDomainName.test(target);
-				let isValidIP = validateIP.test(target);
-
-				if (!isValidDomainName && !isValidIP) {
-					inputErrors.target = 'Target does not match any of the allowed formats';
-				}
-			}
-
-			// validate Limit field
-			if (limit) {
-				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
-					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
-
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
-						};
-					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors.limit = result.errMsg;
-				} else if (limit > 500 || limit < 1) {
-					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
-				}
-			}
-
-			return inputErrors;
 		},
 	};
 </script>
