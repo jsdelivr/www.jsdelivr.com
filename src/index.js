@@ -378,7 +378,7 @@ koaElasticUtils.addRoutes(router, [
 	[ '/globalping/network-tools', '/globalping/network-tools/:params' ],
 ], async (ctx) => {
 	let data = {
-		currentPolicy: ctx.params.params || '',
+		params: ctx.params.params || '',
 	};
 
 	try {
