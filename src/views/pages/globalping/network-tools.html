@@ -19,7 +19,7 @@
 
 		<div class="gp-nettools_main-info">
 			<h1>{{capitalizedTestType}} from multiple locations in</h1>
-			<span>Europe, <span class="gp-nettools_green-text">World</span></span>
+			<span>{{locationDescr.name}}, <span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
 
 			<div class="gp-nettools_main-info_input-block">
 				<span>Run a Free</span>
@@ -175,6 +175,13 @@
 				testReqInterval: null,
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 				probesResponse: null,
+				locationDescr: {
+					name: 'Europe',
+					from: 'World',
+				},
+				parsedLocations: {
+					cities: {},
+				},
 			};
 		},
 		oninit () {
@@ -187,24 +194,6 @@
 					this.set('inputErrors', {});
 					this.set('testResultsId', null);
 					this.set('testResults', null);
-				});
-
-				// handle URL, get values from it and set
-				this.observe('params', (rawValue) => {
-					if (!rawValue) { return; }
-
-					let clearValue = rawValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
-
-					if (clearValue.includes(`${clearValue}-from-`)) {
-						// from case
-					} else {
-						let testTypesList = this.get('testTypesList');
-						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
-
-						if (testType) {
-							this.set('selectedTestType', testType);
-						}
-					}
 				});
 
 				// get probes from sessionStorage or fetch them
@@ -224,6 +213,29 @@
 					if (!probesResponse) { return; }
 
 					this.parseProbesResponse(probesResponse);
+				});
+
+				// handle URL, get values from it and set
+				this.observe('params', (rawValue) => {
+					if (!rawValue) { return; }
+
+					let clearValue = rawValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+
+					if (clearValue.includes('-from-')) {
+						let valueSplitted = clearValue.split('-from-');
+						let testType = valueSplitted[0];
+						let locationDescr = this.getLocationDescr(valueSplitted[1]);
+
+						this.set('selectedTestType', testType);
+						this.set('locationDescr', locationDescr);
+					} else {
+						let testTypesList = this.get('testTypesList');
+						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
+
+						if (testType) {
+							this.set('selectedTestType', testType);
+						}
+					}
 				});
 			}
 		},
@@ -313,22 +325,37 @@
 			};
 		},
 		parseProbesResponse (data) {
-			let locations = data.reduce((res, item) => {
+			let parsedLocations = data.reduce((res, item) => {
 				// get all uniques cities and count amount of probes per city
-				if (!Object.keys(res.cities).includes(item.location.city)) {
-					res.cities[item.location.city] = {
-						city: item.location.city,
-						country: countries.find(i => i.code.toLowerCase() === item.location.country.toLowerCase()).name,
+				let cityNameLC = item.location.city.toLowerCase();
+				let countryNameLC = item.location.country.toLowerCase();
+
+				if (!Object.keys(res.cities).includes(cityNameLC)) {
+					res.cities[cityNameLC] = {
+						name: cityNameLC,
+						from: countries.find(i => i.code.toLowerCase() === countryNameLC).name.toLowerCase(),
 						probesCnt: 1,
 					};
 				} else {
-					res.cities[item.location.city].probesCnt += 1;
+					res.cities[cityNameLC].probesCnt += 1;
 				}
 
 				return res;
 			}, {
 				cities: {},
 			});
+
+			this.set('parsedLocations', parsedLocations);
+		},
+		getLocationDescr (location) {
+			let parsedLocations = this.get('parsedLocations');
+
+			if (parsedLocations.cities[location.toLowerCase()]) {
+				return {
+					name: _.capitalizeFirstLetter(parsedLocations.cities[location].name),
+					from: _.capitalizeFirstLetter(parsedLocations.cities[location].from),
+				};
+			}
 		},
 	};
 </script>
