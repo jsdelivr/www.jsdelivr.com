@@ -26,7 +26,7 @@ module.exports = async (ctx) => {
 	);
 
 	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage) });
+		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage + 1) });
 	} else if (page > 0 && page <= maxPage) {
 		ctx.body = siteMapTemplate({ packages: packages.slice((page - 1) * 50000, page * 50000) });
 	} else if (page === 0) {
@@ -40,7 +40,7 @@ module.exports = async (ctx) => {
 };
 
 function updatePackages () {
-	return got('https://data.jsdelivr.com/v1/stats/packages/all?type=npm&period=year').json().then((body) => {
+	return got('https://data.jsdelivr.com/v1/stats/packages/all?type=npm&period=month').json().then((body) => {
 		setTimeout(updatePackages, 24 * 60 * 60 * 1000);
 		return packagesPromise = body.map(({ name }) => ({ name }));
 	}).catch(() => {
