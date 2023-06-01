@@ -18,35 +18,37 @@
 		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
 
 		<div class="gp-nettools_main-info">
-			<h1>{{capitalizedTestType}} from multiple locations in</h1>
-			<span>{{locationDescr.name}}, <span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
+			{{#if locationDescr}}
+				<h1>{{capitalizedTestType}} from {{#if locationDescr.probesCnt}}multiple locations in {{/if}}</h1>
+				<span>{{locationDescr.name}}, <span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
 
-			<div class="gp-nettools_main-info_input-block">
-				<span>Run a Free</span>
+				<div class="gp-nettools_main-info_input-block">
+					<span>Run a Free</span>
 
-				<div class="gp_dropdown_alt">
-					<div class="btn-group">
-						<button type="button"
-							class="dropdown-toggle"
-							data-toggle="dropdown"
-							aria-haspopup="true"
-							aria-expanded="false">
-							<span>{{~/selectedTestType}}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
+					<div class="gp_dropdown_alt">
+						<div class="btn-group">
+							<button type="button"
+								class="dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{~/selectedTestType}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
 
-						<div class="dropdown-menu">
-							{{#each ~/testTypesList}}
-								{{#if this !== selectedTestType}}
-									<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
-								{{/if}}
-							{{/each}}
+							<div class="dropdown-menu">
+								{{#each ~/testTypesList}}
+									{{#if this !== selectedTestType}}
+										<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+									{{/if}}
+								{{/each}}
+							</div>
 						</div>
 					</div>
-				</div>
 
-				<span>test</span>
-			</div>
+					<span>test</span>
+				</div>
+			{{/if}}
 		</div>
 
 		<div class="gp-nettools_demo-tools">
@@ -175,10 +177,7 @@
 				testReqInterval: null,
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 				probesResponse: null,
-				locationDescr: {
-					name: 'Europe',
-					from: 'World',
-				},
+				locationDescr: null,
 				parsedLocations: {
 					cities: {},
 				},
@@ -351,9 +350,12 @@
 			let parsedLocations = this.get('parsedLocations');
 
 			if (parsedLocations.cities[location.toLowerCase()]) {
+				let { name, from, probesCnt } = parsedLocations.cities[location];
+
 				return {
-					name: _.capitalizeFirstLetter(parsedLocations.cities[location].name),
-					from: _.capitalizeFirstLetter(parsedLocations.cities[location].from),
+					name: _.capitalizeFirstLetter(name),
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
 				};
 			}
 		},
