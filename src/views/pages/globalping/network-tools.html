@@ -149,6 +149,7 @@
 	const validateIP = require('../../../assets/js/utils/validate-ip');
 	const validateByPattern = require('../../../assets/js/utils/validate-by-pattern');
 	const has = require('../../../assets/js/utils/has');
+	const countries = require('../../../assets/json/countries.json');
 	const DEFAULT_PROBES_AMOUNT = 3;
 	// TODO: do we need additional options for different types of request
 	const PING_PARAMS = {};
@@ -176,6 +177,7 @@
 				testInProgress: false,
 				testReqInterval: null,
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
+				probesResponse: null,
 			};
 		},
 		oninit () {
@@ -220,6 +222,12 @@
 				} else {
 					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
+
+				this.observe('probesResponse', (probesResponse) => {
+					if (!probesResponse) { return; }
+
+					this.parseProbesResponse(probesResponse);
+				});
 			}
 		},
 		proceedToTest () {
@@ -306,6 +314,24 @@
 
 				this.set('probesResponse', response);
 			};
+		},
+		parseProbesResponse (data) {
+			let locations = data.reduce((res, item) => {
+				// get all uniques cities and count amount of probes per city
+				if (!Object.keys(res.cities).includes(item.location.city)) {
+					res.cities[item.location.city] = {
+						city: item.location.city,
+						country: countries.find(i => i.code.toLowerCase() === item.location.country.toLowerCase()).name,
+						probesCnt: 1,
+					};
+				} else {
+					res.cities[item.location.city].probesCnt += 1;
+				}
+
+				return res;
+			}, {
+				cities: {},
+			});
 		},
 	};
 </script>
