@@ -32,7 +32,7 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{~/selectedTestType}}</span>
+								<span>{{~/capitalizedTestType}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
@@ -164,9 +164,9 @@
 				_,
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping Network Tools description',
-				selectedTestType: 'ping',
+				selectedTestType: 'Ping',
 				capitalizedTestType: 'Ping',
-				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				testTypesList: [ 'Ping', 'Traceroute', 'DNS', 'MTR', 'HTTP' ],
 				testOpts: {
 					target: '',
 					limit: '',
@@ -194,7 +194,14 @@
 			if (!Ractive.isServer) {
 				this.observe('selectedTestType', (selectedTestType) => {
 					if (selectedTestType) {
-						this.set('capitalizedTestType', _.capitalizeFirstLetter(selectedTestType));
+						switch (selectedTestType.toLowerCase()) {
+							case 'dns':
+							case 'mtr':
+							case 'http':
+								this.set('capitalizedTestType', selectedTestType.toUpperCase()); break;
+							default:
+								this.set('capitalizedTestType', _.capitalizeFirstLetter(selectedTestType));
+						}
 					}
 
 					this.set('inputErrors', {});
