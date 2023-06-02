@@ -215,7 +215,6 @@
 					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
 
-
 				// handle URL, get values from it and set
 				this.observe('params', (rawValue) => {
 					if (!rawValue) { return; }
@@ -238,6 +237,30 @@
 						}
 					}
 				});
+
+				// handle test results in real time
+				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (realTimeTestResResponse.status === 'finished') {
+						clearInterval(this.get('testReqInterval'));
+						this.set('testInProgress', false);
+						this.set('testResultsId', realTimeTestResResponse.id);
+					}
+
+					let prevTestResults = this.get('testResults') || [];
+					let updTestResults = realTimeTestResResponse.results.filter((res) => {
+						// if it is no in-progress then it is already finished or failed and we could draw a marker
+						if (res.result.status !== 'in-progress') { return true; }
+
+						return false;
+					});
+
+					// filter out results that have already been drawn
+					let newTestResults = updTestResults.filter((updRes) => {
+						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
+					});
+
+					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
+				}, { init: false });
 			}
 		},
 		proceedToTest () {
@@ -284,21 +307,7 @@
 			}
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				testReqInterval = setInterval(() => {
-					http.getGlobalpingMeasurement(response.id).then((testRes) => {
-						if (testRes.status !== 'in-progress') {
-							clearInterval(testReqInterval);
-
-							this.set('testInProgress', false);
-							this.set('testResultsId', testRes.id);
-							this.set('testResults', testRes);
-						}
-					}).catch(() => {
-						clearInterval(testReqInterval);
-					});
-				}, 1000);
-
-				this.set('testReqInterval', testReqInterval);
+				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
 				if (err.error.type === 'validation_error') {
 					this.set('testInProgress', false);
@@ -496,6 +505,21 @@
 				from: 'World',
 				probesCnt: this.get('totalProbesCnt'),
 			};
+		},
+		getTestMeasurementById (measurementId) {
+			let testReqInterval = setInterval(() => {
+				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+					// needed for c-gp-test-results calcs
+					this.set('dnsTraceEnabled', testRes.measurementOptions?.trace || false);
+
+					// should be after the mainOptions.type was set
+					this.set('realTimeTestResResponse', testRes);
+				}).catch(() => {
+					clearInterval(testReqInterval);
+				});
+			}, 1000);
+
+			this.set('testReqInterval', testReqInterval);
 		},
 	};
 </script>
