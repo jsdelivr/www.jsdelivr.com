@@ -18,9 +18,9 @@
 		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
 
 		<div class="gp-nettools_main-info">
-			{{#if locationDescr}}
-				<h1>{{capitalizedTestType}} from {{#if locationDescr.probesCnt}}multiple locations in {{/if}}</h1>
-				<span>{{#if locationDescr.name}}{{locationDescr.name}}, {{/if}}<span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
+			{{#if locationData}}
+				<h1>{{capitalizedTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
+				<span>{{#if locationData.name}}{{locationData.name}}, {{/if}}<span class="gp-nettools_green-text">{{locationData.from}}</span></span>
 
 				<div class="gp-nettools_main-info_input-block">
 					<span>Run a Free</span>
@@ -178,7 +178,7 @@
 				testReqInterval: null,
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 				probesResponse: null,
-				locationDescr: null,
+				locationData: null,
 				totalProbesCnt: 0,
 				parsedLocations: {
 					cities: {},
@@ -225,10 +225,10 @@
 					if (clearValue.includes('-from-')) {
 						let valueSplitted = clearValue.split('-from-');
 						let testType = valueSplitted[0];
-						let locationDescr = this.getLocationDescr(valueSplitted[1]);
+						let locationData = this.getLocationData(valueSplitted[1]);
 
 						this.set('selectedTestType', testType);
-						this.set('locationDescr', locationDescr);
+						this.set('locationData', locationData);
 					} else {
 						let testTypesList = this.get('testTypesList');
 						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
@@ -415,7 +415,7 @@
 			this.set('totalProbesCnt', data.length);
 			this.set('parsedLocations', parsedLocations);
 		},
-		getLocationDescr (location) {
+		getLocationData (location) {
 			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
 			let networkNameAsKey = locationLC.replace(/[^\w]|_/g, '');
