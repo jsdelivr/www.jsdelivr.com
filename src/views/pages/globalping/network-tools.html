@@ -183,6 +183,7 @@
 					cities: {},
 					asns: {},
 					networks: {},
+					countries: {},
 				},
 			};
 		},
@@ -330,7 +331,8 @@
 		parseProbesResponse (data) {
 			let parsedLocations = data.reduce((res, item) => {
 				let cityNameLC = item.location.city.toLowerCase();
-				let countryNameLC = item.location.country.toLowerCase();
+				let countryCodeLC = item.location.country.toLowerCase();
+				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
 				let asnName = `as${item.location.asn}`;
 				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
 
@@ -338,7 +340,7 @@
 				if (!Object.keys(res.cities).includes(cityNameLC)) {
 					res.cities[cityNameLC] = {
 						name: cityNameLC,
-						from: countries.find(i => i.code.toLowerCase() === countryNameLC).name.toLowerCase(),
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
 						probesCnt: 1,
 					};
 				} else {
@@ -367,11 +369,23 @@
 					res.networks[networkNameAsKey].probesCnt += 1;
 				}
 
+				// collect uniques Countries and count amount of probes per Country
+				if (!Object.keys(res.countries).includes(countryNameLC)) {
+					res.countries[countryNameLC] = {
+						name: countryNameLC,
+						from: 'World',
+						probesCnt: 1,
+					};
+				} else {
+					res.countries[countryNameLC].probesCnt += 1;
+				}
+
 				return res;
 			}, {
 				cities: {},
 				asns: {},
 				networks: {},
+				countries: {},
 			});
 
 			this.set('parsedLocations', parsedLocations);
@@ -409,6 +423,17 @@
 
 				return {
 					name,
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
+				};
+			}
+
+			// check if the location is a Country
+			if (parsedLocations.countries[locationLC]) {
+				let { name, from, probesCnt } = parsedLocations.countries[locationLC];
+
+				return {
+					name: _.capitalizeFirstLetter(name),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
 				};
