@@ -215,11 +215,6 @@
 					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
 
-				this.observe('probesResponse', (probesResponse) => {
-					if (!probesResponse) { return; }
-
-					this.parseProbesResponse(probesResponse);
-				});
 
 				// handle URL, get values from it and set
 				this.observe('params', (rawValue) => {
@@ -327,8 +322,7 @@
 					response = JSON.parse(response);
 				}
 
-				this.set('probesResponse', response);
-				this.set('totalProbesCnt', response.length);
+				this.parseProbesResponse(response);
 			};
 		},
 		parseProbesResponse (data) {
@@ -418,6 +412,7 @@
 				regions: {},
 			});
 
+			this.set('totalProbesCnt', data.length);
 			this.set('parsedLocations', parsedLocations);
 		},
 		getLocationDescr (location) {
