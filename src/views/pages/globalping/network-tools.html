@@ -20,7 +20,7 @@
 		<div class="gp-nettools_main-info">
 			{{#if locationDescr}}
 				<h1>{{capitalizedTestType}} from {{#if locationDescr.probesCnt}}multiple locations in {{/if}}</h1>
-				<span>{{locationDescr.name}}, <span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
+				<span>{{#if locationDescr.name}}{{locationDescr.name}}, {{/if}}<span class="gp-nettools_green-text">{{locationDescr.from}}</span></span>
 
 				<div class="gp-nettools_main-info_input-block">
 					<span>Run a Free</span>
@@ -178,9 +178,11 @@
 				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
 				probesResponse: null,
 				locationDescr: null,
+				totalProbesCnt: 0,
 				parsedLocations: {
 					cities: {},
 					asns: {},
+					networks: {},
 				},
 			};
 		},
@@ -322,6 +324,7 @@
 				}
 
 				this.set('probesResponse', response);
+				this.set('totalProbesCnt', response.length);
 			};
 		},
 		parseProbesResponse (data) {
@@ -329,6 +332,7 @@
 				let cityNameLC = item.location.city.toLowerCase();
 				let countryNameLC = item.location.country.toLowerCase();
 				let asnName = `as${item.location.asn}`;
+				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameLC)) {
@@ -340,6 +344,7 @@
 				} else {
 					res.cities[cityNameLC].probesCnt += 1;
 				}
+
 				// collect uniques ASNs and count amount of probes per ASN
 				if (!Object.keys(res.asns).includes(asnName)) {
 					res.asns[asnName] = {
@@ -351,10 +356,22 @@
 					res.asns[asnName].probesCnt += 1;
 				}
 
+				// collect uniques Networks and count amount of probes per Network
+				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
+					res.networks[networkNameAsKey] = {
+						name: item.location.network,
+						from: 'World',
+						probesCnt: 1,
+					};
+				} else {
+					res.networks[networkNameAsKey].probesCnt += 1;
+				}
+
 				return res;
 			}, {
 				cities: {},
 				asns: {},
+				networks: {},
 			});
 
 			this.set('parsedLocations', parsedLocations);
@@ -362,6 +379,7 @@
 		getLocationDescr (location) {
 			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
+			let networkNameAsKey = location.replace(/[^\w]|_/g, '').toLowerCase();
 
 			// check if the location is a city
 			if (parsedLocations.cities[locationLC]) {
@@ -384,6 +402,24 @@
 					probesCnt,
 				};
 			}
+
+			// check if the location is a Network
+			if (parsedLocations.networks[networkNameAsKey]) {
+				let { name, from, probesCnt } = parsedLocations.networks[networkNameAsKey];
+
+				return {
+					name,
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
+				};
+			}
+
+			// if couldnt be identified as ASN, Network, city etc. then we should show defaults
+			return {
+				name: '',
+				from: 'World',
+				probesCnt: this.get('totalProbesCnt'),
+			};
 		},
 	};
 </script>
