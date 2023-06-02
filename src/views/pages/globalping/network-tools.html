@@ -149,6 +149,7 @@
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
 	const countries = require('../../../assets/json/countries.json');
+	const continents = require('../../../assets/json/continents.json');
 	const DEFAULT_PROBES_AMOUNT = 3;
 	// TODO: do we need additional options for different types of request
 	const PING_PARAMS = {};
@@ -184,6 +185,7 @@
 					asns: {},
 					networks: {},
 					countries: {},
+					continents: {},
 				},
 			};
 		},
@@ -335,6 +337,8 @@
 				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
 				let asnName = `as${item.location.asn}`;
 				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
+				let continentCodeLC = item.location.continent.toLowerCase();
+				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameLC)) {
@@ -380,12 +384,24 @@
 					res.countries[countryNameLC].probesCnt += 1;
 				}
 
+				// collect uniques Continents and count amount of probes per Continent
+				if (!Object.keys(res.continents).includes(continentNameLC)) {
+					res.continents[continentNameLC] = {
+						name: continentNameLC,
+						from: 'World',
+						probesCnt: 1,
+					};
+				} else {
+					res.continents[continentNameLC].probesCnt += 1;
+				}
+
 				return res;
 			}, {
 				cities: {},
 				asns: {},
 				networks: {},
 				countries: {},
+				continents: {},
 			});
 
 			this.set('parsedLocations', parsedLocations);
@@ -393,7 +409,8 @@
 		getLocationDescr (location) {
 			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
-			let networkNameAsKey = location.replace(/[^\w]|_/g, '').toLowerCase();
+			let networkNameAsKey = locationLC.replace(/[^\w]|_/g, '');
+			let continentNameAsKey = locationLC.replace('-', ' ');
 
 			// check if the location is a city
 			if (parsedLocations.cities[locationLC]) {
@@ -434,6 +451,17 @@
 
 				return {
 					name: _.capitalizeFirstLetter(name),
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
+				};
+			}
+
+			// check if the location is a Continent
+			if (parsedLocations.continents[continentNameAsKey]) {
+				let { name, from, probesCnt } = parsedLocations.continents[continentNameAsKey];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
 				};
