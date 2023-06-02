@@ -81,8 +81,8 @@
 				<span></span>
 				<span></span>
 				<span></span>
-				{{#if shareResHeaderDate}}
-					<span class="gp_map-block_header_share-res-msg">{{shareResHeaderDate}}</span>
+				{{#if shareResHeaderData}}
+					<span class="gp_map-block_header_share-res-msg">{{shareResHeaderData}}</span>
 				{{/if}}
 			</div>
 
@@ -1154,7 +1154,7 @@
 				measurementId: null,
 				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
-				shareResHeaderDate: null,
+				shareResHeaderData: null,
 				runTestBtnText: 'Run Test',
 				shareResultsCase: false,
 			};
@@ -1400,7 +1400,7 @@
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
 			this.set('testFailed', false);
-			this.set('shareResHeaderDate', null);
+			this.set('shareResHeaderData', null);
 
 			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
 			this.set('dnsTraceEnabled', reqParams.measurementOptions?.trace || false);
@@ -1811,7 +1811,7 @@
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
-						this.set('shareResHeaderDate', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit);
