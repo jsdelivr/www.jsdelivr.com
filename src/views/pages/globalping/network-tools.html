@@ -180,6 +180,7 @@
 				locationDescr: null,
 				parsedLocations: {
 					cities: {},
+					asns: {},
 				},
 			};
 		},
@@ -327,6 +328,7 @@
 			let parsedLocations = data.reduce((res, item) => {
 				let cityNameLC = item.location.city.toLowerCase();
 				let countryNameLC = item.location.country.toLowerCase();
+				let asnName = `as${item.location.asn}`;
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameLC)) {
@@ -338,22 +340,46 @@
 				} else {
 					res.cities[cityNameLC].probesCnt += 1;
 				}
+				// collect uniques ASNs and count amount of probes per ASN
+				if (!Object.keys(res.asns).includes(asnName)) {
+					res.asns[asnName] = {
+						name: asnName,
+						from: 'World',
+						probesCnt: 1,
+					};
+				} else {
+					res.asns[asnName].probesCnt += 1;
+				}
 
 				return res;
 			}, {
 				cities: {},
+				asns: {},
 			});
 
 			this.set('parsedLocations', parsedLocations);
 		},
 		getLocationDescr (location) {
+			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
 
-			if (parsedLocations.cities[location.toLowerCase()]) {
-				let { name, from, probesCnt } = parsedLocations.cities[location];
+			// check if the location is a city
+			if (parsedLocations.cities[locationLC]) {
+				let { name, from, probesCnt } = parsedLocations.cities[locationLC];
 
 				return {
 					name: _.capitalizeFirstLetter(name),
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
+				};
+			}
+
+			// check if the location is an ASN
+			if (parsedLocations.asns[locationLC]) {
+				let { name, from, probesCnt } = parsedLocations.asns[locationLC];
+
+				return {
+					name: name.toUpperCase(),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
 				};
