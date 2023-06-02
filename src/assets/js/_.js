@@ -1325,4 +1325,12 @@ module.exports = {
 	capitalizeFirstLetter (word) {
 		return word ? word[0].toUpperCase() + word.slice(1) : '';
 	},
+
+	capitalizeStrEveryFirstLetter (string) {
+		return string.split(' ').reduce((res, w) => {
+			res.push(this.capitalizeFirstLetter(w));
+
+			return res;
+		}, []).join(' ');
+	},
 };
