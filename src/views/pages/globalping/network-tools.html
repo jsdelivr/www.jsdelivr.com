@@ -186,6 +186,7 @@
 					networks: {},
 					countries: {},
 					continents: {},
+					regions: {},
 				},
 			};
 		},
@@ -339,6 +340,7 @@
 				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
 				let continentCodeLC = item.location.continent.toLowerCase();
 				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
+				let regionNameLC = item.location.region.toLowerCase();
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameLC)) {
@@ -395,6 +397,17 @@
 					res.continents[continentNameLC].probesCnt += 1;
 				}
 
+				// collect uniques Regions and count amount of probes per Region
+				if (!Object.keys(res.regions).includes(regionNameLC)) {
+					res.regions[regionNameLC] = {
+						name: regionNameLC,
+						from: 'World',
+						probesCnt: 1,
+					};
+				} else {
+					res.regions[regionNameLC].probesCnt += 1;
+				}
+
 				return res;
 			}, {
 				cities: {},
@@ -402,6 +415,7 @@
 				networks: {},
 				countries: {},
 				continents: {},
+				regions: {},
 			});
 
 			this.set('parsedLocations', parsedLocations);
@@ -411,6 +425,7 @@
 			let parsedLocations = this.get('parsedLocations');
 			let networkNameAsKey = locationLC.replace(/[^\w]|_/g, '');
 			let continentNameAsKey = locationLC.replace('-', ' ');
+			let regionNameAsKey = locationLC.replace('-', ' ');
 
 			// check if the location is a city
 			if (parsedLocations.cities[locationLC]) {
@@ -459,6 +474,17 @@
 			// check if the location is a Continent
 			if (parsedLocations.continents[continentNameAsKey]) {
 				let { name, from, probesCnt } = parsedLocations.continents[continentNameAsKey];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeFirstLetter(from),
+					probesCnt,
+				};
+			}
+
+			// check if the location is a Region
+			if (parsedLocations.regions[regionNameAsKey]) {
+				let { name, from, probesCnt } = parsedLocations.regions[regionNameAsKey];
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
