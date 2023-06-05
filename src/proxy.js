@@ -193,7 +193,9 @@ module.exports = (proxyTarget, host) => {
 		(req, res, next) => {
 			let path = req.path.toLowerCase();
 
-			if (path.endsWith('/') || path.endsWith('.html')) {
+			if (path.endsWith('rss/')) {
+				return next();
+			} else if (path.endsWith('/') || path.endsWith('.html')) {
 				harmonMiddlewareHTML(req, res, next);
 			} else if (path.endsWith('.xml')) {
 				harmonMiddlewareXML(req, res, next);
