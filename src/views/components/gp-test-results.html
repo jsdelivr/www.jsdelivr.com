@@ -51,15 +51,32 @@
 
 	{{#if testResultsId}}
 		<div class="c-gp-test-results_share">
-			<span>Share your results:</span>
+			<div class="c-gp-test-results_share_switch">
+				<input id="share-switch"
+					type="checkbox"
+					class="share-type-switch {{#if shareAsURL}}checked{{/if}}"
+					twoway="false">
 
-			<div id="share-res-text">{{@global.location.origin}}/globalping?measurement={{testResultsId}}</div>
+				<label for="share-switch" on-click="@this.set('shareAsURL', !shareAsURL)">
+					<span>URL</span>
+					<span>CLI</span>
+					<div class="slide-select">
+						<div class="selected"></div>
+					</div>
+				</label>
+			</div>
 
-			<button as-clipboard data-clipboard-text="{{@global.location.origin}}/globalping?measurement={{testResultsId}}">
-				<img width="20"
-					height="20"
-					src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
-			</button>
+			<div class="c-gp-test-results_share_content">
+				<span>Share your results:</span>
+
+				<div id="share-res-text">{{@global.location.origin}}/globalping?measurement={{testResultsId}}</div>
+
+				<button as-clipboard data-clipboard-text="{{@global.location.origin}}/globalping?measurement={{testResultsId}}">
+					<img width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
+				</button>
+			</div>
 		</div>
 	{{/if}}
 </div>
