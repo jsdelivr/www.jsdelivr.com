@@ -54,12 +54,34 @@
 			<div class="c-gp-test-results_share_switch">
 				<input id="share-switch"
 					type="checkbox"
-					class="share-type-switch {{#if shareAsURL}}checked{{/if}}"
+					class="share-type-switch {{#unless shareResultsAsURL}}checked{{/unless}}"
 					twoway="false">
 
-				<label for="share-switch" on-click="@this.set('shareAsURL', !shareAsURL)">
-					<span>URL</span>
-					<span>CLI</span>
+				<label for="share-switch" on-click="@this.set('shareResultsAsURL', !shareResultsAsURL)">
+					<span>
+						{{#if shareResultsAsURL}}
+							<img width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/globalping/TODO_switch-url-icon_white.svg">
+						{{else}}
+							<img width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/globalping/TODO_switch-url-icon.svg">
+						{{/if}}
+						URL
+					</span>
+					<span>
+						{{#if shareResultsAsURL}}
+							<img width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/globalping/TODO_switch-cli-icon.svg">
+						{{else}}
+							<img width="20"
+								height="20"
+								src="{{@shared.assetsHost}}/img/globalping/TODO_switch-cli-icon_white.svg">
+						{{/if}}
+						CLI
+					</span>
 					<div class="slide-select">
 						<div class="selected"></div>
 					</div>
@@ -67,8 +89,6 @@
 			</div>
 
 			<div class="c-gp-test-results_share_content">
-				<span>Share your results:</span>
-
 				<div id="share-res-text">{{@global.location.origin}}/globalping?measurement={{testResultsId}}</div>
 
 				<button as-clipboard data-clipboard-text="{{@global.location.origin}}/globalping?measurement={{testResultsId}}">
@@ -95,6 +115,7 @@
 				hiddenTestResults: [],
 				testResultsTimings: [],
 				testResultsExtra: {},
+				shareResultsAsURL: true,
 			};
 		},
 		onrender () {
