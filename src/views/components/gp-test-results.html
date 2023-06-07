@@ -89,9 +89,11 @@
 			</div>
 
 			<div class="c-gp-test-results_share_content">
-				<div id="share-res-text">{{@global.location.origin}}/globalping?measurement={{testResultsId}}</div>
+				<div id="share-res-text">
+					{{shareResultsText}}
+				</div>
 
-				<button as-clipboard data-clipboard-text="{{@global.location.origin}}/globalping?measurement={{testResultsId}}">
+				<button as-clipboard data-clipboard-text="{{shareResultsText}}">
 					<img width="20"
 						height="20"
 						src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
@@ -116,6 +118,7 @@
 				testResultsTimings: [],
 				testResultsExtra: {},
 				shareResultsAsURL: true,
+				shareResultsText: null,
 			};
 		},
 		onrender () {
@@ -159,7 +162,6 @@
 					this.set('scrolledToResIdx', null);
 				}, { init: false });
 
-
 				// select all share-res text of link on click
 				this.observe('testResultsId', (testResultsId) => {
 					if (testResultsId) {
@@ -170,6 +172,13 @@
 						});
 					}
 				}, { defer: true });
+
+				// check shareRes state and create URL or CLI cmd respectively
+				this.observe('shareResultsAsURL', (shareResultsAsURL) => {
+					let shareResultsText = this.createShareResText(shareResultsAsURL);
+
+					this.set('shareResultsText', shareResultsText);
+				});
 			}
 		},
 		hideShowTestResult (idx) {
@@ -193,5 +202,18 @@
 				listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
 			});
 		},
+		createShareResText (urlFlow = true) {
+			if (urlFlow) {
+				let origin = this.get('@global.location.origin');
+				let testResultsId = this.get('testResultsId');
+
+				return `${origin}/globalping?measurement=${testResultsId}`;
+			} else {
+				let cmd = `globalping TODO: CREATE CLI CMD BASED ON testReqParams `;
+				let testReqParams = this.get('testReqParams');
+
+				return cmd;
+			}
+		}
 	};
 </script>
