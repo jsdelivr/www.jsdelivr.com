@@ -44,12 +44,12 @@
 
 				<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
 
-				<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testType, this, dnsTraceEnabled).isFailed}}failed{{/if}}"></div>
+				<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testReqParams.type, this, testReqParams.measurementOptions.trace).isFailed}}failed{{/if}}"></div>
 			</div>
 		{{/each}}
 	</div>
 
-	{{#if testResultsId}}
+	{{#if testReqParams.id && !testInProgress}}
 		<div class="c-gp-test-results_share">
 			<div class="c-gp-test-results_share_switch">
 				<input id="share-switch"
@@ -127,8 +127,8 @@
 					if (!testResults) { return; }
 
 					// set timings and extra timings for each test result
-					let testType = this.get('testType');
-					let dnsTraceEnabled = this.get('dnsTraceEnabled');
+					let testType = this.get('testReqParams.type');
+					let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
 					let timings = testResults.reduce((timingValues, result, idx) => {
 						let { fullText, extraValues } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
@@ -163,8 +163,8 @@
 				}, { init: false });
 
 				// select all share-res text of link on click
-				this.observe('testResultsId', (testResultsId) => {
-					if (testResultsId) {
+				this.observe('testInProgress', (testInProgress) => {
+					if (!testInProgress) {
 						let shareResTextEl = this.find('#share-res-text');
 
 						shareResTextEl.addEventListener('click', () => {
@@ -205,15 +205,19 @@
 		createShareResText (urlFlow = true) {
 			if (urlFlow) {
 				let origin = this.get('@global.location.origin');
-				let testResultsId = this.get('testResultsId');
+				let testResultsId = this.get('testReqParams.id');
 
 				return `${origin}/globalping?measurement=${testResultsId}`;
-			} else {
-				let cmd = `globalping TODO: CREATE CLI CMD BASED ON testReqParams `;
-				let testReqParams = this.get('testReqParams');
-
-				return cmd;
 			}
-		}
+
+			// create CLI command
+			let cmd = `globalping TODO: CREATE CLI CMD BASED ON testReqParams `;
+			let testReqParams = this.get('testReqParams');
+
+			console.log('++++ TODO: PARSE testReqParams and create CLI cmd', testReqParams);
+			console.log('_______________________________');
+
+			return cmd;
+		},
 	};
 </script>
