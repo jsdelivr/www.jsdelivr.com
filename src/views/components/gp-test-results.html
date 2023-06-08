@@ -204,20 +204,54 @@
 		},
 		createShareResText (urlFlow = true) {
 			if (urlFlow) {
+				// return URL
 				let origin = this.get('@global.location.origin');
 				let testResultsId = this.get('testReqParams.id');
 
 				return `${origin}/globalping?measurement=${testResultsId}`;
 			}
 
-			// create CLI command
-			let cmd = `globalping TODO: CREATE CLI CMD BASED ON testReqParams `;
-			let testReqParams = this.get('testReqParams');
+			// return CLI cmd
+			return this.createCliCommand(this.get('testReqParams'));
+		},
+		createCliCommand (params) {
+			let cmd = Object.keys(params).reduce((cmd, key) => {
+				// test type part
+				if (key === 'type') {
+					cmd.typePart += ` ${params[key]} ${params.target}`;
 
-			console.log('++++ TODO: PARSE testReqParams and create CLI cmd', testReqParams);
-			console.log('_______________________________');
+					if (params.locations && params.locations.length) {
+						let locationStr = params.locations.reduce((str, loc, idx) => {
+							let locPart = loc.magic.toLowerCase().trim();
 
-			return cmd;
+							if (idx === 0) {
+								return str += locPart;
+							}
+
+							return str += `+${locPart}`;
+						}, '');
+
+						cmd.typePart += ` from ${locationStr}`;
+					}
+				}
+
+				// global flags part
+				if (key === 'limit') {
+					cmd.globalPart += ` --limit ${params[key]}`;
+				}
+
+				if (key === 'inProgressUpdates') {
+					cmd.globalPart += ` --ci ${params[key]}`;
+				}
+
+				return cmd;
+			}, {
+				base: 'globalping',
+				typePart: '',
+				globalPart: '',
+			});
+
+			return cmd.base + cmd.typePart + cmd.globalPart;
 		},
 	};
 </script>
