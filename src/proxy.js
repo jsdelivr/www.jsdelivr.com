@@ -14,9 +14,6 @@ module.exports = (proxyTarget, host) => {
 	let proxyUrl = new URL(proxyTarget);
 	let hostUrl = new URL(host);
 	let proxyTargetPattern = new RegExp(`${_.escapeRegExp(proxyTarget)}/?`, 'gi');
-	let rewriteAttributes = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
-	let rewriteElements = [ 'loc' ];
-	let rewriteRegExp = [ 'script[type="application/ld+json"]' ];
 
 	let rewrite = (link, baseUrl) => {
 		// A relative URL without a leading slash. No transformation needed.
@@ -42,6 +39,76 @@ module.exports = (proxyTarget, host) => {
 		return content.replace(proxyTargetPattern, (link) => {
 			return rewrite(link, baseUrl);
 		});
+	};
+
+	let removeElement = (name) => {
+		return {
+			query: name,
+			func (el) {
+				el.createStream({ outer: true }).end();
+			},
+		};
+	};
+
+	let rewriteAttribute = (name) => {
+		return {
+			query: `[${name}]`,
+			func (el, req) {
+				el.getAttribute(name, (value) => {
+					try {
+						if (name === 'srcset') {
+							value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
+						} else if (name === 'style') {
+							value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
+								return `url("${rewrite($2 || $3, req.baseUrl)}")`;
+							});
+						} else {
+							value = rewrite(value, req.baseUrl);
+						}
+
+						el.setAttribute(name, value);
+					} catch (e) {}
+				});
+			},
+		};
+	};
+
+	let rewriteElement = (name) => {
+		return {
+			query: name,
+			func (el, req) {
+				let value = '';
+				let stream = el.createStream()
+					.on('error', () => stream.end())
+					.on('data', chunk => value += chunk.toString())
+					.on('end', () => {
+						try {
+							stream.end(rewrite(value, req.baseUrl));
+						} catch (e) {
+							stream.end(value);
+						}
+					});
+			},
+		};
+	};
+
+	let rewriteRegexp = (name) => {
+		return {
+			query: name,
+			func (el, req) {
+				let value = '';
+				let stream = el.createStream()
+					.on('error', () => stream.end())
+					.on('data', chunk => value += chunk.toString())
+					.on('end', () => {
+						try {
+							stream.end(rewriteAllAbsolute(value, req.baseUrl));
+						} catch (e) {
+							stream.end(value);
+						}
+					});
+			},
+		};
 	};
 
 	proxy.on('proxyReq', (proxyReq, req) => {
@@ -102,66 +169,42 @@ module.exports = (proxyTarget, host) => {
 		}
 	});
 
+	let removeElementsHTML = [ 'meta[name="robots"][content="noindex"]' ];
+	let rewriteAttributesHTML = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
+	let rewriteElementsHTML = [ 'loc' ];
+	let rewriteRegExpsHTML = [ 'script[type="application/ld+json"]' ];
+	let harmonMiddlewareHTML = harmon([], removeElementsHTML.map(removeElement)
+		.concat(rewriteAttributesHTML.map(rewriteAttribute))
+		.concat(rewriteElementsHTML.map(rewriteElement))
+		.concat(rewriteRegExpsHTML.map(rewriteRegexp)), false);
+
+	let rewriteAttributesXML = [ 'href' ];
+	let rewriteElementsXML = [ 'loc', 'image\\:loc' ];
+	let harmonMiddlewareXML = harmon([], rewriteElementsXML.map(rewriteElement)
+		.concat(rewriteAttributesXML.map(rewriteAttribute)), false);
+
+	let rewriteAttributesXSL = [ 'href' ];
+	let harmonMiddlewareXSL = harmon([], rewriteAttributesXSL.map(rewriteAttribute), false);
+
 	return [
 		/**
-		 * Rewrite links in HTML.
+		 * Harmon middleware should only be applied to html, xml and xsl files.
 		 */
-		harmon([], rewriteAttributes.map((name) => {
-			return {
-				query: `[${name}]`,
-				func (el, req) {
-					el.getAttribute(name, (value) => {
-						try {
-							if (name === 'srcset') {
-								value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
-							} else if (name === 'style') {
-								value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
-									return `url("${rewrite($2 || $3, req.baseUrl)}")`;
-								});
-							} else {
-								value = rewrite(value, req.baseUrl);
-							}
+		(req, res, next) => {
+			let path = req.path.toLowerCase();
 
-							el.setAttribute(name, value);
-						} catch (e) {}
-					});
-				},
-			};
-		}).concat(rewriteElements.map((name) => {
-			return {
-				query: name,
-				func (el, req) {
-					let value = '';
-					let stream = el.createStream()
-						.on('error', () => stream.end())
-						.on('data', chunk => value += chunk.toString())
-						.on('end', () => {
-							try {
-								stream.end(rewrite(value, req.baseUrl));
-							} catch (e) {
-								stream.end(value);
-							}
-						});
-				},
-			};
-		})).concat(rewriteRegExp.map((name) => {
-			return {
-				query: name,
-				func (el, req) {
-					let value = '';
-					let stream = el.createStream()
-						.on('error', () => stream.end())
-						.on('data', chunk => value += chunk.toString())
-						.on('end', () => {
-							try {
-								stream.end(rewriteAllAbsolute(value, req.baseUrl));
-							} catch (e) {
-								stream.end(value);
-							}
-						});
-				},
-			};
-		})), true),
+			if (path.endsWith('rss/')) {
+				return next();
+			} else if (path.endsWith('/') || path.endsWith('.html')) {
+				harmonMiddlewareHTML(req, res, next);
+			} else if (path.endsWith('.xml')) {
+				harmonMiddlewareXML(req, res, next);
+			} else if (path.endsWith('.xsl')) {
+				harmonMiddlewareXSL(req, res, next);
+			} else {
+				return next();
+			}
+		},
 
 		/**
 		 * Fix for harmon with http-proxy@1.17.0+
