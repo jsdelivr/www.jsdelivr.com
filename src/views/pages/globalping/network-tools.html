@@ -20,7 +20,10 @@
 		<div class="gp-nettools_main-info">
 			{{#if locationData}}
 				<h1>{{capitalizedTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
-				<span>{{#if locationData.name}}{{locationData.name}}, {{/if}}<span class="gp-nettools_green-text">{{locationData.from}}</span></span>
+				<span>
+					{{#if locationData.name}}{{locationData.name}}, {{/if}}
+					<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">{{locationData.from}}</a>
+				</span>
 
 				<div class="gp-nettools_main-info_input-block">
 					<span>Run a Free</span>
@@ -188,6 +191,7 @@
 					continents: {},
 					regions: {},
 				},
+				highLevelLocationHref: null,
 			};
 		},
 		oninit () {
@@ -235,6 +239,7 @@
 
 						this.set('selectedTestType', testType);
 						this.set('locationData', locationData);
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.from)}`);
 					} else {
 						let testTypesList = this.get('testTypesList');
 						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
@@ -244,6 +249,7 @@
 						}
 
 						this.set('locationData', { name: '', from: 'World', probesCnt: this.get('totalProbesCnt') });
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, 'world')}`);
 					}
 				});
 
@@ -534,14 +540,27 @@
 			this.moveToNewPageURL(testType);
 		},
 		moveToNewPageURL (testType) {
+			let newPath = this.modifyQueryPart(testType);
+
+			app.router.dispatch(newPath, { noScroll: true });
+		},
+		modifyQueryPart (testType = 'ping', location = null) {
 			let splittedQueryTestFrom = app.router.uri.path.split('/');
-			let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
-			let newQueryTestFromValue = currQueryTestFromValue.replace(/[A-Za-z]+/, `${testType}`).toLowerCase();
+			let newQueryTestFromValue = '';
+
+			if (location) {
+				newQueryTestFromValue = `${testType}-from-${location}`;
+			} else {
+				let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
+
+				newQueryTestFromValue = currQueryTestFromValue.replace(/[A-Za-z]+/, `${testType}`);
+			}
+
 			let newPath = splittedQueryTestFrom.reduce((res, part, idx) => {
 				return idx === splittedQueryTestFrom.length - 1 ? res : res += `${part}/`;
 			}, '') + newQueryTestFromValue;
 
-			app.router.dispatch(newPath, { noScroll: true });
+			return newPath.toLowerCase();
 		},
 	};
 </script>
