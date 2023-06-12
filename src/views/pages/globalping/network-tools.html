@@ -39,7 +39,7 @@
 							<div class="dropdown-menu">
 								{{#each ~/testTypesList}}
 									{{#if this !== selectedTestType}}
-										<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
+										<div on-click="@this.handleTestTypeSelect(this)">{{this}}</div>
 									{{/if}}
 								{{/each}}
 							</div>
@@ -552,6 +552,20 @@
 			}, 1000);
 
 			this.set('testReqInterval', testReqInterval);
+		},
+		handleTestTypeSelect (testType) {
+			this.set('selectedTestType', testType);
+			this.moveToNewPageURL(testType);
+		},
+		moveToNewPageURL (testType) {
+			let splittedQueryTestFrom = app.router.uri.path.split('/');
+			let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
+			let newQueryTestFromValue = currQueryTestFromValue.replace(/[A-Za-z]+/, `${testType}`).toLowerCase();
+			let newPath = splittedQueryTestFrom.reduce((res, part, idx) => {
+				return idx === splittedQueryTestFrom.length - 1 ? res : res += `${part}/`;
+			}, '') + newQueryTestFromValue;
+
+			app.router.dispatch(newPath, { noScroll: true });
 		},
 	};
 </script>
