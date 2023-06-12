@@ -153,12 +153,6 @@
 	const countries = require('../../../assets/json/countries.json');
 	const continents = require('../../../assets/json/continents.json');
 	const DEFAULT_PROBES_AMOUNT = 3;
-	// TODO: do we need additional options for different types of request
-	const PING_PARAMS = {};
-	const TRACEROUTE_PARAMS = {};
-	const DNS_PARAMS = {};
-	const MTR_PARAMS = {};
-	const HTTP_PARAMS = {};
 	const INITIAL_OPTS_VALUES = {
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
@@ -307,24 +301,6 @@
 
 			if (!reqParams.limit) {
 				reqParams.limit = DEFAULT_PROBES_AMOUNT;
-			}
-
-			switch (type.toLowerCase()) {
-				case 'ping':
-					reqParams = { ...reqParams, ...PING_PARAMS };
-					break;
-				case 'traceroute':
-					reqParams = { ...reqParams, ...TRACEROUTE_PARAMS };
-					break;
-				case 'dns':
-					reqParams = { ...reqParams, ...DNS_PARAMS };
-					break;
-				case 'mtr':
-					reqParams = { ...reqParams, ...MTR_PARAMS };
-					break;
-				case 'http':
-					reqParams = { ...reqParams, ...HTTP_PARAMS };
-					break;
 			}
 
 			this.set('testResultsId', null);
