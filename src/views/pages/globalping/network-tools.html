@@ -41,7 +41,7 @@
 
 							<div class="dropdown-menu">
 								{{#each ~/testTypesList}}
-									{{#if this !== selectedTestType}}
+									{{#if this !== capitalizedTestType}}
 										<div on-click="@this.handleTestTypeSelect(this)">{{this}}</div>
 									{{/if}}
 								{{/each}}
@@ -204,7 +204,7 @@
 							case 'http':
 								this.set('capitalizedTestType', selectedTestType.toUpperCase()); break;
 							default:
-								this.set('capitalizedTestType', _.capitalizeFirstLetter(selectedTestType));
+								this.set('capitalizedTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
 						}
 					}
 
@@ -467,8 +467,8 @@
 				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.cities[locationLC];
 
 				return {
-					name: _.capitalizeFirstLetter(name),
-					from: _.capitalizeFirstLetter(from),
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
 				};
@@ -480,7 +480,7 @@
 
 				return {
 					name: name.toUpperCase(),
-					from: _.capitalizeFirstLetter(from),
+					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
 				};
@@ -492,7 +492,7 @@
 
 				return {
 					name,
-					from: _.capitalizeFirstLetter(from),
+					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
 				};
@@ -516,7 +516,7 @@
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
-					from: _.capitalizeFirstLetter(from),
+					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
 				};
@@ -528,7 +528,7 @@
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
-					from: _.capitalizeFirstLetter(from),
+					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
 				};
