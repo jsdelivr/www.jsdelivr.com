@@ -227,10 +227,15 @@
 				}
 
 				// handle URL, get values from it and set
-				this.observe('params', (rawValue) => {
-					if (!rawValue) { return; }
+				this.observe('params totalProbesCnt', () => {
+					let rawParamsValue = this.get('params');
+					let totalProbesCnt = this.get('totalProbesCnt');
+					let parsedLocations = this.get('parsedLocations');
 
-					let clearValue = rawValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+					// check if totalProbesCnt already set - means that we already have parsedLocations
+					if (!rawParamsValue || !totalProbesCnt) { return; }
+
+					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
 
 					if (clearValue.includes('-from-')) {
 						let valueSplitted = clearValue.split('-from-');
@@ -248,7 +253,7 @@
 							this.set('selectedTestType', testType);
 						}
 
-						this.set('locationData', { name: '', from: 'World', probesCnt: this.get('totalProbesCnt') });
+						this.set('locationData', { name: '', from: 'World', probesCnt: totalProbesCnt });
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, 'world')}`);
 					}
 				});
@@ -437,8 +442,9 @@
 				regions: {},
 			});
 
-			this.set('totalProbesCnt', data.length);
+			// set parsedLocations before totalProbesCnt, important for the params observer logic
 			this.set('parsedLocations', parsedLocations);
+			this.set('totalProbesCnt', data.length);
 		},
 		getLocationData (location) {
 			let locationLC = location.toLowerCase();
