@@ -243,7 +243,7 @@
 
 						this.set('selectedTestType', testType);
 						this.set('locationData', locationData);
-						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.from)}`);
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.fromAsUrlPart)}`);
 					} else {
 						let testTypesList = this.get('testTypesList');
 						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
@@ -357,31 +357,36 @@
 		parseProbesResponse (data) {
 			let parsedLocations = data.reduce((res, item) => {
 				let cityNameLC = item.location.city.toLowerCase();
+				let cityNameAsUrl = item.location.city.split(' ').join('-');
 				let countryCodeLC = item.location.country.toLowerCase();
 				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
+				let countryNameAsUrl = countryNameLC.split(' ').join('-');
 				let asnName = `as${item.location.asn}`;
 				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
 				let continentCodeLC = item.location.continent.toLowerCase();
 				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
+				let continentNameAsUrl = continentNameLC.split(' ').join('-');
 				let regionNameLC = item.location.region.toLowerCase();
 
 				// collect uniques cities and count amount of probes per city
-				if (!Object.keys(res.cities).includes(cityNameLC)) {
-					res.cities[cityNameLC] = {
+				if (!Object.keys(res.cities).includes(cityNameAsUrl)) {
+					res.cities[cityNameAsUrl] = {
 						name: cityNameLC,
 						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
 						probesCnt: 1,
+						fromAsUrlPart: countryNameAsUrl,
 					};
 				} else {
-					res.cities[cityNameLC].probesCnt += 1;
+					res.cities[cityNameAsUrl].probesCnt += 1;
 				}
 
 				// collect uniques ASNs and count amount of probes per ASN
 				if (!Object.keys(res.asns).includes(asnName)) {
 					res.asns[asnName] = {
 						name: asnName,
-						from: 'World',
+						from: 'world',
 						probesCnt: 1,
+						fromAsUrlPart: 'world',
 					};
 				} else {
 					res.asns[asnName].probesCnt += 1;
@@ -391,41 +396,45 @@
 				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
 					res.networks[networkNameAsKey] = {
 						name: item.location.network,
-						from: 'World',
+						from: 'world',
 						probesCnt: 1,
+						fromAsUrlPart: 'world',
 					};
 				} else {
 					res.networks[networkNameAsKey].probesCnt += 1;
 				}
 
 				// collect uniques Countries and count amount of probes per Country
-				if (!Object.keys(res.countries).includes(countryNameLC)) {
-					res.countries[countryNameLC] = {
+				if (!Object.keys(res.countries).includes(countryNameAsUrl)) {
+					res.countries[countryNameAsUrl] = {
 						name: countryNameLC,
 						from: continentNameLC,
 						probesCnt: 1,
+						fromAsUrlPart: continentNameAsUrl,
 					};
 				} else {
-					res.countries[countryNameLC].probesCnt += 1;
+					res.countries[countryNameAsUrl].probesCnt += 1;
 				}
 
 				// collect uniques Continents and count amount of probes per Continent
-				if (!Object.keys(res.continents).includes(continentNameLC)) {
-					res.continents[continentNameLC] = {
+				if (!Object.keys(res.continents).includes(continentNameAsUrl)) {
+					res.continents[continentNameAsUrl] = {
 						name: continentNameLC,
-						from: 'World',
+						from: 'world',
 						probesCnt: 1,
+						fromAsUrlPart: 'world',
 					};
 				} else {
-					res.continents[continentNameLC].probesCnt += 1;
+					res.continents[continentNameAsUrl].probesCnt += 1;
 				}
 
 				// collect uniques Regions and count amount of probes per Region
 				if (!Object.keys(res.regions).includes(regionNameLC)) {
 					res.regions[regionNameLC] = {
 						name: regionNameLC,
-						from: 'World',
+						from: 'world',
 						probesCnt: 1,
+						fromAsUrlPart: 'world',
 					};
 				} else {
 					res.regions[regionNameLC].probesCnt += 1;
@@ -454,67 +463,73 @@
 
 			// check if the location is a city
 			if (parsedLocations.cities[locationLC]) {
-				let { name, from, probesCnt } = parsedLocations.cities[locationLC];
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.cities[locationLC];
 
 				return {
 					name: _.capitalizeFirstLetter(name),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
 			// check if the location is an ASN
 			if (parsedLocations.asns[locationLC]) {
-				let { name, from, probesCnt } = parsedLocations.asns[locationLC];
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.asns[locationLC];
 
 				return {
 					name: name.toUpperCase(),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
 			// check if the location is a Network
 			if (parsedLocations.networks[networkNameAsKey]) {
-				let { name, from, probesCnt } = parsedLocations.networks[networkNameAsKey];
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.networks[networkNameAsKey];
 
 				return {
 					name,
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
 			// check if the location is a Country
 			if (parsedLocations.countries[locationLC]) {
-				let { name, from, probesCnt } = parsedLocations.countries[locationLC];
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.countries[locationLC];
 
 				return {
-					name: _.capitalizeFirstLetter(name),
+					name: _.capitalizeStrEveryFirstLetter(name),
 					from: _.capitalizeStrEveryFirstLetter(from, [ 'and' ]),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
 			// check if the location is a Continent
-			if (parsedLocations.continents[continentNameAsKey]) {
-				let { name, from, probesCnt } = parsedLocations.continents[continentNameAsKey];
+			if (parsedLocations.continents[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.continents[locationLC];
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
 			// check if the location is a Region
-			if (parsedLocations.regions[regionNameAsKey]) {
-				let { name, from, probesCnt } = parsedLocations.regions[regionNameAsKey];
+			if (parsedLocations.regions[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.regions[locationLC];
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
 					from: _.capitalizeFirstLetter(from),
 					probesCnt,
+					fromAsUrlPart,
 				};
 			}
 
@@ -523,6 +538,7 @@
 				name: null,
 				from: 'World',
 				probesCnt: this.get('totalProbesCnt'),
+				fromAsUrlPart: 'world',
 			};
 		},
 		getTestMeasurementById (measurementId) {
