@@ -1326,9 +1326,13 @@ module.exports = {
 		return word ? word[0].toUpperCase() + word.slice(1) : '';
 	},
 
-	capitalizeStrEveryFirstLetter (string) {
+	capitalizeStrEveryFirstLetter (string, exclude = []) {
 		return string.split(' ').reduce((res, w) => {
-			res.push(this.capitalizeFirstLetter(w));
+			if (exclude.includes(w)) {
+				res.push(w);
+			} else {
+				res.push(this.capitalizeFirstLetter(w));
+			}
 
 			return res;
 		}, []).join(' ');
