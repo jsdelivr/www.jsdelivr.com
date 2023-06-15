@@ -19,7 +19,7 @@
 
 		<div class="gp-nettools_main-info">
 			{{#if locationData}}
-				<h1>{{capitalizedTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
+				<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
 				<span>
 					{{#if locationData.name}}{{locationData.name}}, {{/if}}
 					<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">{{locationData.from}}</a>
@@ -35,14 +35,14 @@
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
-								<span>{{~/capitalizedTestType}}</span>
+								<span>{{~/displayingTestType}}</span>
 								<i class="fa fa-angle-down" aria-hidden="true"></i>
 							</button>
 
 							<div class="dropdown-menu">
 								{{#each ~/testTypesList}}
-									{{#if this !== capitalizedTestType}}
-										<div on-click="@this.handleTestTypeSelect(this)">{{this}}</div>
+									{{#if this.toDisplay !== displayingTestType}}
+										<div on-click="@this.handleTestTypeSelect(this)">{{this.toDisplay}}</div>
 									{{/if}}
 								{{/each}}
 							</div>
@@ -89,7 +89,7 @@
 						<div></div>
 						<div></div>
 					{{else}}
-						Run {{capitalizedTestType}} Test
+						Run {{btnTestType}} Test
 					{{/if}}
 				</button>
 			</div>
@@ -168,8 +168,30 @@
 				title: 'Globalping - jsDelivr',
 				description: 'TODO: add Globalping Network Tools description',
 				selectedTestType: INITIAL_OPTS_VALUES.type,
-				capitalizedTestType: INITIAL_OPTS_VALUES.type,
-				testTypesList: [ 'Ping', 'Traceroute', 'DNS', 'MTR', 'HTTP' ],
+				displayingTestType: INITIAL_OPTS_VALUES.type,
+				btnTestType: INITIAL_OPTS_VALUES.type,
+				testTypesList: [
+					{
+						name: 'Ping',
+						toDisplay: 'Ping',
+					},
+					{
+						name: 'Traceroute',
+						toDisplay: 'Traceroute',
+					},
+					{
+						name: 'DNS',
+						toDisplay: 'DNS resolve',
+					},
+					{
+						name: 'MTR',
+						toDisplay: 'MTR',
+					},
+					{
+						name: 'HTTP',
+						toDisplay: 'HTTP',
+					},
+				],
 				testOpts: {
 					target: INITIAL_OPTS_VALUES.target,
 					limit: '',
@@ -199,12 +221,22 @@
 				this.observe('selectedTestType', (selectedTestType) => {
 					if (selectedTestType) {
 						switch (selectedTestType.toLowerCase()) {
-							case 'dns':
 							case 'mtr':
 							case 'http':
-								this.set('capitalizedTestType', selectedTestType.toUpperCase()); break;
+								this.set('displayingTestType', selectedTestType.toUpperCase());
+								this.set('btnTestType', selectedTestType.toUpperCase());
+
+								break;
+
+							case 'dns':
+								this.set('displayingTestType', `${selectedTestType.toUpperCase()} resolve`);
+								this.set('btnTestType', selectedTestType.toUpperCase());
+
+								break;
+
 							default:
-								this.set('capitalizedTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
+								this.set('displayingTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
+								this.set('btnTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
 						}
 					}
 
@@ -554,9 +586,9 @@
 
 			this.set('testReqInterval', testReqInterval);
 		},
-		handleTestTypeSelect (testType) {
-			this.set('selectedTestType', testType);
-			this.moveToNewPageURL(testType);
+		handleTestTypeSelect (testTypeObj) {
+			this.set('selectedTestType', testTypeObj.name);
+			this.moveToNewPageURL(testTypeObj.name);
 		},
 		moveToNewPageURL (testType) {
 			let newPath = this.modifyQueryPart(testType);
