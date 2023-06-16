@@ -215,6 +215,7 @@
 					regions: {},
 				},
 				highLevelLocationHref: null,
+				probesParsed: false,
 			};
 		},
 		oninit () {
@@ -259,13 +260,13 @@
 					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
 
-				// handle URL, get values from it and set
-				this.observe('params totalProbesCnt', () => {
-					let rawParamsValue = this.get('params');
-					let totalProbesCnt = this.get('totalProbesCnt');
+				// handle URL, get values from it and set locationData
+				this.observe('probesParsed', (probesParsed) => {
+					if (!probesParsed) { return; }
 
-					// check if totalProbesCnt already set - means that we already have parsedLocations
-					if (!rawParamsValue || !totalProbesCnt) { return; }
+					let rawParamsValue = this.get('params');
+
+					if (!rawParamsValue) { return; }
 
 					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
 
@@ -285,7 +286,7 @@
 							this.set('selectedTestType', testTypeData.name);
 						}
 
-						this.set('locationData', { name: '', from: 'World', probesCnt: totalProbesCnt });
+						this.set('locationData', { name: '', from: 'World', probesCnt: this.get('totalProbesCnt') });
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
 					}
 				});
@@ -384,9 +385,9 @@
 					response = JSON.parse(response);
 				}
 
-				// set parsedLocations before totalProbesCnt, important for the params observer logic
 				this.set('parsedLocations', this.parseProbesResponse(response));
 				this.set('totalProbesCnt', response.length);
+				this.set('probesParsed', true);
 			};
 		},
 		parseProbesResponse (data) {
@@ -593,7 +594,7 @@
 					// needed for c-gp-test-results calcs
 					this.set('dnsTraceEnabled', testRes.measurementOptions?.trace || false);
 
-					// should be after the mainOptions.type was set
+					// should be after the mainOptions.type is already set
 					this.set('realTimeTestResResponse', testRes);
 				}).catch(() => {
 					clearInterval(testReqInterval);
