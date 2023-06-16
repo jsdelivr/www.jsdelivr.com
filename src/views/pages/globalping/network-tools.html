@@ -155,6 +155,7 @@
 	const has = require('../../../assets/js/utils/has');
 	const countries = require('../../../assets/json/countries.json');
 	const continents = require('../../../assets/json/continents.json');
+	const usaStates = require('../../../assets/json/usa-states.json');
 	const DEFAULT_PROBES_AMOUNT = 3;
 	const INITIAL_OPTS_VALUES = {
 		type: 'Ping',
@@ -399,6 +400,9 @@
 				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
 				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
 				let regionNameLC = item.location.region.toLowerCase();
+				let stateCodeLC = item.location.state ? item.location.state.toLowerCase() : null;
+				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
+				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameAsUrlPart)) {
@@ -472,6 +476,19 @@
 					res.regions[regionNameLC].probesCnt += 1;
 				}
 
+				// collect uniques states (if they are present) and count amount of probes per state
+				if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
+					res.cities[stateNameAsUrlPart] = {
+						name: stateNameLC,
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+						probesCnt: 1,
+						fromAsUrlPart: countryNameAsUrlPart,
+					};
+				} else {
+					res.cities[stateNameAsUrlPart].probesCnt += 1;
+				}
+
+
 				return res;
 			}, {
 				cities: {},
@@ -480,6 +497,7 @@
 				countries: {},
 				continents: {},
 				regions: {},
+				states: {},
 			});
 
 			// set parsedLocations before totalProbesCnt, important for the params observer logic
