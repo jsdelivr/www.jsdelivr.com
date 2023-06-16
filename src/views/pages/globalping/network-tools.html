@@ -384,11 +384,13 @@
 					response = JSON.parse(response);
 				}
 
-				this.parseProbesResponse(response);
+				// set parsedLocations before totalProbesCnt, important for the params observer logic
+				this.set('parsedLocations', this.parseProbesResponse(response));
+				this.set('totalProbesCnt', response.length);
 			};
 		},
 		parseProbesResponse (data) {
-			let parsedLocations = data.reduce((res, item) => {
+			return data.reduce((res, item) => {
 				let cityNameLC = item.location.city.toLowerCase();
 				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
 				let countryCodeLC = item.location.country.toLowerCase();
@@ -499,10 +501,6 @@
 				regions: {},
 				states: {},
 			});
-
-			// set parsedLocations before totalProbesCnt, important for the params observer logic
-			this.set('parsedLocations', parsedLocations);
-			this.set('totalProbesCnt', data.length);
 		},
 		getLocationData (location) {
 			let locationLC = location.toLowerCase();
