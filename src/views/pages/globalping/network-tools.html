@@ -42,7 +42,7 @@
 							<div class="dropdown-menu">
 								{{#each ~/testTypesList}}
 									{{#if this.toDisplay !== displayingTestType}}
-										<div on-click="@this.handleTestTypeSelect(this)">{{this.toDisplay}}</div>
+										<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
 									{{/if}}
 								{{/each}}
 							</div>
@@ -278,14 +278,14 @@
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.fromAsUrlPart)}`);
 					} else {
 						let testTypesList = this.get('testTypesList');
-						let testType = testTypesList.find(i => i.toLowerCase() === clearValue);
+						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearValue);
 
-						if (testType) {
-							this.set('selectedTestType', testType);
+						if (testTypeData) {
+							this.set('selectedTestType', testTypeData.name);
 						}
 
 						this.set('locationData', { name: '', from: 'World', probesCnt: totalProbesCnt });
-						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, 'world')}`);
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
 					}
 				});
 
@@ -586,9 +586,9 @@
 
 			this.set('testReqInterval', testReqInterval);
 		},
-		handleTestTypeSelect (testTypeObj) {
-			this.set('selectedTestType', testTypeObj.name);
-			this.moveToNewPageURL(testTypeObj.name);
+		handleTestTypeSelect (testTypeName) {
+			this.set('selectedTestType', testTypeName);
+			this.moveToNewPageURL(testTypeName);
 		},
 		moveToNewPageURL (testType) {
 			let newPath = this.modifyQueryPart(testType);
