@@ -75,7 +75,7 @@
 					id="limitInput"
 					value="{{testOpts.limit}}"
 					error="{{inputErrors.limit}}"
-					placeholder="{{defaultProbesAmount}}"
+					placeholder="{{defaultTestLimit}}"
 					labelText="Probes"
 					classList="gp-nettools_demo-tools_ctrls_probes gp_input">
 				</c-controlled-input>
@@ -106,10 +106,9 @@
 				</div>
 			{{elseif testResults}}
 				<c-gp-test-results
-					testType="{{selectedTestType}}"
-					testResultsId="{{testResultsId}}"
+					testReqParams="{{testReqParams}}"
 					testResults="{{testResults}}"
-					dnsTraceEnabled="{{false}}">
+					testInProgress="{{testInProgress}}">
 				</c-gp-test-results>
 			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
@@ -156,7 +155,7 @@
 	const countries = require('../../../assets/json/countries.json');
 	const continents = require('../../../assets/json/continents.json');
 	const usaStates = require('../../../assets/json/usa-states.json');
-	const DEFAULT_PROBES_AMOUNT = 3;
+	const DEFAULT_LIMIT = 3;
 	const INITIAL_OPTS_VALUES = {
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
@@ -198,11 +197,10 @@
 					limit: '',
 				},
 				inputErrors: {},
-				testResultsId: null,
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
-				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
+				defaultTestLimit: DEFAULT_LIMIT,
 				probesResponse: null,
 				locationData: null,
 				totalProbesCnt: 0,
@@ -216,6 +214,7 @@
 				},
 				highLevelLocationHref: null,
 				probesParsed: false,
+				testReqParams: null,
 			};
 		},
 		oninit () {
@@ -243,7 +242,6 @@
 					}
 
 					this.set('inputErrors', {});
-					this.set('testResultsId', null);
 					this.set('testResults', null);
 				});
 
@@ -286,7 +284,7 @@
 							this.set('selectedTestType', testTypeData.name);
 						}
 
-						this.set('locationData', { name: '', from: 'World', probesCnt: this.get('totalProbesCnt') });
+						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
 					}
 				});
@@ -296,7 +294,6 @@
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
-						this.set('testResultsId', realTimeTestResResponse.id);
 					}
 
 					let prevTestResults = this.get('testResults') || [];
@@ -344,19 +341,13 @@
 			};
 
 			if (!reqParams.limit) {
-				reqParams.limit = DEFAULT_PROBES_AMOUNT;
+				reqParams.limit = DEFAULT_LIMIT;
 			}
 
-			this.set('testResultsId', null);
+			// clear all data from the previous test, show spinner
 			this.set('testResults', null);
 			this.set('testInProgress', true);
-
-			// get test interval and clear it when new test is started
-			let testReqInterval = this.get('testReqInterval');
-
-			if (testReqInterval) {
-				clearInterval(testReqInterval);
-			}
+			this.set('testReqParams', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -591,10 +582,28 @@
 		getTestMeasurementById (measurementId) {
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
-					// needed for c-gp-test-results calcs
-					this.set('dnsTraceEnabled', testRes.measurementOptions?.trace || false);
+					// prepare and set request params to pass them to gp-test-results
+					let testReqParams = JSON.parse(JSON.stringify(testRes));
 
-					// should be after the mainOptions.type is already set
+					delete testReqParams.results;
+					delete testReqParams.status;
+					delete testReqParams.updatedAt;
+					delete testReqParams.createdAt;
+
+					testReqParams = {
+						inProgressUpdates: true,
+						limit: DEFAULT_LIMIT,
+						...testReqParams,
+						measurementOptions: {
+							trace: false,
+							...testReqParams.measurementOptions,
+						},
+					};
+
+					// set testReqParams to pass them to c-gp-test-results
+					this.set('testReqParams', testReqParams);
+
+					// should be after the mainOptions.type was set
 					this.set('realTimeTestResResponse', testRes);
 				}).catch(() => {
 					clearInterval(testReqInterval);
