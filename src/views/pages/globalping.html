@@ -467,10 +467,9 @@
 					</div>
 				{{elseif testResults}}
 					<c-gp-test-results
-						testType="{{mainOptions.type}}"
-						testResultsId="{{testResultsId}}"
+						testReqParams="{{testReqParams}}"
 						testResults="{{testResults}}"
-						dnsTraceEnabled="{{dnsTraceEnabled}}"
+						testInProgress="{{testInProgress}}"
 						scrolledToResIdx="{{scrolledToResIdx}}">
 					</c-gp-test-results>
 				{{else}}
@@ -1139,7 +1138,6 @@
 				mtrOpts: CLIENT_DEFAULT_MTR_OPTS,
 				httpOpts: CLIENT_DEFAULT_HTTP_OPTS,
 				inputErrors: {},
-				testResultsId: null,
 				testResults: null,
 				testFailed: false,
 				testInProgress: false,
@@ -1157,6 +1155,7 @@
 				shareResHeaderData: null,
 				runTestBtnText: 'Run Test',
 				shareResultsCase: false,
+				testReqParams: null,
 			};
 		},
 		onrender () {
@@ -1203,7 +1202,6 @@
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
 					this.set('testResults', null);
-					this.set('testResultsId', null);
 					this.set('markersData', null);
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
@@ -1262,7 +1260,6 @@
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
-						this.set('testResultsId', realTimeTestResResponse.id);
 						this.zoomToResults(realTimeTestResResponse.locations);
 					}
 
@@ -1394,16 +1391,13 @@
 
 			// clear all data from the previous test, close additional options menu, show spinner
 			this.set('testResults', null);
-			this.set('testResultsId', null);
 			this.set('markersData', null);
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
 			this.set('testFailed', false);
-			this.set('shareResHeaderData', null);
-
-			// set dnsTraceEnabled value to know what it was during the request to avoid unnecessary recalcs in gp-test-results
-			this.set('dnsTraceEnabled', reqParams.measurementOptions?.trace || false);
+			this.set('shareResHeaderDate', null);
+			this.set('testReqParams', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -1421,7 +1415,7 @@
 
 						res[fieldName] = errMsg;
 
-						if (splittedKeyName[splittedKeyNameLength - 2] === 'measurementOptions') {
+						if (splittedKeyName[0] === 'measurementOptions') {
 							measurementOptsErr = true;
 						}
 
@@ -1814,7 +1808,7 @@
 						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
-						this.set('mainOptions.limit', testRes.limit);
+						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
@@ -1841,8 +1835,26 @@
 						this.set('measurementId', null);
 					}
 
-					// needed for c-gp-test-results calcs
-					this.set('dnsTraceEnabled', testRes.measurementOptions?.trace || false);
+					// prepare and set request params to pass them to gp-test-results
+					let testReqParams = JSON.parse(JSON.stringify(testRes));
+
+					delete testReqParams.results;
+					delete testReqParams.status;
+					delete testReqParams.updatedAt;
+					delete testReqParams.createdAt;
+
+					testReqParams = {
+						inProgressUpdates: true,
+						limit: DEFAULT_LIMIT,
+						...testReqParams,
+						measurementOptions: {
+							trace: false,
+							...testReqParams.measurementOptions,
+						},
+					};
+
+					// set testReqParams to pass them to c-gp-test-results
+					this.set('testReqParams', testReqParams);
 
 					// should be after the mainOptions.type was set
 					this.set('realTimeTestResResponse', testRes);
@@ -1993,7 +2005,6 @@
 				google.maps.event.clearListeners(map, 'idle');
 			});
 		},
-
 		filterForInitPresetOpts (defaultOpts, optionsToFilter) {
 			return Object.keys(optionsToFilter).reduce((res, key) => {
 				if (Object.hasOwn(defaultOpts, key)) {
