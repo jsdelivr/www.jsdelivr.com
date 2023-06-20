@@ -258,37 +258,6 @@
 					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 				}
 
-				// handle URL, get values from it and set locationData
-				this.observe('probesParsed', (probesParsed) => {
-					if (!probesParsed) { return; }
-
-					let rawParamsValue = this.get('params');
-
-					if (!rawParamsValue) { return; }
-
-					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
-
-					if (clearValue.includes('-from-')) {
-						let valueSplitted = clearValue.split('-from-');
-						let testType = valueSplitted[0];
-						let locationData = this.getLocDataByLocValue(valueSplitted[1]);
-
-						this.set('selectedTestType', testType);
-						this.set('locationData', locationData);
-						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.fromAsUrlPart)}`);
-					} else {
-						let testTypesList = this.get('testTypesList');
-						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearValue);
-
-						if (testTypeData) {
-							this.set('selectedTestType', testTypeData.name);
-						}
-
-						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
-						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
-					}
-				});
-
 				// handle test results in real time
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (realTimeTestResResponse.status === 'finished') {
@@ -328,6 +297,51 @@
 
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
+
+				// handle URL, get values from it and set locationData
+				this.observe('probesParsed', (probesParsed) => {
+					if (!probesParsed) { return; }
+
+					let rawParamsValue = this.get('params');
+
+					if (!rawParamsValue) { return; }
+
+					let testTypesList = this.get('testTypesList');
+					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+
+					if (clearValue.includes('-from-')) {
+						let valueSplitted = clearValue.split('-from-');
+						let testType = valueSplitted[0];
+						let locationData = this.getLocDataByLocValue(valueSplitted[1]);
+						let isTestTypePresents = testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
+
+						// if both location and testType are correct and present
+						if (locationData && isTestTypePresents) {
+							this.set('selectedTestType', testType);
+							this.set('locationData', locationData);
+							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.fromAsUrlPart)}`);
+						} else if (isTestTypePresents && !locationData) {
+						// when testType correct but location incorrect or missing
+							this.moveToNewPageURL(testType, null, true);
+						} else if (locationData && !isTestTypePresents) {
+						// when  location correct and testType is incorrect
+							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type);
+						} else {
+							// when testType is incorect and location incorrect or missing
+							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
+						}
+					} else {
+						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearValue);
+
+						if (testTypeData) {
+							this.set('selectedTestType', testTypeData.name);
+							this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
+							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
+						} else {
+							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type);
+						}
+					}
+				});
 			}
 		},
 		proceedToTest () {
@@ -570,14 +584,6 @@
 					fromAsUrlPart,
 				};
 			}
-
-			// if couldnt be identified as ASN, Network, city etc. then we should show defaults
-			return {
-				name: null,
-				from: 'world',
-				probesCnt: this.get('totalProbesCnt'),
-				fromAsUrlPart: 'world',
-			};
 		},
 		getTestMeasurementById (measurementId) {
 			let testReqInterval = setInterval(() => {
@@ -616,17 +622,19 @@
 			this.set('selectedTestType', testTypeName);
 			this.moveToNewPageURL(testTypeName);
 		},
-		moveToNewPageURL (testType) {
-			let newPath = this.modifyQueryPart(testType);
+		moveToNewPageURL (testType, newLocation = null, leaveTestOnly = false) {
+			let newPath = this.modifyQueryPart(testType, newLocation, leaveTestOnly);
 
 			app.router.dispatch(newPath, { noScroll: true });
 		},
-		modifyQueryPart (testType = 'ping', location = null) {
+		modifyQueryPart (testType = 'ping', newLocation = null, leaveTestOnly = false) {
 			let splittedQueryTestFrom = app.router.uri.path.split('/');
 			let newQueryTestFromValue = '';
 
-			if (location) {
-				newQueryTestFromValue = `${testType}-from-${location}`;
+			if (newLocation) {
+				newQueryTestFromValue = `${testType}-from-${newLocation}`;
+			} else if (leaveTestOnly) {
+				newQueryTestFromValue = testType;
 			} else {
 				let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
 
