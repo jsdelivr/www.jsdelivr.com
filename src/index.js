@@ -28,6 +28,7 @@ const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const sitemap = require('./middleware/sitemap');
+const globalpingSitemap = require('./middleware/sitemap/globalping');
 const ogImage = require('./middleware/open-graph');
 const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
@@ -291,6 +292,10 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
 ], sitemap);
+
+koaElasticUtils.addRoutes(router, [
+	[ '/sitemap/globalping/:page', '/sitemap/globalping/:page' ],
+], globalpingSitemap);
 
 /**
  * Package pages.
