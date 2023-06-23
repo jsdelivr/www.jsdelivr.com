@@ -396,19 +396,19 @@
 			};
 		},
 		parseProbesResponse (data) {
-			return data.reduce((res, item) => {
-				let cityNameLC = item.location.city.toLowerCase();
+			return data.reduce((res, { location }) => {
+				let cityNameLC = location.city.toLowerCase();
 				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
-				let countryCodeLC = item.location.country.toLowerCase();
+				let countryCodeLC = location.country.toLowerCase();
 				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
 				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
-				let asnName = `as${item.location.asn}`;
-				let networkNameAsKey = item.location.network.replace(/[^\w]|_/g, '').toLowerCase();
-				let continentCodeLC = item.location.continent.toLowerCase();
+				let asnName = `as${location.asn}`;
+				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
+				let continentCodeLC = location.continent.toLowerCase();
 				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
 				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
-				let regionNameLC = item.location.region.toLowerCase();
-				let stateCodeLC = item.location.state ? item.location.state.toLowerCase() : null;
+				let regionNameLC = location.region.toLowerCase();
+				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
 				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
 				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
 
@@ -439,7 +439,7 @@
 				// collect uniques Networks and count amount of probes per Network
 				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
 					res.networks[networkNameAsKey] = {
-						name: item.location.network,
+						name: location.network,
 						from: 'world',
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
