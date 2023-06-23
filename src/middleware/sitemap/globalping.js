@@ -110,8 +110,8 @@ function createPossibleUrls (data) {
 	let testTypesList = [ 'ping', 'dns', 'traceroute', 'mtr', 'http' ];
 	let parsedProbesResponse = parseProbesResponse(data);
 
-	return parsedProbesResponse.reduce((urlParts, locsArr) => {
-		let prepared = locsArr.reduce((res, loc) => {
+	return Object.keys(parsedProbesResponse).reduce((urlParts, ppKey) => {
+		let prepared = parsedProbesResponse[ppKey].reduce((res, loc) => {
 			let combined = testTypesList.map(tt => `${tt}-from-${loc}`);
 
 			return [ ...res, ...combined ];
