@@ -485,17 +485,18 @@
 				}
 
 				// collect uniques states (if they are present) and count amount of probes per state
-				if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
-					res.cities[stateNameAsUrlPart] = {
-						name: stateNameLC,
-						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
-						probesCnt: 1,
-						fromAsUrlPart: countryNameAsUrlPart,
-					};
-				} else {
-					res.cities[stateNameAsUrlPart].probesCnt += 1;
+				if (stateNameAsUrlPart) {
+					if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
+						res.states[stateNameAsUrlPart] = {
+							name: stateNameLC,
+							from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+							probesCnt: 1,
+							fromAsUrlPart: countryNameAsUrlPart,
+						};
+					} else {
+						res.states[stateNameAsUrlPart].probesCnt += 1;
+					}
 				}
-
 
 				return res;
 			}, {
@@ -576,6 +577,18 @@
 			// check if the location is a Region
 			if (parsedLocations.regions[locationLC]) {
 				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.regions[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+				};
+			}
+
+			// check if the location is a State
+			if (parsedLocations.states[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.states[locationLC];
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
