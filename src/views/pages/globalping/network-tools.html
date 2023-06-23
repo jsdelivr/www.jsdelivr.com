@@ -512,7 +512,7 @@
 		getLocDataByLocValue (location) {
 			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
-			let networkNameAsKey = locationLC.replace(/[^\w]|_/g, '');
+			let networkNameAsKey = locationLC.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
 
 			// check if the location is a city
 			if (parsedLocations.cities[locationLC]) {
