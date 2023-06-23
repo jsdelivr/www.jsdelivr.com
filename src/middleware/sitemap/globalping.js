@@ -51,7 +51,7 @@ function parseProbesResponse (data) {
 		let countryNameLC = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase()).name.toLowerCase();
 		let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
 		let asnName = `as${location.asn}`;
-		let networkNameAsUrlPart = location.network.replace(/[^\w]|_/g, '').toLowerCase();
+		let networkNameAsUrlPart = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
 		let continentNameLC = continents.find(i => i.code.toLowerCase() === location.continent.toLowerCase()).name.toLowerCase();
 		let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
 		let regionNameAsUrlPart = location.region.split(' ').join('-').toLowerCase();
