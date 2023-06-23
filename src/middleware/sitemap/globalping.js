@@ -90,8 +90,8 @@ function parseProbesResponse (data) {
 		}
 
 		// collect uniques states (if they are present)
-		if (!res.states.includes(stateNameAsUrlPart)) {
-			res.cities.push(stateNameAsUrlPart);
+		if (stateNameAsUrlPart && !res.states.includes(stateNameAsUrlPart)) {
+			res.states.push(stateNameAsUrlPart);
 		}
 
 		return res;
