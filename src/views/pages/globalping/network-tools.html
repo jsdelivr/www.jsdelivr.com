@@ -4,7 +4,6 @@
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
 <link rel="ractive" href="../../components/gp-test-results.html" name="c-gp-test-results">
-<link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
@@ -13,45 +12,45 @@
 	<c-header additionalClasses="header-with-globalping-bg"></c-header>
 
 	<div class="p-globalping-network-tools">
-		<c-gp-top-navigation currentName="globalping-network-tools"></c-gp-top-navigation>
-
-		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
-
 		<div class="gp-nettools_main-info">
-			{{#if locationData}}
-				<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
-				<span>
-					{{#if locationData.name}}{{locationData.name}}, {{/if}}
-					<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">{{locationData.from}}</a>
-				</span>
+			<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
 
-				<div class="gp-nettools_main-info_input-block">
-					<span>Run a Free</span>
+			<div class="gp-nettools_main-info_content">
+				{{#if locationData}}
+					<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
+					<span>
+						{{#if locationData.name}}{{locationData.name}}, {{/if}}
+						<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">{{locationData.from}}</a>
+					</span>
 
-					<div class="gp_dropdown_alt">
-						<div class="btn-group">
-							<button type="button"
-								class="dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{~/displayingTestType}}</span>
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
+					<div class="gp-nettools_main-info_content_input-block">
+						<span>Run a Free</span>
 
-							<div class="dropdown-menu">
-								{{#each ~/testTypesList}}
-									{{#if this.toDisplay !== displayingTestType}}
-										<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
-									{{/if}}
-								{{/each}}
+						<div class="gp_dropdown_alt">
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/displayingTestType}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										{{#if this.toDisplay !== displayingTestType}}
+											<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
+										{{/if}}
+									{{/each}}
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<span>test</span>
-				</div>
-			{{/if}}
+						<span>test</span>
+					</div>
+				{{/if}}
+			</div>
 		</div>
 
 		<div class="gp-nettools_demo-tools">
