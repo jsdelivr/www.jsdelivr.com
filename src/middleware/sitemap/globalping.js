@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
-const path = require('path');
 const Handlebars = require('handlebars');
 const got = require('../../lib/got');
 const countries = require('../../assets/json/countries.json');
