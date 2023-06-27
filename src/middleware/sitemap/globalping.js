@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const readDirRecursive = require('recursive-readdir');
 const Handlebars = require('handlebars');
 const got = require('../../lib/got');
 const countries = require('../../assets/json/countries.json');
@@ -9,24 +8,20 @@ const continents = require('../../assets/json/continents.json');
 const usaStates = require('../../assets/json/usa-states.json');
 const viewsPath = __dirname + '/../../views';
 
-let siteMapTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap.xml', 'utf8'));
-let siteMap0Template = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-0.xml', 'utf8'));
-let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-index.xml', 'utf8'));
+let siteMapTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-gp.xml', 'utf8'));
+let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-gp-index.xml', 'utf8'));
 let probesPromise = updateProbesData();
 
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let pages = (await readDirRecursive(viewsPath + '/pages', [ '_*' ])).map(p => path.relative(viewsPath + '/pages', p).replace(/\\/g, '/').slice(0, -5));
 	let probes = await probesPromise;
 	let maxPage = Math.ceil(probes.length / 50000);
 	let page = Number(ctx.params.page);
 
 	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ maps: _.range(1, maxPage + 1) });
+		ctx.body = siteMapIndexTemplate({ maps: _.range(0, maxPage + 1) });
 	} else if (page > 0 && page <= maxPage) {
 		ctx.body = siteMapTemplate({ probes: probes.slice((page - 1) * 50000, page * 50000) });
-	} else if (page === 0) {
-		ctx.body = siteMap0Template({ pages });
 	} else {
 		ctx.status = 404;
 	}
