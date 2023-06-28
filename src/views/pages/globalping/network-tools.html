@@ -644,7 +644,6 @@
 			app.router.dispatch(newPath, { noScroll: true });
 		},
 		modifyQueryPart (testType = 'ping', newLocation = null, leaveTestOnly = false) {
-			let splittedQueryTestFrom = app.router.uri.path.split('/');
 			let newQueryTestFromValue = '';
 
 			if (newLocation) {
@@ -652,16 +651,13 @@
 			} else if (leaveTestOnly) {
 				newQueryTestFromValue = testType;
 			} else {
+				let splittedQueryTestFrom = app.router.uri.path.split('/');
 				let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
 
 				newQueryTestFromValue = currQueryTestFromValue.replace(/[A-Za-z]+/, `${testType}`);
 			}
 
-			let newPath = splittedQueryTestFrom.reduce((res, part, idx) => {
-				return idx === splittedQueryTestFrom.length - 1 ? res : res += `${part}/`;
-			}, '') + newQueryTestFromValue;
-
-			return newPath.toLowerCase();
+			return `/globalping/network-tools/${newQueryTestFromValue.toLowerCase()}`;
 		},
 	};
 </script>
