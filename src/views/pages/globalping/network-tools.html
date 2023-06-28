@@ -303,7 +303,11 @@
 
 					let rawParamsValue = this.get('params');
 
-					if (!rawParamsValue) { return; }
+					if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
+						this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
+
+						return;
+					}
 
 					let testTypesList = this.get('testTypesList');
 					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
