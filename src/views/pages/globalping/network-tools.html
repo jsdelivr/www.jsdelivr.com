@@ -214,11 +214,14 @@
 				highLevelLocationHref: null,
 				probesParsed: false,
 				testReqParams: null,
+				clearParamsValue: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.getGlobalpingProbesData();
+
+				this.getParamsFromUrl();
 
 				this.observe('selectedTestType', (selectedTestType) => {
 					if (selectedTestType) {
@@ -289,21 +292,13 @@
 				this.observe('probesParsed', (probesParsed) => {
 					if (!probesParsed) { return; }
 
-					let rawParamsValue = this.get('params');
-
-					if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
-						this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
-
-						return;
-					}
-
+					let clearParamsValue = this.get('clearParamsValue');
 					let testTypesList = this.get('testTypesList');
-					let clearValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
 
-					if (clearValue.includes('-from-')) {
-						let valueSplitted = clearValue.split('-from-');
-						let testType = valueSplitted[0];
-						let locationData = this.getLocDataByLocValue(valueSplitted[1]);
+					if (clearParamsValue.includes('-from-')) {
+						let paramsValueSplitted = clearParamsValue.split('-from-');
+						let testType = paramsValueSplitted[0];
+						let locationData = this.getLocDataByLocValue(paramsValueSplitted[1]);
 						let isTestTypePresents = testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 
 						// if both location and testType are correct and present
@@ -322,7 +317,7 @@
 							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
 						}
 					} else {
-						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearValue);
+						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearParamsValue);
 
 						if (testTypeData) {
 							this.set('selectedTestType', testTypeData.name);
@@ -660,6 +655,19 @@
 			} else {
 				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
+		},
+		getParamsFromUrl () {
+			let rawParamsValue = this.get('params');
+
+			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
+				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
+
+				return;
+			}
+
+			let clearParamsValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+
+			this.set('clearParamsValue', clearParamsValue);
 		},
 	};
 </script>
