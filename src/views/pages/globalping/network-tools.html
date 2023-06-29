@@ -218,6 +218,8 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.getGlobalpingProbesData();
+
 				this.observe('selectedTestType', (selectedTestType) => {
 					if (selectedTestType) {
 						switch (selectedTestType.toLowerCase()) {
@@ -244,20 +246,6 @@
 					this.set('testResults', null);
 				});
 
-				// get probes from sessionStorage or fetch them
-				if (has.sessionStorage()) {
-					let probesResponse = sessionStorage.getItem('probesResponse');
-
-					if (probesResponse) {
-						this.handleProbesResponse(true)(probesResponse);
-					} else {
-						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-					}
-				} else {
-					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-				}
-
-				// handle test results in real time
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
@@ -658,6 +646,20 @@
 			}
 
 			return `/globalping/network-tools/${newQueryTestFromValue.toLowerCase()}`;
+		},
+		getGlobalpingProbesData () {
+			// get probes from sessionStorage or fetch them
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
 		},
 	};
 </script>
