@@ -19,8 +19,19 @@
 				{{#if locationData}}
 					<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
 					<span>
-						{{#if locationData.name}}{{locationData.name}}, {{/if}}
-						<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">{{locationData.from}}</a>
+						{{#if locationData.name}}
+							<span>{{locationData.name}}</span>
+						{{/if}}
+
+						{{#unless locationData.type === 'asn' || locationData.type === 'isp'}}
+							{{#if locationData.name}}
+								<span>,&nbsp;</span>
+							{{/if}}
+
+							<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">
+								{{locationData.from}}
+							</a>
+						{{/unless}}
 					</span>
 
 					<div class="gp-nettools_main-info_content_input-block">
@@ -1055,6 +1066,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'city',
 				};
 			}
 
@@ -1067,6 +1079,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'asn',
 				};
 			}
 
@@ -1079,6 +1092,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'isp',
 				};
 			}
 
@@ -1091,6 +1105,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from, [ 'and' ]),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'country',
 				};
 			}
 
@@ -1103,6 +1118,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'continent',
 				};
 			}
 
@@ -1115,6 +1131,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'region',
 				};
 			}
 
@@ -1127,6 +1144,7 @@
 					from: _.capitalizeStrEveryFirstLetter(from),
 					probesCnt,
 					fromAsUrlPart,
+					type: 'state',
 				};
 			}
 		},
