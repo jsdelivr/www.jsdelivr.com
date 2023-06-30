@@ -18,7 +18,7 @@ module.exports = async (ctx) => {
 	let page = Number(ctx.params.page);
 
 	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ maps: _.range(0, maxPage - 1) });
+		ctx.body = siteMapIndexTemplate({ maps: _.range(0, maxPage) });
 	} else if (page >= 0 && page < maxPage) {
 		ctx.body = siteMapTemplate({ probes: probes.slice(page * 50000, (page + 1) * 50000) });
 	} else {
