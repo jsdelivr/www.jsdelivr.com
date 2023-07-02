@@ -294,7 +294,7 @@ koaElasticUtils.addRoutes(router, [
 ], sitemap);
 
 koaElasticUtils.addRoutes(router, [
-	[ '/sitemap/globalping/:page', '/sitemap/globalping/:page' ],
+	[ '/globalping/sitemap/:page', '/globalping/sitemap/:page' ],
 ], globalpingSitemap);
 
 /**
