@@ -724,8 +724,8 @@
 		data () {
 			return {
 				_,
-				title: 'Globalping - jsDelivr',
-				description: 'TODO: add Globalping Network Tools description',
+				title: '',
+				description: '',
 				selectedTestType: null,
 				displayingTestType: INITIAL_OPTS_VALUES.type,
 				btnTestType: INITIAL_OPTS_VALUES.type,
@@ -807,6 +807,41 @@
 
 					this.set('inputErrors', {});
 					this.set('testResults', null);
+				});
+
+				this.observe('clearParamsValue', (clearParamsValue) => {
+					let testTypesList = this.get('testTypesList');
+					let clearValueSplitted = clearParamsValue.split('-from-');
+					let { name: locationName } = clearValueSplitted[1] ? this.getLocDataByLocValue(clearValueSplitted[1]) : { name: 'world' };
+					let testType = testTypesList.some(i => i.name.toLowerCase() === clearValueSplitted[0].toLowerCase()) ? clearValueSplitted[0] : INITIAL_OPTS_VALUES.type;
+					locationName = _.capitalizeFirstLetter(locationName);
+
+					switch (testType.toLowerCase()) {
+						case 'dns':
+						case 'mtr':
+						case 'http':
+							testType = testType.toUpperCase(); break;
+						default:
+							testType = _.capitalizeFirstLetter(testType);
+					}
+
+					let title = `${testType} for free from ${locationName} - Global ${testType} tests by Globalping`;
+					let description = `Run ${testType} network tests for free from multiple global regions`;
+
+					if (locationName !== 'World') {
+						description += ` like ${locationName}`;
+					}
+
+					description += ' to any endpoint including IP addresses, websites, CDN or cloud providers. Test the network latency and uptime regionally';
+
+					if (locationName !== 'World') {
+						description += ` in ${locationName}`;
+					}
+
+					description += ' or globally.';
+
+					this.set('title', title);
+					this.set('description', description);
 				});
 
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
