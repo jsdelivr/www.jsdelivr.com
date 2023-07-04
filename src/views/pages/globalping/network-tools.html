@@ -813,7 +813,7 @@
 					let testTypesList = this.get('testTypesList');
 					let clearValueSplitted = clearParamsValue.split('-from-');
 					let { name: locationName } = clearValueSplitted[1] ? this.getLocDataByLocValue(clearValueSplitted[1]) : { name: 'world' };
-					let testType = testTypesList.some(i => i.name.toLowerCase() === clearValueSplitted[0].toLowerCase()) ? clearValueSplitted[0] : INITIAL_OPTS_VALUES.type;
+					let testType = this.checkIfTestTypeCorrect(clearValueSplitted[0]) ? clearValueSplitted[0] : INITIAL_OPTS_VALUES.type;
 					locationName = _.capitalizeFirstLetter(locationName);
 
 					switch (testType.toLowerCase()) {
@@ -894,7 +894,7 @@
 						let paramsValueSplitted = clearParamsValue.split('-from-');
 						let testType = paramsValueSplitted[0];
 						let locationData = this.getLocDataByLocValue(paramsValueSplitted[1]);
-						let isTestTypePresents = testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
+						let isTestTypePresents = this.checkIfTestTypeCorrect(testType);
 
 						// if both location and testType are correct and present
 						if (locationData && isTestTypePresents) {
@@ -1270,6 +1270,13 @@
 			let clearParamsValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
 
 			this.set('clearParamsValue', clearParamsValue);
+		},
+		checkIfTestTypeCorrect (testType) {
+			if (!testType) { return false; }
+
+			let testTypesList = this.get('testTypesList');
+
+			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 		},
 	};
 </script>
