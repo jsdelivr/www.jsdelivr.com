@@ -1221,12 +1221,15 @@
 		},
 		handleTestTypeSelect (testTypeName) {
 			this.set('selectedTestType', testTypeName);
-			this.moveToNewPageURL(testTypeName);
+
+			let newPath = this.modifyQueryPart(testTypeName);
+
+			app.router.dispatch(newPath, { noScroll: true });
 		},
 		moveToNewPageURL (testType, newLocation = null, leaveTestOnly = false) {
 			let newPath = this.modifyQueryPart(testType, newLocation, leaveTestOnly);
 
-			app.router.dispatch(newPath, { noScroll: true });
+			window.location.replace(newPath);
 		},
 		modifyQueryPart (testType = 'ping', newLocation = null, leaveTestOnly = false) {
 			let newQueryTestFromValue = '';
