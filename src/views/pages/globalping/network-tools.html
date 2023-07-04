@@ -830,23 +830,6 @@
 
 					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
 				}, { init: false });
-			}
-		},
-		oncomplete () {
-			if (!Ractive.isServer) {
-				// run the test if user is pressed Enter inside of any of options inputs
-				let targetInput = this.find('#targetInput');
-				let limitInput = this.find('#limitInput');
-
-				let handleEnterBtn = (event) => {
-					if (event.key === 'Enter') {
-						event.preventDefault();
-						this.proceedToTest();
-					}
-				};
-
-				targetInput.addEventListener('keypress', handleEnterBtn);
-				limitInput.addEventListener('keypress', handleEnterBtn);
 
 				// handle URL, get values from it and set locationData
 				this.observe('probesParsed', (probesParsed) => {
@@ -855,8 +838,10 @@
 					let clearParamsValue = this.get('clearParamsValue');
 					let selectedTestType = this.get('selectedTestType');
 					let paramsValueSplitted = clearParamsValue.split('-from-');
+					let { title, description } = this.createMetaTitleAndDescr(paramsValueSplitted);
 
-					this.createAndSetMetaTitleAndDescr(paramsValueSplitted);
+					this.set('title', title);
+					this.set('description', description);
 
 					if (clearParamsValue.includes('-from-')) {
 						let locationData = this.getLocDataByLocValue(paramsValueSplitted[1]);
@@ -874,6 +859,23 @@
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
 					}
 				});
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// run the test if user is pressed Enter inside of any of options inputs
+				let targetInput = this.find('#targetInput');
+				let limitInput = this.find('#limitInput');
+
+				let handleEnterBtn = (event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						this.proceedToTest();
+					}
+				};
+
+				targetInput.addEventListener('keypress', handleEnterBtn);
+				limitInput.addEventListener('keypress', handleEnterBtn);
 			}
 		},
 		proceedToTest () {
@@ -1227,13 +1229,17 @@
 
 			// if testType provided by user is incorrect
 			// navigate to default network-tools testType page but conserve the location
-			if (!this.checkIfTestTypeCorrect(clearParamsValue.split('-from-')[0])) {
-				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type);
+			let [ rawTestType, rawLocation ] = clearParamsValue.split('-from-');
+
+			if (!this.checkIfTestTypeCorrect(rawTestType)) {
+				let isFullParam = clearParamsValue.includes('-from-') && rawLocation;
+
+				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, isFullParam ? rawLocation : null, !isFullParam);
 
 				return;
 			}
 
-			this.set('selectedTestType', clearParamsValue.split('-from-')[0]);
+			this.set('selectedTestType', rawTestType);
 			this.set('clearParamsValue', clearParamsValue);
 		},
 		checkIfTestTypeCorrect (testType) {
@@ -1243,7 +1249,7 @@
 
 			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 		},
-		createAndSetMetaTitleAndDescr ([ rawTestType, rawLocation ]) {
+		createMetaTitleAndDescr ([ rawTestType, rawLocation ]) {
 			let locationName = 'world';
 			let testType = this.checkIfTestTypeCorrect(rawTestType) ? rawTestType : INITIAL_OPTS_VALUES.type;
 			let locationData = this.getLocDataByLocValue(rawLocation);
@@ -1274,8 +1280,7 @@
 
 			description += ' or globally.';
 
-			this.set('title', title);
-			this.set('description', description);
+			return { title, description };
 		},
 	};
 </script>
