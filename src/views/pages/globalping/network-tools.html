@@ -809,41 +809,6 @@
 					this.set('testResults', null);
 				});
 
-				this.observe('clearParamsValue', (clearParamsValue) => {
-					let testTypesList = this.get('testTypesList');
-					let clearValueSplitted = clearParamsValue.split('-from-');
-					let { name: locationName } = clearValueSplitted[1] ? this.getLocDataByLocValue(clearValueSplitted[1]) : { name: 'world' };
-					let testType = this.checkIfTestTypeCorrect(clearValueSplitted[0]) ? clearValueSplitted[0] : INITIAL_OPTS_VALUES.type;
-					locationName = _.capitalizeFirstLetter(locationName);
-
-					switch (testType.toLowerCase()) {
-						case 'dns':
-						case 'mtr':
-						case 'http':
-							testType = testType.toUpperCase(); break;
-						default:
-							testType = _.capitalizeFirstLetter(testType);
-					}
-
-					let title = `${testType} for free from ${locationName} - Global ${testType} tests by Globalping`;
-					let description = `Run ${testType} network tests for free from multiple global regions`;
-
-					if (locationName !== 'World') {
-						description += ` like ${locationName}`;
-					}
-
-					description += ' to any endpoint including IP addresses, websites, CDN or cloud providers. Test the network latency and uptime regionally';
-
-					if (locationName !== 'World') {
-						description += ` in ${locationName}`;
-					}
-
-					description += ' or globally.';
-
-					this.set('title', title);
-					this.set('description', description);
-				});
-
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
@@ -888,39 +853,25 @@
 					if (!probesParsed) { return; }
 
 					let clearParamsValue = this.get('clearParamsValue');
-					let testTypesList = this.get('testTypesList');
+					let selectedTestType = this.get('selectedTestType');
+					let paramsValueSplitted = clearParamsValue.split('-from-');
+
+					this.createAndSetMetaTitleAndDescr(paramsValueSplitted);
 
 					if (clearParamsValue.includes('-from-')) {
-						let paramsValueSplitted = clearParamsValue.split('-from-');
-						let testType = paramsValueSplitted[0];
 						let locationData = this.getLocDataByLocValue(paramsValueSplitted[1]);
-						let isTestTypePresents = this.checkIfTestTypeCorrect(testType);
 
-						// if both location and testType are correct and present
-						if (locationData && isTestTypePresents) {
-							this.set('selectedTestType', testType);
+						if (locationData) {
+							// if both location and testType are correct and present
 							this.set('locationData', locationData);
-							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testType, locationData.fromAsUrlPart)}`);
-						} else if (isTestTypePresents && !locationData) {
-						// when testType correct but location incorrect or missing
-							this.moveToNewPageURL(testType, null, true);
-						} else if (locationData && !isTestTypePresents) {
-						// when  location correct and testType is incorrect
-							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type);
+							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, locationData.fromAsUrlPart)}`);
 						} else {
-							// when testType is incorect and location incorrect or missing
-							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
+							// when testType correct but location absent at the moment among the probes or incorrect
+							this.moveToNewPageURL(selectedTestType, null, true);
 						}
 					} else {
-						let testTypeData = testTypesList.find(i => i.name.toLowerCase() === clearParamsValue);
-
-						if (testTypeData) {
-							this.set('selectedTestType', testTypeData.name);
-							this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
-							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(testTypeData.name, 'world')}`);
-						} else {
-							this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
-						}
+						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
 					}
 				});
 			}
@@ -1090,7 +1041,7 @@
 				states: {},
 			});
 		},
-		getLocDataByLocValue (location) {
+		getLocDataByLocValue (location = '') {
 			let locationLC = location.toLowerCase();
 			let parsedLocations = this.get('parsedLocations');
 			let networkNameAsKey = locationLC.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
@@ -1264,6 +1215,8 @@
 		getParamsFromUrl () {
 			let rawParamsValue = this.get('params');
 
+			// if user tries to get the network-tools page without providing at least testType
+			// navigate to default network-tools page
 			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
 				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
 
@@ -1272,6 +1225,15 @@
 
 			let clearParamsValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
 
+			// if testType provided by user is incorrect
+			// navigate to default network-tools testType page but conserve the location
+			if (!this.checkIfTestTypeCorrect(clearParamsValue.split('-from-')[0])) {
+				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type);
+
+				return;
+			}
+
+			this.set('selectedTestType', clearParamsValue.split('-from-')[0]);
 			this.set('clearParamsValue', clearParamsValue);
 		},
 		checkIfTestTypeCorrect (testType) {
@@ -1280,6 +1242,40 @@
 			let testTypesList = this.get('testTypesList');
 
 			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
+		},
+		createAndSetMetaTitleAndDescr ([ rawTestType, rawLocation ]) {
+			let locationName = 'world';
+			let testType = this.checkIfTestTypeCorrect(rawTestType) ? rawTestType : INITIAL_OPTS_VALUES.type;
+			let locationData = this.getLocDataByLocValue(rawLocation);
+
+			locationName = _.capitalizeFirstLetter(locationData ? locationData.name : locationName);
+
+			switch (testType.toLowerCase()) {
+				case 'dns':
+				case 'mtr':
+				case 'http':
+					testType = testType.toUpperCase(); break;
+				default:
+					testType = _.capitalizeFirstLetter(testType);
+			}
+
+			let title = `${testType} for free from ${locationName} - Global ${testType} tests by Globalping`;
+			let description = `Run ${testType} network tests for free from multiple global regions`;
+
+			if (locationName !== 'World') {
+				description += ` like ${locationName}`;
+			}
+
+			description += ' to any endpoint including IP addresses, websites, CDN or cloud providers. Test the network latency and uptime regionally';
+
+			if (locationName !== 'World') {
+				description += ` in ${locationName}`;
+			}
+
+			description += ' or globally.';
+
+			this.set('title', title);
+			this.set('description', description);
 		},
 	};
 </script>
