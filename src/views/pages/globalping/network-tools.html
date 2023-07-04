@@ -774,7 +774,8 @@
 				highLevelLocationHref: null,
 				probesParsed: false,
 				testReqParams: null,
-				clearParamsValue: null,
+				rawLocation: null,
+				allRequiredDataReady: false,
 			};
 		},
 		oninit () {
@@ -831,20 +832,33 @@
 					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
 				}, { init: false });
 
-				// handle URL, get values from it and set locationData
-				this.observe('probesParsed', (probesParsed) => {
-					if (!probesParsed) { return; }
-
-					let clearParamsValue = this.get('clearParamsValue');
+				// check if everything is already set and we can get LocationData etc.
+				this.observe('probesParsed selectedTestType rawLocation', () => {
+					let probesParsed = this.get('probesParsed');
 					let selectedTestType = this.get('selectedTestType');
-					let paramsValueSplitted = clearParamsValue.split('-from-');
-					let { title, description } = this.createMetaTitleAndDescr(paramsValueSplitted);
+					let rawLocation = this.get('rawLocation');
+
+					if (probesParsed && selectedTestType && rawLocation) {
+						this.set('allRequiredDataReady', true);
+					} else {
+						this.set('allRequiredDataReady', false);
+					}
+				});
+
+				// create and set meta title, description; locationData, highLevelLocationHref
+				// check if location is correct or presented in the available probes locations
+				this.observe('allRequiredDataReady', (allRequiredDataReady) => {
+					if (allRequiredDataReady === false) { return; }
+
+					let selectedTestType = this.get('selectedTestType');
+					let rawLocation = this.get('rawLocation');
+					let { title, description } = this.createMetaTitleAndDescr(selectedTestType, rawLocation);
 
 					this.set('title', title);
 					this.set('description', description);
 
-					if (clearParamsValue.includes('-from-')) {
-						let locationData = this.getLocDataByLocValue(paramsValueSplitted[1]);
+					if (rawLocation && rawLocation !== 'world') {
+						let locationData = this.getLocDataByLocValue(rawLocation);
 
 						if (locationData) {
 							// if both location and testType are correct and present
@@ -1229,7 +1243,7 @@
 
 			// if testType provided by user is incorrect
 			// navigate to default network-tools testType page but conserve the location
-			let [ rawTestType, rawLocation ] = clearParamsValue.split('-from-');
+			let [ rawTestType, rawLocation = 'world' ] = clearParamsValue.split('-from-');
 
 			if (!this.checkIfTestTypeCorrect(rawTestType)) {
 				let isFullParam = clearParamsValue.includes('-from-') && rawLocation;
@@ -1240,7 +1254,7 @@
 			}
 
 			this.set('selectedTestType', rawTestType);
-			this.set('clearParamsValue', clearParamsValue);
+			this.set('rawLocation', rawLocation);
 		},
 		checkIfTestTypeCorrect (testType) {
 			if (!testType) { return false; }
@@ -1249,7 +1263,7 @@
 
 			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 		},
-		createMetaTitleAndDescr ([ rawTestType, rawLocation ]) {
+		createMetaTitleAndDescr (rawTestType, rawLocation) {
 			let locationName = 'world';
 			let testType = this.checkIfTestTypeCorrect(rawTestType) ? rawTestType : INITIAL_OPTS_VALUES.type;
 			let locationData = this.getLocDataByLocValue(rawLocation);
