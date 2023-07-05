@@ -21,7 +21,7 @@
 			<div class="gp-nettools_main-info_content">
 				{{#if locationData}}
 					<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
-					<span>
+					<span class="gp-nettools_main-info_content_location">
 						{{#if locationData.name}}
 							<span>{{locationData.name}}</span>
 						{{/if}}
@@ -35,6 +35,44 @@
 								{{locationData.from}}
 							</a>
 						{{/unless}}
+					</span>
+
+					<div class="gp-nettools_main-info_content_input-block">
+						<span>Run a Free</span>
+
+						<div class="gp_dropdown_alt">
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/displayingTestType}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										{{#if this.toDisplay !== displayingTestType}}
+											<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
+										{{/if}}
+									{{/each}}
+								</div>
+							</div>
+						</div>
+
+						<span>test</span>
+					</div>
+				{{elseif placeholerLocation}}
+					<h1>{{displayingTestType}} from multiple locations in </h1>
+					<span class="gp-nettools_main-info_content_temp-location">
+						{{#if placeholerLocation.toLowerCase() !== 'world'}}
+							{{placeholerLocation}},
+						{{/if}}
+
+						<a target="_blank" rel="noopener noreferrer" href="{{global.location.origin}}/globalping/network-tools/{{selectedTestType}}-from-world" class="gp-nettools_green-text">
+							World
+						</a>
 					</span>
 
 					<div class="gp-nettools_main-info_content_input-block">
@@ -1268,6 +1306,7 @@
 
 			this.set('selectedTestType', rawTestType);
 			this.set('rawLocation', rawLocation || 'world');
+			this.set('placeholerLocation', _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' ')), [ 'and', 'or', 'from', 'ltd', 'of' ]);
 		},
 		checkIfTestTypeCorrect (testType) {
 			if (!testType) { return false; }
