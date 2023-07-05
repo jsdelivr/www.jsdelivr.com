@@ -757,6 +757,7 @@
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
 	};
+	const CAPITALIZE_EXCLUDE_LIST = [ 'and', 'or', 'from', 'ltd', 'of' ];
 
 	component.exports = {
 		data () {
@@ -908,8 +909,11 @@
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
 					}
 
-					// handle meta tag title and description
-					let { title, description } = this.createMetaTitleAndDescr(selectedTestType, rawLocation);
+					// handle meta tag title and description once location is confirmed as presented
+					let title = this.createMetaTitle(selectedTestType, rawLocation);
+
+					let locationData = this.getLocDataByLocValue(rawLocation);
+					let description = this.createMetaDescr(selectedTestType, locationData ? locationData.name : 'world');
 
 					this.set('title', title);
 					this.set('description', description);
@@ -1147,7 +1151,7 @@
 
 				return {
 					name: _.capitalizeStrEveryFirstLetter(name),
-					from: _.capitalizeStrEveryFirstLetter(from, [ 'and' ]),
+					from: _.capitalizeStrEveryFirstLetter(from, CAPITALIZE_EXCLUDE_LIST),
 					probesCnt,
 					fromAsUrlPart,
 					type: 'country',
@@ -1306,7 +1310,15 @@
 
 			this.set('selectedTestType', rawTestType);
 			this.set('rawLocation', rawLocation || 'world');
-			this.set('placeholerLocation', _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' ')), [ 'and', 'or', 'from', 'ltd', 'of' ]);
+			let placeholderLocation = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
+			this.set('placeholerLocation', placeholderLocation);
+
+			// set temp meta tag title, descr
+			let title = this.createMetaTitle(rawTestType, placeholderLocation);
+			let description = this.createMetaDescr(rawTestType, placeholderLocation);
+
+			this.set('title', title);
+			this.set('description', description);
 		},
 		checkIfTestTypeCorrect (testType) {
 			if (!testType) { return false; }
@@ -1315,9 +1327,7 @@
 
 			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 		},
-		createMetaTitleAndDescr (testType, location) {
-			let locationName = _.capitalizeFirstLetter(location.toLowerCase());
-
+		createMetaTitle (testType, location) {
 			switch (testType.toLowerCase()) {
 				case 'dns':
 				case 'mtr':
@@ -1327,22 +1337,24 @@
 					testType = _.capitalizeFirstLetter(testType);
 			}
 
-			let title = `${testType} for free from ${locationName} - Global ${testType} tests by Globalping`;
+			return `${testType} for free from ${location} - Global ${testType} tests by Globalping`;
+		},
+		createMetaDescr (testType, location) {
 			let description = `Run ${testType} network tests for free from multiple global regions`;
 
-			if (locationName !== 'World') {
-				description += ` like ${locationName}`;
+			if (location !== 'world') {
+				description += ` like ${location}`;
 			}
 
 			description += ' to any endpoint including IP addresses, websites, CDN or cloud providers. Test the network latency and uptime regionally';
 
-			if (locationName !== 'World') {
-				description += ` in ${locationName}`;
+			if (location !== 'World') {
+				description += ` in ${location}`;
 			}
 
 			description += ' or globally.';
 
-			return { title, description };
+			return description;
 		},
 	};
 </script>
