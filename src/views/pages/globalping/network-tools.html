@@ -852,11 +852,8 @@
 
 					let selectedTestType = this.get('selectedTestType');
 					let rawLocation = this.get('rawLocation');
-					let { title, description } = this.createMetaTitleAndDescr(selectedTestType, rawLocation);
 
-					this.set('title', title);
-					this.set('description', description);
-
+					// handle locationData, highLevelLocationHref
 					if (rawLocation && rawLocation !== 'world') {
 						let locationData = this.getLocDataByLocValue(rawLocation);
 
@@ -872,6 +869,12 @@
 						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
 						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
 					}
+
+					// handle meta tag title and description
+					let { title, description } = this.createMetaTitleAndDescr(selectedTestType, rawLocation);
+
+					this.set('title', title);
+					this.set('description', description);
 				});
 			}
 		},
@@ -1273,9 +1276,8 @@
 
 			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
 		},
-		createMetaTitleAndDescr (rawTestType, rawLocation) {
+		createMetaTitleAndDescr (testType, rawLocation) {
 			let locationName = 'world';
-			let testType = this.checkIfTestTypeCorrect(rawTestType) ? rawTestType : INITIAL_OPTS_VALUES.type;
 			let locationData = this.getLocDataByLocValue(rawLocation);
 
 			locationName = _.capitalizeFirstLetter(locationData ? locationData.name : locationName);
