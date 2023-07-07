@@ -7,6 +7,7 @@
 <link rel="ractive" href="../../components/gp-jumbotron.html" name="c-gp-jumbotron">
 <link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../../components/gp-test-depiction.html" name="c-gp-test-depiction">
+<link rel="ractive" href="../../components/placeholder-skeleton.html" name="c-placeholder-skeleton">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -162,15 +163,19 @@
 					testResults="{{testResults}}"
 					testInProgress="{{testInProgress}}">
 				</c-gp-test-results>
-			{{elseif locationData}}
+			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
 					<img width="56"
 						height="56"
 						src="{{@shared.assetsHost}}/img/globalping/bulb-icon.svg">
-					<span>
-						Run a global ping test from {{locationData.name || locationData.from}} to debug and troubleshoot your network, CDN, or website.
-						Use ping to measure your latency from {{locationData.name || locationData.from}}
-					</span>
+						{{#if locationData}}
+							<span>
+								Run a global ping test from {{locationData.name || locationData.from}} to debug and troubleshoot your network, CDN, or website.
+								Use ping to measure your latency from {{locationData.name || locationData.from}}
+							</span>
+						{{else}}
+							<c-placeholder-skeleton type="descr"></c-placeholder-skeleton>
+						{{/if}}
 				</div>
 			{{/if}}
 		</div>
