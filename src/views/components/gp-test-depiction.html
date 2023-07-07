@@ -6,13 +6,17 @@
 					{{#if isLocationPresented}}
 						<span class="c-gp-test-depiction_test_header">{{this.content}}</span>
 					{{else}}
-						<span class="c-gp-test-depiction_test_header-placeholder"></span>
+						<div class="skeleton-header">
+							<div class="skeleton_animated"></div>
+						</div>
 					{{/if}}
 				{{elseif this.type === 'subheader'}}
 					{{#if isLocationPresented}}
 						<span class="c-gp-test-depiction_test_subheader">{{this.content}}</span>
 					{{else}}
-						<span class="c-gp-test-depiction_test_subheader-placeholder"></span>
+						<div class="skeleton-subheader">
+							<div class="skeleton_animated"></div>
+						</div>
 					{{/if}}
 				{{elseif this.type === 'descr'}}
 					{{#if isLocationPresented}}
@@ -20,7 +24,11 @@
 							{{this.content}}
 						</p>
 					{{else}}
-						<span class="c-gp-test-depiction_test_descr-placeholder"></span>
+						<div class="skeleton-descr">
+							<div class="skeleton_animated"></div>
+							<div class="skeleton_animated"></div>
+							<div class="skeleton_animated"></div>
+						</div>
 					{{/if}}
 				{{elseif this.type === 'list'}}
 					{{#if isLocationPresented}}
@@ -30,7 +38,13 @@
 							{{/each}}
 						</ul>
 					{{else}}
-						<span class="c-gp-test-depiction_test_list-placeholder"></span>
+						<div class="skeleton-list">
+							{{#each this.content}}
+								<div>
+									<li><div class="skeleton_animated"></div></li>
+								</div>
+							{{/each}}
+						</div>
 					{{/if}}
 				{{/if}}
 			{{/each}}
@@ -634,7 +648,8 @@ Edge computing companies.`,
 			isLocationPresented () {
 				let locationData = this.get('locationData');
 
-				return locationData !== null && typeof locationData === 'object';
+				// return locationData !== null && typeof locationData === 'object';
+				return false;
 			},
 		},
 	};
