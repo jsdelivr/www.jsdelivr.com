@@ -1,3 +1,5 @@
+<link rel="ractive" href="./placeholder-skeleton.html" name="c-placeholder-skeleton">
+
 <div class="c-gp-test-depiction">
 	{{#if testType}}
 		<div class="c-gp-test-depiction_test">
@@ -6,19 +8,13 @@
 					{{#if isLocationPresented}}
 						<span class="c-gp-test-depiction_test_header">{{this.content}}</span>
 					{{else}}
-						<div class="skeleton-header">
-							<div class="skeleton_animated"></div>
-						</div>
+						<c-placeholder-skeleton type="header"></c-placeholder-skeleton>
 					{{/if}}
 				{{elseif this.type === 'subheader'}}
 					{{#if isLocationPresented}}
 						<span class="c-gp-test-depiction_test_subheader">{{this.content}}</span>
 					{{else}}
-						<div class="skeleton-subheader">
-							<div>
-								<div class="skeleton_animated"></div>
-							</div>
-						</div>
+						<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 					{{/if}}
 				{{elseif this.type === 'descr'}}
 					{{#if isLocationPresented}}
@@ -26,11 +22,7 @@
 							{{this.content}}
 						</p>
 					{{else}}
-						<div class="skeleton-descr">
-							<div class="skeleton_animated"></div>
-							<div class="skeleton_animated"></div>
-							<div class="skeleton_animated"></div>
-						</div>
+						<c-placeholder-skeleton type="descr"></c-placeholder-skeleton>
 					{{/if}}
 				{{elseif this.type === 'list'}}
 					{{#if isLocationPresented}}
@@ -40,13 +32,7 @@
 							{{/each}}
 						</ul>
 					{{else}}
-						<div class="skeleton-list">
-							{{#each this.content}}
-								<div>
-									<li><div class="skeleton_animated"></div></li>
-								</div>
-							{{/each}}
-						</div>
+						<c-placeholder-skeleton type="list"></c-placeholder-skeleton>
 					{{/if}}
 				{{/if}}
 			{{/each}}
@@ -645,7 +631,7 @@ Edge computing companies.`,
 			testType () {
 				let selectedTestType = this.get('selectedTestType');
 
-				return selectedTestType ? selectedTestType.toLowerCase() : null;
+				return selectedTestType ? selectedTestType.toLowerCase() : 'ping';
 			},
 			isLocationPresented () {
 				let locationData = this.get('locationData');
