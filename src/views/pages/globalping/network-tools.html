@@ -4,8 +4,8 @@
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
 <link rel="ractive" href="../../components/gp-test-results.html" name="c-gp-test-results">
-<link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../../components/gp-jumbotron.html" name="c-gp-jumbotron">
+<link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -15,37 +15,93 @@
 	<div class="p-globalping-network-tools">
 		<c-gp-top-navigation currentName="globalping-network-tools"></c-gp-top-navigation>
 
-		<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
-
 		<div class="gp-nettools_main-info">
-			<h1>{{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} from multiple locations in</h1>
-			<span>Europe, <span class="gp-nettools_green-text">World</span></span>
+			<c-gp-jumbotron className="network-tools" useAltGridImg="true"></c-gp-jumbotron>
 
-			<div class="gp-nettools_main-info_input-block">
-				<span>Run a Free</span>
+			<div class="gp-nettools_main-info_content">
+				{{#if locationData}}
+					<h1>{{displayingTestType}} from {{#if locationData.probesCnt}}multiple locations in {{/if}}</h1>
+					<span class="gp-nettools_main-info_content_location">
+						{{#if locationData.name}}
+							<span>{{locationData.name}}</span>
+						{{/if}}
 
-				<div class="gp_dropdown_alt">
-					<div class="btn-group">
-						<button type="button"
-							class="dropdown-toggle"
-							data-toggle="dropdown"
-							aria-haspopup="true"
-							aria-expanded="false">
-							<span>{{~/selectedTestType}}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
+						{{#unless locationData.type === 'asn' || locationData.type === 'isp'}}
+							{{#if locationData.name}}
+								<span>,&nbsp;</span>
+							{{/if}}
 
-						<div class="dropdown-menu">
-							{{#each ~/testTypesList}}
-								{{#if this !== selectedTestType}}
-									<div on-click="@this.set('selectedTestType', this)">{{this}}</div>
-								{{/if}}
-							{{/each}}
+							<a target="_blank" rel="noopener noreferrer" href="{{highLevelLocationHref}}" class="gp-nettools_green-text">
+								{{locationData.from}}
+							</a>
+						{{/unless}}
+					</span>
+
+					<div class="gp-nettools_main-info_content_input-block">
+						<span>Run a Free</span>
+
+						<div class="gp_dropdown_alt">
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/displayingTestType}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										{{#if this.toDisplay !== displayingTestType}}
+											<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
+										{{/if}}
+									{{/each}}
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
 
-				<span>test</span>
+						<span>test</span>
+					</div>
+				{{elseif placeholerLocation}}
+					<h1>{{displayingTestType}} from multiple locations in </h1>
+					<span class="gp-nettools_main-info_content_temp-location">
+						{{#if placeholerLocation.toLowerCase() !== 'world'}}
+							{{placeholerLocation}},
+						{{/if}}
+
+						<a target="_blank" rel="noopener noreferrer" href="{{global.location.origin}}/globalping/network-tools/{{selectedTestType}}-from-world" class="gp-nettools_green-text">
+							World
+						</a>
+					</span>
+
+					<div class="gp-nettools_main-info_content_input-block">
+						<span>Run a Free</span>
+
+						<div class="gp_dropdown_alt">
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/displayingTestType}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
+
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										{{#if this.toDisplay !== displayingTestType}}
+											<div on-click="@this.handleTestTypeSelect(this.name)">{{this.toDisplay}}</div>
+										{{/if}}
+									{{/each}}
+								</div>
+							</div>
+						</div>
+
+						<span>test</span>
+					</div>
+				{{/if}}
 			</div>
 		</div>
 
@@ -58,6 +114,7 @@
 
 			<div class="gp-nettools_demo-tools_ctrls">
 				<c-controlled-input
+					id="targetInput"
 					value="{{testOpts.target}}"
 					error="{{inputErrors.target}}"
 					placeholder="IP or host"
@@ -66,9 +123,10 @@
 				</c-controlled-input>
 
 				<c-controlled-input
+					id="limitInput"
 					value="{{testOpts.limit}}"
 					error="{{inputErrors.limit}}"
-					placeholder="{{defaultProbesAmount}}"
+					placeholder="{{defaultTestLimit}}"
 					labelText="Probes"
 					classList="gp-nettools_demo-tools_ctrls_probes gp_input">
 				</c-controlled-input>
@@ -82,7 +140,7 @@
 						<div></div>
 						<div></div>
 					{{else}}
-						Run {{selectedTestType[0].toUpperCase() + selectedTestType.slice(1)}} Test
+						Run {{btnTestType}} Test
 					{{/if}}
 				</button>
 			</div>
@@ -99,43 +157,588 @@
 				</div>
 			{{elseif testResults}}
 				<c-gp-test-results
-					testType="{{selectedTestType}}"
-					testResultsId="{{testResultsId}}"
+					testReqParams="{{testReqParams}}"
 					testResults="{{testResults}}"
-					dnsTraceEnabled="{{false}}">
+					testInProgress="{{testInProgress}}">
 				</c-gp-test-results>
-			{{else}}
+			{{elseif locationData}}
 				<div class="gp-nettools_demo-tools_descr">
 					<img width="56"
 						height="56"
 						src="{{@shared.assetsHost}}/img/globalping/bulb-icon.svg">
-					<span>Run a global ping latency test to debug and troubleshoot your network, CDN or website from multiple locations in Europe.</span>
+					<span>
+						Run a global ping test from {{locationData.name || locationData.from}} to debug and troubleshoot your network, CDN, or website.
+						Use ping to measure your latency from {{locationData.name || locationData.from}}
+					</span>
 				</div>
 			{{/if}}
 		</div>
 
 		<div class="gp-nettools_learn-how">
-			<span class="gp-nettools_learn-how_title">
-				Learn more about how Globalping makes global network tests and benchmarking possible and free for all.
-			</span>
+			{{#if locationData}}
+				<span class="gp-nettools_learn-how_title">
+					Explore how Globalping makes global network tests and benchmarking possible and free for all.
+				</span>
 
-			<span class="gp-nettools_learn-how_descr">
-				Debug your web services and servers, understand and fix your routing, simply by running network commands from Europe or any other specific location like a country or city.
-			</span>
+				<span class="gp-nettools_learn-how_descr">
+					Debug your web services and servers and understand and fix your routing by running network commands like ping from {{locationData.name || locationData.from}} or any other location like a country or city.
+				</span>
 
-			<a href="/globalping" class="gp-nettools_learn-how_btn gp_btn_green">
-				Learn more
-			</a>
+				<a href="/globalping" class="gp-nettools_learn-how_btn gp_btn_green">
+					Learn more
+				</a>
+			{{/if}}
 		</div>
 
-		<div class="gp-nettools_ping">
-			<span class="gp-nettools_ping_title">
-				What is ping?
-			</span>
+		<div class="gp-nettools_depiction">
+			{{#if locationData && selectedTestType}}
+				{{#if selectedTestType.toLowerCase() === 'ping'}}
+					<div class="gp-nettools_depiction_test">
+						<span class="gp-nettools_depiction_test_header">
+							What is ping?
+						</span>
 
-			<span class="gp-nettools_ping_descr">
-				Ping is a tool that sends ICMP packets to an IP address (hostname is also accepted but will be first resolved to an IP) to understand the latency to the target or if the target server or website exist and are working. Since website and server response times are very important, Ping is a very simple way to quickly and easily check and understand the network delay in milliseconds between the sender and receiver. It's basically how long it takes for  data to travel across the internet to the destination and then back to the sender.  A low latency is always better and will result in a faster website and fewer issues. Methods to improve the latency include moving the server closer to the users, using a CDN or for advanced users improving peering and BGP routing.
-			</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Ping is a network testing and troubleshooting utility that helps identify problems when
+							you can't reach a server or experience slow loading times. It's also often used for simple
+							network performance monitoring, determining if a website is reachable from the local network, or resolving a hostname's IP address.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Ping sends Internet Control Message Protocol (ICMP) packets from your location to a target
+							host (a hostname or IP address) to test connectivity. If everything goes well, the target
+							receives the request and sends back a response to confirm that it's reachable and working.
+							The response includes the round-trip time (RTT), which tells you how long it took for the
+							data to travel to the destination and back. This RTT can also indicate the latency, or delay, to the target.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are everyday use cases for ping?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Not sure how ping can help you? Here are some popular use cases:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Test network connectivity
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Ping is the go-to tool when you experience network issues. By sending data packets to a target
+							host and receiving a response, ping lets you quickly verify if the target is reachable and evaluate
+							the overall network connectivity.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Measure latency
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							You may have a network bottleneck or other performance issues if you spot unusually high RTTs in
+							your ping results. If you notice high latency but don't know where in the network the problem is,
+							pinging different hosts and comparing the RTTs helps find the problematic devices.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Test website reachability
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							When you can't load a website via your browser, ping the website's hostname to check if it's reachable
+							from your network. This lets you determine whether you're facing network-related issues or a problem with your browser.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Diagnose Internet connection problems
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Can't connect to the Internet? Ping your router's IP address to verify if your device can reach the
+							router, helping you find out if the issue lies within your local network or the Internet connection.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Monitor networks
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Create automated scripts that regularly ping one or more hosts and store the result data. Use this
+							data to identify hosts that frequently cause high response times, packet loss, or other problems so you can take action.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are common use cases to run ping from {{locationData.name || locationData.from}}?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Sometimes you need to run network tests from locations that aren't accessible to you. That's where Globalping comes
+							to the rescue. It's a platform that relies on a globally distributed network of probes, allowing you to
+							perform measurements from any corner of the world.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Running ping from {{locationData.name || locationData.from}} and other places provides many insights and extends the
+							use cases we explored in the previous section:
+						</p>
+
+						<ul class="gp-nettools_depiction_test_descr">
+							<li>Set up global network monitoring</li>
+							<li>Test website availability from various regions</li>
+							<li>Measure latency as experienced by users across the globe</li>
+						</ul>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Here are some additional use cases for geographically distributed ping:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Optimize content delivery
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Run ping from {{locationData.name || locationData.from}} and other locations to test the latency to your website or API. Examine the ping's
+							RTTs - if they're unusually high, users likely experience delays and long loading times. To reduce latency,
+							consider using a CDN (Content Delivery Network) for efficient content distribution.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Troubleshoot from your users' perspective
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Imagine your website users in {{locationData.name || locationData.from}} are reporting issues, but everything
+							seems fine from your end. With Globalping, you can run ping from {{locationData.name || locationData.from}} as if you were doing it from your
+							location to troubleshoot the problem.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Monitor remote servers
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							If you manage servers around the globe, running ping from different locations can be of invaluable help for
+							monitoring performance and connectivity. This allows you to respond faster and more informed when issues in specific regions arise.
+						</p>
+					</div>
+				{{elseif selectedTestType.toLowerCase() === 'traceroute'}}
+					<div class="gp-nettools_depiction_test">
+						<span class="gp-nettools_depiction_test_header">
+							What is traceroute?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Traceroute is a valuable network testing and troubleshooting utility that helps pinpoint potential issues along
+							the route between your device and the target host, such as when you're unable to reach a website or experience slow load times.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Traceroute sends small data packets to a target hostname or IP address and lists each hop (usually a router) used to get there.
+							Each packet has a Time to Live (TTL) value, starting at 1, to limit its lifespan. As the data passes through each hop, the TTL
+							value decreases by 1. Once it reaches 0, the current router stops forwarding the packet and responds with a "TTL exceeded" message.
+							Traceroute then takes note of the router's IP address, increases the packet's initial TTL by 1, and resends the request.
+							Thanks to this back and forth, traceroute can compile a list of all the hops the data passes to the target, including the
+							round-trip time (RTT) for each hop.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are common use cases for traceroute?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Are you wondering what you can actually achieve by running traceroute? Here're some typical use cases:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Measure performance
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							If you notice high latency to a target, run traceroute and look at each hop's round-trip time (RTT) to learn about the time it
+							took for the data packets to reach the destination and back. If you come across a hop with an unusually high RTT, it could
+							indicate congestion or some other performance issue at that point.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Analyze network paths
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Traceroute comes in handy when you need to know the path packets take through the network to reach a target host. Listing
+							the IP addresses, host names, and RTTs for each hop gives you a clearer picture of the network infrastructure. As a result,
+							you may find potential bottlenecks or other problematic segments, allowing you to take action quickly.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Troubleshoot network connectivity
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							When you're experiencing network connectivity issues, traceroute can help pinpoint the problem by collecting data about
+							each hop between your device and the target. Typically, the issue is with the last hop that sent a response or the one after
+							that hop. Once you know where the problem is, you're a big step closer to solving it.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Verify routing changes
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Running traceroute before and after making changes to your network infrastructure allows you to verify that the new
+							routing's working as expected. Compare traceroute results to ensure that data takes the correct path and identify
+							any unexpected behavior you should fix.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are everyday use cases to run traceroute from {{locationData.name || locationData.from}}?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							But how can you use traceroute when users report issues with your infrastructure in places that aren't accessible to
+							you? This is where Globalping can help you: The platform leverages a globally distributed network of probes, enabling
+							you to send measurement requests from anywhere in the world.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Running traceroute from {{locationData.name || locationData.from}} and any other location provides insights on a global scale, adding to the use cases explored above:
+						</p>
+
+						<ul class="gp-nettools_depiction_test_descr">
+							<li>Find network bottlenecks and measure latency globally</li>
+							<li>Analyze and verify the paths data takes from different locations to a website or server</li>
+							<li>Resolve network connectivity issues reported by users all over the world</li>
+						</ul>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Let's explore some more use cases for running traceroute globally:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Global network monitoring
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Running traceroute with Globalping regularly from different locations around the world gives you a comprehensive
+							view of your network's performance and connectivity. This allows you to resolve many network-related issues faster
+							and ensure a consistently high user experience.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Compare service providers
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							When choosing the ideal CDN provider, DNS provider, or Cloud hosting company, running traceroute from {{locationData.name || locationData.from}} and
+							other locations to the provider can help. Examine the number of hops, the round-trip times, and any potential performance
+							spikes encountered along the path. That way, you can determine which providers offer the best network connectivity
+							and reliability for your desired locations.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Investigate user reports
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Are users in remote locations like {{locationData.name || locationData.from}} reporting issues you can't reproduce? Use Globalping to run traceroute from
+							an area near these users to identify regional problems and determine the proper troubleshooting steps.
+						</p>
+					</div>
+				{{elseif selectedTestType.toLowerCase() === 'dns'}}
+					<div class="gp-nettools_depiction_test">
+						<span class="gp-nettools_depiction_test_header">
+							What is dig, and how to resolve DNS?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Dig is a network testing and troubleshooting tool that allows you to retrieve DNS (Domain Name System) information,
+							such as a domain's IP address, DNS records, and name server information.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							The dig command is quite flexible and lets you add options as needed. For example, you can query specific record types
+							or define the name server to query instead of your default resolver. When you run the dig command, you get a response
+							divided into sections. The "authority section," for instance, lists the authoritative name servers that responded,
+							and the "answer section" contains the response to your DNS query, such as the A record.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are typical scenarios for using dig?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Not sure what you can do with the dig command? Here are some ideas:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Perform DNS lookups
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Probably the most common use case for dig is to perform DNS lookups to provide you with information about the DNS
+							configuration of a domain. The data retrieved can include A records (IPv4 addresses), AAAA records (IPv6 addresses),
+							MX records (mail server), NS records (name servers), and more.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Troubleshoot DNS issues
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Dig is also the go-to tool for troubleshooting DNS resolution problems. Using the command, you can verify if DNS
+							records are configured correctly and that DNS servers are responding as they should. Query DNS records and analyze
+							the results to find misconfigurations, DNS propagation problems, and other DNS issues.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Measure DNS performance
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							If you want to measure the performance and reliability of different DNS servers, dig can help you with that too.
+							Examine DNS response times and query statistics to identify potential bottlenecks or test the efficiency of DNS caching.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are common use cases to run dig from {{locationData.name || locationData.from}}?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Sometimes you may experience DNS resolution issues or need to check DNS information from locations that aren't accessible to you.
+							That's where the Globalping platform comes into play. It consists of a network of globally distributed probes that allows you to
+							perform DNS queries similar to dig from any location.
+						</p>
+						<p class="gp-nettools_depiction_test_descr">
+							If you run dig from different places around the world, you can perform DNS-related tasks on a global scale, extending the use cases
+							listed in the previous section:
+						</p>
+
+						<ul class="gp-nettools_depiction_test_descr">
+							<li>Measure regional DNS performance</li>
+							<li>Perform global DNS resolution</li>
+							<li>Monitor and troubleshoot DNS issues globally</li>
+						</ul>
+
+						<p class="gp-nettools_depiction_test_descr">
+							But there's more:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Resolve DNS from {{locationData.name || locationData.from}}
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Suppose your users in {{locationData.name || locationData.from}} can't reach your website or email services. By running dig from {{locationData.name || locationData.from}} with Globalping,
+							you can retrieve DNS information specific to that location. Examine the query results and look for misconfigurations that
+							could affect your users' experience.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Test load balancers
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Load balancers help you distribute incoming network traffic, for example, if you run a busy website. You can run dig
+							from {{locationData.name || locationData.from}} and other locations to test whether your load balancers work as intended. Use Globalping to query
+							your domain's DNS record, which should return IP addresses representing the used load balancers. Then, run the same
+							dig command repeatedly and see if it returns different IP, showing the load balancer in action.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Debug CDN and multi-CDN setups
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Dig can also help you optimize global content delivery and troubleshoot CDN and multi-CDN setups. For example, use
+							Globalping to perform DNS queries by running dig from {{locationData.name || locationData.from}} to identify the region's CDN nodes responsible for
+							content delivery. This way, you can verify whether the content is served to users from the closest nodes and compare
+							DNS response times to find potential performance issues.
+						</p>
+					</div>
+				{{elseif selectedTestType.toLowerCase() === 'mtr'}}
+					<div class="gp-nettools_depiction_test">
+						<span class="gp-nettools_depiction_test_header">
+							What is mtr?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							MTR (My Traceroute) is a network testing and troubleshooting utility that combines the functionality of the ping and
+							traceroute commands. It's designed to help identify issues along the path between your device and a specific destination,
+							including connectivity problems, packet loss, and high latency.
+						</p>
+						<p class="gp-nettools_depiction_test_descr">
+							When you run mtr, it sends small data packets to the target host. As the data travels through the network, mtr records
+							information about each hop (typically a router) passed on the way. For each hop, it notes the IP address and continuously
+							updates the packet loss percentage and the average and current round-trip time (RTT). While traceroute provides a snapshot
+							of the network path at a specific time, mtr lets you observe what happens as the test progresses.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are typical scenarios for using mtr?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Here are three examples of what you can accomplish with mtr:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Analyze & troubleshoot network paths
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Running mtr gives you real-time data showing the network path between your device and a target host. By providing the IP
+							address, hostname, RTTs, and packet loss percentage for each hop, you can find bottlenecks and other problematic points
+							and start targeted troubleshooting.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Plan & optimize network infrastructure
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Want to update the routing to improve your network infrastructure? Then run mtr to get data about your network paths before
+							and after the changes. This helps you determine if you're on the right track and take quick action if the results are not meeting your expectations.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Measure performance
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							MTR is also helpful in troubleshooting network issues that impact latency by helping you locate the root cause within
+							the network. Observe each hop's round-trip time (RTT) as the test progresses, and you can hopefully find the hops contributing
+							to high latency and take measures, such as moving servers or using a CDN.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are typical use cases to run mtr from {{locationData.name || locationData.from}}?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							When troubleshooting network issues, running mtr from your location or a server you can access is often not enough.
+							Instead, you may want to perform measurements from various locations worldwide - fortunately, Globalping's global
+							probe network allows you to do just that.
+						</p>
+						<p class="gp-nettools_depiction_test_descr">
+							Running mtr globally expands the previously described usage scenarios:
+						</p>
+
+						<ul class="gp-nettools_depiction_test_descr">
+							<li>Analyze, plan, and optimize network paths from various regions</li>
+							<li>Troubleshoot network problems wherever they occur</li>
+							<li>Optimize content delivery for your international users</li>
+						</ul>
+
+						<p class="gp-nettools_depiction_test_descr">
+							But there's more you can achieve when you run mtr from different places:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Investigate regional user issues
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							If you receive reports from your users about connection problems, use Globalping to run mtr from {{locationData.name || locationData.from}} or
+							just about any other location. This allows you to find the network segments that aren't working properly and
+							then determine the needed steps to get to the bottom of the problem.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							SLA monitoring
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							If you have service level agreements with customers worldwide, monitoring your network infrastructure with mtr
+							can help ensure that performance and reliability meet agreed metrics. Of course, you can also use this in reverse
+							to ensure that your SLAs with service providers are met in various locations.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Compare CDN performance and quality
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Want to find the best content delivery networks (CDN) in {{locationData.name || locationData.from}} or other locations? Use Globalping to run mtr
+							from different sites within {{locationData.name || locationData.from}} to compare the performance and reliability of the providers' network infrastructures.
+							Then, compare the results with those from other regions to find the CDN provider that best meets your needs in your most important locations.
+						</p>
+					</div>
+				{{elseif selectedTestType.toLowerCase() === 'http'}}
+					<div class="gp-nettools_depiction_test">
+						<span class="gp-nettools_depiction_test_header">
+							What is curl?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Curl is a tool that lets you make HTTP requests and retrieve content or get information from URLs directly from the command line.
+						</p>
+
+						<p class="gp-nettools_depiction_test_descr">
+							You often use curl to make HEAD or GET requests to URLs. For instance, when you make a HEAD request, you get information
+							about the host and web server associated with the URL. For a GET request, the server responds with the contents of the URL,
+							such as a web page or data from an API GET endpoint.
+							Each response from the server contains a status code like 404 for "not found" or 200 for successful requests. You can use
+							these codes to determine if the requested resource is accessible and if there are any server problems.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What are some everyday use cases for curl to send HTTP requests?
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Not sure what you can achieve by sending HTTP GET or HEAD requests?
+							Here are some ideas:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Verify service availability
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Adding HTTP GET and HEAD requests to your monitoring setup is an effective and simple way to keep an eye on the
+							availability and response times of your website or servers. Set up alerts to be able to quickly address issues
+							and ensure that everything is back up and running in no time.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Check HTTP headers
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							When making an HTTP HEAD request to a website or API using curl, you can fetch the header information without
+							the URL's content. This allows you to explore and verify cache directives (e.g., ETag or Cache-Control), server
+							information (e.g., software and version), content type, encoding, and security measures
+							(e.g., Content-Security-Policy or Strict-Transport-Security).
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Debugging and troubleshooting
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Curl can also be super helpful in numerous troubleshooting scenarios. For example, you can send requests to your
+							API endpoints using different parameter values and request headers to test and verify the responses. Or you can
+							use it to evaluate the performance of your service by measuring the time it takes a GET or HEAD request to your
+							service to send you a response.
+						</p>
+
+						<span class="gp-nettools_depiction_test_header">
+							What can I achieve by making HTTP requests from {{locationData.name || locationData.from}}?
+						</span>
+
+						<p class="gp-nettools_depiction_test_descr">
+							If you run a website or an API, your users often report problems with your service from different locations that
+							you'd like to investigate but can't because the location is out of your reach. That's where our Globalping network
+							testing platform comes to the rescue. It consists of a global probe network that allows you to perform various network commands from anywhere.
+						</p>
+						<p class="gp-nettools_depiction_test_descr">
+							The ability to make HTTP requests using curl from anywhere in the world makes the above scenarios even more interesting:
+						</p>
+
+						<ul class="gp-nettools_depiction_test_descr">
+							<li>Debug and troubleshoot regional issues with your website or server</li>
+							<li>Verify the availability and performance of your website or API from all over the world</li>
+						</ul>
+
+						<p class="gp-nettools_depiction_test_descr">
+							Let's explore some more use cases:
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Test services from your user's perspective
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Imagine your users in {{locationData.name || locationData.from}} are reporting unusual behavior from one of your API GET endpoints that you can't
+							reproduce from your location. To get to the bottom of the problem, you can start troubleshooting by running curl
+							from {{locationData.name || locationData.from}} using Globalping. By making a GET request, you can retrieve the API response as seen by your users,
+							helping you learn more about the problem and determine your next troubleshooting steps.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Investigate censorship & content modification
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Another interesting way to use Globalping is to run curl from {{locationData.name || locationData.from}} or any other location to learn about censorship
+							or content modification in that area. For example, you can make a HEAD request to check if a URL is accessible or perform
+							a GET request to compare the content of a URL with your local version, ensuring that it hasn't been changed.
+						</p>
+
+						<span class="gp-nettools_depiction_test_subheader">
+							Measure and compare performance
+						</span>
+						<p class="gp-nettools_depiction_test_descr">
+							Globalping also provides performance metrics for each HTTP request, including the response time, content download time,
+							time to first byte, DNS resolution time, and the time taken to establish the TLS and TCP connection with the server.
+							This allows you to run performance benchmarks and comparisons from {{locationData.name || locationData.from}}. Measure and understand the local and global
+							latency of your service or the service providers you use, such as CDN, DNS, and Edge computing companies.
+						</p>
+					</div>
+				{{/if}}
+			{{/if}}
 		</div>
 	</div>
 
@@ -143,119 +746,218 @@
 </r-page>
 
 <script>
+	const _ = require('../../../assets/js/_');
 	const http = require('../../../assets/js/utils/http');
-	const validateDomainName = require('../../../assets/js/utils/validate-domain-name');
-	const validateIP = require('../../../assets/js/utils/validate-ip');
-	const validateByPattern = require('../../../assets/js/utils/validate-by-pattern');
-	const DEFAULT_PROBES_AMOUNT = 3;
-	// TODO: do we need additional options for different types of request
-	const PING_PARAMS = {};
-	const TRACEROUTE_PARAMS = {};
-	const DNS_PARAMS = {};
-	const MTR_PARAMS = {};
-	const HTTP_PARAMS = {};
-	const VALIDATION_PATTERNS_MAP = {
-		limit: [
-			{
-				pattern: '^[0-9]+$',
-				errMsg: 'Limit must be an integer number',
-			},
-		],
+	const has = require('../../../assets/js/utils/has');
+	const countries = require('../../../assets/json/countries.json');
+	const continents = require('../../../assets/json/continents.json');
+	const usaStates = require('../../../assets/json/usa-states.json');
+	const DEFAULT_LIMIT = 3;
+	const INITIAL_OPTS_VALUES = {
+		type: 'Ping',
+		target: 'cdn.jsdelivr.net',
 	};
+	const CAPITALIZE_EXCLUDE_LIST = [ 'and', 'or', 'from', 'ltd', 'of' ];
 
 	component.exports = {
 		data () {
 			return {
-				title: 'Globalping - jsDelivr',
-				description: 'TODO: add Globalping Network Tools description',
-				selectedTestType: 'ping',
-				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				_,
+				title: '',
+				description: '',
+				selectedTestType: null,
+				displayingTestType: INITIAL_OPTS_VALUES.type,
+				btnTestType: INITIAL_OPTS_VALUES.type,
+				testTypesList: [
+					{
+						name: 'Ping',
+						toDisplay: 'Ping',
+					},
+					{
+						name: 'Traceroute',
+						toDisplay: 'Traceroute',
+					},
+					{
+						name: 'DNS',
+						toDisplay: 'DNS resolve',
+					},
+					{
+						name: 'MTR',
+						toDisplay: 'MTR',
+					},
+					{
+						name: 'HTTP',
+						toDisplay: 'HTTP',
+					},
+				],
 				testOpts: {
-					target: '',
+					target: INITIAL_OPTS_VALUES.target,
 					limit: '',
 				},
 				inputErrors: {},
-				testResultsId: null,
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
-				defaultProbesAmount: DEFAULT_PROBES_AMOUNT,
+				defaultTestLimit: DEFAULT_LIMIT,
+				probesResponse: null,
+				locationData: null,
+				totalProbesCnt: 0,
+				parsedLocations: {
+					cities: {},
+					asns: {},
+					networks: {},
+					countries: {},
+					continents: {},
+					regions: {},
+				},
+				highLevelLocationHref: null,
+				probesParsed: false,
+				testReqParams: null,
+				rawLocation: null,
+				allRequiredDataReady: false,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('selectedTestType', () => {
+				this.getGlobalpingProbesData();
+
+				this.getParamsFromUrl();
+
+				this.observe('selectedTestType', (selectedTestType) => {
+					if (selectedTestType) {
+						switch (selectedTestType.toLowerCase()) {
+							case 'mtr':
+							case 'http':
+								this.set('displayingTestType', selectedTestType.toUpperCase());
+								this.set('btnTestType', selectedTestType.toUpperCase());
+
+								break;
+
+							case 'dns':
+								this.set('displayingTestType', `${selectedTestType.toUpperCase()} resolve`);
+								this.set('btnTestType', selectedTestType.toUpperCase());
+
+								break;
+
+							default:
+								this.set('displayingTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
+								this.set('btnTestType', _.capitalizeStrEveryFirstLetter(selectedTestType));
+						}
+					}
+
 					this.set('inputErrors', {});
-					this.set('testResultsId', null);
 					this.set('testResults', null);
+				});
+
+				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (realTimeTestResResponse.status === 'finished') {
+						clearInterval(this.get('testReqInterval'));
+						this.set('testInProgress', false);
+					}
+
+					let prevTestResults = this.get('testResults') || [];
+					let updTestResults = realTimeTestResResponse.results.filter((res) => {
+						// if it is no in-progress then it is already finished or failed and we could draw a marker
+						if (res.result.status !== 'in-progress') { return true; }
+
+						return false;
+					});
+
+					// filter out results that have already been drawn
+					let newTestResults = updTestResults.filter((updRes) => {
+						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
+					});
+
+					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
 				}, { init: false });
+
+				// check if everything is already set and we can get LocationData etc.
+				this.observe('probesParsed selectedTestType rawLocation', () => {
+					let probesParsed = this.get('probesParsed');
+					let selectedTestType = this.get('selectedTestType');
+					let rawLocation = this.get('rawLocation');
+
+					if (probesParsed && selectedTestType && rawLocation) {
+						this.set('allRequiredDataReady', true);
+					} else {
+						this.set('allRequiredDataReady', false);
+					}
+				});
+
+				// create and set meta title, description; locationData, highLevelLocationHref
+				// check if location is correct or presented in the available probes locations
+				this.observe('allRequiredDataReady', (allRequiredDataReady) => {
+					if (allRequiredDataReady === false) { return; }
+
+					let selectedTestType = this.get('selectedTestType');
+					let rawLocation = this.get('rawLocation');
+
+					// handle locationData, highLevelLocationHref
+					if (rawLocation && rawLocation !== 'world') {
+						let locationData = this.getLocDataByLocValue(rawLocation);
+
+						if (locationData) {
+							// if both location and testType are correct and present
+							this.set('locationData', locationData);
+							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, locationData.fromAsUrlPart)}`);
+						} else {
+							// when testType correct but location absent at the moment among the probes or incorrect
+							this.moveToNewPageURL(selectedTestType, null, true);
+						}
+					} else {
+						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
+					}
+
+					// handle meta tag title and description once location is confirmed as presented
+					let title = this.createMetaTitle(selectedTestType, rawLocation);
+
+					let locationData = this.getLocDataByLocValue(rawLocation);
+					let description = this.createMetaDescr(selectedTestType, locationData ? locationData.name : 'world');
+
+					this.set('title', title);
+					this.set('description', description);
+				});
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// run the test if user is pressed Enter inside of any of options inputs
+				let targetInput = this.find('#targetInput');
+				let limitInput = this.find('#limitInput');
+
+				let handleEnterBtn = (event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						this.proceedToTest();
+					}
+				};
+
+				targetInput.addEventListener('keypress', handleEnterBtn);
+				limitInput.addEventListener('keypress', handleEnterBtn);
 			}
 		},
 		proceedToTest () {
 			let type = this.get('selectedTestType');
 			let testOpts = this.get('testOpts');
+			let { name: magic = 'World' } = this.get('locationData');
 			let reqParams = {
 				type,
 				...testOpts,
+				locations: [{ magic }],
 			};
 
 			if (!reqParams.limit) {
-				reqParams.limit = DEFAULT_PROBES_AMOUNT;
+				reqParams.limit = DEFAULT_LIMIT;
 			}
 
-			switch (type.toLowerCase()) {
-				case 'ping':
-					reqParams = { ...reqParams, ...PING_PARAMS };
-					break;
-				case 'traceroute':
-					reqParams = { ...reqParams, ...TRACEROUTE_PARAMS };
-					break;
-				case 'dns':
-					reqParams = { ...reqParams, ...DNS_PARAMS };
-					break;
-				case 'mtr':
-					reqParams = { ...reqParams, ...MTR_PARAMS };
-					break;
-				case 'http':
-					reqParams = { ...reqParams, ...HTTP_PARAMS };
-					break;
-			}
-
-			let inputErrors = this.validateDataForRequest(testOpts);
-
-			if (Object.keys(inputErrors).length) {
-				this.set('inputErrors', inputErrors);
-
-				return;
-			}
-
-			this.set('testResultsId', null);
+			// clear all data from the previous test, show spinner
 			this.set('testResults', null);
 			this.set('testInProgress', true);
-
-			// get test interval and clear it when new test is started
-			let testReqInterval = this.get('testReqInterval');
-
-			if (testReqInterval) {
-				clearInterval(testReqInterval);
-			}
+			this.set('testReqParams', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				testReqInterval = setInterval(() => {
-					http.getGlobalpingMeasurement(response.id).then((testRes) => {
-						if (testRes.status !== 'in-progress') {
-							clearInterval(testReqInterval);
-
-							this.set('testInProgress', false);
-							this.set('testResultsId', testRes.id);
-							this.set('testResults', testRes);
-						}
-					}).catch(() => {
-						clearInterval(testReqInterval);
-					});
-				}, 1000);
-
-				this.set('testReqInterval', testReqInterval);
+				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
 				if (err.error.type === 'validation_error') {
 					this.set('testInProgress', false);
@@ -273,44 +975,386 @@
 				}
 			});
 		},
-		validateDataForRequest ({ target, limit }) {
-			let inputErrors = {};
-
-			// validate Target field
-			if (!target) {
-				inputErrors.target = 'Target is required';
-			} else {
-				let isValidDomainName = validateDomainName.test(target);
-				let isValidIP = validateIP.test(target);
-
-				if (!isValidDomainName && !isValidIP) {
-					inputErrors.target = 'Target does not match any of the allowed formats';
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
 				}
-			}
 
-			// validate Limit field
-			if (limit) {
-				let result = VALIDATION_PATTERNS_MAP.limit.reduce((res, data) => {
-					let isValid = validateByPattern.test(Math.abs(limit), data.pattern);
+				this.set('parsedLocations', this.parseProbesResponse(response));
+				this.set('totalProbesCnt', response.length);
+				this.set('probesParsed', true);
+			};
+		},
+		parseProbesResponse (data) {
+			return data.reduce((res, { location }) => {
+				let cityNameLC = location.city.toLowerCase();
+				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
+				let countryCodeLC = location.country.toLowerCase();
+				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
+				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
+				let asnName = `as${location.asn}`;
+				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
+				let continentCodeLC = location.continent.toLowerCase();
+				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
+				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
+				let regionNameLC = location.region.toLowerCase();
+				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
+				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
+				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
 
-					if (res.isValid && !isValid) {
-						return {
-							isValid: false,
-							errMsg: data.errMsg,
+				// collect uniques cities and count amount of probes per city
+				if (!Object.keys(res.cities).includes(cityNameAsUrlPart)) {
+					res.cities[cityNameAsUrlPart] = {
+						name: cityNameLC,
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+						probesCnt: 1,
+						fromAsUrlPart: countryNameAsUrlPart,
+					};
+				} else {
+					res.cities[cityNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques ASNs and count amount of probes per ASN
+				if (!Object.keys(res.asns).includes(asnName)) {
+					res.asns[asnName] = {
+						name: asnName,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.asns[asnName].probesCnt += 1;
+				}
+
+				// collect uniques Networks and count amount of probes per Network
+				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
+					res.networks[networkNameAsKey] = {
+						name: location.network,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.networks[networkNameAsKey].probesCnt += 1;
+				}
+
+				// collect uniques Countries and count amount of probes per Country
+				if (!Object.keys(res.countries).includes(countryNameAsUrlPart)) {
+					res.countries[countryNameAsUrlPart] = {
+						name: countryNameLC,
+						from: continentNameLC,
+						probesCnt: 1,
+						fromAsUrlPart: continentNameAsUrlPart,
+					};
+				} else {
+					res.countries[countryNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Continents and count amount of probes per Continent
+				if (!Object.keys(res.continents).includes(continentNameAsUrlPart)) {
+					res.continents[continentNameAsUrlPart] = {
+						name: continentNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.continents[continentNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Regions and count amount of probes per Region
+				if (!Object.keys(res.regions).includes(regionNameLC)) {
+					res.regions[regionNameLC] = {
+						name: regionNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.regions[regionNameLC].probesCnt += 1;
+				}
+
+				// collect uniques states (if they are present) and count amount of probes per state
+				if (stateNameAsUrlPart) {
+					if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
+						res.states[stateNameAsUrlPart] = {
+							name: stateNameLC,
+							from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+							probesCnt: 1,
+							fromAsUrlPart: countryNameAsUrlPart,
 						};
+					} else {
+						res.states[stateNameAsUrlPart].probesCnt += 1;
 					}
-
-					return res;
-				}, { isValid: true, errMsg: '' });
-
-				if (!result.isValid) {
-					inputErrors.limit = result.errMsg;
-				} else if (limit > 500 || limit < 1) {
-					inputErrors.limit = 'Limit must be from 1 to 500 inclusive';
 				}
+
+				return res;
+			}, {
+				cities: {},
+				asns: {},
+				networks: {},
+				countries: {},
+				continents: {},
+				regions: {},
+				states: {},
+			});
+		},
+		getLocDataByLocValue (location = '') {
+			let locationLC = location.toLowerCase();
+			let parsedLocations = this.get('parsedLocations');
+
+			// check if the location is a city
+			if (parsedLocations.cities[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.cities[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'city',
+				};
 			}
 
-			return inputErrors;
+			// check if the location is an ASN
+			if (parsedLocations.asns[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.asns[locationLC];
+
+				return {
+					name: name.toUpperCase(),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'asn',
+				};
+			}
+
+			// check if the location is a Network
+			if (parsedLocations.networks[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.networks[locationLC];
+
+				return {
+					name,
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'isp',
+				};
+			}
+
+			// check if the location is a Country
+			if (parsedLocations.countries[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.countries[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from, CAPITALIZE_EXCLUDE_LIST),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'country',
+				};
+			}
+
+			// check if the location is a Continent
+			if (parsedLocations.continents[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.continents[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'continent',
+				};
+			}
+
+			// check if the location is a Region
+			if (parsedLocations.regions[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.regions[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'region',
+				};
+			}
+
+			// check if the location is a State
+			if (parsedLocations.states[locationLC]) {
+				let { name, from, probesCnt, fromAsUrlPart } = parsedLocations.states[locationLC];
+
+				return {
+					name: _.capitalizeStrEveryFirstLetter(name),
+					from: _.capitalizeStrEveryFirstLetter(from),
+					probesCnt,
+					fromAsUrlPart,
+					type: 'state',
+				};
+			}
+		},
+		getTestMeasurementById (measurementId) {
+			let testReqInterval = setInterval(() => {
+				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+					// prepare and set request params to pass them to gp-test-results
+					let testReqParams = JSON.parse(JSON.stringify(testRes));
+
+					delete testReqParams.results;
+					delete testReqParams.status;
+					delete testReqParams.updatedAt;
+					delete testReqParams.createdAt;
+
+					testReqParams = {
+						inProgressUpdates: true,
+						limit: DEFAULT_LIMIT,
+						...testReqParams,
+						measurementOptions: {
+							trace: false,
+							...testReqParams.measurementOptions,
+						},
+					};
+
+					// set testReqParams to pass them to c-gp-test-results
+					this.set('testReqParams', testReqParams);
+
+					// should be after the mainOptions.type was set
+					this.set('realTimeTestResResponse', testRes);
+				}).catch(() => {
+					clearInterval(testReqInterval);
+				});
+			}, 1000);
+
+			this.set('testReqInterval', testReqInterval);
+		},
+		handleTestTypeSelect (testTypeName) {
+			this.set('selectedTestType', testTypeName);
+
+			let newPath = this.modifyQueryPart(testTypeName);
+
+			app.router.dispatch(newPath, { noScroll: true });
+		},
+		moveToNewPageURL (testType, newLocation = null, leaveTestOnly = false) {
+			let newPath = this.modifyQueryPart(testType, newLocation, leaveTestOnly);
+
+			window.location.replace(newPath);
+		},
+		modifyQueryPart (testType = 'ping', newLocation = null, leaveTestOnly = false) {
+			let newQueryTestFromValue = '';
+
+			if (newLocation) {
+				newQueryTestFromValue = `${testType}-from-${newLocation}`;
+			} else if (leaveTestOnly) {
+				newQueryTestFromValue = testType;
+			} else {
+				let splittedQueryTestFrom = app.router.uri.path.split('/');
+				let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
+
+				newQueryTestFromValue = currQueryTestFromValue.replace(/[A-Za-z]+/, `${testType}`);
+			}
+
+			return `/globalping/network-tools/${newQueryTestFromValue.toLowerCase()}`;
+		},
+		getGlobalpingProbesData () {
+			// get probes from sessionStorage or fetch them
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		getParamsFromUrl () {
+			let rawParamsValue = this.get('params');
+
+			// if user tries to get the network-tools page without providing at least testType
+			// navigate to default network-tools page
+			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
+				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
+
+				return;
+			}
+
+			let clearParamsValue = rawParamsValue.replace(/\/globalping\/network-tools\/?/, '').toLowerCase();
+			let splitPoint = '-from-';
+			let splitPointIdx = clearParamsValue.indexOf(splitPoint);
+			let [ rawTestType, rawLocation ] = splitPointIdx === -1
+				? clearParamsValue.split(splitPoint)
+				: [ clearParamsValue.slice(0, splitPointIdx), clearParamsValue.slice(splitPointIdx + splitPoint.length) ];
+
+			// if testType provided by user is incorrect
+			// navigate to default network-tools testType page but conserve the location
+			if (!this.checkIfTestTypeCorrect(rawTestType)) {
+				let isFullParam = clearParamsValue.includes(splitPoint) && rawLocation && rawTestType;
+
+				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, isFullParam ? rawLocation : null, !isFullParam);
+
+				return;
+			}
+
+			// if testType provided by user is correct but there is no location provided
+			// navigate to provided by user testType network-tools page
+			if (clearParamsValue.includes(splitPoint) && !rawLocation) {
+				this.moveToNewPageURL(rawTestType, null, true);
+
+				return;
+			}
+
+			this.set('selectedTestType', rawTestType);
+			this.set('rawLocation', rawLocation || 'world');
+			let placeholderLocation = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
+			this.set('placeholerLocation', placeholderLocation);
+
+			// set temp meta tag title, descr
+			let title = this.createMetaTitle(rawTestType, placeholderLocation);
+			let description = this.createMetaDescr(rawTestType, placeholderLocation);
+
+			this.set('title', title);
+			this.set('description', description);
+		},
+		checkIfTestTypeCorrect (testType) {
+			if (!testType) { return false; }
+
+			let testTypesList = this.get('testTypesList');
+
+			return testTypesList.some(i => i.name.toLowerCase() === testType.toLowerCase());
+		},
+		createMetaTitle (testType, location) {
+			switch (testType.toLowerCase()) {
+				case 'dns':
+				case 'mtr':
+				case 'http':
+					testType = testType.toUpperCase(); break;
+				default:
+					testType = _.capitalizeFirstLetter(testType);
+			}
+
+			return `${testType} for free from ${location} - Global ${testType} tests by Globalping`;
+		},
+		createMetaDescr (testType, location) {
+			let description = `Run ${testType} network tests for free from multiple global regions`;
+
+			if (location.toLowerCase() !== 'world') {
+				description += ` like ${location}`;
+			}
+
+			description += ' to any endpoint including IP addresses, websites, CDN or cloud providers. Test the network latency and uptime regionally';
+
+			if (location.toLowerCase() !== 'world') {
+				description += ` in ${location}`;
+			}
+
+			description += ' or globally.';
+
+			return description;
 		},
 	};
 </script>

@@ -1321,4 +1321,20 @@ module.exports = {
 	getProbeTimeOutValue () {
 		return NO_PROBE_TIMING_VALUE;
 	},
+
+	capitalizeFirstLetter (word) {
+		return word ? word[0].toUpperCase() + word.slice(1) : '';
+	},
+
+	capitalizeStrEveryFirstLetter (string, exclude = []) {
+		return string.split(' ').reduce((res, w) => {
+			if (exclude.includes(w)) {
+				res.push(w);
+			} else {
+				res.push(this.capitalizeFirstLetter(w));
+			}
+
+			return res;
+		}, []).join(' ');
+	},
 };

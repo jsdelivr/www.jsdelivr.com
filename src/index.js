@@ -28,6 +28,7 @@ const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const sitemap = require('./middleware/sitemap');
+const globalpingSitemap = require('./middleware/sitemap/globalping');
 const ogImage = require('./middleware/open-graph');
 const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
@@ -292,6 +293,10 @@ koaElasticUtils.addRoutes(router, [
 	[ '/sitemap/:page', '/sitemap/:page' ],
 ], sitemap);
 
+koaElasticUtils.addRoutes(router, [
+	[ '/globalping/sitemap/:page', '/globalping/sitemap/:page' ],
+], globalpingSitemap);
+
 /**
  * Package pages.
  */
@@ -370,6 +375,29 @@ koaElasticUtils.addRoutes(router, [
 	[ '/readme/npm/:name', '/readme/:type(npm)/:scope?/:name' ],
 	[ '/readme/gh/:user/:repo', '/readme/:type(gh)/:user/:repo' ],
 ], readme);
+
+/**
+ * Globalping network-tools page
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/globalping/network-tools', '/globalping/network-tools/:params' ],
+], async (ctx) => {
+	let data = {
+		params: ctx.params.params || '',
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		data.noYield = true;
+		ctx.body = await ctx.render('pages/_index.html', data);
+	}
+});
 
 /**
  * Debug endpoints.
