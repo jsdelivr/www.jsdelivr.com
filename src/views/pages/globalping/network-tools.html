@@ -463,6 +463,7 @@
 				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
 				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
 				let regionNameLC = location.region.toLowerCase();
+				let regionNameAsUrlPart = regionNameLC.split(' ').join('-');
 				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
 				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
 				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
@@ -528,15 +529,15 @@
 				}
 
 				// collect uniques Regions and count amount of probes per Region
-				if (!Object.keys(res.regions).includes(regionNameLC)) {
-					res.regions[regionNameLC] = {
+				if (!Object.keys(res.regions).includes(regionNameAsUrlPart)) {
+					res.regions[regionNameAsUrlPart] = {
 						name: regionNameLC,
 						from: 'world',
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
 					};
 				} else {
-					res.regions[regionNameLC].probesCnt += 1;
+					res.regions[regionNameAsUrlPart].probesCnt += 1;
 				}
 
 				// collect uniques states (if they are present) and count amount of probes per state
