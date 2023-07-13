@@ -1172,6 +1172,7 @@
 				runTestBtnText: 'Run Test',
 				testReqParams: null,
 				probesResponse: null,
+				shareResFlow: false,
 			};
 		},
 		onrender () {
@@ -1192,9 +1193,19 @@
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
-					this.set('runTestBtnText', 'Run Again');
+					this.set('shareResFlow', true);
 					this.getTestMeasurementById(measurementId, true);
 				}
+
+				// handle what data should we show depending whether user in share-res-flow or not
+				this.observe('shareResFlow', (shareResFlow) => {
+					if (shareResFlow) {
+						this.set('runTestBtnText', 'Run Again');
+					} else {
+						this.set('runTestBtnText', 'Run Test');
+						this.set('shareResHeaderData', null);
+					}
+				});
 
 				// get probes from sessionStorage or fetch them and handle
 				this.getProbesData();
@@ -1327,8 +1338,8 @@
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
 
-				// since we have measurementId it is a share-results-flow, initiate scrolling mapBlock into the view
-				if (this.get('measurementId')) {
+				// if it is a share-results-flow - initiate scrolling mapBlock into the view
+				if (this.get('shareResFlow')) {
 					let mapBlockEl = this.find('.gp_map-block');
 
 					mapBlockEl.scrollIntoView({
@@ -1395,6 +1406,7 @@
 			this.set('testFailed', false);
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
+			this.set('shareResFlow', false);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -1538,11 +1550,11 @@
 
 			// draw probes Clusers or clear the map from them
 			this.observe('probesResponse', (probesResponse) => {
+				// when we run a new test probesResponse will be cleared ergo we should clear the map from the probesClusters
 				if (probesResponse === null) {
 					this.clearProbesClusters();
-				// check if there is no measurementId so it is not a share-results-flow
-				// we do need to draw probes Clusters for share-results-flow
-				} else if (probesResponse && this.get('measurementId') === null) {
+				// display probesCLusters on the map only when we have probesData and not in share-results-flow
+				} else if (probesResponse && !this.get('shareResFlow')) {
 					this.updateClusters(probesResponse);
 				}
 			});
