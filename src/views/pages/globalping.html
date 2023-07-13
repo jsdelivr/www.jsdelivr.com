@@ -1270,6 +1270,15 @@
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
 						this.zoomToResults(realTimeTestResResponse.locations);
+
+						// if it is a share-results-flow - scroll mapBlock into the view
+						if (this.get('shareResFlow')) {
+							let mapBlockEl = this.find('.gp_map-block');
+
+							mapBlockEl.scrollIntoView({
+								behavior: 'smooth',
+							});
+						}
 					}
 
 					let prevTestResults = this.get('testResults') || [];
@@ -1328,15 +1337,6 @@
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
-
-				// if it is a share-results-flow - initiate scrolling mapBlock into the view
-				if (this.get('shareResFlow')) {
-					let mapBlockEl = this.find('.gp_map-block');
-
-					mapBlockEl.scrollIntoView({
-						behavior: 'smooth',
-					});
-				}
 
 				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
 				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
