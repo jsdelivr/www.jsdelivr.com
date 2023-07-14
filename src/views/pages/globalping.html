@@ -1170,8 +1170,9 @@
 				appliedMeasOpts: {},
 				shareResHeaderData: null,
 				runTestBtnText: 'Run Test',
-				shareResultsCase: false,
 				testReqParams: null,
+				probesResponse: null,
+				shareResFlow: false,
 			};
 		},
 		onrender () {
@@ -1186,31 +1187,22 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				// check if id is present in query string
-				// if so - should be a share-results logic implemented
+				// if so - should be a share-results-flow logic implemented
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
 				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
-					this.set('runTestBtnText', 'Run Again');
+					this.set('shareResFlow', true);
 					this.getTestMeasurementById(measurementId, true);
 				}
 
-				if (has.sessionStorage()) {
-					let probesResponse = sessionStorage.getItem('probesResponse');
-
-					if (probesResponse) {
-						this.handleProbesResponse(true)(probesResponse);
-					} else {
-						http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-					}
-				} else {
-					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-				}
+				// get probes from sessionStorage or fetch them and handle
+				this.getProbesData();
 
 				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
-					// if measurementId - share-results flow, so type would be set, we should ignore this case
+					// if measurementId - share-results-flow, so type would be set, we should ignore this case
 					if (this.get('measurementId')) {
 						return;
 					}
@@ -1277,6 +1269,11 @@
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
 						this.zoomToResults(realTimeTestResResponse.locations);
+
+						// if it is a share-results-flow - scroll mapBlock into the view
+						if (this.get('shareResFlow')) {
+							this.scrollMapIntoView();
+						}
 					}
 
 					let prevTestResults = this.get('testResults') || [];
@@ -1316,17 +1313,6 @@
 
 					this.set('markersData', markersData);
 				}, { init: false });
-
-				// scroll to the Map-block in share-res case
-				this.observe('shareResultsCase', (shareResultsCase) => {
-					if (shareResultsCase) {
-						let mapBlockEl = this.find('.gp_map-block');
-
-						mapBlockEl.scrollIntoView({
-							behavior: 'smooth',
-						});
-					}
-				});
 			}
 		},
 		oncomplete () {
@@ -1346,14 +1332,6 @@
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
-
-				// set that this is Share results case to initiate scrolling mapBlock into the view
-				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
-				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
-
-				if (measurementId) {
-					this.set('shareResultsCase', true);
-				}
 
 				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
 				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
@@ -1414,6 +1392,8 @@
 			this.set('testFailed', false);
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
+			this.set('shareResFlow', false);
+			this.set('shareResHeaderData', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -1557,11 +1537,11 @@
 
 			// draw probes Clusers or clear the map from them
 			this.observe('probesResponse', (probesResponse) => {
+				// when we run a new test probesResponse will be cleared ergo we should clear the map from the probesClusters
 				if (probesResponse === null) {
 					this.clearProbesClusters();
-				// check if there is no measurementId so it is not a share-results case
-				// we do need to draw probes Clusters for share-results case
-				} else if (probesResponse && this.get('measurementId') === null) {
+				// display probesCLusters on the map only when we have probesData and not in share-results-flow
+				} else if (probesResponse && !this.get('shareResFlow')) {
 					this.updateClusters(probesResponse);
 				}
 			});
@@ -1825,6 +1805,7 @@
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+						this.set('runTestBtnText', 'Run Again');
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
@@ -1874,8 +1855,14 @@
 
 					// should be after the mainOptions.type was set
 					this.set('realTimeTestResResponse', testRes);
-				}).catch(() => {
+				}).catch((e) => {
 					clearInterval(testReqInterval);
+
+					if (e.message === '404') {
+						this.set('shareResHeaderData', 'This measurement has expired!');
+						this.set('runTestBtnText', 'Run Test');
+						this.scrollMapIntoView();
+					}
 				});
 			}, 1000);
 
@@ -2114,6 +2101,26 @@
 			} finally {
 				this.applyOptions();
 			}
+		},
+		getProbesData () {
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		scrollMapIntoView () {
+			let mapBlockEl = this.find('.gp_map-block');
+
+			mapBlockEl.scrollIntoView({
+				behavior: 'smooth',
+			});
 		},
 	};
 </script>

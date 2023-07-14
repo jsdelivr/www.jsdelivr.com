@@ -229,5 +229,5 @@ module.exports.postGlobalpingMeasurement = (opts) => {
 };
 
 module.exports.getGlobalpingMeasurement = (id) => {
-	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}` });
+	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}`, onFailReturnStatus: true });
 };

@@ -375,7 +375,15 @@ module.exports = {
 	},
 
 	makeHTTPRequest (obj) {
-		let { method = 'GET', rawResponse = false, body, url, headers, responseHeadersToGet = null } = obj;
+		let {
+			method = 'GET',
+			rawResponse = false,
+			body,
+			url,
+			headers,
+			responseHeadersToGet = null,
+			onFailReturnStatus = false,
+		} = obj;
 
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
@@ -416,7 +424,11 @@ module.exports = {
 						resolve(response);
 					}
 				} else {
-					reject(response);
+					if (onFailReturnStatus) {
+						reject(new Error(xhr.status));
+					} else {
+						reject(response);
+					}
 				}
 			};
 
