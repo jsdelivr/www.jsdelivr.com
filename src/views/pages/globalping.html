@@ -1193,7 +1193,6 @@
 
 				if (measurementId) {
 					this.set('measurementId', measurementId);
-					this.set('runTestBtnText', 'Run Again');
 					this.set('shareResFlow', true);
 					this.getTestMeasurementById(measurementId, true);
 				}
@@ -1273,11 +1272,7 @@
 
 						// if it is a share-results-flow - scroll mapBlock into the view
 						if (this.get('shareResFlow')) {
-							let mapBlockEl = this.find('.gp_map-block');
-
-							mapBlockEl.scrollIntoView({
-								behavior: 'smooth',
-							});
+							this.scrollMapIntoView();
 						}
 					}
 
@@ -1398,6 +1393,7 @@
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
+			this.set('shareResHeaderData', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -1809,6 +1805,7 @@
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.target', testRes.target);
 						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+						this.set('runTestBtnText', 'Run Again');
 
 						let magicValue = testRes.locations.reduce((res, loc) => {
 							if (loc.magic) {
@@ -1858,8 +1855,14 @@
 
 					// should be after the mainOptions.type was set
 					this.set('realTimeTestResResponse', testRes);
-				}).catch(() => {
+				}).catch((e) => {
 					clearInterval(testReqInterval);
+
+					if (e && typeof e === 'string' && e.toLowerCase() === 'not found') {
+						this.set('shareResHeaderData', 'This measurement has expired!');
+						this.set('runTestBtnText', 'Run Test');
+						this.scrollMapIntoView();
+					}
 				});
 			}, 1000);
 
@@ -2111,6 +2114,13 @@
 			} else {
 				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
+		},
+		scrollMapIntoView () {
+			let mapBlockEl = this.find('.gp_map-block');
+
+			mapBlockEl.scrollIntoView({
+				behavior: 'smooth',
+			});
 		},
 	};
 </script>
