@@ -425,10 +425,7 @@ module.exports = {
 					}
 				} else {
 					if (onFailReturnStatus) {
-						reject({
-							msg: response,
-							status: xhr.status,
-						});
+						reject(new Error(xhr.status));
 					} else {
 						reject(response);
 					}
