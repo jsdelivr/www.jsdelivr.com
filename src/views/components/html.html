@@ -12,6 +12,7 @@
 				_,
 				html: '',
 				safeHtmlToRender: '',
+				DOMPurify: null,
 			};
 		},
 		oninit () {
@@ -46,12 +47,32 @@
 						}
 					});
 
-					// if page URL has a hash then scroll page to the anchor
-					this.observeOnce('safeHtmlToRender', () => {
-						let anchor = app.router.uri.hash;
-						let el = anchor ? this.find(anchor) : null;
+					this.set('DOMPurify', DOMPurify);
+				});
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				this.observe('DOMPurify html', () => {
+					let html = this.get('html');
+					let DOMPurify = this.get('DOMPurify');
 
-						if (el) {
+					if (!html || !DOMPurify) {
+						return;
+					}
+
+					this.set('safeHtmlToRender', DOMPurify.sanitize(html));
+				}, { init: false });
+
+				// if page URL has a hash then scroll page to the anchor
+				this.observeOnce('safeHtmlToRender', () => {
+					let anchor = app.router.uri.hash;
+					let el;
+
+					let interval = setInterval(() => {
+						el = anchor ? this.find(anchor) : null;
+
+						if (el && anchor) {
 							if (document.visibilityState === 'visible') {
 								el.scrollIntoView({
 									behavior: 'smooth',
@@ -65,13 +86,15 @@
 									document.removeEventListener('visibilitychange', listener);
 								});
 							}
-						}
-					}, { init: false, defer: true });
 
-					this.observe('html', (html) => {
-						this.set('safeHtmlToRender', DOMPurify.sanitize(html));
-					});
-				});
+							clearInterval(interval);
+						} else {
+							setTimeout(() => {
+								clearInterval(interval);
+							}, 1000);
+						}
+					}, 4);
+				}, { init: false, defer: true });
 			}
 		},
 	};
