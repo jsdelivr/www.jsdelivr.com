@@ -241,6 +241,13 @@
 						return;
 					}
 
+					// set anchor based on the URL hash
+					let anchor = (app.router.uri.hash || '').replace(`#${ID_PREFIX}`, '');
+
+					if (anchor) {
+						this.set('currentAnchor', anchor)
+					}
+
 					let sideMenuIds = this.get('sideMenuLinksData').map(link => ID_PREFIX + link.id);
 					let headers = Array.from(document.querySelectorAll(`h2[id*=${ID_PREFIX}], h3[id*=${ID_PREFIX}]`)).filter(node => sideMenuIds.includes(node.id));
 
