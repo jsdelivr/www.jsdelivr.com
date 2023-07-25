@@ -67,36 +67,40 @@
 				// if page URL has a hash then scroll page to the anchor
 				this.observeOnce('safeHtmlToRender', () => {
 					let anchor = app.router.uri.hash;
-					let el;
 
-					let interval = setInterval(() => {
-						el = anchor ? this.find(anchor) : null;
+					if (anchor) {
+						let el;
+						let interval = setInterval(() => {
+							el = this.find(anchor);
 
-						if (el && anchor) {
-							this.set('isMarkupReady', true);
+							if (el && el.offsetHeight) {
+								this.set('isMarkupReady', true);
 
-							if (document.visibilityState === 'visible') {
-								el.scrollIntoView({
-									behavior: 'smooth',
-								});
-							} else {
-								document.addEventListener('visibilitychange', function listener () {
+								if (document.visibilityState === 'visible') {
 									el.scrollIntoView({
 										behavior: 'smooth',
 									});
+								} else {
+									document.addEventListener('visibilitychange', function listener () {
+										el.scrollIntoView({
+											behavior: 'smooth',
+										});
 
-									document.removeEventListener('visibilitychange', listener);
-								});
-							}
+										document.removeEventListener('visibilitychange', listener);
+									});
+								}
 
-							clearInterval(interval);
-						} else {
-							setTimeout(() => {
-								this.set('isMarkupReady', true);
 								clearInterval(interval);
-							}, 1000);
-						}
-					}, 4);
+							} else {
+								setTimeout(() => {
+									this.set('isMarkupReady', true);
+									clearInterval(interval);
+								}, 1000);
+							}
+						}, 100);
+					} else {
+						this.set('isMarkupReady', true);
+					}
 				}, { init: false, defer: true });
 			}
 		},
