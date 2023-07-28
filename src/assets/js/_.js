@@ -1241,7 +1241,7 @@ module.exports = {
 			}
 		} else if (lowCaseTestName === 'dns') {
 			if (dnsTraceEnabled) {
-				let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
+				let lastHop = testResData.result.hops ? testResData.result.hops[testResData.result.hops.length - 1] : {};
 
 				if (lastHop) {
 					resTiming = lastHop.timings.total;
@@ -1250,7 +1250,7 @@ module.exports = {
 				resTiming = testResData.result.timings.total;
 			}
 		} else if (lowCaseTestName === 'mtr') {
-			let lastHop = testResData.result.hops[testResData.result.hops.length - 1];
+			let lastHop = testResData.result.hops ? testResData.result.hops[testResData.result.hops.length - 1] : {};
 
 			if (lastHop) {
 				resTiming = lastHop.stats.avg;
