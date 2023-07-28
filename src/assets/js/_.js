@@ -1221,7 +1221,7 @@ module.exports = {
 				};
 			}
 		} else if (lowCaseTestName === 'traceroute') {
-			let { timings } = testResData.result.hops[testResData.result.hops.length - 1];
+			let { timings } = testResData.result.hops ? testResData.result.hops[testResData.result.hops.length - 1] : {};
 
 			if (timings && timings.length) {
 				let timingsCalc = timings.reduce((res, timing) => {
