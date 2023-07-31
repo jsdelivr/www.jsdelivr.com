@@ -47,25 +47,28 @@
 					});
 
 					// if page URL has a hash then scroll page to the anchor
-					this.observeOnce('safeHtmlToRender', () => {
-						let anchor = app.router.uri.hash;
-						let el = anchor ? this.find(anchor) : null;
+					this.observe('safeHtmlToRender', () => {
+						// it appears the observer sometimes executes too soon despite defer: true, so we delay by one cycle here
+						setTimeout(() => {
+							let anchor = app.router.uri.hash;
+							let el = anchor ? this.find(anchor) : null;
 
-						if (el) {
-							if (document.visibilityState === 'visible') {
-								el.scrollIntoView({
-									behavior: 'smooth',
-								});
-							} else {
-								document.addEventListener('visibilitychange', function listener () {
+							if (el) {
+								if (document.visibilityState === 'visible') {
 									el.scrollIntoView({
 										behavior: 'smooth',
 									});
+								} else {
+									document.addEventListener('visibilitychange', function listener () {
+										el.scrollIntoView({
+											behavior: 'smooth',
+										});
 
-									document.removeEventListener('visibilitychange', listener);
-								});
+										document.removeEventListener('visibilitychange', listener);
+									});
+								}
 							}
-						}
+						});
 					}, { init: false, defer: true });
 
 					this.observe('html', (html) => {

@@ -58,7 +58,7 @@ gulp.task('copy', gulp.parallel(
 	() => gulp.src(`${srcAssetsDir}/**/*.!(js|less)`, { base: srcAssetsDir, since: gulp.lastRun('copy') })
 		.pipe(gulp.dest(dstAssetsDir))
 		.pipe(livereload()),
-	() => gulp.src(`${srcPublicDir}/**/*.!(js|less)`, { base: srcPublicDir, since: gulp.lastRun('copy') })
+	() => gulp.src(`${srcPublicDir}/**/*`, { base: srcPublicDir, since: gulp.lastRun('copy') })
 		.pipe(gulp.dest(dstPublicDir))
 		.pipe(livereload()),
 ));
@@ -153,7 +153,7 @@ gulp.task('watch', () => {
 
 	gulp.watch([
 		`${srcAssetsDir}/**/*.!(html|js|less)`,
-		`${srcPublicDir}/**/*.!(html|js|less)`,
+		`${srcPublicDir}/**/*`,
 	], gulp.series('copy'));
 
 	gulp.watch([
