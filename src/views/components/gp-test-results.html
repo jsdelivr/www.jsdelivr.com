@@ -47,7 +47,9 @@
 				<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testReqParams.type, this, testReqParams.measurementOptions.trace).isFailed}}failed{{/if}}"></div>
 
 				<div class="c-gp-test-results_list_item_actions">
-					<div class="c-gp-test-results_list_item_actions_btn" as-tooltip="'Set this probe as location for next test', 'right'">
+					<div class="c-gp-test-results_list_item_actions_btn"
+						as-tooltip="'Set this probe as location for next test', 'right'"
+						on-click="@this.setProbeAsLocation(this.probe)">
 						<i class="fa fa-crosshairs" aria-hidden="true"></i>
 					</div>
 				</div>
@@ -294,6 +296,9 @@
 			});
 
 			return cmd.base + cmd.typePart + cmd.globalPart;
+		},
+		setProbeAsLocation (probeData) {
+			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`)
 		},
 	};
 </script>
