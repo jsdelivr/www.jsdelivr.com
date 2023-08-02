@@ -1,53 +1,59 @@
 <div class="c-gp-test-results">
 	<div class="c-gp-test-results_list">
 		{{#each testResults:idx}}
-			<div class="c-gp-test-results_list_item">
-				<div class="c-gp-test-results_list_item_header">
-					<span class="c-gp-test-results_list_item_header_info">
-						<span>
-							<img width="28"
-								height="20"
-								src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.probe.country}}.svg">
-								{{this.probe.city}}, {{this.probe.country}}, {{this.probe.continent}}
-						</span>
-						<span>&nbsp;-&nbsp;</span>
-						<span>{{this.probe.network}} (AS{{this.probe.asn}})</span>
-					</span>
-
-					{{#if testResultsTimings[idx]}}
-						<span class="c-gp-test-results_list_item_header_time main-value">
-							<img class="c-gp-test-results_list_item_header_time_dot-icon"
-								width="4"
-								height="4"
-								src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
-
-							<span>Time:</span>
-							<span class="c-gp-test-results_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
-						</span>
-					{{/if}}
-
-					{{#if testResultsExtra[idx]}}
-						{{#each testResultsExtra[idx]}}
-							<span class="c-gp-test-results_list_item_header_time">
-								<span>{{this.text}}:</span>
-								<span class="c-gp-test-results_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+			<div class="c-gp-test-results_list_item_actions-space">
+				<div class="c-gp-test-results_list_item_wrapper">
+					<div class="c-gp-test-results_list_item">
+						<div class="c-gp-test-results_list_item_header">
+							<span class="c-gp-test-results_list_item_header_info">
+								<span>
+									<img width="28"
+										height="20"
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.probe.country}}.svg">
+										{{this.probe.city}}, {{this.probe.country}}, {{this.probe.continent}}
+								</span>
+								<span>&nbsp;-&nbsp;</span>
+								<span>{{this.probe.network}} (AS{{this.probe.asn}})</span>
 							</span>
-						{{/each}}
-					{{/if}}
 
-					<img on-click="@this.hideShowTestResult(idx)"
-						class="c-gp-test-results_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
-						width="24"
-						height="24"
-						src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
+							{{#if testResultsTimings[idx]}}
+								<span class="c-gp-test-results_list_item_header_time main-value">
+									<img class="c-gp-test-results_list_item_header_time_dot-icon"
+										width="4"
+										height="4"
+										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
+
+									<span>Time:</span>
+									<span class="c-gp-test-results_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
+								</span>
+							{{/if}}
+
+							{{#if testResultsExtra[idx]}}
+								{{#each testResultsExtra[idx]}}
+									<span class="c-gp-test-results_list_item_header_time">
+										<span>{{this.text}}:</span>
+										<span class="c-gp-test-results_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+									</span>
+								{{/each}}
+							{{/if}}
+
+							<img on-click="@this.hideShowTestResult(idx)"
+								class="c-gp-test-results_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+								width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
+						</div>
+
+						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
+
+						<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testReqParams.type, this, testReqParams.measurementOptions.trace).isFailed}}failed{{/if}}"></div>
+					</div>
+
+					<div class="c-gp-test-results_list_item_wrapper_bottom-line"></div>
 				</div>
 
-				<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
-
-				<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testReqParams.type, this, testReqParams.measurementOptions.trace).isFailed}}failed{{/if}}"></div>
-
-				<div class="c-gp-test-results_list_item_actions">
-					<div class="c-gp-test-results_list_item_actions_btn"
+				<div class="c-gp-test-results_list_item_actions-space_actions">
+					<div class="c-gp-test-results_list_item_actions-space_actions_btn"
 						as-tooltip="'Set this probe as location for next test', 'right'"
 						on-click="@this.setProbeAsLocation(this.probe)">
 						<i class="fa fa-crosshairs" aria-hidden="true"></i>

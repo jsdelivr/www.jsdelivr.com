@@ -10,9 +10,7 @@
 		flex-direction: column;
 		width: 100%;
 		height: auto;
-		padding: 0 24px;
 		border-radius: 8px;
-		background: #fbfbfb;
 		overflow-y: scroll;
 
 		&_item {
@@ -23,8 +21,63 @@
 			width: 100%;
 			padding: 24px 0 24px 18px;
 
-			&:not(:nth-child(1)) {
-				border-top: 1px solid #dcdcdc;
+			&_actions-space {
+				position: relative;
+				display: flex;
+				justify-content: right;
+				width: 100%;
+
+				&:nth-child(1) > .c-gp-test-results_list_item_wrapper {
+					border-top-left-radius: 8px;
+					border-top-right-radius: 8px;
+				}
+
+				&:nth-last-child(1) > .c-gp-test-results_list_item_wrapper {
+					border-bottom-left-radius: 8px;
+					border-bottom-right-radius: 8px;
+				}
+
+				&:hover .c-gp-test-results_list_item_actions-space_actions {
+					visibility: visible;
+				}
+
+				&_actions {
+					visibility: hidden;
+					position: absolute;
+					top: 24px;
+					left: 0;
+					overflow: visible;
+
+					&_btn {
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						cursor: pointer;
+						font-size: 20px;
+						width: 28px;
+						height: 28px;
+						background-color: rgba(243, 245, 246, 1);
+						border: 1px solid rgba(231, 231, 238, 1);
+						border-top-left-radius: 8px;
+						border-bottom-left-radius: 8px;
+					}
+				}
+			}
+
+			&_wrapper {
+				position: relative;
+				width: calc(100% - 28px);
+				padding: 0 24px;
+				background: #fbfbfb;
+
+				&_bottom-line {
+					position: absolute;
+					bottom: 0;
+					left: 42px;
+					width: calc(100% - 18px - 24px - 24px);
+					height: 1px;
+					background: #dcdcdc;
+				}
 			}
 
 			&_header {
@@ -124,34 +177,6 @@
 
 				&.failed {
 					background: #eb5757;
-				}
-			}
-
-			&:hover .c-gp-test-results_list_item_actions {
-				visibility: visible;
-			}
-
-			&_actions {
-				visibility: hidden;
-				position: absolute;
-				// top: 24px;
-				top: 52px;// TODO: 536 temp, uncomment value above after owerwritting the styles
-				// left: -52px;
-				left: -24px;// TODO: 536 temp, uncomment value above after owerwritting the styles
-				overflow: visible;
-
-				&_btn {
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					cursor: pointer;
-					font-size: 20px;
-					width: 28px;
-					height: 28px;
-					background-color: rgba(243, 245, 246, 1);
-					border: 1px solid rgba(231, 231, 238, 1);
-					border-top-left-radius: 8px;
-					border-bottom-left-radius: 8px;
 				}
 			}
 		}
