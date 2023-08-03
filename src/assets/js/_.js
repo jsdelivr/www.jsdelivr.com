@@ -1256,46 +1256,48 @@ module.exports = {
 				resTiming = lastHop.stats.avg;
 			}
 		} else if (lowCaseTestName === 'http') {
-			resTiming = testResData.result?.timings?.total;
+			if (testResData.result.statusCode !== null) {
+				resTiming = testResData.result?.timings?.total;
 
-			if (typeof testResData.result?.timings?.dns === 'number') {
-				extraValues.dns = {
-					text: 'DNS',
-					value: testResData.result.timings.dns,
-					units: ' ms',
-				};
-			}
+				if (typeof testResData.result?.timings?.dns === 'number') {
+					extraValues.dns = {
+						text: 'DNS',
+						value: testResData.result.timings.dns,
+						units: ' ms',
+					};
+				}
 
-			if (typeof testResData.result?.timings?.tcp === 'number') {
-				extraValues.tcp = {
-					text: 'TCP',
-					value: testResData.result.timings.tcp,
-					units: ' ms',
-				};
-			}
+				if (typeof testResData.result?.timings?.tcp === 'number') {
+					extraValues.tcp = {
+						text: 'TCP',
+						value: testResData.result.timings.tcp,
+						units: ' ms',
+					};
+				}
 
-			if (typeof testResData.result?.timings?.tls === 'number') {
-				extraValues.tls = {
-					text: 'TLS',
-					value: testResData.result.timings.tls,
-					units: ' ms',
-				};
-			}
+				if (typeof testResData.result?.timings?.tls === 'number') {
+					extraValues.tls = {
+						text: 'TLS',
+						value: testResData.result.timings.tls,
+						units: ' ms',
+					};
+				}
 
-			if (typeof testResData.result?.timings?.firstByte === 'number') {
-				extraValues.firstByte = {
-					text: 'TTFB',
-					value: testResData.result.timings.firstByte,
-					units: ' ms',
-				};
-			}
+				if (typeof testResData.result?.timings?.firstByte === 'number') {
+					extraValues.firstByte = {
+						text: 'TTFB',
+						value: testResData.result.timings.firstByte,
+						units: ' ms',
+					};
+				}
 
-			if (typeof testResData.result?.timings?.download === 'number') {
-				extraValues.download = {
-					text: 'Download',
-					value: testResData.result.timings.download,
-					units: ' ms',
-				};
+				if (typeof testResData.result?.timings?.download === 'number') {
+					extraValues.download = {
+						text: 'Download',
+						value: testResData.result.timings.download,
+						units: ' ms',
+					};
+				}
 			}
 		}
 
