@@ -11,18 +11,59 @@
 		</div>
 
 		<div class="table-body">
-			{{#each ~/data}}
-				<div class="table-row">
-					<div>{{>column1}}</div>
-					<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
-					<div class="percentage-bar">
-						<div
-							class="table-chart"
-							style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+			<div class="table-body_content">
+				{{#each ~/data}}
+					<div class="table-row">
+						<div>{{>column1}}</div>
+						<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
+						<div class="percentage-bar">
+							<div
+								class="table-chart"
+								style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+							</div>
 						</div>
 					</div>
+				{{/each}}
+			</div>
+
+			<div class="table-body_pagination">
+				<div class="table-body_pagination_range">{{ pageRange }}</div>
+
+				<div class="table-body_pagination_ctrls">
+					<button on-click="@this.prevPage()"
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+					</button>
+
+					<div class="table-body_pagination_ctrls_limit {{#if topList && !topList.length}}table-wrapper_pagination_ctrls_limit_disabled{{/if}}">
+						<span>Show:</span>
+
+						<div class="btn-group">
+							<button type="button"
+								class="btn dropdown-toggle {{#if topList && !topList.length}}disabled{{/if}}"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+
+								<span>{{ pageLimit }}</span>
+
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each paginationLimits}}
+									<li><a on-click="@this.set('pageLimit', this)">{{ this }}</a></li>
+								{{/each}}
+							</ul>
+						</div>
+					</div>
+
+					<button on-click="@this.nextPage()"
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+					</button>
 				</div>
-			{{/each}}
+			</div>
 		</div>
 	</div>
 </div>
@@ -39,12 +80,52 @@
 
 				return _.getValueFormatter(isBandwidth, data.map(v => v[key]));
 			},
+			pageRange () {
+				let page = this.get('page');
+				let pageLimit = this.get('pageLimit');
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
+				let start = (page.value - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+
+				if (xTotalCount < end) {
+					end = xTotalCount;
+				}
+
+				return xTotalPages && xTotalCount ? `Records ${start} - ${end} of ${xTotalCount}` : 'Records 0 of 0';
+			},
 		},
 		data () {
 			return {
 				desc: true,
 				valueKey: 'hits',
+				page: { value: 1 },
+				pageLimit: 10,
+				paginationLimits: [ 10, 20, 50, 100 ],
+				xTotalCount: 0,
+				xTotalPages: 0,
 			};
+		},
+		prevPage () {
+			let topList = this.get('topList');
+
+			if (!topList || !topList.length) { return; }
+
+			let page = this.get('page');
+			let value = page.value > 1 ? page.value - 1 : page.value;
+
+			this.set('page', { value });
+		},
+		nextPage () {
+			let topList = this.get('topList');
+
+			if (!topList || !topList.length) { return; }
+
+			let page = this.get('page');
+			let xTotalPages = this.get('xTotalPages');
+			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
+
+			this.set('page', { value });
 		},
 	};
 </script>
