@@ -35,12 +35,12 @@
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 					</button>
 
-					<div class="table-body_pagination_ctrls_limit {{#if topList && !topList.length}}table-wrapper_pagination_ctrls_limit_disabled{{/if}}">
+					<div class="table-body_pagination_ctrls_limit {{#if data && !data.length}}table-wrapper_pagination_ctrls_limit_disabled{{/if}}">
 						<span>Show:</span>
 
 						<div class="btn-group">
 							<button type="button"
-								class="btn dropdown-toggle {{#if topList && !topList.length}}disabled{{/if}}"
+								class="btn dropdown-toggle {{#if data && !data.length}}disabled{{/if}}"
 								data-toggle="dropdown"
 								aria-haspopup="true"
 								aria-expanded="false">
@@ -98,6 +98,7 @@
 		data () {
 			return {
 				desc: true,
+				data: [],
 				valueKey: 'hits',
 				page: { value: 1 },
 				pageLimit: 10,
@@ -106,10 +107,24 @@
 				xTotalPages: 0,
 			};
 		},
-		prevPage () {
-			let topList = this.get('topList');
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('responseHeaders', (responseHeaders) => {
+					if (responseHeaders) {
+						this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+						this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
+					}
+				}, { init: false });
 
-			if (!topList || !topList.length) { return; }
+				this.observe('responseData', (responseData) => {
+					this.animate('data', responseData);
+				}, { init: false });
+			}
+		},
+		prevPage () {
+			let data = this.get('data');
+
+			if (!data || !data.length) { return; }
 
 			let page = this.get('page');
 			let value = page.value > 1 ? page.value - 1 : page.value;
@@ -117,9 +132,9 @@
 			this.set('page', { value });
 		},
 		nextPage () {
-			let topList = this.get('topList');
+			let data = this.get('data');
 
-			if (!topList || !topList.length) { return; }
+			if (!data || !data.length) { return; }
 
 			let page = this.get('page');
 			let xTotalPages = this.get('xTotalPages');

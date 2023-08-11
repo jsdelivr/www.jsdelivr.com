@@ -6,14 +6,21 @@ const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const GLOBALPING_HOST = 'https://api.globalping.io';
 const HTTP_CACHE = new Map();
 
-const getWithCache = (url, params = {}) => {
+const getWithCache = (url, params = {}, responseHeadersToGet = null) => {
 	url += _.createQueryString(params);
 
 	if (HTTP_CACHE.has(url)) {
 		return HTTP_CACHE.get(url);
 	}
 
-	let request = _.makeHTTPRequest({ url });
+	let request;
+
+	if (responseHeadersToGet) {
+		request = _.makeHTTPRequest({ url, responseHeadersToGet });
+	} else {
+		request = _.makeHTTPRequest({ url });
+	}
+
 	HTTP_CACHE.set(url, request);
 
 	return request;
@@ -72,6 +79,13 @@ module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
 
 module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = 'hits', limit = '5') => {
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit });
+};
+
+// TODO: 507
+module.exports.fetchPackageVersionsStatsWithHeaders = (type, name, period = 'month', by = 'hits', limit = '5') => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit }, responseHeadersToGet);
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
