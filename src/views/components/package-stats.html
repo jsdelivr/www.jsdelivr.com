@@ -107,7 +107,8 @@
 				responseHeaders="{{topVersionsHeaders}}"
 				version="{{~/fileStatsVersion}}"
 				isBandwidth="{{~/showChartBandwidth}}"
-				pageLimit="{{topPackagesLimit}}">
+				pageLimit="{{topPackagesLimit}}"
+				page="{{topPackagesPage}}">
 				{{#partial column1}}
 					<a on-click="@this.set('version', version)">{{version}}</a>
 				{{/partial}}
@@ -190,6 +191,7 @@
 				noPackageStatsData: false,
 				chartTitlePeriodText: 'Stats for past',
 				topPackagesLimit: 10, // TODO: 507
+				topPackagesPage: 1,
 			};
 		},
 		oninit () {
@@ -217,8 +219,8 @@
 					});
 				});
 
-				// get Package Version Stats for Top-5-package-versions
-				this.observe('periodData versionP showChartBandwidth', () => {
+				// get Package Version Stats for Top-package-versions
+				this.observe('periodData versionP showChartBandwidth topPackagesPage topPackagesLimit', () => {
 					if (!this.get('periodData') || !this.get('versionP')) { return; }
 
 					let type = this.get('type');
@@ -227,8 +229,9 @@
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let limit = this.get('topPackagesLimit'); // TODO: 507
+					let page = this.get('topPackagesPage');
 
-					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit).then(({ response, responseHeaders }) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response, responseHeaders }) => {
 						let {
 							noHitsData: noTopFiveHitsData,
 							noBandwidthData: noTopFiveBandData,
@@ -267,12 +270,13 @@
 				});
 
 				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
-				this.observe('periodData', () => {
+				this.observe('periodData topPackagesLimit topPackagesPage', () => {
 					let period = this.get('periodData').periodValue;
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 					let limit = this.get('topPackagesLimit');
+					let page = this.get('topPackagesPage');
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
 					if (period === 'day') { return; }
@@ -300,7 +304,7 @@
 					});
 
 					// get data for lineChart
-					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit).then(({ response }) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
 						let {
 							noHitsData: noHitsChartHitsData,
 							noBandwidthData: noHitsChartBandData,
@@ -328,8 +332,9 @@
 					let name = this.get('name');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let limit = this.get('topPackagesLimit'); // TODO: 507
+					let page = this.get('topPackagesPage');
 
-					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit).then(({ response }) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
 						let {
 							noHitsData: noHitsChartHitsData,
 							noBandwidthData: noHitsChartBandData,

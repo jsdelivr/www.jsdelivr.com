@@ -31,7 +31,7 @@
 
 				<div class="table-body_pagination_ctrls">
 					<button on-click="@this.prevPage()"
-						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-prev {{#if page.value === 1}}disabled{{/if}}">
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
 					</button>
 
@@ -59,7 +59,7 @@
 					</div>
 
 					<button on-click="@this.nextPage()"
-						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-next {{#if page.value === xTotalPages}}disabled{{/if}}">
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
 					</button>
 				</div>
@@ -85,7 +85,7 @@
 				let pageLimit = this.get('pageLimit');
 				let xTotalCount = this.get('xTotalCount');
 				let xTotalPages = this.get('xTotalPages');
-				let start = (page.value - 1) * pageLimit + 1;
+				let start = (page - 1) * pageLimit + 1;
 				let end = start + pageLimit - 1;
 
 				if (xTotalCount < end) {
@@ -100,7 +100,7 @@
 				desc: true,
 				data: [],
 				valueKey: 'hits',
-				page: { value: 1 },
+				page: 1,
 				pageLimit: 10,
 				paginationLimits: [ 10, 20, 50, 100 ],
 				xTotalCount: 0,
@@ -127,9 +127,9 @@
 			if (!data || !data.length) { return; }
 
 			let page = this.get('page');
-			let value = page.value > 1 ? page.value - 1 : page.value;
+			let value = page > 1 ? page - 1 : page;
 
-			this.set('page', { value });
+			this.set('page', value);
 		},
 		nextPage () {
 			let data = this.get('data');
@@ -138,9 +138,9 @@
 
 			let page = this.get('page');
 			let xTotalPages = this.get('xTotalPages');
-			let value = page.value + 1 > xTotalPages ? page.value : page.value + 1;
+			let value = page + 1 > xTotalPages ? page : page + 1;
 
-			this.set('page', { value });
+			this.set('page', value);
 		},
 	};
 </script>

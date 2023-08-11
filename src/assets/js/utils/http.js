@@ -82,10 +82,17 @@ module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = '
 };
 
 // TODO: 507
-module.exports.fetchPackageVersionsStatsWithHeaders = (type, name, period = 'month', by = 'hits', limit = '5') => {
+module.exports.fetchPackageVersionsStatsWithHeaders = (
+	type,
+	name,
+	period = 'month',
+	by = 'hits',
+	limit = 5,
+	page = 1,
+) => {
 	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 
-	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit }, responseHeadersToGet);
+	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit, page }, responseHeadersToGet);
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
