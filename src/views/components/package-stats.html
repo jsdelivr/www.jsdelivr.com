@@ -98,7 +98,7 @@
 					width="270"
 					height="148"
 					src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-				<span>No data for Top 5 versions</span>
+				<span>No data for Top versions</span>
 			</div>
 		{{else}}
 			<c-top-stats-table
@@ -177,6 +177,7 @@
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
 	const initCharts = require('../../assets/js/utils/charts');
+	const DEFAULT_LIMIT = 5;
 
 	component.exports = {
 		computed: {
@@ -193,15 +194,15 @@
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				chartTitlePeriodText: 'Stats for past',
-				topPackagesLimit: 10,
+				topPackagesLimit: DEFAULT_LIMIT,
 				topPackagesPage: 1,
-				filesStatsLimit: 10,
+				filesStatsLimit: DEFAULT_LIMIT,
 				filesStatsPage: 1,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// fetch Package Version File Stats for Top-5-file-per-package-version
+				// fetch Package Version File Stats for Top-files-per-package-version
 				this.observe('periodData fileStatsVersion showChartBandwidth filesStatsLimit filesStatsPage', () => {
 					if (!this.get('periodData') || !this.get('fileStatsVersion')) {
 						return;
