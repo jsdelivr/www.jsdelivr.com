@@ -73,6 +73,20 @@ module.exports.fetchPackageFileStats = (type, name, version, period = 'month', b
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, { period, by, limit });
 };
 
+module.exports.fetchPackageFileStatsWithHeaders = (
+	type,
+	name,
+	version,
+	period = 'month',
+	by = 'hits',
+	limit = 5,
+	page = 1,
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, { period, by, limit, page }, responseHeadersToGet);
+};
+
 module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}`, { period });
 };

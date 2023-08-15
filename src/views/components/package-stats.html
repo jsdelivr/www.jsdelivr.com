@@ -114,13 +114,16 @@
 				{{/partial}}
 			</c-top-stats-table>
 
-			<!-- <c-top-stats-table
+			<c-top-stats-table
 				type="{{~/type}}"
 				name="{{~/name}}"
-				data="{{~/filesStats}}"
+				responseData="{{~/filesStats}}"
+				responseHeaders="{{filesStatsHeaders}}"
 				version="{{~/fileStatsVersion}}"
 				versions="{{~/packageVersionsList}}"
-				isBandwidth="{{~/showChartBandwidth}}">
+				isBandwidth="{{~/showChartBandwidth}}"
+				pageLimit="{{filesStatsLimit}}"
+				page="{{filesStatsPage}}">
 				{{#partial header}}
 					Top files in version
 					<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
@@ -131,7 +134,7 @@
 						{{file}}
 					</a>
 				{{/partial}}
-			</c-top-stats-table> -->
+			</c-top-stats-table>
 		{{/if}}
 	</div>
 
@@ -190,14 +193,16 @@
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				chartTitlePeriodText: 'Stats for past',
-				topPackagesLimit: 10, // TODO: 507
+				topPackagesLimit: 10,
 				topPackagesPage: 1,
+				filesStatsLimit: 10,
+				filesStatsPage: 1,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				// fetch Package Version File Stats for Top-5-file-per-package-version
-				this.observe('periodData fileStatsVersion showChartBandwidth', () => {
+				this.observe('periodData fileStatsVersion showChartBandwidth filesStatsLimit filesStatsPage', () => {
 					if (!this.get('periodData') || !this.get('fileStatsVersion')) {
 						return;
 					}
@@ -208,14 +213,17 @@
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let type = this.get('type');
 					let name = this.get('name');
+					let filesStatsPage = this.get('filesStatsPage');
+					let filesStatsLimit = this.get('filesStatsLimit');
 
-					http.fetchPackageFileStats(type, name, version, period, dataType, '5').then((response) => {
+					http.fetchPackageFileStatsWithHeaders(type, name, version, period, dataType, filesStatsLimit, filesStatsPage).then(({ response, responseHeaders }) => {
 						let filesStats = response.map(statsPerFile => ({
 							file: statsPerFile.name,
 							hits: statsPerFile[dataType].total,
 						}));
 
-						this.animate('filesStats', filesStats);
+						this.set('filesStats', filesStats);
+						this.set('filesStatsHeaders', responseHeaders);
 					});
 				});
 
@@ -228,7 +236,7 @@
 					let period = this.get('periodData').periodValue;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let limit = this.get('topPackagesLimit'); // TODO: 507
+					let limit = this.get('topPackagesLimit');
 					let page = this.get('topPackagesPage');
 
 					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response, responseHeaders }) => {
@@ -329,7 +337,7 @@
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let limit = this.get('topPackagesLimit'); // TODO: 507
+					let limit = this.get('topPackagesLimit');
 					let page = this.get('topPackagesPage');
 
 					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
