@@ -953,7 +953,15 @@ module.exports = {
 	},
 
 	// prepare data for LineChart
-	getPreparedDataForLineChart (rawData, groupBy, chartPeriod, showChartBandwidth, numberOfDatasets = 5, onlyFullPeriods = true) {
+	getPreparedDataForLineChart (
+		rawData,
+		groupBy,
+		chartPeriod,
+		showChartBandwidth,
+		numberOfDatasets = 5,
+		onlyFullPeriods = true,
+		colorsArray = [],
+	) {
 		let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 		let rawDataFiltered = rawData.sort((a, b) => b[dataType].hits - a[dataType].hits).slice(0, numberOfDatasets);
 		let valueUnits = '', unit;
@@ -1014,7 +1022,8 @@ module.exports = {
 			let dataset = {
 				label: this.truncate(versionData.version, 20),
 				data: groupedByValues,
-				...module.exports.getLineColorsFromMask(idx),
+				borderColor: colorsArray[idx],
+				backgroundColor: colorsArray[idx],
 			};
 
 			res.datasets.push(dataset);

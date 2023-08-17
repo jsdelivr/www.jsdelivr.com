@@ -159,9 +159,9 @@
 			</div>
 
 			<div class="hits-chart-legend">
-				{{#each hitsChartLegendVersions}}
+				{{#each hitsChartLegendVersions:idx}}
 					<div class="legend-item">
-						<div></div>
+						<div style="background: {{colorsArray[idx]}};"></div>
 						{{version}}
 					</div>
 				{{/each}}
@@ -178,6 +178,12 @@
 	const throttle = require('../../assets/js/utils/throttle');
 	const initCharts = require('../../assets/js/utils/charts');
 	const DEFAULT_LIMIT = 5;
+	const COLORS_ARR = [
+		'#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7',
+		'#619ED6', '#6BA547', '#F7D027', '#E48F1B', '#B77EA3',
+		'#E64345', '#60CEED', '#9CF168', '#F7EA4A', '#FBC543',
+		'#FFC9ED', '#E6696E', '#FB6F92', '#B5838D', '#83C5BE',
+	];
 
 	component.exports = {
 		computed: {
@@ -188,6 +194,7 @@
 		data () {
 			return {
 				_,
+				colorsArray: COLORS_ARR,
 				periodData: { periodText: 'quarter', periodValue: 'quarter', periodType: 's-quarter' },
 				showChartBandwidth: false,
 				usageChartGroupByValues: stats.groupByOptions['s-quarter'],
@@ -411,6 +418,8 @@
 					let noHitsChartHitsData = this.get('noHitsChartHitsData');
 					let noHitsChartBandData = this.get('noHitsChartBandData');
 					let showChartBandwidth = this.get('showChartBandwidth');
+					let topPackagesLimit = this.get('topPackagesLimit');
+					let colorsArray = this.get('colorsArray');
 
 					if (
 						!rawHitsChartData
@@ -433,7 +442,15 @@
 						datasets,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
+					} = _.getPreparedDataForLineChart(
+						rawHitsChartData,
+						usageChartGroupBy,
+						chartPeriodType,
+						showChartBandwidth,
+						topPackagesLimit,
+						true,
+						colorsArray,
+					);
 
 					this.set('preparedHitsChartData', {
 						datasets,
