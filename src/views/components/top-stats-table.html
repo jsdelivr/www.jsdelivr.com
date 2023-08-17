@@ -52,7 +52,7 @@
 
 							<ul class="dropdown-menu">
 								{{#each paginationLimits}}
-									<li><a on-click="@this.set('pageLimit', this)">{{ this }}</a></li>
+									<li><a on-click="@this.handlePageLimitChange(this)">{{ this }}</a></li>
 								{{/each}}
 							</ul>
 						</div>
@@ -141,6 +141,10 @@
 			let value = page + 1 > xTotalPages ? page : page + 1;
 
 			this.set('page', value);
+		},
+		handlePageLimitChange (pageLimit) {
+			this.set('page', 1);
+			this.set('pageLimit', pageLimit);
 		},
 	};
 </script>
