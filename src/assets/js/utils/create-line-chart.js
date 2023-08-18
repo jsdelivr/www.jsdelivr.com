@@ -120,7 +120,7 @@ const createLineChart = Chart => (
 	};
 
 	// create external tooltip (new version)
-	let externalTooltip = (ctx) => {
+	let externalTooltip = (ctx) => { // TODO: 507 (one-two columns layout for chart tooltip and maybe scrollable tooltip content for mobile)
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
@@ -159,13 +159,17 @@ const createLineChart = Chart => (
 			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
 
 			// create title element
-			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'>`;
+			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'><div class='tooltipBodyItemWrapper'>`;
 
 			// create body lines
-			sortedBodyLines.forEach((line) => {
+			sortedBodyLines.forEach((line, idx) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
 				let [ iVersion, iAmount ] = line.split(':');
 				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
+
+				if (idx === 10) {
+					innerHtml += `</div><div class='tooltipBodyDivider'></div><div class='tooltipBodyItemWrapper'>`;
+				}
 
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
 				innerHtml += `<span>${iVersion}</span><span>${formattedAmount + chartData.valueUnits}</span>`;
