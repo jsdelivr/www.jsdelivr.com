@@ -6,6 +6,7 @@
 <link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
 <link rel="ractive" href="../components/proxy-request-bandwidth-stats.html" name="c-proxy-request-bandwidth-stats">
 <link rel="ractive" href="../components/periods-dropdown.html" name="c-periods-dropdown">
+<link rel="ractive" href="../components/top-stats-table.html" name="c-top-stats-table">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
@@ -104,6 +105,24 @@
 				</div>
 			{{/if}}
 
+			<div class="files-table">
+				<c-top-stats-table
+					title="Top files"
+					responseData="{{~/topFiles}}"
+					responseHeaders="{{topFilesHeaders}}"
+					isBandwidth="{{~/showChartBandwidth}}"
+					pageLimit="{{topFilesLimit}}"
+					page="{{topFilesPage}}">
+					<!-- TODO: 508 check if it is possible to get rid of column1 for this case -->
+					<!-- TODO: 508 bandwidth case does not work -->
+					<!-- TODO: 508 pagination does not work: show all rows at once-->
+					<!-- TODO: 508 pagination does not work: new request should be performed when page changes-->
+					{{#partial column1}}
+						{{version}}
+					{{/partial}}
+				</c-top-stats-table>
+			</div>
+
 			<div class="explore-all-endpoints">
 				<a href="/oss-cdn/" class="btn-arrow">
 					<span>Explore all custom endpoints</span>
@@ -193,6 +212,11 @@
 				projectImgH: '',
 				rawStatsData: {},
 				preparedStatsData: {},
+				cdnOssRes: null,
+				topFiles: null,
+				topFilesHeaders: null,
+				topFilesLimit: 5,
+				topFilesPage: 1,
 			};
 		},
 		oninit () {
@@ -209,6 +233,33 @@
 			});
 
 			if (!Ractive.isServer) {
+				// get files for a specific cdn-oss
+				this.observe('name', (name) => {
+					http.getCdnOssFiles(name).then((result) => {
+						this.set('cdnOssRes', result);
+					});
+				});
+
+				// handle cdn oss files data
+				this.observe('cdnOssRes showChartBandwidth', () => {
+					let { response, responseHeaders } = this.get('cdnOssRes');
+					let showChartBandwidth = this.get('showChartBandwidth');
+
+					if (showChartBandwidth) {
+						this.set('topFiles', response.map(i => ({
+							version: i.name,
+							bandwidth: i.bandwidth.total,
+						})));
+					} else {
+						this.set('topFiles', response.map(i => ({
+							version: i.name,
+							hits: i.hits.total,
+						})));
+					}
+
+					this.set('topFilesHeaders', responseHeaders);
+				}, { init: false });
+
 				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('periodData', (periodData) => {
 					let period = periodData.periodValue;

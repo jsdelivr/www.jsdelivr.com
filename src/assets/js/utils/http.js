@@ -266,3 +266,10 @@ module.exports.postGlobalpingMeasurement = (opts) => {
 module.exports.getGlobalpingMeasurement = (id) => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}`, onFailReturnStatus: true });
 };
+
+
+module.exports.getCdnOssFiles = (name) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/proxies/${name}/files`, {}, responseHeadersToGet);
+};
