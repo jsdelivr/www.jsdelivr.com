@@ -150,8 +150,10 @@ const createLineChart = Chart => (
 
 			// prepare body lines and color map for lines-backgrounds
 			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
-				res.lines.push(item.lines[0]);
-				res.linesMap[item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+				// add index to the key because content of the line could be cut and therefore they will ahve the same value which leads to bugs
+				res.lines.push(itemIdx + item.lines[0]);
+				res.linesMap[itemIdx + item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+
 				return res;
 			}, { lines: [], linesMap: {} });
 
@@ -164,7 +166,8 @@ const createLineChart = Chart => (
 			// create body lines
 			sortedBodyLines.forEach((line, idx) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
-				let [ iVersion, iAmount ] = line.split(':');
+				// remove first number character from the line because it is an index which is used to differentiate lines names in case if they were cut
+				let [ iVersion, iAmount ] = line.replace(/^\d/, '').split(':');
 				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
 
 				if (idx === 10) {
