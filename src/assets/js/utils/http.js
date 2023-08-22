@@ -270,10 +270,11 @@ module.exports.getGlobalpingMeasurement = (id) => {
 
 module.exports.getCdnOssFiles = (
 	name,
+	by = 'hits',
 	limit = 5,
 	page = 1,
 ) => {
 	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 
-	return getWithCache(`${API_HOST}/v1/stats/proxies/${name}/files`, { page, limit }, responseHeadersToGet);
+	return getWithCache(`${API_HOST}/v1/stats/proxies/${name}/files`, { page, limit, by }, responseHeadersToGet);
 };

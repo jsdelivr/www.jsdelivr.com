@@ -232,18 +232,19 @@
 
 			if (!Ractive.isServer) {
 				// get files for a specific cdn-oss
-				this.observe('name topFilesPage topFilesLimit', () => {
+				this.observe('name topFilesPage topFilesLimit showChartBandwidth', () => {
 					let name = this.get('name');
 					let topFilesLimit = this.get('topFilesLimit');
 					let topFilesPage = this.get('topFilesPage');
+					let filterBy = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
 
-					http.getCdnOssFiles(name, topFilesLimit, topFilesPage).then((result) => {
+					http.getCdnOssFiles(name, filterBy, topFilesLimit, topFilesPage).then((result) => {
 						this.set('cdnOssRes', result);
 					});
 				});
 
 				// handle cdn oss files data
-				this.observe('cdnOssRes showChartBandwidth', () => {
+				this.observe('cdnOssRes', () => {
 					let { response, responseHeaders } = this.get('cdnOssRes');
 					let showChartBandwidth = this.get('showChartBandwidth');
 
