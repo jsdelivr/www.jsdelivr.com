@@ -113,12 +113,11 @@
 					isBandwidth="{{~/showChartBandwidth}}"
 					pageLimit="{{topFilesLimit}}"
 					page="{{topFilesPage}}">
-					<!-- TODO: 508 check if it is possible to get rid of column1 for this case -->
 					<!-- TODO: 508 bandwidth case does not work -->
 					<!-- TODO: 508 pagination does not work: show all rows at once-->
 					<!-- TODO: 508 pagination does not work: new request should be performed when page changes-->
 					{{#partial column1}}
-						{{version}}
+						{{name}}
 					{{/partial}}
 				</c-top-stats-table>
 			</div>
@@ -247,12 +246,12 @@
 
 					if (showChartBandwidth) {
 						this.set('topFiles', response.map(i => ({
-							version: i.name,
+							name: i.name,
 							bandwidth: i.bandwidth.total,
 						})));
 					} else {
 						this.set('topFiles', response.map(i => ({
-							version: i.name,
+							name: i.name,
 							hits: i.hits.total,
 						})));
 					}
