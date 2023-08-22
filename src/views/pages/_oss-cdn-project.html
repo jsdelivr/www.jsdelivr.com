@@ -233,8 +233,12 @@
 
 			if (!Ractive.isServer) {
 				// get files for a specific cdn-oss
-				this.observe('name', (name) => {
-					http.getCdnOssFiles(name).then((result) => {
+				this.observe('name topFilesPage topFilesLimit', () => {
+					let name = this.get('name');
+					let topFilesLimit = this.get('topFilesLimit');
+					let topFilesPage = this.get('topFilesPage');
+
+					http.getCdnOssFiles(name, topFilesLimit, topFilesPage).then((result) => {
 						this.set('cdnOssRes', result);
 					});
 				});
