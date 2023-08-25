@@ -161,7 +161,7 @@ const createLineChart = Chart => (
 			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
 
 			// create title element
-			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'><div class='tooltipBodyItemWrapper'>`;
+			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'><div class='tooltipBodyItemsWrapper'>`;
 
 			// create body lines
 			sortedBodyLines.forEach((line, idx) => {
@@ -171,7 +171,7 @@ const createLineChart = Chart => (
 				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
 
 				if (idx === 10) {
-					innerHtml += `</div><div class='tooltipBodyDivider'></div><div class='tooltipBodyItemWrapper'>`;
+					innerHtml += `</div><div class='tooltipBodyDivider'></div><div class='tooltipBodyItemsWrapper'>`;
 				}
 
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
@@ -193,6 +193,7 @@ const createLineChart = Chart => (
 			tooltipInstance.style.top = chartArea.top + 'px';
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 
+			// TODO 507 fix tooltip here
 			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
 				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
