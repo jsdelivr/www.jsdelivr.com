@@ -189,11 +189,23 @@ const createLineChart = Chart => (
 		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
 		let tooltipWrapperEl = tooltipInstance.querySelector('div.tooltipWrapper');
 
-		if (screen.width >= 768) {
+		if (screen.width >= 992) {
 			tooltipInstance.style.top = chartArea.top + 'px';
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 
-			// TODO 507 fix tooltip here
+			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
+				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			} else {
+				tooltipVerticalLine.style.left = '-10px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
+		} else if (screen.width >= 768 && screen.width < 992) {
+			tooltipInstance.style.top = chartArea.top + 'px';
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+			tooltipWrapperEl.style.position = 'absolute';
+			tooltipWrapperEl.style.top = -tooltipWrapperEl.offsetHeight + tooltipVerticalLine.offsetHeight + 'px';
+
 			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
 				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
