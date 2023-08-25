@@ -248,17 +248,11 @@
 					let { response, responseHeaders } = this.get('cdnOssRes');
 					let showChartBandwidth = this.get('showChartBandwidth');
 
-					if (showChartBandwidth) {
-						this.set('topFiles', response.map(i => ({
-							name: i.name,
-							bandwidth: i.bandwidth.total,
-						})));
-					} else {
-						this.set('topFiles', response.map(i => ({
+					this.set('topFiles', response.map(i => ({
 							name: i.name,
 							hits: i.hits.total,
+							bandwidth: i.bandwidth.total,
 						})));
-					}
 
 					this.set('topFilesHeaders', responseHeaders);
 				}, { init: false });
