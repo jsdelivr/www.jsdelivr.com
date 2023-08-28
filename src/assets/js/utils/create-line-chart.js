@@ -197,6 +197,7 @@ const createLineChart = Chart => (
 				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
 			} else {
+				tooltipVerticalLine.style.left = '-10px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
 			}
 		} else if (screen.width >= 768 && screen.width < 992) {
