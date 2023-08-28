@@ -120,7 +120,7 @@ const createLineChart = Chart => (
 	};
 
 	// create external tooltip (new version)
-	let externalTooltip = (ctx) => { // TODO: 507 (one-two columns layout for chart tooltip and maybe scrollable tooltip content for mobile)
+	let externalTooltip = (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
@@ -197,7 +197,6 @@ const createLineChart = Chart => (
 				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
 			} else {
-				tooltipVerticalLine.style.left = '-10px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
 			}
 		} else if (screen.width >= 768 && screen.width < 992) {
@@ -206,11 +205,11 @@ const createLineChart = Chart => (
 			tooltipWrapperEl.style.position = 'absolute';
 			tooltipWrapperEl.style.top = -tooltipWrapperEl.offsetHeight + tooltipVerticalLine.offsetHeight + 'px';
 
-			if (tooltipModel.caretX + tooltipInstance.offsetWidth > canvas.clientWidth) {
-				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth + 10 + 'px';
-				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
+			if (tooltipModel.caretX > canvas.clientWidth / 2) {
+				tooltipVerticalLine.style.left = tooltipWrapperEl.offsetWidth + 10 + 'px';
+				tooltipInstance.style.left = tooltipModel.caretX - tooltipWrapperEl.offsetWidth - 10 + 'px';
 			} else {
-				tooltipVerticalLine.style.left = '-10px';
+				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth - 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
 			}
 		} else {
