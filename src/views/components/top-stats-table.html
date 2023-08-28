@@ -11,20 +11,27 @@
 		</div>
 
 		<div class="table-body">
-			<div class="table-body_content">
-				{{#each ~/data}}
-					<div class="table-row">
-						<div>{{>column1}}</div>
-						<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
-						<div class="percentage-bar">
-							<div
-								class="table-chart"
-								style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+			{{#if data !== null}}
+				<div class="table-body_content">
+					{{#each ~/data}}
+						<div class="table-row">
+							<div>{{>column1}}</div>
+							<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
+							<div class="percentage-bar">
+								<div
+									class="table-chart"
+									style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+								</div>
 							</div>
 						</div>
-					</div>
-				{{/each}}
-			</div>
+					{{/each}}
+				</div>
+			{{else}}
+				<div class="table-body_no-data-msg">
+					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+					<span>{{noDataMsg}}</span>
+				</div>
+			{{/if}}
 
 			<div class="table-body_pagination">
 				<div class="table-body_pagination_range">{{ pageRange }}</div>
@@ -105,6 +112,7 @@
 				paginationLimits: [ 5, 10, 15, 20 ],
 				xTotalCount: 0,
 				xTotalPages: 0,
+				noDataMsg: 'No available data',
 			};
 		},
 		oninit () {
@@ -117,7 +125,11 @@
 				}, { init: false });
 
 				this.observe('responseData', (responseData) => {
-					this.animate('data', responseData);
+					if (responseData.length) {
+						this.animate('data', responseData);
+					} else {
+						this.animate('data', null);
+					}
 				}, { init: false });
 			}
 		},
