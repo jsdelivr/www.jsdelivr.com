@@ -120,7 +120,7 @@ const createLineChart = Chart => (
 	};
 
 	// create external tooltip (new version)
-	let externalTooltip = (ctx) => {
+	let externalTooltip = (noSpaceCase = false) => (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
@@ -189,7 +189,7 @@ const createLineChart = Chart => (
 		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
 		let tooltipWrapperEl = tooltipInstance.querySelector('div.tooltipWrapper');
 
-		if (screen.width >= 992) {
+		if (noSpaceCase ? screen.width >= 992 : screen.width >= 768) {
 			tooltipInstance.style.top = chartArea.top + 'px';
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 
@@ -200,7 +200,7 @@ const createLineChart = Chart => (
 				tooltipVerticalLine.style.left = '-10px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
 			}
-		} else if (screen.width >= 768 && screen.width < 992) {
+		} else if (noSpaceCase && screen.width >= 768 && screen.width < 992) {
 			tooltipInstance.style.top = chartArea.top + 'px';
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 			tooltipWrapperEl.style.position = 'absolute';
@@ -275,7 +275,9 @@ const createLineChart = Chart => (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltip : externalTooltipOldVersion,
+					external: !chartSettings.useExternalTooltip
+						? null
+						: chartSettings.useImprovedTooltip ? externalTooltip(chartSettings.noSpaceForImprvdTltp) : externalTooltipOldVersion,
 				},
 			},
 			scales: {
