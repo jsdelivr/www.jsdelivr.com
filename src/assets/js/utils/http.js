@@ -95,7 +95,6 @@ module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = '
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit });
 };
 
-// TODO: 507
 module.exports.fetchPackageVersionsStatsWithHeaders = (
 	type,
 	name,
