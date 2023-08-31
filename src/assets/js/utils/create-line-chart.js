@@ -132,11 +132,6 @@ const createLineChart = Chart => (
 			let wrapper = document.createElement('div');
 			wrapper.classList.add('tooltipWrapper', 'tooltipWrapper-improved');
 
-			// TODO: 507, test mobile tooltip
-			if (noSpaceCase) {
-				wrapper.classList.add('tooltipWrapper-noSpaceCase');
-			}
-
 			tooltipInstance.appendChild(wrapper);
 			let verticalLine = document.createElement('div');
 			verticalLine.classList.add('tooltipVerticalLine');
