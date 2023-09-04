@@ -4,12 +4,12 @@
 			<div class="row block-main">
 				<div class="col-xs-12 col-sm-6 main-left">
 					<div class="maintain-header">
+						<span class="text-footer-14 op-64">Maintained by</span>
+						<a class="text-footer-14" href="/about#people">jsDelivr team and contributors</a>
 						<span class="text-footer-14 op-64">Founded by</span>
 						<a class="text-footer-14" target="_blank" rel="noopener noreferrer"
 							href="https://dakulov.com/">Dmitriy Akulov</a>
 						<br>
-						<span class="text-footer-14 op-64">Maintained by</span>
-						<a class="text-footer-14" href="/about#people">the jsDelivr team and contributors</a>
 					</div>
 				</div>
 
@@ -166,8 +166,13 @@
 					if (response) {
 						let document = ( new window.DOMParser() ).parseFromString(response, "text/xml");
 						let documentEl = document.documentElement;
-						let docInnerHtml = document.documentElement.innerHTML;
-						let nodeName = document.documentElement.nodeName;
+						let docInnerHtml = documentEl.innerHTML;
+
+						// TODO: 560 each item has 9 childNodes and among them 0-title, 2-link, 3-pubDate
+						// extract this data per item and sort based on pubDate, get five latest
+						console.log("++++ document.documentElement", documentEl);
+						console.log("++++ items", documentEl.childNodes[0].getElementsByTagName('item'));
+						console.log("____________________________");
 
 						// this.set('docInnerHtml', docInnerHtml);
 					}
