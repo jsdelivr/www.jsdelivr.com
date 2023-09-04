@@ -4,6 +4,7 @@ const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const GLOBALPING_HOST = 'https://api.globalping.io';
+const JSDELIVR_HOST = 'https://jsdelivr.com';
 const HTTP_CACHE = new Map();
 
 const getWithCache = (url, params = {}) => {
@@ -230,4 +231,9 @@ module.exports.postGlobalpingMeasurement = (opts) => {
 
 module.exports.getGlobalpingMeasurement = (id) => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}`, onFailReturnStatus: true });
+};
+
+module.exports.getBlogRss = () => {
+	// return _.makeHTTPRequest({ url: `${JSDELIVR_HOST}/blog/rss` });
+	return _.makeHTTPRequest({ url: `http://localhost:4400/blog/rss`, rawResponse: true });
 };
