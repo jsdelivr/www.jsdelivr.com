@@ -178,11 +178,11 @@
 			if (!Ractive.isServer) {
 				http.getBlogRss().then((response) => {
 					if (response) {
-						let document = ( new window.DOMParser() ).parseFromString(response, "text/xml");
+						let document = new window.DOMParser().parseFromString(response, 'text/xml');
 						let items = document.documentElement.childNodes[0].getElementsByTagName('item');
 						let data = [];
 
-						for (let i = 0;  i < items.length; i++ ) {
+						for (let i = 0; i < items.length; i++) {
 							let currItemNodesList = items[i].childNodes;
 							let currItemTitle;
 							let currItemLink;
@@ -202,7 +202,7 @@
 								text: currItemTitle,
 								url: currItemLink,
 								date: new Date(currItemPubDate).getTime(),
-							})
+							});
 						}
 
 						data.sort((a, b) => b.date - a.date);
