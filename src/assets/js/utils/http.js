@@ -234,6 +234,5 @@ module.exports.getGlobalpingMeasurement = (id) => {
 };
 
 module.exports.getBlogRss = () => {
-	// return _.makeHTTPRequest({ url: `${JSDELIVR_HOST}/blog/rss` });
-	return _.makeHTTPRequest({ url: `http://localhost:4400/blog/rss`, rawResponse: true });
+	return _.makeHTTPRequest({ url: `${JSDELIVR_HOST}/blog/rss`, rawResponse: true });
 };
