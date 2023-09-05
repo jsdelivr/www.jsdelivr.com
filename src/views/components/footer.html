@@ -171,29 +171,7 @@
 						},
 					],
 				],
-				// blogLinksData: null,
-				blogLinksData: [
-					{
-						text: 'TEST goes live! A community-powered global network testing platform',
-						url: '/',
-					},
-					{
-						text: 'TEST Website, Improved API, and ESM Support',
-						url: '/',
-					},
-					{
-						text: 'TEST Sponsor Announcement: Gcore Joins jsDelivr',
-						url: '/',
-					},
-					{
-						text: 'TEST the German court’s ruling on Google Fonts affects jsDelivr and why it is safe to use',
-						url: '/',
-					},
-					{
-						text: 'TEST welcomes BootstrapCDN and continues to power Bootstrap!',
-						url: '/',
-					},
-				],
+				blogLinksData: null,
 			};
 		},
 		oninit () {
@@ -201,16 +179,35 @@
 				http.getBlogRss().then((response) => {
 					if (response) {
 						let document = ( new window.DOMParser() ).parseFromString(response, "text/xml");
-						let documentEl = document.documentElement;
-						let docInnerHtml = documentEl.innerHTML;
+						let items = document.documentElement.childNodes[0].getElementsByTagName('item');
+						let data = [];
 
-						// TODO: 560 each item has 9 childNodes and among them 0-title, 2-link, 3-pubDate
-						// extract this data per item and sort based on pubDate, get five latest
-						console.log("++++ document.documentElement", documentEl);
-						console.log("++++ items", documentEl.childNodes[0].getElementsByTagName('item'));
-						console.log("____________________________");
+						for (let i = 0;  i < items.length; i++ ) {
+							let currItemNodesList = items[i].childNodes;
+							let currItemTitle;
+							let currItemLink;
+							let currItemPubDate;
 
-						// this.set('blogLinksData', blogLinksData);
+							for (let k = 0; k < currItemNodesList.length; k++) {
+								if (currItemNodesList[k].nodeName === 'title') {
+									currItemTitle = currItemNodesList[k].textContent;
+								} else if (currItemNodesList[k].nodeName === 'link') {
+									currItemLink = currItemNodesList[k].textContent;
+								} else if (currItemNodesList[k].nodeName === 'pubDate') {
+									currItemPubDate = currItemNodesList[k].textContent;
+								}
+							}
+
+							data.push({
+								text: currItemTitle,
+								url: currItemLink,
+								date: new Date(currItemPubDate).getTime(),
+							})
+						}
+
+						data.sort((a, b) => b.date - a.date);
+
+						this.set('blogLinksData', data.slice(0, 5));
 					}
 				});
 			}
