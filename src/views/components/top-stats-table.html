@@ -12,7 +12,7 @@
 
 		<div class="table-body">
 			{{#if data !== null}}
-				<div class="table-body_content">
+				<div class="table-body_content" style="height: {{@this.getContentItemHeight(pageLimit)}}px;">
 					{{#each ~/data}}
 						<div class="table-row">
 							<div>{{>column1}}</div>
@@ -157,6 +157,13 @@
 		handlePageLimitChange (pageLimit) {
 			this.set('page', 1);
 			this.set('pageLimit', pageLimit);
+		},
+		getContentItemHeight (pageLimit) {
+			if (innerWidth < 1272) {
+				return pageLimit * 72;
+			}
+
+			return pageLimit * 40;
 		},
 	};
 </script>
