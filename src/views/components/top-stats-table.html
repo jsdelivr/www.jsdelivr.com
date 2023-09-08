@@ -12,7 +12,7 @@
 
 		<div class="table-body">
 			{{#if data !== null}}
-				<div class="table-body_content" style="height: {{preliminaryHeight}}px;">
+				<div class="table-body_content" style="height: {{contentHeight || preliminaryHeight}}px;">
 					{{#each ~/data}}
 						<div class="table-row">
 							<div>{{>column1}}</div>
@@ -122,6 +122,7 @@
 				xTotalCount: 0,
 				xTotalPages: 0,
 				noDataMsg: 'No available data',
+				contentHeight: null,
 			};
 		},
 		oninit () {
@@ -135,7 +136,16 @@
 
 				this.observe('responseData', (responseData) => {
 					if (responseData.length) {
-						this.animate('data', responseData);
+						this.animate('data', responseData).then(() => {
+							let els = this.findAll('.table-body_content .table-row');
+							let contentHeight = 0;
+
+							els.forEach((el) => {
+								contentHeight += el.offsetHeight;
+							});
+
+							this.set('contentHeight', contentHeight);
+						});
 					} else {
 						this.animate('data', null);
 					}
@@ -144,6 +154,7 @@
 				this.observe('pageLimit', (pageLimit, prevVal) => {
 					if (pageLimit !== prevVal) {
 						this.set('page', 1);
+						this.set('contentHeight', null);
 					}
 				}, { init: false });
 
