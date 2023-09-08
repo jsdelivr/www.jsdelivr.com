@@ -168,7 +168,7 @@ const createLineChart = Chart => (
 			sortedBodyLines.forEach((line, idx) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
 				// remove first number character from the line because it is an index which is used to differentiate lines names in case if they were cut
-				let [ iVersion, iAmount ] = line.replace(/^\d/, '').split(':');
+				let [ iVersion, iAmount ] = (idx < 10 ? line.replace(/^\d/, '') : line.replace(/^\d\d/, '')).split(':');
 				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
 
 				if (idx === 10) {
