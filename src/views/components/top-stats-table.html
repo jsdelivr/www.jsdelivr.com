@@ -12,7 +12,7 @@
 
 		<div class="table-body">
 			{{#if data !== null}}
-				<div class="table-body_content" style="height: {{@this.getContentItemHeight(pageLimit)}}px;">
+				<div class="table-body_content" style="height: {{preliminaryHeight}}px;">
 					{{#each ~/data}}
 						<div class="table-row">
 							<div>{{>column1}}</div>
@@ -101,6 +101,15 @@
 
 				return xTotalPages && xTotalCount ? `Records ${start} - ${end} of ${xTotalCount}` : 'Records 0 of 0';
 			},
+			preliminaryHeight (pageLimit) {
+				let pageLimit = this.get('pageLimit');
+
+				if (innerWidth < 1272) {
+					return pageLimit * 72;
+				}
+
+				return pageLimit * 40;
+			},
 		},
 		data () {
 			return {
@@ -157,13 +166,6 @@
 		handlePageLimitChange (pageLimit) {
 			this.set('page', 1);
 			this.set('pageLimit', pageLimit);
-		},
-		getContentItemHeight (pageLimit) {
-			if (innerWidth < 1272) {
-				return pageLimit * 72;
-			}
-
-			return pageLimit * 40;
 		},
 	};
 </script>
