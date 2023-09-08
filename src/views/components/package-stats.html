@@ -107,7 +107,7 @@
 				responseHeaders="{{topVersionsHeaders}}"
 				version="{{~/fileStatsVersion}}"
 				isBandwidth="{{~/showChartBandwidth}}"
-				pageLimit="{{topPackagesLimit}}"
+				pageLimit="{{topTablesLimit}}"
 				page="{{topPackagesPage}}">
 				{{#partial column1}}
 					<a on-click="@this.set('version', version)">{{version}}</a>
@@ -122,7 +122,7 @@
 				version="{{~/fileStatsVersion}}"
 				versions="{{~/packageVersionsList}}"
 				isBandwidth="{{~/showChartBandwidth}}"
-				pageLimit="{{filesStatsLimit}}"
+				pageLimit="{{topTablesLimit}}"
 				page="{{filesStatsPage}}">
 				{{#partial header}}
 					Top files in version
@@ -201,16 +201,15 @@
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				chartTitlePeriodText: 'Stats for past',
-				topPackagesLimit: DEFAULT_LIMIT,
+				topTablesLimit: DEFAULT_LIMIT,
 				topPackagesPage: 1,
-				filesStatsLimit: DEFAULT_LIMIT,
 				filesStatsPage: 1,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				// fetch Package Version File Stats for Top-files-per-package-version
-				this.observe('periodData fileStatsVersion showChartBandwidth filesStatsLimit filesStatsPage', () => {
+				this.observe('periodData fileStatsVersion showChartBandwidth topTablesLimit filesStatsPage', () => {
 					if (!this.get('periodData') || !this.get('fileStatsVersion')) {
 						return;
 					}
@@ -222,9 +221,9 @@
 					let type = this.get('type');
 					let name = this.get('name');
 					let filesStatsPage = this.get('filesStatsPage');
-					let filesStatsLimit = this.get('filesStatsLimit');
+					let topTablesLimit = this.get('topTablesLimit');
 
-					http.fetchPackageFileStatsWithHeaders(type, name, version, period, dataType, filesStatsLimit, filesStatsPage).then(({ response, responseHeaders }) => {
+					http.fetchPackageFileStatsWithHeaders(type, name, version, period, dataType, topTablesLimit, filesStatsPage).then(({ response, responseHeaders }) => {
 						let filesStats = response.map(statsPerFile => ({
 							file: statsPerFile.name,
 							hits: statsPerFile[dataType].total,
@@ -236,7 +235,7 @@
 				});
 
 				// get Package Version Stats for Top-package-versions
-				this.observe('periodData versionP showChartBandwidth topPackagesPage topPackagesLimit', () => {
+				this.observe('periodData versionP showChartBandwidth topPackagesPage topTablesLimit', () => {
 					if (!this.get('periodData') || !this.get('versionP')) { return; }
 
 					let type = this.get('type');
@@ -244,7 +243,7 @@
 					let period = this.get('periodData').periodValue;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let limit = this.get('topPackagesLimit');
+					let limit = this.get('topTablesLimit');
 					let page = this.get('topPackagesPage');
 
 					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response, responseHeaders }) => {
@@ -285,12 +284,12 @@
 				});
 
 				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
-				this.observe('periodData topPackagesLimit topPackagesPage', () => {
+				this.observe('periodData topTablesLimit topPackagesPage', () => {
 					let period = this.get('periodData').periodValue;
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
-					let limit = this.get('topPackagesLimit');
+					let limit = this.get('topTablesLimit');
 					let page = this.get('topPackagesPage');
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
@@ -346,7 +345,7 @@
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
-					let limit = this.get('topPackagesLimit');
+					let limit = this.get('topTablesLimit');
 					let page = this.get('topPackagesPage');
 
 					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
@@ -419,7 +418,7 @@
 					let noHitsChartHitsData = this.get('noHitsChartHitsData');
 					let noHitsChartBandData = this.get('noHitsChartBandData');
 					let showChartBandwidth = this.get('showChartBandwidth');
-					let topPackagesLimit = this.get('topPackagesLimit');
+					let topTablesLimit = this.get('topTablesLimit');
 					let colorsArray = this.get('colorsArray');
 
 					if (
@@ -448,7 +447,7 @@
 						usageChartGroupBy,
 						chartPeriodType,
 						showChartBandwidth,
-						topPackagesLimit,
+						topTablesLimit,
 						true,
 						colorsArray,
 					);
