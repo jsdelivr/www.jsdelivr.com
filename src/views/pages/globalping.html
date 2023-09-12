@@ -1579,11 +1579,11 @@
 						markersDataToDraw = markersData;
 					}
 
-					this.updateMarkers(markersDataToDraw, newDrawBaseIdx);
+					this.updateMarkers(markersDataToDraw, prevMarkersData, newDrawBaseIdx);
 				}
 			}, { init: false });
 		},
-		updateMarkers (markersData, baseDrawIdx = 0) {
+		updateMarkers (markersData, prevMarkersData = [], baseDrawIdx = 0) {
 			markersData.forEach((markerData, mDataIdx) => {
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow();
@@ -1656,7 +1656,36 @@
 				});
 
 				infoWindows.push(infoWindow);
-				mapMarkers.push(marker);
+
+				if (prevMarkersData) {
+					// check if the new Marker is the old one but with a timing value
+					// collect indexes to remove them later from the map
+					let markersIdsToRm = [];
+
+					prevMarkersData.forEach((pmd, pmdIdx) => {
+						let pmdStr = pmd.city + pmd.country + pmd.lat + pmd.lng + pmd.network;
+						let mdStr = markerData.city + markerData.country + markerData.lat + markerData.lng + markerData.network;
+
+						if (pmd.timing === null && markersData !== null && pmdStr === mdStr) {
+							markersIdsToRm.push(pmdIdx);
+						} else {
+							mapMarkers.push(marker);
+						}
+					});
+
+					// check if the marker is already present on the map and replace it with the new one, with timing
+					mapMarkers = mapMarkers.map((mm, idx) => {
+						if (markersIdsToRm.indexOf(idx) !== -1) {
+							mm.setMap(null);
+
+							return marker;
+						}
+
+						return mm;
+					});
+				} else {
+					mapMarkers.push(marker);
+				}
 			});
 
 			google.maps.event.addListener(map, 'click', () => {
