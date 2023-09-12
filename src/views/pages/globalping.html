@@ -1277,16 +1277,21 @@
 					}
 
 					let prevTestResults = this.get('testResults') || [];
-					let updTestResults = realTimeTestResResponse.results.filter((res) => {
-						// if it is no in-progress then it is already finished or failed and we could draw a marker
-						if (res.result.status !== 'in-progress') { return true; }
+					let newTestResults = [];
 
-						return false;
-					});
+					realTimeTestResResponse.results.forEach((res) => {
+						let isResPresent = false;
 
-					// filter out results that have already been drawn
-					let newTestResults = updTestResults.filter((updRes) => {
-						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
+						prevTestResults.forEach((prevRes, prevResId) => {
+							if (JSON.stringify(prevRes.probe) === JSON.stringify(res.probe)) {
+								prevTestResults.splice(prevResId, 1, res);
+								isResPresent = true;
+							}
+						});
+
+						if (!isResPresent) {
+							newTestResults.push(res);
+						}
 					});
 
 					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
@@ -1294,18 +1299,27 @@
 
 				// prepare data for Markers of the map, timings for the map scale
 				this.observe('testResults', (testResults) => {
+					// console.log("++++ testResults", testResults);
+					// console.log("_________________________");
 					if (!testResults || !testResults.length) { return; }
 
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
 					let markersData = testResults.map((res) => {
-						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+						let calcTiming = null;
+
+						if (res.result.status === 'finished') {
+							calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+						}
+
+						let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value
+
 
 						return {
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
-							timing: typeof resTiming.value === 'number' ? `${Math.round(resTiming.value)}${resTiming.units}` : resTiming.value,
+							timing: resTiming,
 							lat: res.probe.latitude,
 							lng: res.probe.longitude,
 						};
@@ -1559,6 +1573,7 @@
 					// if the data was already drawn on the map we should filter it out
 					if (prevMarkersData) {
 						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
+
 						newDrawBaseIdx += prevMarkersData.length;
 					} else {
 						markersDataToDraw = markersData;
@@ -1574,7 +1589,7 @@
 				let infoWindow = new google.maps.InfoWindow();
 
 				// create svg to use as a Marker icon
-				let svgFillColor = this.pickMarkerColor(markerData.timing);
+				let svgFillColor = markerData.timing ? this.pickMarkerColor(markerData.timing) : 'purple';
 				let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
@@ -1609,15 +1624,21 @@
 				});
 
 				oms.addMarker(marker, () => {
-					infoWindow.setContent(`<div class="gp-map_popup">
-						<div class="gp-map_popup_header">${markerData.timing}</div>
-						<div class="gp-map_popup_descr">${markerData.network}</div>
+					let infoWindowContent = '<div class="gp-map_popup">';
+
+					if (markerData.timing) {
+						infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
+					}
+
+					infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
 						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
 						<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
 							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
 							<span>Results and Actions</span>
 						</div>
-					</div>`);
+					</div>`;
+
+					infoWindow.setContent(infoWindowContent);
 
 					infoWindow.open(map, marker);
 				});
