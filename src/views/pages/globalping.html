@@ -1577,8 +1577,30 @@
 		},
 		updateMarkers (markersData, prevMarkersData = []) {
 			markersData.forEach((markerData, mDataIdx) => {
+				// check if the new Marker is the old one but with a timing value
+				// get index to remove it later from the map
+				let markerIdToReplace;
 				// TODO: 577 we should calculate index for every Marker we draw or redraw on the map here
-				let baseDrawIdx = 0;
+				let currentMarkerIdx = 0;
+
+				if (prevMarkersData) {
+					// stop once we found the match to get proper currentMarkerIdx
+					prevMarkersData.every((pmd, pmdIdx) => {
+						let pmdStr = pmd.city + pmd.country + pmd.lat + pmd.lng + pmd.network;
+						let mdStr = markerData.city + markerData.country + markerData.lat + markerData.lng + markerData.network;
+
+						if (pmd.timing === null && markersData !== null && pmdStr === mdStr) {
+							markerIdToReplace = pmdIdx;
+							currentMarkerIdx = pmdIdx;
+
+							return false;
+						} else {
+							currentMarkerIdx = prevMarkersData.length + mDataIdx;
+
+							return true;
+						}
+					});
+				}
 
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow();
@@ -1627,7 +1649,7 @@
 
 					infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
 						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-						<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
+						<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
 							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
 							<span>Results and Actions</span>
 						</div>
@@ -1639,12 +1661,12 @@
 				});
 
 				google.maps.event.addListener(infoWindow, 'domready', () => {
-					let clickableEl = document.getElementById(`iw-${baseDrawIdx + mDataIdx}`);
+					let clickableEl = document.getElementById(`iw-${currentMarkerIdx}`);
 					let hasListener = clickableEl.dataset.hasListener;
 
 					if (!hasListener) {
 						clickableEl.addEventListener('click', () => {
-							this.handleSeeResults(baseDrawIdx + mDataIdx);
+							this.handleSeeResults(currentMarkerIdx);
 							clickableEl.dataset.hasListener = true;
 						});
 					}
@@ -1652,22 +1674,7 @@
 
 				infoWindows.push(infoWindow);
 
-				if (prevMarkersData) {
-					// check if the new Marker is the old one but with a timing value
-					// collect indexes to remove them later from the map
-					let markerIdToReplace;
-
-					prevMarkersData.forEach((pmd, pmdIdx) => {
-						let pmdStr = pmd.city + pmd.country + pmd.lat + pmd.lng + pmd.network;
-						let mdStr = markerData.city + markerData.country + markerData.lat + markerData.lng + markerData.network;
-
-						if (pmd.timing === null && markersData !== null && pmdStr === mdStr) {
-							markerIdToReplace = pmdIdx;
-						} else {
-							mapMarkers.push(marker);
-						}
-					});
-
+				if (markerIdToReplace) {
 					// check if the marker is already present on the map and replace it with the new one, with timing
 					mapMarkers = mapMarkers.map((mm, mmIdx) => {
 						if (markerIdToReplace === mmIdx) {
