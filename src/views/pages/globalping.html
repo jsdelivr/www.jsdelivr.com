@@ -1579,8 +1579,8 @@
 			markersData.forEach((markerData, mDataIdx) => {
 				// check if the new Marker is the old one but with a timing value
 				// get index to remove it later from the map
-				let markerIdToReplace;
-				// TODO: 577 we should calculate index for every Marker we draw or redraw on the map here
+				let markerIdToReplace = null;
+				// we should calculate index for every Marker we draw or redraw on the map here
 				let currentMarkerIdx = 0;
 
 				if (prevMarkersData) {
@@ -1674,7 +1674,7 @@
 
 				infoWindows.push(infoWindow);
 
-				if (markerIdToReplace) {
+				if (markerIdToReplace !== null) {
 					// check if the marker is already present on the map and replace it with the new one, with timing
 					mapMarkers = mapMarkers.map((mm, mmIdx) => {
 						if (markerIdToReplace === mmIdx) {
