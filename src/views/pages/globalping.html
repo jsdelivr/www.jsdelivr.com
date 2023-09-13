@@ -1563,25 +1563,23 @@
 					this.clearTestResponseMarkers();
 				} else {
 					let markersDataToDraw;
-					// since we are drawing markers in real-time we should counting new base index
-					// so our results in gp-test-results table and infoWindows IDs have the same index
-					let newDrawBaseIdx = 0;
 
 					// if the data was already drawn on the map we should filter it out
 					if (prevMarkersData) {
 						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
-
-						newDrawBaseIdx += prevMarkersData.length;
 					} else {
 						markersDataToDraw = markersData;
 					}
 
-					this.updateMarkers(markersDataToDraw, prevMarkersData, newDrawBaseIdx);
+					this.updateMarkers(markersDataToDraw, prevMarkersData);
 				}
 			}, { init: false });
 		},
-		updateMarkers (markersData, prevMarkersData = [], baseDrawIdx = 0) {
+		updateMarkers (markersData, prevMarkersData = []) {
 			markersData.forEach((markerData, mDataIdx) => {
+				// TODO: 577 we should calculate index for every Marker we draw or redraw on the map here
+				let baseDrawIdx = 0;
+
 				// create Popup element
 				let infoWindow = new google.maps.InfoWindow();
 
@@ -1657,22 +1655,22 @@
 				if (prevMarkersData) {
 					// check if the new Marker is the old one but with a timing value
 					// collect indexes to remove them later from the map
-					let markersIdsToRm = [];
+					let markerIdToReplace;
 
 					prevMarkersData.forEach((pmd, pmdIdx) => {
 						let pmdStr = pmd.city + pmd.country + pmd.lat + pmd.lng + pmd.network;
 						let mdStr = markerData.city + markerData.country + markerData.lat + markerData.lng + markerData.network;
 
 						if (pmd.timing === null && markersData !== null && pmdStr === mdStr) {
-							markersIdsToRm.push(pmdIdx);
+							markerIdToReplace = pmdIdx;
 						} else {
 							mapMarkers.push(marker);
 						}
 					});
 
 					// check if the marker is already present on the map and replace it with the new one, with timing
-					mapMarkers = mapMarkers.map((mm, idx) => {
-						if (markersIdsToRm.indexOf(idx) !== -1) {
+					mapMarkers = mapMarkers.map((mm, mmIdx) => {
+						if (markerIdToReplace === mmIdx) {
 							mm.setMap(null);
 
 							return marker;
