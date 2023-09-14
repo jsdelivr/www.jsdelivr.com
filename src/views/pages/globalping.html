@@ -1276,25 +1276,15 @@
 						}
 					}
 
-					let prevTestResults = this.get('testResults') || [];
-					let newTestResults = [];
+					let prevTestResults = this.get('testResults');
+					let testResults = realTimeTestResResponse.results.map((res, resIdx) => ({
+						clientSideId: resIdx,
+						...res,
+					}));
 
-					realTimeTestResResponse.results.forEach((res) => {
-						let isResPresent = false;
-
-						prevTestResults.forEach((prevRes, prevResId) => {
-							if (JSON.stringify(prevRes.probe) === JSON.stringify(res.probe)) {
-								prevTestResults.splice(prevResId, 1, res);
-								isResPresent = true;
-							}
-						});
-
-						if (!isResPresent) {
-							newTestResults.push(res);
-						}
-					});
-
-					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
+					if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
+						this.set('testResults', testResults);
+					}
 				}, { init: false });
 
 				// prepare data for Markers of the map, timings for the map scale
@@ -1313,6 +1303,7 @@
 						let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
 						return {
+							clientSideId: res.clientSideId,
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
@@ -1557,48 +1548,37 @@
 				}
 			});
 
-			// draw test response  markers and Clusers or clear the map from them
+			// check whether we should clear the Map from the markers or update them
 			this.observe('markersData', (markersData, prevMarkersData) => {
 				if (markersData === null) {
 					this.clearTestResponseMarkers();
-				} else {
-					let markersDataToDraw;
-
-					// if the data was already drawn on the map we should filter it out
-					if (prevMarkersData) {
-						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
-					} else {
-						markersDataToDraw = markersData;
-					}
-
-					this.updateMarkers(markersDataToDraw, prevMarkersData);
+				} else if (JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					// update Markers on the map (replace or add new) if Markers data is different
+					this.updateMarkers(markersData, prevMarkersData);
 				}
 			}, { init: false });
 		},
-		updateMarkers (markersData, prevMarkersData = []) {
+		updateMarkers (markersData, prevMarkersData) {
 			markersData.forEach((markerData, mDataIdx) => {
 				// check if the new Marker is the old one but with a timing value
 				// get index to remove it later from the map
 				let markerIdToReplace = null;
-				// we should calculate index for every Marker we draw or redraw on the map here
+				// get index for every Marker we draw or redraw on the map to provide proper work of InfoWindows, Results and Actions etc.
 				let currentMarkerIdx = 0;
 
 				if (prevMarkersData) {
 					// stop once we found the match to get proper currentMarkerIdx
-					prevMarkersData.every((pmd, pmdIdx) => {
-						let pmdStr = pmd.city + pmd.country + pmd.lat + pmd.lng + pmd.network;
-						let mdStr = markerData.city + markerData.country + markerData.lat + markerData.lng + markerData.network;
-
-						if (pmd.timing === null && markersData !== null && pmdStr === mdStr) {
-							markerIdToReplace = pmdIdx;
-							currentMarkerIdx = pmdIdx;
+					prevMarkersData.every((pmd) => {
+						if (pmd.clientSideId === markerData.clientSideId && pmd.timing === null && markersData.timing !== null) {
+							markerIdToReplace = pmd.clientSideId;
+							currentMarkerIdx = pmd.clientSideId;
 
 							return false;
-						} else {
-							currentMarkerIdx = prevMarkersData.length + mDataIdx;
-
-							return true;
 						}
+
+						currentMarkerIdx = prevMarkersData.length + mDataIdx;
+
+						return true;
 					});
 				}
 
@@ -1626,40 +1606,6 @@
 					</defs>
 					</svg>`);
 
-				// create Marker
-				let marker = new google.maps.Marker({
-					map,
-					icon: {
-						url: `data:image/svg+xml;base64,${svg}`,
-					},
-					position: { lat: markerData.lat, lng: markerData.lng },
-					optimized: false,
-				});
-
-				google.maps.event.addListener(marker, 'click', () => {
-					infoWindows.forEach(iw => iw.close());
-				});
-
-				oms.addMarker(marker, () => {
-					let infoWindowContent = '<div class="gp-map_popup">';
-
-					if (markerData.timing) {
-						infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
-					}
-
-					infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
-						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-						<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
-							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-							<span>Results and Actions</span>
-						</div>
-					</div>`;
-
-					infoWindow.setContent(infoWindowContent);
-
-					infoWindow.open(map, marker);
-				});
-
 				google.maps.event.addListener(infoWindow, 'domready', () => {
 					let clickableEl = document.getElementById(`iw-${currentMarkerIdx}`);
 					let hasListener = clickableEl.dataset.hasListener;
@@ -1675,17 +1621,86 @@
 				infoWindows.push(infoWindow);
 
 				if (markerIdToReplace !== null) {
+					// clear the Map from Marker which will be replaced
+					mapMarkers[markerIdToReplace].setMap(null);
+
 					// check if the marker is already present on the map and replace it with the new one, with timing
 					mapMarkers = mapMarkers.map((mm, mmIdx) => {
 						if (markerIdToReplace === mmIdx) {
-							mm.setMap(null);
+							// create Marker
+							let marker = new google.maps.Marker({
+								map,
+								icon: {
+									url: `data:image/svg+xml;base64,${svg}`,
+								},
+								position: { lat: markerData.lat, lng: markerData.lng },
+								optimized: false,
+							});
+
+							google.maps.event.addListener(marker, 'click', () => {
+								infoWindows.forEach(iw => iw.close());
+							});
+
+							oms.addMarker(marker, () => {
+								let infoWindowContent = '<div class="gp-map_popup">';
+
+								if (markerData.timing) {
+									infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
+								}
+
+								infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
+									<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+									<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
+										<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+										<span>Results and Actions</span>
+									</div>
+								</div>`;
+
+								infoWindow.setContent(infoWindowContent);
+
+								infoWindow.open(map, marker);
+							});
 
 							return marker;
 						}
 
 						return mm;
 					});
-				} else {
+				} else if (!mapMarkers[markerData.clientSideId]) {
+					// create Marker
+					let marker = new google.maps.Marker({
+						map,
+						icon: {
+							url: `data:image/svg+xml;base64,${svg}`,
+						},
+						position: { lat: markerData.lat, lng: markerData.lng },
+						optimized: false,
+					});
+
+					google.maps.event.addListener(marker, 'click', () => {
+						infoWindows.forEach(iw => iw.close());
+					});
+
+					oms.addMarker(marker, () => {
+						let infoWindowContent = '<div class="gp-map_popup">';
+
+						if (markerData.timing) {
+							infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
+						}
+
+						infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
+							<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+							<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
+								<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+								<span>Results and Actions</span>
+							</div>
+						</div>`;
+
+						infoWindow.setContent(infoWindowContent);
+
+						infoWindow.open(map, marker);
+					});
+
 					mapMarkers.push(marker);
 				}
 			});
