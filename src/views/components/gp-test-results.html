@@ -131,6 +131,14 @@
 					let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
 					let timings = testResults.reduce((timingValues, result, idx) => {
+						// if result is yet in-progress do not calc timings
+						if (result.result.status === 'in-progress') {
+							timingValues.mainTimingValues.push(null);
+							timingValues.extraValues[idx] = null;
+
+							return timingValues;
+						}
+
 						let { fullText, extraValues } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
 
 						timingValues.mainTimingValues.push(fullText);
