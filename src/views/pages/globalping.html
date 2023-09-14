@@ -1263,12 +1263,20 @@
 					}
 				}, { init: false, defer: true });
 
+				// zoom to results once we get the first response
+				this.observe('realTimeTestResResponse', (response, prevResponse) => {
+					if (!prevResponse && response && response.results.length) {
+						this.zoomToResults(response.locations);
+					}
+				}, { init: false })
+
 				// handle test results in real time
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (!realTimeTestResResponse) { return; }
+
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
-						this.zoomToResults(realTimeTestResResponse.locations);
 
 						// if it is a share-results-flow - scroll mapBlock into the view
 						if (this.get('shareResFlow')) {
@@ -1396,6 +1404,7 @@
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
 			this.set('shareResHeaderData', null);
+			this.set('realTimeTestResResponse', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -2036,7 +2045,7 @@
 				});
 
 				map.fitBounds(bounds);
-			}, 100);
+			}, 400);
 		},
 		handleTargetInputPaste (event) {
 			event.preventDefault();
