@@ -267,6 +267,10 @@ module.exports.getGlobalpingMeasurement = (id) => {
 };
 
 
+module.exports.getBlogRss = () => {
+	return _.makeHTTPRequest({ url: `/blog/rss`, rawResponse: true });
+};
+
 module.exports.getCdnOssFiles = (
 	name,
 	by = 'hits',
