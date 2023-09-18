@@ -120,7 +120,7 @@ const createLineChart = Chart => (
 	};
 
 	// create external tooltip (new version)
-	let externalTooltip = (ctx) => {
+	let externalTooltip = (noSpaceCase = false) => (ctx) => {
 		let { chart, tooltip: tooltipModel } = ctx;
 		let tooltipInstance = document.getElementById('lineChart-tooltip');
 
@@ -131,6 +131,7 @@ const createLineChart = Chart => (
 			tooltipInstance.classList.add('tooltipEl');
 			let wrapper = document.createElement('div');
 			wrapper.classList.add('tooltipWrapper', 'tooltipWrapper-improved');
+
 			tooltipInstance.appendChild(wrapper);
 			let verticalLine = document.createElement('div');
 			verticalLine.classList.add('tooltipVerticalLine');
@@ -150,8 +151,10 @@ const createLineChart = Chart => (
 
 			// prepare body lines and color map for lines-backgrounds
 			let bodyData = tooltipModel.body.reduce((res, item, itemIdx) => {
-				res.lines.push(item.lines[0]);
-				res.linesMap[item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+				// add index to the key because content of the line could be cut and therefore they will ahve the same value which leads to bugs
+				res.lines.push(itemIdx + item.lines[0]);
+				res.linesMap[itemIdx + item.lines[0]] = tooltipModel.labelColors[itemIdx].backgroundColor;
+
 				return res;
 			}, { lines: [], linesMap: {} });
 
@@ -159,13 +162,18 @@ const createLineChart = Chart => (
 			let sortedBodyLines = bodyData.lines.sort((a, b) => b.split(': ')[1].replace(/,/g, '') - a.split(': ')[1].replace(/,/g, ''));
 
 			// create title element
-			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'>`;
+			let innerHtml = `<div class='tooltipTitle'>${tooltipDate}</div><div class='tooltipBody'><div class='tooltipBodyItemsWrapper'>`;
 
 			// create body lines
-			sortedBodyLines.forEach((line) => {
+			sortedBodyLines.forEach((line, idx) => {
 				let coloredSquare = `<span class='tooltipSquare' style='background: ${bodyData.linesMap[line]}'></span>`;
-				let [ iVersion, iAmount ] = line.split(':');
+				// remove first number character from the line because it is an index which is used to differentiate lines names in case if they were cut
+				let [ iVersion, iAmount ] = (idx < 10 ? line.replace(/^\d/, '') : line.replace(/^\d\d/, '')).split(':');
 				let formattedAmount = _.formatNumber(iAmount.replace(/\D/g, ''));
+
+				if (idx === 10) {
+					innerHtml += `</div><div class='tooltipBodyDivider'></div><div class='tooltipBodyItemsWrapper'>`;
+				}
 
 				innerHtml += `<div class='tooltipBodyItem'>${coloredSquare}`;
 				innerHtml += `<span>${iVersion}</span><span>${formattedAmount + chartData.valueUnits}</span>`;
@@ -182,7 +190,7 @@ const createLineChart = Chart => (
 		let tooltipVerticalLine = tooltipInstance.querySelector('.tooltipVerticalLine');
 		let tooltipWrapperEl = tooltipInstance.querySelector('div.tooltipWrapper');
 
-		if (screen.width >= 768) {
+		if (noSpaceCase ? screen.width >= 992 : screen.width >= 768) {
 			tooltipInstance.style.top = chartArea.top + 'px';
 			tooltipVerticalLine.style.height = chartArea.height + 'px';
 
@@ -191,6 +199,19 @@ const createLineChart = Chart => (
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX - tooltipInstance.offsetWidth / 2 - 10 + 'px';
 			} else {
 				tooltipVerticalLine.style.left = '-10px';
+				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
+			}
+		} else if (noSpaceCase && screen.width >= 768 && screen.width < 992) {
+			tooltipInstance.style.top = chartArea.top + 'px';
+			tooltipVerticalLine.style.height = chartArea.height + 'px';
+			tooltipWrapperEl.style.position = 'absolute';
+			tooltipWrapperEl.style.top = -tooltipWrapperEl.offsetHeight + tooltipVerticalLine.offsetHeight + 'px';
+
+			if (tooltipModel.caretX > canvas.clientWidth / 2) {
+				tooltipVerticalLine.style.left = tooltipWrapperEl.offsetWidth + 10 + 'px';
+				tooltipInstance.style.left = tooltipModel.caretX - tooltipWrapperEl.offsetWidth - 10 + 'px';
+			} else {
+				tooltipVerticalLine.style.left = tooltipInstance.offsetWidth - 10 + 'px';
 				tooltipInstance.style.left = canvas.offsetLeft + tooltipModel.caretX + tooltipInstance.offsetWidth / 2 + 10 + 'px';
 			}
 		} else {
@@ -255,7 +276,9 @@ const createLineChart = Chart => (
 				},
 				tooltip: {
 					enabled: !chartSettings.useExternalTooltip && true,
-					external: !chartSettings.useExternalTooltip ? null : chartSettings.useImprovedTooltip ? externalTooltip : externalTooltipOldVersion,
+					external: !chartSettings.useExternalTooltip
+						? null
+						: chartSettings.useImprovedTooltip ? externalTooltip(chartSettings.noSpaceForImprvdTltp) : externalTooltipOldVersion,
 				},
 			},
 			scales: {

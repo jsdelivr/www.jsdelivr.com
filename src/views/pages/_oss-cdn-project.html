@@ -6,6 +6,7 @@
 <link rel="ractive" href="../components/new-infographic-banner.html" name="c-new-infographic-banner">
 <link rel="ractive" href="../components/proxy-request-bandwidth-stats.html" name="c-proxy-request-bandwidth-stats">
 <link rel="ractive" href="../components/periods-dropdown.html" name="c-periods-dropdown">
+<link rel="ractive" href="../components/top-stats-table.html" name="c-top-stats-table">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
@@ -104,6 +105,22 @@
 				</div>
 			{{/if}}
 
+			<div class="files-table">
+				<c-top-stats-table
+					title="Top files"
+					responseData="{{~/topFiles}}"
+					responseHeaders="{{topFilesHeaders}}"
+					isBandwidth="{{~/showChartBandwidth}}"
+					pageLimit="{{topFilesLimit}}"
+					page="{{topFilesPage}}"
+					paginationLimits="{{[10, 20, 50, 100]}}"
+					valueKey="{{showChartBandwidth ? 'bandwidth' : 'hits'}}">
+					{{#partial column1}}
+						{{name}}
+					{{/partial}}
+				</c-top-stats-table>
+			</div>
+
 			<div class="explore-all-endpoints">
 				<a href="/oss-cdn/" class="btn-arrow">
 					<span>Explore all custom endpoints</span>
@@ -193,6 +210,11 @@
 				projectImgH: '',
 				rawStatsData: {},
 				preparedStatsData: {},
+				cdnOssRes: null,
+				topFiles: null,
+				topFilesHeaders: null,
+				topFilesLimit: 10,
+				topFilesPage: 1,
 			};
 		},
 		oninit () {
@@ -209,6 +231,31 @@
 			});
 
 			if (!Ractive.isServer) {
+				// get files for a specific cdn-oss
+				this.observe('name topFilesPage topFilesLimit showChartBandwidth', () => {
+					let name = this.get('name');
+					let topFilesLimit = this.get('topFilesLimit');
+					let topFilesPage = this.get('topFilesPage');
+					let filterBy = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
+
+					http.getCdnOssFiles(name, filterBy, topFilesLimit, topFilesPage).then((result) => {
+						this.set('cdnOssRes', result);
+					});
+				});
+
+				// handle cdn oss files data
+				this.observe('cdnOssRes', () => {
+					let { response, responseHeaders } = this.get('cdnOssRes');
+
+					this.set('topFiles', response.map(i => ({
+						name: i.name,
+						hits: i.hits.total,
+						bandwidth: i.bandwidth.total,
+					})));
+
+					this.set('topFilesHeaders', responseHeaders);
+				}, { init: false });
+
 				// handle chart period changes by updating groupBy options and chart data fetching
 				this.observe('periodData', (periodData) => {
 					let period = periodData.periodValue;

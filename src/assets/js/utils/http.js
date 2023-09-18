@@ -6,14 +6,21 @@ const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const GLOBALPING_HOST = 'https://api.globalping.io';
 const HTTP_CACHE = new Map();
 
-const getWithCache = (url, params = {}) => {
+const getWithCache = (url, params = {}, responseHeadersToGet = null) => {
 	url += _.createQueryString(params);
 
 	if (HTTP_CACHE.has(url)) {
 		return HTTP_CACHE.get(url);
 	}
 
-	let request = _.makeHTTPRequest({ url });
+	let request;
+
+	if (responseHeadersToGet) {
+		request = _.makeHTTPRequest({ url, responseHeadersToGet });
+	} else {
+		request = _.makeHTTPRequest({ url });
+	}
+
 	HTTP_CACHE.set(url, request);
 
 	return request;
@@ -66,12 +73,39 @@ module.exports.fetchPackageFileStats = (type, name, version, period = 'month', b
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, { period, by, limit });
 };
 
+module.exports.fetchPackageFileStatsWithHeaders = (
+	type,
+	name,
+	version,
+	period = 'month',
+	by = 'hits',
+	limit = 5,
+	page = 1,
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}@${encodeURIComponent(version)}/files`, { period, by, limit, page }, responseHeadersToGet);
+};
+
 module.exports.fetchPackageSummaryStats = (type, name, period = 'month') => {
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}`, { period });
 };
 
 module.exports.fetchPackageVersionsStats = (type, name, period = 'month', by = 'hits', limit = '5') => {
 	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit });
+};
+
+module.exports.fetchPackageVersionsStatsWithHeaders = (
+	type,
+	name,
+	period = 'month',
+	by = 'hits',
+	limit = 5,
+	page = 1,
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/packages/${type}/${name}/versions`, { period, by, limit, page }, responseHeadersToGet);
 };
 
 module.exports.fetchPackageVersions = (type, name) => {
@@ -230,4 +264,20 @@ module.exports.postGlobalpingMeasurement = (opts) => {
 
 module.exports.getGlobalpingMeasurement = (id) => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}`, onFailReturnStatus: true });
+};
+
+
+module.exports.getBlogRss = () => {
+	return _.makeHTTPRequest({ url: `/blog/rss`, rawResponse: true });
+};
+
+module.exports.getCdnOssFiles = (
+	name,
+	by = 'hits',
+	limit = 5,
+	page = 1,
+) => {
+	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
+
+	return getWithCache(`${API_HOST}/v1/stats/proxies/${name}/files`, { page, limit, by }, responseHeadersToGet);
 };
