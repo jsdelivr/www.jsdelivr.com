@@ -11,18 +11,66 @@
 		</div>
 
 		<div class="table-body">
-			{{#each ~/data}}
-				<div class="table-row">
-					<div>{{>column1}}</div>
-					<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
-					<div class="percentage-bar">
-						<div
-							class="table-chart"
-							style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+			{{#if data !== null}}
+				<div class="table-body_content" style="height: {{contentHeight || preliminaryHeight}}px;">
+					{{#each ~/data}}
+						<div class="table-row {{#if responseData && pageLimit === responseData.length}}table-row_no-shadow{{/if}}">
+							<div>{{>column1}}</div>
+							<div class="hits text-table-number">{{~/formatValue(this[valueKey])}}</div>
+							<div class="percentage-bar">
+								<div
+									class="table-chart"
+									style-width="{{(this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100) > 2 ? this[valueKey] / data[desc ? 0 : data.length - 1][valueKey] * 100 : 2}}%">
+								</div>
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			{{else}}
+				<div class="table-body_no-data-msg">
+					<img width="180" height="152" src="{{@shared.assetsHost}}/img/no-data-chart-main.svg">
+					<span>{{noDataMsg}}</span>
+				</div>
+			{{/if}}
+
+			<div class="table-body_pagination">
+				<div class="table-body_pagination_range">{{ pageRange }}</div>
+
+				<div class="table-body_pagination_ctrls">
+					<button on-click="@this.prevPage()"
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-prev {{#if page === 1}}disabled{{/if}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+					</button>
+
+					<div class="table-body_pagination_ctrls_limit {{#if data && !data.length}}table-wrapper_pagination_ctrls_limit_disabled{{/if}}">
+						<span>Show:</span>
+
+						<div class="btn-group">
+							<button type="button"
+								class="btn dropdown-toggle {{#if data && !data.length}}disabled{{/if}}"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+
+								<span>{{ pageLimit }}</span>
+
+								<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/left.svg" loading="lazy">
+							</button>
+
+							<ul class="dropdown-menu">
+								{{#each paginationLimits}}
+									<li><a on-click="@this.handlePageLimitChange(this)">{{ this }}</a></li>
+								{{/each}}
+							</ul>
 						</div>
 					</div>
+
+					<button on-click="@this.nextPage()"
+						class="table-body_pagination_ctrls_btn table-body_pagination_ctrls_btn-next {{#if page === xTotalPages}}disabled{{/if}}">
+						<img width="20" height="20" src="{{@shared.assetsHost}}/img/statistics/right.svg" loading="lazy">
+					</button>
 				</div>
-			{{/each}}
+			</div>
 		</div>
 	</div>
 </div>
@@ -39,12 +87,110 @@
 
 				return _.getValueFormatter(isBandwidth, data.map(v => v[key]));
 			},
+			pageRange () {
+				let page = this.get('page');
+				let pageLimit = this.get('pageLimit');
+				let xTotalCount = this.get('xTotalCount');
+				let xTotalPages = this.get('xTotalPages');
+				let start = (page - 1) * pageLimit + 1;
+				let end = start + pageLimit - 1;
+
+				if (xTotalCount < end) {
+					end = xTotalCount;
+				}
+
+				return xTotalPages && xTotalCount ? `Records ${start} - ${end} of ${xTotalCount}` : 'Records 0 of 0';
+			},
+			preliminaryHeight () {
+				let pageLimit = this.get('pageLimit');
+
+				if (innerWidth < 1272) {
+					return pageLimit * 72;
+				}
+
+				return pageLimit * 40;
+			},
 		},
 		data () {
 			return {
 				desc: true,
+				data: [],
 				valueKey: 'hits',
+				page: 1,
+				pageLimit: 5,
+				paginationLimits: [ 5, 10, 15, 20 ],
+				xTotalCount: 0,
+				xTotalPages: 0,
+				noDataMsg: 'No available data',
+				contentHeight: null,
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('responseHeaders', (responseHeaders) => {
+					if (responseHeaders) {
+						this.set('xTotalCount', parseInt(responseHeaders['x-total-count']));
+						this.set('xTotalPages', parseInt(responseHeaders['x-total-pages']));
+					}
+				}, { init: false });
+
+				this.observe('responseData', (responseData) => {
+					if (responseData.length) {
+						this.animate('data', responseData).then(() => {
+							let els = this.findAll('.table-body_content .table-row');
+							let contentHeight = 0;
+
+							els.forEach((el) => {
+								contentHeight += el.offsetHeight;
+							});
+
+							this.set('contentHeight', contentHeight);
+						});
+					} else {
+						this.animate('data', null);
+					}
+				}, { init: false });
+
+				this.observe('pageLimit', (pageLimit, prevVal) => {
+					if (pageLimit !== prevVal) {
+						this.set('page', 1);
+						this.set('contentHeight', null);
+					}
+				}, { init: false });
+
+				this.observe('version', (version, prevVal) => {
+					let handleVersionChange = this.get('handleVersionChange');
+
+					if (handleVersionChange && version !== prevVal) {
+						this.set('page', 1);
+					}
+				}, { init: false });
+			}
+		},
+		prevPage () {
+			let data = this.get('data');
+
+			if (!data || !data.length) { return; }
+
+			let page = this.get('page');
+			let value = page > 1 ? page - 1 : page;
+
+			this.set('page', value);
+		},
+		nextPage () {
+			let data = this.get('data');
+
+			if (!data || !data.length) { return; }
+
+			let page = this.get('page');
+			let xTotalPages = this.get('xTotalPages');
+			let value = page + 1 > xTotalPages ? page : page + 1;
+
+			this.set('page', value);
+		},
+		handlePageLimitChange (pageLimit) {
+			this.set('page', 1);
+			this.set('pageLimit', pageLimit);
 		},
 	};
 </script>
