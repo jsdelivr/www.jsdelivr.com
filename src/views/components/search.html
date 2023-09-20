@@ -203,27 +203,14 @@
 			}
 		},
 		scrollToSearch () {
-			let startLocation = location.href.replace(location.search, '');
-			let page = $('html, body');
-			let searchInputEl = $('.search-input');
-			let scrollToPos = Math.floor(searchInputEl.offset().top / 100) * 100;
+			let page = document.querySelector('html');
+			let searchInputEl = this.find('.search-input');
+			let scrollToPos = Math.floor(searchInputEl.getBoundingClientRect().top / 100) * 100;
 
-			if (app.config.animateScrolling) {
-				page.animate({
-					scrollTop: scrollToPos,
-				}, {
-					step () {
-						let currLocation = location.href.replace(location.search, '');
-
-						if (startLocation !== currLocation) {
-							page.stop();
-						}
-					},
-				});
-			} else {
-				scrollTo(0, scrollToPos);
-				app.config.animateScrolling = true;
-			}
+			page.scrollTo({
+				behavior: 'smooth',
+				top: scrollToPos,
+			});
 		},
 	};
 </script>
