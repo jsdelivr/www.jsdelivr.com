@@ -112,9 +112,15 @@
 
 	component.exports = {
 		oncomplete () {
-			$('#purge-urls').on('input', function () {
-				this.style.height = 'auto';
-				this.style.height = this.scrollHeight + 'px';
+			// $('#purge-urls').on('input', function () {
+			// 	this.style.height = 'auto';
+			// 	this.style.height = this.scrollHeight + 'px';
+			// });
+			let pageUrlsEl = this.find('#purge-urls');
+
+			pageUrlsEl.addEventListener('input', (e) => {
+				e.target.style.height = 'auto';
+				e.target.style.height = (e.target.scrollHeight >= 80 ? e.target.scrollHeight : 80) + 'px';
 			});
 		},
 		data () {
