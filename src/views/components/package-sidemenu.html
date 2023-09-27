@@ -69,7 +69,7 @@
 				<div class="twitter-share">
 					<div>
 						{{#if packageRank}}
-							{{_.nth(packageRank)}} most popular on jsDelivr
+							The {{_.nth(packageRank)}} most popular on jsDelivr
 						{{/if}}
 					</div>
 					<a class="btn-twitter-share mt-8"
@@ -173,7 +173,7 @@
 
 						// get overall package stats (hits-bandwidth data for charts, hits rank of package)
 						http.fetchPackageSummaryStats(type, name, periodValue).then((response) => {
-							this.animate('packageRank', response.hits.rank, { duration: 1000 });
+							this.animate('packageRank', response.hits.rank + 1, { duration: 1000 });
 
 							if (response.hits.total) {
 								this.set('noDataOfRequests', false);

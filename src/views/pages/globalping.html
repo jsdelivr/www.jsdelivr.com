@@ -1114,6 +1114,7 @@
 	const MAP_CENTER_REG = { lat: 48, lng: 16 };
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
+	const DEFAULT_MARKER_COLOR = '#C0C0C0';
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1263,12 +1264,20 @@
 					}
 				}, { init: false, defer: true });
 
+				// zoom to results once we get the first response
+				this.observe('realTimeTestResResponse', (response, prevResponse) => {
+					if (!prevResponse && response && response.results.length) {
+						this.zoomToResults(response.locations);
+					}
+				}, { init: false });
+
 				// handle test results in real time
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (!realTimeTestResResponse) { return; }
+
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
-						this.zoomToResults(realTimeTestResResponse.locations);
 
 						// if it is a share-results-flow - scroll mapBlock into the view
 						if (this.get('shareResFlow')) {
@@ -1276,20 +1285,15 @@
 						}
 					}
 
-					let prevTestResults = this.get('testResults') || [];
-					let updTestResults = realTimeTestResResponse.results.filter((res) => {
-						// if it is no in-progress then it is already finished or failed and we could draw a marker
-						if (res.result.status !== 'in-progress') { return true; }
+					let prevTestResults = this.get('testResults');
+					let testResults = realTimeTestResResponse.results.map((res, resIdx) => ({
+						clientSideId: resIdx,
+						...res,
+					}));
 
-						return false;
-					});
-
-					// filter out results that have already been drawn
-					let newTestResults = updTestResults.filter((updRes) => {
-						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
-					});
-
-					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
+					if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
+						this.set('testResults', testResults);
+					}
 				}, { init: false });
 
 				// prepare data for Markers of the map, timings for the map scale
@@ -1299,13 +1303,20 @@
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
 					let markersData = testResults.map((res) => {
-						let resTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+						let calcTiming = null;
+
+						if (res.result.status !== 'in-progress') {
+							calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+						}
+
+						let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
 						return {
+							clientSideId: res.clientSideId,
 							network: res.probe.network,
 							city: res.probe.city,
 							country: res.probe.country,
-							timing: typeof resTiming.value === 'number' ? `${Math.round(resTiming.value)}${resTiming.units}` : resTiming.value,
+							timing: resTiming,
 							lat: res.probe.latitude,
 							lng: res.probe.longitude,
 						};
@@ -1394,6 +1405,7 @@
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
 			this.set('shareResHeaderData', null);
+			this.set('realTimeTestResResponse', null);
 
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
@@ -1546,98 +1558,58 @@
 				}
 			});
 
-			// draw test response  markers and Clusers or clear the map from them
+			// check whether we should clear the Map from the markers or update them
 			this.observe('markersData', (markersData, prevMarkersData) => {
 				if (markersData === null) {
 					this.clearTestResponseMarkers();
-				} else {
-					let markersDataToDraw;
-					// since we are drawing markers in real-time we should counting new base index
-					// so our results in gp-test-results table and infoWindows IDs have the same index
-					let newDrawBaseIdx = 0;
-
-					// if the data was already drawn on the map we should filter it out
-					if (prevMarkersData) {
-						markersDataToDraw = markersData.filter(md => !prevMarkersData.some(pmd => JSON.stringify(md) === JSON.stringify(pmd)));
-						newDrawBaseIdx += prevMarkersData.length;
-					} else {
-						markersDataToDraw = markersData;
-					}
-
-					this.updateMarkers(markersDataToDraw, newDrawBaseIdx);
+				} else if (JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					// update Markers on the map (replace or add new) if Markers data is different
+					this.updateMarkers(markersData, prevMarkersData);
 				}
 			}, { init: false });
 		},
-		updateMarkers (markersData, baseDrawIdx = 0) {
-			markersData.forEach((markerData, mDataIdx) => {
-				// create Popup element
-				let infoWindow = new google.maps.InfoWindow();
+		updateMarkers (markersData, prevMarkersData) {
+			markersData.forEach((markerData) => {
+				let markerIdToReplace = null;
+				let currentMarkerIdx = markerData.clientSideId;
 
-				// create svg to use as a Marker icon
-				let svgFillColor = this.pickMarkerColor(markerData.timing);
-				let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<g filter="url(#filter0_d_6106_3045)">
-					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
-					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
-					</g>
-					<defs>
-					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-					<feOffset dy="2"/>
-					<feGaussianBlur stdDeviation="2"/>
-					<feComposite in2="hardAlpha" operator="out"/>
-					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-					</filter>
-					</defs>
-					</svg>`);
+				// check if the new Marker is the old one but with a timing value
+				// and get Marker index to replace it later on the Map
+				// get index for every Marker we draw or redraw on the map to provide proper work of InfoWindows, Results and Actions etc.
+				if (prevMarkersData) {
+					// stop once we found the match to get proper currentMarkerIdx
+					prevMarkersData.every((pmd) => {
+						if (pmd.clientSideId === markerData.clientSideId && pmd.timing === null && markersData.timing !== null) {
+							markerIdToReplace = pmd.clientSideId;
+							currentMarkerIdx = pmd.clientSideId;
 
-				// create Marker
-				let marker = new google.maps.Marker({
-					map,
-					icon: {
-						url: `data:image/svg+xml;base64,${svg}`,
-					},
-					position: { lat: markerData.lat, lng: markerData.lng },
-					optimized: false,
-				});
+							return false;
+						}
 
-				google.maps.event.addListener(marker, 'click', () => {
-					infoWindows.forEach(iw => iw.close());
-				});
+						return true;
+					});
+				}
 
-				oms.addMarker(marker, () => {
-					infoWindow.setContent(`<div class="gp-map_popup">
-						<div class="gp-map_popup_header">${markerData.timing}</div>
-						<div class="gp-map_popup_descr">${markerData.network}</div>
-						<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-						<div class="gp-map_popup_see-results" id="iw-${baseDrawIdx + mDataIdx}">
-							<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-							<span>Results and Actions</span>
-						</div>
-					</div>`);
+				if (markerIdToReplace !== null) {
+					// clear the Map from the Marker which will be replaced
+					mapMarkers[markerIdToReplace].setMap(null);
 
-					infoWindow.open(map, marker);
-				});
+					// check if the marker is already present on the map and replace it with the new one, with timing
+					mapMarkers = mapMarkers.map((mm, mmIdx) => {
+						if (markerIdToReplace === mmIdx) {
+							// replace the Marker without timing with the same one but with timing value
+							return this.createMapMarkerWithIW(markerData, currentMarkerIdx);
+						}
 
-				google.maps.event.addListener(infoWindow, 'domready', () => {
-					let clickableEl = document.getElementById(`iw-${baseDrawIdx + mDataIdx}`);
-					let hasListener = clickableEl.dataset.hasListener;
-
-					if (!hasListener) {
-						clickableEl.addEventListener('click', () => {
-							this.handleSeeResults(baseDrawIdx + mDataIdx);
-							clickableEl.dataset.hasListener = true;
-						});
-					}
-				});
-
-				infoWindows.push(infoWindow);
-				mapMarkers.push(marker);
+						return mm;
+					});
+				} else if (!mapMarkers[markerData.clientSideId]) {
+					// add new Marker to the Map
+					mapMarkers.push(this.createMapMarkerWithIW(markerData, currentMarkerIdx));
+				}
 			});
 
+			// close IWs on click on Map
 			google.maps.event.addListener(map, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
 			});
@@ -1790,7 +1762,7 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		handleSeeResults (resIdx) {
-			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item:nth-child(${resIdx + 1})`);
+			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item_top-wrapper:nth-child(${resIdx + 1})`);
 
 			// this prop will be passed to c-gp-test-results in order for it to show the specific result element if it was hidden
 			this.set('scrolledToResIdx', resIdx);
@@ -2072,7 +2044,7 @@
 				});
 
 				map.fitBounds(bounds);
-			}, 100);
+			}, 400);
 		},
 		handleTargetInputPaste (event) {
 			event.preventDefault();
@@ -2121,6 +2093,85 @@
 			mapBlockEl.scrollIntoView({
 				behavior: 'smooth',
 			});
+		},
+		createMapMarkerWithIW (markerData, currentMarkerIdx) {
+			// create Popup element
+			let infoWindow = new google.maps.InfoWindow();
+
+			// create svg to use as a Marker icon
+			let svgFillColor = markerData.timing ? this.pickMarkerColor(markerData.timing) : DEFAULT_MARKER_COLOR;
+			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g filter="url(#filter0_d_6106_3045)">
+				<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
+				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+				</g>
+				<defs>
+				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+				<feOffset dy="2"/>
+				<feGaussianBlur stdDeviation="2"/>
+				<feComposite in2="hardAlpha" operator="out"/>
+				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+				</filter>
+				</defs>
+				</svg>`);
+
+			// add listener to IW for Results and Actions button
+			google.maps.event.addListener(infoWindow, 'domready', () => {
+				let clickableEl = document.getElementById(`iw-${currentMarkerIdx}`);
+				let hasListener = clickableEl.dataset.hasListener;
+
+				if (!hasListener) {
+					clickableEl.addEventListener('click', () => {
+						this.handleSeeResults(currentMarkerIdx);
+						clickableEl.dataset.hasListener = true;
+					});
+				}
+			});
+
+			// collect IWs
+			infoWindows.push(infoWindow);
+
+			// create the Marker
+			let marker = new google.maps.Marker({
+				map,
+				icon: {
+					url: `data:image/svg+xml;base64,${svg}`,
+				},
+				position: { lat: markerData.lat, lng: markerData.lng },
+				optimized: false,
+			});
+
+			// handle close all IWs on mMrker click
+			google.maps.event.addListener(marker, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
+			});
+
+			// add Marker to OverlappingMarkerSpiderfier
+			oms.addMarker(marker, () => {
+				let infoWindowContent = '<div class="gp-map_popup">';
+
+				if (markerData.timing) {
+					infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
+				}
+
+				infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
+					<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
+					<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
+						<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
+						<span>Results and Actions</span>
+					</div>
+				</div>`;
+
+				infoWindow.setContent(infoWindowContent);
+
+				infoWindow.open(map, marker);
+			});
+
+			return marker;
 		},
 	};
 </script>

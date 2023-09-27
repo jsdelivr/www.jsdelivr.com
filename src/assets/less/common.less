@@ -267,6 +267,7 @@ body.noscroll {
 
 		&.tooltipWrapper-improved {
 			min-width: 312px;
+			width: auto;
 			border: none;
 			padding: 10px 20px;
 			background: rgba(17, 26, 44, .9);
@@ -278,8 +279,46 @@ body.noscroll {
 				white-space: nowrap;
 			}
 
-			.tooltipBody > .tooltipBodyItem {
-				color: #fff;
+			.tooltipBody {
+				display: flex;
+				flex-direction: column;
+				row-gap: 6px;
+
+				@media (min-width: @screen-md-min) {
+					flex-direction: row;
+				}
+
+				.tooltipBodyDivider {
+					display: flex;
+					flex-direction: column;
+					flex-grow: 1;
+					flex-shrink: 0;
+					opacity: .5;
+					width: 1px;
+					background: #fff;
+					margin: 0 16px;
+				}
+
+				.tooltipBodyItemsWrapper {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					flex-grow: 1;
+
+					> .tooltipBodyItem {
+						display: flex;
+						color: #fff;
+						white-space: nowrap;
+						width: 100%;
+
+						>span:nth-last-child(1) {
+							margin-left: 48px;
+							display: flex;
+							flex-grow: 1;
+							justify-content: right;
+						}
+					}
+				}
 			}
 		}
 	}

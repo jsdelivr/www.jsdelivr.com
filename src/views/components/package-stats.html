@@ -98,14 +98,17 @@
 					width="270"
 					height="148"
 					src="{{@shared.assetsHost}}/img/landing/new/no-results.svg">
-				<span>No data for Top 5 versions</span>
+				<span>No data for Top versions</span>
 			</div>
 		{{else}}
 			<c-top-stats-table
-				title="Top 5 versions"
-				data="{{~/topFiveVersions}}"
+				title="Top versions"
+				responseData="{{~/topVersions}}"
+				responseHeaders="{{topVersionsHeaders}}"
 				version="{{~/fileStatsVersion}}"
-				isBandwidth="{{~/showChartBandwidth}}">
+				isBandwidth="{{~/showChartBandwidth}}"
+				pageLimit="{{topTablesLimit}}"
+				page="{{topPackagesPage}}">
 				{{#partial column1}}
 					<a on-click="@this.set('version', version)">{{version}}</a>
 				{{/partial}}
@@ -114,12 +117,16 @@
 			<c-top-stats-table
 				type="{{~/type}}"
 				name="{{~/name}}"
-				data="{{~/filesStats}}"
+				responseData="{{~/filesStats}}"
+				responseHeaders="{{filesStatsHeaders}}"
 				version="{{~/fileStatsVersion}}"
 				versions="{{~/packageVersionsList}}"
-				isBandwidth="{{~/showChartBandwidth}}">
+				isBandwidth="{{~/showChartBandwidth}}"
+				pageLimit="{{topTablesLimit}}"
+				page="{{filesStatsPage}}"
+				handleVersionChange="true">
 				{{#partial header}}
-					Top 5 files in version
+					Top files in version
 					<c-version-dropdown versions="{{versions}}" version="{{version}}"></c-version-dropdown>
 				{{/partial}}
 
@@ -153,9 +160,9 @@
 			</div>
 
 			<div class="hits-chart-legend">
-				{{#each hitsChartLegendVersions}}
+				{{#each hitsChartLegendVersions:idx}}
 					<div class="legend-item">
-						<div></div>
+						<div style="background: {{colorsArray[idx]}};"></div>
 						{{version}}
 					</div>
 				{{/each}}
@@ -171,6 +178,13 @@
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
 	const initCharts = require('../../assets/js/utils/charts');
+	const DEFAULT_LIMIT = 5;
+	const COLORS_ARR = [
+		'#5C667A', '#BC5090', '#FFA600', '#FF6361', '#69C4F7',
+		'#018b01', '#ffd68b', '#056ca6', '#c6302e', '#f53daa',
+		'#aa0065', '#4eff4e', '#c79331', '#ffec00', '#FF6361',
+		'#a2a9b6', '#dd8cbc', '#fab996', '#009ff9', '#709e11',
+	];
 
 	component.exports = {
 		computed: {
@@ -181,18 +195,22 @@
 		data () {
 			return {
 				_,
+				colorsArray: COLORS_ARR,
 				periodData: { periodText: 'quarter', periodValue: 'quarter', periodType: 's-quarter' },
 				showChartBandwidth: false,
 				usageChartGroupByValues: stats.groupByOptions['s-quarter'],
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
 				chartTitlePeriodText: 'Stats for past',
+				topTablesLimit: DEFAULT_LIMIT,
+				topPackagesPage: 1,
+				filesStatsPage: 1,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// fetch Package Version File Stats for Top-5-file-per-package-version
-				this.observe('periodData fileStatsVersion showChartBandwidth', () => {
+				// fetch Package Version File Stats for Top-files-per-package-version
+				this.observe('periodData fileStatsVersion showChartBandwidth topTablesLimit filesStatsPage', () => {
 					if (!this.get('periodData') || !this.get('fileStatsVersion')) {
 						return;
 					}
@@ -203,19 +221,22 @@
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 					let type = this.get('type');
 					let name = this.get('name');
+					let filesStatsPage = this.get('filesStatsPage');
+					let topTablesLimit = this.get('topTablesLimit');
 
-					http.fetchPackageFileStats(type, name, version, period, dataType, '5').then((response) => {
+					http.fetchPackageFileStatsWithHeaders(type, name, version, period, dataType, topTablesLimit, filesStatsPage).then(({ response, responseHeaders }) => {
 						let filesStats = response.map(statsPerFile => ({
 							file: statsPerFile.name,
 							hits: statsPerFile[dataType].total,
 						}));
 
-						this.animate('filesStats', filesStats);
+						this.set('filesStats', filesStats);
+						this.set('filesStatsHeaders', responseHeaders);
 					});
 				});
 
-				// get Package Version Stats for Top-5-package-versions
-				this.observe('periodData versionP showChartBandwidth', () => {
+				// get Package Version Stats for Top-package-versions
+				this.observe('periodData versionP showChartBandwidth topPackagesPage topTablesLimit', () => {
 					if (!this.get('periodData') || !this.get('versionP')) { return; }
 
 					let type = this.get('type');
@@ -223,8 +244,10 @@
 					let period = this.get('periodData').periodValue;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+					let limit = this.get('topTablesLimit');
+					let page = this.get('topPackagesPage');
 
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response, responseHeaders }) => {
 						let {
 							noHitsData: noTopFiveHitsData,
 							noBandwidthData: noTopFiveBandData,
@@ -235,7 +258,7 @@
 
 						if (noTopFiveHitsData && noTopFiveBandData) {
 							this.set('fileStatsVersion', null);
-							this.animate('topFiveVersions', null);
+							this.set('topVersions', null);
 
 							return;
 						}
@@ -255,16 +278,20 @@
 							this.set('fileStatsVersion', versionsStats[0].version);
 						}
 
-						this.animate('topFiveVersions', versionsStats);
+						this.set('topVersions', versionsStats);
+						this.set('topVersionsHeaders', responseHeaders);
+						this.set('filesStatsPage', 1);
 					});
 				});
 
 				// handle period changes by updating groupBy options and fetch statsChart/hitsChart data
-				this.observe('periodData', () => {
+				this.observe('periodData topTablesLimit topPackagesPage', () => {
 					let period = this.get('periodData').periodValue;
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = this.get('showChartBandwidth') ? 'bandwidth' : 'hits';
+					let limit = this.get('topTablesLimit');
+					let page = this.get('topPackagesPage');
 
 					// prevent chart data fetching from the back when period is DAY, left it as it was prev
 					if (period === 'day') { return; }
@@ -292,7 +319,7 @@
 					});
 
 					// get data for lineChart
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
 						let {
 							noHitsData: noHitsChartHitsData,
 							noBandwidthData: noHitsChartBandData,
@@ -319,8 +346,10 @@
 					let type = this.get('type');
 					let name = this.get('name');
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
+					let limit = this.get('topTablesLimit');
+					let page = this.get('topPackagesPage');
 
-					http.fetchPackageVersionsStats(type, name, period, dataType).then((response) => {
+					http.fetchPackageVersionsStatsWithHeaders(type, name, period, dataType, limit, page).then(({ response }) => {
 						let {
 							noHitsData: noHitsChartHitsData,
 							noBandwidthData: noHitsChartBandData,
@@ -390,6 +419,8 @@
 					let noHitsChartHitsData = this.get('noHitsChartHitsData');
 					let noHitsChartBandData = this.get('noHitsChartBandData');
 					let showChartBandwidth = this.get('showChartBandwidth');
+					let topTablesLimit = this.get('topTablesLimit');
+					let colorsArray = this.get('colorsArray');
 
 					if (
 						!rawHitsChartData
@@ -412,7 +443,15 @@
 						datasets,
 						labelsStartEndPeriods,
 						valueUnits,
-					} = _.getPreparedDataForLineChart(rawHitsChartData, usageChartGroupBy, chartPeriodType, showChartBandwidth);
+					} = _.getPreparedDataForLineChart(
+						rawHitsChartData,
+						usageChartGroupBy,
+						chartPeriodType,
+						showChartBandwidth,
+						topTablesLimit,
+						true,
+						colorsArray,
+					);
 
 					this.set('preparedHitsChartData', {
 						datasets,
@@ -614,6 +653,7 @@
 							useYAxisBorderPlugin,
 							useExternalTooltip: true,
 							useImprovedTooltip: true,
+							noSpaceForImprvdTltp: true,
 							plugins: {
 								useExternalTooltip: true,
 							},

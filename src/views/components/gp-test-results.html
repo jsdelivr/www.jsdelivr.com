@@ -46,7 +46,8 @@
 
 						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
 
-						<div class="c-gp-test-results_list_item_status-line {{#if _.calcGpTestResTiming(testReqParams.type, this, testReqParams.measurementOptions.trace).isFailed}}failed{{/if}}"></div>
+						<div class="c-gp-test-results_list_item_status-line {{#if testResultsFailedList[idx]}}failed{{elseif testResultsFailedList[idx] === false}}success{{/if}}">
+						</div>
 					</div>
 
 					<div class="c-gp-test-results_list_item_inner-wrapper_bottom-line"></div>
@@ -117,6 +118,7 @@
 				hiddenTestResults: [],
 				testResultsTimings: [],
 				testResultsExtra: {},
+				testResultsFailedList: {},
 				shareResultsAsURL: true,
 				shareResultsText: null,
 			};
@@ -131,19 +133,31 @@
 					let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
 					let timings = testResults.reduce((timingValues, result, idx) => {
-						let { fullText, extraValues } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
+						// if result is yet in-progress do not calc timings
+						if (result.result.status === 'in-progress') {
+							timingValues.mainTimingValues.push(null);
+							timingValues.extraValues[idx] = null;
+							timingValues.failedList[idx] = null;
+
+							return timingValues;
+						}
+
+						let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
 
 						timingValues.mainTimingValues.push(fullText);
 						timingValues.extraValues[idx] = extraValues;
+						timingValues.failedList[idx] = isFailed;
 
 						return timingValues;
 					}, {
 						mainTimingValues: [],
 						extraValues: {},
+						failedList: {},
 					});
 
 					this.set('testResultsTimings', timings.mainTimingValues);
 					this.set('testResultsExtra', timings.extraValues);
+					this.set('testResultsFailedList', timings.failedList);
 
 					// set results block height based on content
 					this.setResultsBlockHeight(testResults);
@@ -228,7 +242,7 @@
 								return str += locPart;
 							}
 
-							return str += `+${locPart}`;
+							return str += `, ${locPart}`;
 						}, '');
 
 						cmd.typePart += ` from ${locationStr}`;
