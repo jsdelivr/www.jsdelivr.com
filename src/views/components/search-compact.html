@@ -141,23 +141,13 @@
 					}
 				});
 
-				// TODO: 514 - serach for the React package - click on React-is, when you on the react-is page - query is still react - is it ok?
-				// TODO: 514 - when you on the package page - reload the page - the query is empty in the search-compact - it is ok?
-
-				// TODO: 514 wth? do wee need this? i guess it is somekind of ol code which does nothing at all at the moment
-				// this.observe('inputFocused', (value) => {
-				// 	if (value) {
-				// 		this.set('searchOpened', !!this.get('query'));
-				// 	} else {
-				// 		console.log("+++++ HERE");
-				// 		console.log("__________________");
-				// 		// $('.c-package-header-wrapper.selected').removeClass('selected');
-				// 		console.log("++++ FIND", this.find('.c-package-header-wrapper.selected'));
-				// 		console.log("++++ JQ", $('.c-package-header-wrapper.selected'));
-				// 		console.log("_________________________");
-				// 		this.find('.c-package-header-wrapper.selected').classList.remove('selected');
-				// 	}
-				// });
+				this.observe('inputFocused', (isFocused) => {
+					if (isFocused) {
+						this.set('searchOpened', !!this.get('query'));
+					} else {
+						$('.c-package-header-wrapper.selected').removeClass('selected');
+					}
+				});
 			}
 		},
 		onKeyDown (e) {
