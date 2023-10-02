@@ -17,10 +17,10 @@
 	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
 
 	{{#if searchOpened }}
-		<div class="c-search-compact-wrapper">
+		<div class="c-search-compact-wrapper" tabindex="-1">
 			<div class="search-results">
-				{{#each packages}}
-					<div class="c-package-header-wrapper">
+				{{#each packages:packIdx}}
+					<div class="c-package-header-wrapper {{#if currSelectedItemIdx == packIdx}}selected{{/if}}">
 						<c-package-header
 							package="{{this}}"
 							version="{{version}}"
@@ -73,6 +73,7 @@
 				page: 0,
 				query: '',
 				packages: [],
+				currSelectedItemIdx: null,
 				pagination (page, nbPages) {
 					let start = Math.max(page - 2, 0);
 					let pages = [];
@@ -153,27 +154,58 @@
 					if (isFocused) {
 						this.set('searchOpened', !!this.get('query'));
 					} else {
-						$('.c-package-header-wrapper.selected').removeClass('selected');
+						document.querySelector('.c-package-header-wrapper.selected').classList.remove('selected');
+
+						this.set('currSelectedItemIdx', null);
+					}
+				});
+
+				// check if pagackes received and searchResults is opened
+				this.observe('searchOpened packages', () => {
+					let searchOpened = this.get('searchOpened');
+					let packages = this.get('packages');
+
+					if (searchOpened && packages.length) {
+						this.set('searchResulsOpened', true);
+					}
+				});
+
+				// once packages is received and search opened add listener to handle keyDown
+				this.observe('searchResulsOpened', (isOpened) => {
+					if (isOpened) {
+						setTimeout(() => {
+							let searchResultsEl = this.find('.c-search-compact-wrapper');
+
+							searchResultsEl.addEventListener('keydown', (e) => {
+								this.onKeyDown(e);
+								e.preventDefault();
+							});
+						}, 4);
 					}
 				});
 			}
 		},
 		onKeyDown (e) {
-			let listEl = $(this.find('.c-search-compact-wrapper'));
-			let selectedItemEl = listEl.find('.c-package-header-wrapper.selected');
+			let listEl = this.find('.c-search-compact-wrapper');
+
+			if (!listEl) { return; }
+
+			let selectedItemEl = listEl.querySelector('.c-package-header-wrapper.selected');
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let packages = this.get('packages');
 
 			if (e.key === 'ArrowDown') {
-				if (!selectedItemEl.length || !selectedItemEl.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					listEl.find('.c-package-header-wrapper').first().addClass('selected');
-				}
+				currSelectedItemIdx =  currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > packages.length - 1 ? 0 : currSelectedItemIdx + 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'ArrowUp') {
-				if (!selectedItemEl.length || !selectedItemEl.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					listEl.find('.c-package-header-wrapper').last().addClass('selected');
-				}
+				currSelectedItemIdx = currSelectedItemIdx === null ? packages.length - 1:  currSelectedItemIdx - 1 < 0 ?  packages.length - 1 : currSelectedItemIdx - 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'Enter') {
 				// if there is a selected element then go to the selected package page
-				if (selectedItemEl.length) {
-					app.router.dispatch(`/package/npm/${selectedItemEl.find('.package-name').text()}`);
+				if (currSelectedItemIdx !== null) {
+					app.router.dispatch(`/package/npm/${selectedItemEl.querySelector('.package-name').textContent}`);
 
 					return;
 				}
