@@ -45,7 +45,7 @@
 						</li>
 
 						{{#each pagination(page, nbPages)}}
-						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+							<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.handlePagination(this)">{{this + 1}}</a></li>
 						{{/each}}
 
 						<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
@@ -223,6 +223,10 @@
 				left: Math.floor(this.find('.search-input').getBoundingClientRect().top / 100) * 100,
 				behavior: 'smooth',
 			});
+		},
+		handlePagination (pageNumber) {
+			this.set('page', pageNumber);
+			this.set('currSelectedItemIdx', 0);
 		},
 	};
 </script>
