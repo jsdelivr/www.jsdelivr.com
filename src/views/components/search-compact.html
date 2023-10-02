@@ -3,7 +3,15 @@
 <div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" on-keydown="@this.onKeyDown(@event)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+		<input
+			type="text"
+			class="search-input"
+			on-focus="@this.set('inputFocused', true)"
+			on-blur="@this.set('inputFocused', false)"
+			on-keydown="@this.onKeyDown(@event)"
+			placeholder="search all of npm"
+			value="{{query}}"
+			spellcheck="false">
 	</div>
 
 	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
@@ -151,20 +159,21 @@
 			}
 		},
 		onKeyDown (e) {
-			let $list = $(this.find('.c-search-compact-wrapper'));
-			let $selected = $list.find('.c-package-header-wrapper.selected');
+			let listEl = $(this.find('.c-search-compact-wrapper'));
+			let selectedItemEl = listEl.find('.c-package-header-wrapper.selected');
 
 			if (e.key === 'ArrowDown') {
-				if (!$selected.length || !$selected.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					$list.find('.c-package-header-wrapper').first().addClass('selected');
+				if (!selectedItemEl.length || !selectedItemEl.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					listEl.find('.c-package-header-wrapper').first().addClass('selected');
 				}
 			} else if (e.key === 'ArrowUp') {
-				if (!$selected.length || !$selected.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					$list.find('.c-package-header-wrapper').last().addClass('selected');
+				if (!selectedItemEl.length || !selectedItemEl.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
+					listEl.find('.c-package-header-wrapper').last().addClass('selected');
 				}
 			} else if (e.key === 'Enter') {
-				if ($selected.length) {
-					app.router.dispatch(`/package/npm/${$selected.find('.package-name').text()}`);
+				if (selectedItemEl.length) {
+					app.router.dispatch(`/package/npm/${selectedItemEl.find('.package-name').text()}`);
+
 					return;
 				}
 
