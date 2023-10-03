@@ -1361,13 +1361,13 @@ module.exports = {
 		}, []).join(' ');
 	},
 
-	getElementOffset(el) {
+	getElementOffset (el) {
 		let box = el.getBoundingClientRect();
 		let docElem = document.documentElement;
 
 		return {
 			top: box.top + window.scrollY - docElem.clientTop,
-			left: box.left + window.scrollX - docElem.clientLeft
+			left: box.left + window.scrollX - docElem.clientLeft,
 		};
 	},
 };
