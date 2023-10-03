@@ -163,6 +163,7 @@
 								// Scroll to the results.
 								if (!scrollY || keypath === 'page') {
 									this.scrollToSearch();
+									this.scrollToSearchOLD();
 								}
 							}
 						});
@@ -210,7 +211,7 @@
 		scrollToSearch () {
 			let page = document.querySelector('html');
 			let searchInputEl = this.find('.search-input');
-			let scrollToPos = Math.floor(searchInputEl.getBoundingClientRect().top / 100) * 100;
+			let scrollToPos = Math.floor(_.getElementOffset(searchInputEl).top / 100) * 100;
 
 			page.scrollTo({
 				behavior: 'smooth',
