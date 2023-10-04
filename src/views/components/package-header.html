@@ -4,7 +4,7 @@
 			<div class="col-sm-8">
 				<div class="package-name-wrapper">
 					{{#if packageNameAsLink}}
-						<a href="/package/npm/{{name}}" class="package-name">{{name}}</a>
+						<a on-click="@this.handlePageNameClick(name)" class="package-name">{{name}}</a>
 					{{else}}
 						<h1>{{name}}</h1>
 					{{/if}}
@@ -309,6 +309,14 @@
 			} else {
 				this.set('filterStyle', filterBy);
 			}
+		},
+		handlePageNameClick (name) {
+			// make sure scrollY is at 0 when page is rendered
+			window.scrollTo(0, 0);
+			setTimeout(() => window.scrollTo(0, 0), 0);
+
+			// navigate to the Package page
+			app.router.dispatch(`/package/npm/${name}`);
 		},
 	};
 </script>
