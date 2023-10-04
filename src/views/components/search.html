@@ -127,7 +127,7 @@
 					this.find('.search-input').setSelectionRange(this.get('caretPosition'), this.get('caretPosition'));
 				}
 
-				let s = debounce(() => {
+				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						let newQuery = this.get('query');
 
@@ -160,8 +160,10 @@
 									nbHits: result.response.nbHits,
 								});
 
-								// scroll to the results
-								this.scrollToSearch();
+								// Scroll to the results.
+								if (!scrollY || keypath === 'page') {
+									this.scrollToSearch();
+								}
 							}
 						});
 					}
@@ -210,10 +212,15 @@
 			let searchInputEl = this.find('.search-input');
 			let scrollToPos = Math.floor(_.getElementOffset(searchInputEl).top / 100) * 100;
 
-			page.scrollTo({
-				behavior: 'smooth',
-				top: scrollToPos,
-			});
+			if (app.config.animateScrolling) {
+				page.scrollTo({
+					behavior: 'smooth',
+					top: scrollToPos,
+				});
+			} else {
+				scrollTo(0, scrollToPos);
+				app.config.animateScrolling = true;
+			}
 		},
 	};
 </script>
