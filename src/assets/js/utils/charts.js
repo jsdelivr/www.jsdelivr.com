@@ -3,7 +3,7 @@ const createLineChart = require('./create-line-chart');
 
 module.exports = () => {
 	return Promise.all([
-		// eslint-disable-next-line node/no-missing-import
+		// eslint-disable-next-line n/no-missing-import
 		import('https://cdn.jsdelivr.net/npm/chart.js@3.9.1/+esm'),
 	]).then(([
 		{
