@@ -3,16 +3,24 @@
 <div class="c-search-compact {{#if searchOpened }}active{{/if}}">
 	<div class="search-input-wrapper">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-		<input type="text" class="search-input" on-focus="@this.set('inputFocused', true)" on-blur="@this.set('inputFocused', false)" on-keydown="@this.onKeyDown(@event)" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+		<input
+			type="text"
+			class="search-input"
+			on-focus="@this.set('inputFocused', true)"
+			on-blur="@this.set('inputFocused', false)"
+			on-keydown="@this.onKeyDown(@event)"
+			placeholder="search all of npm"
+			value="{{query}}"
+			spellcheck="false">
 	</div>
 
 	<div class="c-search-compact-overlay" on-click="@this.set('searchOpened', false)"></div>
 
 	{{#if searchOpened }}
-		<div class="c-search-compact-wrapper">
+		<div class="c-search-compact-wrapper" tabindex="-1">
 			<div class="search-results">
-				{{#each packages}}
-					<div class="c-package-header-wrapper">
+				{{#each packages:packIdx}}
+					<div class="c-package-header-wrapper {{#if currSelectedItemIdx == packIdx}}selected{{/if}}">
 						<c-package-header
 							package="{{this}}"
 							version="{{version}}"
@@ -37,7 +45,7 @@
 						</li>
 
 						{{#each pagination(page, nbPages)}}
-						<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.set('page', this)">{{this + 1}}</a></li>
+							<li class="{{#if page === this}}active{{/if}}"><a on-click="@this.handlePagination(this)">{{this + 1}}</a></li>
 						{{/each}}
 
 						<li style="{{#unless page + 1 < nbPages}}visibility: hidden;{{/unless}}">
@@ -65,6 +73,7 @@
 				page: 0,
 				query: '',
 				packages: [],
+				currSelectedItemIdx: null,
 				pagination (page, nbPages) {
 					let start = Math.max(page - 2, 0);
 					let pages = [];
@@ -141,46 +150,88 @@
 					}
 				});
 
-				this.observe('inputFocused', (value) => {
-					if (value) {
+				// handle search input focus/blur
+				this.observe('inputFocused', (isFocused) => {
+					if (isFocused) {
 						this.set('searchOpened', !!this.get('query'));
 					} else {
-						$('.c-package-header-wrapper.selected').removeClass('selected');
+						let selectedEl = document.querySelector('.c-package-header-wrapper.selected');
+
+						if (selectedEl) {
+							selectedEl.classList.remove('selected');
+						}
+
+						this.set('currSelectedItemIdx', null);
+					}
+				});
+
+				// check if pagackes received and searchResults is opened
+				this.observe('searchOpened packages', () => {
+					let searchOpened = this.get('searchOpened');
+					let packages = this.get('packages');
+
+					if (searchOpened && packages.length) {
+						this.set('searchResulsOpened', true);
+					}
+				});
+
+				// once packages is received and search opened add listener to handle keyDown
+				this.observe('searchResulsOpened', (isOpened) => {
+					if (isOpened) {
+						setTimeout(() => {
+							let searchResultsEl = this.find('.c-search-compact-wrapper');
+
+							searchResultsEl.addEventListener('keydown', (e) => {
+								this.onKeyDown(e);
+								e.preventDefault();
+							});
+						}, 4);
 					}
 				});
 			}
 		},
 		onKeyDown (e) {
-			let $list = $(this.find('.c-search-compact-wrapper'));
-			let $selected = $list.find('.c-package-header-wrapper.selected');
+			let listEl = this.find('.c-search-compact-wrapper');
+
+			if (!listEl) { return; }
+
+			let selectedItemEl = listEl.querySelector('.c-package-header-wrapper.selected');
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let packages = this.get('packages');
 
 			if (e.key === 'ArrowDown') {
-				if (!$selected.length || !$selected.removeClass('selected').nextAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					$list.find('.c-package-header-wrapper').first().addClass('selected');
-				}
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > packages.length - 1 ? 0 : currSelectedItemIdx + 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'ArrowUp') {
-				if (!$selected.length || !$selected.removeClass('selected').prevAll('.c-package-header-wrapper').first().addClass('selected').length) {
-					$list.find('.c-package-header-wrapper').last().addClass('selected');
-				}
+				currSelectedItemIdx = currSelectedItemIdx === null ? packages.length - 1 : currSelectedItemIdx - 1 < 0 ? packages.length - 1 : currSelectedItemIdx - 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'Enter') {
-				if ($selected.length) {
-					app.router.dispatch(`/package/npm/${$selected.find('.package-name').text()}`);
+				// if there is a selected element then go to the selected package page
+				if (currSelectedItemIdx !== null) {
+					app.router.dispatch(`/package/npm/${selectedItemEl.querySelector('.package-name').textContent}`);
+
 					return;
 				}
 
+				// otherwise navigate to the main page search
 				this.goTo(this.get('query'));
 			}
 		},
 		goTo (query) {
 			app.router.dispatch(`/?query=${encodeURIComponent(query)}`, { state: { caretPosition: this.find('.search-input').selectionStart } });
-			scrollTo(0, Math.floor($('.search-input').offset().top / 100) * 100);
 		},
 		scrollToSearch () {
 			scrollTo({
 				top: 0,
-				left: Math.floor($('.search-input').offset().top / 100) * 100,
+				left: Math.floor(this.find('.search-input').getBoundingClientRect().top / 100) * 100,
 				behavior: 'smooth',
 			});
+		},
+		handlePagination (pageNumber) {
+			this.set('page', pageNumber);
+			this.set('currSelectedItemIdx', 0);
 		},
 	};
 </script>

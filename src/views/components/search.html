@@ -3,7 +3,12 @@
 <div class="c-search">
 	<div class="container-fluid container-mw"><div class="row"><div class="col-xs-12 col-lg-10 col-lg-push-1">
 		<div class="search-input-wrapper">
-			<input class="search-input" type="text" placeholder="search all of npm" value="{{query}}" spellcheck="false">
+			<input
+				class="search-input"
+				type="text"
+				placeholder="search all of npm"
+				value="{{query}}"
+				spellcheck="false">
 
 			<div class="search-by">
 				<span>Real-time search by </span>
@@ -203,27 +208,14 @@
 			}
 		},
 		scrollToSearch () {
-			let startLocation = location.href.replace(location.search, '');
-			let page = $('html, body');
-			let searchInputEl = $('.search-input');
-			let scrollToPos = Math.floor(searchInputEl.offset().top / 100) * 100;
+			let page = document.querySelector('html');
+			let searchInputEl = this.find('.search-input');
+			let scrollToPos = Math.floor(_.getElementOffset(searchInputEl).top / 100) * 100;
 
-			if (app.config.animateScrolling) {
-				page.animate({
-					scrollTop: scrollToPos,
-				}, {
-					step () {
-						let currLocation = location.href.replace(location.search, '');
-
-						if (startLocation !== currLocation) {
-							page.stop();
-						}
-					},
-				});
-			} else {
-				scrollTo(0, scrollToPos);
-				app.config.animateScrolling = true;
-			}
+			page.scrollTo({
+				behavior: 'smooth',
+				top: scrollToPos,
+			});
 		},
 	};
 </script>
