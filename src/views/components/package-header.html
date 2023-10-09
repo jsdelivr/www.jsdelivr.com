@@ -4,7 +4,7 @@
 			<div class="col-sm-8">
 				<div class="package-name-wrapper">
 					{{#if packageNameAsLink}}
-						<a on-click="@this.handlePageNameClick(name)" class="package-name">{{name}}</a>
+						<a href="/package/npm/{{name}}" on-click="@this.handlePageNameClick(name)" class="package-name">{{name}}</a>
 					{{else}}
 						<h1>{{name}}</h1>
 					{{/if}}
@@ -311,6 +311,9 @@
 			}
 		},
 		handlePageNameClick (name) {
+			this.event.original.preventDefault();
+			this.event.original.stopPropagation();
+
 			// make sure scrollY is at 0 when page is rendered
 			window.scrollTo(0, 0);
 			setTimeout(() => window.scrollTo(0, 0), 0);
