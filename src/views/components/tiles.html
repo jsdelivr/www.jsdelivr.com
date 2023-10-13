@@ -1,11 +1,20 @@
 <div class="c-tiles">
 	{{#each tilesData}}
 		<div class="c-tiles_tile {{#if status}}disabled{{/if}}">
-			<img
-				class="c-tiles_tile_img"
-				width="{{imgW || defaultImgW}}"
-				height="{{imgH || defaultImgH}}"
-				src="{{@shared.assetsHost}}{{imgSrc}}">
+			<div class="c-tiles_tile_img">
+				{{#if imgExt === '.png'}}
+					<img
+						width="{{imgW || defaultImgW}}"
+						height="{{imgH || defaultImgH}}"
+						src="{{@shared.assetsHost}}{{baseImgSrc}}/{{imgName}}{{imgExt}}"
+						srcset="{{@shared.assetsHost}}{{baseImgSrc}}/{{imgName}}@2x{{imgExt}} 2x">
+				{{else}}
+					<img
+						width="{{imgW || defaultImgW}}"
+						height="{{imgH || defaultImgH}}"
+						src="{{@shared.assetsHost}}{{baseImgSrc}}/{{imgName}}{{imgExt}}">
+				{{/if}}
+			</div>
 			<div class="c-tiles_tile_header">{{header}}</div>
 			<div class="c-tiles_tile_descr">{{descr}}</div>
 			{{#if status}}
