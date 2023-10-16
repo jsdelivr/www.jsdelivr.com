@@ -7,6 +7,7 @@ const cGlobalping = require('../../views/pages/globalping.html');
 const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
+const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -43,6 +44,7 @@ app.router.addRoute('/globalping', cGlobalping);
 app.router.addRoute('/globalping/cli', cGlobalpingCli);
 app.router.addRoute('/globalping/slack', cGlobalpingSlack);
 app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
+app.router.addRoute('/globalping/integrations', cGlobalpingIntegrations);
 
 _.onDocumentReady(() => {
 	let state = {};
