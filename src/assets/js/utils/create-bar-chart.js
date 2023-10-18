@@ -35,11 +35,14 @@ const createBarChart = Chart => (
 
 	// handle hover over the chart to change colors of the bars
 	let handleChartOnHover = (event, elements, chart) => {
-		if (elements.length !== 1) { return; }
+		if (elements.length > 0) {
+			let dataset = chart.data.datasets[0];
+			let data = chart.data.datasets[0].data;
 
-		event.native.target.style.cursor = 'pointer';
-		chart.options.elements.bar.backgroundColor = chartSettings.onHoverNotActiveBarsBGColor || '#FAE5E0';
-		chart.update();
+			event.native.target.style.cursor = 'pointer';
+			dataset.backgroundColor = data.map(() => chartSettings.onHoverNotActiveBarsBGColor || '#FAE5E0');
+			chart.update();
+		}
 	};
 
 	// handle mouse out of the chart area to restore bar colors
@@ -49,8 +52,11 @@ const createBarChart = Chart => (
 			let { event } = args;
 
 			if (event.type === 'mouseout') {
+				let dataset = chart.data.datasets[0];
+				let data = chart.data.datasets[0].data;
+
 				event.native.target.style.cursor = 'default';
-				chart.options.elements.bar.backgroundColor = chartConfig?.options?.elements?.bar.backgroundColor || createBarWithGradient(chartEl);
+				dataset.backgroundColor = data.map(() => chartConfig?.options?.elements?.bar.backgroundColor || createBarWithGradient(chartEl));
 				chart.update();
 			}
 		},
