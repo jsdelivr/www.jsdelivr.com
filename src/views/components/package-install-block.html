@@ -30,13 +30,13 @@
 
 					<ul class="dropdown-menu">
 						{{#each ~/versionsList}}
-							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+							<li><a on-click="@this.handleVersionSelect(this)">{{this}}</a></li>
 						{{/each}}
 
 						<li class="divider" role="separator"></li>
 
 						{{#each ~/packageVersionsList}}
-							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
+							<li><a on-click="@this.handleVersionSelect(this)">{{this}}</a></li>
 						{{/each}}
 					</ul>
 				</div>
@@ -333,27 +333,25 @@
 					}
 				});
 
-				this.observe('sharedVersion selectedVersion', () => {
+				this.observe('sharedVersion', (sharedVersion) => {
+					if (!sharedVersion) { return; }
+
 					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
-					let sharedVersion = this.get('sharedVersion');
+					let initVersion = this.get('initVersion');
 					let packageType = this.get('type');
 
-					console.log("+++++ selectedVersion", selectedVersion);
-					console.log("+++++ sharedVersion", sharedVersion);
-					console.log("__________________");
-
 					if (selectedVersion === 'Static') {
-						installPackageVersion += sharedVersion;
+						installPackageVersion += initVersion;
 					} else if (selectedVersion === 'Latest Patch') {
-						installPackageVersion += sharedVersion.split('.').slice(0, 2).join('.');
+						installPackageVersion += initVersion.split('.').slice(0, 2).join('.');
 					} else if (selectedVersion === 'Latest Minor') {
-						installPackageVersion += sharedVersion.split('.')[0];
+						installPackageVersion += initVersion.split('.')[0];
 					} else if (selectedVersion === 'Latest Major') {
 						installPackageVersion = '';
 					} else {
-						installPackageVersion += selectedVersion;
+						installPackageVersion += sharedVersion;
 					}
 
 					http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
@@ -451,6 +449,26 @@
 			if (installScriptSrc && installEsmSrc) {
 				this.toggle('isDefaultPackageTmp');
 			}
+		},
+		handleVersionSelect (selectedVersion) {
+			let updSharedVersion;
+			let initVersion = this.get('initVersion');
+
+			this.set('selectedVersion', selectedVersion);
+
+			switch (selectedVersion) {
+				case 'Static':
+				case 'Latest Patch':
+				case 'Latest Minor':
+				case 'Latest Major':
+					updSharedVersion = initVersion;
+					break;
+
+				default:
+					updSharedVersion = selectedVersion;
+			}
+
+			this.set('sharedVersion', updSharedVersion);
 		},
 	};
 </script>
