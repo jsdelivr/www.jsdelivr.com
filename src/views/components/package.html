@@ -32,12 +32,13 @@
 					</div>
 				{{/if}}
 
+				<!-- TODO: 523 -->
 				<c-package-install-block
 					package="{{package}}"
 					packageVersionsList="{{packageVersionsList}}"
 					type="{{type}}"
 					name="{{name}}"
-					version="{{versionP}}"
+					sharedVersion="{{sharedVersion}}"
 					tabRoute="{{tabRoute}}"
 				>
 				</c-package-install-block>
@@ -96,11 +97,12 @@
 
 		{{#if tabRoute === NAV_MENU_TABS.files}}
 			<div class="package-files full-width-content">
+				<!-- TODO: 523 -->
 				<c-package-file-browser
 					type="{{type}}"
 					name="{{name}}"
 					github="{{package.githubRepo}}"
-					version="{{versionP}}"
+					sharedVersion="{{sharedVersion}}"
 					versions="{{packageVersionsList}}"
 					path="{{path}}"
 					collection="{{collection}}">
@@ -194,6 +196,13 @@
 						url.searchParams.set('tab', NAV_MENU_TABS.files);
 						app.router.history.replaceState(app.router.history.state, '', url);
 					}
+				});
+
+				// set versionP to a separate variable to use it as a shared value between PackageInstallBlock and PackageFielsTab and do not mutate origin variable
+				this.observe('versionP', (versionP) => {
+					console.log("+++++ versionP", versionP);
+					console.log("____________________");
+					this.set('sharedVersion', versionP);
 				});
 
 				if (!this.get('versionP')) {

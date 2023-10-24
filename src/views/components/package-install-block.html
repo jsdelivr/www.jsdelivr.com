@@ -333,26 +333,30 @@
 					}
 				});
 
-				this.observe('version selectedVersion', () => {
+				this.observe('sharedVersion selectedVersion', () => {
 					let installPackageVersion = '@';
 					let selectedVersion = this.get('selectedVersion');
 					let packageName = this.get('name');
-					let packageVersion = this.get('version');
+					let sharedVersion = this.get('sharedVersion');
 					let packageType = this.get('type');
 
+					console.log("+++++ selectedVersion", selectedVersion);
+					console.log("+++++ sharedVersion", sharedVersion);
+					console.log("__________________");
+
 					if (selectedVersion === 'Static') {
-						installPackageVersion += packageVersion;
+						installPackageVersion += sharedVersion;
 					} else if (selectedVersion === 'Latest Patch') {
-						installPackageVersion += packageVersion.split('.').slice(0, 2).join('.');
+						installPackageVersion += sharedVersion.split('.').slice(0, 2).join('.');
 					} else if (selectedVersion === 'Latest Minor') {
-						installPackageVersion += packageVersion.split('.')[0];
+						installPackageVersion += sharedVersion.split('.')[0];
 					} else if (selectedVersion === 'Latest Major') {
 						installPackageVersion = '';
 					} else {
 						installPackageVersion += selectedVersion;
 					}
 
-					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
+					http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
 						let packageJsEntrypoint = '';
 						let packageCssEntrypoint = '';
 						let isGuessedFile = false;
@@ -380,7 +384,7 @@
 						this.set('isGuessedFile', isGuessedFile);
 						this.set('entrypoints', data.entrypoints);
 
-						http.fetchPackageFilesFlat(packageType, packageName, packageVersion).then((data) => {
+						http.fetchPackageFilesFlat(packageType, packageName, sharedVersion).then((data) => {
 							if (packageJsEntrypoint) {
 								data.files.forEach((file) => {
 									if (file.name === this.get('packageJsEntrypoint')) {
