@@ -381,6 +381,10 @@
 					this.set('sharedVersion', sharedVersion);
 
 					http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
+						// clear script src and links href from prev version
+						this.set('installScriptSrc', null);
+						this.set('installLinkHref', null);
+
 						let packageJsEntrypoint = '';
 						let packageCssEntrypoint = '';
 						let isGuessedFile = false;
