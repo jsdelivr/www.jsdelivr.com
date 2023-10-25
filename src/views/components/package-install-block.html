@@ -350,6 +350,10 @@
 
 				// handle version selection
 				this.observe('selectedVersion', (selectedVersion) => {
+					// clear SRI hashes from previous version
+					this.set('packageJsHash', null);
+					this.set('packageCssHash', null);
+
 					let installPackageVersion = '@';
 					let packageName = this.get('name');
 					let initVersion = this.get('initVersion');
@@ -373,6 +377,7 @@
 						sharedVersion = selectedVersion;
 					}
 
+					// update sharedVersion
 					this.set('sharedVersion', sharedVersion);
 
 					http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
