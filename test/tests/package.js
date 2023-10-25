@@ -10,7 +10,7 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('index.min.js');
+		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('transform.min.js');
 	});
 
 	it('opening directories works', async () => {
