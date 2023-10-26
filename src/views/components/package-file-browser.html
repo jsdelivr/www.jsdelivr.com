@@ -216,7 +216,15 @@
 
 					if (packageType === 'npm') {
 						http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
-							this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
+							let defaultFile = '';
+
+							if (data.entrypoints.js) {
+								defaultFile = data.entrypoints.js.file || '';
+							} else if (data.entrypoints.css) {
+								defaultFile = data.entrypoints.css.file || '';
+							}
+
+							this.set('default', defaultFile);
 						}).catch(() => {});
 					}
 
