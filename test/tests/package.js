@@ -86,8 +86,7 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(3) label' }).click();
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(4) label' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-of-type(5) label' }).click();
 		await browser.sleep(1000);
 		await browser.executeScript(`arguments[0].click();`, await browser.findElement({ css: '.collection-header .remove-text' }));
 		await browser.sleep(1000);
