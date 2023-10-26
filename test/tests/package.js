@@ -55,17 +55,17 @@ describe('package', () => {
 	});
 
 	it('copying url works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .c-copy-dropdown span' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .c-copy-dropdown span' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(5) .dropdown-menu a' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .dropdown-menu a' }).click();
 		await browser.sleep(1000);
 		await browser.executeScript(`let ele = document.createElement('input'); ele.setAttribute('id', 'testInput'); document.body.appendChild(ele)`);
 		await browser.findElement({ css: '#testInput' }).sendKeys(KEY.CONTROL, 'v');
 		await browser.sleep(1000);
-		await expect(browser.findElement({ css: '#testInput' }).getAttribute('value')).to.eventually.equal('https://cdn.jsdelivr.net/npm/jsdelivr@0.1.2/.jshintrc');
+		await expect(browser.findElement({ css: '#testInput' }).getAttribute('value')).to.eventually.equal('https://cdn.jsdelivr.net/npm/fontfamous@2.1.1/LICENSE');
 		await browser.executeScript(`let ele = document.querySelector('#testInput'); ele.parentNode.removeChild(ele)`);
 	});
 
