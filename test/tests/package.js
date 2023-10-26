@@ -43,14 +43,15 @@ describe('package', () => {
 	});
 
 	it('changing versions works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.version-dropdown-selected-version' }).click();
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.dropdown-menu-right li:last-of-type a' }).click();
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(8) > a .file-path' }).getText()).to.eventually.equal('index.js');
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) > a .file-path' }).getText()).to.eventually.equal('dist/fonts');
 	});
 
 	it('copying url works', async () => {
