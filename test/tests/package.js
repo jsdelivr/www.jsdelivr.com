@@ -7,18 +7,19 @@ chai.use(chaiAsPromised);
 
 describe('package', () => {
 	it('displays default file', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('transform.min.js');
+		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('font-famous-jsdelivr.min.css');
 	});
 
 	it('opening directories works', async () => {
-		await browser.navigate().to(`${BASE_URL}/package/npm/jsdelivr?version=0.1.2`);
+		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
-		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('demos/api_demo.js');
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(3) a' }).click();
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('dist/font/font-famous.eot');
 	});
 
 	it('going up in directories works', async () => {
