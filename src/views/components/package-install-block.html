@@ -333,26 +333,58 @@
 					}
 				});
 
-				this.observe('version selectedVersion', () => {
-					let installPackageVersion = '@';
-					let selectedVersion = this.get('selectedVersion');
-					let packageName = this.get('name');
-					let packageVersion = this.get('version');
-					let packageType = this.get('type');
+				// update selectedVersion (and tmp version for mobile) when sharedVersion was changed within FilesTab
+				this.observe('sharedVersion', (sharedVersion) => {
+					let initVersion = this.get('initVersion');
+					let updSelectedVersion;
 
-					if (selectedVersion === 'Static') {
-						installPackageVersion += packageVersion;
-					} else if (selectedVersion === 'Latest Patch') {
-						installPackageVersion += packageVersion.split('.').slice(0, 2).join('.');
-					} else if (selectedVersion === 'Latest Minor') {
-						installPackageVersion += packageVersion.split('.')[0];
-					} else if (selectedVersion === 'Latest Major') {
-						installPackageVersion = '';
+					if (sharedVersion === initVersion) {
+						updSelectedVersion = 'Static';
 					} else {
-						installPackageVersion += selectedVersion;
+						updSelectedVersion = sharedVersion;
 					}
 
-					http.fetchPackageEntrypoints(packageType, packageName, packageVersion).then((data) => {
+					this.set('selectedVersion', updSelectedVersion);
+					this.set('selectedVersionTmp', updSelectedVersion);
+				});
+
+				// handle version selection
+				this.observe('selectedVersion', (selectedVersion) => {
+					// clear SRI hashes from previous version
+					this.set('packageJsHash', null);
+					this.set('packageCssHash', null);
+
+					let installPackageVersion = '@';
+					let packageName = this.get('name');
+					let initVersion = this.get('initVersion');
+					let packageType = this.get('type');
+					let sharedVersion;
+
+					if (selectedVersion === 'Static') {
+						installPackageVersion += initVersion;
+						sharedVersion = initVersion;
+					} else if (selectedVersion === 'Latest Patch') {
+						installPackageVersion += initVersion.split('.').slice(0, 2).join('.');
+						sharedVersion = initVersion;
+					} else if (selectedVersion === 'Latest Minor') {
+						installPackageVersion += initVersion.split('.')[0];
+						sharedVersion = initVersion;
+					} else if (selectedVersion === 'Latest Major') {
+						installPackageVersion = '';
+						sharedVersion = initVersion;
+					} else {
+						installPackageVersion += selectedVersion;
+						sharedVersion = selectedVersion;
+					}
+
+					// update sharedVersion
+					this.set('sharedVersion', sharedVersion);
+
+					http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
+						// clear script src and links href from prev version
+						this.set('installScriptSrc', null);
+						this.set('installLinkHref', null);
+
 						let packageJsEntrypoint = '';
 						let packageCssEntrypoint = '';
 						let isGuessedFile = false;
@@ -380,7 +412,7 @@
 						this.set('isGuessedFile', isGuessedFile);
 						this.set('entrypoints', data.entrypoints);
 
-						http.fetchPackageFilesFlat(packageType, packageName, packageVersion).then((data) => {
+						http.fetchPackageFilesFlat(packageType, packageName, sharedVersion).then((data) => {
 							if (packageJsEntrypoint) {
 								data.files.forEach((file) => {
 									if (file.name === this.get('packageJsEntrypoint')) {

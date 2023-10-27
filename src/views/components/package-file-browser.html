@@ -16,7 +16,7 @@
 				{{/if}}
 			</div>
 
-			<c-version-dropdown versions="{{versions}}" version="{{~/version}}"></c-version-dropdown>
+			<c-version-dropdown versions="{{versions}}" version="{{~/sharedVersion}}"></c-version-dropdown>
 		</div>
 
 		<div class="box-content-wrapper">
@@ -25,7 +25,7 @@
 					<a class="file-default-link"
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}"
+						href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/sharedVersion}}{{~/default}}"
 						as-tooltip="'Default file: ' + ~/default, 'top'">
 						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/code.svg" loading="lazy"/>
 
@@ -50,12 +50,12 @@
 							</div>
 						{{/if}}
 
-						<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
+						<c-copy-dropdown url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/sharedVersion}}{{~/default}}" hash="{{defaultFile.hash}}"></c-copy-dropdown>
 
 						<input type="checkbox"
 							class="switch-inline"
 							id="df"
-							checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, ~/default) !== -1}}"
+							checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/sharedVersion, ~/default) !== -1}}"
 							twoway="false">
 
 						<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
@@ -87,12 +87,12 @@
 						{{#if type === 'directory'}}
 							<a on-click="@this.push('path', name)">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/folder.svg" loading="lazy"/>
-								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+								/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
 						{{else}}
-							<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}">
+							<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/{{pathS}}{{name}}">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
-								/{{~/type}}/{{~/name}}@{{~/version}}/<span class="file-path">{{pathS}}{{name}}</span>
+								/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/<span class="file-path">{{pathS}}{{name}}</span>
 							</a>
 						{{/if}}
 						<div>
@@ -113,7 +113,7 @@
 							{{/if}}
 
 							<c-copy-dropdown
-								url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/version}}/{{pathS}}{{name}}"
+								url="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/{{pathS}}{{name}}"
 								hash="{{hash}}"
 								dropup="{{(@index > (pathS ? 0 : 1)) && ../length - @index <= 4}}">
 							</c-copy-dropdown>
@@ -121,7 +121,7 @@
 							<input id="{{name}}"
 								type="checkbox"
 								class="switch-inline"
-								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/version, '/' + pathS + name) !== -1}}"
+								checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/sharedVersion, '/' + pathS + name) !== -1}}"
 								twoway="false">
 
 							<label for="{{name}}"
@@ -206,8 +206,8 @@
 					}
 				});
 
-				this.observe('version', (version) => {
-					if (!version) { return; }
+				this.observe('sharedVersion', (sharedVersion) => {
+					if (!sharedVersion) { return; }
 
 					this.set('files', []);
 					this.set('filesLoadingMessage', '');
@@ -215,13 +215,21 @@
 					let packageName = this.get('name');
 
 					if (packageType === 'npm') {
-						http.fetchPackageEntrypoints(packageType, packageName, version).then((data) => {
-							this.set('default', data.entrypoints.js ? data.entrypoints.js.file : '');
+						http.fetchPackageEntrypoints(packageType, packageName, sharedVersion).then((data) => {
+							let defaultFile = '';
+
+							if (data.entrypoints.js) {
+								defaultFile = data.entrypoints.js.file || '';
+							} else if (data.entrypoints.css) {
+								defaultFile = data.entrypoints.css.file || '';
+							}
+
+							this.set('default', defaultFile);
 						}).catch(() => {});
 					}
 
 					// Load package files.
-					http.fetchPackageFiles(packageType, packageName, version).then((data) => {
+					http.fetchPackageFiles(packageType, packageName, sharedVersion).then((data) => {
 						this.set('files', data.files);
 					}).catch((error) => {
 						let defaultError = 'Failed to load the file listing.';
@@ -233,7 +241,7 @@
 								http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 									errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 								}).finally(() => {
-									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@version/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@sharedVersion/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 									this.set('filesLoadingMessage', errorHtml);
 								});
 							}
@@ -245,7 +253,7 @@
 					});
 
 					// fetch package File stats to get downloads amount per file
-					http.fetchPackageFileStats(packageType, packageName, version).then((response) => {
+					http.fetchPackageFileStats(packageType, packageName, sharedVersion).then((response) => {
 						let downloadsPerFile = response.reduce((downloadsPerFile, fileStats) => {
 							let fileName = fileStats.name.substring(fileStats.name.indexOf('/') + 1);
 
@@ -298,12 +306,12 @@
 				});
 			}
 		},
-		getCollectionIndex (collection, type, name, version, file) {
+		getCollectionIndex (collection, type, name, sharedVersion, file) {
 			for (let i = 0; i < collection.length; i++) {
 				if (
 					collection[i].type === type
 					&& collection[i].name === name
-					&& collection[i].version === version
+					&& collection[i].version === sharedVersion
 					&& (collection[i].file === file || (collection[i].isDefault && this.getFile(file).path === this.getFile(this.get('default')).path))) {
 					return i;
 				}
@@ -335,9 +343,9 @@
 		toggleCollectionFile (file) {
 			let type = this.get('type');
 			let name = this.get('name');
-			let version = this.get('version');
+			let sharedVersion = this.get('sharedVersion');
 			let collection = this.get('collection');
-			let index = this.getCollectionIndex(collection, type, name, version, file);
+			let index = this.getCollectionIndex(collection, type, name, sharedVersion, file);
 
 			if (index !== -1) {
 				this.splice('collection', index, 1);
@@ -354,7 +362,7 @@
 				this.push('collection', {
 					type,
 					name,
-					version,
+					version: sharedVersion,
 					file,
 					hash: f.hash,
 					isDefault: f.path === this.getFile(this.get('default')).path,

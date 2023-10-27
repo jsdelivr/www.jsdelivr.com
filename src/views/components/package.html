@@ -37,7 +37,8 @@
 					packageVersionsList="{{packageVersionsList}}"
 					type="{{type}}"
 					name="{{name}}"
-					version="{{versionP}}"
+					initVersion="{{versionP}}"
+					sharedVersion="{{sharedVersion}}"
 					tabRoute="{{tabRoute}}"
 				>
 				</c-package-install-block>
@@ -100,7 +101,7 @@
 					type="{{type}}"
 					name="{{name}}"
 					github="{{package.githubRepo}}"
-					version="{{versionP}}"
+					sharedVersion="{{sharedVersion}}"
 					versions="{{packageVersionsList}}"
 					path="{{path}}"
 					collection="{{collection}}">
@@ -194,6 +195,11 @@
 						url.searchParams.set('tab', NAV_MENU_TABS.files);
 						app.router.history.replaceState(app.router.history.state, '', url);
 					}
+				});
+
+				// set versionP to a separate variable to use it as a shared value between PackageInstallBlock and PackageFielsTab and do not mutate origin variable
+				this.observe('versionP', (versionP) => {
+					this.set('sharedVersion', versionP);
 				});
 
 				if (!this.get('versionP')) {
