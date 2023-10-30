@@ -1,11 +1,19 @@
 <div class="c-proxy-data-card endpoints_list_wrapper_item">
 	<a href="/oss-cdn/{{name}}">
-		<img
-			width="{{imgWidth}}"
-			height="{{imgHeight}}"
-			src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.png"
-			srcset="{{@shared.assetsHost}}/img/landing/new/{{imgName}}@2x.png 2x"
-			loading="lazy" />
+		{{#if imgExt === 'svg'}}
+			<img
+				width="{{imgWidth}}"
+				height="{{imgHeight}}"
+				src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.svg"
+				loading="lazy" />
+		{{else}}
+			<img
+				width="{{imgWidth}}"
+				height="{{imgHeight}}"
+				src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.png"
+				srcset="{{@shared.assetsHost}}/img/landing/new/{{imgName}}@2x.png 2x"
+				loading="lazy" />
+		{{/if}}
 	</a>
 	<p>{{_.formatNumber(hitsTotal)}}</p>
 	<span>Requests past {{period}}</span>
