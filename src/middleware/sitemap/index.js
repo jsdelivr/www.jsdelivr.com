@@ -23,6 +23,8 @@ module.exports = async (ctx) => {
 		'oss-cdn/ghost',
 		'oss-cdn/musescore',
 		'oss-cdn/pyodide',
+		'oss-cdn/fontsource',
+		'oss-cdn/yocto-sstate',
 	);
 
 	if (ctx.params.page === 'index') {
