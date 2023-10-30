@@ -242,10 +242,20 @@
 
 		<div class="horizontal-divider-19"></div>
 
-		{{#if isGuessedFile && isDefaultPackage}}
+		{{#if isDefaultPackage && (isGuessedJsFile || isGuessedCssFile)}}
 			<div class="install-default-warning">
-				{{#if Object.values(entrypoints) > 1}}The URLs are{{else}}The URL is{{/if}} guessed and might not be correct.
-				You can always <a on-click="@this.set('tabRoute', 'files')">browse all package files</a> to find the correct one.
+				No default
+				{{#if isGuessedJsFile && isGuessedCssFile}}
+				files
+				{{elseif isGuessedJsFile}}
+				JS file
+				{{elseif isGuessedCssFile}}
+				CSS file
+				{{/if}}
+				<a href="/documentation#id-configuring-a-default-file-in-packagejson">set by the package author</a>
+				so the {{#if isGuessedJsFile && isGuessedCssFile}}URLs are{{else}}URL is{{/if}} guessed.
+				You can always <a on-click="@this.set('tabRoute', 'files')">browse all package files</a> to use
+				{{#if isGuessedJsFile && isGuessedCssFile}}other ones{{else}}another one{{/if}}.
 			</div>
 		{{else}}
 			<div class="install-esm-ctrls">
@@ -308,7 +318,8 @@
 				isDefaultPackageTmp: null,
 				selectedVersion: 'Static',
 				selectedVersionTmp: 'Static',
-				isGuessedFile: false,
+				isGuessedJsFile: false,
+				isGuessedCssFile: false,
 				buildIntegrity,
 				canBuildHtml,
 				buildHtml,
@@ -387,11 +398,12 @@
 
 						let packageJsEntrypoint = '';
 						let packageCssEntrypoint = '';
-						let isGuessedFile = false;
+						let isGuessedJsFile = false;
+						let isGuessedCssFile = false;
 
 						if (data.entrypoints.js) {
 							if (data.entrypoints.js.guessed) {
-								isGuessedFile = true;
+								isGuessedJsFile = true;
 							}
 
 							packageJsEntrypoint = data.entrypoints.js.file;
@@ -401,7 +413,7 @@
 
 						if (data.entrypoints.css) {
 							if (data.entrypoints.css.guessed) {
-								isGuessedFile = true;
+								isGuessedCssFile = true;
 							}
 
 							packageCssEntrypoint = data.entrypoints.css.file;
@@ -409,7 +421,8 @@
 							this.set('packageCssEntrypoint', packageCssEntrypoint);
 						}
 
-						this.set('isGuessedFile', isGuessedFile);
+						this.set('isGuessedJsFile', isGuessedJsFile);
+						this.set('isGuessedCssFile', isGuessedCssFile);
 						this.set('entrypoints', data.entrypoints);
 
 						http.fetchPackageFilesFlat(packageType, packageName, sharedVersion).then((data) => {
