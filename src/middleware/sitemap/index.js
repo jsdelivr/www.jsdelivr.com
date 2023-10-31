@@ -19,7 +19,7 @@ module.exports = async (ctx) => {
 	let page = Number(ctx.params.page);
 
 	pages.push(
-		'oss-cdn/cocoapods',
+		'oss-cdn/cocoa',
 		'oss-cdn/ghost',
 		'oss-cdn/musescore',
 		'oss-cdn/pyodide',
