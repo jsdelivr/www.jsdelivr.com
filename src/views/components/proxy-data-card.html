@@ -36,12 +36,11 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('name', () => {
-					let name = this.get('name');
+				this.observe('apiName', (apiName) => {
 					let period = this.get('period') || 'month';
 					let bandwidthUnit = this.get('bandwidthUnit');
 
-					http.fetchCdnOssStats(name, period).then(({ hits, bandwidth }) => {
+					http.fetchCdnOssStats(apiName, period).then(({ hits, bandwidth }) => {
 						if (hits.total >= 0) {
 							this.animate('hitsTotal', hits.total, { duration: 1000 });
 						}
