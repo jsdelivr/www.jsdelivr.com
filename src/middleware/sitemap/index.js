@@ -19,12 +19,12 @@ module.exports = async (ctx) => {
 	let page = Number(ctx.params.page);
 
 	pages.push(
-		'oss-cdn/cocoa',
+		'oss-cdn/cocoapods',
 		'oss-cdn/ghost',
 		'oss-cdn/musescore',
 		'oss-cdn/pyodide',
 		'oss-cdn/fontsource',
-		'oss-cdn/yocto-sstate',
+		'oss-cdn/yocto',
 	);
 
 	if (ctx.params.page === 'index') {
