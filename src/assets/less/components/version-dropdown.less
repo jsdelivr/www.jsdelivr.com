@@ -1,19 +1,47 @@
 @import "../mixins.less";
 
+// .version-dropdown {
+// 	.dropdown-menu {
+// 		font-size: 15px;
+// 		max-height: 282px;
+// 		overflow-y: auto;
+
+// 		> li > a {
+// 			max-width: 320px;
+// 			text-overflow: ellipsis;
+// 			overflow: hidden;
+// 		}
+// 	}
+
+// 	.version-dropdown-selected-version {
+// 		display: flex;
+// 		align-items: center;
+// 		justify-content: center;
+// 		height: 40px;
+// 		cursor: pointer;
+// 		border: 1px solid #cfd6dd;
+// 		box-sizing: border-box;
+// 		border-radius: 6px;
+// 		padding: 0 8px 0 16px;
+// 		font-size: 14px;
+// 		line-height: 20px;
+
+// 		& > a {
+// 			max-width: 100px;
+// 			text-overflow: ellipsis;
+// 			overflow: hidden;
+// 			white-space: nowrap;
+// 			color: #111a2c;
+// 			margin-right: 4px;
+// 			text-decoration: none;
+// 		}
+// 	}
+// }
+
 .version-dropdown {
-	.dropdown-menu {
-		font-size: 15px;
-		max-height: 282px;
-		overflow-y: auto;
+	position: relative;
 
-		> li > a {
-			max-width: 320px;
-			text-overflow: ellipsis;
-			overflow: hidden;
-		}
-	}
-
-	.version-dropdown-selected-version {
+	&_selected {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -23,17 +51,71 @@
 		box-sizing: border-box;
 		border-radius: 6px;
 		padding: 0 8px 0 16px;
-		font-size: 14px;
-		line-height: 20px;
 
-		& > a {
+		> a {
+			font-size: 14px;
+			line-height: 20px;
+			letter-spacing: .2px;
+			color: #111a2c;
+			white-space: nowrap;
 			max-width: 100px;
 			text-overflow: ellipsis;
 			overflow: hidden;
-			white-space: nowrap;
-			color: #111a2c;
 			margin-right: 4px;
 			text-decoration: none;
+		}
+	}
+
+	&_wrapper {
+		position: absolute;
+		top: 49px;
+		right: 0;
+		display: none;
+		flex-direction: column;
+		row-gap: 16px;
+		font-size: 15px;
+		max-height: 282px;
+		padding: 8px;
+		background: #fff;
+		border: 1px solid #dfe3e7;
+		box-shadow: 0 4px 4px rgba(23, 35, 59, .06), 0 0 1px 1px rgba(23, 35, 59, .11), 0 10px 22px -2px rgba(23, 35, 59, .08);
+		border-radius: 6px;
+		width: auto;
+		max-width: 320px;
+		min-width: 160px;
+
+		&.opened {
+			display: flex;
+		}
+
+		&_filter {
+			height: 40px;
+			padding: 10px 8px 10px 16px;
+			border-radius: 6px;
+			border: 1px solid #cfd6dd;
+			background: #fff;
+		}
+
+		&_list {
+			overflow-y: auto;
+			padding-right: 8px;
+
+			&_item {
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
+				height: 40px;
+				padding: 10px;
+				font-size: 14px;
+				font-weight: 400;
+				line-height: 20px;
+				color: #111a2c;
+
+				&:hover {
+					border-radius: 4px;
+					background: #f3f5f7;
+				}
+			}
 		}
 	}
 }

@@ -1,22 +1,55 @@
-<div class="version-dropdown btn-group ">
+<div class="version-dropdown">
 	{{#if versions.length > 1}}
-		<div class="version-dropdown-selected-version" data-toggle="dropdown">
+		<div class="version-dropdown_selected" on-click="@this.toggleDropdown()">
 			<a>{{version}}</a>
 			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy"/>
 		</div>
 
-		<ul class="dropdown-menu dropdown-menu-right">
-			{{#each versions}}
-				{{#if this !== version}}
-					<li>
-						<a on-click="@this.set('version', this)">{{this}}</a>
-					</li>
-				{{/if}}
-			{{/each}}
-		</ul>
+		<div class="version-dropdown_wrapper {{#if dropdownOpened}}opened{{/if}}">
+			<input class="version-dropdown_wrapper_filter" value="{{filterBy}}">
+
+			<div class="version-dropdown_wrapper_list">
+				{{#each filteredVersions}}
+					{{#if this !== version}}
+						<div class="version-dropdown_wrapper_list_item" on-click="@this.selectItem(this)">
+							{{this}}
+						</div>
+					{{/if}}
+				{{/each}}
+			</div>
+		</div>
 	{{else}}
 		<span class="version-dropdown-selected-version">
 			<a>{{version}}</a>
 		</span>
 	{{/if}}
 </div>
+
+<script>
+	component.exports = {
+		computed: {
+			filteredVersions () {
+				let filterBy = this.get('filterBy');
+				let versions = this.get('versions');
+
+				if (filterBy) {
+					return versions.filter(v => v.includes(filterBy));
+				}
+
+				return versions;
+			},
+		},
+		data () {
+			return {
+				dropdownOpened: false,
+			};
+		},
+		toggleDropdown () {
+			this.set('dropdownOpened', !this.get('dropdownOpened'));
+		},
+		selectItem (version) {
+			this.toggleDropdown();
+			this.set('version', version);
+		},
+	};
+</script>
