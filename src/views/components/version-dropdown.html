@@ -44,6 +44,20 @@
 				dropdownOpened: false,
 			};
 		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// close dropdown and clear filter on click outside the dropdown el
+				document.addEventListener("click", (event) => {
+					let el = this.find('.version-dropdown');
+					let currDropdownOpened = this.get('dropdownOpened');
+
+					if (currDropdownOpened && !el.contains(event.target)) {
+						this.set('filterBy', null);
+						this.set('dropdownOpened', false);
+					}
+				});
+			}
+		},
 		toggleDropdown () {
 			this.set('dropdownOpened', !this.get('dropdownOpened'));
 		},
