@@ -94,6 +94,9 @@
 			title () {
 				return this.get('name') + ' CDN by jsDelivr - A CDN for npm and GitHub';
 			},
+			description () {
+				return this.get('package.description') ? `A free, fast, and reliable CDN for ${this.get('name')}. ${this.get('package.description')}` : undefined;
+			},
 			version: {
 				get () {
 					return !this.get('versionS') || this.get('versionS') === this.get('versionP') ? '' : this.get('versionP');
@@ -218,13 +221,6 @@
 						if (!this.get('versionP') || versionsArr.indexOf(this.get('versionP')) === -1) {
 							this.set('versionP', versionsResponse.versions[0].version);
 						}
-					}
-
-					if (result.description) {
-						document.querySelector('meta[name="description"]').setAttribute(
-							'content',
-							`A free, fast, and reliable CDN for ${this.get('name')}. ${result.description}`,
-						);
 					}
 
 					this.set({ package: { ...result, readme } });
