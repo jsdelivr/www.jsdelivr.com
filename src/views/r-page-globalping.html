@@ -33,7 +33,20 @@
 	<meta name="twitter:site" content="@jsdelivr">
 	<meta name="twitter:creator" content="@jsdelivr">
 	<title>{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}</title>
-	<link rel="icon" type="image/x-icon" href="{{icon || '/favicon-globalping.ico'}}">
+
+	<link rel="icon" type="image/x-icon" href="{{publicRoot}}/favicon.ico">
+	<link rel="icon" type="image/svg+xml" href="{{publicRoot}}/icons/favicon.svg">
+	<link rel="icon" type="image/png" sizes="48x48" href="{{publicRoot}}/icons/favicon-48x48.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{publicRoot}}/icons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{publicRoot}}/icons/favicon-16x16.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="{{publicRoot}}/icons/apple-touch-icon.png">
+	<link rel="manifest" href="{{publicRoot}}/icons/site.webmanifest">
+	<link rel="mask-icon" href="{{publicRoot}}/icons/safari-pinned-tab.svg" color="#e64e3d">
+	<meta name="apple-mobile-web-app-title" content="Globalping">
+	<meta name="application-name" content="Globalping">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-config" content="{{publicRoot}}/icons/browserconfig.xml">
+	<meta name="theme-color" content="#ffffff">
 	{{>seo ~/rootContext}}
 {{/partial}}
 
@@ -95,6 +108,11 @@
 
 <script>
 	component.exports = {
+		data () {
+			return {
+				publicRoot: '/globalping',
+			};
+		},
 		onrender () {
 			document.querySelectorAll(`.${Ractive.sharedGet('R_META_CLASS')}`).forEach(e => e.remove());
 			// eslint-disable-next-line new-cap
