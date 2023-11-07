@@ -8,18 +8,24 @@
 		<div class="version-dropdown_wrapper {{#if dropdownOpened}}opened{{/if}}">
 			<div class="version-dropdown_wrapper_filter">
 				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-				<input value="{{filterBy}}">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}">
 			</div>
 
-			<div class="version-dropdown_wrapper_list">
-				{{#each filteredVersions}}
-					{{#if this !== version}}
-						<div class="version-dropdown_wrapper_list_item" on-click="@this.selectItem(this)">
-							{{this}}
-						</div>
-					{{/if}}
-				{{/each}}
-			</div>
+			{{#if filteredVersions.length }}
+				<div class="version-dropdown_wrapper_list">
+					{{#each filteredVersions}}
+						{{#if this !== version}}
+							<div class="version-dropdown_wrapper_list_item" on-click="@this.selectItem(this)">
+								{{this}}
+							</div>
+						{{/if}}
+					{{/each}}
+				</div>
+			{{else}}
+				<div class="version-dropdown_wrapper_no-versions-found">
+					{{noVersionsMsg}}
+				</div>
+			{{/if}}
 		</div>
 	{{else}}
 		<span class="version-dropdown_selected">
@@ -44,6 +50,8 @@
 		},
 		data () {
 			return {
+				filterPlaceholder: 'Find version..',
+				noVersionsMsg: 'No versions found..',
 				dropdownOpened: false,
 			};
 		},
