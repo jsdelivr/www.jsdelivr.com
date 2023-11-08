@@ -1,36 +1,39 @@
 <div class="c-periods-dropdown">
 	{{#if periodToDisplay}}
-		<div class="btn-group">
+		<div class="dropdown_head">
 			{{#if pinnedLabel}}
 				{{>pinnedLabel}}
 			{{/if}}
 
-			<button
-				type="button"
-				class="btn dropdown-toggle"
-				data-toggle="dropdown"
-				aria-haspopup="true"
-				aria-expanded="false">
-				<span>{{periodToDisplay}}</span>
+			<div class="dropdown_head_selected" on-click="@this.toggleDropdown()">
+				<a>{{periodToDisplay}}</a>
+				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy"/>
+			</div>
+		</div>
 
-				<i class="fa fa-angle-down" aria-hidden="true"></i>
-			</button>
+		<div class="dropdown_body {{#if dropdownOpened}}opened{{/if}}">
+			<div class="dropdown_body_filter">
+				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}">
+			</div>
 
-			<ul class="dropdown-menu">
-				{{#each prepStatPeriods}}
-					{{#if periodType === 'separator'}}
-						<li role="separator" class="divider"></li>
-					{{else}}
-						<li>
-							<a
-								on-click="@this.handleClick(this)"
-								class="{{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}}">
+			{{#if filteredPeriods.length }}
+				<div class="dropdown_body_list">
+					{{#each prepStatPeriods}}
+						{{#if periodType === 'separator'}}
+							<div role="separator" class="divider"></div>
+						{{else}}
+							<div on-click="@this.handleClick(this)" class="{{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}}">
 								{{periodText}}
-							</a>
-						</li>
-					{{/if}}
-				{{/each}}
-			</ul>
+							</div>
+						{{/if}}
+					{{/each}}
+				</div>
+			{{else}}
+				<div class="dropdown_body_nothing-found-msg">
+					{{nothingFoundMsg}}
+				</div>
+			{{/if}}
 		</div>
 	{{/if}}
 </div>
@@ -39,10 +42,25 @@
 	const _ = require('../../assets/js/_');
 
 	component.exports = {
+		computed: {
+			filteredPeriods () {
+				let filterBy = this.get('filterBy');
+				let prepStatPeriods = this.get('prepStatPeriods');
+
+				if (filterBy) {
+					return prepStatPeriods.filter(v => v.includes(filterBy));
+				}
+
+				return prepStatPeriods;
+			},
+		},
 		data () {
 			return {
 				periodToDisplay: null,
 				prepStatPeriods: [],
+				filterPlaceholder: 'Find period..',
+				nothingFoundMsg: 'No periods found..',
+				dropdownOpened: false,
 			};
 		},
 		oninit () {
@@ -69,9 +87,29 @@
 				});
 			}
 		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// close dropdown and clear filter on click outside the dropdown el
+				let el = this.find('.c-periods-dropdown');
+
+				document.addEventListener('click', (event) => {
+					let currDropdownOpened = this.get('dropdownOpened');
+
+					if (currDropdownOpened && !el.contains(event.target)) {
+						this.set('filterBy', null);
+						this.set('dropdownOpened', false);
+					}
+				});
+			}
+		},
+		toggleDropdown () {
+			this.set('dropdownOpened', !this.get('dropdownOpened'));
+		},
 		handleClick (periodData) {
 			let selectHandler = this.get('selectHandler');
 
+			this.toggleDropdown();
+			this.set('filterBy', null);
 			selectHandler(periodData);
 		},
 	};
