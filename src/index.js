@@ -179,6 +179,8 @@ router.use(koaElasticUtils.middleware(global.apmClient));
 router.use(
 	'/assets/:v',
 	async (ctx, next) => {
+		ctx.set('X-Robots-Tag', 'noindex');
+
 		ctx.originalPath = ctx.path;
 		ctx.path = ctx.path.replace(/^\/[^/]+\/[^/]+/, '') || '/';
 
