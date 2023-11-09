@@ -49,13 +49,15 @@
 				let prepStatPeriods = this.get('prepStatPeriods');
 
 				if (filterBy) {
-					return prepStatPeriods.filter((i) => {
-						if (i.periodText) {
-							return i.periodText.toLowerCase().includes(filterBy.toLowerCase());
-						}
+					return filterBy.split(' ').reduce((results, filterPart) => {
+						return results.filter((i) => {
+							if (i.periodText) {
+								return i.periodText.toLowerCase().includes(filterPart.toLowerCase());
+							}
 
-						return false;
-					});
+							return false;
+						});
+					}, [ ...prepStatPeriods ]);
 				}
 
 				return prepStatPeriods;
