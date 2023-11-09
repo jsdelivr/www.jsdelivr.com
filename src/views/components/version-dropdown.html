@@ -42,7 +42,9 @@
 				let versions = this.get('versions');
 
 				if (filterBy) {
-					return versions.filter(v => v.includes(filterBy));
+					return filterBy.split(' ').reduce((results, filterPart) => {
+						return results.filter(i => i.toLowerCase().includes(filterPart.toLowerCase()));
+					}, [ ...versions ]);
 				}
 
 				return versions;
