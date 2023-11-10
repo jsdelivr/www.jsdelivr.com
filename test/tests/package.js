@@ -48,7 +48,7 @@ describe('package', () => {
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.findElement({ css: '.version-dropdown_selected' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.version-dropdown_wrapper_list div:last-of-type' }).click();
+		await browser.findElement({ css: '.version-dropdown_wrapper_list li:last-of-type' }).click();
 		await browser.sleep(4000);
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
 		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) > a .file-path' }).getText()).to.eventually.equal('dist/fonts');
