@@ -1,3 +1,5 @@
+<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+
 <div class="c-package-install-block {{#unless type === 'npm'}}block-empty{{/unless}}">
 	{{#if type === 'npm'}}
 	<div class="package-install-wrapper">
@@ -19,7 +21,10 @@
 				</div>
 			{{/if}}
 
-			<div class="dropdown-wrapper">
+
+			<c-version-dropdown versions="{{[...versionsList, 'separator', ...packageVersionsList]}}" version="{{selectedVersion}}"></c-version-dropdown>
+
+			<!-- <div class="dropdown-wrapper">
 				<label for="version-select">Version:&nbsp;&nbsp;</label>
 				<div class="btn-group">
 					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
@@ -40,7 +45,7 @@
 						{{/each}}
 					</ul>
 				</div>
-			</div>
+			</div> -->
 
 			<button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
 				<img width="24" height="24" src="{{@shared.assetsHost}}/img/icons/settings-white.svg">
