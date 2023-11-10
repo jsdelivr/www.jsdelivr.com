@@ -25,21 +25,6 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-let routerDispatch = Ractive.Router.prototype.dispatch;
-
-Ractive.Router.prototype.dispatch = function (...args) {
-	routerDispatch.apply(this, args);
-
-	if (!app.router.route.view) {
-		return;
-	}
-
-	document.title = app.router.route.view.get('title') || 'Globalping - Internet and web infrastructure monitoring and benchmarking';
-	document.querySelector('meta[name=description]').setAttribute('content', app.router.route.view.get('description') || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.');
-
-	return this;
-};
-
 app.router.addRoute('/globalping', cGlobalping);
 app.router.addRoute('/globalping/cli', cGlobalpingCli);
 app.router.addRoute('/globalping/slack', cGlobalpingSlack);

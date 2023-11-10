@@ -1,0 +1,74 @@
+{{>meta rPageContext}}
+
+<script>
+	const R_META_CLASS = 'r-meta-e';
+	Ractive.sharedSet('R_META_CLASS', R_META_CLASS);
+
+	component.exports = {
+		oninit () {
+			let rPage = this.findParent('r-page');
+			let tMeta = rPage.partials.meta;
+			let tSeo = rPage.partials.seo;
+
+			let filterNodes = (o, predicate) => {
+				if (Array.isArray(o)) {
+					return o.filter(predicate).map(n => filterNodes(n, predicate));
+				} else if (o && typeof o === 'object') {
+					return Object.fromEntries(Object.entries(o).map(([ key, value ]) => {
+						return [ key, filterNodes(value, predicate) ];
+					}));
+				}
+
+				return o;
+			};
+
+			let walkElements = (o, callback) => {
+				if (Array.isArray(o)) {
+					o.forEach(i => walkElements(i, callback));
+				} else if (o && typeof o === 'object') {
+					if (o.t === 7) {
+						callback(o);
+					}
+
+					Object.values(o).forEach(v => walkElements(v, callback));
+				}
+			};
+
+			if (!tMeta._metaDecorated) {
+				tMeta = filterNodes(tMeta, n => n.t !== 9);
+
+				walkElements(tMeta, (e) => {
+					e.m = e.m || [];
+					e.m.push({ t: 13, n: 'class', f: R_META_CLASS });
+				});
+
+				tMeta._metaDecorated = true;
+			}
+
+			if (tSeo && !tSeo._metaDecorated) {
+				tSeo = filterNodes(tSeo, n => n.t !== 9);
+
+				walkElements(tSeo, (e) => {
+					e.m = e.m || [];
+					e.m.push({ t: 13, n: 'class', f: R_META_CLASS });
+				});
+
+				tSeo._metaDecorated = true;
+			}
+
+			// We need a way to identify the nodes rendered by the component via SSR
+			// when running on the client. We do this by injecting a special class into
+			// all elements in the template.
+			rPage.partials.seo = tSeo;
+			rPage.partials.meta = tMeta;
+			this.partials = rPage.partials;
+			this.resetPartial('meta', tMeta);
+
+			// A bit of context hacking:
+			// the meta partial itself renders with the context of r-page
+			// the seo partial renders with the context of the current page (root context)
+			this.link('', 'rootContext', { instance: rPage.parent });
+			this.link('', 'rPageContext', { instance: rPage });
+		},
+	};
+</script>

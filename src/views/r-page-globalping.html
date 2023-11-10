@@ -1,4 +1,54 @@
+<link rel="ractive" href="./r-meta.html" name="r-meta">
 <link rel="ractive" href="./r-serialize.html" name="r-serialize">
+
+{{#partial meta}}
+	<!-- Dynamic metadata that may change between pages. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
+	<meta name="keywords" content="globalping, jsdelivr, free, open source, oss">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}">
+	<meta property="og:description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
+	<meta property="og:url" content="{{@shared.serverHost}}/globalping">
+	<meta property="og:site_name" content="Globalping">
+
+	{{#if openGraphImage}}
+	<meta property="og:image" content="{{openGraphImage}}">
+	<meta property="og:image:secure_url" content="{{openGraphImage}}">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="600">
+	<meta name="twitter:image" content="{{openGraphImage}}">
+	{{else}}
+	<meta property="og:image" content="{{@shared.assetsHost}}/img/og-globalping.png">
+	<meta property="og:image:secure_url" content="{{@shared.assetsHost}}/img/og-globalping.png">
+	<meta property="og:image:width" content="1280">
+	<meta property="og:image:height" content="640">
+	<meta name="twitter:image" content="{{@shared.assetsHost}}/img/og-globalping.png">
+	{{/if}}
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}">
+	<meta name="twitter:description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
+	<meta name="twitter:site" content="@jsdelivr">
+	<meta name="twitter:creator" content="@jsdelivr">
+	<title>{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}</title>
+
+	<link rel="icon" type="image/x-icon" href="{{publicRoot}}/favicon.ico">
+	<link rel="icon" type="image/svg+xml" href="{{publicRoot}}/icons/favicon.svg">
+	<link rel="icon" type="image/png" sizes="48x48" href="{{publicRoot}}/icons/favicon-48x48.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{publicRoot}}/icons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{publicRoot}}/icons/favicon-16x16.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="{{publicRoot}}/icons/apple-touch-icon.png">
+	<link rel="manifest" href="{{publicRoot}}/icons/site.webmanifest">
+	<link rel="mask-icon" href="{{publicRoot}}/icons/safari-pinned-tab.svg" color="#e64e3d">
+	<meta name="apple-mobile-web-app-title" content="Globalping">
+	<meta name="application-name" content="Globalping">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-config" content="{{publicRoot}}/icons/browserconfig.xml">
+	<meta name="theme-color" content="#ffffff">
+	{{>seo ~/rootContext}}
+{{/partial}}
 
 {{#if !@shared.isServer}}
 	{{yield}}
@@ -7,38 +57,9 @@
 	<html lang="en">
 		<head>
 			<meta charset="utf-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<meta name="description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
-			<meta name="keywords" content="globalping, jsdelivr, free, open source, oss">
-			<meta property="og:locale" content="en_US">
-			<meta property="og:type" content="website">
-			<meta property="og:title" content="{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}">
-			<meta property="og:description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
-			<meta property="og:url" content="{{@shared.serverHost}}/globalping">
-			<meta property="og:site_name" content="Globalping">
+			<r-meta></r-meta>
 
-			{{#if openGraphImage}}
-			<meta property="og:image" content="{{openGraphImage}}">
-			<meta property="og:image:secure_url" content="{{openGraphImage}}">
-			<meta property="og:image:width" content="1200">
-			<meta property="og:image:height" content="600">
-			<meta name="twitter:image" content="{{openGraphImage}}">
-			{{else}}
-			<meta property="og:image" content="{{@shared.assetsHost}}/img/og-globalping.png">
-			<meta property="og:image:secure_url" content="{{@shared.assetsHost}}/img/og-globalping.png">
-			<meta property="og:image:width" content="1280">
-			<meta property="og:image:height" content="640">
-			<meta name="twitter:image" content="{{@shared.assetsHost}}/img/og-globalping.png">
-			{{/if}}
-
-			<meta name="twitter:card" content="summary_large_image">
-			<meta name="twitter:title" content="{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}">
-			<meta name="twitter:description" content="{{description || 'Run free latency tests and network commands like ping, traceroute, HTTP and DNS resolve on probes located worldwide.'}}">
-			<meta name="twitter:site" content="@jsdelivr">
-			<meta name="twitter:creator" content="@jsdelivr">
-			<title>{{title || 'Globalping - Internet and web infrastructure monitoring and benchmarking'}}</title>
-			<link rel="icon" type="image/x-icon" href="{{icon || '/favicon-globalping.ico'}}">
-			{{yield seo}}
+			<!-- Static part that doesn't change after the initial render. -->
 
 			<!-- Maybe will be useful in Firefox at some point. -->
 			<link rel="dns-prefetch" href="https://cdn.jsdelivr.net/">
@@ -83,3 +104,22 @@
 		</body>
 	</html>
 {{/if}}
+
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				publicRoot: '/globalping',
+			};
+		},
+		onrender () {
+			document.querySelectorAll(`.${Ractive.sharedGet('R_META_CLASS')}`).forEach(e => e.remove());
+			// eslint-disable-next-line new-cap
+			app.meta = new this.components['r-meta']({ el: document.head, append: document.querySelector('meta').nextElementSibling, parent: this });
+		},
+		onunrender () {
+			app.meta.teardown();
+		},
+	};
+</script>
