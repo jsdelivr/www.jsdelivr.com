@@ -8,14 +8,14 @@
 		<div class="version-dropdown_wrapper {{#if dropdownOpened}}opened{{/if}}">
 			<div class="version-dropdown_wrapper_filter">
 				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}" on-keydown="@this.onKeyDown(@event)">
 			</div>
 
 			{{#if filteredVersions.length }}
 				<ul class="version-dropdown_wrapper_list">
-					{{#each filteredVersions}}
+					{{#each filteredVersions:itemIndex}}
 						{{#if this !== version}}
-							<li class="version-dropdown_wrapper_list_item" on-click="@this.selectItem(this)">
+							<li class="version-dropdown_wrapper_list_item {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
 								{{this}}
 							</li>
 						{{/if}}
@@ -55,6 +55,7 @@
 				filterPlaceholder: 'Filter versions',
 				noVersionsMsg: 'No results found',
 				dropdownOpened: false,
+				currSelectedItemIdx: null,
 			};
 		},
 		oncomplete () {
@@ -69,10 +70,49 @@
 						this.set('dropdownOpened', false);
 					}
 				});
+
+				this.observe('dropdownOpened', (newValue) => {
+					let ul = this.find('.version-dropdown_wrapper_list');
+
+					if (newValue) {
+						ul.style.minWidth = `${ul.getBoundingClientRect().width}px`;
+					} else {
+						ul.style.minWidth = null;
+					}
+
+					this.find('.version-dropdown_wrapper_filter input').focus();
+				}, { defer: true });
+
+				this.observe('currSelectedItemIdx', () => {
+					let selected = this.find('.version-dropdown_wrapper_list_item.selected');
+					selected.scrollIntoView({ block: 'nearest' });
+				}, { defer: true });
+			}
+		},
+		onKeyDown (e) {
+			let listEl = this.find('.version-dropdown_wrapper_list');
+
+			if (!listEl) { return; }
+
+			let selectedItemEl = listEl.querySelector('.version-dropdown_wrapper_list_item.selected');
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let versions = this.get('filteredVersions');
+
+			if (e.key === 'ArrowDown') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > versions.length - 1 ? versions.length - 1 : currSelectedItemIdx + 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'ArrowUp') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'Enter') {
+				this.selectItem(selectedItemEl.textContent);
 			}
 		},
 		toggleDropdown () {
 			this.set('dropdownOpened', !this.get('dropdownOpened'));
+			this.set('currSelectedItemIdx', null);
 		},
 		selectItem (version) {
 			this.toggleDropdown();
