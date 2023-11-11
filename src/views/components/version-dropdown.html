@@ -42,8 +42,8 @@
 				let versions = this.get('versions');
 
 				if (filterBy) {
-					return filterBy.split(' ').reduce((results, filterPart) => {
-						return results.filter(i => i.toLowerCase().includes(filterPart.toLowerCase()));
+					return filterBy.toLowerCase().split(' ').reduce((results, filterPart) => {
+						return results.filter(i => i.toLowerCase().includes(filterPart));
 					}, [ ...versions ]);
 				}
 
@@ -52,8 +52,8 @@
 		},
 		data () {
 			return {
-				filterPlaceholder: 'Find version..',
-				noVersionsMsg: 'No versions found..',
+				filterPlaceholder: 'Filter versions',
+				noVersionsMsg: 'No results found',
 				dropdownOpened: false,
 			};
 		},
@@ -66,7 +66,6 @@
 					let currDropdownOpened = this.get('dropdownOpened');
 
 					if (currDropdownOpened && !el.contains(event.target)) {
-						this.set('filterBy', null);
 						this.set('dropdownOpened', false);
 					}
 				});
@@ -74,12 +73,10 @@
 		},
 		toggleDropdown () {
 			this.set('dropdownOpened', !this.get('dropdownOpened'));
-			this.set('filterBy', null);
 		},
 		selectItem (version) {
 			this.toggleDropdown();
 			this.set('version', version);
-			this.set('filterBy', null);
 		},
 	};
 </script>
