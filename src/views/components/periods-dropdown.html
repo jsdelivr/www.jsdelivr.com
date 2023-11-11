@@ -20,17 +20,17 @@
 		<div class="dropdown_body {{#if dropdownOpened}}opened{{/if}}">
 			<div class="dropdown_body_filter">
 				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
-				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}" on-keydown="@this.onKeyDown(@event)">
 			</div>
 
 			{{#if filteredPeriods.length }}
 				<ul class="dropdown_body_list">
-					{{#each filteredPeriods}}
+					{{#each filteredPeriods:itemIndex}}
 						{{#if periodType === 'separator'}}
 							<li class="dropdown_body_list_separator"></li>
 						{{else}}
 							<li on-click="@this.handleClick(this)"
-								class="dropdown_body_list_item {{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}}">
+								class="dropdown_body_list_item {{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}">
 								{{periodText}}
 							</li>
 						{{/if}}
@@ -55,10 +55,10 @@
 				let prepStatPeriods = this.get('prepStatPeriods');
 
 				if (filterBy) {
-					return filterBy.split(' ').reduce((results, filterPart) => {
+					return filterBy.toLowerCase().split(' ').reduce((results, filterPart) => {
 						return results.filter((i) => {
 							if (i.periodText) {
-								return i.periodText.toLowerCase().includes(filterPart.toLowerCase());
+								return i.periodText.toLowerCase().includes(filterPart);
 							}
 
 							return false;
@@ -73,9 +73,10 @@
 			return {
 				periodToDisplay: null,
 				prepStatPeriods: [],
-				filterPlaceholder: 'Find period..',
-				nothingFoundMsg: 'No periods found..',
+				filterPlaceholder: 'Filter periods',
+				nothingFoundMsg: 'No periods found',
 				dropdownOpened: false,
+				currSelectedItemIdx: null,
 			};
 		},
 		oninit () {
@@ -111,21 +112,64 @@
 					let currDropdownOpened = this.get('dropdownOpened');
 
 					if (currDropdownOpened && !el.contains(event.target)) {
-						this.set('filterBy', null);
 						this.set('dropdownOpened', false);
 					}
 				});
+
+				this.observe('dropdownOpened', (newValue) => {
+					let ul = this.find('.dropdown_body_list');
+
+					if (newValue) {
+						ul.style.minWidth = `${ul.getBoundingClientRect().width}px`;
+					} else {
+						ul.style.minWidth = null;
+					}
+
+					this.find('.dropdown_body_filter input').focus();
+				}, { defer: true });
+
+				this.observe('currSelectedItemIdx', () => {
+					let selected = this.find('.dropdown_body_list_item.selected');
+					selected.scrollIntoView({ block: 'nearest' });
+				}, { defer: true });
+			}
+		},
+		onKeyDown (e) {
+			let listEl = this.find('.dropdown_body_list');
+
+			if (!listEl) { return; }
+
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let periods = this.get('filteredPeriods');
+
+			if (e.key === 'ArrowDown') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > periods.length - 1 ? periods.length - 1 : currSelectedItemIdx + 1;
+
+				if (periods[currSelectedItemIdx].periodType === 'separator') {
+					currSelectedItemIdx++;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'ArrowUp') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+
+				if (periods[currSelectedItemIdx].periodType === 'separator') {
+					currSelectedItemIdx--;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'Enter') {
+				this.handleClick(periods[currSelectedItemIdx]);
 			}
 		},
 		toggleDropdown () {
 			this.set('dropdownOpened', !this.get('dropdownOpened'));
-			this.set('filterBy', null);
+			this.set('currSelectedItemIdx', null);
 		},
 		handleClick (periodData) {
 			let selectHandler = this.get('selectHandler');
 
 			this.toggleDropdown();
-			this.set('filterBy', null);
 			selectHandler(periodData);
 		},
 	};
