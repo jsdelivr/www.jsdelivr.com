@@ -12,11 +12,11 @@
 			</div>
 
 			{{#if filteredVersions.length }}
-				<ul class="version-dropdown_wrapper_list">
+				<ul style="min-width: {{calculatedListWidth}}px;" class="version-dropdown_wrapper_list">
 					{{#each filteredVersions:itemIndex}}
 						{{#if this === 'separator'}}
 							<li class="version-dropdown_wrapper_list_separator"></li>
-						{{elseif this !== version}}
+						{{else}}
 							<li class="version-dropdown_wrapper_list_item {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
 								{{this}}
 							</li>
@@ -76,17 +76,20 @@
 				this.observe('dropdownOpened', (newValue) => {
 					let ul = this.find('.version-dropdown_wrapper_list');
 
-					if (newValue) {
-						ul.style.minWidth = `${ul.getBoundingClientRect().width}px`;
-					} else {
-						ul.style.minWidth = null;
-					}
+					if (!ul) { return; }
 
-					this.find('.version-dropdown_wrapper_filter input').focus();
+					if (newValue) {
+						this.set('calculatedListWidth', ul.getBoundingClientRect().width);
+						this.find('.version-dropdown_wrapper_filter input').focus();
+					}
 				}, { defer: true });
 
 				this.observe('currSelectedItemIdx', () => {
 					let selected = this.find('.version-dropdown_wrapper_list_item.selected');
+
+					if (!selected) {
+						return;
+					}
 					selected.scrollIntoView({ block: 'nearest' });
 				}, { defer: true });
 			}
