@@ -77,6 +77,7 @@
 				nothingFoundMsg: 'No periods found',
 				dropdownOpened: false,
 				currSelectedItemIdx: null,
+				startNavFromSelected: false,
 			};
 		},
 		oninit () {
@@ -145,6 +146,19 @@
 
 			let currSelectedItemIdx = this.get('currSelectedItemIdx');
 			let periods = this.get('filteredPeriods');
+			let periodToDisplay = this.get('periodToDisplay');
+			let startNavFromSelected = this.get('startNavFromSelected');
+
+			// start nav from the selected value position
+			startNavFromSelected && currSelectedItemIdx === null && periods.some((p, pIdx) => {
+				if (p.periodText === periodToDisplay) {
+					currSelectedItemIdx = pIdx;
+
+					return true;
+				}
+
+				return false;
+			});
 
 			if (e.key === 'ArrowDown') {
 				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > periods.length - 1 ? periods.length - 1 : currSelectedItemIdx + 1;
