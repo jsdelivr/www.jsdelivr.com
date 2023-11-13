@@ -17,7 +17,7 @@
 						{{#if this === 'separator'}}
 							<li class="version-dropdown_wrapper_list_separator"></li>
 						{{else}}
-							<li class="version-dropdown_wrapper_list_item {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
+							<li class="version-dropdown_wrapper_list_item {{#if currentSelectedClass && this === version}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
 								{{this}}
 							</li>
 						{{/if}}
@@ -58,6 +58,7 @@
 				noVersionsMsg: 'No results found',
 				dropdownOpened: false,
 				currSelectedItemIdx: null,
+				currentSelectedClass: 'currently-selected',
 			};
 		},
 		oncomplete () {
@@ -103,6 +104,18 @@
 			let selectedItemEl = listEl.querySelector('.version-dropdown_wrapper_list_item.selected');
 			let currSelectedItemIdx = this.get('currSelectedItemIdx');
 			let versions = this.get('filteredVersions');
+			let currentlySelectedVersion = this.get('version');
+
+			// start nav from the selected value position
+			currSelectedItemIdx === null && versions.some((v, vIdx) => {
+				if (v === currentlySelectedVersion) {
+					currSelectedItemIdx = vIdx;
+
+					return true;
+				}
+
+				return false;
+			});
 
 			if (e.key === 'ArrowDown') {
 				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > versions.length - 1 ? versions.length - 1 : currSelectedItemIdx + 1;
