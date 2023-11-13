@@ -103,9 +103,17 @@
 			if (e.key === 'ArrowDown') {
 				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > versions.length - 1 ? versions.length - 1 : currSelectedItemIdx + 1;
 
+				if (versions[currSelectedItemIdx] === 'separator') {
+					currSelectedItemIdx++;
+				}
+
 				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'ArrowUp') {
 				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+
+				if (versions[currSelectedItemIdx] === 'separator') {
+					currSelectedItemIdx--;
+				}
 
 				this.set('currSelectedItemIdx', currSelectedItemIdx);
 			} else if (e.key === 'Enter') {
