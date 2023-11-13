@@ -6,23 +6,23 @@
 			return {};
 		},
 		oninit () {
-			if (!Ractive.isServer && !this.get('@shared.ppComText')) {
-				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Privacy%20Policy%20-%20jsdelivr.com.md', rawResponse: true }).then((response) => {
-					this.set('@shared.ppComText', response);
+			if (!Ractive.isServer && !this.get('@shared.tuText')) {
+				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/terms/Terms%20of%20Use.md', rawResponse: true }).then((response) => {
+					this.set('@shared.tuText', response);
 				}).catch(() => {
-					this.set('@shared.ppComText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Privacy%20Policy%20-%20jsdelivr.com.md`);
+					this.set('@shared.tuText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/terms/Terms%20of%20Use.md`);
 				});
 
-				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Privacy%20Policy%20-%20jsdelivr.net.md', rawResponse: true }).then((response) => {
-					this.set('@shared.ppNetText', response);
+				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/terms/Privacy%20Policy.md', rawResponse: true }).then((response) => {
+					this.set('@shared.ppText', response);
 				}).catch(() => {
-					this.set('@shared.ppNetText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Privacy%20Policy%20-%20jsdelivr.com.md`);
+					this.set('@shared.ppText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Privacy%20Policy.md`);
 				});
 
-				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/Acceptable%20Use%20Policy%20-%20jsdelivr.net.md', rawResponse: true }).then((response) => {
-					this.set('@shared.auNetText', response);
+				_.makeHTTPRequest({ url: 'https://raw.githubusercontent.com/jsdelivr/jsdelivr/terms/Sub-Processors.md', rawResponse: true }).then((response) => {
+					this.set('@shared.spText', response);
 				}).catch(() => {
-					this.set('@shared.auNetText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Acceptable%20Use%20Policy%20-%20jsdelivr.net.md`);
+					this.set('@shared.spText', `Failed to load the document. Please view it directly at:<br>https://github.com/jsdelivr/jsdelivr/blob/master/Sub-Processors.md`);
 				});
 			}
 		},

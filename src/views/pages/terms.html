@@ -11,11 +11,11 @@
 	<c-header></c-header>
 
 	<div class="p-privacy-policy">
-		<div class="please-wait-sign {{#if @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/if}}">
+		<div class="please-wait-sign {{#if @shared.tuText && @shared.ppText && @shared.spText}} not-displayed{{/if}}">
 			Please wait while the document loads.
 		</div>
 
-		<div class="dropdown {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
+		<div class="dropdown {{#unless @shared.tuText && @shared.ppText && @shared.spText}} not-displayed{{/unless}}">
 			<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span>Navigation</span>
 				<div class="toggle-icon">
@@ -25,77 +25,77 @@
 			</div>
 			<ul class="dropdown-menu">
 				<li>
-					<div class="dropdown-subtitle">CDN - cdn.jsdelivr.net</div>
+					<div class="dropdown-subtitle">Documents:</div>
 				</li>
 				<li>
-					<a href="/terms/acceptable-use-policy-jsdelivr-net"
-						class="dropdown-item {{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
-						Acceptable Use Policy
+					<a href="/terms/terms-of-use"
+						class="dropdown-item {{#if currentPolicy === 'terms-of-use'}}active{{/if}}">
+						Terms of Use
 					</a>
 				</li>
 				<li>
-					<a href="/terms/privacy-policy-jsdelivr-net"
-						class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
+					<a href="/terms/privacy-policy"
+						class="dropdown-item {{#if currentPolicy === 'privacy-policy'}}active{{/if}}">
 						Privacy Policy
 					</a>
 				</li>
-				<li>
-					<div class="dropdown-subtitle">Website - jsdelivr.com</div>
-				</li>
-				<li>
-					<a href="/terms/privacy-policy-jsdelivr-com"
-						class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
-						Privacy Policy
-					</a>
-				</li>
+<!--				<li>-->
+<!--					<div class="dropdown-subtitle">Website - jsdelivr.com</div>-->
+<!--				</li>-->
+<!--				<li>-->
+<!--					<a href="/terms/privacy-policy-jsdelivr-com"-->
+<!--						class="dropdown-item {{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">-->
+<!--						Privacy Policy-->
+<!--					</a>-->
+<!--				</li>-->
 			</ul>
 		</div>
 
-		<div class="page-content {{#unless @shared.auNetText && @shared.ppNetText && @shared.ppComText}} not-displayed{{/unless}}">
+		<div class="page-content {{#unless @shared.tuText && @shared.ppText && @shared.spText}} not-displayed{{/unless}}">
 			<div class="page-content_side-menu">
 				<div class="menu-section">
-					<strong class="section-title">CDN - cdn.jsdelivr.net</strong>
+					<strong class="section-title">Documents:</strong>
 
 					<div class="section-list">
 						<div>
-							<a href="/terms/acceptable-use-policy-jsdelivr-net"
-								class="{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}active{{/if}}">
-									Acceptable Use Policy
+							<a href="/terms/terms-of-use"
+								class="{{#if currentPolicy === 'terms-of-use'}}active{{/if}}">
+									Terms of Use
 							</a>
 						</div>
 
 						<div>
-							<a href="/terms/privacy-policy-jsdelivr-net"
-								class="{{#if currentPolicy === 'privacy-policy-jsdelivr-net'}}active{{/if}}">
+							<a href="/terms/privacy-policy"
+								class="{{#if currentPolicy === 'privacy-policy'}}active{{/if}}">
 									Privacy Policy
 							</a>
 						</div>
 					</div>
 				</div>
 
-				<div class="horizontal-divider"></div>
+<!--				<div class="horizontal-divider"></div>-->
 
-				<div class="menu-section">
-					<strong class="section-title">Website - jsdelivr.com</strong>
+<!--				<div class="menu-section">-->
+<!--					<strong class="section-title">Website - jsdelivr.com</strong>-->
 
-					<div class="section-list">
-						<a href="/terms/privacy-policy-jsdelivr-com"
-							class="{{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">
-								Privacy Policy
-						</a>
-					</div>
-				</div>
+<!--					<div class="section-list">-->
+<!--						<a href="/terms/privacy-policy-jsdelivr-com"-->
+<!--							class="{{#if currentPolicy === 'privacy-policy-jsdelivr-com'}}active{{/if}}">-->
+<!--								Privacy Policy-->
+<!--						</a>-->
+<!--					</div>-->
+<!--				</div>-->
 			</div>
 
 			<div class="page-content_main">
 				<h1 class="page-content_main_title">Terms &amp; Policies</h1>
 
-				{{#if currentPolicy === 'acceptable-use-policy-jsdelivr-net'}}
-					<c-markdown markdown="{{@shared.auNetText}}"></c-markdown>
-				{{elseif currentPolicy === 'privacy-policy-jsdelivr-net'}}
-					<c-markdown markdown="{{@shared.ppNetText}}"></c-markdown>
+				{{#if currentPolicy === 'privacy-policy'}}
+					<c-markdown markdown="{{@shared.ppText}}"></c-markdown>
+				{{elseif currentPolicy === 'sub-processors'}}
+					<c-markdown markdown="{{@shared.spText}}"></c-markdown>
 				{{else}}
-					<c-markdown markdown="{{@shared.ppComText}}"></c-markdown>
+					<c-markdown markdown="{{@shared.tuText}}"></c-markdown>
 				{{/if}}
 			</div>
 		</div>
@@ -109,7 +109,7 @@
 		data () {
 			return {
 				title: 'Terms & Policies - jsDelivr',
-				currentPolicy: 'acceptable-use-policy-jsdelivr-net',
+				currentPolicy: 'terms-of-use',
 			};
 		},
 		onrender () {
