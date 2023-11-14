@@ -24,7 +24,7 @@
 			</div>
 
 			{{#if filteredPeriods.length }}
-				<ul style="min-width: {{calculatedListWidth}}px;" class="dropdown_body_list">
+				<ul style="{{#if calculatedListWidth}}min-width: {{calculatedListWidth}}px;{{/if}}" class="dropdown_body_list">
 					{{#each filteredPeriods:itemIndex}}
 						{{#if periodType === 'separator'}}
 							<li class="dropdown_body_list_separator"></li>
@@ -124,17 +124,14 @@
 					if (newValue) {
 						this.set('calculatedListWidth', ul.getBoundingClientRect().width);
 						this.find('.dropdown_body_filter input').focus();
+						this.find('.dropdown_body_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+					} else {
+						this.set('calculatedListWidth', null);
 					}
 				}, { defer: true });
 
 				this.observe('currSelectedItemIdx', () => {
-					let selected = this.find('.dropdown_body_list_item.selected');
-
-					if (!selected) {
-						return;
-					}
-
-					selected.scrollIntoView({ block: 'nearest' });
+					this.find('.dropdown_body_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
 				}, { defer: true });
 			}
 		},

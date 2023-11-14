@@ -12,7 +12,7 @@
 			</div>
 
 			{{#if filteredVersions.length }}
-				<ul style="min-width: {{calculatedListWidth}}px;" class="version-dropdown_wrapper_list">
+				<ul style="{{#if calculatedListWidth}}min-width: {{calculatedListWidth}}px;{{/if}}" class="version-dropdown_wrapper_list">
 					{{#each filteredVersions:itemIndex}}
 						{{#if this === 'separator'}}
 							<li class="version-dropdown_wrapper_list_separator"></li>
@@ -83,6 +83,8 @@
 						this.set('calculatedListWidth', Math.max(160, ul.getBoundingClientRect().width));
 						this.find('.version-dropdown_wrapper_filter input').focus();
 						this.find('.version-dropdown_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+					} else {
+						this.set('calculatedListWidth', null);
 					}
 				}, { defer: true });
 
