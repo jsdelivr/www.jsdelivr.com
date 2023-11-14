@@ -1,22 +1,148 @@
-<div class="version-dropdown btn-group ">
+<div class="version-dropdown">
 	{{#if versions.length > 1}}
-		<div class="version-dropdown-selected-version" data-toggle="dropdown">
+		<button class="version-dropdown_selected" on-click="@this.toggleDropdown()">
 			<a>{{version}}</a>
-			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy"/>
-		</div>
+			<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/{{#if useCustomIconStyles}}chevron-down.white{{else}}chevron-down{{/if}}.svg" loading="lazy"/>
+		</button>
 
-		<ul class="dropdown-menu dropdown-menu-right">
-			{{#each versions}}
-				{{#if this !== version}}
-					<li>
-						<a on-click="@this.set('version', this)">{{this}}</a>
-					</li>
-				{{/if}}
-			{{/each}}
-		</ul>
+		<div class="version-dropdown_wrapper {{#if dropdownOpened}}opened{{/if}}">
+			<div class="version-dropdown_wrapper_filter">
+				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}" on-keydown="@this.onKeyDown(@event)">
+			</div>
+
+			{{#if filteredVersions.length }}
+				<ul style="{{#if calculatedListWidth}}min-width: {{calculatedListWidth}}px;{{/if}}" class="version-dropdown_wrapper_list">
+					{{#each filteredVersions:itemIndex}}
+						{{#if this === 'separator'}}
+							<li class="version-dropdown_wrapper_list_separator"></li>
+						{{else}}
+							<li class="version-dropdown_wrapper_list_item {{#if currSelectedItemIdx === null && currentSelectedClass && this === version}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}">
+								<a on-click="@this.selectItem(this)">{{this}}</a>
+							</li>
+						{{/if}}
+					{{/each}}
+				</ul>
+			{{else}}
+				<div class="version-dropdown_wrapper_no-versions-found">
+					{{noVersionsMsg}}
+				</div>
+			{{/if}}
+		</div>
 	{{else}}
-		<span class="version-dropdown-selected-version">
+		<span class="version-dropdown_selected">
 			<a>{{version}}</a>
 		</span>
 	{{/if}}
 </div>
+
+<script>
+	component.exports = {
+		computed: {
+			filteredVersions () {
+				let filterBy = this.get('filterBy');
+				let versions = this.get('versions');
+
+				if (filterBy) {
+					return filterBy.toLowerCase().split(' ').reduce((results, filterPart) => {
+						return results.filter(i => i.toLowerCase().includes(filterPart));
+					}, [ ...versions ]);
+				}
+
+				return versions;
+			},
+		},
+		data () {
+			return {
+				filterPlaceholder: 'Filter versions',
+				noVersionsMsg: 'No results found',
+				dropdownOpened: false,
+				currSelectedItemIdx: null,
+				currentSelectedClass: 'selected',
+			};
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// close dropdown and clear filter on click outside the dropdown el
+				let el = this.find('.version-dropdown');
+
+				document.addEventListener('click', (event) => {
+					let currDropdownOpened = this.get('dropdownOpened');
+
+					if (currDropdownOpened && !el.contains(event.target)) {
+						this.set('dropdownOpened', false);
+					}
+				});
+
+				this.observe('dropdownOpened', (newValue) => {
+					let ul = this.find('.version-dropdown_wrapper_list');
+
+					if (!ul) { return; }
+
+					if (newValue) {
+						this.set('calculatedListWidth', Math.max(160, ul.getBoundingClientRect().width));
+						this.find('.version-dropdown_wrapper_filter input').focus();
+						this.find('.version-dropdown_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+					} else {
+						this.set('calculatedListWidth', null);
+					}
+				}, { defer: true });
+
+				this.observe('currSelectedItemIdx', () => {
+					this.find('.version-dropdown_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+				}, { defer: true });
+			}
+		},
+		onKeyDown (e) {
+			let listEl = this.find('.version-dropdown_wrapper_list');
+
+			if (!listEl) { return; }
+
+			let selectedItemEl = listEl.querySelector('.version-dropdown_wrapper_list_item.selected');
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let versions = this.get('filteredVersions');
+			let currentlySelectedVersion = this.get('version');
+
+			// start nav from the selected value position
+			currSelectedItemIdx === null && versions.some((v, vIdx) => {
+				if (v === currentlySelectedVersion) {
+					currSelectedItemIdx = vIdx;
+
+					return true;
+				}
+
+				return false;
+			});
+
+			if (e.key === 'ArrowDown') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > versions.length - 1 ? versions.length - 1 : currSelectedItemIdx + 1;
+
+				if (versions[currSelectedItemIdx] === 'separator') {
+					currSelectedItemIdx++;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'ArrowUp') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+
+				if (versions[currSelectedItemIdx] === 'separator') {
+					currSelectedItemIdx--;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'Enter') {
+				this.selectItem(selectedItemEl.textContent);
+			} else {
+				this.set('currSelectedItemIdx', 0);
+			}
+		},
+		toggleDropdown () {
+			this.set('dropdownOpened', !this.get('dropdownOpened'));
+			this.set('currSelectedItemIdx', null);
+		},
+		selectItem (version) {
+			this.toggleDropdown();
+			this.set('version', version);
+		},
+	};
+</script>
