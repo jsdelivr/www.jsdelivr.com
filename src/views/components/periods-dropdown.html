@@ -1,36 +1,45 @@
 <div class="c-periods-dropdown">
 	{{#if periodToDisplay}}
-		<div class="btn-group">
+		<div class="dropdown_head">
 			{{#if pinnedLabel}}
 				{{>pinnedLabel}}
 			{{/if}}
 
-			<button
-				type="button"
-				class="btn dropdown-toggle"
-				data-toggle="dropdown"
-				aria-haspopup="true"
-				aria-expanded="false">
-				<span>{{periodToDisplay}}</span>
-
-				<i class="fa fa-angle-down" aria-hidden="true"></i>
+			<button class="dropdown_head_selected {{#if dropdownOpened}}opened{{/if}}" on-click="@this.toggleDropdown()">
+				<a class="dropdown_head_selected_text">{{periodToDisplay}}</a>
+				<div class="dropdown_head_selected_img-wrapper">
+					<img
+						width="20"
+						height="20"
+						src="{{@shared.assetsHost}}/img/icons/{{#if dropdownOpened && !useCustomIconStyles}}chevron-down.orange{{else}}chevron-down{{/if}}.svg"
+						loading="lazy"/>
+				</div>
 			</button>
+		</div>
 
-			<ul class="dropdown-menu">
-				{{#each prepStatPeriods}}
-					{{#if periodType === 'separator'}}
-						<li role="separator" class="divider"></li>
-					{{else}}
-						<li>
-							<a
-								on-click="@this.handleClick(this)"
-								class="{{#if currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}}">
-								{{periodText}}
-							</a>
-						</li>
-					{{/if}}
-				{{/each}}
-			</ul>
+		<div class="dropdown_body {{#if dropdownOpened}}opened{{/if}}">
+			<div class="dropdown_body_filter">
+				<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/magnifier.svg">
+				<input placeholder="{{filterPlaceholder}}" value="{{filterBy}}" on-keydown="@this.onKeyDown(@event)">
+			</div>
+
+			{{#if filteredPeriods.length }}
+				<ul style="{{#if calculatedListWidth}}min-width: {{calculatedListWidth}}px;{{/if}}" class="dropdown_body_list">
+					{{#each filteredPeriods:itemIndex}}
+						{{#if periodType === 'separator'}}
+							<li class="dropdown_body_list_separator"></li>
+						{{else}}
+							<li class="dropdown_body_list_item {{#if currSelectedItemIdx === null && currentSelectedClass && periodText === periodToDisplay}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}">
+								<a on-click="@this.handleClick(this)">{{periodText}}</a>
+							</li>
+						{{/if}}
+					{{/each}}
+				</ul>
+			{{else}}
+				<div class="dropdown_body_nothing-found-msg">
+					{{nothingFoundMsg}}
+				</div>
+			{{/if}}
 		</div>
 	{{/if}}
 </div>
@@ -39,10 +48,35 @@
 	const _ = require('../../assets/js/_');
 
 	component.exports = {
+		computed: {
+			filteredPeriods () {
+				let filterBy = this.get('filterBy');
+				let prepStatPeriods = this.get('prepStatPeriods');
+
+				if (filterBy) {
+					return filterBy.toLowerCase().split(' ').reduce((results, filterPart) => {
+						return results.filter((i) => {
+							if (i.periodText) {
+								return i.periodText.toLowerCase().includes(filterPart);
+							}
+
+							return false;
+						});
+					}, [ ...prepStatPeriods ]);
+				}
+
+				return prepStatPeriods;
+			},
+		},
 		data () {
 			return {
 				periodToDisplay: null,
 				prepStatPeriods: [],
+				filterPlaceholder: 'Filter periods',
+				nothingFoundMsg: 'No periods found',
+				dropdownOpened: false,
+				currSelectedItemIdx: null,
+				currentSelectedClass: 'selected',
 			};
 		},
 		oninit () {
@@ -69,9 +103,88 @@
 				});
 			}
 		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// close dropdown and clear filter on click outside the dropdown el
+				let el = this.find('.c-periods-dropdown');
+
+				document.addEventListener('click', (event) => {
+					let currDropdownOpened = this.get('dropdownOpened');
+
+					if (currDropdownOpened && !el.contains(event.target)) {
+						this.set('dropdownOpened', false);
+					}
+				});
+
+				this.observe('dropdownOpened', (newValue) => {
+					let ul = this.find('.dropdown_body_list');
+
+					if (!ul) { return; }
+
+					if (newValue) {
+						this.set('calculatedListWidth', ul.getBoundingClientRect().width);
+						this.find('.dropdown_body_filter input').focus();
+						this.find('.dropdown_body_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+					} else {
+						this.set('calculatedListWidth', null);
+					}
+				}, { defer: true });
+
+				this.observe('currSelectedItemIdx', () => {
+					this.find('.dropdown_body_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+				}, { defer: true });
+			}
+		},
+		onKeyDown (e) {
+			let listEl = this.find('.dropdown_body_list');
+
+			if (!listEl) { return; }
+
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let periods = this.get('filteredPeriods');
+			let periodToDisplay = this.get('periodToDisplay');
+
+			// start nav from the selected value position
+			currSelectedItemIdx === null && periods.some((p, pIdx) => {
+				if (p.periodText === periodToDisplay) {
+					currSelectedItemIdx = pIdx;
+
+					return true;
+				}
+
+				return false;
+			});
+
+			if (e.key === 'ArrowDown') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > periods.length - 1 ? periods.length - 1 : currSelectedItemIdx + 1;
+
+				if (periods[currSelectedItemIdx].periodType === 'separator') {
+					currSelectedItemIdx++;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'ArrowUp') {
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+
+				if (periods[currSelectedItemIdx].periodType === 'separator') {
+					currSelectedItemIdx--;
+				}
+
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'Enter') {
+				this.handleClick(periods[currSelectedItemIdx]);
+			} else {
+				this.set('currSelectedItemIdx', 0);
+			}
+		},
+		toggleDropdown () {
+			this.set('dropdownOpened', !this.get('dropdownOpened'));
+			this.set('currSelectedItemIdx', null);
+		},
 		handleClick (periodData) {
 			let selectHandler = this.get('selectHandler');
 
+			this.toggleDropdown();
 			selectHandler(periodData);
 		},
 	};

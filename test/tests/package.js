@@ -46,9 +46,9 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.version-dropdown-selected-version' }).click();
+		await browser.findElement({ css: '.version-dropdown_selected' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.dropdown-menu-right li:last-of-type a' }).click();
+		await browser.findElement({ css: '.version-dropdown_wrapper_list li:last-of-type a' }).click();
 		await browser.sleep(4000);
 		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
 		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) > a .file-path' }).getText()).to.eventually.equal('dist/fonts');
@@ -112,6 +112,6 @@ describe('package', () => {
 		let version = await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).getText();
 		await browser.findElement({ css: '.c-top-stats-table:nth-child(1) .table-row:nth-child(2) a' }).click();
 		await browser.sleep(4000);
-		await expect(browser.findElement({ css: '.c-top-stats-table:nth-child(2) .version-dropdown-selected-version a' }).getText()).to.eventually.equal(version);
+		await expect(browser.findElement({ css: '.c-top-stats-table:nth-child(2) .version-dropdown_selected a' }).getText()).to.eventually.equal(version);
 	});
 });

@@ -1,3 +1,5 @@
+<link rel="ractive" href="./version-dropdown.html" name="c-version-dropdown">
+
 <div class="c-package-install-block {{#unless type === 'npm'}}block-empty{{/unless}}">
 	{{#if type === 'npm'}}
 	<div class="package-install-wrapper">
@@ -19,27 +21,13 @@
 				</div>
 			{{/if}}
 
-			<div class="dropdown-wrapper">
-				<label for="version-select">Version:&nbsp;&nbsp;</label>
-				<div class="btn-group">
-					<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-						aria-expanded="false">
-						<span>{{~/selectedVersion}}</span>
-						<i class="fa fa-angle-down" aria-hidden="true"></i>
-					</button>
-
-					<ul class="dropdown-menu">
-						{{#each ~/versionsList}}
-							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
-						{{/each}}
-
-						<li class="divider" role="separator"></li>
-
-						{{#each ~/packageVersionsList}}
-							<li><a on-click="@this.set('selectedVersion', this)">{{this}}</a></li>
-						{{/each}}
-					</ul>
-				</div>
+			<div class="versions-wrapper">
+				<span>Version:</span>
+				<c-version-dropdown
+					versions="{{[...versionsList, 'separator', ...packageVersionsList]}}"
+					version="{{selectedVersion}}"
+					useCustomIconStyles="true">
+				</c-version-dropdown>
 			</div>
 
 			<button class="settings-btn" on-click="@this.set('mobileSettingsVisible', true)">
@@ -61,28 +49,12 @@
 						</label>
 					</div>
 
-					<div class="dropdown-wrapper dropup">
-						<label for="version-select">Version:&nbsp;&nbsp;</label>
-
-						<div class="btn-group">
-							<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{~/selectedVersionTmp}}</span>
-								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" />
-							</button>
-
-							<ul class="dropdown-menu">
-								{{#each ~/versionsList}}
-									<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
-								{{/each}}
-
-								<li class="divider" role="separator"></li>
-
-								{{#each ~/packageVersionsList}}
-								<li><a on-click="@this.set('selectedVersionTmp', this)">{{this}}</a></li>
-								{{/each}}
-							</ul>
-						</div>
+					<div class="versions-wrapper">
+						<span>Version:</span>
+						<c-version-dropdown
+							versions="{{[...versionsList, 'separator', ...packageVersionsList]}}"
+							version="{{selectedVersionTmp}}">
+						</c-version-dropdown>
 					</div>
 
 					<button class="btn-primary" on-click="@this.onClickMobileApply()">Apply</button>
