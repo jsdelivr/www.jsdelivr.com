@@ -17,7 +17,7 @@
 						{{#if this === 'separator'}}
 							<li class="version-dropdown_wrapper_list_separator"></li>
 						{{else}}
-							<li class="version-dropdown_wrapper_list_item {{#if currentSelectedClass && this === version}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
+							<li class="version-dropdown_wrapper_list_item {{#if currSelectedItemIdx === null && currentSelectedClass && this === version}}{{currentSelectedClass}}{{/if}} {{#if currSelectedItemIdx == itemIndex}}selected{{/if}}" on-click="@this.selectItem(this)">
 								{{this}}
 							</li>
 						{{/if}}
@@ -58,7 +58,7 @@
 				noVersionsMsg: 'No results found',
 				dropdownOpened: false,
 				currSelectedItemIdx: null,
-				currentSelectedClass: 'currently-selected',
+				currentSelectedClass: 'selected',
 			};
 		},
 		oncomplete () {
@@ -80,19 +80,14 @@
 					if (!ul) { return; }
 
 					if (newValue) {
-						this.set('calculatedListWidth', ul.getBoundingClientRect().width);
+						this.set('calculatedListWidth', Math.max(160, ul.getBoundingClientRect().width));
 						this.find('.version-dropdown_wrapper_filter input').focus();
+						this.find('.version-dropdown_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
 					}
 				}, { defer: true });
 
 				this.observe('currSelectedItemIdx', () => {
-					let selected = this.find('.version-dropdown_wrapper_list_item.selected');
-
-					if (!selected) {
-						return;
-					}
-
-					selected.scrollIntoView({ block: 'nearest' });
+					this.find('.version-dropdown_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
 				}, { defer: true });
 			}
 		},
