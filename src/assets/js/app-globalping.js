@@ -35,16 +35,18 @@ _.onDocumentReady(() => {
 	let state = {};
 	let ractive = new Ractive();
 	ractive.set('@shared.app', app);
+	ractive.set('@shared.escape', escape);
 
-	let unescape = (string) => {
-		return string
-			.replace(/&gt;/g, '>')
-			.replace(/&lt;/g, '<')
-			.replace(/&amp;/g, '&');
-	};
+	function escape (string) {
+		string
+			.replace(/</g, '\\u003c')
+			.replace(/>/g, '\\u003e')
+			.replace(/\u2028/g, '\\u2028')
+			.replace(/\u2029/g, '\\u2029');
+	}
 
 	try {
-		let shared = JSON.parse(unescape(document.querySelector('#ractive-shared').innerHTML.trim()));
+		let shared = JSON.parse(document.querySelector('#ractive-shared').innerHTML.trim());
 
 		if (shared) {
 			Object.keys(shared).forEach((key) => {
@@ -58,7 +60,7 @@ _.onDocumentReady(() => {
 	} catch (e) {}
 
 	try {
-		state = JSON.parse(unescape(document.querySelector('#ractive-data').innerHTML.trim()));
+		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
 	} catch (e) {}
 
 	app.router
