@@ -1005,7 +1005,7 @@
 </r-page>
 
 <script>
-	const styles = require('../../assets/js/map/styles.json');
+	const INIAL_MAP_STYLES = require('../../assets/js/map/styles.json');
 	const _ = require('../../assets/js/_.js');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
@@ -1115,6 +1115,29 @@
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	const DEFAULT_MARKER_COLOR = '#C0C0C0';
+	const MODERATE_MAP_STYLES = [
+		...INIAL_MAP_STYLES,
+		{
+			elementType: "labels.text.stroke",
+			stylers: [
+				{ visibility: "on" },
+			]
+		},
+		{
+			elementType: "labels.text.fill",
+			stylers: [
+				{ visibility: "on" },
+				{ color: "#989b9e" },
+			]
+		},
+	];
+	const DETAILED_MAP_STYLES = [
+		...MODERATE_MAP_STYLES,
+		{
+			featureType: "road",
+			stylers: [{ visibility: "on" }]
+		},
+	];
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1480,7 +1503,7 @@
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
-				styles,
+				styles: INIAL_MAP_STYLES,
 				zoom: MAP_ZOOM_REG,
 				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
@@ -1521,6 +1544,16 @@
 				infoWindows.forEach(iw => iw.close());
 				probesInfoWindows.forEach(piw => piw.close());
 
+				// handle map detalization on zoom
+				if (currZoom >= 14) {
+					map.setOptions({ styles: DETAILED_MAP_STYLES });
+				} else if (currZoom >= 5) {
+					map.setOptions({ styles: MODERATE_MAP_STYLES });
+				} else {
+					map.setOptions({ styles: INIAL_MAP_STYLES });
+				}
+
+				// handle markers on zoom
 				if (currZoom > 16) {
 					let markersData = this.get('markersData');
 					let bounds = map.getBounds();
