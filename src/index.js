@@ -255,6 +255,24 @@ koaElasticUtils.addRoutes(router, [
 	return ctx.redirect(`/terms${ctx.path}`);
 });
 
+koaElasticUtils.addRoutes(router, [ [ '/terms/acceptable-use-policy-jsdelivr-net' ] ], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect(`/terms/terms-of-use`);
+});
+
+koaElasticUtils.addRoutes(router, [
+	[ '/terms/privacy-policy-jsdelivr-com' ],
+	[ '/terms/privacy-policy-jsdelivr-net' ],
+], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect(`/terms/privacy-policy`);
+});
+
+koaElasticUtils.addRoutes(router, [ [ '/terms/acceptable-use-policy-jsdelivr-net' ] ], async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect(`/terms/terms-of-use`);
+});
+
 koaElasticUtils.addRoutes(router, [ [ '/discord', '/discord' ] ], async (ctx) => {
 	ctx.status = 301;
 	return ctx.redirect('https://discord.gg/by8AcrjvRB');
