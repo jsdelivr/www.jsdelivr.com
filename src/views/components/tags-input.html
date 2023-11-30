@@ -28,14 +28,12 @@
 
 	{{#if id}}
 		<input id="{{id}}"
-			value={{value}}
 			type="text"
 			placeholder="{{placeholder}}"
 			class="{{#if error}}has-error{{/if}}"
 			autofocus>
 	{{else}}
 		<input
-			value={{value}}
 			type="text"
 			placeholder="{{placeholder}}"
 			class="{{#if error}}has-error{{/if}}"
@@ -71,6 +69,12 @@
 						this.set('errMsgTopPos', false);
 					}
 				});
+
+				// TODO: temp 592
+				this.observe('value', (value) => {
+					console.log("+++++ value", value);
+					console.log("__________________");
+				});
 			}
 		},
 		onrender () {
@@ -81,7 +85,15 @@
 			if (!Ractive.isServer) {
 				let inputElm = document.querySelector('label.c-tags-input input');
 
-				new Tagify (inputElm);
+				let tagifyInst = new Tagify (inputElm);
+
+				tagifyInst.on('add', (e) => {
+					let addedTagValue = e.detail.data.value;
+					let currValue = this.get('value');
+					let newValue = currValue ? currValue + ', ' + addedTagValue : addedTagValue;
+
+					this.set('value', newValue);
+				});
 			}
 		},
 	};
