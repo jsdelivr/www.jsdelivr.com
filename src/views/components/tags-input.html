@@ -1,4 +1,4 @@
-<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}}">
+<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}}">
 	<div class="c-tags-input_info">
 		<span class="c-tags-input_info_label">
 			{{labelText}}
@@ -18,7 +18,7 @@
 				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
 		{{/if}}
 
-		{{#if inputIcon}}
+		{{#if !value && inputIcon}}
 			<img class="c-tags-input_input-icon"
 				width="20"
 				height="20"
@@ -28,15 +28,18 @@
 
 	{{#if id}}
 		<input id="{{id}}"
-			value="{{value}}"
+			value={{value}}
 			type="text"
 			placeholder="{{placeholder}}"
-			class="{{#if error}}has-error{{/if}}">
+			class="{{#if error}}has-error{{/if}}"
+			autofocus>
 	{{else}}
-		<input value="{{value}}"
+		<input
+			value={{value}}
 			type="text"
 			placeholder="{{placeholder}}"
-			class="{{#if error}}has-error{{/if}}">
+			class="{{#if error}}has-error{{/if}}"
+			autofocus>
 	{{/if}}
 </label>
 
@@ -61,15 +64,6 @@
 					this.set('invalidValue', this.get('value'));
 				}, { init: false });
 
-				this.observe('value', (value) => {
-					let invalidValue = this.get('invalidValue');
-					let error = this.get('error');
-
-					if (error && invalidValue !== value) {
-						this.set('error', undefined);
-					}
-				});
-
 				this.observe('screenWidth', (screenWidth) => {
 					if ((screenWidth || innerWidth) < 768) {
 						this.set('errMsgTopPos', true);
@@ -82,6 +76,13 @@
 		onrender () {
 			// detect window resize
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				let inputElm = document.querySelector('label.c-tags-input input');
+
+				new Tagify (inputElm);
+			}
 		},
 	};
 </script>
