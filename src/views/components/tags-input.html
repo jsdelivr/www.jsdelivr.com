@@ -90,7 +90,17 @@
 				tagifyInst.on('add', (e) => {
 					let addedTagValue = e.detail.data.value;
 					let currValue = this.get('value');
+					// TODO: temp, replace it later with an array flow
 					let newValue = currValue ? currValue + ', ' + addedTagValue : addedTagValue;
+
+					this.set('value', newValue);
+				});
+
+				tagifyInst.on('remove', (e) => {
+					let removedTagValue = e.detail.data.value;
+					let currValue = this.get('value');
+					// TODO: temp, replace it later with an array flow
+					let newValue = currValue.includes(', ') ? currValue.replace(', ' + removedTagValue, '') : currValue.replace(removedTagValue, '');
 
 					this.set('value', newValue);
 				});
