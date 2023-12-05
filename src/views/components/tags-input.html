@@ -80,9 +80,25 @@
 				let inputEl = document.querySelector('.c-tags-input input');
 
 				// eslint-disable-next-line no-undef
-				new Choices(inputEl, {
+				let choicesInst = new Choices(inputEl, {
 					removeItemButton: true,
 					addItemText: '',
+					placeholder: !this.get('value'),
+					placeholderValue: this.get('placeholder'),
+				});
+
+				// hide placeholder if there are some tags added
+				choicesInst.passedElement.element.addEventListener('addItem', (e) => {
+					if (e.detail.value) {
+						e.explicitOriginalTarget.placeholder = '';
+					}
+				});
+
+				// show placeholder if there are no tags left
+				choicesInst.passedElement.element.addEventListener('removeItem', (e) => {
+					if (!this.get('value').replace(e.detail.value, '')) {
+						e.explicitOriginalTarget.placeholder = this.get('placeholder');
+					}
 				});
 			}
 		},
