@@ -1388,6 +1388,7 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
+			let targetsArr = target.split(', '); // TDOO: 592
 
 			let reqParams = {
 				type,
@@ -1395,8 +1396,8 @@
 				inProgressUpdates: true,
 			};
 
-			if (target) {
-				reqParams.target = target;
+			if (targetsArr[0]) { // TODO: 592
+				reqParams.target = targetsArr[0]; // TODO: 592
 			}
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
