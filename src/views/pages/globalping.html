@@ -468,8 +468,8 @@
 				{{/if}}
 			</div>
 
-			<div class="gp_map-block_test-output">
-				{{#if testFailed}}
+			{{#if testFailed}}
+				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
 						<img width="56"
 							height="56"
@@ -479,17 +479,23 @@
 							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
 						</p>
 					</div>
-				{{elseif testResults}}
+				</div>
+			{{elseif testResults}}
+				<div class="gp_map-block_test-output">
 					<c-gp-results-controls></c-gp-results-controls>
 
-					<c-gp-test-results
-						testReqParams="{{testReqParams}}"
-						testResults="{{testResults}}"
-						testInProgress="{{testInProgress}}"
-						scrolledToResIdx="{{scrolledToResIdx}}"
-						currSearchLocation="{{mainOptions.location}}">
-					</c-gp-test-results>
-				{{else}}
+					<div class="gp_map-block_test-output_results">
+						<c-gp-test-results
+							testReqParams="{{testReqParams}}"
+							testResults="{{testResults}}"
+							testInProgress="{{testInProgress}}"
+							scrolledToResIdx="{{scrolledToResIdx}}"
+							currSearchLocation="{{mainOptions.location}}">
+						</c-gp-test-results>
+					</div>
+				</div>
+			{{else}}
+				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_info">
 						<img width="56"
 							height="56"
@@ -502,8 +508,8 @@
 							Debug and troubleshoot your networking problems and share the test results with others!
 						</p>
 					</div>
-				{{/if}}
-			</div>
+				</div>
+			{{/if}}
 		</div>
 
 		<div class="gp_detalization">
