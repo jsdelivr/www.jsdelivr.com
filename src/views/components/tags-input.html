@@ -104,6 +104,21 @@
 						choicesInput.placeholder = this.get('placeholder');
 					}
 				});
+
+				// check whether the user clicked outside the input before adding a new tag and add it if necessary
+				document.addEventListener('click', (e) => {
+					let tagsInputEl = document.querySelector('.c-tags-input');
+					let clonedInputEl = document.querySelector('.choices__input.choices__input--cloned');
+
+					if (!tagsInputEl.contains(e.target) && clonedInputEl.value) {
+						let newVal = this.get('value') ? `${this.get('value')}, ${clonedInputEl.value}` : clonedInputEl.value;
+
+						this.set('value', newVal);
+						choicesInst.setValue([ clonedInputEl.value ]);
+						clonedInputEl.value = '';
+						clonedInputEl.placeholder = '';
+					}
+				});
 			}
 		},
 	};
