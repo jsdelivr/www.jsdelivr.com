@@ -81,6 +81,7 @@
 
 				// eslint-disable-next-line no-undef
 				let choicesInst = new Choices(inputEl, {
+					allowHTML: false,
 					removeItemButton: true,
 					addItemText: '',
 					placeholder: !this.get('value'),
@@ -95,9 +96,11 @@
 				});
 
 				// show placeholder if there are no tags left
-				choicesInst.passedElement.element.addEventListener('removeItem', (e) => {
+				choicesInst.passedElement.element.addEventListener('removeItem', (e, test) => {
+					let choicesInput = document.querySelector('.choices__input.choices__input--cloned');
+
 					if (!this.get('value').replace(e.detail.value, '')) {
-						e.explicitOriginalTarget.placeholder = this.get('placeholder');
+						choicesInput.placeholder = this.get('placeholder');
 					}
 				});
 			}
