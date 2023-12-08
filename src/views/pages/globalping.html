@@ -420,15 +420,6 @@
 							</div>
 						</div>
 
-						<!-- <div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
-							<label class="gp_switch">
-								<input type="checkbox" on-click="@this.set('showMap', !showMap)" checked>
-								<span class="slider round"></span>
-							</label>
-
-							<span>Map</span>
-						</div> -->
-
 						{{#if mainOptions.type === 'ping'}}
 							<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
 								<label class="gp_switch">
@@ -468,6 +459,10 @@
 				{{/if}}
 			</div>
 
+			{{#unless showMap}}
+				<div class="gp_map-block_line"></div>
+			{{/unless}}
+
 			{{#if testFailed}}
 				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
@@ -482,7 +477,7 @@
 				</div>
 			{{elseif testResults}}
 				<div class="gp_map-block_test-output">
-					<c-gp-results-controls></c-gp-results-controls>
+					<c-gp-results-controls showMap={{showMap}}></c-gp-results-controls>
 
 					<div class="gp_map-block_test-output_results">
 						<c-gp-test-results
