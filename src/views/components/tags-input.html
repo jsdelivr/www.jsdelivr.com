@@ -1,4 +1,4 @@
-<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}}">
+<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}} {{#if error}}error{{/if}}">
 	<div class="c-tags-input_info">
 		<span class="c-tags-input_info_label">
 			{{labelText}}
@@ -61,6 +61,15 @@
 				this.observeOnce('error', () => {
 					this.set('invalidValue', this.get('value'));
 				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
 
 				this.observe('screenWidth', (screenWidth) => {
 					if ((screenWidth || innerWidth) < 768) {
