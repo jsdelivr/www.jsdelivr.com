@@ -477,7 +477,11 @@
 				</div>
 			{{elseif testResults}}
 				<div class="gp_map-block_test-output">
-					<c-gp-results-controls showMap={{showMap}}></c-gp-results-controls>
+					<c-gp-results-controls
+						showMap={{showMap}}
+						targets={{mainOptions.target.split(',')}}
+						activeTargetIdx={{activeTargetIdx}}>
+					</c-gp-results-controls>
 
 					<div class="gp_map-block_test-output_results">
 						<c-gp-test-results
@@ -1213,6 +1217,7 @@
 				testReqParams: null,
 				probesResponse: null,
 				shareResFlow: false,
+				activeTargetIdx: 0,
 			};
 		},
 		onrender () {
@@ -1392,7 +1397,7 @@
 			let { type, target, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
-			let targetsArr = target.split(', '); // TDOO: 592
+			let targetsArr = target.split(','); // TDOO: 592
 
 			let reqParams = {
 				type,
