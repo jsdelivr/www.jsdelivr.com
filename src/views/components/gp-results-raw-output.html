@@ -1,11 +1,11 @@
-<div class="c-gp-test-results">
-	<div class="c-gp-test-results_list">
+<div class="c-gp-results-raw-output">
+	<div class="c-gp-results-raw-output_list">
 		{{#each testResults:idx}}
-			<div class="c-gp-test-results_list_item_top-wrapper">
-				<div class="c-gp-test-results_list_item_inner-wrapper">
-					<div class="c-gp-test-results_list_item">
-						<div class="c-gp-test-results_list_item_header">
-							<span class="c-gp-test-results_list_item_header_info">
+			<div class="c-gp-results-raw-output_list_item_top-wrapper">
+				<div class="c-gp-results-raw-output_list_item_inner-wrapper">
+					<div class="c-gp-results-raw-output_list_item">
+						<div class="c-gp-results-raw-output_list_item_header">
+							<span class="c-gp-results-raw-output_list_item_header_info">
 								<span>
 									<img width="28"
 										height="20"
@@ -17,28 +17,28 @@
 							</span>
 
 							{{#if testResultsTimings[idx]}}
-								<span class="c-gp-test-results_list_item_header_time main-value">
-									<img class="c-gp-test-results_list_item_header_time_dot-icon"
+								<span class="c-gp-results-raw-output_list_item_header_time main-value">
+									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
 										width="4"
 										height="4"
 										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
 
 									<span>Time:</span>
-									<span class="c-gp-test-results_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
 								</span>
 							{{/if}}
 
 							{{#if testResultsExtra[idx]}}
 								{{#each testResultsExtra[idx]}}
-									<span class="c-gp-test-results_list_item_header_time">
+									<span class="c-gp-results-raw-output_list_item_header_time">
 										<span>{{this.text}}:</span>
-										<span class="c-gp-test-results_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+										<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
 									</span>
 								{{/each}}
 							{{/if}}
 
 							<img on-click="@this.hideShowTestResult(idx)"
-								class="c-gp-test-results_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
 								width="24"
 								height="24"
 								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
@@ -46,15 +46,15 @@
 
 						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
 
-						<div class="c-gp-test-results_list_item_status-line {{#if testResultsFailedList[idx]}}failed{{elseif testResultsFailedList[idx] === false}}success{{/if}}">
+						<div class="c-gp-results-raw-output_list_item_status-line {{#if testResultsFailedList[idx]}}failed{{elseif testResultsFailedList[idx] === false}}success{{/if}}">
 						</div>
 					</div>
 
-					<div class="c-gp-test-results_list_item_inner-wrapper_bottom-line"></div>
+					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
 				</div>
 
-				<div class="c-gp-test-results_list_item_top-wrapper_actions">
-					<div class="c-gp-test-results_list_item_top-wrapper_actions_btn"
+				<div class="c-gp-results-raw-output_list_item_top-wrapper_actions">
+					<div class="c-gp-results-raw-output_list_item_top-wrapper_actions_btn"
 						as-tooltip="'Set as location for the next test', 'right'"
 						on-click="@this.setProbeAsLocation(this.probe)">
 						<i class="fa fa-map-marker" aria-hidden="true"></i>
@@ -65,8 +65,8 @@
 	</div>
 
 	{{#if testReqParams.id && !testInProgress}}
-		<div class="c-gp-test-results_share">
-			<div class="c-gp-test-results_share_switch">
+		<div class="c-gp-results-raw-output_share">
+			<div class="c-gp-results-raw-output_share_switch">
 				<input id="share-switch"
 					type="checkbox"
 					class="share-type-switch {{#unless shareResultsAsURL}}checked{{/unless}}"
@@ -87,7 +87,7 @@
 				</label>
 			</div>
 
-			<div class="c-gp-test-results_share_content">
+			<div class="c-gp-results-raw-output_share_content">
 				<div id="share-res-text">
 					{{shareResultsText}}
 				</div>
@@ -208,7 +208,7 @@
 		},
 		setResultsBlockHeight (testResults) {
 			requestAnimationFrame(() => {
-				let listEl = document.querySelector('.c-gp-test-results_list');
+				let listEl = document.querySelector('.c-gp-results-raw-output_list');
 				let itemsAmount = testResults.length;
 				let lestElScrollHeight = listEl.scrollHeight;
 				let avgItemElHeight = Math.round(lestElScrollHeight / itemsAmount);

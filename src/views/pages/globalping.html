@@ -5,7 +5,7 @@
 <link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
 <link rel="ractive" href="../components/tags-input.html" name="c-tags-input">
 <link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
-<link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
+<link rel="ractive" href="../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
 <link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
 <link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
@@ -487,13 +487,13 @@
 
 					{{#if rawOutput}}
 						<div class="gp_map-block_test-output_raw-output">
-							<c-gp-test-results
+							<c-gp-results-raw-output
 								testReqParams="{{testReqParams}}"
 								testResults="{{testResults}}"
 								testInProgress="{{testInProgress}}"
 								scrolledToResIdx="{{scrolledToResIdx}}"
 								currSearchLocation="{{mainOptions.location}}">
-							</c-gp-test-results>
+							</c-gp-results-raw-output>
 						</div>
 					{{else}}
 						<c-gp-results-table-output></c-gp-results-table-output>
@@ -1825,9 +1825,9 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		handleSeeResults (resIdx) {
-			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+			let el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper:nth-child(${resIdx + 1})`);
 
-			// this prop will be passed to c-gp-test-results in order for it to show the specific result element if it was hidden
+			// this prop will be passed to c-gp-results-raw-output in order for it to show the specific result element if it was hidden
 			this.set('scrolledToResIdx', resIdx);
 
 			el.scrollIntoView({ behvior: 'smooth' });
@@ -1885,7 +1885,7 @@
 						},
 					};
 
-					// set testReqParams to pass them to c-gp-test-results
+					// set testReqParams to pass them to c-gp-results-raw-output
 					this.set('testReqParams', testReqParams);
 
 					// should be after the mainOptions.type was set
