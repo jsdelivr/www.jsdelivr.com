@@ -6,6 +6,7 @@
 <link rel="ractive" href="../components/tags-input.html" name="c-tags-input">
 <link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
 <link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
+<link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
 <link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
@@ -478,20 +479,25 @@
 			{{elseif testResults}}
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
-						showMap={{showMap}}
-						targets={{mainOptions.target.split(',')}}
-						activeTargetIdx={{activeTargetIdx}}>
+						showMap="{{showMap}}"
+						targets="{{mainOptions.target.split(',')}}"
+						activeTargetIdx="{{activeTargetIdx}}"
+						rawOutput="{{rawOutput}}">
 					</c-gp-results-controls>
 
-					<div class="gp_map-block_test-output_results">
-						<c-gp-test-results
-							testReqParams="{{testReqParams}}"
-							testResults="{{testResults}}"
-							testInProgress="{{testInProgress}}"
-							scrolledToResIdx="{{scrolledToResIdx}}"
-							currSearchLocation="{{mainOptions.location}}">
-						</c-gp-test-results>
-					</div>
+					{{#if rawOutput}}
+						<div class="gp_map-block_test-output_raw-output">
+							<c-gp-test-results
+								testReqParams="{{testReqParams}}"
+								testResults="{{testResults}}"
+								testInProgress="{{testInProgress}}"
+								scrolledToResIdx="{{scrolledToResIdx}}"
+								currSearchLocation="{{mainOptions.location}}">
+							</c-gp-test-results>
+						</div>
+					{{else}}
+						<c-gp-results-table-output></c-gp-results-table-output>
+					{{/if}}
 				</div>
 			{{else}}
 				<div class="gp_map-block_test-output with-padding">
@@ -1218,6 +1224,7 @@
 				probesResponse: null,
 				shareResFlow: false,
 				activeTargetIdx: 0,
+				rawOutput: true,
 			};
 		},
 		onrender () {
