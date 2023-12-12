@@ -9,51 +9,37 @@
 	background: #fbfbfb;
 
 	.table {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		display: grid;
+		grid-template-columns: repeat(6, minmax(auto, 1fr));
 		width: 100%;
-		padding: 0 24px;
+		margin: 0 24px 24px;
+		border-left: 1px solid #e7e7ee;
+		border-right: 1px solid #e7e7ee;
+		border-bottom: 1px solid #e7e7ee;
+		border-bottom-left-radius: 8px;
+		border-bottom-right-radius: 8px;
 
-		&_header {
-			width: 100%;
-
-			@media (min-width: @screen-sm-min) {
-				display: grid;
-				grid-template-columns: repeat(6, 1fr);
+		&_column {
+			&_header {
 				height: 40px;
-				border: 1px solid rgba(231, 231, 238, .91);
-				border-top: none;
 				background: #f3f5f6;
-			}
-
-			>span {
 				display: inline-flex;
 				align-items: center;
-				justify-content: flex-start;
 				color: #17233a;
-				text-align: center;
 				font-size: 14px;
 				font-weight: 600;
 				line-height: 20px;
 				padding-left: 16px;
+				border-bottom: 1px solid rgba(231, 231, 238, .91);
 
 				&:nth-child(1) {
 					padding-left: 24px;
 				}
 
-				&:nth-last-child(1) {
+				&:nth-child(6) {
 					padding-left: 0;
 				}
 			}
-		}
-
-		&_row {
-			display: grid;
-			grid-template-columns: repeat(6, 1fr);
-			border: 1px solid #e7e7ee;
-			border-top: none;
 
 			&_urls, &_quality, &_rrt, &_ip, &_graph {
 				display: flex;
@@ -74,6 +60,15 @@
 						height: calc(50% - 1px);
 						border-bottom: 1px solid #e7e7ee;
 					}
+				}
+
+				&:nth-child(1) {
+					border-left: 1px solid #e7e7ee;
+				}
+
+				&:nth-child(6) {
+					padding-left: 0;
+					border-right: 1px solid #e7e7ee;
 				}
 			}
 
@@ -107,7 +102,7 @@
 
 						&:nth-child(2) {
 							font-size: 12px;
-							line-height: 20px;
+							line-height: 12px;
 						}
 					}
 				}
@@ -120,6 +115,7 @@
 				> div {
 					>span {
 						display: inline-flex;
+						align-items: center;
 						height: 28px;
 						padding: 0 4px;
 						color: #17233a;
@@ -133,21 +129,6 @@
 				}
 			}
 
-			&_quality {
-				display: flex;
-				flex-direction: column;
-			}
-
-			&_rrt {
-				display: flex;
-				flex-direction: column;
-			}
-
-			&_ip {
-				display: flex;
-				flex-direction: column;
-			}
-
 			&_graph {
 				display: flex;
 				flex-direction: column;
@@ -155,6 +136,15 @@
 				>div {
 					padding: 0;
 				}
+			}
+		}
+
+		&_line {
+			grid-column: 1 / -1;
+			border-bottom: 1px solid #e7e7ee;
+
+			&:nth-last-child(1) {
+				display: none;
 			}
 		}
 	}

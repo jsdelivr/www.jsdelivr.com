@@ -1,50 +1,82 @@
 <div class="c-gp-results-table-output">
 	<div class="table">
-		<div class="table_header">
-			<span>Location</span>
-			<span></span>
-			<span>Quality</span>
-			<span>rrt min /avg / max</span>
-			<span>IP</span>
-			<span>Graph</span>
-		</div>
+		<div class="table_column table_column_header">Location</div>
+		<div class="table_column table_column_header"></div>
+		<div class="table_column table_column_header">Quality</div>
+		<div class="table_column table_column_header">rrt min /avg / max</div>
+		<div class="table_column table_column_header">IP</div>
+		<div class="table_column table_column_header">Graph</div>
 
-		<div class="table_row">
-			<div class="table_row_location">
-				<span class="table_row_location_status-line"></span>
+		{{#each testArr}}
+			<div class="table_column table_column_location">
+				<span class="table_column_location_status-line"></span>
 
-				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/NL.svg">
+				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
 				<div>
-					<span>Riga, LV, EU</span>
-					<span>CGI IT Latvia (BT3789)</span>
+					<span>{{this.location}}</span>
+					<span>{{this.isp}}</span>
 				</div>
 			</div>
 
-			<div class="table_row_urls">
+			<div class="table_column table_column_urls">
 				<div><span>perfops.net</span></div>
 				<div><span>jsdelivr.com</span></div>
 			</div>
 
-			<div class="table_row_quality">
+			<div class="table_column table_column_quality">
 				<div>4 /4 - 100%</div>
 				<div>3 /4 - 75%</div>
 			</div>
 
-			<div class="table_row_rrt">
+			<div class="table_column table_column_rrt">
 				<div>13.1 / 13.3 / 20 ms</div>
 				<div>13.3 / 12.4 / 16 ms</div>
 			</div>
 
-			<div class="table_row_ip">
+			<div class="table_column table_column_ip">
 				<div>167.253.48.126</div>
 				<div>123.32.77.100</div>
 			</div>
 
-			<div class="table_row_graph">
+			<div class="table_column table_column_graph">
 				<div></div>
 				<div></div>
 			</div>
-		</div>
+
+			<div class="table_line"></div>
+		{{/each}}
 	</div>
 </div>
+
+<script>
+
+component.exports = {
+	data () {
+		return {
+			testArr: [
+				{
+					location: 'Riga, LV, EU',
+					isp: 'CGI IT Latvia (BT3789)',
+					country: 'EU',
+				},
+				{
+					location: 'Riga, LV, EU',
+					isp: 'Technology Company Riga (HGD3428)',
+					country: 'EU',
+				},
+				{
+					location: 'Warsaw, PL, EU',
+					isp: 'Altcom Consultations Inc. (YGH213432)',
+					country: 'EU',
+				},
+				{
+					location: 'Berlin, DE, EU',
+					isp: 'Deutsche Computer Company. (360DIAG)',
+					country: 'EU',
+				},
+			],
+		};
+	},
+};
+</script>
