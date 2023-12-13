@@ -3,8 +3,8 @@
 		<div class="content-wrapper_tabs">
 			{{#each targets:idx}}
 				<div
-					on-click="@this.set('activeTargetIdx', idx)"
-					class="content-wrapper_tabs_tab {{#if idx === activeTargetIdx}}active{{/if}}">
+					on-click="@this.handleTabSwitch(idx)"
+					class="content-wrapper_tabs_tab {{#if idx === activeTargetIdx && rawOutputMode}}active{{/if}} {{#unless rawOutputMode}}disabled{{/unless}}">
 					{{this}}
 				</div>
 			{{/each}}
@@ -32,3 +32,17 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	component.exports = {
+		handleTabSwitch (idx) {
+			let isRawOutputMode = this.get('rawOutputMode');
+
+			if (isRawOutputMode) {
+				this.set('activeTargetIdx', idx);
+			} else {
+				return;
+			}
+		},
+	};
+</script>
