@@ -1,0 +1,162 @@
+<div class="c-gp-results-share">
+	<div class="c-gp-results-share_switch">
+		<input id="share-switch"
+			type="checkbox"
+			class="share-type-switch {{#unless shareResultsAsURL}}checked{{/unless}}"
+			twoway="false">
+
+		<label for="share-switch" on-click="@this.set('shareResultsAsURL', !shareResultsAsURL)">
+			<span>
+				<i class="fa fa-link" aria-hidden="true"></i>
+				<span>Share URL</span>
+			</span>
+			<span>
+				<i class="fa fa-terminal" aria-hidden="true"></i>
+				<span>Replicate in CLI</span>
+			</span>
+			<div class="slide-select">
+				<div class="selected"></div>
+			</div>
+		</label>
+	</div>
+
+	<div class="c-gp-results-share_content">
+		<div id="share-res-text">
+			{{shareResultsText}}
+		</div>
+
+		<button as-clipboard data-clipboard-text="{{shareResultsText}}">
+			<img width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
+		</button>
+	</div>
+</div>
+
+
+<script>
+	const clipboard = require('../../assets/js/decorators/clipboard');
+
+	component.exports = {
+		decorators: {
+			clipboard,
+		},
+		data () {
+			return {
+				shareResultsAsURL: true,
+				shareResultsText: null,
+			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// check shareRes state and create URL or CLI cmd respectively
+				this.observe('shareResultsAsURL', (shareResultsAsURL) => {
+					let shareResultsText = this.createShareResText(shareResultsAsURL);
+
+					this.set('shareResultsText', shareResultsText);
+				});
+			}
+		},
+		createShareResText (urlFlow = true) {
+			if (urlFlow) {
+				// return URL
+				let origin = this.get('@global.location.origin');
+				let testResultsId = this.get('testReqParams.id');
+
+				return `${origin}/globalping?measurement=${testResultsId}`;
+			}
+
+			// return CLI cmd
+			return this.createCliCommand(this.get('testReqParams'));
+		},
+		createCliCommand (params) {
+			let cmd = Object.keys(params).reduce((cmd, key) => {
+				// test type part
+				if (key === 'type') {
+					cmd.typePart += ` ${params[key]} ${params.target}`;
+
+					if (params.locations && params.locations.length) {
+						let locationStr = params.locations.reduce((str, loc, idx) => {
+							let locPart = loc.magic.toLowerCase().trim();
+
+							if (idx === 0) {
+								return str += locPart;
+							}
+
+							return str += `, ${locPart}`;
+						}, '');
+
+						cmd.typePart += ` from ${locationStr}`;
+					}
+
+					if (params.measurementOptions) {
+						let str = Object.keys(params.measurementOptions).reduce((str, key) => {
+							switch (key) {
+								case 'packets':
+									str += ` --packets ${params.measurementOptions.packets}`; break;
+
+								case 'port':
+									str += ` --port ${params.measurementOptions.port}`; break;
+
+								case 'protocol':
+									str += ` --protocol ${params.measurementOptions.protocol}`; break;
+
+								case 'type':
+									str += ` --type ${params.measurementOptions.type}`; break;
+
+								case 'trace':
+									if (params.type.toLowerCase() === 'dns' && params.measurementOptions.trace) {
+										str += ' --trace';
+									}
+
+									break;
+
+								case 'resolver':
+									str += ` --resolver ${params.measurementOptions.resolver}`; break;
+
+								case 'request':
+									if (params.measurementOptions.request.host) {
+										str += ` --host ${params.measurementOptions.request.host}`;
+									}
+
+									if (params.measurementOptions.request.path) {
+										let path = params.measurementOptions.request.path;
+
+										path = path[0] === '/' ? path : `/${path}`;
+										str += ` --path '${path}'`;
+									}
+
+									if (params.measurementOptions.request.query) {
+										str += ` --query '${params.measurementOptions.request.query}'`;
+									}
+
+									if (params.measurementOptions.request.method) {
+										str += ` --method ${params.measurementOptions.request.method}`;
+									}
+
+									break;
+							}
+
+							return str;
+						}, '');
+
+						cmd.typePart += str;
+					}
+				}
+
+				// global flags part
+				if (key === 'limit') {
+					cmd.globalPart += ` --limit ${params[key]}`;
+				}
+
+				return cmd;
+			}, {
+				base: 'globalping',
+				typePart: '',
+				globalPart: '',
+			});
+
+			return cmd.base + cmd.typePart + cmd.globalPart;
+		},
+	};
+</script>
