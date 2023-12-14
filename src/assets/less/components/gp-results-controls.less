@@ -6,27 +6,53 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 48px;
 	width: 100%;
-	padding: 0 24px;
 	border-bottom: 1px solid #e7e7ee;
 	background: #fff;
 
+	@media (min-width: @screen-sm-min) {
+		padding: 0 24px;
+	}
+
 	.content-wrapper {
 		display: flex;
-		justify-content: space-between;
-		height: 100%;
-		width: 1158px;
-		padding: 0 24px;
+		flex-direction: column;
+		width: 100%;
+		max-width: 1158px;
+
+		@media (min-width: @screen-sm-min) {
+			flex-direction: row;
+			justify-content: space-between;
+			padding: 0 24px;
+		}
 
 		&_tabs {
 			display: flex;
+			height: 48px;
+			order: 2;
+			width: 100%;
+			padding: 0 24px;
+
+			@media (min-width: @screen-sm-min) {
+				order: 1;
+				width: auto;
+				padding: 0;
+			}
+
+			&.table-mode {
+				display: none;
+
+				@media (min-width: @screen-sm-min) {
+					display: flex;
+				}
+			}
 
 			&_tab {
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				height: 100%;
+				width: 50%;
 				color: #9b9ba6;
 				font-size: 14px;
 				font-weight: 400;
@@ -34,6 +60,10 @@
 				padding: 0 16px;
 				cursor: pointer;
 				user-select: none;
+
+				@media (min-width: @screen-sm-min) {
+					width: auto;
+				}
 
 				&.active {
 					color: #17233a;
@@ -49,8 +79,19 @@
 		&_ctrls {
 			display: flex;
 			align-items: center;
-			justify-content: center;
+			justify-content: space-between;
 			column-gap: 16px;
+			height: 48px;
+			order: 1;
+			border-bottom: 1px solid #e7e7ee;
+			padding: 0 24px;
+
+			@media (min-width: @screen-sm-min) {
+				order: 2;
+				justify-content: center;
+				border-bottom: none;
+				padding: 0;
+			}
 
 			&_display-settings {
 				display: flex;
