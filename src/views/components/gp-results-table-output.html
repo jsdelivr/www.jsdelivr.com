@@ -1,16 +1,20 @@
 <link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
 
 <div class="c-gp-results-table-output">
-	<div class="results-table">
-		<div class="results-table_column results-table_column_header">Location</div>
-		<div class="results-table_column results-table_column_header"></div>
-		<div class="results-table_column results-table_column_header">Quality</div>
-		<div class="results-table_column results-table_column_header">rrt min /avg / max</div>
-		<div class="results-table_column results-table_column_header">IP</div>
-		<div class="results-table_column results-table_column_header">Graph</div>
+	<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
+		<div class="results-table_column_header">Location</div>
 
-		{{#each testArr}}
-			<div class="results-table_column results-table_column_location">
+		{{#if targetsCnt > 1}}
+			<div class="results-table_column_header"></div>
+		{{/if}}
+
+		<div class="results-table_column_header">Quality</div>
+		<div class="results-table_column_header">rrt min /avg / max</div>
+		<div class="results-table_column_header">IP</div>
+		<div class="results-table_column_header">Graph</div>
+
+		{{#each testArr:testArrIdx}}
+			<div class="results-table_column_location">
 				<span class="results-table_column_location_status-line"></span>
 
 				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
@@ -21,33 +25,46 @@
 				</div>
 			</div>
 
-			<div class="results-table_column results-table_column_urls">
+			{{#if targetsCnt > 1}}
+				<div class="results-table_column_urls">
+					{{#each this.probesData}}
+						<div class="results-table_column_urls_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+							<span>{{this.url}}</span>
+						</div>
+					{{/each}}
+				</div>
+			{{/if}}
+
+			<div class="results-table_column_quality">
 				{{#each this.probesData}}
-					<div><span>{{this.url}}</span></div>
+					<div class="results-table_column_quality_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+						{{this.quality}}
+					</div>
 				{{/each}}
 			</div>
 
-			<div class="results-table_column results-table_column_quality">
+			<div class="results-table_column_rrt">
 				{{#each this.probesData}}
-					<div>{{this.quality}}</div>
+					<div class="results-table_column_rrt_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+						{{this.rrt}}
+					</div>
 				{{/each}}
 			</div>
 
-			<div class="results-table_column results-table_column_rrt">
+			<div class="results-table_column_ip">
 				{{#each this.probesData}}
-					<div>{{this.rrt}}</div>
+					<div class="results-table_column_ip_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+						{{this.ip}}
+					</div>
 				{{/each}}
 			</div>
 
-			<div class="results-table_column results-table_column_ip">
+			<div class="results-table_column_graph">
 				{{#each this.probesData}}
-					<div>{{this.ip}}</div>
+					<div class="results-table_column_graph_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+						G R A P H
+					</div>
 				{{/each}}
-			</div>
-
-			<div class="results-table_column results-table_column_graph">
-				<div></div>
-				<div></div>
 			</div>
 
 			<div class="results-table_line"></div>
@@ -64,6 +81,7 @@
 component.exports = {
 	data () {
 		return {
+			targetsCnt: 1,
 			testArr: [
 				{
 					location: 'Riga, LV, EU',
@@ -76,6 +94,12 @@ component.exports = {
 							rrt: '13.1 / 13.3 / 20 ms',
 							ip: '167.253.48.126',
 						},
+						// {
+						// 	url: 'jsdelivr.com',
+						// 	quality: '3 /4 - 75%',
+						// 	rrt: '13.3 / 12.4 / 16 ms',
+						// 	ip: '123.32.77.100',
+						// },
 					],
 				},
 				{
@@ -89,12 +113,12 @@ component.exports = {
 							rrt: '13.1 / 13.3 / 20 ms',
 							ip: '167.253.48.126',
 						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
+						// {
+						// 	url: 'jsdelivr.com',
+						// 	quality: '3 /4 - 75%',
+						// 	rrt: '13.3 / 12.4 / 16 ms',
+						// 	ip: '123.32.77.100',
+						// },
 					],
 				},
 				{
@@ -108,12 +132,12 @@ component.exports = {
 							rrt: '13.1 / 13.3 / 20 ms',
 							ip: '167.253.48.126',
 						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
+						// {
+						// 	url: 'jsdelivr.com',
+						// 	quality: '3 /4 - 75%',
+						// 	rrt: '13.3 / 12.4 / 16 ms',
+						// 	ip: '123.32.77.100',
+						// },
 					],
 				},
 				{
@@ -127,12 +151,12 @@ component.exports = {
 							rrt: '13.1 / 13.3 / 20 ms',
 							ip: '167.253.48.126',
 						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
+						// {
+						// 	url: 'jsdelivr.com',
+						// 	quality: '3 /4 - 75%',
+						// 	rrt: '13.3 / 12.4 / 16 ms',
+						// 	ip: '123.32.77.100',
+						// },
 					],
 				},
 				{
@@ -146,12 +170,12 @@ component.exports = {
 							rrt: '13.1 / 13.3 / 20 ms',
 							ip: '167.253.48.126',
 						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
+						// {
+						// 	url: 'jsdelivr.com',
+						// 	quality: '3 /4 - 75%',
+						// 	rrt: '13.3 / 12.4 / 16 ms',
+						// 	ip: '123.32.77.100',
+						// },
 					],
 				},
 			],
