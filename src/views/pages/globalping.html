@@ -997,12 +997,41 @@
 									height="28"
 									src="{{@shared.assetsHost}}/img/globalping/sponsors/zenlayer.svg">
 							</a>
-							<a target="_blank" rel="noopener noreferrer" href="https://www.dnsfilter.com/">
-								<img title="Sponsored by DNSFilter"
-									width="120"
-									height="28"
-									src="{{@shared.assetsHost}}/img/globalping/sponsors/dnsfilter.png">
-							</a>
+							<!-- swap images for better look depending on screenWidth -->
+							{{#if screenWidth < 768}}
+								<a target="_blank" rel="noopener noreferrer" href="https://www.dnsfilter.com/">
+									<img title="Sponsored by DNSFilter"
+										width="120"
+										height="28"
+										src="{{@shared.assetsHost}}/img/globalping/sponsors/dnsfilter.png">
+								</a>
+							{{else}}
+								<a target="_blank" rel="noopener noreferrer" href="https://ipgeolocation.io/">
+									<img title="Sponsored by IP Geolocation"
+										width="97"
+										height="56"
+										src="{{@shared.assetsHost}}/img/globalping/sponsors/ipgeolocation.svg">
+								</a>
+							{{/if}}
+						</div>
+
+						<div class="gp_sponsors_content_list_tier-one_row">
+							<!-- swap images for better look depending on screenWidth -->
+							{{#if screenWidth < 768}}
+								<a target="_blank" rel="noopener noreferrer" href="https://ipgeolocation.io/">
+									<img title="Sponsored by IP Geolocation"
+										width="97"
+										height="56"
+										src="{{@shared.assetsHost}}/img/globalping/sponsors/ipgeolocation.svg">
+								</a>
+							{{else}}
+								<a target="_blank" rel="noopener noreferrer" href="https://www.dnsfilter.com/">
+									<img title="Sponsored by DNSFilter"
+										width="120"
+										height="28"
+										src="{{@shared.assetsHost}}/img/globalping/sponsors/dnsfilter.png">
+								</a>
+							{{/if}}
 						</div>
 
 						<!-- <div class="gp_sponsors_content_list_tier-two">
@@ -1035,8 +1064,10 @@
 </r-page>
 
 <script>
-	const INITIAL_MAP_STYLES = require('../../assets/js/map/styles.json');
 	const _ = require('../../assets/js/_.js');
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
+	const INITIAL_MAP_STYLES = require('../../assets/js/map/styles.json');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 	const http = require('../../assets/js/utils/http');
 	const has = require('../../assets/js/utils/has');
@@ -1237,6 +1268,9 @@
 				if (app.loaded) {
 					this.initMap();
 				}
+
+				// detect window resize
+				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 			}
 		},
 		oninit () {
@@ -1379,6 +1413,13 @@
 
 					this.set('markersData', markersData);
 				}, { init: false });
+
+				// set initial screenWidth value
+				this.observe('screenWidth', (screenWidth) => {
+					if (!screenWidth) {
+						this.set('screenWidth', innerWidth);
+					}
+				});
 			}
 		},
 		oncomplete () {
