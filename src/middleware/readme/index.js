@@ -63,15 +63,15 @@ const fetchFromJsDelivr = async (pkg, version) => {
 
 module.exports = async (ctx) => {
 	try {
-		let { type, scope, name } = ctx.params;
+		let { type, scope, name, version } = ctx.params;
 		let readme = '';
 
 		if (type === 'gh') {
-			readme = await fetchFromGitHub(ctx.params.user, ctx.params.repo);
+			readme = await fetchFromGitHub(ctx.params.user, ctx.params.repo, version);
 		} else {
 			let pkg = scope ? scope + '/' + name : name;
 			let meta = await algoliaNode.getObjectWithCache(pkg);
-			readme = await fetchFromJsDelivr(pkg, meta.version);
+			readme = await fetchFromJsDelivr(pkg, version || meta.version);
 
 			if (!readme && meta.githubRepo) {
 				readme = await fetchFromGitHub(meta.githubRepo.user, meta.githubRepo.project);

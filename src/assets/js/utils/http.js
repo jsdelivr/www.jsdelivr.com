@@ -26,8 +26,8 @@ const getWithCache = (url, params = {}, responseHeadersToGet = null) => {
 	return request;
 };
 
-module.exports.fetchPackageReadme = (type, name) => {
-	return _.makeHTTPRequest({ url: `/readme/${type}/${name}`, rawResponse: true });
+module.exports.fetchPackageReadme = (type, name, version) => {
+	return _.makeHTTPRequest({ url: `/readme/${type}/${name}${version ? `/${version}` : ''}`, rawResponse: true });
 };
 
 module.exports.fetchNetworkStats = (period = 'month') => {

@@ -193,10 +193,18 @@
 			}
 
 			if (!Ractive.isServer) {
+				this.observe('version', (version) => {
+					http.fetchPackageReadme(this.get('type'), this.get('name'), version).then((readme) => {
+						if (readme && version === this.get('version')) {
+							this.set('package.readme', readme);
+						}
+					});
+				}, { init: false });
+
 				Promise.all([
 					Object.keys(this.get('package')).length ? this.get('package') : search.getByName(this.get('name')),
 					http.fetchPackageVersions(this.get('type'), this.get('name')),
-					http.fetchPackageReadme(this.get('type'), this.get('name')).catch(() => ''),
+					http.fetchPackageReadme(this.get('type'), this.get('name'), this.get('version')).catch(() => ''),
 				]).then(([ result, versionsResponse, readme ]) => {
 					let versionsArr = versionsResponse.versions.map(item => item.version);
 
