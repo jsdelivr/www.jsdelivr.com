@@ -85,7 +85,7 @@
 component.exports = {
 	data () {
 		return {
-			targetsCnt: 2,
+			targetsCnt: null,
 			testArr: [
 				{
 					location: 'Riga, LV, EU',
@@ -184,6 +184,15 @@ component.exports = {
 				},
 			],
 		};
+	},
+	oninit () {
+		if (!Ractive.isServer) {
+			this.observe('targets', (targets) => {
+				if (targets) {
+					this.set('targetsCnt', targets.split(',').length);
+				}
+			});
+		}
 	},
 };
 </script>
