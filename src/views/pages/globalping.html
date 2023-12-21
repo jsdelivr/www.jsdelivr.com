@@ -451,13 +451,14 @@
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
-				{{#if testResults}}
+				<!-- TODO: 592, handle it later -->
+				<!-- {{#if testResults}}
 					<div class="gp_map-block_map-wrapper_timings-scale">
 						<span class="value">{{probesMaxTiming}} ms</span>
 						<div class="gradient"></div>
 						<span class="value">{{probesMinTiming}} ms</span>
 					</div>
-				{{/if}}
+				{{/if}} -->
 			</div>
 
 			{{#unless showMap}}
@@ -480,7 +481,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
-						targets="{{mainOptions.targets.split(TARGETS_DELIMITER)}}"
+						targets="{{mainOptions.targets.split(',')}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}">
 					</c-gp-results-controls>
@@ -489,7 +490,7 @@
 						<div class="gp_map-block_test-output_raw-output">
 							<c-gp-results-raw-output
 								testReqParams="{{testReqParams}}"
-								testResults="{{testResults}}"
+								testResults="{{testResults[activeTargetIdx]}}"
 								testInProgress="{{testInProgress}}"
 								scrolledToResIdx="{{scrolledToResIdx}}"
 								currSearchLocation="{{mainOptions.location}}">
@@ -1198,7 +1199,6 @@
 			stylers: [{ visibility: 'on' }],
 		},
 	];
-	const TARGETS_DELIMITER = ',';
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1285,7 +1285,7 @@
 				if (measurementId) {
 					this.set('measurementId', measurementId);
 					this.set('shareResFlow', true);
-					this.getTestMeasurementById(measurementId, true);
+					this.getTestMeasurementById(measurementId, 0, true);
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -1357,8 +1357,9 @@
 
 				// zoom to results once we get the first response
 				this.observe('realTimeTestResResponse', (response, prevResponse) => {
-					if (!prevResponse && response && response.results.length) {
-						this.zoomToResults(response.locations);
+					if (!prevResponse && response && response.every(r => r.results.length)) {
+						// TODO: 592 temp, handle it properly later
+						this.zoomToResults(response[0].locations);
 					}
 				}, { init: false });
 
@@ -1366,55 +1367,66 @@
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (!realTimeTestResResponse) { return; }
 
-					if (realTimeTestResResponse.status === 'finished') {
-						clearInterval(this.get('testReqInterval'));
-						this.set('testInProgress', false);
+					// TODO: 592 handle this moment later, since now we could have two reponses
+					// if (realTimeTestResResponse.status === 'finished') {
+					// 	clearInterval(this.get('testReqInterval'));
+					// 	this.set('testInProgress', false);
 
 						// if it is a share-results-flow - scroll mapBlock into the view
-						if (this.get('shareResFlow')) {
-							this.scrollMapIntoView();
-						}
-					}
+					// 	if (this.get('shareResFlow')) {
+					// 		this.scrollMapIntoView();
+					// 	}
+					// }
+					if (realTimeTestResResponse && realTimeTestResResponse.length) {
+						realTimeTestResResponse.forEach((rtTestRes, rtTestResIdx) => {
+							let prevTestResults = this.get(`testResults[${rtTestResIdx}]`);
+							let testResults = rtTestRes.results.map((res, resIdx) => ({
+								clientSideId: resIdx,
+								...res,
+							}));
 
-					let prevTestResults = this.get('testResults');
-					let testResults = realTimeTestResResponse.results.map((res, resIdx) => ({
-						clientSideId: resIdx,
-						...res,
-					}));
-
-					if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
-						this.set('testResults', testResults);
+							if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
+								this.set(`testResults[${rtTestResIdx}]`, testResults);
+							}
+						});
 					}
 				}, { init: false });
 
-				// prepare data for Markers of the map, timings for the map scale
+				// TODO: 592 temp
 				this.observe('testResults', (testResults) => {
-					if (!testResults || !testResults.length) { return; }
+					console.log("++++ TEST RESULTS", testResults);
+					console.log("_________________________");
+				});
 
-					let dnsOpts = this.get('dnsOpts');
-					let testType = this.get('mainOptions.type');
-					let markersData = testResults.map((res) => {
-						let calcTiming = null;
+				// TODO: 592 handle results displaying on the Map later
+				// prepare data for Markers of the map, timings for the map scale
+				// this.observe('testResults', (testResults) => {
+				// 	if (!testResults || !testResults.length) { return; }
 
-						if (res.result.status !== 'in-progress') {
-							calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
-						}
+				// 	let dnsOpts = this.get('dnsOpts');
+				// 	let testType = this.get('mainOptions.type');
+				// 	let markersData = testResults.map((res) => {
+				// 		let calcTiming = null;
 
-						let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+				// 		if (res.result.status !== 'in-progress') {
+				// 			calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+				// 		}
 
-						return {
-							clientSideId: res.clientSideId,
-							network: res.probe.network,
-							city: res.probe.city,
-							country: res.probe.country,
-							timing: resTiming,
-							lat: res.probe.latitude,
-							lng: res.probe.longitude,
-						};
-					});
+				// 		let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
-					this.set('markersData', markersData);
-				}, { init: false });
+				// 		return {
+				// 			clientSideId: res.clientSideId,
+				// 			network: res.probe.network,
+				// 			city: res.probe.city,
+				// 			country: res.probe.country,
+				// 			timing: resTiming,
+				// 			lat: res.probe.latitude,
+				// 			lng: res.probe.longitude,
+				// 		};
+				// 	});
+
+				// 	this.set('markersData', markersData);
+				// }, { init: false });
 
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
@@ -1450,17 +1462,14 @@
 			let { type, targets, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
-			let targetsArr = targets.split(TARGETS_DELIMITER);
+			let targetsArr = targets.split(',');
 
+			// create parameters for the measurement request
 			let reqParams = {
 				type,
 				// to get test results in real time
 				inProgressUpdates: true,
 			};
-
-			if (targetsArr[0]) { // TODO: 592
-				reqParams.target = targetsArr[0]; // TODO: 592
-			}
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
@@ -1507,8 +1516,28 @@
 			this.set('realTimeTestResResponse', null);
 			this.set('rawOutputMode', true);
 
-			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				this.getTestMeasurementById(response.id);
+			// handle request depending on targets
+
+			if (targetsArr[0]) { // TODO: 592
+				reqParams.target = targetsArr[0]; // TODO: 592
+			}
+
+			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
+				console.log("++++ MEAS FIRST res", res);
+				console.log("_____________________");
+				this.getTestMeasurementById(res.id);
+
+				if (targetsArr[1]) {
+					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
+						console.log("++++ MEAS SECOND res1", res1);
+						console.log("_____________________");
+						this.getTestMeasurementById(res1.id, 1);
+					}).catch((err) => {
+						// TODO: 592
+						console.log("++++ handle second Measurement request err", err);
+						console.log("_____________________");
+					});
+				}
 			}).catch((err) => {
 				this.set('testInProgress', false);
 				this.set('testFailed', true);
@@ -1879,7 +1908,7 @@
 
 			el.scrollIntoView({ behvior: 'smooth' });
 		},
-		getTestMeasurementById (measurementId, isShareResCase = false) {
+		getTestMeasurementById (measurementId, resNumber = '0', isShareResCase = false) {
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
@@ -1936,7 +1965,7 @@
 					this.set('testReqParams', testReqParams);
 
 					// should be after the mainOptions.type was set
-					this.set('realTimeTestResResponse', testRes);
+					this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
 				}).catch((e) => {
 					clearInterval(testReqInterval);
 
