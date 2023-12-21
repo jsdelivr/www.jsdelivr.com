@@ -480,7 +480,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
-						targets="{{mainOptions.targets.split(',')}}"
+						targets="{{mainOptions.targets.split(TARGETS_DELIMITER)}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}">
 					</c-gp-results-controls>
@@ -1198,6 +1198,7 @@
 			stylers: [{ visibility: 'on' }],
 		},
 	];
+	const TARGETS_DELIMITER = ',';
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1449,7 +1450,7 @@
 			let { type, targets, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
-			let targetsArr = targets.split(','); // TDOO: 592
+			let targetsArr = targets.split(TARGETS_DELIMITER);
 
 			let reqParams = {
 				type,
