@@ -114,7 +114,7 @@
 
 					<c-tags-input
 						id="targetInput"
-						value="{{mainOptions.target}}"
+						value="{{mainOptions.targets}}"
 						error="{{inputErrors.target}}"
 						placeholder="e.g. IP or domain"
 						labelText="Target(s)"
@@ -480,7 +480,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
-						targets="{{mainOptions.target.split(',')}}"
+						targets="{{mainOptions.targets.split(',')}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}">
 					</c-gp-results-controls>
@@ -497,7 +497,7 @@
 						</div>
 					{{else}}
 						<c-gp-results-table-output
-							targets="{{mainOptions.target}}"
+							targets="{{mainOptions.targets}}"
 							testReqParams="{{testReqParams}}"
 							testInProgress="{{testInProgress}}">
 						</c-gp-results-table-output>
@@ -1166,7 +1166,7 @@
 	];
 	const INITIAL_MAIN_OPTS_VALUES = {
 		type: 'ping',
-		target: '',
+		targets: '',
 		location: 'World',
 		limit: '10',
 	};
@@ -1446,10 +1446,10 @@
 			}
 		},
 		proceedToTest () {
-			let { type, target, location, limit } = this.get('mainOptions');
+			let { type, targets, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
-			let targetsArr = target.split(','); // TDOO: 592
+			let targetsArr = targets.split(','); // TDOO: 592
 
 			let reqParams = {
 				type,
@@ -1884,7 +1884,7 @@
 					if (isShareResCase) {
 						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-						this.set('mainOptions.target', testRes.target);
+						this.set('mainOptions.targets', testRes.target);
 						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 						this.set('runTestBtnText', 'Run Again');
 
@@ -2163,7 +2163,7 @@
 				let { protocol, port, pathname, hostname, search } = new URL(rawPasteContent);
 
 				this.set('mainOptions.type', 'HTTP');
-				this.set('mainOptions.target', hostname);
+				this.set('mainOptions.targets', hostname);
 				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
 				this.set('notAppliedOpts.port', port);
 				this.set('notAppliedOpts.request.path', pathname !== '/' ? pathname : '');
@@ -2171,7 +2171,7 @@
 			} catch (err) {
 				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
 
-				this.set('mainOptions.target', rawPasteContent);
+				this.set('mainOptions.targets', rawPasteContent);
 
 				if (this.get('mainOptions.type') === 'HTTP') {
 					this.set('httpOpts.protocol', defaultClientProtocol);
