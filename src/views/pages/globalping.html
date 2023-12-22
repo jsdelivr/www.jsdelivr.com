@@ -1261,6 +1261,7 @@
 				shareResFlow: false,
 				activeTargetIdx: 0,
 				rawOutputMode: true,
+				targetsCnt: null,
 			};
 		},
 		onrender () {
@@ -1367,26 +1368,26 @@
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (!realTimeTestResResponse) { return; }
 
-					// handle intervals, test progress, scroll to map in sahre-res-case
-					realTimeTestResResponse.reduce((statusObj, r, rIdx) => {
+					// clear interval for the related request when it's finished, collect reponses statuses
+					let respStatuses = realTimeTestResResponse.reduce((statusObj, r, rIdx) => {
 						if (r.status === 'finished') {
 							clearInterval(this.get('testReqInterval')[rIdx]);
-
-							// handle when all requests are finished
-							if (Object.values(statusObj).every(s => s === true)) {
-								this.set('testInProgress', false);
-
-								// if it is a share-results-flow - scroll mapBlock into the view
-								if (this.get('shareResFlow')) {
-									this.scrollMapIntoView();
-								}
-							}
 
 							return { ...statusObj, [rIdx]: true };
 						}
 
-						return statusObj;
+						return { ...statusObj, [rIdx]: false };
 					}, {});
+
+					// check respStatuses and handle the case when all requests are finished
+					if (Object.values(respStatuses).length === this.get('targetsCnt') && Object.values(respStatuses).every(s => s === true)) {
+						this.set('testInProgress', false);
+
+						// if it is a share-results-flow - scroll mapBlock into the view
+						if (this.get('shareResFlow')) {
+							this.scrollMapIntoView();
+						}
+					}
 
 					if (realTimeTestResResponse && realTimeTestResResponse.length) {
 						realTimeTestResResponse.forEach((rtTestRes, rtTestResIdx) => {
@@ -1405,33 +1406,33 @@
 
 				// TODO: 592 handle results displaying on the Map later
 				// prepare data for Markers of the map, timings for the map scale
-				// this.observe('testResults', (testResults) => {
-				// 	if (!testResults || !testResults.length) { return; }
+				//- this.observe('testResults', (testResults) => {
+				//-  	if (!testResults || !testResults.length) { return; }
 
-				// 	let dnsOpts = this.get('dnsOpts');
-				// 	let testType = this.get('mainOptions.type');
-				// 	let markersData = testResults.map((res) => {
-				// 		let calcTiming = null;
+				//- 	let dnsOpts = this.get('dnsOpts');
+				//- 	let testType = this.get('mainOptions.type');
+				//- 	let markersData = testResults.map((res) => {
+				//- 		let calcTiming = null;
 
-				// 		if (res.result.status !== 'in-progress') {
-				// 			calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
-				// 		}
+				//- 		if (res.result.status !== 'in-progress') {
+				//- 			calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+				//- 		}
 
-				// 		let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+				//- 		let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
-				// 		return {
-				// 			clientSideId: res.clientSideId,
-				// 			network: res.probe.network,
-				// 			city: res.probe.city,
-				// 			country: res.probe.country,
-				// 			timing: resTiming,
-				// 			lat: res.probe.latitude,
-				// 			lng: res.probe.longitude,
-				// 		};
-				// 	});
+				//- 		return {
+				//- 			clientSideId: res.clientSideId,
+				//- 			network: res.probe.network,
+				//- 			city: res.probe.city,
+				//- 			country: res.probe.country,
+				//- 			timing: resTiming,
+				//- 			lat: res.probe.latitude,
+				//- 			lng: res.probe.longitude,
+				//- 		};
+				//- 	});
 
-				// 	this.set('markersData', markersData);
-				// }, { init: false });
+				//- 	this.set('markersData', markersData);
+				//- }, { init: false });
 
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
@@ -1523,6 +1524,8 @@
 
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				if (targetsArr[1]) {
+					this.set('targetsCnt', 2);
+
 					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
 						this.getTestMeasurementById(res.id);
 						this.getTestMeasurementById(res1.id, 1);
@@ -1531,6 +1534,7 @@
 						console.warn('Handle the second Measurement request err', err);
 					});
 				} else {
+					this.set('targetsCnt', 1);
 					this.getTestMeasurementById(res.id);
 				}
 			}).catch((err) => {
