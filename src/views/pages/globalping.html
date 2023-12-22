@@ -1367,16 +1367,27 @@
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (!realTimeTestResResponse) { return; }
 
-					// TODO: 592 handle this moment later, since now we could have two reponses
-					// if (realTimeTestResResponse.status === 'finished') {
-					// 	clearInterval(this.get('testReqInterval'));
-					// 	this.set('testInProgress', false);
+					// handle intervals, test progress, scroll to map in sahre-res-case
+					realTimeTestResResponse.reduce((statusObj, r, rIdx) => {
+						if (r.status === 'finished') {
+							clearInterval(this.get('testReqInterval')[rIdx]);
 
-						// if it is a share-results-flow - scroll mapBlock into the view
-					// 	if (this.get('shareResFlow')) {
-					// 		this.scrollMapIntoView();
-					// 	}
-					// }
+							// handle when all requests are finished
+							if (Object.values(statusObj).every(s => s === true)) {
+								this.set('testInProgress', false);
+
+								// if it is a share-results-flow - scroll mapBlock into the view
+								if (this.get('shareResFlow')) {
+									this.scrollMapIntoView();
+								}
+							}
+
+							return { ...statusObj, [rIdx]: true };
+						}
+
+						return statusObj;
+					}, {});
+
 					if (realTimeTestResResponse && realTimeTestResResponse.length) {
 						realTimeTestResResponse.forEach((rtTestRes, rtTestResIdx) => {
 							let prevTestResults = this.get(`testResults[${rtTestResIdx}]`);
@@ -1977,7 +1988,7 @@
 				});
 			}, 1000);
 
-			this.set('testReqInterval', testReqInterval);
+			this.set(`testReqInterval[${resNumber}]`, testReqInterval);
 		},
 		handleProbesResponse (isStored) {
 			return (response) => {
