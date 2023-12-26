@@ -1406,33 +1406,56 @@
 
 				// TODO: 592 handle results displaying on the Map later
 				// prepare data for Markers of the map, timings for the map scale
-				//- this.observe('testResults', (testResults) => {
-				//-  	if (!testResults || !testResults.length) { return; }
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
 
-				//- 	let dnsOpts = this.get('dnsOpts');
-				//- 	let testType = this.get('mainOptions.type');
-				//- 	let markersData = testResults.map((res) => {
-				//- 		let calcTiming = null;
+					let dnsOpts = this.get('dnsOpts');
+					let testType = this.get('mainOptions.type');
 
-				//- 		if (res.result.status !== 'in-progress') {
-				//- 			calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
-				//- 		}
+					let mDPerReq = testResults.reduce((mData, tr, trIdx) => {
+						if (!tr || !tr.length) {
+							return mData;
+						}
 
-				//- 		let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+						mData[trIdx] = tr.map((res) => {
+							let calcTiming = null;
 
-				//- 		return {
-				//- 			clientSideId: res.clientSideId,
-				//- 			network: res.probe.network,
-				//- 			city: res.probe.city,
-				//- 			country: res.probe.country,
-				//- 			timing: resTiming,
-				//- 			lat: res.probe.latitude,
-				//- 			lng: res.probe.longitude,
-				//- 		};
-				//- 	});
+							if (res.result.status !== 'in-progress') {
+								calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+							}
 
-				//- 	this.set('markersData', markersData);
-				//- }, { init: false });
+							let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+
+							return {
+								clientSideId: res.clientSideId,
+								network: res.probe.network,
+								city: res.probe.city,
+								country: res.probe.country,
+								timing: [ resTiming ],
+								lat: res.probe.latitude,
+								lng: res.probe.longitude,
+							};
+						});
+
+						return mData;
+					}, {});
+
+					let markersData = mDPerReq[0];
+
+					// if there is a second request then we should add it's data to markersData
+					if (mDPerReq[1]) {
+						markersData = markersData.map((mD) => {
+							let secReqMD = mDPerReq[1].find(i => i.clientSideId === mD.clientSideId);
+
+							return {
+								...mD,
+								timing: [ mD.timing, secReqMD.timing ],
+							};
+						});
+					}
+
+					this.set('markersData', markersData);
+				}, { init: false });
 
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
@@ -2293,7 +2316,7 @@
 			oms.addMarker(marker, () => {
 				let infoWindowContent = '<div class="gp-map_popup">';
 
-				if (markerData.timing) {
+				if (markerData.timing) { // TODO: 592 timing-case
 					infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
 				}
 
