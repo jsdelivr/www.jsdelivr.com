@@ -2265,21 +2265,22 @@
 			let infoWindow = new google.maps.InfoWindow();
 
 			// create svg to use as a Marker icon
-			let svgFillColor = markerData.timing ? this.pickMarkerColor(markerData.timing) : DEFAULT_MARKER_COLOR;
 			let svg;
+			let svgFillColors = [];
+			let targetsCnt = this.get('targetsCnt');
+
+			for (let i = 0; i < targetsCnt; i++) {
+				svgFillColors.push(markerData.timing[i] ? this.pickMarkerColor(markerData.timing[i]) : DEFAULT_MARKER_COLOR);
+			}
 
 			if (markerData.timing.length > 1) {
-				// TODO: 592 temp
-				let rightColor = '#ff0000';
-				let leftColor = '#00ff00';
-
 				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
-					<circle cx="12" cy="10" r="6" fill="${rightColor}"/>
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[1]}"/>
 					<clipPath id="cut-off">
 					<rect x="6" y="4" width="6" height="1112"/>
 					</clipPath>
-					<circle cx="12" cy="10" r="6" fill="${leftColor}" clip-path="url(#cut-off)"/>
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}" clip-path="url(#cut-off)"/>
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
@@ -2298,7 +2299,7 @@
 			} else {
 				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
-					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}"/>
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
