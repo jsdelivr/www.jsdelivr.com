@@ -1404,7 +1404,6 @@
 					}
 				}, { init: false });
 
-				// TODO: 592 handle results displaying on the Map later
 				// prepare data for Markers of the map, timings for the map scale
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
@@ -1442,6 +1441,7 @@
 
 					let markersData = mDPerReq[0];
 
+					// TODO: 592, optimie this part
 					// if there is a second request then we should add it's data to markersData
 					if (mDPerReq[1]) {
 						markersData = markersData.map((mD) => {
@@ -1449,7 +1449,7 @@
 
 							return {
 								...mD,
-								timing: [ mD.timing, secReqMD.timing ],
+								timing: [ ...mD.timing, ...secReqMD.timing ],
 							};
 						});
 					}
@@ -1741,8 +1741,11 @@
 				if (prevMarkersData) {
 					// stop once we found the match to get proper currentMarkerIdx
 					prevMarkersData.every((pmd) => {
-						// TODO: 592 - check this condition since timings now is array is it still works?
-						if (pmd.clientSideId === markerData.clientSideId && pmd.timing === null && markersData.timing !== null) {
+						if (
+							pmd.clientSideId === markerData.clientSideId
+							&& markerData.timing !== null
+							&& markerData.timing.every(t => t)
+						) {
 							markerIdToReplace = pmd.clientSideId;
 							currentMarkerIdx = pmd.clientSideId;
 
@@ -2263,24 +2266,55 @@
 
 			// create svg to use as a Marker icon
 			let svgFillColor = markerData.timing ? this.pickMarkerColor(markerData.timing) : DEFAULT_MARKER_COLOR;
-			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g filter="url(#filter0_d_6106_3045)">
-				<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
-				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
-				</g>
-				<defs>
-				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-				<feOffset dy="2"/>
-				<feGaussianBlur stdDeviation="2"/>
-				<feComposite in2="hardAlpha" operator="out"/>
-				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-				</filter>
-				</defs>
-				</svg>`);
+			let svg;
+
+			if (markerData.timing.length > 1) {
+				// TODO: 592 temp
+				let rightColor = '#ff0000';
+				let leftColor = '#00ff00';
+
+				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+					<circle cx="12" cy="10" r="6" fill="${rightColor}"/>
+					<clipPath id="cut-off">
+					<rect x="6" y="4" width="6" height="1112"/>
+					</clipPath>
+					<circle cx="12" cy="10" r="6" fill="${leftColor}" clip-path="url(#cut-off)"/>
+					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+					</g>
+					<defs>
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+					<feOffset dy="2"/>
+					<feGaussianBlur stdDeviation="2"/>
+					<feComposite in2="hardAlpha" operator="out"/>
+					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+					</filter>
+					</defs>
+					</svg>`);
+			} else {
+				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+					<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
+					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+					</g>
+					<defs>
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+					<feOffset dy="2"/>
+					<feGaussianBlur stdDeviation="2"/>
+					<feComposite in2="hardAlpha" operator="out"/>
+					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+					</filter>
+					</defs>
+					</svg>`);
+			}
 
 			// add listener to IW for Results and Actions button
 			google.maps.event.addListener(infoWindow, 'domready', () => {
