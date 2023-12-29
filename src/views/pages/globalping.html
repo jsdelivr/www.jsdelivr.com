@@ -1357,10 +1357,9 @@
 				}, { init: false, defer: true });
 
 				// zoom to results once we get the first response
-				this.observe('realTimeTestResResponse', (response, prevResponse) => {
-					if (!prevResponse && response && response.every(r => r.results.length)) {
-						// TODO: 592 temp, handle it properly later
-						this.zoomToResults(response[0].locations);
+				this.observe('realTimeTestResResponse', (responses, prevResponses) => {
+					if (!prevResponses && responses && responses.every(r => r.results.length)) {
+						this.zoomToResults(responses[0].locations);
 					}
 				}, { init: false });
 
