@@ -2353,15 +2353,20 @@
 
 			// add Marker to OverlappingMarkerSpiderfier
 			oms.addMarker(marker, () => {
-				let infoWindowContent = '<div class="gp-map_popup">';
+				let infoWindowContent = '<div class="gp-map_popup"><div class="gp-map_popup_data">';
 
-				if (markerData.timing) { // TODO: 592 timing-case
-					infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
+				for (let cnt = 0; cnt < targetsCnt; cnt++) {
+					infoWindowContent += '<div class="gp-map_popup_data_item">';
+
+					if (markerData.timing[cnt]) { // TODO: 592 timing-case
+						infoWindowContent += `<div class="gp-map_popup_data_item_header">${markerData.timing[cnt]}</div>`;
+					}
+
+					infoWindowContent += `<div class="gp-map_popup_data_item_descr">${markerData.network}</div>
+						<div class="gp-map_popup_data_item_descr">(${markerData.city}, ${markerData.country})</div></div>`;
 				}
 
-				infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
-					<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-					<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
+				infoWindowContent += `</div><div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
 						<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
 						<span>Results and Actions</span>
 					</div>
