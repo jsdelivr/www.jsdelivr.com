@@ -1430,7 +1430,7 @@
 								network: res.probe.network,
 								city: res.probe.city,
 								country: res.probe.country,
-								timing: [ resTiming ],
+								timings: [ resTiming ],
 								lat: res.probe.latitude,
 								lng: res.probe.longitude,
 								targets: [ res.target ],
@@ -1453,7 +1453,7 @@
 
 								return {
 									...mD,
-									timing: [ ...mD.timing, ...secReqMD.timing ],
+									timings: [ ...mD.timings, ...secReqMD.timings ],
 									targets: [ ...mD.targets, ...secReqMD.targets ],
 								};
 							});
@@ -1749,8 +1749,8 @@
 					prevMarkersData.every((pmd) => {
 						if (
 							pmd.clientSideId === markerData.clientSideId
-							&& markerData.timing !== null
-							&& markerData.timing.every(t => t)
+							&& markerData.timings !== null
+							&& markerData.timings.every(t => t)
 						) {
 							markerIdToReplace = pmd.clientSideId;
 							currentMarkerIdx = pmd.clientSideId;
@@ -2276,10 +2276,10 @@
 			let targetsCnt = this.get('targetsCnt');
 
 			for (let i = 0; i < targetsCnt; i++) {
-				svgFillColors.push(markerData.timing[i] ? this.pickMarkerColor(markerData.timing[i]) : DEFAULT_MARKER_COLOR);
+				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
 			}
 
-			if (markerData.timing.length > 1) {
+			if (markerData.timings.length > 1) {
 				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColors[1]}"/>
@@ -2361,8 +2361,8 @@
 				for (let cnt = 0; cnt < targetsCnt; cnt++) {
 					infoWindowContent += '<div class="gp-map_popup_data_item">';
 
-					if (markerData.timing[cnt]) {
-						infoWindowContent += `<div class="gp-map_popup_data_item_timing">${markerData.timing[cnt]}</div>`;
+					if (markerData.timings[cnt]) {
+						infoWindowContent += `<div class="gp-map_popup_data_item_timing">${markerData.timings[cnt]}</div>`;
 					}
 
 					if (targetsCnt > 1 && markerData.targets[cnt]) {
