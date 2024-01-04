@@ -13,8 +13,7 @@
 		<div class="results-table_column_header">IP</div>
 		<div class="results-table_column_header">Graph</div>
 
-		<!-- TODO: 592, temp condition to check two states of the table -->
-		{{#each (targetsCnt > 1 ? singleTargetTestArr : multiTargetsTestArr):testArrIdx}}
+		{{#each preparedTestResults:resIdx}}
 			<div class="results-table_column_location">
 				<span class="results-table_column_location_status-line"></span>
 
@@ -29,7 +28,7 @@
 			{{#if targetsCnt > 1}}
 				<div class="results-table_column_urls">
 					{{#each this.probesData}}
-						<div class="results-table_column_urls_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 							<span>{{this.url}}</span>
 						</div>
 					{{/each}}
@@ -38,7 +37,7 @@
 
 			<div class="results-table_column_quality">
 				{{#each this.probesData}}
-					<div class="results-table_column_quality_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_quality_value_header">Quality</span>
 						<span>{{this.quality}}</span>
 					</div>
@@ -47,7 +46,7 @@
 
 			<div class="results-table_column_rrt">
 				{{#each this.probesData}}
-					<div class="results-table_column_rrt_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+					<div class="results-table_column_rrt_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_rrt_value_header">rrt min/avg/max</span>
 						<span>{{this.rrt}}</span>
 					</div>
@@ -56,7 +55,7 @@
 
 			<div class="results-table_column_ip">
 				{{#each this.probesData}}
-					<div class="results-table_column_ip_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_ip_value_header">IP</span>
 						<span>{{this.ip}}</span>
 					</div>
@@ -65,7 +64,7 @@
 
 			<div class="results-table_column_graph">
 				{{#each this.probesData}}
-					<div class="results-table_column_graph_value {{#if testArr[testArrIdx].probesData.length === 1}}single-cell{{/if}}">
+					<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_graph_value_header">Graph</span>
 						<img width="48" height="24" src="{{@shared.assetsHost}}/img/globalping/TEMP.graph.svg">
 					</div>
@@ -86,179 +85,20 @@
 component.exports = {
 	data () {
 		return {
-			targetsCnt: null,
-			singleTargetTestArr: [
-				{
-					location: 'Riga, LV, EU',
-					isp: 'CGI IT Latvia (BT3789)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
-					],
-				},
-				{
-					location: 'Riga, LV, EU',
-					isp: 'Technology Company Riga (HGD3428)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
-					],
-				},
-				{
-					location: 'Warsaw, PL, EU',
-					isp: 'Altcom Consultations Inc. (YGH213432)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
-					],
-				},
-				{
-					location: 'Berlin, DE, EU',
-					isp: 'Deutsche Computer Company. (360DIAG)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
-					],
-				},
-				{
-					location: 'Milan, IT, EU',
-					isp: 'Oracle Corporation (AS31898)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-						{
-							url: 'jsdelivr.com',
-							quality: '3 /4 - 75%',
-							rrt: '13.3 / 12.4 / 16 ms',
-							ip: '123.32.77.100',
-						},
-					],
-				},
-			],
-			multiTargetsTestArr: [
-				{
-					location: 'Riga, LV, EU',
-					isp: 'CGI IT Latvia (BT3789)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-					],
-				},
-				{
-					location: 'Riga, LV, EU',
-					isp: 'Technology Company Riga (HGD3428)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-					],
-				},
-				{
-					location: 'Warsaw, PL, EU',
-					isp: 'Altcom Consultations Inc. (YGH213432)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-					],
-				},
-				{
-					location: 'Berlin, DE, EU',
-					isp: 'Deutsche Computer Company. (360DIAG)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-					],
-				},
-				{
-					location: 'Milan, IT, EU',
-					isp: 'Oracle Corporation (AS31898)',
-					country: 'EU',
-					probesData: [
-						{
-							url: 'perfops.net',
-							quality: '4 /4 - 100%',
-							rrt: '13.1 / 13.3 / 20 ms',
-							ip: '167.253.48.126',
-						},
-					],
-				},
-			],
+			preparedTestResults: [],
 		};
 	},
 	oninit () {
 		if (!Ractive.isServer) {
-			this.observe('targets', (targets) => {
-				if (targets) {
-					this.set('targetsCnt', targets.split(',').length);
-				}
+			this.observe('testResults', (testResults) => {
+				console.log('++++ testResults', testResults);
+				console.log('_____________________');
+				let preparedTestResults = combineResults();
+				this.set('preparedTestResults', preparedTestResults)
+				// TODO: 592
+				// here we should go through the testResults and combine arrays (if there more than 1 target then each testResults will be in an own array)
+				// we can combine objects by their clientSideId, don't forget to calculate timings etc. (check the raw-outut or IWs there should be such calculations)
+
 			});
 		}
 	},
