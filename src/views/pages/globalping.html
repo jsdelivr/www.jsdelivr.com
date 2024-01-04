@@ -480,7 +480,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
-						targets="{{mainOptions.targets.split(',')}}"
+						targets="{{targetsArr}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}">
 					</c-gp-results-controls>
@@ -1555,9 +1555,10 @@
 			this.set('activeTargetIdx', 0);
 
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
-				if (targetsArr[1]) {
-					this.set('targetsCnt', 2);
+				this.set('targetsArr', targetsArr);
+				this.set('targetsCnt', targetsArr.length);
 
+				if (targetsArr[1]) {
 					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
 						this.getTestMeasurementById(res.id);
 						this.getTestMeasurementById(res1.id, 1);
@@ -1566,7 +1567,6 @@
 						console.warn('Handle the second Measurement request err', err);
 					});
 				} else {
-					this.set('targetsCnt', 1);
 					this.getTestMeasurementById(res.id);
 				}
 			}).catch((err) => {
