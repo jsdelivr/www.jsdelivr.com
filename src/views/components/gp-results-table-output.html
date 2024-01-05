@@ -100,7 +100,7 @@ component.exports = {
 	combineResults (results) {
 		return results.reduce((prepResults, resArr, resArrIdx) => {
 			if (resArrIdx === 0) {
-				return resArr.map((res) => ({
+				return resArr.map(res => ({
 					clientSideId: res.clientSideId,
 					...res.probe,
 					probesData: [{
@@ -113,33 +113,31 @@ component.exports = {
 						statsLoss: res.result.stats.loss,
 					}],
 				}));
-			} else {
-				return prepResults.map((pR) => {
-					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
-
-					if (nextReqRes) {
-						return {
-							...pR,
-							probesData: [
-								...pR.probesData,
-								{
-									target: nextReqRes.target,
-									ipAddr: nextReqRes.result.resolvedAddress,
-									minTimings: nextReqRes.result.stats.min,
-									avgTimings: nextReqRes.result.stats.avg,
-									maxTimings: nextReqRes.result.stats.max,
-									statsTotal: nextReqRes.result.stats.total,
-									statsLoss: nextReqRes.result.stats.loss,
-								},
-							],
-						};
-					}
-
-					return pR;
-				});
 			}
 
-			return prepResults;
+			return prepResults.map((pR) => {
+				let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
+
+				if (nextReqRes) {
+					return {
+						...pR,
+						probesData: [
+							...pR.probesData,
+							{
+								target: nextReqRes.target,
+								ipAddr: nextReqRes.result.resolvedAddress,
+								minTimings: nextReqRes.result.stats.min,
+								avgTimings: nextReqRes.result.stats.avg,
+								maxTimings: nextReqRes.result.stats.max,
+								statsTotal: nextReqRes.result.stats.total,
+								statsLoss: nextReqRes.result.stats.loss,
+							},
+						],
+					};
+				}
+
+				return pR;
+			});
 		}, []);
 	},
 };
