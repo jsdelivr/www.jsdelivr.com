@@ -1935,7 +1935,13 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		handleSeeResults (resIdx) {
-			let el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+			let el;
+
+			if (this.get('rawOutputMode')) {
+				el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+			} else {
+				el = this.find(`.c-gp-results-table-output .results-table_column_location.row-num-${resIdx}`);
+			}
 
 			// this prop will be passed to c-gp-results-raw-output in order for it to show the specific result element if it was hidden
 			this.set('scrolledToResIdx', resIdx);
