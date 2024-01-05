@@ -9,7 +9,7 @@
 		{{/if}}
 
 		<div class="results-table_column_header">Quality</div>
-		<div class="results-table_column_header">rrt min /avg / max</div>
+		<div class="results-table_column_header">rtt min /avg / max</div>
 		<div class="results-table_column_header">IP</div>
 		<div class="results-table_column_header">Graph</div>
 
@@ -20,8 +20,8 @@
 				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
 				<div>
-					<span>{{this.location}}</span>
-					<span>{{this.isp}}</span>
+					<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
+					<span>{{this.network}}</span>
 				</div>
 			</div>
 
@@ -29,7 +29,7 @@
 				<div class="results-table_column_urls">
 					{{#each this.probesData}}
 						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
-							<span>{{this.url}}</span>
+							<span>{{this.target}}</span>
 						</div>
 					{{/each}}
 				</div>
@@ -39,16 +39,18 @@
 				{{#each this.probesData}}
 					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_quality_value_header">Quality</span>
-						<span>{{this.quality}}</span>
+						<span>
+							{{this.statsTotal - this.statsLoss}} /{{this.statsTotal}} - {{Math.round((this.statsTotal - this.statsLoss)/this.statsTotal * 100)}}%
+						</span>
 					</div>
 				{{/each}}
 			</div>
 
-			<div class="results-table_column_rrt">
+			<div class="results-table_column_rtt">
 				{{#each this.probesData}}
-					<div class="results-table_column_rrt_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_rrt_value_header">rrt min/avg/max</span>
-						<span>{{this.rrt}}</span>
+					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+						<span class="results-table_column_rtt_value_header">rtt min/avg/max</span>
+						<span>{{this.timings.join(' / ')}} ms</span>
 					</div>
 				{{/each}}
 			</div>
@@ -57,7 +59,7 @@
 				{{#each this.probesData}}
 					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_ip_value_header">IP</span>
-						<span>{{this.ip}}</span>
+						<span>{{this.ipAddr}}</span>
 					</div>
 				{{/each}}
 			</div>
@@ -91,16 +93,50 @@ component.exports = {
 	oninit () {
 		if (!Ractive.isServer) {
 			this.observe('testResults', (testResults) => {
-				console.log('++++ testResults', testResults);
-				console.log('_____________________');
-				let preparedTestResults = combineResults();
-				this.set('preparedTestResults', preparedTestResults)
-				// TODO: 592
-				// here we should go through the testResults and combine arrays (if there more than 1 target then each testResults will be in an own array)
-				// we can combine objects by their clientSideId, don't forget to calculate timings etc. (check the raw-outut or IWs there should be such calculations)
-
+				this.set('preparedTestResults', this.combineResults(testResults));
 			});
 		}
+	},
+	combineResults (results) {
+		return results.reduce((prepResults, resArr, resArrIdx) => {
+			if (resArrIdx === 0) {
+				return resArr.map((res) => ({
+					clientSideId: res.clientSideId,
+					...res.probe,
+					probesData: [{
+						target: res.target,
+						ipAddr: res.result.resolvedAddress,
+						timings: res.result.timings.map((t) => t.rtt),
+						statsTotal: res.result.stats.total,
+						statsLoss: res.result.stats.loss,
+					}],
+				}));
+			} else {
+				return prepResults.map((pR) => {
+					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
+
+					if (nextReqRes) {
+						return {
+							...pR,
+							probesData: [
+								...pR.probesData,
+								{
+									target: nextReqRes.target,
+									ipAddr: nextReqRes.result.resolvedAddress,
+									timings: nextReqRes.result.timings.map((t) => t.rtt),
+									statsTotal: nextReqRes.result.stats.total,
+									statsLoss: nextReqRes.result.stats.loss,
+								},
+							],
+						};
+					}
+
+					return pR;
+				});
+			}
+
+			return prepResults;
+		}, []);
 	},
 };
 </script>
