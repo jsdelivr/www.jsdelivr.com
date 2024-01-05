@@ -49,8 +49,8 @@
 			<div class="results-table_column_rtt">
 				{{#each this.probesData}}
 					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_rtt_value_header">rtt min/avg/max</span>
-						<span>{{this.timings.join(' / ')}} ms</span>
+						<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
+						<span>{{this.minTimings}} / {{this.avgTimings}} / {{this.maxTimings}} ms</span>
 					</div>
 				{{/each}}
 			</div>
@@ -106,7 +106,9 @@ component.exports = {
 					probesData: [{
 						target: res.target,
 						ipAddr: res.result.resolvedAddress,
-						timings: res.result.timings.map((t) => t.rtt),
+						minTimings: res.result.stats.min,
+						avgTimings: res.result.stats.avg,
+						maxTimings: res.result.stats.max,
 						statsTotal: res.result.stats.total,
 						statsLoss: res.result.stats.loss,
 					}],
@@ -123,7 +125,9 @@ component.exports = {
 								{
 									target: nextReqRes.target,
 									ipAddr: nextReqRes.result.resolvedAddress,
-									timings: nextReqRes.result.timings.map((t) => t.rtt),
+									minTimings: nextReqRes.result.stats.min,
+									avgTimings: nextReqRes.result.stats.avg,
+									maxTimings: nextReqRes.result.stats.max,
 									statsTotal: nextReqRes.result.stats.total,
 									statsLoss: nextReqRes.result.stats.loss,
 								},
