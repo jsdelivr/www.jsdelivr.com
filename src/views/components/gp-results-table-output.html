@@ -23,6 +23,14 @@
 					<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
 					<span>{{this.network}}</span>
 				</div>
+
+				<div class="results-table_column_location_actions">
+					<div class="results-table_column_location_actions_btn"
+						as-tooltip="'Set as location for the next test', 'right'"
+						on-click="@this.setProbeAsLocation(this)">
+						<i class="fa fa-map-marker" aria-hidden="true"></i>
+					</div>
+				</div>
 			</div>
 
 			{{#if targetsCnt > 1}}
@@ -83,62 +91,69 @@
 </div>
 
 <script>
+	const tooltip = require('../../assets/js/decorators/tooltip');
 
-component.exports = {
-	data () {
-		return {
-			preparedTestResults: [],
-		};
-	},
-	oninit () {
-		if (!Ractive.isServer) {
-			this.observe('testResults', (testResults) => {
-				this.set('preparedTestResults', this.combineResults(testResults));
-			});
-		}
-	},
-	combineResults (results) {
-		return results.reduce((prepResults, resArr, resArrIdx) => {
-			if (resArrIdx === 0) {
-				return resArr.map(res => ({
-					clientSideId: res.clientSideId,
-					...res.probe,
-					probesData: [{
-						target: res.target,
-						ipAddr: res.result.resolvedAddress,
-						minTimings: res.result.stats.min,
-						avgTimings: res.result.stats.avg,
-						maxTimings: res.result.stats.max,
-						statsTotal: res.result.stats.total,
-						statsLoss: res.result.stats.loss,
-					}],
-				}));
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				preparedTestResults: [],
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('testResults', (testResults) => {
+					this.set('preparedTestResults', this.combineResults(testResults));
+				});
 			}
-
-			return prepResults.map((pR) => {
-				let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
-
-				if (nextReqRes) {
-					return {
-						...pR,
-						probesData: [
-							...pR.probesData,
-							{
-								target: nextReqRes.target,
-								ipAddr: nextReqRes.result.resolvedAddress,
-								minTimings: nextReqRes.result.stats.min,
-								avgTimings: nextReqRes.result.stats.avg,
-								maxTimings: nextReqRes.result.stats.max,
-								statsTotal: nextReqRes.result.stats.total,
-								statsLoss: nextReqRes.result.stats.loss,
-							},
-						],
-					};
+		},
+		combineResults (results) {
+			return results.reduce((prepResults, resArr, resArrIdx) => {
+				if (resArrIdx === 0) {
+					return resArr.map(res => ({
+						clientSideId: res.clientSideId,
+						...res.probe,
+						probesData: [{
+							target: res.target,
+							ipAddr: res.result.resolvedAddress,
+							minTimings: res.result.stats.min,
+							avgTimings: res.result.stats.avg,
+							maxTimings: res.result.stats.max,
+							statsTotal: res.result.stats.total,
+							statsLoss: res.result.stats.loss,
+						}],
+					}));
 				}
 
-				return pR;
-			});
-		}, []);
-	},
-};
+				return prepResults.map((pR) => {
+					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
+
+					if (nextReqRes) {
+						return {
+							...pR,
+							probesData: [
+								...pR.probesData,
+								{
+									target: nextReqRes.target,
+									ipAddr: nextReqRes.result.resolvedAddress,
+									minTimings: nextReqRes.result.stats.min,
+									avgTimings: nextReqRes.result.stats.avg,
+									maxTimings: nextReqRes.result.stats.max,
+									statsTotal: nextReqRes.result.stats.total,
+									statsLoss: nextReqRes.result.stats.loss,
+								},
+							],
+						};
+					}
+
+					return pR;
+				});
+			}, []);
+		},
+		setProbeAsLocation (probeData) {
+			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+	};
 </script>
