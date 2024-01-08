@@ -35,8 +35,8 @@
 
 			{{#if targetsCnt > 1}}
 				<div class="results-table_column_urls">
-					{{#each this.probesData}}
-						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+					{{#each this.statsPerProbes}}
+						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span>{{this.target}}</span>
 						</div>
 					{{/each}}
@@ -44,8 +44,8 @@
 			{{/if}}
 
 			<div class="results-table_column_quality">
-				{{#each this.probesData}}
-					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+				{{#each this.statsPerProbes}}
+					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_quality_value_header">Quality</span>
 						<span>
 							{{this.statsTotal - this.statsLoss}} /{{this.statsTotal}} - {{Math.round((this.statsTotal - this.statsLoss)/this.statsTotal * 100)}}%
@@ -55,8 +55,8 @@
 			</div>
 
 			<div class="results-table_column_rtt">
-				{{#each this.probesData}}
-					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+				{{#each this.statsPerProbes}}
+					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
 						<span>{{this.minTimings}} / {{this.avgTimings}} / {{this.maxTimings}} ms</span>
 					</div>
@@ -64,8 +64,8 @@
 			</div>
 
 			<div class="results-table_column_ip">
-				{{#each this.probesData}}
-					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+				{{#each this.statsPerProbes}}
+					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_ip_value_header">IP</span>
 						<span>{{this.ipAddr}}</span>
 					</div>
@@ -73,8 +73,8 @@
 			</div>
 
 			<div class="results-table_column_graph">
-				{{#each this.probesData}}
-					<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].probesData.length === 1}}single-cell{{/if}}">
+				{{#each this.statsPerProbes}}
+					<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_graph_value_header">Graph</span>
 						<img width="48" height="24" src="{{@shared.assetsHost}}/img/globalping/TEMP.graph.svg">
 					</div>
@@ -115,7 +115,7 @@
 					return resArr.map(res => ({
 						clientSideId: res.clientSideId,
 						...res.probe,
-						probesData: [{
+						statsPerProbes: [{
 							target: res.target,
 							ipAddr: res.result.resolvedAddress,
 							minTimings: res.result.stats.min,
@@ -133,8 +133,8 @@
 					if (nextReqRes) {
 						return {
 							...pR,
-							probesData: [
-								...pR.probesData,
+							statsPerProbes: [
+								...pR.statsPerProbes,
 								{
 									target: nextReqRes.target,
 									ipAddr: nextReqRes.result.resolvedAddress,
