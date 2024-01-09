@@ -14,12 +14,12 @@
 		<div class="results-table_column_header">Graph</div>
 
 		{{#each preparedTestResults:resIdx}}
-			<div class="results-table_column_location row-num-{{resIdx}}">
+			<div class="results-table_column results-table_column_location row-num-{{resIdx}}">
 				<span class="results-table_column_location_status-line"></span>
 
 				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
-				<div>
+				<div class="results-table_column_location_data">
 					<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
 					<span>{{this.network}}</span>
 				</div>
@@ -34,7 +34,7 @@
 			</div>
 
 			{{#if targetsCnt > 1}}
-				<div class="results-table_column_urls">
+				<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span>{{this.target}}</span>
@@ -43,7 +43,7 @@
 				</div>
 			{{/if}}
 
-			<div class="results-table_column_quality">
+			<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
 				{{#each this.statsPerProbes}}
 					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_quality_value_header">Quality</span>
@@ -54,7 +54,7 @@
 				{{/each}}
 			</div>
 
-			<div class="results-table_column_rtt">
+			<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
 				{{#each this.statsPerProbes}}
 					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
@@ -63,7 +63,7 @@
 				{{/each}}
 			</div>
 
-			<div class="results-table_column_ip">
+			<div class="results-table_column results-table_column_ip row-num-{{resIdx}}">
 				{{#each this.statsPerProbes}}
 					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_ip_value_header">IP</span>
@@ -72,7 +72,7 @@
 				{{/each}}
 			</div>
 
-			<div class="results-table_column_graph">
+			<div class="results-table_column results-table_column_graph row-num-{{resIdx}}">
 				{{#each this.statsPerProbes}}
 					<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 						<span class="results-table_column_graph_value_header">Graph</span>
@@ -106,6 +106,39 @@
 			if (!Ractive.isServer) {
 				this.observe('testResults', (testResults) => {
 					this.set('preparedTestResults', this.combineResults(testResults));
+				});
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				let tableEl = this.find('.c-gp-results-table-output .results-table');
+				let columns = tableEl.querySelectorAll('.results-table_column');
+				let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
+
+				columns.forEach((c) => {
+					c.addEventListener('mouseover', (e) => {
+						let rowNum;
+
+						e.currentTarget.classList.forEach((c) => {
+							if (c.includes('row-num-')) {
+								rowNum = c.replace('row-num-', '');
+							}
+						});
+
+						if (rowNum) {
+							let elToShow = document.querySelector(`.results-table_column_location.row-num-${rowNum} .results-table_column_location_actions_btn`);
+
+							allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
+
+							if (elToShow) {
+								elToShow.style.visibility = 'visible';
+							}
+						}
+					});
+				});
+
+				tableEl.addEventListener('mouseleave', () => {
+					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
 				});
 			}
 		},
