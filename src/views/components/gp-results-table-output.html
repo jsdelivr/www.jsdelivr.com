@@ -1,88 +1,90 @@
 <link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
 
 <div class="c-gp-results-table-output">
-	<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
-		<div class="results-table_column_header">Location</div>
-
-		{{#if targetsCnt > 1}}
-			<div class="results-table_column_header"></div>
-		{{/if}}
-
-		<div class="results-table_column_header">Quality</div>
-		<div class="results-table_column_header">rtt min /avg / max</div>
-		<div class="results-table_column_header">IP</div>
-		<div class="results-table_column_header">Graph</div>
-
-		{{#each preparedTestResults:resIdx}}
-			<div class="results-table_column results-table_column_location row-num-{{resIdx}}">
-				<span class="results-table_column_location_status-line"></span>
-
-				<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
-
-				<div class="results-table_column_location_data">
-					<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
-					<span>{{this.network}}</span>
-				</div>
-
-				<div class="results-table_column_location_actions">
-					<div class="results-table_column_location_actions_btn"
-						as-tooltip="'Set as location for the next test', 'right'"
-						on-click="@this.setProbeAsLocation(this)">
-						<i class="fa fa-map-marker" aria-hidden="true"></i>
-					</div>
-				</div>
-			</div>
+	<div class="results-table-wrapper">
+		<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
+			<div class="results-table_column_header">Location</div>
 
 			{{#if targetsCnt > 1}}
-				<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
+				<div class="results-table_column_header"></div>
+			{{/if}}
+
+			<div class="results-table_column_header">Quality</div>
+			<div class="results-table_column_header">rtt min /avg / max</div>
+			<div class="results-table_column_header">IP</div>
+			<div class="results-table_column_header">Graph</div>
+
+			{{#each preparedTestResults:resIdx}}
+				<div class="results-table_column results-table_column_location row-num-{{resIdx}}">
+					<span class="results-table_column_location_status-line"></span>
+
+					<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
+
+					<div class="results-table_column_location_data">
+						<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
+						<span>{{this.network}}</span>
+					</div>
+
+					<div class="results-table_column_location_actions">
+						<div class="results-table_column_location_actions_btn"
+							as-tooltip="'Set as location for the next test', 'right'"
+							on-click="@this.setProbeAsLocation(this)">
+							<i class="fa fa-map-marker" aria-hidden="true"></i>
+						</div>
+					</div>
+				</div>
+
+				{{#if targetsCnt > 1}}
+					<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
+						{{#each this.statsPerProbes}}
+							<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+								<span>{{this.target}}</span>
+							</div>
+						{{/each}}
+					</div>
+				{{/if}}
+
+				<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
 					{{#each this.statsPerProbes}}
-						<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-							<span>{{this.target}}</span>
+						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+							<span class="results-table_column_quality_value_header">Quality</span>
+							<span>
+								{{this.statsTotal - this.statsLoss}} /{{this.statsTotal}} - {{Math.round((this.statsTotal - this.statsLoss)/this.statsTotal * 100)}}%
+							</span>
 						</div>
 					{{/each}}
 				</div>
-			{{/if}}
 
-			<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
-				{{#each this.statsPerProbes}}
-					<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_quality_value_header">Quality</span>
-						<span>
-							{{this.statsTotal - this.statsLoss}} /{{this.statsTotal}} - {{Math.round((this.statsTotal - this.statsLoss)/this.statsTotal * 100)}}%
-						</span>
-					</div>
-				{{/each}}
-			</div>
+				<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
+					{{#each this.statsPerProbes}}
+						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+							<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
+							<span>{{this.minTimings}} / {{this.avgTimings}} / {{this.maxTimings}} ms</span>
+						</div>
+					{{/each}}
+				</div>
 
-			<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
-				{{#each this.statsPerProbes}}
-					<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
-						<span>{{this.minTimings}} / {{this.avgTimings}} / {{this.maxTimings}} ms</span>
-					</div>
-				{{/each}}
-			</div>
+				<div class="results-table_column results-table_column_ip row-num-{{resIdx}}">
+					{{#each this.statsPerProbes}}
+						<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+							<span class="results-table_column_ip_value_header">IP</span>
+							<span>{{this.ipAddr}}</span>
+						</div>
+					{{/each}}
+				</div>
 
-			<div class="results-table_column results-table_column_ip row-num-{{resIdx}}">
-				{{#each this.statsPerProbes}}
-					<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_ip_value_header">IP</span>
-						<span>{{this.ipAddr}}</span>
-					</div>
-				{{/each}}
-			</div>
+				<div class="results-table_column results-table_column_graph row-num-{{resIdx}}">
+					{{#each this.statsPerProbes}}
+						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+							<span class="results-table_column_graph_value_header">Graph</span>
+							<img width="48" height="24" src="{{@shared.assetsHost}}/img/globalping/TEMP.graph.svg">
+						</div>
+					{{/each}}
+				</div>
 
-			<div class="results-table_column results-table_column_graph row-num-{{resIdx}}">
-				{{#each this.statsPerProbes}}
-					<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-						<span class="results-table_column_graph_value_header">Graph</span>
-						<img width="48" height="24" src="{{@shared.assetsHost}}/img/globalping/TEMP.graph.svg">
-					</div>
-				{{/each}}
-			</div>
-
-			<div class="results-table_line"></div>
-		{{/each}}
+				<div class="results-table_line"></div>
+			{{/each}}
+		</div>
 	</div>
 
 	{{#if testReqParams.id && !testInProgress}}
@@ -107,6 +109,15 @@
 				this.observe('testResults', (testResults) => {
 					this.set('preparedTestResults', this.combineResults(testResults));
 				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.observe('preparedTestResults', (preparedTestResults) => {
+					// set results block height based on content
+					this.setResultsBlockHeight(preparedTestResults);
+				});
+
 			}
 		},
 		oncomplete () {
@@ -187,6 +198,16 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+		setResultsBlockHeight (results) {
+			requestAnimationFrame(() => {
+				let listWrapperEl = document.querySelector('.results-table-wrapper');
+				let itemsAmount = results.length;
+				let listElScrollHeight = listWrapperEl.scrollHeight;
+				let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
+
+				listWrapperEl.style.height = `${itemsAmount < 8 ? avgItemElHeight * itemsAmount : avgItemElHeight * 8}px`;
+			});
 		},
 	};
 </script>
