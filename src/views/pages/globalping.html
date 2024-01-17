@@ -492,7 +492,8 @@
 								testResults="{{testResults[activeTargetIdx]}}"
 								testInProgress="{{testInProgress}}"
 								scrolledToResIdx="{{scrolledToResIdx}}"
-								currSearchLocation="{{mainOptions.location}}">
+								currSearchLocation="{{mainOptions.location}}"
+								targetsMeasReqIds="{{targetsMeasReqIds}}">
 							</c-gp-results-raw-output>
 						</div>
 					{{else}}
@@ -501,7 +502,8 @@
 							testInProgress="{{testInProgress}}"
 							testResults="{{testResults}}"
 							targetsCnt="{{targetsCnt}}"
-							currSearchLocation="{{mainOptions.location}}">
+							currSearchLocation="{{mainOptions.location}}"
+							targetsMeasReqIds="{{targetsMeasReqIds}}">
 						</c-gp-results-table-output>
 					{{/if}}
 				</div>
@@ -1263,6 +1265,7 @@
 				activeTargetIdx: 0,
 				rawOutputMode: true,
 				targetsCnt: null,
+				targetsMeasReqIds: [],
 			};
 		},
 		onrender () {
@@ -1553,6 +1556,8 @@
 			this.set('realTimeTestResResponse', null);
 			this.set('rawOutputMode', true);
 			this.set('activeTargetIdx', 0);
+			this.set('targetsCnt', null);
+			this.set('targetsMeasReqIds', []);
 
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				this.set('targetsArr', targetsArr);
@@ -2004,6 +2009,8 @@
 
 					// set testReqParams to pass them to c-gp-results-raw-output
 					this.set('testReqParams', testReqParams);
+					// collect IDs of each target's measurement response
+					this.push('targetsMeasReqIds', testReqParams.id);
 
 					// should be after the mainOptions.type was set
 					this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
