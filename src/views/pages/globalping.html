@@ -493,7 +493,7 @@
 								testInProgress="{{testInProgress}}"
 								scrolledToResIdx="{{scrolledToResIdx}}"
 								currSearchLocation="{{mainOptions.location}}"
-								targetsMeasReqIds="{{targetsMeasReqIds}}">
+								measurementsMetadata="{{measurementsMetadata}}">
 							</c-gp-results-raw-output>
 						</div>
 					{{else}}
@@ -503,7 +503,7 @@
 							testResults="{{testResults}}"
 							targetsCnt="{{targetsCnt}}"
 							currSearchLocation="{{mainOptions.location}}"
-							targetsMeasReqIds="{{targetsMeasReqIds}}">
+							measurementsMetadata="{{measurementsMetadata}}">
 						</c-gp-results-table-output>
 					{{/if}}
 				</div>
@@ -1254,7 +1254,6 @@
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
-				measurementId: null,
 				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
 				shareResHeaderData: null,
@@ -1265,7 +1264,7 @@
 				activeTargetIdx: 0,
 				rawOutputMode: true,
 				targetsCnt: null,
-				targetsMeasReqIds: [],
+				measurementsMetadata: null,
 			};
 		},
 		onrender () {
@@ -1282,15 +1281,16 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// check if id is present in query string
-				// if so - should be a share-results-flow logic implemented
+				// check if ids are present in query string
+				// if so - it is a share-results-flow
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
-				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let { measurement = '' } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let qsMeasurementIdsArr = measurement.split(',');
 
-				if (measurementId) {
-					this.set('measurementId', measurementId);
+				if (qsMeasurementIdsArr.length) {
+					this.set('qsMeasurementIdsArr', qsMeasurementIdsArr);
 					this.set('shareResFlow', true);
-					this.getTestMeasurementById(measurementId, 0, true);
+					qsMeasurementIdsArr.forEach(id => this.getTestMeasurementById(id, 0, true));
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -1298,8 +1298,8 @@
 
 				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
-					// if measurementId - share-results-flow, so type would be set, we should ignore this case
-					if (this.get('measurementId')) {
+					// if qsMeasurementIdsArr - share-results-flow, so type would be set, we should ignore this case
+					if (this.get('qsMeasurementIdsArr').length) {
 						return;
 					}
 
@@ -1557,7 +1557,7 @@
 			this.set('rawOutputMode', true);
 			this.set('activeTargetIdx', 0);
 			this.set('targetsCnt', null);
-			this.set('targetsMeasReqIds', []);
+			this.set('measurementsMetadata', null);
 
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				this.set('targetsArr', targetsArr);
@@ -1958,6 +1958,7 @@
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
+						// TODO: 592 handle this flow
 						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 						this.set('mainOptions.targets', testRes.target);
@@ -1985,8 +1986,8 @@
 						this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
 						this.applyOptions();
 
-						// clear measurementId so the mainOptions.type observer could work now
-						this.set('measurementId', null);
+						// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
+						this.set('qsMeasurementIdsArr', null);
 					}
 
 					// prepare and set request params to pass them to gp-test-results
@@ -2010,7 +2011,7 @@
 					// set testReqParams to pass them to c-gp-results-raw-output
 					this.set('testReqParams', testReqParams);
 					// collect IDs of each target's measurement response
-					this.push('targetsMeasReqIds', testReqParams.id);
+					this.set(`measurementsMetadata[${resNumber}]`, { target: testReqParams.target, measurementId: testReqParams.id });
 
 					// should be after the mainOptions.type was set
 					this.set(`realTimeTestResResponse[${resNumber}]`, testRes);

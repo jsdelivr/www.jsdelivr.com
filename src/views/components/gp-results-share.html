@@ -61,7 +61,7 @@
 			if (urlFlow) {
 				// return URL
 				let origin = this.get('@global.location.origin');
-				let testResultsIdStr = this.get('targetsMeasReqIds').join(',');
+				let testResultsIdStr = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join(',');
 
 				return `${origin}/globalping?measurement=${testResultsIdStr}`;
 			}
