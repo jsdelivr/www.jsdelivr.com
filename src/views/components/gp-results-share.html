@@ -22,10 +22,10 @@
 
 	<div class="c-gp-results-share_content">
 		<div id="share-res-text">
-			{{shareResultsText}}
+			{{shareResTextToDisplay}}
 		</div>
 
-		<button as-clipboard data-clipboard-text="{{shareResultsText}}">
+		<button as-clipboard data-clipboard-text="{{shareResTextToCopy}}">
 			<img width="20"
 				height="20"
 				src="{{@shared.assetsHost}}/img/globalping/copy-icon-black.svg">
@@ -51,9 +51,10 @@
 			if (!Ractive.isServer) {
 				// check shareRes state and create URL or CLI cmd respectively
 				this.observe('shareResultsAsURL', (shareResultsAsURL) => {
-					let shareResultsText = this.createShareResText(shareResultsAsURL);
+					let { shareResTextToDisplay, shareResTextToCopy } = this.createShareResText(shareResultsAsURL);
 
-					this.set('shareResultsText', shareResultsText);
+					this.set('shareResTextToDisplay', shareResTextToDisplay);
+					this.set('shareResTextToCopy', shareResTextToCopy);
 				});
 			}
 		},
@@ -61,9 +62,13 @@
 			if (urlFlow) {
 				// return URL
 				let origin = this.get('@global.location.origin');
-				let testResultsIdStr = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join(',');
+				let textToDisplay = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join(',');
+				let textToCopy = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join('%2C');
 
-				return `${origin}/globalping?measurement=${testResultsIdStr}`;
+				return {
+					shareResTextToDisplay: `${origin}/globalping?measurement=${textToDisplay}`,
+					shareResTextToCopy: `${origin}/globalping?measurement=${textToCopy}`,
+				};
 			}
 
 			// return CLI cmd
