@@ -1285,12 +1285,14 @@
 				// if so - it is a share-results-flow
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
 				let { measurement = '' } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
-				let qsMeasurementIdsArr = measurement.split(',');
+				let qsMeasurementIdsArr = measurement.split('%2C');
 
 				if (qsMeasurementIdsArr.length) {
 					this.set('qsMeasurementIdsArr', qsMeasurementIdsArr);
 					this.set('shareResFlow', true);
-					qsMeasurementIdsArr.forEach(id => this.getTestMeasurementById(id, 0, true));
+					qsMeasurementIdsArr.forEach((id, idIdx, idsArr) => {
+						this.getTestMeasurementById(id, idIdx, true, (idsArr.length - 1 === idIdx));
+					});
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -1954,40 +1956,46 @@
 
 			el.scrollIntoView({ behvior: 'smooth' });
 		},
-		getTestMeasurementById (measurementId, resNumber = '0', isShareResCase = false) {
+		getTestMeasurementById (measurementId, resNumber = '0', isShareResCase = false, isLastShareReq = false) {
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
-						// TODO: 592 handle this flow
-						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-						this.set('mainOptions.targets', testRes.target);
-						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
-						this.set('runTestBtnText', 'Run Again');
+						let currTargets = this.get('mainOptions.targets');
 
-						let magicValue = testRes.locations.reduce((res, loc) => {
-							if (loc.magic) {
-								res += res.length ? `, ${loc.magic}` : loc.magic;
+						// TODO: 592, it is broken now
+						this.set('mainOptions.targets', `${currTargets}, ${testRes.target}`);
+
+						if (isLastShareReq) {
+							// TODO: 592, something is missing, targets list for the table-output etc. check it
+							this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+							this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+							this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+
+							let magicValue = testRes.locations.reduce((res, loc) => {
+								if (loc.magic) {
+									res += res.length ? `, ${loc.magic}` : loc.magic;
+
+									return res;
+								}
 
 								return res;
-							}
+							}, '');
 
-							return res;
-						}, '');
+							this.set('mainOptions.location', magicValue);
 
-						this.set('mainOptions.location', magicValue);
+							let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
+							let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
+							let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
+							let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
 
-						let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
-						let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
-						let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
-						let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
+							this.set('notAppliedOpts', receivedNotPresetOpts);
+							this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
+							this.applyOptions();
 
-						this.set('notAppliedOpts', receivedNotPresetOpts);
-						this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
-						this.applyOptions();
-
-						// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
-						this.set('qsMeasurementIdsArr', null);
+							// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
+							this.set('runTestBtnText', 'Run Again');
+							this.set('qsMeasurementIdsArr', null);
+						}
 					}
 
 					// prepare and set request params to pass them to gp-test-results
