@@ -10,7 +10,7 @@
 			{{/if}}
 
 			<div class="results-table_column_header">Quality</div>
-			<div class="results-table_column_header">rtt min /avg / max</div>
+			<div class="results-table_column_header">rtt last / min /avg / max</div>
 			<div class="results-table_column_header">IP</div>
 			<div class="results-table_column_header">Graph</div>
 
@@ -58,8 +58,8 @@
 				<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
-							<span class="results-table_column_rtt_value_header">rtt min / avg / max</span>
-							<span>{{this.minTimings}} / {{this.avgTimings}} / {{this.maxTimings}} ms</span>
+							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
+							<span>{{this.lastTiming}} / {{this.minTiming}} / {{this.avgTiming}} / {{this.maxTiming}} ms</span>
 						</div>
 					{{/each}}
 				</div>
@@ -164,9 +164,10 @@
 						statsPerProbes: [{
 							target: res.target,
 							ipAddr: res.result.resolvedAddress,
-							minTimings: res.result.stats.min,
-							avgTimings: res.result.stats.avg,
-							maxTimings: res.result.stats.max,
+							lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
+							minTiming: res.result.stats.min,
+							avgTiming: res.result.stats.avg,
+							maxTiming: res.result.stats.max,
 							statsTotal: res.result.stats.total,
 							statsLoss: res.result.stats.loss,
 						}],
@@ -184,9 +185,10 @@
 								{
 									target: nextReqRes.target,
 									ipAddr: nextReqRes.result.resolvedAddress,
-									minTimings: nextReqRes.result.stats.min,
-									avgTimings: nextReqRes.result.stats.avg,
-									maxTimings: nextReqRes.result.stats.max,
+									lastTiming: nextReqRes.result.timings[nextReqRes.result.timings.length - 1].rtt,
+									minTiming: nextReqRes.result.stats.min,
+									avgTiming: nextReqRes.result.stats.avg,
+									maxTiming: nextReqRes.result.stats.max,
 									statsTotal: nextReqRes.result.stats.total,
 									statsLoss: nextReqRes.result.stats.loss,
 								},
