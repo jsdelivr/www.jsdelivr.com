@@ -1963,10 +1963,11 @@
 			let testReqInterval = setInterval(() => {
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
-						let currTargets = this.get('mainOptions.targets');
-						let targetsVal = currTargets ? `${currTargets},${testRes.target}` : testRes.target;
+						let currentTargets = this.get('mainOptions.targets');
+						let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
+						let updTargetsArr = currTargetsArr.indexOf(testRes.target) < 0 ? [ ...currTargetsArr, testRes.target ] : currTargetsArr;
 
-						this.set('mainOptions.targets', targetsVal);
+						this.set('mainOptions.targets', updTargetsArr.join(','));
 
 						if (isLastShareReq) {
 							this.set('targetsCnt', resNumber + 1);

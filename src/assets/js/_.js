@@ -1370,4 +1370,14 @@ module.exports = {
 			left: box.left + window.scrollX - docElem.clientLeft,
 		};
 	},
+
+	removeDuplicatedTargets (arr) {
+		return arr.reduce((uniquesArr, item) => {
+			if (uniquesArr.indexOf(item) < 0) {
+				uniquesArr.push(item);
+			}
+
+			return uniquesArr;
+		}, []);
+	},
 };
