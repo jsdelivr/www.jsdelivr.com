@@ -140,9 +140,7 @@
 				this.observe('value', (value) => {
 					if (value) {
 						let clonedInputEl = document.querySelector('.choices__input.choices__input--cloned');
-						let currChoicesValuesArr = choicesInst.getValue(true);
-						let currChoicesVal = this.removeDuplicatedTargets(currChoicesValuesArr).join(',');
-						let clonedInputVal = clonedInputEl.value;
+						let currChoicesVal = choicesInst.getValue(true).join(',');
 						let newVal = value.replace(currChoicesVal, '').replace(',', '');
 
 						if (newVal) {
@@ -153,15 +151,6 @@
 					}
 				});
 			}
-		},
-		removeDuplicatedTargets (arr) {
-			return arr.reduce((uniquesArr, item) => {
-				if (uniquesArr.indexOf(item) < 0) {
-					uniquesArr.push(item);
-
-					return uniquesArr;
-				}
-			}, []);
 		},
 	};
 </script>
