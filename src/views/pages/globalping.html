@@ -1292,6 +1292,7 @@
 					this.set('shareResFlow', true);
 
 					qsMeasurementIdsArr.forEach((id, idIdx, idsArr) => {
+						// TODO: 592, currently these requests may be executed out of sequence, this leads to incorrect tags display
 						this.getTestMeasurementById(id, idIdx, true, idsArr.length - 1 === idIdx);
 					});
 				}
@@ -1365,7 +1366,7 @@
 
 				// zoom to results once we get the first response
 				this.observe('realTimeTestResResponse', (responses, prevResponses) => {
-					if (!prevResponses && responses && responses.every(r => r.results.length)) {
+					if (!prevResponses && responses && responses.every(r => r.results.length) && responses[0]) {
 						this.zoomToResults(responses[0].locations);
 					}
 				}, { init: false });
@@ -1412,6 +1413,7 @@
 				}, { init: false });
 
 				// prepare data for Markers of the map, timings for the map scale
+				//- TODO: 592 check this observer, it cause an error 'markersData is undefined' from time to time, when there is more than 1 target
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
@@ -1962,9 +1964,9 @@
 				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 					if (isShareResCase) {
 						let currTargets = this.get('mainOptions.targets');
+						let targetsVal = currTargets ? `${currTargets},${testRes.target}` : testRes.target;
 
-						// TODO: 592, it is broken now
-						this.set('mainOptions.targets', `${currTargets}, ${testRes.target}`);
+						this.set('mainOptions.targets', targetsVal);
 
 						if (isLastShareReq) {
 							this.set('targetsCnt', resNumber + 1);

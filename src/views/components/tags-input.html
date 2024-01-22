@@ -95,6 +95,7 @@
 					addItemText: '',
 					placeholder: !this.get('value'),
 					placeholderValue: this.get('placeholder'),
+					duplicateItemsAllowed: false,
 					//	TODO: 592 it seems there is no built-in way to alter the behavior of the ChoiceJS and add tags on Tab key for example
 					//	maybe it is possible to alter it via native JS and block adding tags via addItemFilter?
 					//	addItemFilter: (value) => {
@@ -135,7 +136,32 @@
 						clonedInputEl.placeholder = '';
 					}
 				});
+
+				this.observe('value', (value) => {
+					if (value) {
+						let clonedInputEl = document.querySelector('.choices__input.choices__input--cloned');
+						let currChoicesValuesArr = choicesInst.getValue(true);
+						let currChoicesVal = this.removeDuplicatedTargets(currChoicesValuesArr).join(',');
+						let clonedInputVal = clonedInputEl.value;
+						let newVal = value.replace(currChoicesVal, '').replace(',', '');
+
+						if (newVal) {
+							choicesInst.setValue([ newVal ]);
+							clonedInputEl.value = '';
+							clonedInputEl.placeholder = '';
+						}
+					}
+				});
 			}
+		},
+		removeDuplicatedTargets (arr) {
+			return arr.reduce((uniquesArr, item) => {
+				if (uniquesArr.indexOf(item) < 0) {
+					uniquesArr.push(item);
+
+					return uniquesArr;
+				}
+			}, []);
 		},
 	};
 </script>
