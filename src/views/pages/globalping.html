@@ -1291,10 +1291,7 @@
 					this.set('qsMeasurementIdsArr', qsMeasurementIdsArr);
 					this.set('shareResFlow', true);
 
-					qsMeasurementIdsArr.forEach((id, idIdx, idsArr) => {
-						// TODO: 592, currently these requests may be executed out of sequence, this leads to incorrect tags display
-						this.getTestMeasurementById(id, idIdx, true, idsArr.length - 1 === idIdx);
-					});
+					this.getMultipleTestMeasurementById(qsMeasurementIdsArr);
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -1960,85 +1957,91 @@
 			el.scrollIntoView({ behvior: 'smooth' });
 		},
 		getTestMeasurementById (measurementId, resNumber = '0', isShareResCase = false, isLastShareReq = false) {
-			let testReqInterval = setInterval(() => {
-				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
-					if (isShareResCase) {
-						let currentTargets = this.get('mainOptions.targets');
-						let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
-						let updTargetsArr = currTargetsArr.indexOf(testRes.target) < 0 ? [ ...currTargetsArr, testRes.target ] : currTargetsArr;
+			return new Promise((resolve, reject) => {
+				let testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+						if (isShareResCase) {
+							let currentTargets = this.get('mainOptions.targets');
+							let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
+							let updTargetsArr = currTargetsArr.indexOf(testRes.target) < 0 ? [ ...currTargetsArr, testRes.target ] : currTargetsArr;
 
-						this.set('mainOptions.targets', updTargetsArr.join(','));
+							this.set('mainOptions.targets', updTargetsArr.join(','));
 
-						if (isLastShareReq) {
-							this.set('targetsCnt', resNumber + 1);
-							this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-							this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-							this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+							if (isLastShareReq) {
+								this.set('targetsCnt', resNumber + 1);
+								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
-							let magicValue = testRes.locations.reduce((res, loc) => {
-								if (loc.magic) {
-									res += res.length ? `, ${loc.magic}` : loc.magic;
+								let magicValue = testRes.locations.reduce((res, loc) => {
+									if (loc.magic) {
+										res += res.length ? `, ${loc.magic}` : loc.magic;
+
+										return res;
+									}
 
 									return res;
-								}
+								}, '');
 
-								return res;
-							}, '');
+								this.set('mainOptions.location', magicValue);
 
-							this.set('mainOptions.location', magicValue);
+								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
+								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
+								let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
+								let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
 
-							let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
-							let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
-							let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
-							let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
+								this.set('notAppliedOpts', receivedNotPresetOpts);
+								this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
+								this.applyOptions();
 
-							this.set('notAppliedOpts', receivedNotPresetOpts);
-							this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
-							this.applyOptions();
-
-							// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
-							this.set('runTestBtnText', 'Run Again');
-							this.set('qsMeasurementIdsArr', null);
+								// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
+								this.set('runTestBtnText', 'Run Again');
+								this.set('qsMeasurementIdsArr', null);
+							}
 						}
-					}
 
-					// prepare and set request params to pass them to gp-test-results
-					let testReqParams = JSON.parse(JSON.stringify(testRes));
+						// prepare and set request params to pass them to gp-test-results
+						let testReqParams = JSON.parse(JSON.stringify(testRes));
 
-					delete testReqParams.results;
-					delete testReqParams.status;
-					delete testReqParams.updatedAt;
-					delete testReqParams.createdAt;
+						delete testReqParams.results;
+						delete testReqParams.status;
+						delete testReqParams.updatedAt;
+						delete testReqParams.createdAt;
 
-					testReqParams = {
-						inProgressUpdates: true,
-						limit: DEFAULT_LIMIT,
-						...testReqParams,
-						measurementOptions: {
-							trace: false,
-							...testReqParams.measurementOptions,
-						},
-					};
+						testReqParams = {
+							inProgressUpdates: true,
+							limit: DEFAULT_LIMIT,
+							...testReqParams,
+							measurementOptions: {
+								trace: false,
+								...testReqParams.measurementOptions,
+							},
+						};
 
-					// set testReqParams to pass them to c-gp-results-raw-output
-					this.set('testReqParams', testReqParams);
-					// collect IDs of each target's measurement response
-					this.set(`measurementsMetadata[${resNumber}]`, { target: testReqParams.target, measurementId: testReqParams.id });
+						// set testReqParams to pass them to c-gp-results-raw-output
+						this.set('testReqParams', testReqParams);
+						// collect IDs of each target's measurement response
+						this.set(`measurementsMetadata[${resNumber}]`, { target: testReqParams.target, measurementId: testReqParams.id });
 
-					// should be after the mainOptions.type was set
-					this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
-				}).catch((e) => {
-					clearInterval(testReqInterval);
+						// should be after the mainOptions.type was set
+						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
 
-					if (e.message === '404') {
-						this.set('shareResHeaderData', 'This measurement has expired!');
-						this.set('runTestBtnText', 'Run Test');
-						this.scrollMapIntoView();
-					}
-				});
-			}, 1000);
+						resolve(testRes);
+					}).catch((e) => {
+						clearInterval(testReqInterval);
 
-			this.set(`testReqInterval[${resNumber}]`, testReqInterval);
+						if (e.message === '404') {
+							this.set('shareResHeaderData', 'This measurement has expired!');
+							this.set('runTestBtnText', 'Run Test');
+							this.scrollMapIntoView();
+						}
+
+						reject(e);
+					});
+				}, 1000);
+
+				this.set(`testReqInterval[${resNumber}]`, testReqInterval);
+			});
 		},
 		handleProbesResponse (isStored) {
 			return (response) => {
@@ -2413,6 +2416,15 @@
 			});
 
 			return marker;
+		},
+		async getMultipleTestMeasurementById (idsArr) {
+			try {
+				for (let i = 0; i < idsArr.length; i++) {
+					await this.getTestMeasurementById(idsArr[i], i, true, idsArr.length - 1 === i);
+				}
+			} catch (e) {
+				console.error('TODO: 592 - getMultipleTestMeasurementById error:', e);
+			}
 		},
 	};
 </script>
