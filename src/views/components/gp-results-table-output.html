@@ -16,7 +16,7 @@
 
 			{{#each preparedTestResults:resIdx}}
 				<div class="results-table_column results-table_column_location row-num-{{resIdx}}">
-					<span class="results-table_column_location_status-line"></span>
+					<span class="results-table_column_location_status-line {{@this.getStatusLineColorClass(this)}}"></span>
 
 					<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
@@ -96,6 +96,7 @@
 </div>
 
 <script>
+	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
 
 	component.exports = {
@@ -157,27 +158,38 @@
 		},
 		combineResults (results) {
 			return results.reduce((prepResults, resArr, resArrIdx) => {
+				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+
 				if (resArrIdx === 0) {
-					return resArr.map(res => ({
-						clientSideId: res.clientSideId,
-						...res.probe,
-						statsPerProbes: [{
-							target: res.target,
-							ipAddr: res.result.resolvedAddress,
-							lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
-							minTiming: res.result.stats.min,
-							avgTiming: res.result.stats.avg,
-							maxTiming: res.result.stats.max,
-							statsTotal: res.result.stats.total,
-							statsLoss: res.result.stats.loss,
-						}],
-					}));
+					return resArr.map(res => {
+						let { isFailed = false } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+
+						// TODO: 592, handle timing values for time-out/failed cases
+						return {
+							clientSideId: res.clientSideId,
+							...res.probe,
+							statsPerProbes: [{
+								target: res.target,
+								ipAddr: res.result.resolvedAddress,
+								lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
+								minTiming: res.result.stats.min,
+								avgTiming: res.result.stats.avg,
+								maxTiming: res.result.stats.max,
+								statsTotal: res.result.stats.total,
+								statsLoss: res.result.stats.loss,
+								isFailed,
+							}],
+						};
+					});
 				}
 
 				return prepResults.map((pR) => {
 					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
 
 					if (nextReqRes) {
+						let { isFailed = false } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+
+						// TODO: 592, handle timing values for time-out/failed cases
 						return {
 							...pR,
 							statsPerProbes: [
@@ -185,12 +197,13 @@
 								{
 									target: nextReqRes.target,
 									ipAddr: nextReqRes.result.resolvedAddress,
-									lastTiming: nextReqRes.result.timings[nextReqRes.result.timings.length - 1].rtt,
+									lastTiming: nextReqRes.result.timings[nextReqRes.result.timings.length - 1] ? nextReqRes.result.timings[nextReqRes.result.timings.length - 1].rtt : 0,
 									minTiming: nextReqRes.result.stats.min,
 									avgTiming: nextReqRes.result.stats.avg,
 									maxTiming: nextReqRes.result.stats.max,
 									statsTotal: nextReqRes.result.stats.total,
 									statsLoss: nextReqRes.result.stats.loss,
+									isFailed,
 								},
 							],
 						};
@@ -212,6 +225,15 @@
 
 				listWrapperEl.style.height = `${itemsAmount < 8 ? avgItemElHeight * itemsAmount : avgItemElHeight * 8}px`;
 			});
+		},
+		getStatusLineColorClass (probesData) {
+			if (probesData.statsPerProbes.every(s => s.isFailed === false)) {
+				return 'success';
+			} else if (probesData.statsPerProbes.every(s => s.isFailed === true)) {
+				return 'failed';
+			}
+
+			return 'some-failed';
 		},
 	};
 </script>
