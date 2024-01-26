@@ -501,7 +501,7 @@
 							testReqParams="{{testReqParams}}"
 							testInProgress="{{testInProgress}}"
 							testResults="{{testResults}}"
-							targetsCnt="{{targetsCnt}}"
+							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}">
 						</c-gp-results-table-output>
@@ -1263,8 +1263,8 @@
 				shareResFlow: false,
 				activeTargetIdx: 0,
 				rawOutputMode: true,
-				targetsCnt: null,
 				measurementsMetadata: null,
+				targetsArr: [],
 			};
 		},
 		onrender () {
@@ -1384,7 +1384,7 @@
 					}, {});
 
 					// check respStatuses and handle the case when all requests are finished
-					if (Object.values(respStatuses).length === this.get('targetsCnt') && Object.values(respStatuses).every(s => s === true)) {
+					if (Object.values(respStatuses).length === this.get('targetsArr').length && Object.values(respStatuses).every(s => s === true)) {
 						this.set('testInProgress', false);
 
 						// if it is a share-results-flow - scroll mapBlock into the view
@@ -1416,7 +1416,7 @@
 
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
-					let targetsCnt = this.get('targetsCnt');
+					let targetsCnt = this.get('targetsArr').length;
 
 					let mDPerReq = testResults.reduce((mData, tr, trIdx) => {
 						if (!tr || !tr.length) {
@@ -1558,12 +1558,10 @@
 			this.set('realTimeTestResResponse', null);
 			this.set('rawOutputMode', true);
 			this.set('activeTargetIdx', 0);
-			this.set('targetsCnt', null);
 			this.set('measurementsMetadata', null);
 
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				this.set('targetsArr', targetsArr);
-				this.set('targetsCnt', targetsArr.length);
 
 				if (targetsArr[1]) {
 					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
@@ -1968,7 +1966,6 @@
 							this.set('mainOptions.targets', updTargetsArr.join(','));
 
 							if (isLastShareReq) {
-								this.set('targetsCnt', resNumber + 1);
 								this.set('targetsArr', updTargetsArr);
 								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
@@ -2305,7 +2302,7 @@
 			// create svg to use as a Marker icon
 			let svg;
 			let svgFillColors = [];
-			let targetsCnt = this.get('targetsCnt');
+			let targetsCnt = this.get('targetsArr').length;
 
 			for (let i = 0; i < targetsCnt; i++) {
 				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
