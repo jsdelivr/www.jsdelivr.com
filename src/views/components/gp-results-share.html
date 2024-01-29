@@ -59,11 +59,13 @@
 			}
 		},
 		createShareResText (urlFlow = true) {
+			let measurementsMetadata = this.get('measurementsMetadata');
+
 			if (urlFlow) {
 				// return URL
 				let origin = this.get('@global.location.origin');
-				let textToDisplay = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join(',');
-				let textToCopy = Object.values(this.get('measurementsMetadata')).map(v => v.measurementId).join('%2C');
+				let textToDisplay = Object.values(measurementsMetadata).map(v => v.measurementId).join(',');
+				let textToCopy = Object.values(measurementsMetadata).map(v => v.measurementId).join('%2C');
 
 				return {
 					shareResTextToDisplay: `${origin}/globalping?measurement=${textToDisplay}`,
@@ -72,9 +74,18 @@
 			}
 
 			// return CLI cmd
-			return this.createCliCommand(this.get('testReqParams'));
+			return this.createCliCommand(this.get('testReqParams'), measurementsMetadata);
 		},
-		createCliCommand (params) {
+		createCliCommand (params, measurementsMetadata) {
+			let targetsCnt = Object.values(measurementsMetadata).map(v => v.target).length;
+
+			if (targetsCnt >= 2) {
+				return {
+					shareResTextToDisplay: 'Not supported yet',
+					shareResTextToCopy: 'Not supported yet',
+				};
+			}
+
 			let cmd = Object.keys(params).reduce((cmd, key) => {
 				// test type part
 				if (key === 'type') {
