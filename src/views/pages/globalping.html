@@ -2019,8 +2019,17 @@
 
 						// set testReqParams to pass them to c-gp-results-raw-output
 						this.set('testReqParams', testReqParams);
+
 						// collect IDs of each target's measurement response
-						this.set(`measurementsMetadata[${resNumber}]`, { target: testReqParams.target, measurementId: testReqParams.id });
+						let updMeasMetadata = {
+							...this.get('measurementsMetadata'),
+							[resNumber]: {
+								target: testReqParams.target,
+								measurementId: testReqParams.id,
+							},
+						};
+
+						this.set('measurementsMetadata', updMeasMetadata);
 
 						// should be after the mainOptions.type was set
 						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
