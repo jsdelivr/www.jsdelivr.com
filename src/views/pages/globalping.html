@@ -1507,6 +1507,7 @@
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 			let targetsArr = targets.split(',');
+			let runInfiniteMeasurement = this.get('runInfiniteMeasurement');
 
 			// create parameters for the measurement request
 			let reqParams = {
@@ -1558,10 +1559,19 @@
 			this.set('shareResFlow', false);
 			this.set('shareResHeaderData', null);
 			this.set('realTimeTestResResponse', null);
-			this.set('rawOutputMode', true);
+			// if it is infinite measurement then we should show TableOutput by default
+			this.set('rawOutputMode', type === 'ping' && runInfiniteMeasurement ? false : true);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
 
+			// run Infinite type of the measurement
+			if (type === 'ping' && runInfiniteMeasurement) {
+				this.postInfiniteGlobalpingMeasurement(reqParams, targetsArr[0]);
+
+				return;
+			}
+
+			// common type of the measurement
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				this.set('targetsArr', targetsArr);
 
@@ -1570,6 +1580,8 @@
 						this.getTestMeasurementById(res.id);
 						this.getTestMeasurementById(res1.id, 1);
 					}).catch((err) => {
+						this.set('testInProgress', false);
+						this.set('testFailed', true);
 						// TODO: 592
 						console.warn('Handle the second Measurement request err', err);
 					});
@@ -2432,9 +2444,41 @@
 				for (let i = 0; i < idsArr.length; i++) {
 					await this.getTestMeasurementById(idsArr[i], i, true, idsArr.length - 1 === i);
 				}
-			} catch (e) {
-				console.error('TODO: 592 - getMultipleTestMeasurementById error:', e);
+			} catch (err) {
+				// TODO: 592, handle errors properly
+				console.error('getMultipleTestMeasurementById err:', err);
 			}
+		},
+		postInfiniteGlobalpingMeasurement (reqParams, target) {
+			// TODO: 592, test var, remove it later
+			let isStopped = false;
+
+			let measIdx = 0;
+
+			try {
+				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
+					this.getTestMeasurementById(res.id, measIdx++);
+
+					// TODO: 592, test flow, remove it later
+					if (!isStopped) {
+						console.log("+++++ INFINITE STOPPED");
+						console.log("_________________________");
+						return;
+					} else {
+						console.log("+++++ INFINITE RUNS");
+						console.log("_________________________");
+						this.postInfiniteGlobalpingMeasurement(reqParams, target);
+					}
+				});
+			} catch (err) {
+				// TODO: 592, handle errors during Infinite measurement
+				console.warn("++++ postInfiniteGlobalpingMeasurement err", err);
+			}
+
+			// TODO: 592, test flow, remove it later
+			setTimeout(() => {
+				isStopped = true;
+			}, 8000);
 		},
 	};
 </script>
