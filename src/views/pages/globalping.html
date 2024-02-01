@@ -503,7 +503,8 @@
 							testResults="{{testResults}}"
 							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
-							measurementsMetadata="{{measurementsMetadata}}">
+							measurementsMetadata="{{measurementsMetadata}}"
+							infiniteMeasurement="{{runInfiniteMeasurement}}">
 						</c-gp-results-table-output>
 					{{/if}}
 				</div>
@@ -2449,36 +2450,22 @@
 				console.error('getMultipleTestMeasurementById err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement (reqParams, target) {
-			// TODO: 592, test var, remove it later
-			let isStopped = false;
-
-			let measIdx = 0;
-
+		postInfiniteGlobalpingMeasurement (reqParams, target, measIdx = 0, cnt = 0) {
 			try {
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
-					this.getTestMeasurementById(res.id, measIdx++);
+					this.getTestMeasurementById(res.id, measIdx);
 
-					// TODO: 592, test flow, remove it later
-					if (isStopped) {
-						console.log("+++++ INFINITE STOPPED");
-						console.log("_________________________");
+					// TODO: 592, test flow, remove it later (cnt variable too)
+					if (cnt > 8) {
 						return;
 					} else {
-						console.log("+++++ INFINITE RUNS");
-						console.log("_________________________");
-						this.postInfiniteGlobalpingMeasurement(reqParams, target);
+						this.postInfiniteGlobalpingMeasurement(reqParams, target, ++measIdx, ++cnt);
 					}
 				});
 			} catch (err) {
 				// TODO: 592, handle errors during Infinite measurement
 				console.warn("++++ postInfiniteGlobalpingMeasurement err", err);
 			}
-
-			// TODO: 592, test flow, remove it later
-			setTimeout(() => {
-				isStopped = true;
-			}, 8000);
 		},
 	};
 </script>
