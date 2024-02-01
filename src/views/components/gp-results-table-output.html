@@ -111,9 +111,17 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('testResults', (testResults) => {
-					console.log('++++ TABLE: testResults', testResults);
-					console.log('___________________');
-					// this.set('preparedTestResults', this.combineResults(testResults));
+					let testType = this.get('testReqParams.type');
+					let infiniteMeasurement = this.get('infiniteMeasurement');
+					let preparedTestResults;
+
+					if (testType === 'ping' && infiniteMeasurement) {
+						preparedTestResults = this.combineInfiniteResults(testResults);
+					} else {
+						preparedTestResults = this.combineResults(testResults);
+					}
+
+					this.set('preparedTestResults', preparedTestResults);
 				});
 			}
 		},
@@ -122,6 +130,8 @@
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
+					console.log("++++ preparedTestResults", preparedTestResults);
+					console.log("______________________________");
 				});
 			}
 		},
@@ -240,6 +250,39 @@
 			}
 
 			return 'some-failed';
+		},
+		combineInfiniteResults (results) {
+			//console.log("++++ results", results);
+			//console.log("++++ prevResults", prevResults);
+			//console.log("++++ combined", combined);
+			//console.log("___________________________");
+
+			return results.reduce((prepRes, resArr) => {
+				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+				let res = resArr[0];// temp
+				let { isFailed = false } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+				console.log("++++ res", res);
+				console.log("___________________________");
+
+				prepRes.push({
+					clientSideId: res.clientSideId,
+					...res.probe,
+					statsPerProbes: [{
+						target: res.target,
+						ipAddr: res.result.resolvedAddress,
+						// lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
+						lastTiming: 0,
+						minTiming: res.result.stats ? res.result.stats.min : 0,
+						avgTiming: res.result.stats ? res.result.stats.avg : 0,
+						maxTiming: res.result.stats ? res.result.stats.max : 0,
+						statsTotal: res.result.stats ? res.result.stats.total : 0,
+						statsLoss: res.result.stats ? res.result.stats.loss : 0,
+						isFailed,
+					}],
+				});
+
+				return prepRes;
+			}, []);
 		},
 	};
 </script>
