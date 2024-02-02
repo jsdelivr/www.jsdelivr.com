@@ -106,6 +106,7 @@
 		data () {
 			return {
 				preparedTestResults: [],
+				displayedRowsCnt: null,
 			};
 		},
 		oninit () {
@@ -127,41 +128,17 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				this.observe('preparedTestResults', (preparedTestResults) => {
+				this.observe('preparedTestResults', (preparedTestResults, prevValue = []) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
-					console.log("++++ preparedTestResults", preparedTestResults);
-					console.log("______________________________");
+					this.addMouseoverListenersToColumns(prevValue.length);
 				});
 			}
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
 				let tableEl = this.find('.c-gp-results-table-output .results-table');
-				let columns = tableEl.querySelectorAll('.results-table_column');
 				let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
-
-				columns.forEach((c) => {
-					c.addEventListener('mouseover', (e) => {
-						let rowNum;
-
-						e.currentTarget.classList.forEach((c) => {
-							if (c.includes('row-num-')) {
-								rowNum = c.replace('row-num-', '');
-							}
-						});
-
-						if (rowNum) {
-							let elToShow = document.querySelector(`.results-table_column_location.row-num-${rowNum} .results-table_column_location_actions_btn`);
-
-							allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
-
-							if (elToShow) {
-								elToShow.style.visibility = 'visible';
-							}
-						}
-					});
-				});
 
 				tableEl.addEventListener('mouseleave', () => {
 					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
@@ -252,20 +229,13 @@
 			return 'some-failed';
 		},
 		combineInfiniteResults (results) {
-			//console.log("++++ results", results);
-			//console.log("++++ prevResults", prevResults);
-			//console.log("++++ combined", combined);
-			//console.log("___________________________");
-
-			return results.reduce((prepRes, resArr) => {
+			return results.reduce((prepRes, resArr, resArIdx) => {
 				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
-				let res = resArr[0];// temp
+				let res = resArr[0];// TODO: 592, temp, here results should be combined too
 				let { isFailed = false } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
-				console.log("++++ res", res);
-				console.log("___________________________");
 
 				prepRes.push({
-					clientSideId: res.clientSideId,
+					clientSideId: resArIdx,
 					...res.probe,
 					statsPerProbes: [{
 						target: res.target,
@@ -283,6 +253,36 @@
 
 				return prepRes;
 			}, []);
+		},
+		addMouseoverListenersToColumns (rowIdx) {
+			requestAnimationFrame(() => {
+				let displayedRowsCnt = this.get('displayedRowsCnt');
+
+				if (displayedRowsCnt && displayedRowsCnt === rowIdx) {
+					return;
+				}
+
+				let tableEl = this.find('.c-gp-results-table-output .results-table');
+				let cells = tableEl.querySelectorAll(`.results-table_column.row-num-${rowIdx}`);
+				let actionEl = tableEl.querySelector(`.results-table_column.row-num-${rowIdx} .results-table_column_location_actions_btn`);
+
+				cells.forEach((c) => {
+					c.addEventListener('mouseover', (e) => {
+						let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
+
+						allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
+						actionEl.style.visibility = 'visible';
+					});
+				});
+
+				tableEl.addEventListener('mouseleave', () => {
+					let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
+
+					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
+				});
+
+				this.set('displayedRowsCnt', rowIdx);
+			});
 		},
 	};
 </script>
