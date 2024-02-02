@@ -131,7 +131,7 @@
 				this.observe('preparedTestResults', (preparedTestResults, prevValue = []) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
-					this.addMouseoverListenersToColumns(prevValue.length);
+					this.handleProbeRowActionBtn(prevValue.length);
 				});
 			}
 		},
@@ -254,17 +254,23 @@
 				return prepRes;
 			}, []);
 		},
-		addMouseoverListenersToColumns (rowIdx) {
-			requestAnimationFrame(() => {
-				let displayedRowsCnt = this.get('displayedRowsCnt');
+		handleProbeRowActionBtn (rowIdx) {
+			let displayedRowsCnt = this.get('displayedRowsCnt');
 
-				if (displayedRowsCnt && displayedRowsCnt === rowIdx) {
+			if (displayedRowsCnt && displayedRowsCnt === rowIdx) {
+				return;
+			}
+
+			let intervalId = setInterval(() => {
+				let tableEl = document.querySelector('.c-gp-results-table-output .results-table');
+				let cells = tableEl.querySelectorAll(`.results-table_column.row-num-${rowIdx}`);
+				let actionEl = tableEl.querySelector(`.results-table_column.row-num-${rowIdx} .results-table_column_location_actions_btn`);
+
+				if (!tableEl || !cells || !cells.length || !actionEl) {
 					return;
 				}
 
-				let tableEl = this.find('.c-gp-results-table-output .results-table');
-				let cells = tableEl.querySelectorAll(`.results-table_column.row-num-${rowIdx}`);
-				let actionEl = tableEl.querySelector(`.results-table_column.row-num-${rowIdx} .results-table_column_location_actions_btn`);
+				clearInterval(intervalId);
 
 				cells.forEach((c) => {
 					c.addEventListener('mouseover', (e) => {
@@ -282,7 +288,7 @@
 				});
 
 				this.set('displayedRowsCnt', rowIdx);
-			});
+			}, 4);
 		},
 	};
 </script>
