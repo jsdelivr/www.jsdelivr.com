@@ -1561,7 +1561,7 @@
 			this.set('shareResHeaderData', null);
 			this.set('realTimeTestResResponse', null);
 			// if it is infinite measurement then we should show TableOutput by default
-			this.set('rawOutputMode', type === 'ping' && runInfiniteMeasurement ? false : true);
+			this.set('rawOutputMode', !type === 'ping' || !runInfiniteMeasurement);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
 
@@ -2456,15 +2456,13 @@
 					this.getTestMeasurementById(res.id, measIdx);
 
 					// TODO: 592, test flow, remove it later (cnt variable too)
-					if (cnt > 13) {
-						return;
-					} else {
+					if (cnt < 13) {
 						this.postInfiniteGlobalpingMeasurement(reqParams, target, ++measIdx, ++cnt);
 					}
 				});
 			} catch (err) {
 				// TODO: 592, handle errors during Infinite measurement
-				console.warn("++++ postInfiniteGlobalpingMeasurement err", err);
+				console.warn('++++ postInfiniteGlobalpingMeasurement err', err);
 			}
 		},
 	};
