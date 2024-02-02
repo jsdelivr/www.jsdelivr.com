@@ -1565,6 +1565,8 @@
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
 
+			this.set('targetsArr', targetsArr);
+
 			// run Infinite type of the measurement
 			if (type === 'ping' && runInfiniteMeasurement) {
 				this.postInfiniteGlobalpingMeasurement(reqParams, targetsArr[0]);
@@ -1574,8 +1576,6 @@
 
 			// common type of the measurement
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
-				this.set('targetsArr', targetsArr);
-
 				if (targetsArr[1]) {
 					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
 						this.getTestMeasurementById(res.id);
@@ -2456,7 +2456,7 @@
 					this.getTestMeasurementById(res.id, measIdx);
 
 					// TODO: 592, test flow, remove it later (cnt variable too)
-					if (cnt > 8) {
+					if (cnt > 13) {
 						return;
 					} else {
 						this.postInfiniteGlobalpingMeasurement(reqParams, target, ++measIdx, ++cnt);
