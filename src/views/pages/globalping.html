@@ -2458,11 +2458,20 @@
 					// TODO: 592, test flow, remove it later (cnt variable too)
 					if (cnt < 13) {
 						this.postInfiniteGlobalpingMeasurement(reqParams, target, ++measIdx, ++cnt);
+					} else {
+						// TODO: 592, temp test solution
+						throw new Error('Infinite measurements have stopped because the user has run out of credits!')
 					}
+				}).catch ((err) => {
+					this.set('testInProgress', false);
+
+					// TODO: 592, handle errors during Infinite measurement
+					console.warn('++++ err', err);
 				});
 			} catch (err) {
+				this.set('testInProgress', false);
 				// TODO: 592, handle errors during Infinite measurement
-				console.warn('++++ postInfiniteGlobalpingMeasurement err', err);
+				console.warn('++++ err', err);
 			}
 		},
 	};
