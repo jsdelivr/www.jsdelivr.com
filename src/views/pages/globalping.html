@@ -2409,28 +2409,32 @@
 
 			// add Marker to OverlappingMarkerSpiderfier
 			oms.addMarker(marker, () => {
-				let infoWindowContent = '<div class="gp-map_popup"><div class="gp-map_popup_data">';
+				let infoWindowContent = '<div class="gp-map_popup">';
 
-				for (let cnt = 0; cnt < targetsCnt; cnt++) {
-					infoWindowContent += '<div class="gp-map_popup_data_item">';
+				infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
 
-					if (markerData.timings[cnt]) {
-						infoWindowContent += `<div class="gp-map_popup_data_item_timing">${markerData.timings[cnt]}</div>`;
-					}
+				if (targetsCnt === 1) {
+					infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0]}</div>`;
+					infoWindowContent += `<div class="gp-map_popup_single_network">${markerData.network}</div>`;
+					infoWindowContent += `<div class="gp-map_popup_single_location">(${markerData.city}, ${markerData.country})</div>`;
+				} else {
+					infoWindowContent += `<div class="gp-map_popup_multi_network">${markerData.network}</div>`;
+					infoWindowContent += `<div class="gp-map_popup_multi_location">(${markerData.city}, ${markerData.country})</div>`;
 
-					if (targetsCnt > 1 && markerData.targets[cnt]) {
-						infoWindowContent += `<div class="gp-map_popup_data_item_target">${markerData.targets[cnt]}</div>`;
-					}
-
-					infoWindowContent += `<div class="gp-map_popup_data_item_descr">${markerData.network}</div>
-						<div class="gp-map_popup_data_item_descr">(${markerData.city}, ${markerData.country})</div></div>`;
+					markerData.targets.forEach((target, targetIdx) => {
+						infoWindowContent += '<div class="gp-map_popup_multi_data">';
+						infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
+						infoWindowContent += `<span class="gp-map_popup_multi_data_timing">${markerData.timings[targetIdx]}</span>`;
+						infoWindowContent += '</div>';
+					});
 				}
 
-				infoWindowContent += `</div><div class="gp-map_popup_see-results ${targetsCnt > 1 ? 'centered' : ''}" id="iw-${currentMarkerIdx}">
-						<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-						<span>Results and Actions</span>
-					</div>
-				</div>`;
+				infoWindowContent += '</div>';
+				infoWindowContent += `<div class="gp-map_popup_see-results ${targetsCnt > 1 ? 'centered' : ''}" id="iw-${currentMarkerIdx}">`;
+				infoWindowContent += `<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">`;
+				infoWindowContent += '<span>Results and Actions</span>';
+				infoWindowContent += '</div>';
+				infoWindowContent += '</div>';
 
 				infoWindow.setContent(infoWindowContent);
 
