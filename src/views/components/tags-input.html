@@ -28,12 +28,23 @@
 
 	<div class="c-tags-input_tags-block">
 		<div class="c-tags-input_tags-block_tags-list">
+			{{#each tagsArr}}
+				<div class="c-tags-input_tags-block_tags-list_tag">
+					<span class="c-tags-input_tags-block_tags-list_tag_text">
+						{{this}}
+					</span>
 
+					<img class="c-tags-input_tags-block_tags-list_tag_close-icon"
+						width="16"
+						height="16"
+						src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
+				</div>
+			{{/each}}
 		</div>
 
 		<input
 			{{#if id}}id="{{id}}"{{/if}}
-			value="{{value}}"
+			value="{{inputValue}}"
 			type="text"
 			placeholder="{{placeholder}}"
 			class="{{#if error}}has-error{{/if}}">
@@ -53,6 +64,10 @@
 			return {
 				invalidValue: null,
 				errMsgTopPos: false,
+				inputValue: '',
+				valuesDelimiter: ',',
+				maxTagsAllowed: 2,
+				tagsArr: [],
 			};
 		},
 		oninit () {
@@ -77,6 +92,14 @@
 						this.set('errMsgTopPos', false);
 					}
 				});
+
+				this.observe('value', (value) => {
+					let valuesDelimiter = this.get('valuesDelimiter');
+
+					if (value) {
+						this.set('tagsArr', value.split(valuesDelimiter));
+					}
+				});
 			}
 		},
 		onrender () {
@@ -89,18 +112,36 @@
 				let targetInputEl = this.find(`#${targetInputId}`);
 
 				targetInputEl.addEventListener('keydown', (e) => {
-					if (e.key === "Enter") {
-						// TODO: 592 add input's value as tag, clear the value and pass event through, GP will call a measurement test
-						console.log("+++++ ENTER PRESSED");
-					} else if (e.key === "Tab" || e.key === " " || e.key === ",") {
-						console.log("+++++ TAB PRESSED");
-						// TODO: 592 add input's value as tag, clear the value, check amount of tags, etc.
+					if (e.key === "Enter" || e.key === "Tab" || e.key === " " || e.key === ",") {
+						this.addTag();
 
 						if (e.key === "Tab") {
 							e.preventDefault();
 						}
+
+						if (e.key === "Tab" || e.key === " " || e.key === ",") {
+							e.stopPropagation();
+						}
 					}
 				});
+			}
+		},
+		addTag () {
+			let inputValue = this.get('inputValue');
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let maxTagsAllowed = this.get('maxTagsAllowed');
+			let tagsArr = this.get('tagsArr');
+
+			if (tagsArr.length < maxTagsAllowed) {
+				if (!tagsArr.includes(inputValue) && inputValue) {
+					tagsArr.push(inputValue);
+
+					this.set('value', tagsArr.join(valuesDelimiter));
+				}
+
+				this.set('inputValue', '');
+			} else {
+				// TODO: 592 should we show somekind of message that tags are limited?
 			}
 		},
 	};
