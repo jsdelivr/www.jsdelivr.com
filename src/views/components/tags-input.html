@@ -85,7 +85,22 @@
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
+				let targetInputId = this.get('id');
+				let targetInputEl = this.find(`#${targetInputId}`);
 
+				targetInputEl.addEventListener('keydown', (e) => {
+					if (e.key === "Enter") {
+						// TODO: 592 add input's value as tag, clear the value and pass event through, GP will call a measurement test
+						console.log("+++++ ENTER PRESSED");
+					} else if (e.key === "Tab" || e.key === " " || e.key === ",") {
+						console.log("+++++ TAB PRESSED");
+						// TODO: 592 add input's value as tag, clear the value, check amount of tags, etc.
+
+						if (e.key === "Tab") {
+							e.preventDefault();
+						}
+					}
+				});
 			}
 		},
 	};
