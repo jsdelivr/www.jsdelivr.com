@@ -28,7 +28,7 @@
 
 	<div class="c-tags-input_tags-block">
 		<div class="c-tags-input_tags-block_tags-list">
-			{{#each tagsArr}}
+			{{#each tagsArr:tagIdx}}
 				<div class="c-tags-input_tags-block_tags-list_tag">
 					<span class="c-tags-input_tags-block_tags-list_tag_text">
 						{{this}}
@@ -37,6 +37,7 @@
 					<img class="c-tags-input_tags-block_tags-list_tag_close-icon"
 						width="16"
 						height="16"
+						on-click="@this.removeTagByIdx(tagIdx)"
 						src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
 				</div>
 			{{/each}}
@@ -96,9 +97,7 @@
 				this.observe('value', (value) => {
 					let valuesDelimiter = this.get('valuesDelimiter');
 
-					if (value) {
-						this.set('tagsArr', value.split(valuesDelimiter));
-					}
+					this.set('tagsArr', value ? value.split(valuesDelimiter) : []);
 				});
 			}
 		},
@@ -112,28 +111,27 @@
 				let targetInputEl = this.find(`#${targetInputId}`);
 
 				targetInputEl.addEventListener('keydown', (e) => {
-					if (e.key === "Enter" || e.key === "Tab" || e.key === " " || e.key === ",") {
+					if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ' || e.key === ',') {
 						this.addTag();
 
-						if (e.key === "Tab") {
+						if (e.key === 'Tab' || e.key === ' ' || e.key === ',') {
 							e.preventDefault();
-						}
-
-						if (e.key === "Tab" || e.key === " " || e.key === ",") {
 							e.stopPropagation();
 						}
+					} else if (e.key === 'Backspace') {
+						this.removeLastTag();
 					}
 				});
 			}
 		},
 		addTag () {
-			let inputValue = this.get('inputValue');
-			let valuesDelimiter = this.get('valuesDelimiter');
 			let maxTagsAllowed = this.get('maxTagsAllowed');
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let inputValue = this.get('inputValue');
 			let tagsArr = this.get('tagsArr');
 
 			if (tagsArr.length < maxTagsAllowed) {
-				if (!tagsArr.includes(inputValue) && inputValue) {
+				if (!tagsArr.includes(inputValue) && inputValue !== '') {
 					tagsArr.push(inputValue);
 
 					this.set('value', tagsArr.join(valuesDelimiter));
@@ -143,6 +141,25 @@
 			} else {
 				// TODO: 592 should we show somekind of message that tags are limited?
 			}
+		},
+		removeLastTag () {
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let inputValue = this.get('inputValue');
+			let tagsArr = this.get('tagsArr');
+
+			if (inputValue === '') {
+				tagsArr.pop();
+
+				this.set('value', tagsArr.join(valuesDelimiter));
+			}
+		},
+		removeTagByIdx (tagIdx) {
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let tagsArr = this.get('tagsArr');
+
+			tagsArr.splice(tagIdx, 1);
+
+			this.set('value', tagsArr.join(valuesDelimiter));
 		},
 	};
 </script>
