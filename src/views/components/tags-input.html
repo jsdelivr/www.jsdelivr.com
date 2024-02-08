@@ -86,72 +86,7 @@
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
-				let inputEl = document.querySelector('.c-tags-input input');
 
-				// eslint-disable-next-line no-undef
-				let choicesInst = new Choices(inputEl, {
-					allowHTML: false,
-					removeItemButton: true,
-					addItemText: '',
-					placeholder: !this.get('value'),
-					placeholderValue: this.get('placeholder'),
-					duplicateItemsAllowed: false,
-					maxItemCount: 2,
-					maxItemText: '', // TODO: 592, do not show a choices message that only 2 allowed, show as input error maybe by passing here a custom func
-					//	TODO: 592 it seems there is no built-in way to alter the behavior of the ChoiceJS and add tags on Tab key for example
-					//	maybe it is possible to alter it via native JS and block adding tags via addItemFilter?
-					//	addItemFilter: (value) => {
-					//	console.log("++++ value", value);
-
-					//	return value;
-					//	},
-				});
-
-				// hide placeholder if there are some tags added
-				choicesInst.passedElement.element.addEventListener('addItem', (e) => {
-					if (!this.get('value') && e.detail.value) {
-						e.explicitOriginalTarget.placeholder = '';
-					}
-				});
-
-				// show placeholder if there are no tags left
-				choicesInst.passedElement.element.addEventListener('removeItem', (e) => {
-					// we should get the element manually and not from the e, because removing tag via close icon returns wrong target
-					let choicesInput = document.querySelector('.choices__input.choices__input--cloned');
-
-					if (!this.get('value').replace(e.detail.value, '')) {
-						choicesInput.placeholder = this.get('placeholder');
-					}
-				});
-
-				// check whether the user clicked outside the input before adding a new tag and add it if necessary
-				document.addEventListener('click', (e) => {
-					let tagsInputEl = document.querySelector('.c-tags-input');
-					let clonedInputEl = document.querySelector('.choices__input.choices__input--cloned');
-
-					if (!tagsInputEl.contains(e.target) && clonedInputEl.value) {
-						let newVal = this.get('value') ? `${this.get('value')}, ${clonedInputEl.value}` : clonedInputEl.value;
-
-						this.set('value', newVal);
-						choicesInst.setValue([ clonedInputEl.value ]);
-						clonedInputEl.value = '';
-						clonedInputEl.placeholder = '';
-					}
-				});
-
-				this.observe('value', (value) => {
-					if (value) {
-						let clonedInputEl = document.querySelector('.choices__input.choices__input--cloned');
-						let currChoicesVal = choicesInst.getValue(true).join(',');
-						let newVal = value.replace(currChoicesVal, '').replace(',', '');
-
-						if (newVal) {
-							choicesInst.setValue([ newVal ]);
-							clonedInputEl.value = '';
-							clonedInputEl.placeholder = '';
-						}
-					}
-				});
 			}
 		},
 	};
