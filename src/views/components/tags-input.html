@@ -26,7 +26,7 @@
 		{{/if}}
 	</div>
 
-	<div class="c-tags-input_tags-block" id="{{id}}">
+	<div class="c-tags-input_tags-block" id="{{inputWrapperIdPrefix + inputId}}">
 		<div class="c-tags-input_tags-block_tags-list">
 			{{#each tagsArr:tagIdx}}
 				<div class="c-tags-input_tags-block_tags-list_tag">
@@ -44,7 +44,7 @@
 		</div>
 
 		<input
-			id="{{inputIdPrefix + id}}"
+			id="{{inputId}}"
 			value="{{inputValue}}"
 			type="text"
 			placeholder="{{placeholder}}"
@@ -66,7 +66,7 @@
 				invalidValue: null,
 				errMsgTopPos: false,
 				inputValue: '',
-				inputIdPrefix: 'input-',
+				inputWrapperIdPrefix: 'tags-block-',
 				valuesDelimiter: ',',
 				maxTagsAllowed: 2,
 				tagsArr: [],
@@ -108,9 +108,10 @@
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
-				let inputIdPrefix= this.get('inputIdPrefix');
-				let inputId = this.get('id');
-				let inputEl = this.find(`#${inputIdPrefix + inputId}`);
+				let inputWrapperIdPrefix= this.get('inputWrapperIdPrefix');
+				let inputId = this.get('inputId');
+				let inputEl = this.find(`#${inputId}`);
+				let tagsBlockEl = this.find(`#${inputWrapperIdPrefix + inputId}`);
 
 				// handle input, tags adding etc.
 				inputEl.addEventListener('keydown', (e) => {
@@ -123,6 +124,19 @@
 						}
 					} else if (e.key === 'Backspace') {
 						this.removeLastTag();
+					}
+				});
+
+				// add/remove focus styles
+				tagsBlockEl.addEventListener('click', (e) => {
+					if (!tagsBlockEl.classList.contains('focused')) {
+						tagsBlockEl.classList.add('focused');
+					}
+				});
+
+				document.addEventListener('click', (e) => {
+					if (!tagsBlockEl.contains(e.target)) {
+						tagsBlockEl.classList.remove('focused');
 					}
 				});
 			}
