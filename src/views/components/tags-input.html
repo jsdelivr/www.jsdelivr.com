@@ -26,7 +26,7 @@
 		{{/if}}
 	</div>
 
-	<div class="c-tags-input_tags-block">
+	<div class="c-tags-input_tags-block" id="{{id}}">
 		<div class="c-tags-input_tags-block_tags-list">
 			{{#each tagsArr:tagIdx}}
 				<div class="c-tags-input_tags-block_tags-list_tag">
@@ -44,7 +44,7 @@
 		</div>
 
 		<input
-			{{#if id}}id="{{id}}"{{/if}}
+			id="{{inputIdPrefix + id}}"
 			value="{{inputValue}}"
 			type="text"
 			placeholder="{{placeholder}}"
@@ -66,6 +66,7 @@
 				invalidValue: null,
 				errMsgTopPos: false,
 				inputValue: '',
+				inputIdPrefix: 'input-',
 				valuesDelimiter: ',',
 				maxTagsAllowed: 2,
 				tagsArr: [],
@@ -107,10 +108,12 @@
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
-				let targetInputId = this.get('id');
-				let targetInputEl = this.find(`#${targetInputId}`);
+				let inputIdPrefix= this.get('inputIdPrefix');
+				let inputId = this.get('id');
+				let inputEl = this.find(`#${inputIdPrefix + inputId}`);
 
-				targetInputEl.addEventListener('keydown', (e) => {
+				// handle input, tags adding etc.
+				inputEl.addEventListener('keydown', (e) => {
 					if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ' || e.key === ',') {
 						this.addTag();
 
