@@ -113,18 +113,28 @@
 				let inputEl = this.find(`#${inputId}`);
 				let tagsBlockEl = this.find(`#${inputWrapperIdPrefix + inputId}`);
 
-				// handle input, tags adding etc.
+				// handle input changes
 				inputEl.addEventListener('keydown', (e) => {
+					let currMaxTagsAllowed = this.get('maxTagsAllowed');
+					let currTagsArr = this.get('tagsArr');
+
+					// while there are already max tags and key is not Tab or Backspace - ignore input changes
+					if (currTagsArr.length === currMaxTagsAllowed && e.key !== 'Tab' && e.key !== 'Backspace') {
+						return;
+					}
+
+					// handle keys for adding new tags, removing tags, allow to bubble event on Enter key etc.
 					if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ' || e.key === ',') {
 						this.addTag();
 
-						let maxTagsAllowed = this.get('maxTagsAllowed');
-						let tagsArr = this.get('tagsArr');
+						// get the values right after we added a new tag
+						let updMaxTagsAllowed = this.get('maxTagsAllowed');
+						let updTagsArr = this.get('tagsArr');
 
-						if (tagsArr.length < maxTagsAllowed && (e.key === 'Tab' || e.key === ' ' || e.key === ',')) {
+						if (updTagsArr.length < updMaxTagsAllowed && (e.key === 'Tab' || e.key === ' ' || e.key === ',')) {
 							e.preventDefault();
 							e.stopPropagation();
-						} else if (tagsArr.length >= maxTagsAllowed && e.key === 'Tab') {
+						} else if (updTagsArr.length >= updMaxTagsAllowed && e.key === 'Tab') {
 							tagsBlockEl.classList.remove('focused');
 						}
 					} else if (e.key === 'Backspace') {
