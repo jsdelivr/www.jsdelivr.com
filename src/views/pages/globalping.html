@@ -420,17 +420,17 @@
 							</div>
 						</div>
 
-						<!-- TODO: 592, i guess it will be better to make it disabled in some cases but show always -->
-						{{#if mainOptions.type === 'ping' && mainOptions.targets.split(',').length === 1}}
-							<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
-								<label class="gp_switch">
-									<input type="checkbox" on-click="@this.set('runInfiniteMeasurement', !runInfiniteMeasurement)">
-									<span class="slider round"></span>
-								</label>
+						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block {{#unless @this.isInfiniteSwitchEnabled()}}disabled{{/unless}}">
+							<label class="gp_switch">
+								<input type="checkbox"
+									checked="{{runInfiniteMeasurement}}"
+									on-click="@this.handleInfiniteSwitch()"
+									{{#unless @this.isInfiniteSwitchEnabled()}}disabled="true"{{/unless}}>
+								<span class="slider round"></span>
+							</label>
 
-								<span>Infinite</span>
-							</div>
-						{{/if}}
+							<span>Infinite</span>
+						</div>
 					</div>
 
 					<button on-click="@this.resetMapAndRunTest()"
@@ -1479,6 +1479,13 @@
 						this.set('screenWidth', innerWidth);
 					}
 				});
+
+				// disable Infinite switch if there is more than one target
+				this.observe('mainOptions.targets', (targets) => {
+					if (targets.split(',').length > 1) {
+						this.set('runInfiniteMeasurement', false);
+					}
+				});
 			}
 		},
 		oncomplete () {
@@ -2481,5 +2488,15 @@
 				console.warn('++++ err', err);
 			}
 		},
+		isInfiniteSwitchEnabled () {
+			let { type, targets } = this.get('mainOptions');
+
+			return type === 'ping' && targets.split(',').length <= 1;
+		},
+		handleInfiniteSwitch () {
+			if (this.isInfiniteSwitchEnabled()) {
+				this.toggle('runInfiniteMeasurement');
+			}
+		}
 	};
 </script>
