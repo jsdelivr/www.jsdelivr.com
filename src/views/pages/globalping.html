@@ -420,7 +420,8 @@
 							</div>
 						</div>
 
-						{{#if mainOptions.type === 'ping'}}
+						<!-- TODO: 592, i guess it will be better to make it disabled in some cases but show always -->
+						{{#if mainOptions.type === 'ping' && mainOptions.targets.split(',').length === 1}}
 							<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
 								<label class="gp_switch">
 									<input type="checkbox" on-click="@this.set('runInfiniteMeasurement', !runInfiniteMeasurement)">
@@ -1567,7 +1568,7 @@
 			this.set('targetsArr', targetsArr);
 
 			// run Infinite type of the measurement
-			if (type === 'ping' && runInfiniteMeasurement) {
+			if (type === 'ping' && targetsArr.length === 1 && runInfiniteMeasurement) {
 				this.postInfiniteGlobalpingMeasurement(reqParams, targetsArr[0]);
 
 				return;
