@@ -2472,19 +2472,17 @@
 							this.set('infiniteMeasId', response.id);
 						}
 
-						if (response.status === 'finished') {
-							// TODO: 592, test flow, remove it later (cnt variable too)
-							if (cnt < 13) {
-								let prepParams = {
-									...reqParams,
-									locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
-								};
+						// TODO: 592, test flow, remove it later (cnt variable too)
+						if (cnt < 13) {
+							let prepParams = {
+								...reqParams,
+								locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
+							};
 
-								this.postInfiniteGlobalpingMeasurement({ reqParams: prepParams, target, measIdx: ++measIdx, cnt: ++cnt });
-							} else {
-								// TODO: 592, temp test solution
-								throw new Error('Infinite measurements have stopped because the user has run out of credits!');
-							}
+							this.postInfiniteGlobalpingMeasurement({ reqParams: prepParams, target, measIdx: ++measIdx, cnt: ++cnt });
+						} else {
+							// TODO: 592, temp test solution
+							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 						}
 					});
 
