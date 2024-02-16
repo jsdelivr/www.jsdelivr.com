@@ -106,7 +106,7 @@
 		data () {
 			return {
 				preparedTestResults: [],
-				displayedRowsCnt: null,
+				displayedRowsIdxes: [],
 			};
 		},
 		oninit () {
@@ -131,7 +131,7 @@
 				this.observe('preparedTestResults', (preparedTestResults, prevValue = []) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
-					this.handleProbeRowActionBtn(prevValue.length);
+					preparedTestResults.forEach((r, rIdx)=> this.handleProbeRowActionBtn(rIdx));
 				});
 			}
 		},
@@ -271,9 +271,9 @@
 			}, preparedTestResults);
 		},
 		handleProbeRowActionBtn (rowIdx) {
-			let displayedRowsCnt = this.get('displayedRowsCnt');
+			let displayedRowsIdxes = this.get('displayedRowsIdxes');
 
-			if (displayedRowsCnt && displayedRowsCnt === rowIdx) {
+			if (displayedRowsIdxes.includes(rowIdx)) {
 				return;
 			}
 
@@ -308,7 +308,7 @@
 					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
 				});
 
-				this.set('displayedRowsCnt', rowIdx);
+				this.push('displayedRowsIdxes', rowIdx);
 			}, 4);
 		},
 		getAvgTimingValue (timing) {
