@@ -2464,7 +2464,7 @@
 				console.error('getMultipleTestMeasurementById err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement ({ reqParams, target, measIdx = 0, cnt = 0, measurementId = null }) {
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, measIdx = 0, cnt = 0 }) {
 			try {
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
 					this.getTestMeasurementById(res.id, measIdx).then((response) => {
@@ -2485,7 +2485,6 @@
 							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 						}
 					});
-
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
@@ -2507,6 +2506,6 @@
 			if (this.isInfiniteSwitchEnabled()) {
 				this.toggle('runInfiniteMeasurement');
 			}
-		}
+		},
 	};
 </script>

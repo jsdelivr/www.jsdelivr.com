@@ -232,7 +232,7 @@
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 			let preparedTestResults = this.get('preparedTestResults');
 
-			return rawResults.reduce((prepResultsObj, rawRes, rawResIdx) => {
+			return rawResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
 					if (probeData.result.status === 'finished') {
 						let {
@@ -306,7 +306,7 @@
 		},
 		getAvgTimingValue (timing) {
 			if (Array.isArray(timing)) {
-				let sum = timing.reduce((sum, t) => (sum + t), 0);
+				let sum = timing.reduce((sum, t) => sum + t, 0);
 
 				return Math.round(sum / timing.length * 100) / 100;
 			}
