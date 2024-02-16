@@ -59,7 +59,7 @@
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
-							<span>{{this.lastTiming}} / {{this.minTiming}} / {{this.avgTiming}} / {{this.maxTiming}} ms</span>
+							<span>{{this.lastTiming}} / {{this.minTiming}} / {{@this.getAvgTimingValue(this.avgTiming)}} / {{this.maxTiming}} ms</span>
 						</div>
 					{{/each}}
 				</div>
@@ -228,31 +228,45 @@
 
 			return 'some-failed';
 		},
-		combineInfiniteResults (results) {
-			return results.reduce((prepRes, resArr, resArIdx) => {
-				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
-				let res = resArr[0];// TODO: 592, temp, here results should be combined too
-				let { isFailed = false } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+		combineInfiniteResults (rawResults) {
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+			let preparedTestResults = this.get('preparedTestResults');
 
-				prepRes.push({
-					clientSideId: resArIdx,
-					...res.probe,
-					statsPerProbes: [{
-						target: res.target,
-						ipAddr: res.result.resolvedAddress,
-						// lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
-						lastTiming: 0,
-						minTiming: res.result.stats ? res.result.stats.min : 0,
-						avgTiming: res.result.stats ? res.result.stats.avg : 0,
-						maxTiming: res.result.stats ? res.result.stats.max : 0,
-						statsTotal: res.result.stats ? res.result.stats.total : 0,
-						statsLoss: res.result.stats ? res.result.stats.loss : 0,
-						isFailed,
-					}],
+			return rawResults.reduce((prepResultsObj, rawRes, rawResIdx) => {
+				rawRes.forEach((probeData, probeDataIdx) => {
+					if (probeData.result.status === 'finished') {
+						let {
+							minTiming: prevMinTiming = 0,
+							avgTiming: prevAvgTiming = [],
+							maxTiming: prevMaxTiming = 0,
+							statsTotal: prevStatsTotal = 0,
+							statsLoss: prevStatsLoss = 0,
+						} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
+
+						let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
+
+						prepResultsObj[probeDataIdx] = {
+							clientSideId: probeDataIdx,
+							...probeData.probe,
+							statsPerProbes: [{
+								target: probeData.target,
+								ipAddr: probeData.result.resolvedAddress,
+								lastTiming: probeData.result.timings[probeData.result.timings.length - 1].rtt,
+								minTiming: prevMinTiming ? Math.min(prevMinTiming, probeData.result.stats.min) : probeData.result.stats.min,
+								avgTiming: [ ...prevAvgTiming, probeData.result.stats.avg ],
+								maxTiming: Math.max(prevMaxTiming, probeData.result.stats.max),
+								statsTotal: prevStatsTotal + probeData.result.stats.total,
+								statsLoss: prevStatsLoss + probeData.result.stats.loss,
+								isFailed,
+							}],
+						};
+					} else if (probeData.result.status === 'failed' || probeData.result.status === 'offline') {
+						// TODO: 592 - handle failed or offline probes
+					}
 				});
 
-				return prepRes;
-			}, []);
+				return prepResultsObj;
+			}, preparedTestResults);
 		},
 		handleProbeRowActionBtn (rowIdx) {
 			let displayedRowsCnt = this.get('displayedRowsCnt');
@@ -289,6 +303,15 @@
 
 				this.set('displayedRowsCnt', rowIdx);
 			}, 4);
+		},
+		getAvgTimingValue (timing) {
+			if (Array.isArray(timing)) {
+				let sum = timing.reduce((sum, t) => (sum + t), 0);
+
+				return Math.round(sum / timing.length * 100) / 100;
+			}
+
+			return timing;
 		},
 	};
 </script>
