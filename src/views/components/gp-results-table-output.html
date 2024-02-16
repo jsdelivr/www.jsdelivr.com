@@ -279,10 +279,15 @@
 
 			let intervalId = setInterval(() => {
 				let tableEl = document.querySelector('.c-gp-results-table-output .results-table');
+
+				if (!tableEl) {
+					return;
+				}
+
 				let cells = tableEl.querySelectorAll(`.results-table_column.row-num-${rowIdx}`);
 				let actionEl = tableEl.querySelector(`.results-table_column.row-num-${rowIdx} .results-table_column_location_actions_btn`);
 
-				if (!tableEl || !cells || !cells.length || !actionEl) {
+				if (!cells || !cells.length || !actionEl) {
 					return;
 				}
 
