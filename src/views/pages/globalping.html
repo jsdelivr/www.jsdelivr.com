@@ -1576,7 +1576,7 @@
 
 			// run Infinite type of the measurement
 			if (type === 'ping' && targetsArr.length === 1 && runInfiniteMeasurement) {
-				this.postInfiniteGlobalpingMeasurement(reqParams, targetsArr[0]);
+				this.postInfiniteGlobalpingMeasurement({ reqParams, target: targetsArr[0] });
 
 				return;
 			}
@@ -2464,18 +2464,30 @@
 				console.error('getMultipleTestMeasurementById err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement (reqParams, target, measIdx = 0, cnt = 0) {
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, measIdx = 0, cnt = 0, measurementId = null }) {
 			try {
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
-					this.getTestMeasurementById(res.id, measIdx);
+					this.getTestMeasurementById(res.id, measIdx).then((response) => {
+						if (measIdx === 0) {
+							this.set('infiniteMeasId', response.id);
+						}
 
-					// TODO: 592, test flow, remove it later (cnt variable too)
-					if (cnt < 13) {
-						this.postInfiniteGlobalpingMeasurement(reqParams, target, ++measIdx, ++cnt);
-					} else {
-						// TODO: 592, temp test solution
-						throw new Error('Infinite measurements have stopped because the user has run out of credits!');
-					}
+						if (response.status === 'finished') {
+							// TODO: 592, test flow, remove it later (cnt variable too)
+							if (cnt < 13) {
+								let prepParams = {
+									...reqParams,
+									locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
+								};
+
+								this.postInfiniteGlobalpingMeasurement({ reqParams: prepParams, target, measIdx: ++measIdx, cnt: ++cnt });
+							} else {
+								// TODO: 592, temp test solution
+								throw new Error('Infinite measurements have stopped because the user has run out of credits!');
+							}
+						}
+					});
+
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
