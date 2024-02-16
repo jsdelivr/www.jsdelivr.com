@@ -114,15 +114,15 @@
 				this.observe('testResults', (testResults) => {
 					let testType = this.get('testReqParams.type');
 					let infiniteMeasurement = this.get('infiniteMeasurement');
-					let preparedTestResults;
+					let updPreparedTestResults;
 
 					if (testType === 'ping' && infiniteMeasurement) {
-						preparedTestResults = this.combineInfiniteResults(testResults);
+						updPreparedTestResults = this.combineInfiniteResults(testResults);
 					} else {
-						preparedTestResults = this.combineResults(testResults);
+						updPreparedTestResults = this.combineResults(testResults);
 					}
 
-					this.set('preparedTestResults', preparedTestResults);
+					this.set('preparedTestResults', updPreparedTestResults);
 				});
 			}
 		},
@@ -220,6 +220,8 @@
 			});
 		},
 		getStatusLineColorClass (probesData) {
+			if (!probesData) { return; }
+
 			if (probesData.statsPerProbes.every(s => s.isFailed === false)) {
 				return 'success';
 			} else if (probesData.statsPerProbes.every(s => s.isFailed === true)) {
