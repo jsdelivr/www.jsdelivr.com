@@ -1385,9 +1385,16 @@
 						return { ...statusObj, [rIdx]: false };
 					}, {});
 
-					// check respStatuses and handle the case when all requests are finished
-					if (Object.values(respStatuses).length === this.get('targetsArr').length && Object.values(respStatuses).every(s => s === true)) {
-						this.set('testInProgress', false);
+					// check respStatuses and handle the case when all requests are finished unless it is an infinite flow
+					let runInfiniteMeasurement = this.get('runInfiniteMeasurement');
+					let targetsArrLength = this.get('targetsArr').length;
+
+					if (
+						!(targetsArrLength === 1 && runInfiniteMeasurement)
+						&& Object.values(respStatuses).length === targetsArrLength
+						&& Object.values(respStatuses).every(s => s === true)
+					) {
+						this.set('testInProgress', false).then(() => console.log('CALLED !!!!') );
 
 						// if it is a share-results-flow - scroll mapBlock into the view
 						if (this.get('shareResFlow')) {
@@ -2481,6 +2488,8 @@
 
 							this.postInfiniteGlobalpingMeasurement({ reqParams: prepParams, target, measIdx: ++measIdx, cnt: ++cnt });
 						} else {
+							this.set('testInProgress', false);
+
 							// TODO: 592, temp test solution
 							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 						}
