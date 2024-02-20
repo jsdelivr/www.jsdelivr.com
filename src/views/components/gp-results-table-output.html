@@ -77,7 +77,7 @@
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_graph_value_header">Graph</span>
-							<img width="48" height="24" src="{{@shared.assetsHost}}/img/globalping/TEMP.graph.svg">
+							<div>{{{ @this.createRealTimeChartSvg(this.avgTiming) }}}</div>
 						</div>
 					{{/each}}
 				</div>
@@ -319,6 +319,78 @@
 			}
 
 			return timing;
+		},
+		createRealTimeChartSvg (data, svgWidth = 48, svgHeight = 24, svgBgColor = '#F4F4F4', barWidth = 2, gap = 1) {
+			let maxLines = Math.floor(svgWidth / barWidth);
+			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+			svg.setAttribute('width', svgWidth);
+			svg.setAttribute('height', svgHeight);
+			svg.style.backgroundColor = svgBgColor;
+
+			// TODO 592, test calcs
+			let maxDataValue = Math.max(...data);
+
+			for (let i = 0; i < data.length; i++) {
+				// TODO 592, test calcs
+				let barHeight = Math.floor(Math.random() * svgHeight);
+
+				// calc bar position
+				let x = i * (barWidth + gap);
+				let y = svgHeight - barHeight;
+				let barColor = this.pickBarColor(data[i]);
+
+				let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+				rect.setAttribute('x', x);
+				rect.setAttribute('y', y);
+				rect.setAttribute('width', barWidth);
+				rect.setAttribute('height', barHeight);
+				rect.setAttribute('fill', barColor);
+				svg.appendChild(rect);
+			}
+
+			return svg.outerHTML;
+		},
+		pickBarColor (timing) {
+			// return default color for timed out probe
+			if (timing === _.getProbeTimeOutValue()) {
+				return '#17233A';
+			}
+
+			function getColorFromGradient (quotient, start, middle, end) {
+				return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
+			}
+
+			function linear (startColor, endColor, quotient) {
+				let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
+				let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
+				let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
+
+				return `#${redColor}${greenColor}${blueColor}`;
+			}
+
+			function byteLinear (partOne, partTwo, quotient) {
+				let color = Math.floor(('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient);
+
+				return color.toString(16).padStart(2, '0');
+			}
+
+			// TODO: 592
+			let probesMaxTiming = 200;
+			let probesMinTiming = 5;
+			let pureTimingValue = parseInt(timing);
+
+			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
+			if (pureTimingValue <= probesMinTiming) {
+				return '#17d4a7';
+			}
+
+			if (pureTimingValue >= probesMaxTiming) {
+				return '#e64e3d';
+			}
+
+			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 	};
 </script>
