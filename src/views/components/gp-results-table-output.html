@@ -320,31 +320,37 @@
 
 			return timing;
 		},
-		createRealTimeChartSvg (data, svgWidth = 48, svgHeight = 24, svgBgColor = '#F4F4F4', barWidth = 2, gap = 1) {
+		createRealTimeChartSvg (
+			data,
+			svgWidth = 48,
+			svgHeight = 24,
+			svgBgColor = '#F4F4F4',
+			barWidth = 2,
+			gap = 1,
+			maxValue = 200,
+			minValue = 5,
+		) {
 			let maxLines = Math.floor(svgWidth / barWidth);
+			let startIndex = Math.max(data.length - maxLines, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
 			svg.setAttribute('width', svgWidth);
 			svg.setAttribute('height', svgHeight);
 			svg.style.backgroundColor = svgBgColor;
 
-			// TODO 592, test calcs
-			let startIndex = Math.max(data.length - maxLines, 0);
-
 			for (let i = startIndex; i < data.length; i++) {
-				// TODO 592, test calcs
-				let barHeight = 0;
-				let probesMaxTiming = 200;
-				let probesMinTiming = 5;
-				let pureTimingValue = parseInt(data[i]);
+				let percentage;
+				let value = parseInt(data[i]);
 
-				if (pureTimingValue <= probesMinTiming) {
-					barHeight = Math.min(probesMinTiming, svgHeight * 0.4);
-				} else if (pureTimingValue >= probesMaxTiming) {
-					barHeight = svgHeight;
+				if (value < minValue) {
+					percentage = 0;
+				} else if (value > maxValue) {
+					percentage = 1;
 				} else {
-					barHeight = pureTimingValue;
+					percentage = (value - minValue) / (maxValue - minValue);
 				}
+
+				let barHeight = Math.max(percentage * svgHeight, minValue);
 
 				// calc bar position
 				let x = (i - startIndex) * (barWidth + gap);
