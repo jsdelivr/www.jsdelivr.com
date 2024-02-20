@@ -329,14 +329,25 @@
 			svg.style.backgroundColor = svgBgColor;
 
 			// TODO 592, test calcs
-			let maxDataValue = Math.max(...data);
+			let startIndex = Math.max(data.length - maxLines, 0);
 
-			for (let i = 0; i < data.length; i++) {
+			for (let i = startIndex; i < data.length; i++) {
 				// TODO 592, test calcs
-				let barHeight = Math.floor(Math.random() * svgHeight);
+				let barHeight = 0;
+				let probesMaxTiming = 200;
+				let probesMinTiming = 5;
+				let pureTimingValue = parseInt(data[i]);
+
+				if (pureTimingValue <= probesMinTiming) {
+					barHeight = Math.min(probesMinTiming, svgHeight * 0.4);
+				} else if (pureTimingValue >= probesMaxTiming) {
+					barHeight = svgHeight;
+				} else {
+					barHeight = pureTimingValue;
+				}
 
 				// calc bar position
-				let x = i * (barWidth + gap);
+				let x = (i - startIndex) * (barWidth + gap);
 				let y = svgHeight - barHeight;
 				let barColor = this.pickBarColor(data[i]);
 
