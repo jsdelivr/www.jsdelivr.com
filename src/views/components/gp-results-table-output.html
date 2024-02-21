@@ -112,6 +112,8 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
 					let testType = this.get('testReqParams.type');
 					let infiniteMeasurement = this.get('infiniteMeasurement');
 					let updPreparedTestResults;
