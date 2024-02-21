@@ -49,7 +49,7 @@
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_quality_value_header">Quality</span>
 							<span>
-								{{this.statsTotal - this.statsLoss}} /{{this.statsTotal}} - {{Math.round((this.statsTotal - this.statsLoss)/this.statsTotal * 100)}}%
+								{{@this.calcQuality(this.statsTotal, this.statsLoss)}}
 							</span>
 						</div>
 					{{/each}}
@@ -410,6 +410,11 @@
 			}
 
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
+		},
+		calcQuality (statsTotal, statsLoss) {
+			let actualAmount = Math.max(statsTotal - statsLoss, 0);
+
+			return `${actualAmount}/${statsTotal} - ${Math.round((actualAmount)/statsTotal * 100)}%`;
 		},
 	};
 </script>
