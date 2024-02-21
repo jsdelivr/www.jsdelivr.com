@@ -334,8 +334,8 @@
 			gap = 1,
 		) {
 			let maxValue = Math.max(...data);
-			let maxLines = Math.floor(svgWidth / barWidth);
-			let startIndex = Math.max(data.length - maxLines, 0);
+			let maxBars = Math.floor(svgWidth / (barWidth + gap));
+			let startIndex = Math.max(data.length - maxBars, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
 			svg.setAttribute('width', svgWidth);
@@ -343,29 +343,22 @@
 			svg.style.backgroundColor = svgBgColor;
 
 			for (let i = startIndex; i < data.length; i++) {
-				let percentage;
-
-				if (data[i] >= maxValue) {
-					percentage = 1;
-				} else {
-					percentage = data[i] / maxValue;
-				}
-
+				let percentage = data[i] < maxValue ? data[i] / maxValue : 1;
 				let barHeight = percentage * svgHeight;
 
-				// calc bar position
-				let x = (i - startIndex) * (barWidth + gap);
+				let x = svgWidth - ((data.length - 1 - i) * (barWidth + gap)) - barWidth;
 				let y = svgHeight - barHeight;
-				let barColor = this.pickBarColor(data[i]);
 
-				let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+				if (x >= 0) {
+					let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
-				rect.setAttribute('x', x);
-				rect.setAttribute('y', y);
-				rect.setAttribute('width', barWidth);
-				rect.setAttribute('height', barHeight);
-				rect.setAttribute('fill', barColor);
-				svg.appendChild(rect);
+					rect.setAttribute('x', x);
+					rect.setAttribute('y', y);
+					rect.setAttribute('width', barWidth);
+					rect.setAttribute('height', barHeight);
+					rect.setAttribute('fill', this.pickBarColor(data[i]));
+					svg.appendChild(rect);
+				}
 			}
 
 			return svg.outerHTML;
@@ -413,7 +406,7 @@
 		calcQuality (statsTotal, statsLoss) {
 			let actualAmount = Math.max(statsTotal - statsLoss, 0);
 
-			return `${actualAmount}/${statsTotal} - ${Math.round((actualAmount)/statsTotal * 100)}%`;
+			return `${actualAmount}/${statsTotal} - ${Math.round(actualAmount / statsTotal * 100)}%`;
 		},
 	};
 </script>
