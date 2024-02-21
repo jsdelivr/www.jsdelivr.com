@@ -77,7 +77,7 @@
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_graph_value_header">Graph</span>
-							<div>{{{ @this.createRealTimeChartSvg(this.avgTiming) }}}</div>
+							<div>{{{ @this.createRealTimeChartSvg(this.packetsRtt) }}}</div>
 						</div>
 					{{/each}}
 				</div>
@@ -245,9 +245,11 @@
 							maxTiming: prevMaxTiming = 0,
 							statsTotal: prevStatsTotal = 0,
 							statsLoss: prevStatsLoss = 0,
+							packetsRtt: prevPacketsRtt = [],
 						} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 
 						let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
+						let currPacketsRtt = probeData.result.timings ? probeData.result.timings.map(t => t.rtt) : [];
 
 						prepResultsObj[probeDataIdx] = {
 							clientSideId: probeDataIdx,
@@ -262,6 +264,7 @@
 								statsTotal: prevStatsTotal + probeData.result.stats.total,
 								statsLoss: prevStatsLoss + probeData.result.stats.loss,
 								isFailed,
+								packetsRtt: [ ...prevPacketsRtt, ...currPacketsRtt ],
 							}],
 						};
 					} else if (probeData.result.status === 'failed' || probeData.result.status === 'offline') {
@@ -329,9 +332,8 @@
 			svgBgColor = '#F4F4F4',
 			barWidth = 2,
 			gap = 1,
-			maxValue = 200,
-			minValue = 5,
 		) {
+			let maxValue = Math.max(...data);
 			let maxLines = Math.floor(svgWidth / barWidth);
 			let startIndex = Math.max(data.length - maxLines, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -342,17 +344,14 @@
 
 			for (let i = startIndex; i < data.length; i++) {
 				let percentage;
-				let value = parseInt(data[i]);
 
-				if (value < minValue) {
-					percentage = 0;
-				} else if (value > maxValue) {
+				if (data[i] >= maxValue) {
 					percentage = 1;
 				} else {
-					percentage = (value - minValue) / (maxValue - minValue);
+					percentage = data[i] / maxValue;
 				}
 
-				let barHeight = Math.max(percentage * svgHeight, minValue);
+				let barHeight = percentage * svgHeight;
 
 				// calc bar position
 				let x = (i - startIndex) * (barWidth + gap);
