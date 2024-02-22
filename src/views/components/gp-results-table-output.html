@@ -171,6 +171,7 @@
 								statsTotal: res.result.stats.total,
 								statsLoss: res.result.stats.loss,
 								isFailed,
+								packetsRtt: res.result.timings.map(t => t.rtt),
 							}],
 						};
 					});
@@ -199,6 +200,7 @@
 									statsTotal: nextReqRes.result.stats.total,
 									statsLoss: nextReqRes.result.stats.loss,
 									isFailed,
+									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
 								},
 							],
 						};
@@ -363,9 +365,36 @@
 
 			return svg.outerHTML;
 		},
-		createRegularGraph (data) {
-				console.log('++++ createRegularGraph data', data);
-				console.log('_____________________');
+		createRegularGraph (
+			data,
+			svgWidth = 48,
+			svgHeight = 24,
+			svgBgColor = '#F4F4F4',
+		) {
+			let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+			svg.setAttribute("width", svgWidth);
+			svg.setAttribute("height", svgHeight);
+
+			let numBars = data.length;
+			let barWidth = svgWidth / (numBars * 2);
+			let gapWidth = barWidth;
+			let maxValue = Math.max(...data);
+
+			data.forEach((value, index) => {
+					let barHeight = (value / maxValue) * svgHeight;
+					let xPosition = (index * 2 + 1) * barWidth;
+					let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+					rect.setAttribute("x", xPosition);
+					rect.setAttribute("y", svgHeight - barHeight);
+					rect.setAttribute("width", barWidth);
+					rect.setAttribute("height", barHeight);
+					rect.setAttribute("fill", this.pickBarColor(value));
+					svg.appendChild(rect);
+			});
+
+			return svg.outerHTML;
 		},
 		pickBarColor (timing) {
 			// return default color for timed out probe
@@ -416,10 +445,10 @@
 			let infiniteMeasurement = this.get('infiniteMeasurement');
 
 			if (infiniteMeasurement) {
-				this.createRealTimeGraph(data.packetsRtt);
-			} else {
-				this.createRegularGraph(data);
+				return this.createRealTimeGraph(data.packetsRtt);
 			}
+
+			return this.createRegularGraph(data.packetsRtt);
 		},
 	};
 </script>
