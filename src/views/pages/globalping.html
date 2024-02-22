@@ -2513,7 +2513,16 @@
 		},
 		handleInfiniteSwitch () {
 			if (this.isInfiniteSwitchEnabled()) {
-				this.toggle('runInfiniteMeasurement');
+				let runInfiniteMeasurement = this.get('runInfiniteMeasurement');
+
+				if (runInfiniteMeasurement) {
+					this.set('notAppliedOpts.packets', '');
+				} else {
+					this.set('notAppliedOpts.packets', 16);
+				}
+
+				this.set('runInfiniteMeasurement', !runInfiniteMeasurement);
+				this.applyOptions();
 			}
 		},
 	};
