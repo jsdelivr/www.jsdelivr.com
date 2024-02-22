@@ -77,7 +77,7 @@
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_graph_value_header">Graph</span>
-							<div>{{{ @this.createRealTimeChartSvg(this.packetsRtt) }}}</div>
+							<div>{{{ @this.createGraph(this) }}}</div>
 						</div>
 					{{/each}}
 				</div>
@@ -325,7 +325,7 @@
 
 			return timing;
 		},
-		createRealTimeChartSvg (
+		createRealTimeGraph (
 			data,
 			svgWidth = 48,
 			svgHeight = 24,
@@ -362,6 +362,10 @@
 			}
 
 			return svg.outerHTML;
+		},
+		createRegularGraph (data) {
+				console.log('++++ createRegularGraph data', data);
+				console.log('_____________________');
 		},
 		pickBarColor (timing) {
 			// return default color for timed out probe
@@ -407,6 +411,15 @@
 			let actualAmount = Math.max(statsTotal - statsLoss, 0);
 
 			return `${actualAmount}/${statsTotal} - ${Math.round(actualAmount / statsTotal * 100)}%`;
+		},
+		createGraph (data) {
+			let infiniteMeasurement = this.get('infiniteMeasurement');
+
+			if (infiniteMeasurement) {
+				this.createRealTimeGraph(data.packetsRtt);
+			} else {
+				this.createRegularGraph(data);
+			}
 		},
 	};
 </script>
