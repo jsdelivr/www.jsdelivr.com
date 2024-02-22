@@ -371,27 +371,27 @@
 			svgHeight = 24,
 			svgBgColor = '#F4F4F4',
 		) {
-			let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
-			svg.setAttribute("width", svgWidth);
-			svg.setAttribute("height", svgHeight);
+			svg.setAttribute('width', svgWidth);
+			svg.setAttribute('height', svgHeight);
+			svg.style.backgroundColor = svgBgColor;
 
 			let numBars = data.length;
 			let barWidth = svgWidth / (numBars * 2);
-			let gapWidth = barWidth;
 			let maxValue = Math.max(...data);
 
 			data.forEach((value, index) => {
-					let barHeight = (value / maxValue) * svgHeight;
-					let xPosition = (index * 2 + 1) * barWidth;
-					let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				let barHeight = (value / maxValue) * svgHeight;
+				let xPosition = (index * 2 + 1) * barWidth;
+				let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
-					rect.setAttribute("x", xPosition);
-					rect.setAttribute("y", svgHeight - barHeight);
-					rect.setAttribute("width", barWidth);
-					rect.setAttribute("height", barHeight);
-					rect.setAttribute("fill", this.pickBarColor(value));
-					svg.appendChild(rect);
+				rect.setAttribute('x', xPosition);
+				rect.setAttribute('y', svgHeight - barHeight);
+				rect.setAttribute('width', barWidth);
+				rect.setAttribute('height', barHeight);
+				rect.setAttribute('fill', this.pickBarColor(value));
+				svg.appendChild(rect);
 			});
 
 			return svg.outerHTML;
