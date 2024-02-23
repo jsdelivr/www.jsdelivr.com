@@ -171,7 +171,6 @@
 								maxTiming: res.result.stats.max,
 								statsTotal: res.result.stats.total,
 								statsDrop: res.result.stats.drop,
-								statsLoss: res.result.stats.loss,
 								isFailed,
 								packetsRtt: res.result.timings.map(t => t.rtt),
 							}],
@@ -201,7 +200,6 @@
 									maxTiming: nextReqRes.result.stats.max,
 									statsTotal: nextReqRes.result.stats.total,
 									statsDrop: nextReqRes.result.stats.drop,
-									statsLoss: nextReqRes.result.stats.loss,
 									isFailed,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
 								},
@@ -256,7 +254,6 @@
 							maxTiming: prevMaxTiming = 0,
 							statsTotal: prevStatsTotal = 0,
 							statsDrop: prevStatsDrop = 0,
-							statsLoss: prevStatsLoss = 0,
 							packetsRtt: prevPacketsRtt = [],
 						} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 
@@ -275,7 +272,6 @@
 								maxTiming: Math.max(prevMaxTiming, probeData.result.stats.max),
 								statsTotal: prevStatsTotal + probeData.result.stats.total,
 								statsDrop: prevStatsDrop + probeData.result.stats.drop,
-								statsLoss: prevStatsLoss + probeData.result.stats.loss,
 								isFailed,
 								packetsRtt: [ ...prevPacketsRtt, ...currPacketsRtt ],
 							}],
