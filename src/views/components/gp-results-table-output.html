@@ -227,13 +227,19 @@
 		getStatusLineColorClass (probesData) {
 			if (!probesData) { return; }
 
+			let infiniteMeasurement = this.get('infiniteMeasurement');
+
+			if (infiniteMeasurement) {
+				// TODO: 592 if infinite we should get color in different way based on the quality (100% - green, 0% - red, 0-100% - yellow)
+			}
+
 			if (probesData.statsPerProbes.every(s => s.isFailed === false)) {
 				return 'success';
 			} else if (probesData.statsPerProbes.every(s => s.isFailed === true)) {
-				return 'failed';
+				return 'failure';
 			}
 
-			return 'some-failed';
+			return 'some-issues';
 		},
 		combineInfiniteResults (rawResults) {
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
