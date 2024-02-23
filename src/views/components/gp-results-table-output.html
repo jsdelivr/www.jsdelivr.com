@@ -49,7 +49,7 @@
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_quality_value_header">Quality</span>
 							<span>
-								{{@this.calcQuality(this.statsTotal, this.statsLoss)}}
+								{{@this.calcQuality(this.statsTotal, this.statsDrop)}}
 							</span>
 						</div>
 					{{/each}}
@@ -170,6 +170,7 @@
 								avgTiming: res.result.stats.avg,
 								maxTiming: res.result.stats.max,
 								statsTotal: res.result.stats.total,
+								statsDrop: res.result.stats.drop,
 								statsLoss: res.result.stats.loss,
 								isFailed,
 								packetsRtt: res.result.timings.map(t => t.rtt),
@@ -199,6 +200,7 @@
 									avgTiming: nextReqRes.result.stats.avg,
 									maxTiming: nextReqRes.result.stats.max,
 									statsTotal: nextReqRes.result.stats.total,
+									statsDrop: nextReqRes.result.stats.drop,
 									statsLoss: nextReqRes.result.stats.loss,
 									isFailed,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
@@ -253,6 +255,7 @@
 							avgTiming: prevAvgTiming = [],
 							maxTiming: prevMaxTiming = 0,
 							statsTotal: prevStatsTotal = 0,
+							statsDrop: prevStatsDrop = 0,
 							statsLoss: prevStatsLoss = 0,
 							packetsRtt: prevPacketsRtt = [],
 						} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
@@ -271,6 +274,7 @@
 								avgTiming: [ ...prevAvgTiming, probeData.result.stats.avg ],
 								maxTiming: Math.max(prevMaxTiming, probeData.result.stats.max),
 								statsTotal: prevStatsTotal + probeData.result.stats.total,
+								statsDrop: prevStatsDrop + probeData.result.stats.drop,
 								statsLoss: prevStatsLoss + probeData.result.stats.loss,
 								isFailed,
 								packetsRtt: [ ...prevPacketsRtt, ...currPacketsRtt ],
@@ -443,8 +447,8 @@
 
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
-		calcQuality (statsTotal, statsLoss) {
-			let actualAmount = Math.max(statsTotal - statsLoss, 0);
+		calcQuality (statsTotal, statsDrop) {
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
 
 			return `${actualAmount}/${statsTotal} - ${Math.round(actualAmount / statsTotal * 100)}%`;
 		},
