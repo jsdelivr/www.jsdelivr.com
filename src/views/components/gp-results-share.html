@@ -60,12 +60,20 @@
 		},
 		createShareResText (urlFlow = true) {
 			let measurementsMetadata = this.get('measurementsMetadata');
+			let infiniteMeasurement = this.get('infiniteMeasurement');
 
 			if (urlFlow) {
 				// return URL
 				let origin = this.get('@global.location.origin');
 				let textToDisplay = Object.values(measurementsMetadata).map(v => v.measurementId).join(',');
 				let textToCopy = Object.values(measurementsMetadata).map(v => v.measurementId).join('%2C');
+
+				if (infiniteMeasurement) {
+					return {
+						shareResTextToDisplay: 'Not supported',
+						shareResTextToCopy: 'Not supported',
+					};
+				}
 
 				return {
 					shareResTextToDisplay: `${origin}/globalping?measurement=${textToDisplay}`,
@@ -78,8 +86,9 @@
 		},
 		createCliCommand (params, measurementsMetadata) {
 			let targetsCnt = Object.values(measurementsMetadata).map(v => v.target).length;
+			let infiniteMeasurement = this.get('infiniteMeasurement');
 
-			if (targetsCnt >= 2) {
+			if (targetsCnt >= 2 && !infiniteMeasurement) {
 				return {
 					shareResTextToDisplay: 'Not supported yet',
 					shareResTextToCopy: 'Not supported yet',
@@ -171,6 +180,11 @@
 				typePart: '',
 				globalPart: '',
 			});
+
+			// add infinite flag for the Infinite flow
+			if (infiniteMeasurement) {
+				cmd.globalPart += ' --infinite';
+			}
 
 			return {
 				shareResTextToDisplay: cmd.base + cmd.typePart + cmd.globalPart,
