@@ -1214,10 +1214,23 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
+	getGpProbeLastTiming (testType, result) {
+		let lastTiming;
+		let { timings = [] } = result;
+
+		if (testType === 'ping') {
+			lastTiming = timings[timings.length - 1] ? timings[timings.length - 1].rtt : NO_PROBE_TIMING_VALUE;// TODO: 592 - what value we should return in this case?
+		}
+
+		return lastTiming;
+	},
+
 	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = ' ms') {
 		let resTiming;
+		let lastTiming;
 		let extraValues = {};
 		let lowCaseTestName = testType.toLowerCase();
+		lastTiming = this.getGpProbeLastTiming(testType, testResData.result);
 
 		if (lowCaseTestName === 'ping') {
 			resTiming = testResData.result?.stats?.avg;
@@ -1330,6 +1343,7 @@ module.exports = {
 				units,
 				note,
 				fullText: note ? `${Math.round(resTiming)}${units} ${note}` : `${Math.round(resTiming)}${units}`,
+				lastTiming,
 			};
 		}
 
@@ -1338,6 +1352,7 @@ module.exports = {
 			extraValues,
 			fullText: NO_PROBE_TIMING_VALUE,
 			isFailed: true,
+			lastTiming: NO_PROBE_TIMING_VALUE,
 		};
 	},
 
