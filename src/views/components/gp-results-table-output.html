@@ -154,7 +154,7 @@
 
 				if (resArrIdx === 0) {
 					return resArr.map((res) => {
-						let { isFailed = false } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
 
 						// TODO: 592, handle timing values for time-out/failed cases
 						// TODO: 592, check the stats/last timings for other types of meaurement, since a
@@ -165,7 +165,7 @@
 							statsPerProbes: [{
 								target: res.target,
 								ipAddr: res.result.resolvedAddress,
-								lastTiming: res.result.timings[res.result.timings.length - 1].rtt,
+								lastTiming,
 								minTiming: res.result.stats.min,
 								avgTiming: res.result.stats.avg,
 								maxTiming: res.result.stats.max,
@@ -182,7 +182,7 @@
 					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
 
 					if (nextReqRes) {
-						let { isFailed = false } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
 
 						// TODO: 592, handle timing values for time-out/failed cases
 						// TODO: 592, check the stats/last timings for other types of meaurement, since a
@@ -194,7 +194,7 @@
 								{
 									target: nextReqRes.target,
 									ipAddr: nextReqRes.result.resolvedAddress,
-									lastTiming: nextReqRes.result.timings[nextReqRes.result.timings.length - 1] ? nextReqRes.result.timings[nextReqRes.result.timings.length - 1].rtt : 0,
+									lastTiming,
 									minTiming: nextReqRes.result.stats.min,
 									avgTiming: nextReqRes.result.stats.avg,
 									maxTiming: nextReqRes.result.stats.max,
