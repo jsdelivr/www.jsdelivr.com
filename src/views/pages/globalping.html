@@ -450,7 +450,7 @@
 				</div>
 			</div>
 
-			<c-gp-credits-message></c-gp-credits-message>
+			<c-gp-credits-message displayMsg="{{creditsError}}"></c-gp-credits-message>
 
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
@@ -1271,6 +1271,7 @@
 				measurementsMetadata: null,
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
+				creditsError: false,
 			};
 		},
 		onrender () {
@@ -1582,7 +1583,7 @@
 			this.set('rawOutputMode', !type === 'ping' || !runInfiniteMeasurement);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
-
+			this.set('creditsError', false);
 			this.set('targetsArr', targetsArr);
 
 			// run Infinite type of the measurement
@@ -2484,7 +2485,8 @@
 						}
 
 						// TODO: 592, test flow, remove it later (cnt variable too)
-						if (cnt < 13) {
+						if (cnt < 1) {
+						// if (cnt < 13) {
 							let prepParams = {
 								...reqParams,
 								locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
@@ -2498,8 +2500,8 @@
 							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 						}
 					}).catch((err) => {
-						console.log('++++ err', err);
-						console.log('_________________________');
+						this.set('creditsError', true);
+						// TODO: 592 we should stop here test, the same functionality which is use for STOP btn
 					});
 				}).catch((err) => {
 					this.set('testInProgress', false);
