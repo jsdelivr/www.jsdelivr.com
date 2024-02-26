@@ -7,6 +7,7 @@
 <link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
 <link rel="ractive" href="../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
 <link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
+<link rel="ractive" href="../components/gp-credits-message.html" name="c-gp-credits-message">
 <link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
@@ -448,6 +449,8 @@
 					</button>
 				</div>
 			</div>
+
+			<c-gp-credits-message></c-gp-credits-message>
 
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
@@ -2494,6 +2497,9 @@
 							// TODO: 592, temp test solution
 							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 						}
+					}).catch((err) => {
+						console.log('++++ err', err);
+						console.log('_________________________');
 					});
 				}).catch((err) => {
 					this.set('testInProgress', false);
