@@ -154,16 +154,18 @@
 
 				if (resArrIdx === 0) {
 					return resArr.map((res) => {
-						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
-
-						// TODO: 592, handle timing values for time-out/failed cases
-						// TODO: 592, check the stats/last timings for other types of meaurement, since a
-						// TODO: 592 lot of them have no timings or stats, but have hops, so should be handled defferently
-						return {
+						let preparedRes = {
 							clientSideId: res.clientSideId,
 							...res.probe,
 							statsPerProbes: [{
 								target: res.target,
+							}],
+						};
+						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+
+						if (res.result.stats && lastTiming) {
+							preparedRes.statsPerProbes = [{
+								...preparedRes.statsPerProbes,
 								ipAddr: res.result.resolvedAddress,
 								lastTiming,
 								minTiming: res.result.stats.min,
@@ -173,8 +175,10 @@
 								statsDrop: res.result.stats.drop,
 								isFailed,
 								packetsRtt: res.result.timings.map(t => t.rtt),
-							}],
-						};
+							}];
+						}
+
+						return preparedRes;
 					});
 				}
 
@@ -182,17 +186,22 @@
 					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
 
 					if (nextReqRes) {
-						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
-
-						// TODO: 592, handle timing values for time-out/failed cases
-						// TODO: 592, check the stats/last timings for other types of meaurement, since a
-						// TODO: 592 lot of them have no timings or stats, but have hops, so should be handled defferently
-						return {
+						let preparedNextRes = {
 							...pR,
 							statsPerProbes: [
 								...pR.statsPerProbes,
 								{
 									target: nextReqRes.target,
+								},
+							],
+						};
+						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+
+						if (nextReqRes.result.stats) {
+							preparedNextRes.statsPerProbes = [
+								...pR.statsPerProbes,
+								{
+									...preparedNextRes.statsPerProbes[1],
 									ipAddr: nextReqRes.result.resolvedAddress,
 									lastTiming,
 									minTiming: nextReqRes.result.stats.min,
@@ -203,8 +212,10 @@
 									isFailed,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
 								},
-							],
-						};
+							];
+						}
+
+						return preparedNextRes;
 					}
 
 					return pR;
