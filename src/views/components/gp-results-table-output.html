@@ -59,7 +59,9 @@
 					{{#each this.statsPerProbes}}
 						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
-							<span>{{this.lastTiming}} / {{this.minTiming}} / {{@this.getAvgTimingValue(this.avgTiming)}} / {{this.maxTiming}} ms</span>
+							<span>
+								{{@this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
+							</span>
 						</div>
 					{{/each}}
 				</div>
@@ -471,6 +473,18 @@
 			}
 
 			return this.createRegularGraph(data.packetsRtt);
+		},
+		getTimingsStr (lastTiming, maxTiming, minTiming, avgTiming) {
+			if (
+				typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return '';
+			}
+
+			return `${lastTiming} / ${minTiming} / ${this.getAvgTimingValue(avgTiming)} / ${maxTiming} ms`;
 		},
 	};
 </script>
