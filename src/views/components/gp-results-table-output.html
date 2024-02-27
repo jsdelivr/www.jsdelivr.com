@@ -455,6 +455,10 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		calcQuality (statsTotal, statsDrop) {
+			if (typeof statsTotal === 'undefined' || typeof statsDrop === 'undefined') {
+				return '';
+			}
+
 			let actualAmount = Math.max(statsTotal - statsDrop, 0);
 
 			return `${actualAmount}/${statsTotal} - ${Math.round(actualAmount / statsTotal * 100)}%`;
