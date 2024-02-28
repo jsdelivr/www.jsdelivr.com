@@ -262,14 +262,7 @@
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
-
 					let {
-						minTiming: prevMinTiming = 0,
-						avgTiming: prevAvgTiming = [],
-						maxTiming: prevMaxTiming = 0,
-						statsTotal: prevStatsTotal = 0,
-						statsDrop: prevStatsDrop = 0,
-						packetsRtt: prevPacketsRtt = [],
 						rawPacketsRtt: prevRawPacketsRtt = {
 							keyOrder: [],
 							data: [],
@@ -296,7 +289,7 @@
 							avgTiming: calcAvgTiming,
 							maxTiming: Math.max(...finalPacketsRtt),
 							statsTotal: finalPacketsRtt.length,
-							statsDrop: 0,// TODO: 592, how to calculate dropped packets?
+							statsDrop: 0, // TODO: 592, how to calculate dropped packets?
 							isFailed,
 							packetsRtt: finalPacketsRtt,
 							rawPacketsRtt: {
@@ -304,7 +297,7 @@
 								data: {
 									...prevRawPacketsRtt.data,
 									[probeData.id]: currPacketsRtt,
-								}
+								},
 							},
 						}],
 					};
