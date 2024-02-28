@@ -1996,6 +1996,8 @@
 			resNumber = '0',
 			isShareResCase = false,
 			isLastShareReq = false,
+			isInfiniteTest = false,
+			reqParams = {},
 		}) {
 			return new Promise((resolve, reject) => {
 				let testReqInterval = setInterval(() => {
@@ -2074,6 +2076,15 @@
 
 						// should be after the mainOptions.type was set
 						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
+
+						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
+						if (isInfiniteTest && testRes.results.some(r => r.result.status === 'finished')) {
+							this.postInfiniteGlobalpingMeasurement({
+								reqParams,
+								target: testRes.target,
+								isInfiniteTest: true,
+							});
+						}
 
 						resolve(testRes);
 					}).catch((e) => {
@@ -2489,32 +2500,18 @@
 				console.error('getMultipleTestMeasurementById err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement ({ reqParams, target, measIdx = 0, cnt = 0 }) {
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteTest = true }) {
 			try {
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
-					this.getTestMeasurementById({ measurementId: res.id, resNumber: measIdx }).then((response) => {
-						if (measIdx === 0) {
-							this.set('infiniteMeasId', response.id);
-						}
+					let updReqParams = {
+						...reqParams,
+						locations: res.id,
+					};
 
-						// TODO: 592, test flow, remove it later (cnt variable too)
-						if (cnt < 10) {
-							let prepParams = {
-								...reqParams,
-								locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
-							};
+					// this.set('testInProgress', false);
+					// throw new Error('Infinite measurements have stopped because the user has run out of credits!');
 
-							this.postInfiniteGlobalpingMeasurement({ reqParams: prepParams, target, measIdx: ++measIdx, cnt: ++cnt });
-						} else {
-							this.set('testInProgress', false);
-
-							// TODO: 592, temp test solution
-							throw new Error('Infinite measurements have stopped because the user has run out of credits!');
-						}
-					}).catch(() => {
-						this.set('creditsError', true);
-						// TODO: 592 we should stop here test, the same functionality which is use for STOP btn
-					});
+					this.getTestMeasurementById({ measurementId: res.id, isInfiniteTest, reqParams: updReqParams });
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
