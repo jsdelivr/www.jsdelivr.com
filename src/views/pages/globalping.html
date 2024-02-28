@@ -1600,8 +1600,8 @@
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
 				if (targetsArr[1]) {
 					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
-						this.getTestMeasurementById(res.id);
-						this.getTestMeasurementById(res1.id, 1);
+						this.getTestMeasurementById({ measurementId: res.id });
+						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
 					}).catch((err) => {
 						this.set('testInProgress', false);
 						this.set('testFailed', true);
@@ -1609,7 +1609,7 @@
 						console.warn('Handle the second Measurement request err', err);
 					});
 				} else {
-					this.getTestMeasurementById(res.id);
+					this.getTestMeasurementById({ measurementId: res.id });
 				}
 			}).catch((err) => {
 				this.set('testInProgress', false);
@@ -1991,7 +1991,12 @@
 
 			el.scrollIntoView({ behavior: 'smooth' });
 		},
-		getTestMeasurementById (measurementId, resNumber = '0', isShareResCase = false, isLastShareReq = false) {
+		getTestMeasurementById ({
+			measurementId,
+			resNumber = '0',
+			isShareResCase = false,
+			isLastShareReq = false,
+		}) {
 			return new Promise((resolve, reject) => {
 				let testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
@@ -2472,7 +2477,12 @@
 		async getMultipleTestMeasurementById (idsArr) {
 			try {
 				for (let i = 0; i < idsArr.length; i++) {
-					await this.getTestMeasurementById(idsArr[i], i, true, idsArr.length - 1 === i);
+					await this.getTestMeasurementById({
+						measurementId: idsArr[i],
+						resNumber: i,
+						isShareResCase: true,
+						isLastShareReq: idsArr.length - 1 === i,
+					});
 				}
 			} catch (err) {
 				// TODO: 592, handle errors properly
@@ -2482,13 +2492,13 @@
 		postInfiniteGlobalpingMeasurement ({ reqParams, target, measIdx = 0, cnt = 0 }) {
 			try {
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
-					this.getTestMeasurementById(res.id, measIdx).then((response) => {
+					this.getTestMeasurementById({ measurementId: res.id, resNumber: measIdx }).then((response) => {
 						if (measIdx === 0) {
 							this.set('infiniteMeasId', response.id);
 						}
 
 						// TODO: 592, test flow, remove it later (cnt variable too)
-						if (cnt < 4) {
+						if (cnt < 10) {
 							let prepParams = {
 								...reqParams,
 								locations: measIdx === 0 ? response.id : this.get('infiniteMeasId'),
