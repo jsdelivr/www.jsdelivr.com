@@ -262,43 +262,52 @@
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
-					let timings = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
-					//- console.log("+++++ probeData", probeData);
-					//- console.log("+++++ rawOutput", probeData.result.rawOutput);
-					//- console.log("+++++ TIMINGS", timings);
-					//- console.log("_____________________");
-					if (probeData.result.status === 'finished') {
-						let {
-							minTiming: prevMinTiming = 0,
-							avgTiming: prevAvgTiming = [],
-							maxTiming: prevMaxTiming = 0,
-							statsTotal: prevStatsTotal = 0,
-							statsDrop: prevStatsDrop = 0,
-							packetsRtt: prevPacketsRtt = [],
-						} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 
-						let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
-						let currPacketsRtt = probeData.result.timings ? probeData.result.timings.map(t => t.rtt) : [];
+					let {
+						minTiming: prevMinTiming = 0,
+						avgTiming: prevAvgTiming = [],
+						maxTiming: prevMaxTiming = 0,
+						statsTotal: prevStatsTotal = 0,
+						statsDrop: prevStatsDrop = 0,
+						packetsRtt: prevPacketsRtt = [],
+						rawPacketsRtt: prevRawPacketsRtt = {
+							keyOrder: [],
+							data: [],
+						},
+					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 
-						prepResultsObj[probeDataIdx] = {
-							clientSideId: probeDataIdx,
-							...probeData.probe,
-							statsPerProbes: [{
-								target: probeData.target,
-								ipAddr: probeData.result.resolvedAddress,
-								lastTiming: probeData.result.timings[probeData.result.timings.length - 1].rtt,
-								minTiming: prevMinTiming ? Math.min(prevMinTiming, probeData.result.stats.min) : probeData.result.stats.min,
-								avgTiming: [ ...prevAvgTiming, probeData.result.stats.avg ],
-								maxTiming: Math.max(prevMaxTiming, probeData.result.stats.max),
-								statsTotal: prevStatsTotal + probeData.result.stats.total,
-								statsDrop: prevStatsDrop + probeData.result.stats.drop,
-								isFailed,
-								packetsRtt: [ ...prevPacketsRtt, ...currPacketsRtt ],
-							}],
-						};
-					} else if (probeData.result.status === 'failed' || probeData.result.status === 'offline') {
-						// TODO: 592 - handle failed or offline probes
-					}
+					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
+					let currPacketsRtt = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
+					let ipAddr = this.parseIPFromRawOutput(probeData.result.rawOutput);
+					let finalPacketsRtt = prevRawPacketsRtt.keyOrder.reduce((final, key) => {
+						return [ ...final, ...prevRawPacketsRtt.data[key] ];
+					}, []);
+					let updKeyOrder = prevRawPacketsRtt.keyOrder.includes(probeData.id) ? prevRawPacketsRtt.keyOrder : [ ...prevRawPacketsRtt.keyOrder, probeData.id ];
+					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
+
+					prepResultsObj[probeDataIdx] = {
+						clientSideId: probeDataIdx,
+						...probeData.probe,
+						statsPerProbes: [{
+							target: probeData.target,
+							ipAddr,
+							lastTiming: finalPacketsRtt[finalPacketsRtt.length - 1],
+							minTiming: Math.min(...finalPacketsRtt),
+							avgTiming: calcAvgTiming,
+							maxTiming: Math.max(...finalPacketsRtt),
+							statsTotal: finalPacketsRtt.length,
+							statsDrop: 0,// TODO: 592, how to calculate dropped packets?
+							isFailed,
+							packetsRtt: finalPacketsRtt,
+							rawPacketsRtt: {
+								keyOrder: updKeyOrder,
+								data: {
+									...prevRawPacketsRtt.data,
+									[probeData.id]: currPacketsRtt,
+								}
+							},
+						}],
+					};
 				});
 
 				return prepResultsObj;
@@ -507,6 +516,11 @@
 			}
 
 			return timings;
+		},
+		parseIPFromRawOutput (raw) {
+			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
+
+			return raw.match(ipRegex)[0];
 		},
 	};
 </script>
