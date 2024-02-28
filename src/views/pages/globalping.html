@@ -1414,6 +1414,7 @@
 						realTimeTestResResponse.forEach((rtTestRes, rtTestResIdx) => {
 							let prevTestResults = this.get(`testResults[${rtTestResIdx}]`);
 							let testResults = rtTestRes.results.map((res, resIdx) => ({
+								id: rtTestRes.id,
 								clientSideId: resIdx,
 								target: rtTestRes.target,
 								type: rtTestRes.type,
@@ -1451,6 +1452,7 @@
 							let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
 							return {
+								id: res.id,
 								clientSideId: res.clientSideId,
 								network: res.probe.network,
 								city: res.probe.city,
@@ -2505,7 +2507,7 @@
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
 					let updReqParams = {
 						...reqParams,
-						locations: res.id,
+						locations: res.id,// TODO: 592 bug here - run infinite with limit more then 1
 					};
 
 					// this.set('testInProgress', false);
