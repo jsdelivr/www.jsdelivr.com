@@ -262,6 +262,11 @@
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
+					let timings = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
+					//- console.log("+++++ probeData", probeData);
+					//- console.log("+++++ rawOutput", probeData.result.rawOutput);
+					//- console.log("+++++ TIMINGS", timings);
+					//- console.log("_____________________");
 					if (probeData.result.status === 'finished') {
 						let {
 							minTiming: prevMinTiming = 0,
@@ -491,6 +496,17 @@
 			}
 
 			return `${lastTiming} / ${minTiming} / ${this.getAvgTimingValue(avgTiming)} / ${maxTiming} ms`;
+		},
+		parseTimingsFromRawOutput (raw) {
+			let match;
+			let timings = [];
+			let regex = /time=([\d.]+) ms/g;
+
+			while ((match = regex.exec(raw)) !== null) {
+				timings.push(parseFloat(match[1]));
+			}
+
+			return timings;
 		},
 	};
 </script>
