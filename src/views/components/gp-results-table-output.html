@@ -477,7 +477,11 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		calcQuality (statsTotal, statsDrop) {
-			if (typeof statsTotal === 'undefined' || typeof statsDrop === 'undefined') {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
 				return '';
 			}
 
@@ -506,35 +510,19 @@
 
 			return `${lastTiming} / ${minTiming} / ${this.getAvgTimingValue(avgTiming)} / ${maxTiming} ms`;
 		},
-		parseTimingsFromRawOutput (raw) {let match;
+		parseTimingsFromRawOutput (raw) {
 			let timings = [];
-			let regex = /time=([\d.]+) ms/g;
 			let packetsDrop = 0;
+			let timeMatch;
+			let timeRegex = /time=(\d+(\.\d+)?)/;
+			let lineRegex = /\d+\sbytes\sfrom\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\([\d.]+\):\sicmp_seq=\d+\sttl=\d+\stime=[\d.]*\s?ms/g;
+			let lineMatch;
 
-			// split raw input by lines
-			let lines = raw.split('\n');
+			while ((lineMatch = lineRegex.exec(raw)) !== null) {
+				timeMatch = timeRegex.exec(lineMatch[0]);
 
-			for (let i = 0; i < lines.length; i++) {
-				// ignore empty lines
-				if (lines[i].trim() === '') {
-					continue;
-				}
-
-				// do not parse the footer of the raw
-				if (lines[i].startsWith("---")) {
-					break;
-				}
-
-				// ignore the header of the raw
-				if (i === 0) {
-					continue;
-				}
-
-				// if the line has no time value we count it as droped packet
-				match = regex.exec(lines[i]);
-
-				if (match !== null) {
-					timings.push(parseFloat(match[1]));
+				if (timeMatch !== null) {
+					timings.push(parseFloat(timeMatch[1]));
 				} else {
 					packetsDrop++;
 				}
