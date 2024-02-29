@@ -276,7 +276,7 @@
 						return {
 							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevRawPacketsRtt.packetsRttData[key] ],
 							finalPacketsDrop: final.finalPacketsDrop + prevRawPacketsRtt.packetsDropData[key],
-						}
+						};
 					}, { finalPacketsRtt: [], finalPacketsDrop: 0 });
 					let updKeyOrder = prevRawPacketsRtt.keyOrder.includes(probeData.id) ? prevRawPacketsRtt.keyOrder : [ ...prevRawPacketsRtt.keyOrder, probeData.id ];
 					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
@@ -511,7 +511,7 @@
 			return `${lastTiming} / ${minTiming} / ${this.getAvgTimingValue(avgTiming)} / ${maxTiming} ms`;
 		},
 		parseTimingsFromRawOutput (raw) {
-			let timings = [];
+			let packetsRtt = [];
 			let packetsDrop = 0;
 			let timeMatch;
 			let timeRegex = /time=(\d+(\.\d+)?)/;
@@ -522,15 +522,15 @@
 				timeMatch = timeRegex.exec(lineMatch[0]);
 
 				if (timeMatch !== null) {
-					timings.push(parseFloat(timeMatch[1]));
+					packetsRtt.push(parseFloat(timeMatch[1]));
 				} else {
 					packetsDrop++;
 				}
 			}
 
 			return {
-				packetsRtt: timings,
-				packetsDrop: packetsDrop
+				packetsRtt,
+				packetsDrop,
 			};
 		},
 		parseIPFromRawOutput (raw) {
