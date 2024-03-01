@@ -170,7 +170,7 @@
 											placeholder="{{defaultPacketsAmount}}"
 											labelText="Packets"
 											classList="gp_input"
-											disabled="{{infiniteMeasEnabled}}">
+											disabled="{{infiniteSwitchEnabled}}">
 										</c-controlled-input>
 									</div>
 								{{/if}}
@@ -422,12 +422,12 @@
 							</div>
 						</div>
 
-						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block {{#unless @this.isInfiniteSwitchEnabled()}}disabled{{/unless}}">
+						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block {{#unless @this.isInfiniteOptsCorrect()}}disabled{{/unless}}">
 							<label class="gp_switch">
 								<input type="checkbox"
-									checked="{{infiniteMeasEnabled}}"
+									checked="{{infiniteSwitchEnabled}}"
 									on-click="@this.handleInfiniteSwitch()"
-									{{#unless @this.isInfiniteSwitchEnabled()}}disabled="true"{{/unless}}>
+									{{#unless @this.isInfiniteOptsCorrect()}}disabled="true"{{/unless}}>
 								<span class="slider round"></span>
 							</label>
 
@@ -435,7 +435,7 @@
 						</div>
 					</div>
 
-					{{#if infiniteMeasEnabled}}
+					{{#if infiniteSwitchEnabled}}
 						<button on-click="@this.handleInfiniteMeasBtn()"
 							class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_infinite gp_btn_infinite_loading{{/if}}">
 							{{#if testInProgress}}
@@ -528,7 +528,7 @@
 							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
-							infiniteMeasurement="{{infiniteMeasEnabled}}">
+							infiniteMeasurement="{{infiniteSwitchEnabled}}">
 						</c-gp-results-table-output>
 					</div>
 				</div>
@@ -1252,7 +1252,7 @@
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
-				infiniteMeasEnabled: false,
+				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
 				netDockerCmdText: DOCKER_CMD_CONTENT,
@@ -1342,7 +1342,7 @@
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
 					this.set('modifiedMeasOptsCnt', 0);
-					this.set('infiniteMeasEnabled', false);
+					this.set('infiniteSwitchEnabled', false);
 				}, { init: false });
 
 				// handle join-network switch and commands content
@@ -1413,11 +1413,11 @@
 					}, {});
 
 					// check respStatuses and handle the case when all requests are finished unless it is an infinite flow
-					let infiniteMeasEnabled = this.get('infiniteMeasEnabled');
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 					let targetsArrLength = this.get('targetsArr').length;
 
 					if (
-						!(targetsArrLength === 1 && infiniteMeasEnabled)
+						!(targetsArrLength === 1 && infiniteSwitchEnabled)
 						&& Object.values(respStatuses).length === targetsArrLength
 						&& Object.values(respStatuses).every(s => s === true)
 					) {
@@ -1519,7 +1519,7 @@
 				// disable Infinite switch if there is more than one target
 				this.observe('mainOptions.targets', (targets) => {
 					if (targets.split(',').length > 1) {
-						this.set('infiniteMeasEnabled', false);
+						this.set('infiniteSwitchEnabled', false);
 					}
 				});
 			}
@@ -1551,7 +1551,7 @@
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 			let targetsArr = targets.split(',');
-			let infiniteMeasEnabled = this.get('infiniteMeasEnabled');
+			let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
 			// create parameters for the measurement request
 			let reqParams = {
@@ -1604,7 +1604,7 @@
 			this.set('shareResHeaderData', null);
 			this.set('realTimeTestResResponse', null);
 			// if it is infinite measurement then we should show TableOutput by default
-			this.set('rawOutputMode', !type === 'ping' || !infiniteMeasEnabled);
+			this.set('rawOutputMode', !type === 'ping' || !infiniteSwitchEnabled);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
 			this.set('creditsError', false);
@@ -1613,7 +1613,7 @@
 			this.set('isInfiniteMeasStopped', false);
 
 			// run Infinite type of the measurement
-			if (type === 'ping' && targetsArr.length === 1 && infiniteMeasEnabled) {
+			if (type === 'ping' && targetsArr.length === 1 && infiniteSwitchEnabled) {
 				this.postInfiniteGlobalpingMeasurement({ reqParams, target: targetsArr[0] });
 
 				return;
@@ -2563,22 +2563,22 @@
 				console.warn('++++ POST INF GP MEAS err', err);
 			}
 		},
-		isInfiniteSwitchEnabled () {
+		isInfiniteOptsCorrect () {
 			let { type, targets } = this.get('mainOptions');
 
 			return type === 'ping' && targets.split(',').length <= 1;
 		},
 		handleInfiniteSwitch () {
-			if (this.isInfiniteSwitchEnabled()) {
-				let infiniteMeasEnabled = this.get('infiniteMeasEnabled');
+			if (this.isInfiniteOptsCorrect()) {
+				let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
-				if (infiniteMeasEnabled) {
+				if (infiniteSwitchEnabled) {
 					this.set('notAppliedOpts.packets', '');
 				} else {
 					this.set('notAppliedOpts.packets', 16);
 				}
 
-				this.set('infiniteMeasEnabled', !infiniteMeasEnabled);
+				this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
 				this.applyOptions();
 			}
 		},
