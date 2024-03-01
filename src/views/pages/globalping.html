@@ -2507,7 +2507,7 @@
 				}
 			} catch (err) {
 				// TODO: 592, handle errors properly
-				console.error('getMultipleTestMeasurementById err:', err);
+				console.warn('++++ GET MULTI TEST MEAS BY ID err:', err);
 			}
 		},
 		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteTest = true }) {
@@ -2518,20 +2518,17 @@
 						locations: res.id,
 					};
 
-					// this.set('testInProgress', false);
-					// throw new Error('Infinite measurements have stopped because the user has run out of credits!');
-
 					this.getTestMeasurementById({ measurementId: res.id, isInfiniteTest, reqParams: updReqParams });
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
 					// TODO: 592, handle errors during Infinite measurement
-					console.warn('++++ err', err);
+					console.warn('++++ POST GP MEAS err', err);
 				});
 			} catch (err) {
 				this.set('testInProgress', false);
 				// TODO: 592, handle errors during Infinite measurement
-				console.warn('++++ err', err);
+				console.warn('++++ POST INF GP MEAS err', err);
 			}
 		},
 		isInfiniteSwitchEnabled () {
