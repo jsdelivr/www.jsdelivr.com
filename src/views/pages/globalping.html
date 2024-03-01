@@ -492,18 +492,18 @@
 						testType="{{mainOptions.type}}">
 					</c-gp-results-controls>
 
-					{{#if rawOutputMode}}
-						<div class="gp_map-block_test-output_raw-output">
-							<c-gp-results-raw-output
-								testReqParams="{{testReqParams}}"
-								testResults="{{testResults[activeTargetIdx]}}"
-								testInProgress="{{testInProgress}}"
-								scrolledToResIdx="{{scrolledToResIdx}}"
-								currSearchLocation="{{mainOptions.location}}"
-								measurementsMetadata="{{measurementsMetadata}}">
-							</c-gp-results-raw-output>
-						</div>
-					{{else}}
+					<div class="gp_map-block_test-output_raw-output {{#unless rawOutputMode}}output-hidden{{/unless}}">
+						<c-gp-results-raw-output
+							testReqParams="{{testReqParams}}"
+							testResults="{{testResults[activeTargetIdx]}}"
+							testInProgress="{{testInProgress}}"
+							scrolledToResIdx="{{scrolledToResIdx}}"
+							currSearchLocation="{{mainOptions.location}}"
+							measurementsMetadata="{{measurementsMetadata}}">
+						</c-gp-results-raw-output>
+					</div>
+
+					<div class="gp_map-block_test-output_table-output {{#if rawOutputMode}}output-hidden{{/if}}">
 						<c-gp-results-table-output
 							testReqParams="{{testReqParams}}"
 							testInProgress="{{testInProgress}}"
@@ -513,7 +513,7 @@
 							measurementsMetadata="{{measurementsMetadata}}"
 							infiniteMeasurement="{{runInfiniteMeasurement}}">
 						</c-gp-results-table-output>
-					{{/if}}
+					</div>
 				</div>
 			{{else}}
 				<div class="gp_map-block_test-output with-padding">
