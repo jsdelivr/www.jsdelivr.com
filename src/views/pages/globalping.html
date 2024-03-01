@@ -435,18 +435,35 @@
 						</div>
 					</div>
 
-					<button on-click="@this.resetMapAndRunTest()"
-						class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
-						disabled="{{testInProgress}}">
-						{{#if testInProgress}}
-							<div></div>
-							<div></div>
-							<div></div>
-							<div></div>
-						{{else}}
-							{{runTestBtnText}}
-						{{/if}}
-					</button>
+					{{#if runInfiniteMeasurement}}
+						<button on-click="@this.handleInfiniteMeasBtn()"
+							class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_infinite gp_btn_infinite_loading{{/if}}">
+							{{#if testInProgress}}
+								<span>{{runTestBtnText}}</span>
+								<div class="spinner">
+									<div></div>
+									<div></div>
+									<div></div>
+									<div></div>
+								</div>
+							{{else}}
+								{{runTestBtnText}}
+							{{/if}}
+						</button>
+					{{else}}
+						<button on-click="@this.resetMapAndRunTest()"
+							class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+							disabled="{{testInProgress}}">
+							{{#if testInProgress}}
+								<div></div>
+								<div></div>
+								<div></div>
+								<div></div>
+							{{else}}
+								{{runTestBtnText}}
+							{{/if}}
+						</button>
+					{{/if}}
 				</div>
 			</div>
 
@@ -2040,8 +2057,11 @@
 								this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
 								this.applyOptions();
 
+								if (!isInfiniteTest) {
+									this.set('runTestBtnText', 'Run Again');
+								}
+
 								// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
-								this.set('runTestBtnText', 'Run Again');
 								this.set('qsMeasurementIdsArr', []);
 							}
 						}
@@ -2512,6 +2532,8 @@
 		},
 		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteTest = true }) {
 			try {
+				this.set('runTestBtnText', 'Stop');
+
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
 					let updReqParams = {
 						...reqParams,
@@ -2549,6 +2571,18 @@
 				this.set('runInfiniteMeasurement', !runInfiniteMeasurement);
 				this.applyOptions();
 			}
+		},
+		handleInfiniteMeasBtn () {
+			let testInProgress = this.get('testInProgress');
+
+			if (testInProgress) {
+				this.stopInfiniteTest();
+			} else {
+				this.resetMapAndRunTest();
+			}
+		},
+		stopInfiniteTest () {
+			this.set('testInProgress', false);
 		},
 	};
 </script>
