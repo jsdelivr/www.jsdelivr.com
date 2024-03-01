@@ -1275,6 +1275,7 @@
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
 				creditsError: false,
+				currInfiniteMeasId: null,
 			};
 		},
 		onrender () {
@@ -1590,6 +1591,7 @@
 			this.set('measurementsMetadata', null);
 			this.set('creditsError', false);
 			this.set('targetsArr', targetsArr);
+			this.set('currInfiniteMeasId', null);
 
 			// run Infinite type of the measurement
 			if (type === 'ping' && targetsArr.length === 1 && runInfiniteMeasurement) {
@@ -2081,11 +2083,17 @@
 
 						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
 						if (isInfiniteTest && testRes.results.some(r => r.result.status === 'finished')) {
-							this.postInfiniteGlobalpingMeasurement({
-								reqParams,
-								target: testRes.target,
-								isInfiniteTest: true,
-							});
+							let currInfiniteMeasId = this.get('currInfiniteMeasId');
+
+							if (currInfiniteMeasId !== testRes.id) {
+								this.set('currInfiniteMeasId', testRes.id);
+
+								this.postInfiniteGlobalpingMeasurement({
+									reqParams,
+									target: testRes.target,
+									isInfiniteTest: true,
+								});
+							}
 						}
 
 						resolve(testRes);
@@ -2507,8 +2515,7 @@
 				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
 					let updReqParams = {
 						...reqParams,
-						locations: res.id,// TODO: 592 there is a bug, run infinite with limit more than 1
-						// after some time measuremnt id for the getTestMeasurementById will be the same, i guess it somehow related to the finished probes case
+						locations: res.id,
 					};
 
 					// this.set('testInProgress', false);
