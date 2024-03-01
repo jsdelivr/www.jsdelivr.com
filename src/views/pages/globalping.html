@@ -1292,7 +1292,7 @@
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
 				creditsError: false,
-				currInfiniteMeasId: null,
+				infiniteMeasIds: null,
 				isInfiniteMeasStopped: false,
 			};
 		},
@@ -1609,7 +1609,7 @@
 			this.set('measurementsMetadata', null);
 			this.set('creditsError', false);
 			this.set('targetsArr', targetsArr);
-			this.set('currInfiniteMeasId', null);
+			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
 
 			// run Infinite type of the measurement
@@ -2113,16 +2113,19 @@
 
 						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
 						if (isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
-							let currInfiniteMeasId = this.get('currInfiniteMeasId');
+							let infiniteMeasIds = this.get('infiniteMeasIds');
 
-							if (currInfiniteMeasId !== testRes.id && !isInfiniteMeasStopped) {
-								this.set('currInfiniteMeasId', testRes.id);
+							if (!infiniteMeasIds.includes(testRes.id)) {
+								this.set('infiniteMeasIds', [ ...infiniteMeasIds, testRes.id ]);
 
-								this.postInfiniteGlobalpingMeasurement({
-									reqParams,
-									target: testRes.target,
-									isInfiniteMeas: true,
-								});
+								if (!isInfiniteMeasStopped) {
+									this.postInfiniteGlobalpingMeasurement({
+										reqParams,
+										target: testRes.target,
+										isInfiniteMeas: true,
+										resNumber: infiniteMeasIds.length + 1,
+									});
+								}
 							}
 						}
 
@@ -2540,7 +2543,7 @@
 				console.warn('++++ GET MULTI TEST MEAS BY ID err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true }) {
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true, resNumber = 0 }) {
 			try {
 				this.set('runTestBtnText', 'Stop');
 
@@ -2550,7 +2553,7 @@
 						locations: res.id,
 					};
 
-					this.getTestMeasurementById({ measurementId: res.id, isInfiniteMeas, reqParams: updReqParams });
+					this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
