@@ -1293,6 +1293,7 @@
 				qsMeasurementIdsArr: [],
 				creditsError: false,
 				currInfiniteMeasId: null,
+				isInfiniteMeasStopped: false,
 			};
 		},
 		onrender () {
@@ -1609,6 +1610,7 @@
 			this.set('creditsError', false);
 			this.set('targetsArr', targetsArr);
 			this.set('currInfiniteMeasId', null);
+			this.set('isInfiniteMeasStopped', false);
 
 			// run Infinite type of the measurement
 			if (type === 'ping' && targetsArr.length === 1 && runInfiniteMeasurement) {
@@ -2017,7 +2019,7 @@
 			resNumber = '0',
 			isShareResCase = false,
 			isLastShareReq = false,
-			isInfiniteTest = false,
+			isInfiniteMeas = false,
 			reqParams = {},
 		}) {
 			return new Promise((resolve, reject) => {
@@ -2057,13 +2059,21 @@
 								this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
 								this.applyOptions();
 
-								if (!isInfiniteTest) {
+								if (!isInfiniteMeas) {
 									this.set('runTestBtnText', 'Run Again');
 								}
 
 								// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
 								this.set('qsMeasurementIdsArr', []);
 							}
+						}
+
+						let isInfiniteMeasStopped = this.get('isInfiniteMeasStopped');
+
+						// check if infinite measurement was stopped
+						if (isInfiniteMeas && isInfiniteMeasStopped) {
+							clearInterval(testReqInterval);
+							resolve();
 						}
 
 						// prepare and set request params to pass them to gp-test-results
@@ -2102,16 +2112,16 @@
 						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
 
 						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
-						if (isInfiniteTest && testRes.results.some(r => r.result.status === 'finished')) {
+						if (isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
 							let currInfiniteMeasId = this.get('currInfiniteMeasId');
 
-							if (currInfiniteMeasId !== testRes.id) {
+							if (currInfiniteMeasId !== testRes.id && !isInfiniteMeasStopped) {
 								this.set('currInfiniteMeasId', testRes.id);
 
 								this.postInfiniteGlobalpingMeasurement({
 									reqParams,
 									target: testRes.target,
-									isInfiniteTest: true,
+									isInfiniteMeas: true,
 								});
 							}
 						}
@@ -2530,7 +2540,7 @@
 				console.warn('++++ GET MULTI TEST MEAS BY ID err:', err);
 			}
 		},
-		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteTest = true }) {
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true }) {
 			try {
 				this.set('runTestBtnText', 'Stop');
 
@@ -2540,7 +2550,7 @@
 						locations: res.id,
 					};
 
-					this.getTestMeasurementById({ measurementId: res.id, isInfiniteTest, reqParams: updReqParams });
+					this.getTestMeasurementById({ measurementId: res.id, isInfiniteMeas, reqParams: updReqParams });
 				}).catch((err) => {
 					this.set('testInProgress', false);
 
@@ -2583,6 +2593,9 @@
 		},
 		stopInfiniteTest () {
 			this.set('testInProgress', false);
+			this.set('isInfiniteMeasStopped', true);
+			// TODO: 592, temp text, here we should show dropdown-btn with options: Test, Re-use probes
+			this.set('runTestBtnText', 'Run Again');
 		},
 	};
 </script>
