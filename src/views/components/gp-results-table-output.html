@@ -267,10 +267,11 @@
 							keyOrder: [],
 							packetsRttData: {},
 							packetsDropData: {},
+							ipAddr: null,
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
-					let ipAddr = this.parseIPFromRawOutput(probeData.result.rawOutput);
+					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
@@ -286,7 +287,7 @@
 						...probeData.probe,
 						statsPerProbes: [{
 							target: probeData.target,
-							ipAddr,
+							ipAddr: currIpAddr,
 							lastTiming: finalPacketsRtt[finalPacketsRtt.length - 1],
 							minTiming: Math.min(...finalPacketsRtt),
 							avgTiming: calcAvgTiming,
@@ -305,6 +306,7 @@
 									...prevParsedData.packetsDropData,
 									[probeData.id]: currPacketsDrop,
 								},
+								ipAddr: currIpAddr,
 							},
 						}],
 					};
