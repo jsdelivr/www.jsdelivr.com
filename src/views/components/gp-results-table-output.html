@@ -263,7 +263,7 @@
 			return rawResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
 					let {
-						rawPacketsRtt: prevRawPacketsRtt = {
+						parsedData: prevParsedData = {
 							keyOrder: [],
 							packetsRttData: {},
 							packetsDropData: {},
@@ -272,13 +272,13 @@
 					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
 					let ipAddr = this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
-					let { finalPacketsRtt, finalPacketsDrop } = prevRawPacketsRtt.keyOrder.reduce((final, key) => {
+					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
-							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevRawPacketsRtt.packetsRttData[key] ],
-							finalPacketsDrop: final.finalPacketsDrop + prevRawPacketsRtt.packetsDropData[key],
+							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
+							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
 						};
 					}, { finalPacketsRtt: [], finalPacketsDrop: 0 });
-					let updKeyOrder = prevRawPacketsRtt.keyOrder.includes(probeData.id) ? prevRawPacketsRtt.keyOrder : [ ...prevRawPacketsRtt.keyOrder, probeData.id ];
+					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
 
 					prepResultsObj[probeDataIdx] = {
@@ -295,14 +295,14 @@
 							statsDrop: finalPacketsDrop,
 							isFailed,
 							packetsRtt: finalPacketsRtt,
-							rawPacketsRtt: {
+							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
-									...prevRawPacketsRtt.packetsRttData,
+									...prevParsedData.packetsRttData,
 									[probeData.id]: currPacketsRtt,
 								},
 								packetsDropData: {
-									...prevRawPacketsRtt.packetsDropData,
+									...prevParsedData.packetsDropData,
 									[probeData.id]: currPacketsDrop,
 								},
 							},
