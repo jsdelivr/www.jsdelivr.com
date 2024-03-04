@@ -56,6 +56,17 @@
 					this.set('shareResTextToDisplay', shareResTextToDisplay);
 					this.set('shareResTextToCopy', shareResTextToCopy);
 				});
+
+				// select all share-res text of link on click
+				this.observe('testInProgress', (testInProgress) => {
+					if (!testInProgress) {
+						let shareResTextEl = this.find('#share-res-text');
+
+						shareResTextEl.addEventListener('click', () => {
+							window.getSelection().selectAllChildren(shareResTextEl);
+						});
+					}
+				}, { defer: true });
 			}
 		},
 		createShareResText (urlFlow = true) {
