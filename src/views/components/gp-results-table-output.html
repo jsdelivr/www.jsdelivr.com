@@ -164,6 +164,8 @@
 								target: res.target,
 							}],
 						};
+
+						// TODO: 592, check this it seems that the func return isFailed true while infinite even when it shouldnt
 						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
 
 						if (res.result.stats && lastTiming) {
@@ -244,7 +246,21 @@
 			let infiniteMeasurement = this.get('infiniteMeasurement');
 
 			if (infiniteMeasurement) {
-				// TODO: 592 if infinite we should get color in different way based on the quality (100% - green, 0% - red, 0-100% - yellow)
+				let { statsTotal, statsDrop } = probesData.statsPerProbes[0];
+
+				let actualAmount = Math.max(statsTotal - statsDrop, 0);
+				let quality = Math.round(actualAmount / statsTotal * 100);
+
+				if (!quality) {
+					return '';
+				} else if (quality === 100) {
+					return 'success';
+				} else if (quality === 0) {
+					// TODO: 592, failed case is not ready yet
+					return 'failure';
+				}
+
+				return 'some-issues';
 			}
 
 			if (probesData.statsPerProbes.every(s => !Object.hasOwn(s, 'isFailed'))) {
