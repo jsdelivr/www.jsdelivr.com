@@ -427,6 +427,7 @@
 								<input type="checkbox"
 									checked="{{infiniteSwitchEnabled}}"
 									on-click="@this.handleInfiniteSwitch()"
+									on-keydown="@this.handleInfiniteSwitchKeyDown(@event)"
 									{{#unless @this.isInfiniteOptsCorrect()}}disabled="true"{{/unless}}>
 								<span class="slider round"></span>
 							</label>
@@ -2583,6 +2584,11 @@
 
 				this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
 				this.applyOptions();
+			}
+		},
+		handleInfiniteSwitchKeyDown (e) {
+			if (e.key === 'Enter') {
+				this.handleInfiniteSwitch();
 			}
 		},
 		handleInfiniteMeasBtn () {
