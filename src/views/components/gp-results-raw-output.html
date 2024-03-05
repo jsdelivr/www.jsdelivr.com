@@ -97,39 +97,11 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
-					// set timings and extra timings for each test result
-					let testType = this.get('testReqParams.type');
-					let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
-
-					let timings = testResults.reduce((timingValues, result, idx) => {
-						// if result is yet in-progress do not calc timings
-						if (result.result.status === 'in-progress') {
-							timingValues.mainTimingValues.push(null);
-							timingValues.extraValues[idx] = null;
-							timingValues.failedList[idx] = null;
-
-							return timingValues;
-						}
-
-						let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
-
-						timingValues.mainTimingValues.push(fullText);
-						timingValues.extraValues[idx] = extraValues;
-						timingValues.failedList[idx] = isFailed;
-
-						return timingValues;
-					}, {
-						mainTimingValues: [],
-						extraValues: {},
-						failedList: {},
-					});
-
-					this.set('testResultsTimings', timings.mainTimingValues);
-					this.set('testResultsExtra', timings.extraValues);
-					this.set('testResultsFailedList', timings.failedList);
-
-					// set results block height based on content
-					this.setResultsBlockHeight(testResults);
+					if (this.get('infiniteMeasurement')) {
+						this.handleInfiniteResults(testResults);
+					} else {
+						this.handleRegularResults(testResults);
+					}
 				}, { defer: true });
 
 				// open result under specific index when scrool to this element from the parent called
@@ -169,6 +141,44 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+		handleRegularResults (testResults) {
+			// set timings and extra timings for each test result
+			let testType = this.get('testReqParams.type');
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+
+			let timings = testResults.reduce((timingValues, result, idx) => {
+				// if result is yet in-progress do not calc timings
+				if (result.result.status === 'in-progress') {
+					timingValues.mainTimingValues.push(null);
+					timingValues.extraValues[idx] = null;
+					timingValues.failedList[idx] = null;
+
+					return timingValues;
+				}
+
+				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
+
+				timingValues.mainTimingValues.push(fullText);
+				timingValues.extraValues[idx] = extraValues;
+				timingValues.failedList[idx] = isFailed;
+
+				return timingValues;
+			}, {
+				mainTimingValues: [],
+				extraValues: {},
+				failedList: {},
+			});
+
+			this.set('testResultsTimings', timings.mainTimingValues);
+			this.set('testResultsExtra', timings.extraValues);
+			this.set('testResultsFailedList', timings.failedList);
+
+			// set results block height based on content
+			this.setResultsBlockHeight(testResults);
+		},
+		handleInfiniteResults (testResults) {
+
 		},
 	};
 </script>
