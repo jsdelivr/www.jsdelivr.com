@@ -2,7 +2,7 @@
 
 <div class="c-gp-results-raw-output">
 	<div class="c-gp-results-raw-output_list">
-		{{#each testResults:idx}}
+		{{#each preparedTestResults:idx}}
 			<div class="c-gp-results-raw-output_list_item_top-wrapper">
 				<div class="c-gp-results-raw-output_list_item_inner-wrapper">
 					<div class="c-gp-results-raw-output_list_item">
@@ -90,6 +90,7 @@
 				testResultsTimings: [],
 				testResultsExtra: {},
 				testResultsFailedList: {},
+				preparedTestResults: [],
 			};
 		},
 		onrender () {
@@ -97,12 +98,28 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
-					if (this.get('infiniteMeasurement')) {
-						this.handleInfiniteResults(testResults);
+					let testType = this.get('testReqParams.type');
+					let infiniteMeasurement = this.get('infiniteMeasurement');
+					let updPreparedTestResults;
+
+					if (testType === 'ping' && infiniteMeasurement) {
+						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
-						this.handleRegularResults(testResults);
+						let activeTargetIdx = this.get('activeTargetIdx');
+
+						updPreparedTestResults = this.handleRegularResults(activeTargetIdx ? testResults[activeTargetIdx] : testResults);
 					}
+
+					this.set('preparedTestResults', updPreparedTestResults);
 				}, { defer: true });
+
+				// handle switching tabs when there are more than 1 targets
+				this.observe('activeTargetIdx', (activeTargetIdx) => {
+					let testResults = this.get('testResults');
+					let updPreparedTestResults = this.handleRegularResults(testResults[activeTargetIdx]);
+
+					this.set('preparedTestResults', updPreparedTestResults);
+				}, { init: false });
 
 				// open result under specific index when scrool to this element from the parent called
 				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
@@ -116,6 +133,11 @@
 
 					this.set('scrolledToResIdx', null);
 				}, { init: false });
+
+				this.observe('preparedTestResults', (preparedTestResults) => {
+					// set results block height based on content
+					this.setResultsBlockHeight(preparedTestResults);
+				});
 			}
 		},
 		hideShowTestResult (idx) {
@@ -143,10 +165,10 @@
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
 		},
 		handleRegularResults (testResults) {
-			// set timings and extra timings for each test result
 			let testType = this.get('testReqParams.type');
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
+			// set timings and extra timings for each test result
 			let timings = testResults.reduce((timingValues, result, idx) => {
 				// if result is yet in-progress do not calc timings
 				if (result.result.status === 'in-progress') {
@@ -174,11 +196,89 @@
 			this.set('testResultsExtra', timings.extraValues);
 			this.set('testResultsFailedList', timings.failedList);
 
-			// set results block height based on content
-			this.setResultsBlockHeight(testResults);
+			return testResults;
 		},
 		handleInfiniteResults (testResults) {
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+			let preparedTestResults = this.get('preparedTestResults');
 
+			let prepResults = testResults.reduce((prepResultsObj, rawRes) => {
+				rawRes.forEach((probeData, probeDataIdx) => {
+					let {
+						parsedData: prevParsedData = {
+							keyOrder: [],
+							mainTimingValues: [],
+							extraValues: {},
+							failedList: {},
+							rawOutputLines: [],
+						},
+					} = prepResultsObj[probeDataIdx] || {};
+					let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
+					let outputLinesArr = prevParsedData.keyOrder.reduce((final, key) => {
+						return [ ...final, ...prevParsedData.rawOutputLines[key] ];
+					}, []);
+					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
+
+					prepResultsObj[probeDataIdx] = {
+						clientSideId: probeDataIdx,
+						...probeData,
+						result: {
+							...probeData.result,
+							rawOutput: [ linesHeader, ...outputLinesArr ].join('\n'),
+						},
+						parsedData: {
+							keyOrder: updKeyOrder,
+							mainTimingValues: [
+								...prevParsedData.mainTimingValues,
+								fullText,
+							],
+							extraValues: {
+								...prevParsedData.extraValues,
+								[probeData.id]: extraValues,
+							},
+							failedList: {
+								...prevParsedData.failedList,
+								[probeData.id]: isFailed,
+							},
+							rawOutputLines: {
+								...prevParsedData.rawOutputLines,
+								[probeData.id]: packetLines,
+							},
+						},
+					};
+				});
+
+				return prepResultsObj;
+			}, preparedTestResults);
+
+			this.set('testResultsTimings', []);
+			this.set('testResultsExtra', {});
+			this.set('testResultsFailedList', {});
+
+			return prepResults;
+		},
+		parseLinesFromRawOutput (raw) {
+			let lines = raw.split('\n').filter(l => l);
+			let linesHeader;
+			let packetLines = [];
+
+			for (let i = 0; i < lines.length; i++) {
+				if (i === 0) {
+					linesHeader = lines[i];
+
+					continue;
+				}
+
+				if (lines[i].includes('---')) { break; }
+
+				packetLines.push(lines[i]);
+			}
+
+			return {
+				packetLines,
+				linesHeader,
+			};
 		},
 	};
 </script>
