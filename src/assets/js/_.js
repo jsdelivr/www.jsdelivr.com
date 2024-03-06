@@ -1221,7 +1221,7 @@ module.exports = {
 		let { timings = [] } = result;
 
 		if (testType === 'ping') {
-			lastTiming = timings[timings.length - 1] ? timings[timings.length - 1].rtt : NO_PROBE_TIMING_VALUE;// TODO: 592 - what value we should return in this case?
+			lastTiming = timings[timings.length - 1] ? timings[timings.length - 1].rtt : PROBE_NO_TIMING_VALUE;// TODO: 592 - what value we should return in this case?
 		}
 
 		return lastTiming;
@@ -1370,7 +1370,7 @@ module.exports = {
 			extraValues,
 			fullText: PROBE_NO_TIMING_VALUE,
 			isFailed: true,
-			lastTiming: NO_PROBE_TIMING_VALUE,
+			lastTiming: PROBE_NO_TIMING_VALUE,
 		};
 	},
 
