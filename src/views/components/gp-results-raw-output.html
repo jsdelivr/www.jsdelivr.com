@@ -48,8 +48,7 @@
 
 						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
 
-						<div class="c-gp-results-raw-output_list_item_status-line {{#if testResultsFailedList[idx]}}failed{{elseif testResultsFailedList[idx] === false}}success{{/if}}">
-						</div>
+						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this)}}"></div>
 					</div>
 
 					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
@@ -279,6 +278,30 @@
 				packetLines,
 				linesHeader,
 			};
+		},
+		getStatusLineColorClass (data, idx) {
+			if (!probesData) { return; }
+
+			// TODO: 592, handle status line color for infinite measurement outpuy
+			let infiniteMeasurement = this.get('infiniteMeasurement');
+
+			if (infiniteMeasurement) {
+				//- return 'success';
+				//- return 'failure';
+				//- return 'some-issues';
+				return '';
+			}
+
+			// handle status line color for regular measurement outpuy
+			let testResultsFailedList = this.get('testResultsFailedList');
+
+			if (testResultsFailedList[idx] === false) {
+				return 'failure';
+			} else if (testResultsFailedList[idx]) {
+				return 'success';
+			}
+
+			return 'some-issues';
 		},
 	};
 </script>
