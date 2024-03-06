@@ -18,7 +18,7 @@
 								<span>{{this.probe.network}} (AS{{this.probe.asn}})</span>
 							</span>
 
-							{{#if testResultsTimings[idx]}}
+							{{#if this.mainTimingValue}}
 								<span class="c-gp-results-raw-output_list_item_header_time main-value">
 									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
 										width="4"
@@ -26,12 +26,12 @@
 										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
 
 									<span>Time:</span>
-									<span class="c-gp-results-raw-output_list_item_header_time_value">{{testResultsTimings[idx]}}</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.mainTimingValue}}</span>
 								</span>
 							{{/if}}
 
-							{{#if testResultsExtra[idx]}}
-								{{#each testResultsExtra[idx]}}
+							{{#if this.extraValues}}
+								{{#each this.extraValues}}
 									<span class="c-gp-results-raw-output_list_item_header_time">
 										<span>{{this.text}}:</span>
 										<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
@@ -86,9 +86,6 @@
 			return {
 				_,
 				hiddenTestResults: [],
-				testResultsTimings: [],
-				testResultsExtra: {},
-				testResultsFailedList: {},
 				preparedTestResults: [],
 			};
 		},
@@ -168,35 +165,32 @@
 			let testType = this.get('testReqParams.type');
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
-			// set timings and extra timings for each test result
-			let timings = testResults.reduce((timingValues, res, idx) => {
+			return testResults.reduce((final, res, idx) => {
 				// if result is yet in-progress do not calc timings
 				if (res.result.status === 'in-progress') {
-					timingValues.mainTimingValues.push(null);
-					timingValues.extraValues[idx] = null;
-					timingValues.failedList[idx] = null;
-
-					return timingValues;
+					return [
+						...final,
+						{
+							...res,
+							mainTimingValue: null,
+							extraValues: null,
+							isFailed: null,
+						},
+					];
 				}
 
 				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, res, dnsTraceEnabled);
 
-				timingValues.mainTimingValues.push(fullText);
-				timingValues.extraValues[idx] = extraValues;
-				timingValues.failedList[idx] = isFailed;
-
-				return timingValues;
-			}, {
-				mainTimingValues: [],
-				extraValues: {},
-				failedList: {},
-			});
-
-			this.set('testResultsTimings', timings.mainTimingValues);
-			this.set('testResultsExtra', timings.extraValues);
-			this.set('testResultsFailedList', timings.failedList);
-
-			return testResults;
+				return [
+					...final,
+					{
+						...res,
+						mainTimingValue: fullText,
+						extraValues,
+						isFailed,
+					},
+				];
+			}, []);
 		},
 		handleInfiniteResults (testResults) {
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
@@ -252,10 +246,6 @@
 				return prepResultsObj;
 			}, preparedTestResults);
 
-			this.set('testResultsTimings', []);
-			this.set('testResultsExtra', {});
-			this.set('testResultsFailedList', {});
-
 			return prepResults;
 		},
 		parseLinesFromRawOutput (raw) {
@@ -280,7 +270,7 @@
 				linesHeader,
 			};
 		},
-		getStatusLineColorClass (data, idx) {
+		getStatusLineColorClass (data) {
 			if (!data) { return; }
 
 			// TODO: 592, handle status line color for infinite measurement outpuy
@@ -294,15 +284,13 @@
 			}
 
 			// handle status line color for regular measurement outpuy
-			let testResultsFailedList = this.get('testResultsFailedList');
-
-			if (testResultsFailedList[idx] === false) {
-				return 'failure';
-			} else if (testResultsFailedList[idx]) {
+			if (data.isFailed === false) {
 				return 'success';
+			} else if (data.isFailed) {
+				return 'failure';
 			}
 
-			return 'some-issues';
+			return '';
 		},
 	};
 </script>
