@@ -7,6 +7,7 @@ const LRU = require('lru-cache');
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
+const JSDELIVR_HOST = 'https://cdn.jsdelivr.net';
 const ID_PREFIX = 'id-';
 
 marked.setOptions({
@@ -20,36 +21,59 @@ marked.setOptions({
 
 const fetchFromGitHub = async (user, repo, version = 'HEAD') => {
 	let path = `${user}/${repo}/${version}`;
+	let cacheKey = `gh:${path}`;
 
-	if (cache.has(path)) {
-		return cache.get(path);
+	if (cache.has(cacheKey)) {
+		return cache.get(cacheKey);
 	}
 
 	let request = got(`${RAW_GH_USER_CONTENT_HOST}/${path}/README.md`, { resolveBodyOnly: true }).catch(() => {
 		return got(`${RAW_GH_USER_CONTENT_HOST}/${path}/README.markdown`, { resolveBodyOnly: true });
 	}).catch((error) => {
 		console.error(error);
-		cache.set(path, request, 60 * 1000);
+		cache.set(cacheKey, request, 60 * 1000);
 		return '';
 	});
 
-	cache.set(path, request);
+	cache.set(cacheKey, request);
+
+	return request;
+};
+
+const fetchFromJsDelivr = async (pkg, version) => {
+	let path = `npm/${pkg}@${version}`;
+	let cacheKey = `jsd:${path}`;
+
+	if (cache.has(cacheKey)) {
+		return cache.get(cacheKey);
+	}
+
+	let request = got(`${JSDELIVR_HOST}/${path}/README.md`, { resolveBodyOnly: true }).catch(() => {
+		return got(`${JSDELIVR_HOST}/${path}/README.markdown`, { resolveBodyOnly: true });
+	}).catch((error) => {
+		console.error(error);
+		cache.set(cacheKey, request, 60 * 1000);
+		return '';
+	});
+
+	cache.set(cacheKey, request);
 
 	return request;
 };
 
 module.exports = async (ctx) => {
 	try {
-		let { type, scope, name } = ctx.params;
+		let { type, scope, name, version } = ctx.params;
 		let readme = '';
 
 		if (type === 'gh') {
-			readme = await fetchFromGitHub(ctx.params.user, ctx.params.repo);
+			readme = await fetchFromGitHub(ctx.params.user, ctx.params.repo, version);
 		} else {
 			let pkg = scope ? scope + '/' + name : name;
 			let meta = await algoliaNode.getObjectWithCache(pkg);
+			readme = await fetchFromJsDelivr(pkg, version || meta.version);
 
-			if (meta.githubRepo) {
+			if (!readme && meta.githubRepo) {
 				readme = await fetchFromGitHub(meta.githubRepo.user, meta.githubRepo.project);
 			}
 

@@ -392,8 +392,8 @@ koaElasticUtils.addRoutes(router, [
 ], ogImage);
 
 koaElasticUtils.addRoutes(router, [
-	[ '/readme/npm/:name', '/readme/:type(npm)/:scope?/:name' ],
-	[ '/readme/gh/:user/:repo', '/readme/:type(gh)/:user/:repo' ],
+	[ '/readme/npm/:name/:version', '/readme/:type(npm)/:scope(@[^/@]+)?/:name/:version?' ],
+	[ '/readme/gh/:user/:repo/:version', '/readme/:type(gh)/:user/:repo/:version?' ],
 ], readme);
 
 /**

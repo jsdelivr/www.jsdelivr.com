@@ -35,7 +35,7 @@
 				});
 			}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3TJCMNg_5ovy2IH71ryYDUCrrv8j2E6M&amp;language=en&amp;callback=initMap"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap"></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -712,7 +712,7 @@
 								<span>{{idx + 1}}</span>
 								<span>{{this.cmd}}</span>
 								{{#if this.comment}}
-									<span>&#92; {{this.comment}}</span>
+									<span>{{this.comment}}</span>
 								{{/if}}
 							</div>
 						{{/each}}
@@ -1149,19 +1149,19 @@
 	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const DOCKER_CMD_CONTENT_FULL = [
 		{
-			cmd: 'docker run -d',
+			cmd: 'docker run -d \\',
 			comment: ' # Make sure the container runs on boot',
 		},
 		{
-			cmd: '--log-driver local',
+			cmd: '--log-driver local \\',
 			comment: ' # Use the modern logging driver to ensure old logs are deleted',
 		},
 		{
-			cmd: '--network host',
+			cmd: '--network host \\',
 			comment: ' # Bypass overlay and mesh networking to ensure they dont impact latency tests',
 		},
 		{
-			cmd: '--restart=always',
+			cmd: '--restart=always \\',
 			comment: ' # Restart the container in case it crashes',
 		},
 		{
@@ -1172,23 +1172,23 @@
 	const PODMAN_CMD_CONTENT = 'sudo podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
 	const PODMAN_CMD_CONTENT_FULL = [
 		{
-			cmd: 'sudo',
+			cmd: 'sudo \\',
 			comment: ' # Allows the --cap-add=NET_RAW option to work properly',
 		},
 		{
-			cmd: 'podman run -d',
+			cmd: 'podman run -d \\',
 			comment: ' # The container will NOT start on boot. You need to create a systemd service first.',
 		},
 		{
-			cmd: '--cap-add=NET_RAW',
+			cmd: '--cap-add=NET_RAW \\',
 			comment: ' # Network permissions to run ping',
 		},
 		{
-			cmd: '--network host',
+			cmd: '--network host \\',
 			comment: '# Bypass overlay and mesh networking to ensure they dont impact latency tests',
 		},
 		{
-			cmd: '--restart=always',
+			cmd: '--restart=always \\',
 			comment: ' # Restart the container in case it crashes',
 		},
 		{
@@ -1367,15 +1367,7 @@
 					this.set('netCmdText', netCmdText);
 					this.set('netCmdTextFull', netCmdTextFull);
 
-					let clipboardValue = netCmdTextFull.reduce((res, part, idx) => {
-						if (idx !== 0) {
-							res += '\n';
-						}
-
-						res += `${part.cmd} ${part.comment}`;
-
-						return res;
-					}, '');
+					let clipboardValue = netCmdTextFull.map(part => part.cmd).join('\n');
 
 					this.set('netCmdTextFullClipboard', clipboardValue);
 
@@ -1971,7 +1963,11 @@
 		},
 		pickMarkerColor (timing) {
 			// return default color for timed out probe
-			if (timing === _.getProbeTimeOutValue()) {
+			if (
+				timing === _.getProbeTimeOutValue()
+				|| timing === _.getProbeStatusFailedValue()
+				|| timing === _.getProbeStatusOfflineValue()
+			) {
 				return '#17233A';
 			}
 

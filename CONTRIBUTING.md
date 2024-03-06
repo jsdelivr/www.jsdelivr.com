@@ -53,5 +53,3 @@ module.exports = {
 ```
 
 Additionally, `ELASTIC_APM_SERVER_URL`, `ELASTIC_APM_SECRET_TOKEN`, `ELASTIC_SEARCH_URL` (including user + pass), and `NODE_ENV=production` should be set.
-
-Staging: https://jsdelivr-com.herokuapp.com/

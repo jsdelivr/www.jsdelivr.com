@@ -14,7 +14,9 @@ const screenType = {
 	lgDesktop: 1200,
 	xlDesktop: 1400,
 };
-const NO_PROBE_TIMING_VALUE = 'time out';
+const PROBE_NO_TIMING_VALUE = 'time out';
+const PROBE_STATUS_FAILED = 'failed';
+const PROBE_STATUS_OFFLINE = 'offline';
 
 module.exports = {
 	screenType,
@@ -1232,6 +1234,22 @@ module.exports = {
 		let lowCaseTestName = testType.toLowerCase();
 		lastTiming = this.getGpProbeLastTiming(testType, testResData.result);
 
+		if (testResData.result?.status === PROBE_STATUS_FAILED) {
+			return {
+				value: PROBE_STATUS_FAILED,
+				extraValues,
+				fullText: PROBE_STATUS_FAILED,
+				isFailed: true,
+			};
+		} else if (testResData.result?.status === PROBE_STATUS_OFFLINE) {
+			return {
+				value: PROBE_STATUS_OFFLINE,
+				extraValues,
+				fullText: PROBE_STATUS_OFFLINE,
+				isFailed: true,
+			};
+		}
+
 		if (lowCaseTestName === 'ping') {
 			resTiming = testResData.result?.stats?.avg;
 
@@ -1348,16 +1366,24 @@ module.exports = {
 		}
 
 		return {
-			value: NO_PROBE_TIMING_VALUE,
+			value: PROBE_NO_TIMING_VALUE,
 			extraValues,
-			fullText: NO_PROBE_TIMING_VALUE,
+			fullText: PROBE_NO_TIMING_VALUE,
 			isFailed: true,
 			lastTiming: NO_PROBE_TIMING_VALUE,
 		};
 	},
 
 	getProbeTimeOutValue () {
-		return NO_PROBE_TIMING_VALUE;
+		return PROBE_NO_TIMING_VALUE;
+	},
+
+	getProbeStatusFailedValue () {
+		return PROBE_STATUS_FAILED;
+	},
+
+	getProbeStatusOfflineValue () {
+		return PROBE_STATUS_OFFLINE;
 	},
 
 	capitalizeFirstLetter (word) {
