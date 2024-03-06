@@ -105,8 +105,9 @@
 						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
 						let activeTargetIdx = this.get('activeTargetIdx');
+						let regularResults = typeof activeTargetIdx !== 'undefined' ? testResults[activeTargetIdx] : testResults;
 
-						updPreparedTestResults = this.handleRegularResults(activeTargetIdx ? testResults[activeTargetIdx] : testResults);
+						updPreparedTestResults = this.handleRegularResults(regularResults);
 					}
 
 					this.set('preparedTestResults', updPreparedTestResults);
@@ -168,9 +169,9 @@
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
 			// set timings and extra timings for each test result
-			let timings = testResults.reduce((timingValues, result, idx) => {
+			let timings = testResults.reduce((timingValues, res, idx) => {
 				// if result is yet in-progress do not calc timings
-				if (result.result.status === 'in-progress') {
+				if (res.result.status === 'in-progress') {
 					timingValues.mainTimingValues.push(null);
 					timingValues.extraValues[idx] = null;
 					timingValues.failedList[idx] = null;
@@ -178,7 +179,7 @@
 					return timingValues;
 				}
 
-				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, result, dnsTraceEnabled);
+				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, res, dnsTraceEnabled);
 
 				timingValues.mainTimingValues.push(fullText);
 				timingValues.extraValues[idx] = extraValues;
@@ -280,7 +281,7 @@
 			};
 		},
 		getStatusLineColorClass (data, idx) {
-			if (!probesData) { return; }
+			if (!data) { return; }
 
 			// TODO: 592, handle status line color for infinite measurement outpuy
 			let infiniteMeasurement = this.get('infiniteMeasurement');
