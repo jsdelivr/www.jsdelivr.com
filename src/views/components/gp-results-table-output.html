@@ -271,7 +271,6 @@
 			return 'some-issues';
 		},
 		combineInfiniteResults (rawResults) {
-			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 			let preparedTestResults = this.get('preparedTestResults');
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
@@ -284,7 +283,6 @@
 							ipAddr: null,
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
-					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);// TODO: 592, cant use this func for infinite output
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
@@ -308,7 +306,7 @@
 							maxTiming: Math.max(...finalPacketsRtt),
 							statsTotal: finalPacketsRtt.length + finalPacketsDrop,
 							statsDrop: finalPacketsDrop,
-							isFailed,
+							isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
 							packetsRtt: finalPacketsRtt,
 							parsedData: {
 								keyOrder: updKeyOrder,
