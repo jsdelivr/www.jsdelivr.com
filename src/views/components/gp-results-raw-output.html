@@ -193,7 +193,6 @@
 			}, []);
 		},
 		handleInfiniteResults (testResults) {
-			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 			let preparedTestResults = this.get('preparedTestResults');
 
 			let prepResults = testResults.reduce((prepResultsObj, rawRes) => {
@@ -201,39 +200,44 @@
 					let {
 						parsedData: prevParsedData = {
 							keyOrder: [],
-							mainTimingValues: [],
-							extraValues: {},
-							failedList: {},
 							rawOutputLines: [],
 						},
 					} = prepResultsObj[probeDataIdx] || {};
-					let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
 					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
-					let outputLinesArr = prevParsedData.keyOrder.reduce((final, key) => {
-						return [ ...final, ...prevParsedData.rawOutputLines[key] ];
-					}, []);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
+					let { finalPacketsRtt, finalPacketsDrop, outputLinesArr } = prevParsedData.keyOrder.reduce((final, key) => {
+						return {
+							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
+							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
+							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
+						};
+					}, { finalPacketsRtt: [], finalPacketsDrop: 0, outputLinesArr: [] });
+					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData,
+						mainTimingValue: `${calcAvgTiming} ms`,
+						extraValues: [{
+							text: 'Loss',
+							value: this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
+							units: '%',
+						}],
+						isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
 						result: {
 							...probeData.result,
 							rawOutput: [ linesHeader, ...outputLinesArr ].join('\n'),
 						},
 						parsedData: {
 							keyOrder: updKeyOrder,
-							mainTimingValues: [
-								...prevParsedData.mainTimingValues,
-								fullText,
-							],
-							extraValues: {
-								...prevParsedData.extraValues,
-								[probeData.id]: extraValues,
+							packetsRttData: {
+								...prevParsedData.packetsRttData,
+								[probeData.id]: currPacketsRtt,
 							},
-							failedList: {
-								...prevParsedData.failedList,
-								[probeData.id]: isFailed,
+							packetsDropData: {
+								...prevParsedData.packetsDropData,
+								[probeData.id]: currPacketsDrop,
 							},
 							rawOutputLines: {
 								...prevParsedData.rawOutputLines,
@@ -291,6 +295,45 @@
 			}
 
 			return '';
+		},
+		parseTimingsFromRawOutput (raw) {
+			let packetsRtt = [];
+			let packetsDrop = 0;
+			let timeMatch;
+			let timeRegex = /time=(\d+(\.\d+)?)/;
+			let lines = raw.split('\n').filter(l => l);
+
+			for (let i = 0; i < lines.length; i++) {
+				if (i === 0) { continue; }
+
+				if (lines[i].includes('---')) { break; }
+
+				timeMatch = timeRegex.exec(lines[i]);
+
+				if (timeMatch !== null) {
+					packetsRtt.push(parseFloat(timeMatch[1]));
+				} else {
+					packetsDrop++;
+				}
+			}
+
+			return {
+				packetsRtt,
+				packetsDrop,
+			};
+		},
+		calcLoss (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return null;
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+
+			return Math.round(statsDrop / actualAmount * 100);
 		},
 	};
 </script>
