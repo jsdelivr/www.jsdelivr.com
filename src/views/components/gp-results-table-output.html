@@ -165,7 +165,6 @@
 							}],
 						};
 
-						// TODO: 592, check this it seems that the func return isFailed true while infinite even when it shouldnt
 						let { isFailed = false, lastTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
 
 						if (res.result.stats && lastTiming) {
@@ -285,7 +284,7 @@
 							ipAddr: null,
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
-					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);
+					let { isFailed = false } = _.calcGpTestResTiming(probeData.type, probeData, dnsTraceEnabled);// TODO: 592, cant use this func for infinite output
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
