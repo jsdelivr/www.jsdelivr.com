@@ -212,7 +212,7 @@
 							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
 						};
 					}, { finalPacketsRtt: [], finalPacketsDrop: 0, outputLinesArr: [] });
-					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
+					let calcAvgTiming = Math.round(finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length);
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 
 					prepResultsObj[probeDataIdx] = {
