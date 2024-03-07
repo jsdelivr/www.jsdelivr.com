@@ -284,7 +284,7 @@
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = this.parseTimingsFromRawOutput(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
 							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
@@ -535,32 +535,6 @@
 			}
 
 			return `${lastTiming} / ${minTiming} / ${this.getAvgTimingValue(avgTiming)} / ${maxTiming} ms`;
-		},
-		parseTimingsFromRawOutput (raw) {
-			let packetsRtt = [];
-			let packetsDrop = 0;
-			let timeMatch;
-			let timeRegex = /time=(\d+(\.\d+)?)/;
-			let lines = raw.split('\n').filter(l => l);
-
-			for (let i = 0; i < lines.length; i++) {
-				if (i === 0) { continue; }
-
-				if (lines[i].includes('---')) { break; }
-
-				timeMatch = timeRegex.exec(lines[i]);
-
-				if (timeMatch !== null) {
-					packetsRtt.push(parseFloat(timeMatch[1]));
-				} else {
-					packetsDrop++;
-				}
-			}
-
-			return {
-				packetsRtt,
-				packetsDrop,
-			};
 		},
 		parseIPFromRawOutput (raw) {
 			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;

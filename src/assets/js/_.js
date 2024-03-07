@@ -1421,4 +1421,31 @@ module.exports = {
 			return uniquesArr;
 		}, []);
 	},
+
+	parseGpRawOutputForTimings (raw) {
+		let packetsRtt = [];
+		let packetsDrop = 0;
+		let timeMatch;
+		let timeRegex = /time=(\d+(\.\d+)?)/;
+		let lines = raw.split('\n').filter(l => l);
+
+		for (let i = 0; i < lines.length; i++) {
+			if (i === 0) { continue; }
+
+			if (lines[i].includes('---')) { break; }
+
+			timeMatch = timeRegex.exec(lines[i]);
+
+			if (timeMatch !== null) {
+				packetsRtt.push(parseFloat(timeMatch[1]));
+			} else {
+				packetsDrop++;
+			}
+		}
+
+		return {
+			packetsRtt,
+			packetsDrop,
+		};
+	},
 };
