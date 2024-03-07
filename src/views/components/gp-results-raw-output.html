@@ -281,10 +281,17 @@
 			let infiniteMeasurement = this.get('infiniteMeasurement');
 
 			if (infiniteMeasurement) {
-				// return 'success';
-				// return 'failure';
-				// return 'some-issues';
-				return '';
+				let loss = data.extraValues[0].value;
+
+				if (typeof loss !== 'number') {
+					return '';
+				} else if (loss === 100) {
+					return 'failure';
+				} else if (loss === 0) {
+					return 'success';
+				}
+
+				return 'some-issues';
 			}
 
 			// handle status line color for regular measurement outpuy
