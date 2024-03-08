@@ -161,7 +161,8 @@
 				<c-gp-results-raw-output
 					testReqParams="{{testReqParams}}"
 					testResults="{{testResults}}"
-					testInProgress="{{testInProgress}}">
+					testInProgress="{{testInProgress}}"
+					measurementsMetadata="{{measurementsMetadata}}">
 				</c-gp-results-raw-output>
 			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
@@ -379,6 +380,20 @@
 
 					this.set('title', title);
 					this.set('description', description);
+				});
+
+				// set measurementsMetadata for the c-gp-results-share component
+				this.observe('testReqParams', (testReqParams) => {
+					if (!testReqParams) { return; }
+
+					let measurementsMetadata = {
+						0: {
+							target: testReqParams.target,
+							measurementId: testReqParams.id,
+						},
+					};
+
+					this.set('measurementsMetadata', measurementsMetadata);
 				});
 			}
 		},
