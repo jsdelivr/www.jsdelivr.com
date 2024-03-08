@@ -77,6 +77,7 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
 
 	component.exports = {
 		decorators: {
@@ -227,7 +228,7 @@
 						isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
 						result: {
 							...probeData.result,
-							rawOutput: [ linesHeader, ...outputLinesArr ].join('\n'),
+							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
 						},
 						parsedData: {
 							keyOrder: updKeyOrder,
@@ -312,6 +313,11 @@
 			let actualAmount = Math.max(statsTotal - statsDrop, 0);
 
 			return Math.round(statsDrop / actualAmount * 100);
+		},
+		handleRawOutput (header, lines) {
+			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
+
+			return limitedLines.join('\n');
 		},
 	};
 </script>
