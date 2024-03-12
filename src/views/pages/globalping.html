@@ -2110,10 +2110,6 @@
 							this.scrollMapIntoView();
 						}
 
-						// TODO: 592, handle getGlobalpingMeasurement error
-						console.log('+++++ getTestMeasurementById err', e);
-						console.log('______________________________');
-
 						reject(e);
 					});
 				}, 1000);
@@ -2502,42 +2498,29 @@
 
 			return marker;
 		},
-		// TODO: 592, rewrite this method to call each methods at the same time and not one by one
 		async getMultipleTestMeasurementById (idsArr) {
-			try {
-				for (let i = 0; i < idsArr.length; i++) {
-					await this.getTestMeasurementById({
-						measurementId: idsArr[i],
-						resNumber: i,
-						isShareResCase: true,
-						isLastShareReq: idsArr.length - 1 === i,
-					});
-				}
-			} catch (err) {
-				// TODO: 592, handle errors properly
-				console.warn('++++ GET MULTI TEST MEAS BY ID err:', err);
+			for (let i = 0; i < idsArr.length; i++) {
+				await this.getTestMeasurementById({
+					measurementId: idsArr[i],
+					resNumber: i,
+					isShareResCase: true,
+					isLastShareReq: idsArr.length - 1 === i,
+				});
 			}
 		},
 		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true, resNumber = 0 }) {
-			try {
-				this.set('runTestBtnText', 'Stop');
+			this.set('runTestBtnText', 'Stop');
 
-				http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
-					let updReqParams = {
-						...reqParams,
-						locations: res.id,
-					};
+			http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
+				let updReqParams = {
+					...reqParams,
+					locations: res.id,
+				};
 
-					this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
-				}).catch((err) => {
-					this.handlePostGPMeasError(err);
-				});
-			// TODO: 592, current, does this code (whole this try catch thing) below ever even work?
-			} catch (err) {
-				this.set('testInProgress', false);
-				console.log('++++ INFINITE TRY CATCH err', err);
-				console.log('_________________________');
-			}
+				this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
+			}).catch((err) => {
+				this.handlePostGPMeasError(err);
+			});
 		},
 		isInfiniteOptsCorrect () {
 			let { type, target } = this.get('mainOptions');
