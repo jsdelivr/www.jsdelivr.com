@@ -102,6 +102,8 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
+	const PROBE_MAX_TIMING = 200;
+	const PROBE_MIN_TIMING = 5;
 
 	component.exports = {
 		decorators: {
@@ -474,21 +476,18 @@
 				return color.toString(16).padStart(2, '0');
 			}
 
-			// TODO: 592
-			let probesMaxTiming = 200;
-			let probesMinTiming = 5;
 			let pureTimingValue = parseInt(timing);
 
 			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
-			if (pureTimingValue <= probesMinTiming) {
+			if (pureTimingValue <= PROBE_MIN_TIMING) {
 				return '#17d4a7';
 			}
 
-			if (pureTimingValue >= probesMaxTiming) {
+			if (pureTimingValue >= PROBE_MAX_TIMING) {
 				return '#e64e3d';
 			}
 
-			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
+			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		getQualityString (statsTotal, statsDrop) {
 			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
