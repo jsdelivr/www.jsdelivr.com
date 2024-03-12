@@ -1627,13 +1627,13 @@
 						this.getTestMeasurementById({ measurementId: res.id });
 						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
 					}).catch((err) => {
-						this.handlePostGPMeasError({ err });
+						this.handlePostGPMeasError(err);
 					});
 				} else {
 					this.getTestMeasurementById({ measurementId: res.id });
 				}
 			}).catch((err) => {
-				this.handlePostGPMeasError({ err });
+				this.handlePostGPMeasError(err);
 			});
 		},
 		applyOptions () {
@@ -2531,7 +2531,7 @@
 
 					this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
 				}).catch((err) => {
-					this.handlePostGPMeasError({ err, isInfinite: true });
+					this.handlePostGPMeasError(err);
 				});
 			// TODO: 592, current, does this code (whole this try catch thing) below ever even work?
 			} catch (err) {
@@ -2579,41 +2579,37 @@
 			// TODO: 592, temp text, here we should show dropdown-btn with options: Test, Re-use probes
 			this.set('runTestBtnText', 'Run Again');
 		},
-		handlePostGPMeasError ({ err, isInfinite = false }) {
+		handlePostGPMeasError (err) {
 			this.set('testInProgress', false);
 			this.set('testFailed', true);
 
-			switch (err.error.type) {
-				case 'validation_error':
-					let measurementOptsErr = false;
-					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let splittedKeyName = key.split('.');
-						let splittedKeyNameLength = splittedKeyName.length;
-						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+			if (err.error.type === 'validation_error') {
+				let measurementOptsErr = false;
+				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+					let splittedKeyName = key.split('.');
+					let splittedKeyNameLength = splittedKeyName.length;
+					let fieldName = splittedKeyName[splittedKeyNameLength - 1];
+					let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
-						res[fieldName] = errMsg;
+					res[fieldName] = errMsg;
 
-						if (splittedKeyName[0] === 'measurementOptions') {
-							measurementOptsErr = true;
-						}
-
-						return res;
-					}, {});
-
-					this.set('inputErrors', inputErrors);
-
-					// open measurement options menu if it contains errors
-					if (measurementOptsErr) {
-						this.set('showMeasurementOpts', true);
+					if (splittedKeyName[0] === 'measurementOptions') {
+						measurementOptsErr = true;
 					}
-				break;
 
-				case 'no_probes_found':
-					this.set('inputErrors', {
-						noProbesFound: err.error.message,
-					});
-				break;
+					return res;
+				}, {});
+
+				this.set('inputErrors', inputErrors);
+
+				// open measurement options menu if it contains errors
+				if (measurementOptsErr) {
+					this.set('showMeasurementOpts', true);
+				}
+			} else if (err.error.type === 'no_probes_found') {
+				this.set('inputErrors', {
+					noProbesFound: err.error.message,
+				});
 			}
 		},
 	};
