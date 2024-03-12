@@ -115,8 +115,8 @@
 
 					<c-tags-input
 						inputId="targetInput"
-						value="{{mainOptions.targets}}"
-						error="{{inputErrors.targets}}"
+						value="{{mainOptions.target}}"
+						error="{{inputErrors.target}}"
 						placeholder="e.g. IP or domain"
 						labelText="Target(s)"
 						inputIcon="target-icon.svg">
@@ -1198,7 +1198,7 @@
 	];
 	const INITIAL_MAIN_OPTS_VALUES = {
 		type: 'ping',
-		targets: '',
+		target: '',
 		location: 'World',
 		limit: '10',
 	};
@@ -1512,8 +1512,8 @@
 				});
 
 				// disable Infinite switch if there is more than one target
-				this.observe('mainOptions.targets', (targets) => {
-					if (targets.split(',').length > 1) {
+				this.observe('mainOptions.target', (target) => {
+					if (target.split(',').length > 1) {
 						let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
 						if (infiniteSwitchEnabled) {
@@ -1548,10 +1548,10 @@
 			}
 		},
 		proceedToTest () {
-			let { type, targets, location, limit } = this.get('mainOptions');
+			let { type, target, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
-			let targetsArr = targets.split(',');
+			let targetsArr = target.split(',');
 			let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
 			// create parameters for the measurement request
@@ -1627,46 +1627,13 @@
 						this.getTestMeasurementById({ measurementId: res.id });
 						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
 					}).catch((err) => {
-						this.set('testInProgress', false);
-						this.set('testFailed', true);
-						// TODO: 592
-						console.warn('Handle the second Measurement request err', err);
+						this.handlePostGPMeasError({ err });
 					});
 				} else {
 					this.getTestMeasurementById({ measurementId: res.id });
 				}
 			}).catch((err) => {
-				this.set('testInProgress', false);
-				this.set('testFailed', true);
-
-				if (err.error.type === 'validation_error') {
-					let measurementOptsErr = false;
-					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let splittedKeyName = key.split('.');
-						let splittedKeyNameLength = splittedKeyName.length;
-						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
-
-						res[fieldName] = errMsg;
-
-						if (splittedKeyName[0] === 'measurementOptions') {
-							measurementOptsErr = true;
-						}
-
-						return res;
-					}, {});
-
-					this.set('inputErrors', inputErrors);
-
-					// open measurement options menu if it contains errors
-					if (measurementOptsErr) {
-						this.set('showMeasurementOpts', true);
-					}
-				} else if (err.error.type === 'no_probes_found') {
-					this.set('inputErrors', {
-						noProbesFound: err.error.message,
-					});
-				}
+				this.handlePostGPMeasError({ err });
 			});
 		},
 		applyOptions () {
@@ -2031,11 +1998,11 @@
 				let testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
 						if (isShareResCase) {
-							let currentTargets = this.get('mainOptions.targets');
+							let currentTargets = this.get('mainOptions.target');
 							let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
 							let updTargetsArr = currTargetsArr.indexOf(testRes.target) < 0 ? [ ...currTargetsArr, testRes.target ] : currTargetsArr;
 
-							this.set('mainOptions.targets', updTargetsArr.join(','));
+							this.set('mainOptions.target', updTargetsArr.join(','));
 
 							if (isLastShareReq) {
 								this.set('targetsArr', updTargetsArr);
@@ -2143,6 +2110,10 @@
 							this.set('runTestBtnText', 'Run Test');
 							this.scrollMapIntoView();
 						}
+
+						// TODO: 592, handle getGlobalpingMeasurement error
+						console.log('+++++ getTestMeasurementById err', e);
+						console.log('______________________________');
 
 						reject(e);
 					});
@@ -2365,7 +2336,7 @@
 				let { protocol, port, pathname, hostname, search } = new URL(rawPasteContent);
 
 				this.set('mainOptions.type', 'HTTP');
-				this.set('mainOptions.targets', hostname);
+				this.set('mainOptions.target', hostname);
 				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
 				this.set('notAppliedOpts.port', port);
 				this.set('notAppliedOpts.request.path', pathname !== '/' ? pathname : '');
@@ -2373,7 +2344,7 @@
 			} catch (err) {
 				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
 
-				this.set('mainOptions.targets', rawPasteContent);
+				this.set('mainOptions.target', rawPasteContent);
 
 				if (this.get('mainOptions.type') === 'HTTP') {
 					this.set('httpOpts.protocol', defaultClientProtocol);
@@ -2560,21 +2531,19 @@
 
 					this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
 				}).catch((err) => {
-					this.set('testInProgress', false);
-
-					// TODO: 592, handle errors during Infinite measurement
-					console.warn('++++ POST GP MEAS err', err);
+					this.handlePostGPMeasError({ err, isInfinite: true });
 				});
+			// TODO: 592, current, does this code (whole this try catch thing) below ever even work?
 			} catch (err) {
 				this.set('testInProgress', false);
-				// TODO: 592, handle errors during Infinite measurement
-				console.warn('++++ POST INF GP MEAS err', err);
+				console.log('++++ INFINITE TRY CATCH err', err);
+				console.log('_________________________');
 			}
 		},
 		isInfiniteOptsCorrect () {
-			let { type, targets } = this.get('mainOptions');
+			let { type, target } = this.get('mainOptions');
 
-			return type === 'ping' && targets.split(',').length <= 1;
+			return type === 'ping' && target.split(',').length <= 1;
 		},
 		handleInfiniteSwitch () {
 			if (this.isInfiniteOptsCorrect()) {
@@ -2609,6 +2578,43 @@
 			this.set('isInfiniteMeasStopped', true);
 			// TODO: 592, temp text, here we should show dropdown-btn with options: Test, Re-use probes
 			this.set('runTestBtnText', 'Run Again');
+		},
+		handlePostGPMeasError ({ err, isInfinite = false }) {
+			this.set('testInProgress', false);
+			this.set('testFailed', true);
+
+			switch (err.error.type) {
+				case 'validation_error':
+					let measurementOptsErr = false;
+					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+						let splittedKeyName = key.split('.');
+						let splittedKeyNameLength = splittedKeyName.length;
+						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
+						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+						res[fieldName] = errMsg;
+
+						if (splittedKeyName[0] === 'measurementOptions') {
+							measurementOptsErr = true;
+						}
+
+						return res;
+					}, {});
+
+					this.set('inputErrors', inputErrors);
+
+					// open measurement options menu if it contains errors
+					if (measurementOptsErr) {
+						this.set('showMeasurementOpts', true);
+					}
+				break;
+
+				case 'no_probes_found':
+					this.set('inputErrors', {
+						noProbesFound: err.error.message,
+					});
+				break;
+			}
 		},
 	};
 </script>
