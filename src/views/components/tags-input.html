@@ -11,15 +11,10 @@
 			<span class="c-tags-input_info_errorMsg">
 				{{error}}
 			</span>
-
-			<img class="c-tags-input_err-icon"
-				width="20"
-				height="20"
-				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
 		{{/if}}
 	</div>
 
-	<div class="c-tags-input_tags-block" id="{{inputWrapperIdPrefix + inputId}}">
+	<div class="c-tags-input_tags-block {{#if error}}has-error{{/if}} " id="{{inputWrapperIdPrefix + inputId}}">
 		<div class="c-tags-input_tags-block_tags-list">
 			{{#each tagsArr:tagIdx}}
 				<div class="c-tags-input_tags-block_tags-list_tag">
@@ -43,12 +38,19 @@
 				src="{{@shared.assetsHost}}/img/globalping/{{inputIcon}}">
 		{{/if}}
 
+		{{#if error}}
+			<img class="c-tags-input_tags-block_err-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
+		{{/if}}
+
 		<input
 			id="{{inputId}}"
 			value="{{inputValue}}"
 			type="text"
 			placeholder="{{placeholder}}"
-			class="{{#if error}}has-error{{/if}} {{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}}">
+			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}}">
 	</div>
 </label>
 
