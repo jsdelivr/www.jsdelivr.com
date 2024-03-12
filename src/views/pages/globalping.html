@@ -438,18 +438,25 @@
 
 
 					{{#if true}}
-						<button class="gp_map-block_settings-wrapper_settings_split-btn gp_btn_green">
-								<div class="gp_map-block_settings-wrapper_settings_split-btn_btn">
-									<div class="gp_map-block_settings-wrapper_settings_split-btn_btn_text">Run</div>
-									<div class="gp_map-block_settings-wrapper_settings_split-btn_btn_icon">
-										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg">
+						<div class="btn-group">
+							<button type="button"
+								class="dropdown-toggle gp_map-block_settings-wrapper_settings_split-btn gp_btn_green"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+									<div class="gp_map-block_settings-wrapper_settings_split-btn_btn">
+										<div class="gp_map-block_settings-wrapper_settings_split-btn_btn_text">Run</div>
+										<div class="gp_map-block_settings-wrapper_settings_split-btn_btn_icon">
+											<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg">
+										</div>
 									</div>
-								</div>
-								<div class="gp_map-block_settings-wrapper_settings_split-btn_dropdown">
-									<span>Test</span>
-									<span>Re-use probes</span>
-								</div>
-						</button>
+							</button>
+
+							<div class="dropdown-menu gp_map-block_settings-wrapper_settings_split-btn_dropdown">
+								<span on-click="@this.resetMapAndRunTest()">Test</span>
+								<span on-click="@this.reUseProbesRunTest()">Re-use probes</span>
+							</div>
+						</div>
 					{{elseif infiniteSwitchEnabled}}
 						<button on-click="@this.handleInfiniteMeasBtn()"
 							class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_infinite gp_btn_infinite_loading{{/if}}">
@@ -2608,6 +2615,9 @@
 					noProbesFound: err.error.message,
 				});
 			}
+		},
+		reUseProbesRunTest () {
+
 		},
 	};
 </script>
