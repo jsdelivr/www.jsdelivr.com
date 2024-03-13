@@ -1319,6 +1319,7 @@
 				creditsError: false,
 				infiniteMeasIds: null,
 				isInfiniteMeasStopped: false,
+				prevProbesMeasId: null,
 			};
 		},
 		onrender () {
@@ -1568,7 +1569,7 @@
 				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
 			}
 		},
-		proceedToTest () {
+		proceedToTest (prevProbesMeasId) {
 			let { type, target, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
@@ -1633,6 +1634,7 @@
 			this.set('targetsArr', targetsArr);
 			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
+			this.set('prevProbesMeasId', null);
 
 			// run Infinite type of the measurement
 			if (type === 'ping' && targetsArr.length === 1 && infiniteSwitchEnabled) {
@@ -1641,10 +1643,22 @@
 				return;
 			}
 
+			// re-use probes case
+			if (prevProbesMeasId) {
+				reqParams = {
+					...reqParams,
+					locations: prevProbesMeasId,
+				};
+			}
+
 			// common type of the measurement
 			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
+				// set measurement ID for re-use probes case
+				this.set('prevProbesMeasId', res.id);
+
 				if (targetsArr[1]) {
-					http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[1], locations: res.id }).then((res1) => {
+					// order of the parameters below matters, because we need to rewrite locations prop for the re-use case
+					http.postGlobalpingMeasurement({ locations: res.id, ...reqParams, target: targetsArr[1] }).then((res1) => {
 						this.getTestMeasurementById({ measurementId: res.id });
 						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
 					}).catch((err) => {
@@ -2261,7 +2275,7 @@
 
 			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
 		},
-		resetMapAndRunTest () {
+		resetMapAndRunTest (prevProbesMeasId = null) {
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			if (mq.matches) {
@@ -2274,7 +2288,7 @@
 
 			// once zoom is ended the idle event will be fired
 			map.addListener('idle', () => {
-				this.proceedToTest();
+				this.proceedToTest(prevProbesMeasId);
 				// remove listener to avoid unintended test runs while zoom
 				google.maps.event.clearListeners(map, 'idle');
 			});
@@ -2617,7 +2631,9 @@
 			}
 		},
 		reUseProbesRunTest () {
+			let prevProbesMeasId = this.get('prevProbesMeasId');
 
+			this.resetMapAndRunTest(prevProbesMeasId);
 		},
 	};
 </script>
