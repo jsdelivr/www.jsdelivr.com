@@ -2548,6 +2548,9 @@
 			this.set('runTestBtnText', 'Stop');
 
 			http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
+				// set measurement ID for re-use probes case
+				this.set('prevProbesMeasId', res.id);
+
 				let updReqParams = {
 					...reqParams,
 					locations: res.id,
