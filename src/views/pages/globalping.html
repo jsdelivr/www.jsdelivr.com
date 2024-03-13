@@ -1636,19 +1636,19 @@
 			this.set('isInfiniteMeasStopped', false);
 			this.set('prevProbesMeasId', null);
 
-			// run Infinite type of the measurement
-			if (type === 'ping' && targetsArr.length === 1 && infiniteSwitchEnabled) {
-				this.postInfiniteGlobalpingMeasurement({ reqParams, target: targetsArr[0] });
-
-				return;
-			}
-
 			// re-use probes case
 			if (prevProbesMeasId) {
 				reqParams = {
 					...reqParams,
 					locations: prevProbesMeasId,
 				};
+			}
+
+			// run Infinite type of the measurement
+			if (type === 'ping' && targetsArr.length === 1 && infiniteSwitchEnabled) {
+				this.postInfiniteGlobalpingMeasurement({ reqParams, target: targetsArr[0] });
+
+				return;
 			}
 
 			// common type of the measurement
