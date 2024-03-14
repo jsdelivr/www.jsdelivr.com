@@ -96,10 +96,10 @@
 					if (!testResults) { return; }
 
 					let testType = this.get('testReqParams.type');
-					let infiniteMeasurement = this.get('infiniteMeasurement');
+					let isInfiniteModeRes = this.get('isInfiniteModeRes');
 					let updPreparedTestResults;
 
-					if (testType === 'ping' && infiniteMeasurement) {
+					if (testType === 'ping' && isInfiniteModeRes) {
 						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
 						let activeTargetIdx = this.get('activeTargetIdx');
@@ -278,7 +278,7 @@
 		getStatusLineColorClass (data) {
 			if (!data) { return; }
 
-			if (this.get('infiniteMeasurement')) {
+			if (this.get('isInfiniteModeRes')) {
 				let loss = data.extraValues[0].value;
 
 				if (typeof loss !== 'number') {

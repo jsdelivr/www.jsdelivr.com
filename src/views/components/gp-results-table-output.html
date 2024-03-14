@@ -93,7 +93,7 @@
 		<c-gp-results-share
 			testReqParams="{{testReqParams}}"
 			measurementsMetadata="{{measurementsMetadata}}"
-			infiniteMeasurement="{{infiniteMeasurement}}"
+			isInfiniteModeRes="{{isInfiniteModeRes}}"
 			testInProgress="{{testInProgress}}">
 		</c-gp-results-share>
 	{{/if}}
@@ -121,10 +121,10 @@
 					if (!testResults) { return; }
 
 					let testType = this.get('testReqParams.type');
-					let infiniteMeasurement = this.get('infiniteMeasurement');
+					let isInfiniteModeRes = this.get('isInfiniteModeRes');
 					let updPreparedTestResults;
 
-					if (testType === 'ping' && infiniteMeasurement) {
+					if (testType === 'ping' && isInfiniteModeRes) {
 						updPreparedTestResults = this.combineInfiniteResults(testResults);
 					} else {
 						updPreparedTestResults = this.combineResults(testResults);
@@ -244,9 +244,9 @@
 		getStatusLineColorClass (probesData) {
 			if (!probesData) { return; }
 
-			let infiniteMeasurement = this.get('infiniteMeasurement');
+			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
-			if (infiniteMeasurement) {
+			if (isInfiniteModeRes) {
 				let { statsTotal, statsDrop } = probesData.statsPerProbes[0];
 				let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
@@ -515,9 +515,9 @@
 			};
 		},
 		createGraph (data) {
-			let infiniteMeasurement = this.get('infiniteMeasurement');
+			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
-			if (infiniteMeasurement) {
+			if (isInfiniteModeRes) {
 				return this.createRealTimeGraph(data.packetsRtt);
 			}
 
