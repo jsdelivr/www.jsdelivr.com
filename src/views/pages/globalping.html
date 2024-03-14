@@ -540,7 +540,7 @@
 							scrolledToResIdx="{{scrolledToResIdx}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
-							infiniteMeasurement="{{infiniteSwitchEnabled}}">
+							isInfiniteModeRes="{{isInfiniteModeRes}}">
 						</c-gp-results-raw-output>
 					</div>
 
@@ -552,7 +552,7 @@
 							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
-							infiniteMeasurement="{{infiniteSwitchEnabled}}">
+							isInfiniteModeRes="{{isInfiniteModeRes}}">
 						</c-gp-results-table-output>
 					</div>
 				</div>
@@ -1625,8 +1625,6 @@
 			this.set('shareResFlow', false);
 			this.set('shareResHeaderData', null);
 			this.set('realTimeTestResResponse', null);
-			// if it is infinite measurement then we should show TableOutput by default
-			this.set('rawOutputMode', !type === 'ping' || !infiniteSwitchEnabled);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
 			this.set('creditsError', false);
@@ -1634,6 +1632,11 @@
 			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
 			this.set('prevProbesMeasId', null);
+
+			// if it is infinite measurement then we should show TableOutput by default
+			this.set('rawOutputMode', !type === 'ping' || !infiniteSwitchEnabled);
+			// is designed to prevent the way the test results are displayed from changing when the user toggles the infinite switch
+			this.set('isInfiniteModeRes', infiniteSwitchEnabled);
 
 			// re-use probes case
 			if (prevProbesMeasId) {
