@@ -2656,6 +2656,7 @@
 					let dropdownMenu = dropdownComponent.querySelector('.dropdown-menu');
 
 					if (dropdownMenu && event.relatedTarget && !dropdownMenu.contains(event.relatedTarget)) {
+						dropdownMenu.querySelectorAll(".dropdown-item.active").forEach(item => item.classList.remove("active"));
 						button.setAttribute('aria-expanded', false);
 						dropdownComponent.classList.remove('open');
 					}
@@ -2694,9 +2695,7 @@
 						} else if (event.key === 'Enter') {
 							if (activeItem) {
 								activeItem.click();
-							} else if (button && document.activeElement === button) {
-								return;
-							} else {
+							} else if (!(button && document.activeElement === button)) {
 								let firstItem = dropdownMenu.firstElementChild;
 
 								if (firstItem) {
