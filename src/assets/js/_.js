@@ -384,6 +384,7 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
+			// onFailReturnStatus = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
@@ -425,6 +426,7 @@ module.exports = {
 						resolve(response);
 					}
 				} else {
+					// eslint-disable-next-line prefer-promise-reject-errors
 					reject({
 						...response,
 						responseStatusCode: xhr.status,
