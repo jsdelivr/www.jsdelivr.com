@@ -2613,7 +2613,9 @@
 			this.set('testInProgress', false);
 			this.set('testFailed', true);
 
-			if (err.error.type === 'validation_error') {
+			if (err.responseStatusCode === 429) {
+				this.set('creditsError', true);
+			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
 				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
 					let splittedKeyName = key.split('.');
