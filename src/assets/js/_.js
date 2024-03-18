@@ -384,7 +384,6 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
-			onFailReturnStatus = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
@@ -426,11 +425,10 @@ module.exports = {
 						resolve(response);
 					}
 				} else {
-					if (onFailReturnStatus) {
-						reject(new Error(xhr.status));
-					} else {
-						reject(response);
-					}
+					reject({
+						...response,
+						responseStatusCode: xhr.status,
+					});
 				}
 			};
 
