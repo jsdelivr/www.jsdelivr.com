@@ -44,6 +44,12 @@
 					</div>
 				{{/if}}
 
+				<!-- <div class="results-table_column results-table_column_failure row-num-{{resIdx}}">
+					{{#each this.statsPerTarget}}
+						<div>{{this.rawOutput}}</div>
+					{{/each}}
+				</div> -->
+
 				<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
@@ -251,12 +257,11 @@
 				let { statsTotal, statsDrop } = probesData.statsPerTarget[0];
 				let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
-				if (!qualityPercentage) {
+				if (qualityPercentage === null) {
 					return '';
 				} else if (qualityPercentage === 100) {
 					return 'success';
 				} else if (qualityPercentage === 0) {
-					// TODO: 592, failed case is not ready yet
 					return 'failure';
 				}
 
@@ -309,7 +314,7 @@
 							maxTiming: Math.max(...finalPacketsRtt),
 							statsTotal: finalPacketsRtt.length + finalPacketsDrop,
 							statsDrop: finalPacketsDrop,
-							isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
+							isFailed: false || probeData.result.status,
 							packetsRtt: finalPacketsRtt,
 							parsedData: {
 								keyOrder: updKeyOrder,
