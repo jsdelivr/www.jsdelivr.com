@@ -36,8 +36,8 @@
 
 				{{#if targetsCnt > 1}}
 					<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
-						{{#each this.statsPerProbes}}
-							<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+						{{#each this.statsPerTarget}}
+							<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 								<span>{{this.target}}</span>
 							</div>
 						{{/each}}
@@ -45,8 +45,8 @@
 				{{/if}}
 
 				<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
-					{{#each this.statsPerProbes}}
-						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+					{{#each this.statsPerTarget}}
+						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_quality_value_header">Quality</span>
 							<span>
 								{{@this.getQualityString(this.statsTotal, this.statsDrop)}}
@@ -56,8 +56,8 @@
 				</div>
 
 				<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
-					{{#each this.statsPerProbes}}
-						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+					{{#each this.statsPerTarget}}
+						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
 							<span>
 								{{@this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
@@ -67,8 +67,8 @@
 				</div>
 
 				<div class="results-table_column results-table_column_ip row-num-{{resIdx}}">
-					{{#each this.statsPerProbes}}
-						<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+					{{#each this.statsPerTarget}}
+						<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_ip_value_header">IP</span>
 							<span>{{this.ipAddr}}</span>
 						</div>
@@ -76,8 +76,8 @@
 				</div>
 
 				<div class="results-table_column results-table_column_graph row-num-{{resIdx}}">
-					{{#each this.statsPerProbes}}
-						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerProbes.length === 1}}single-cell{{/if}}">
+					{{#each this.statsPerTarget}}
+						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_graph_value_header">Graph</span>
 							<div>{{{ @this.createGraph(this) }}}</div>
 						</div>
@@ -163,7 +163,7 @@
 						let preparedRes = {
 							clientSideId: res.clientSideId,
 							...res.probe,
-							statsPerProbes: [{
+							statsPerTarget: [{
 								target: res.target,
 							}],
 						};
@@ -171,8 +171,8 @@
 						let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
 
 						if (res.result.stats && lastTiming) {
-							preparedRes.statsPerProbes = [{
-								...preparedRes.statsPerProbes[0],
+							preparedRes.statsPerTarget = [{
+								...preparedRes.statsPerTarget[0],
 								ipAddr: res.result.resolvedAddress,
 								lastTiming,
 								minTiming: res.result.stats.min || PROBE_NO_TIMING_VALUE,
@@ -195,8 +195,8 @@
 					if (nextReqRes) {
 						let preparedNextRes = {
 							...pR,
-							statsPerProbes: [
-								...pR.statsPerProbes,
+							statsPerTarget: [
+								...pR.statsPerTarget,
 								{
 									target: nextReqRes.target,
 								},
@@ -205,10 +205,10 @@
 						let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
 
 						if (nextReqRes.result.stats) {
-							preparedNextRes.statsPerProbes = [
-								...pR.statsPerProbes,
+							preparedNextRes.statsPerTarget = [
+								...pR.statsPerTarget,
 								{
-									...preparedNextRes.statsPerProbes[1],
+									...preparedNextRes.statsPerTarget[1],
 									ipAddr: nextReqRes.result.resolvedAddress,
 									lastTiming,
 									minTiming: nextReqRes.result.stats.min || PROBE_NO_TIMING_VALUE,
@@ -248,7 +248,7 @@
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
 			if (isInfiniteModeRes) {
-				let { statsTotal, statsDrop } = probesData.statsPerProbes[0];
+				let { statsTotal, statsDrop } = probesData.statsPerTarget[0];
 				let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
 				if (!qualityPercentage) {
@@ -263,11 +263,11 @@
 				return 'some-issues';
 			}
 
-			if (probesData.statsPerProbes.every(s => !Object.hasOwn(s, 'isFailed'))) {
+			if (probesData.statsPerTarget.every(s => !Object.hasOwn(s, 'isFailed'))) {
 				return '';
-			} else if (probesData.statsPerProbes.every(s => s.isFailed === false)) {
+			} else if (probesData.statsPerTarget.every(s => s.isFailed === false)) {
 				return 'success';
-			} else if (probesData.statsPerProbes.every(s => s.isFailed === true)) {
+			} else if (probesData.statsPerTarget.every(s => s.isFailed === true)) {
 				return 'failure';
 			}
 
@@ -285,7 +285,7 @@
 							packetsDropData: {},
 							ipAddr: null,
 						},
-					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerProbes[0] : {};
+					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerTarget[0] : {};
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
@@ -300,7 +300,7 @@
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData.probe,
-						statsPerProbes: [{
+						statsPerTarget: [{
 							target: probeData.target,
 							ipAddr: currIpAddr,
 							lastTiming: finalPacketsRtt[finalPacketsRtt.length - 1],
