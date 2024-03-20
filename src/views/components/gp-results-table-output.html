@@ -44,12 +44,6 @@
 					</div>
 				{{/if}}
 
-				<!-- <div class="results-table_column results-table_column_failure row-num-{{resIdx}}">
-					{{#each this.statsPerTarget}}
-						<div>{{this.rawOutput}}</div>
-					{{/each}}
-				</div> -->
-
 				<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
@@ -111,6 +105,8 @@
 	const PROBE_MAX_TIMING = 200;
 	const PROBE_MIN_TIMING = 5;
 	const PROBE_NO_TIMING_VALUE = 'time out';
+	const PROBE_STATUS_FAILED = 'failed';
+	const PROBE_STATUS_OFFLINE = 'offline';
 
 	component.exports = {
 		decorators: {
@@ -314,7 +310,9 @@
 							maxTiming: Math.max(...finalPacketsRtt),
 							statsTotal: finalPacketsRtt.length + finalPacketsDrop,
 							statsDrop: finalPacketsDrop,
-							isFailed: false || probeData.result.status,
+							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
+							isOffline: probeData.result.status === PROBE_STATUS_OFFLINE,
+							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
 							parsedData: {
 								keyOrder: updKeyOrder,
@@ -561,6 +559,16 @@
 			let ipAddr = match ? match[0] : '';
 
 			return ipAddr;
+		},
+		getFailureProbeRawOutput (probeData) {
+			let rawOutput;
+			let { status = null } = probeData.result;
+
+			if (status === PROBE_STATUS_OFFLINE || status === PROBE_STATUS_FAILED) {
+				rawOutput = probeData.result.rawOutput;
+			}
+
+			return rawOutput;
 		},
 	};
 </script>
