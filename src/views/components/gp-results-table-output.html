@@ -1,4 +1,5 @@
 <link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
+<link rel="ractive" href="../components/placeholder-skeleton.html" name="c-placeholder-skeleton">
 
 <div class="c-gp-results-table-output">
 	<div class="results-table-wrapper">
@@ -38,7 +39,11 @@
 					<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
 						{{#each this.statsPerTarget}}
 							<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-								<span>{{this.target}}</span>
+								{{#if this.target}}
+									<span>{{this.target}}</span>
+								{{else}}
+									<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+								{{/if}}
 							</div>
 						{{/each}}
 					</div>
@@ -48,9 +53,13 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_quality_value_header">Quality</span>
-							<span>
-								{{@this.getQualityString(this.statsTotal, this.statsDrop)}}
-							</span>
+							{{#if this.statsTotal && this.statsDrop}}
+								<span>
+									{{@this.getQualityString(this.statsTotal, this.statsDrop)}}
+								</span>
+							{{else}}
+								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+							{{/if}}
 						</div>
 					{{/each}}
 				</div>
@@ -59,9 +68,13 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
-							<span>
-								{{@this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
-							</span>
+							{{#if @this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
+								<span>
+									{{@this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
+								</span>
+							{{else}}
+								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+							{{/if}}
 						</div>
 					{{/each}}
 				</div>
@@ -70,7 +83,11 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_ip_value_header">IP</span>
-							<span>{{this.ipAddr}}</span>
+							{{#if this.ipAddr}}
+								<span>{{this.ipAddr}}</span>
+							{{else}}
+								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+							{{/if}}
 						</div>
 					{{/each}}
 				</div>
