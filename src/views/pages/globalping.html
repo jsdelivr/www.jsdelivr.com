@@ -1642,7 +1642,10 @@
 			this.set('prevProbesMeasId', null);
 
 			// if it is infinite measurement then we should show TableOutput by default
-			this.set('rawOutputMode', !type === 'ping' || !infiniteSwitchEnabled);
+			// otherwise leave prev value set by user
+			if (type === 'ping' && infiniteSwitchEnabled) {
+				this.set('rawOutputMode', false);
+			}
 			// is designed to prevent the way the test results are displayed from changing when the user toggles the infinite switch
 			this.set('isInfiniteModeRes', infiniteSwitchEnabled);
 
