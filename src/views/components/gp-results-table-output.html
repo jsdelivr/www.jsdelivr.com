@@ -53,10 +53,8 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_quality_value_header">Quality</span>
-							{{#if this.statsTotal && this.statsDrop}}
-								<span>
-									{{@this.getQualityString(this.statsTotal, this.statsDrop)}}
-								</span>
+							{{#if this.qualityStr}}
+								<span>{{this.qualityStr}}</span>
 							{{else}}
 								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 							{{/if}}
@@ -201,6 +199,7 @@
 								statsDrop: res.result.stats.drop,
 								isFailed,
 								packetsRtt: res.result.timings.map(t => t.rtt),
+								qualityStr: this.createQualityString(res.result.stats.total, res.result.stats.drop),
 							}];
 						}
 
@@ -237,6 +236,7 @@
 									statsDrop: nextReqRes.result.stats.drop,
 									isFailed,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
+									qualityStr: this.createQualityString(nextReqRes.result.stats.total, nextReqRes.result.stats.drop),
 								},
 							];
 						}
@@ -331,6 +331,7 @@
 							isOffline: probeData.result.status === PROBE_STATUS_OFFLINE,
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
+							qualityStr: this.createQualityString(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
@@ -511,7 +512,7 @@
 
 			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
-		getQualityString (statsTotal, statsDrop) {
+		createQualityString (statsTotal, statsDrop) {
 			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
 			return qualityPercentage !== null ? `${actualAmount}/${statsTotal} - ${qualityPercentage}%` : '';
