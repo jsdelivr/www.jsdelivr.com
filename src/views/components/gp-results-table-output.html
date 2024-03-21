@@ -66,10 +66,8 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
-							{{#if @this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
-								<span>
-									{{@this.getTimingsStr(this.lastTiming, this.maxTiming, this.minTiming, this.avgTiming)}}
-								</span>
+							{{#if this.timingsStr}}
+								<span>{{this.timingsStr}}</span>
 							{{else}}
 								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 							{{/if}}
@@ -200,6 +198,12 @@
 								isFailed,
 								packetsRtt: res.result.timings.map(t => t.rtt),
 								qualityStr: this.createQualityString(res.result.stats.total, res.result.stats.drop),
+								timingsStr: this.createTimingsString(
+									lastTiming,
+									res.result.stats.max || PROBE_NO_TIMING_VALUE,
+									res.result.stats.min || PROBE_NO_TIMING_VALUE,
+									avgTiming,
+								),
 							}];
 						}
 
@@ -237,6 +241,12 @@
 									isFailed,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
 									qualityStr: this.createQualityString(nextReqRes.result.stats.total, nextReqRes.result.stats.drop),
+									timingsStr: this.createTimingsString(
+										lastTiming,
+										nextReqRes.result.stats.max || PROBE_NO_TIMING_VALUE,
+										nextReqRes.result.stats.min || PROBE_NO_TIMING_VALUE,
+										avgTiming,
+									),
 								},
 							];
 						}
@@ -332,6 +342,12 @@
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
 							qualityStr: this.createQualityString(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
+							timingsStr: this.createTimingsString(
+								finalPacketsRtt[finalPacketsRtt.length - 1],
+								Math.max(...finalPacketsRtt),
+								Math.min(...finalPacketsRtt),
+								calcAvgTiming,
+							),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
@@ -546,7 +562,7 @@
 
 			return this.createRegularGraph(data.packetsRtt);
 		},
-		getTimingsStr (lastTiming, maxTiming, minTiming, avgTiming) {
+		createTimingsString (lastTiming, maxTiming, minTiming, avgTiming) {
 			if (
 				typeof lastTiming === 'undefined'
 				|| typeof maxTiming === 'undefined'
