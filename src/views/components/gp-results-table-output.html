@@ -327,7 +327,12 @@
 						};
 					}, { finalPacketsRtt: [], finalPacketsDrop: 0 });
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
-					let calcAvgTiming = (finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length).toFixed(2);
+					let realPacketsRttValues = finalPacketsRtt.filter(v => typeof v === 'number');
+					let currMaxValue = realPacketsRttValues.length ? Math.max(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
+					let currMinValue = realPacketsRttValues.length ? Math.min(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
+					let calcAvgTiming = realPacketsRttValues.length
+						? (realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length).toFixed(2)
+						: PROBE_NO_TIMING_VALUE;
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
@@ -336,20 +341,20 @@
 							target: probeData.target,
 							ipAddr: currIpAddr,
 							lastTiming: finalPacketsRtt[finalPacketsRtt.length - 1],
-							minTiming: Math.min(...finalPacketsRtt),
+							minTiming: currMinValue,
 							avgTiming: calcAvgTiming,
-							maxTiming: Math.max(...finalPacketsRtt),
-							statsTotal: finalPacketsRtt.length + finalPacketsDrop,
+							maxTiming: currMaxValue,
+							statsTotal: finalPacketsRtt.length,
 							statsDrop: finalPacketsDrop,
 							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
 							isOffline: probeData.result.status === PROBE_STATUS_OFFLINE,
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
-							qualityStr: this.createQualityString(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
+							qualityStr: this.createQualityString(realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
 							timingsStr: this.createTimingsString(
-								finalPacketsRtt[finalPacketsRtt.length - 1],
-								Math.max(...finalPacketsRtt),
-								Math.min(...finalPacketsRtt),
+								realPacketsRttValues[realPacketsRttValues.length - 1],
+								currMaxValue,
+								currMinValue,
 								calcAvgTiming,
 							),
 							parsedData: {
@@ -412,7 +417,7 @@
 				this.push('displayedRowsIdxes', rowIdx);
 			}, 4);
 		},
-		getAvgTimingValue (timing) {
+		getAvgTimingValueToDisplay (timing) {
 			// for infinite results timing is an array of avg timing values
 			if (Array.isArray(timing)) {
 				let sum = timing.reduce((sum, t) => sum + t, 0);
@@ -432,7 +437,7 @@
 		) {
 			if (!data) { return; }
 
-			let maxValue = Math.max(...data);
+			let maxValue = Math.max(...data.filter(v => typeof v === 'number'));
 			let maxBars = Math.floor(svgWidth / (barWidth + gap));
 			let startIndex = Math.max(data.length - maxBars, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -442,7 +447,7 @@
 			svg.style.backgroundColor = svgBgColor;
 
 			for (let i = startIndex; i < data.length; i++) {
-				let percentage = data[i] < maxValue ? data[i] / maxValue : 1;
+				let percentage = data[i] === maxValue || data[i] === PROBE_NO_TIMING_VALUE ? 1 : data[i] / maxValue;
 				let barHeight = percentage * svgHeight;
 
 				let x = svgWidth - ((data.length - 1 - i) * (barWidth + gap)) - barWidth;
@@ -576,7 +581,7 @@
 				return '';
 			}
 
-			let avgTimingValue = this.getAvgTimingValue(avgTiming);
+			let avgTimingValue = this.getAvgTimingValueToDisplay(avgTiming);
 			let timingStr = `${lastTiming} / ${minTiming} / ${avgTimingValue} / ${maxTiming}`;
 
 			// if probe has timing values - show 'ms', otherwise it is time out
