@@ -92,7 +92,11 @@
 					{{#each this.statsPerTarget}}
 						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
 							<span class="results-table_column_graph_value_header">Graph</span>
-							<div>{{{ @this.createGraph(this) }}}</div>
+							{{#if typeof this.packetsRtt !== 'undefined'}}
+								<div>{{{ @this.createGraph(this.packetsRtt) }}}</div>
+							{{else}}
+								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+							{{/if}}
 						</div>
 					{{/each}}
 				</div>
@@ -553,14 +557,14 @@
 				actualAmount,
 			};
 		},
-		createGraph (data) {
+		createGraph (packetsRtt) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
 			if (isInfiniteModeRes) {
-				return this.createRealTimeGraph(data.packetsRtt);
+				return this.createRealTimeGraph(packetsRtt);
 			}
 
-			return this.createRegularGraph(data.packetsRtt);
+			return this.createRegularGraph(packetsRtt);
 		},
 		createTimingsString (lastTiming, maxTiming, minTiming, avgTiming) {
 			if (
