@@ -1428,6 +1428,7 @@ module.exports = {
 		let timeMatch;
 		let timeRegex = /time=(\d+(\.\d+)?)/;
 		let lines = raw.split('\n').filter(l => l);
+		let currPacketRtt;
 
 		for (let i = 0; i < lines.length; i++) {
 			if (i === 0) { continue; }
@@ -1436,11 +1437,14 @@ module.exports = {
 
 			timeMatch = timeRegex.exec(lines[i]);
 
-			if (timeMatch !== null) {
-				packetsRtt.push(parseFloat(timeMatch[1]));
-			} else {
+			if (timeMatch === null) {
 				packetsDrop++;
+				currPacketRtt = PROBE_NO_TIMING_VALUE;
+			} else {
+				currPacketRtt = parseFloat(timeMatch[1]);
 			}
+
+			packetsRtt.push(currPacketRtt);
 		}
 
 		return {
