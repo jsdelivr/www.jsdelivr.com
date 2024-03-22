@@ -121,9 +121,9 @@
 	const tooltip = require('../../assets/js/decorators/tooltip');
 	const PROBE_MAX_TIMING = 200;
 	const PROBE_MIN_TIMING = 5;
-	const PROBE_NO_TIMING_VALUE = 'time out';
-	const PROBE_STATUS_FAILED = 'failed';
-	const PROBE_STATUS_OFFLINE = 'offline';
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
 		decorators: {
@@ -497,7 +497,7 @@
 		},
 		pickBarColor (timing) {
 			// return default color for timed out probe
-			if (timing === _.getProbeTimeOutValue()) {
+			if (timing === PROBE_NO_TIMING_VALUE) {
 				return '#17233A';
 			}
 
