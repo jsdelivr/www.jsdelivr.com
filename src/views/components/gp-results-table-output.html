@@ -462,23 +462,23 @@
 		) {
 			if (!data) { return; }
 
-			// TODO: 592, temp, graph logic should be fixed, now is can't display normally more than 16 bars
-			data = data.slice(-16);
+			data = data.slice(-20);
 
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
-			svg.setAttribute('width', svgWidth);
+			let numBars = data.length;
+			let spaceWidth = 1;
+			let barWidth = Math.round(svgWidth / numBars - spaceWidth);
+			let maxValue = Math.max(...data.filter(v => typeof v === 'number'));
+			let actualWidth = barWidth * numBars + (numBars - 1) * spaceWidth;
+
+			svg.setAttribute('width', actualWidth > svgWidth ? actualWidth : svgWidth);
 			svg.setAttribute('height', svgHeight);
 			svg.style.backgroundColor = svgBgColor;
 
-			let numBars = data.length;
-			// TODO: 592 graph is broken, can't display odd amount of bars for example
-			let barWidth = svgWidth / (numBars * 2);
-			let maxValue = Math.max(...data.filter(v => typeof v === 'number'));
-
 			data.forEach((value, index) => {
 				let barHeight = value === PROBE_NO_TIMING_VALUE ? svgHeight : (value / maxValue) * svgHeight;
-				let xPosition = (index * 2 + 1) * barWidth;
+				let xPosition = index * spaceWidth + index * barWidth
 				let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
 				rect.setAttribute('x', xPosition);
