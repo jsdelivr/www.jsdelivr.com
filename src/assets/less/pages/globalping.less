@@ -247,6 +247,12 @@
 				}
 			}
 
+			&_line {
+				width: 100%;
+				height: 1px;
+				background: #e7e7ee;
+			}
+
 			&_settings-wrapper {
 				display: flex;
 				flex-direction: column;
@@ -256,7 +262,7 @@
 				padding: 24px;
 
 				@media (min-width: @screen-sm-min) {
-					padding: 32px;
+					padding: 32px 32px 24px;
 				}
 
 				&_settings {
@@ -294,6 +300,14 @@
 					}
 
 					&_location {
+						&:not(:nth-child(1)) {
+							margin-top: 10px;
+
+							@media (min-width: @screen-sm-min) {
+								margin-top: 0;
+							}
+						}
+
 						@media (min-width: @screen-sm-min) and (max-width: @screen-md-min) {
 							max-width: 80px;
 						}
@@ -307,7 +321,7 @@
 						width: 72px;
 					}
 
-					&_target, &_location, &_limit {
+					&_target, &_limit {
 						&:not(:nth-child(1)) {
 							margin-top: 16px;
 
@@ -351,6 +365,12 @@
 								border: 1.5px solid #e1e1e1;
 								box-shadow: 0 2px 2px rgba(0, 0, 0, .04);
 								border-radius: 8px;
+
+								&:focus-visible {
+									box-shadow: 0 2px 2px rgba(0, 0, 0, .04), 0 0 0 1px #fff, 0 0 0 4px rgba(23, 212, 167, .48);
+									border: 1.5px solid #e7e7ee;
+									outline: none;
+								}
 
 								&.active {
 									background: #cfd6dd;
@@ -524,6 +544,30 @@
 							height: 40px;
 							align-items: center;
 							column-gap: 8px;
+
+							&:focus-within {
+								.gp_switch .slider {
+									transition: none;
+									box-shadow: 0 2px 2px rgba(0, 0, 0, .04), 0 0 0 1px #fff, 0 0 0 4px rgba(23, 212, 167, .48);
+									border: 1.5px solid #e7e7ee;
+								}
+							}
+
+							>span {
+								white-space: nowrap;
+							}
+
+							&.disabled {
+								opacity: .5;
+
+								> label > span:before {
+									background: #808080;
+								}
+
+								>span {
+									opacity: .4;
+								}
+							}
 						}
 					}
 
@@ -534,8 +578,85 @@
 
 						@media (min-width: @screen-sm-min) {
 							width: auto;
-							min-width: 96px;
+							min-width: 98px;
 							margin-top: 0;
+						}
+					}
+
+					.btn-group.open {
+						.gp_map-block_settings-wrapper_settings_split-btn_dropdown {
+							display: flex;
+							right: 0;
+							left: auto;
+							flex-direction: column;
+							align-items: flex-start;
+							background: #fff;
+							border: 1px solid #e7e7ee;
+							border-radius: 8px;
+							padding: 0;
+							margin-top: 4px;
+							overflow: hidden;
+
+							.dropdown-item {
+								display: flex;
+								align-items: center;
+								justify-content: flex-start;
+								width: 100%;
+								height: 40px;
+								color: #17233a;
+								font-size: 16px;
+								font-weight: 400;
+								line-height: 20px;
+								letter-spacing: 0;
+								padding: 0 16px;
+								cursor: pointer;
+
+								&:hover, &.active {
+									background: #f3f5f7;
+								}
+
+								&:nth-child(1) {
+									border-bottom: 1px solid #e7e7ee;
+								}
+							}
+						}
+					}
+
+					&_split-btn {
+						display: flex;
+						border-radius: 8px;
+						margin-top: 16px;
+						width: 100%;
+						white-space: nowrap;
+						padding: 0;
+
+						@media (min-width: @screen-sm-min) {
+							width: auto;
+							min-width: 98px;
+							margin-top: 0;
+						}
+
+						&_btn {
+							display: flex;
+							align-items: center;
+							width: 100%;
+
+							&_text {
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								height: 40px;
+								flex-grow: 1;
+								border-right: 1px solid rgba(255, 255, 255, .4);
+							}
+
+							&_icon {
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								width: 30px;
+								flex-shrink: 0;
+							}
 						}
 					}
 				}
@@ -547,10 +668,13 @@
 				align-items: center;
 				justify-content: center;
 				width: 100%;
-				padding: 24px;
 
-				@media (min-width: @screen-sm-min) {
-					padding: 32px 32px 32px 4px;
+				&.with-padding {
+					padding: 24px;
+
+					@media (min-width: @screen-sm-min) {
+						padding: 32px;
+					}
 				}
 
 				&_info, &_fail-msg {
@@ -576,6 +700,25 @@
 						font-size: 16px;
 						line-height: 32px;
 						color: #17233a;
+					}
+				}
+
+				&_raw-output, &_table-output {
+					width: 100%;
+					visibility: visible;
+
+					&.output-hidden {
+						position: absolute;
+						left: -100%;
+						visibility: hidden;
+					}
+				}
+
+				&_raw-output {
+					padding: 24px;
+
+					@media (min-width: @screen-sm-min) {
+						padding: 0 32px 32px 4px;
 					}
 				}
 			}

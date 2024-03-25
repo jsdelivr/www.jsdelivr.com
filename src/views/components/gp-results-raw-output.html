@@ -1,0 +1,323 @@
+<link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
+
+<div class="c-gp-results-raw-output">
+	<div class="c-gp-results-raw-output_list">
+		{{#each preparedTestResults:idx}}
+			<div class="c-gp-results-raw-output_list_item_top-wrapper">
+				<div class="c-gp-results-raw-output_list_item_inner-wrapper">
+					<div class="c-gp-results-raw-output_list_item">
+						<div class="c-gp-results-raw-output_list_item_header">
+							<span class="c-gp-results-raw-output_list_item_header_info">
+								<span>
+									<img width="28"
+										height="20"
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.probe.country}}.svg">
+										{{this.probe.city}}, {{this.probe.country}}, {{this.probe.continent}}
+								</span>
+								<span>&nbsp;-&nbsp;</span>
+								<span>{{this.probe.network}} (AS{{this.probe.asn}})</span>
+							</span>
+
+							{{#if this.mainTimingValue}}
+								<span class="c-gp-results-raw-output_list_item_header_time main-value">
+									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
+										width="4"
+										height="4"
+										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
+
+									<span>Time:</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.mainTimingValue}}</span>
+								</span>
+							{{/if}}
+
+							{{#if this.extraValues}}
+								{{#each this.extraValues}}
+									<span class="c-gp-results-raw-output_list_item_header_time">
+										<span>{{this.text}}:</span>
+										<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+									</span>
+								{{/each}}
+							{{/if}}
+
+							<img on-click="@this.hideShowTestResult(idx)"
+								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+								width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
+						</div>
+
+						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
+
+						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this)}}"></div>
+					</div>
+
+					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
+				</div>
+
+				<div class="c-gp-results-raw-output_list_item_top-wrapper_actions">
+					<div class="c-gp-results-raw-output_list_item_top-wrapper_actions_btn"
+						as-tooltip="'Set as location for the next test', 'right'"
+						on-click="@this.setProbeAsLocation(this.probe)">
+						<i class="fa fa-map-marker" aria-hidden="true"></i>
+					</div>
+				</div>
+			</div>
+		{{/each}}
+	</div>
+
+	{{#if testReqParams.id && !testInProgress}}
+		<c-gp-results-share
+			testReqParams="{{testReqParams}}"
+			measurementsMetadata="{{measurementsMetadata}}"
+			testInProgress="{{testInProgress}}">
+		</c-gp-results-share>
+	{{/if}}
+</div>
+
+<script>
+	const _ = require('../../assets/js/_');
+	const tooltip = require('../../assets/js/decorators/tooltip');
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				_,
+				hiddenTestResults: [],
+				preparedTestResults: [],
+			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					let testType = this.get('testReqParams.type');
+					let isInfiniteModeRes = this.get('isInfiniteModeRes');
+					let updPreparedTestResults;
+
+					if (testType === 'ping' && isInfiniteModeRes) {
+						updPreparedTestResults = this.handleInfiniteResults(testResults);
+					} else {
+						let activeTargetIdx = this.get('activeTargetIdx');
+						let regularResults = typeof activeTargetIdx !== 'undefined' ? testResults[activeTargetIdx] : testResults;
+
+						updPreparedTestResults = this.handleRegularResults(regularResults);
+					}
+
+					this.set('preparedTestResults', updPreparedTestResults);
+				}, { defer: true });
+
+				// handle switching tabs when there are more than 1 targets
+				this.observe('activeTargetIdx', (activeTargetIdx) => {
+					let testResults = this.get('testResults');
+					let updPreparedTestResults = this.handleRegularResults(testResults[activeTargetIdx]);
+
+					this.set('preparedTestResults', updPreparedTestResults);
+				}, { init: false });
+
+				// open result under specific index when scrool to this element from the parent called
+				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
+					if (scrolledToResIdx === null) { return; }
+
+					let hiddenTestResults = this.get('hiddenTestResults');
+
+					if (hiddenTestResults.includes(scrolledToResIdx)) {
+						this.hideShowTestResult(scrolledToResIdx);
+					}
+
+					this.set('scrolledToResIdx', null);
+				}, { init: false });
+
+				this.observe('preparedTestResults', (preparedTestResults) => {
+					// set results block height based on content
+					this.setResultsBlockHeight(preparedTestResults);
+				});
+			}
+		},
+		hideShowTestResult (idx) {
+			let hiddenTestResults = this.get('hiddenTestResults');
+
+			if (hiddenTestResults.includes(idx)) {
+				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
+			} else {
+				hiddenTestResults.push(idx);
+			}
+
+			this.set('hiddenTestResults', hiddenTestResults);
+		},
+		setResultsBlockHeight (testResults) {
+			requestAnimationFrame(() => {
+				let listEl = document.querySelector('.c-gp-results-raw-output_list');
+				let itemsAmount = testResults.length;
+				let listElScrollHeight = listEl.scrollHeight;
+				let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
+
+				listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+			});
+		},
+		setProbeAsLocation (probeData) {
+			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+		handleRegularResults (testResults) {
+			let testType = this.get('testReqParams.type');
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+
+			return testResults.reduce((final, res) => {
+				// if result is yet in-progress do not calc timings
+				if (res.result.status === 'in-progress') {
+					return [
+						...final,
+						{
+							...res,
+							mainTimingValue: null,
+							extraValues: null,
+							isFailed: null,
+						},
+					];
+				}
+
+				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, res, dnsTraceEnabled);
+
+				return [
+					...final,
+					{
+						...res,
+						mainTimingValue: fullText,
+						extraValues,
+						isFailed,
+					},
+				];
+			}, []);
+		},
+		handleInfiniteResults (testResults) {
+			let preparedTestResults = this.get('preparedTestResults');
+
+			let prepResults = testResults.reduce((prepResultsObj, rawRes) => {
+				rawRes.forEach((probeData, probeDataIdx) => {
+					let {
+						parsedData: prevParsedData = {
+							keyOrder: [],
+							rawOutputLines: [],
+						},
+					} = prepResultsObj[probeDataIdx] || {};
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let { finalPacketsRtt, finalPacketsDrop, outputLinesArr } = prevParsedData.keyOrder.reduce((final, key) => {
+						return {
+							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
+							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
+							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
+						};
+					}, { finalPacketsRtt: [], finalPacketsDrop: 0, outputLinesArr: [] });
+					let calcAvgTiming = Math.round(finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length);
+					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
+
+					prepResultsObj[probeDataIdx] = {
+						clientSideId: probeDataIdx,
+						...probeData,
+						mainTimingValue: `${calcAvgTiming} ms`,
+						extraValues: [{
+							text: 'Loss',
+							value: this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
+							units: '%',
+						}],
+						isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
+						result: {
+							...probeData.result,
+							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
+						},
+						parsedData: {
+							keyOrder: updKeyOrder,
+							packetsRttData: {
+								...prevParsedData.packetsRttData,
+								[probeData.id]: currPacketsRtt,
+							},
+							packetsDropData: {
+								...prevParsedData.packetsDropData,
+								[probeData.id]: currPacketsDrop,
+							},
+							rawOutputLines: {
+								...prevParsedData.rawOutputLines,
+								[probeData.id]: packetLines,
+							},
+						},
+					};
+				});
+
+				return prepResultsObj;
+			}, preparedTestResults);
+
+			return prepResults;
+		},
+		parseLinesFromRawOutput (raw) {
+			let lines = raw.split('\n').filter(l => l);
+			let linesHeader;
+			let packetLines = [];
+
+			for (let i = 0; i < lines.length; i++) {
+				if (i === 0) {
+					linesHeader = lines[i];
+
+					continue;
+				}
+
+				if (lines[i].includes('---')) { break; }
+
+				packetLines.push(lines[i]);
+			}
+
+			return {
+				packetLines,
+				linesHeader,
+			};
+		},
+		getStatusLineColorClass (data) {
+			if (!data) { return; }
+
+			if (this.get('isInfiniteModeRes')) {
+				let loss = data.extraValues[0].value;
+
+				if (typeof loss !== 'number') {
+					return '';
+				} else if (loss === 100) {
+					return 'failure';
+				} else if (loss === 0) {
+					return 'success';
+				}
+
+				return 'some-issues';
+			}
+
+			// handle status line color for regular measurement outpuy
+			if (data.isFailed === false) {
+				return 'success';
+			} else if (data.isFailed) {
+				return 'failure';
+			}
+
+			return '';
+		},
+		calcLoss (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return null;
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+
+			return Math.round(statsDrop / actualAmount * 100);
+		},
+		handleRawOutput (header, lines) {
+			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
+
+			return limitedLines.join('\n');
+		},
+	};
+</script>
