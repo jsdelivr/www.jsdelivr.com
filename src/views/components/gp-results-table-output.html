@@ -189,33 +189,27 @@
 
 						let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
 						let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+						let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+						let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+						let statsTotal = res.result?.stats?.total;
+						let statsDrop = res.result?.stats?.drop;
+						let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
 
-						if (res.result.stats && lastTiming) {
-							preparedRes.statsPerTarget = [{
-								...preparedRes.statsPerTarget[0],
-								ipAddr: res.result.resolvedAddress,
-								lastTiming,
-								minTiming: res.result.stats.min || PROBE_NO_TIMING_VALUE,
-								avgTiming,
-								maxTiming: res.result.stats.max || PROBE_NO_TIMING_VALUE,
-								statsTotal: res.result.stats.total,
-								statsDrop: res.result.stats.drop,
-								isFailed,
-								isOffline: res.result.status === PROBE_STATUS_OFFLINE,
-								packetsRtt,
-								qualityStr: this.createQualityString(
-									res.result.status === PROBE_STATUS_OFFLINE,
-									res.result.stats.total,
-									res.result.stats.drop,
-								),
-								timingsStr: this.createTimingsString(
-									lastTiming,
-									res.result.stats.max || PROBE_NO_TIMING_VALUE,
-									res.result.stats.min || PROBE_NO_TIMING_VALUE,
-									avgTiming,
-								),
-							}];
-						}
+						preparedRes.statsPerTarget = [{
+							...preparedRes.statsPerTarget[0],
+							ipAddr: res.result.resolvedAddress,
+							lastTiming,
+							minTiming,
+							avgTiming,
+							maxTiming,
+							statsTotal,
+							statsDrop,
+							isFailed,
+							isOffline,
+							packetsRtt,
+							qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+							timingsStr: this.createTimingsString(lastTiming, maxTiming, minTiming, avgTiming),
+						}];
 
 						return preparedRes;
 					});
@@ -234,37 +228,33 @@
 								},
 							],
 						};
-						let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
 
-						if (nextReqRes.result.stats) {
-							preparedNextRes.statsPerTarget = [
-								...pR.statsPerTarget,
-								{
-									...preparedNextRes.statsPerTarget[1],
-									ipAddr: nextReqRes.result.resolvedAddress,
-									lastTiming,
-									minTiming: nextReqRes.result.stats.min || PROBE_NO_TIMING_VALUE,
-									avgTiming,
-									maxTiming: nextReqRes.result.stats.max || PROBE_NO_TIMING_VALUE,
-									statsTotal: nextReqRes.result.stats.total,
-									statsDrop: nextReqRes.result.stats.drop,
-									isFailed,
-									isOffline: nextReqRes.result.status === PROBE_STATUS_OFFLINE,
-									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
-									qualityStr: this.createQualityString(
-										nextReqRes.result.status === PROBE_STATUS_OFFLINE,
-										nextReqRes.result.stats.total,
-										nextReqRes.result.stats.drop,
-									),
-									timingsStr: this.createTimingsString(
-										lastTiming,
-										nextReqRes.result.stats.max || PROBE_NO_TIMING_VALUE,
-										nextReqRes.result.stats.min || PROBE_NO_TIMING_VALUE,
-										avgTiming,
-									),
-								},
-							];
-						}
+						let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+						let { packetsRtt } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
+						let minTiming = nextReqRes.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+						let maxTiming = nextReqRes.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+						let statsTotal = nextReqRes.result?.stats?.total;
+						let statsDrop = nextReqRes.result?.stats?.drop;
+						let isOffline = nextReqRes.result.status === PROBE_STATUS_OFFLINE;
+
+						preparedNextRes.statsPerTarget = [
+							...pR.statsPerTarget,
+							{
+								...preparedNextRes.statsPerTarget[1],
+								ipAddr: nextReqRes.result.resolvedAddress,
+								lastTiming,
+								minTiming,
+								avgTiming,
+								maxTiming,
+								statsTotal,
+								statsDrop,
+								isFailed,
+								isOffline,
+								packetsRtt,
+								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+								timingsStr: this.createTimingsString(lastTiming, maxTiming, minTiming, avgTiming),
+							},
+						];
 
 						return preparedNextRes;
 					}
@@ -542,9 +532,7 @@
 			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		createQualityString (isOffline, statsTotal, statsDrop) {
-			if (isOffline === PROBE_STATUS_OFFLINE) {
-				return 'Probe offline';
-			}
+			if (isOffline) { return 'Probe offline'; }
 
 			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
