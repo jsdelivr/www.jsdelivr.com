@@ -201,8 +201,13 @@
 								statsTotal: res.result.stats.total,
 								statsDrop: res.result.stats.drop,
 								isFailed,
+								isOffline: res.result.status === PROBE_STATUS_OFFLINE,
 								packetsRtt,
-								qualityStr: this.createQualityString(res.result.stats.total, res.result.stats.drop),
+								qualityStr: this.createQualityString(
+									res.result.status === PROBE_STATUS_OFFLINE,
+									res.result.stats.total,
+									res.result.stats.drop,
+								),
 								timingsStr: this.createTimingsString(
 									lastTiming,
 									res.result.stats.max || PROBE_NO_TIMING_VALUE,
@@ -244,8 +249,13 @@
 									statsTotal: nextReqRes.result.stats.total,
 									statsDrop: nextReqRes.result.stats.drop,
 									isFailed,
+									isOffline: nextReqRes.result.status === PROBE_STATUS_OFFLINE,
 									packetsRtt: nextReqRes.result.timings.map(t => t.rtt),
-									qualityStr: this.createQualityString(nextReqRes.result.stats.total, nextReqRes.result.stats.drop),
+									qualityStr: this.createQualityString(
+										nextReqRes.result.status === PROBE_STATUS_OFFLINE,
+										nextReqRes.result.stats.total,
+										nextReqRes.result.stats.drop,
+									),
 									timingsStr: this.createTimingsString(
 										lastTiming,
 										nextReqRes.result.stats.max || PROBE_NO_TIMING_VALUE,
@@ -337,7 +347,11 @@
 							isOffline: probeData.result.status === PROBE_STATUS_OFFLINE,
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
-							qualityStr: this.createQualityString(realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
+							qualityStr: this.createQualityString(
+								probeData.result.status === PROBE_STATUS_OFFLINE,
+								realPacketsRttValues.length + finalPacketsDrop,
+								finalPacketsDrop,
+							),
 							timingsStr: this.createTimingsString(
 								realPacketsRttValues[realPacketsRttValues.length - 1],
 								currMaxValue,
@@ -527,7 +541,11 @@
 
 			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
-		createQualityString (statsTotal, statsDrop) {
+		createQualityString (isOffline, statsTotal, statsDrop) {
+			if (isOffline === PROBE_STATUS_OFFLINE) {
+				return 'Probe offline';
+			}
+
 			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
 			return qualityPercentage !== null ? `${actualAmount}/${statsTotal} - ${qualityPercentage}%` : '';
