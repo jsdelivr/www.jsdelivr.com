@@ -283,14 +283,18 @@
 		getStatusLineColorClass (probesData) {
 			if (!probesData) { return; }
 
-			let { statsTotal, statsDrop } = probesData.statsPerTarget[0];
-			let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
+			let qualityValuesArr = probesData.statsPerTarget.map((stats) => {
+				let { statsTotal, statsDrop } = stats;
+				let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
-			if (qualityPercentage === null) {
+				return qualityPercentage;
+			});
+
+			if (qualityValuesArr.some(v => v === null)) {
 				return '';
-			} else if (qualityPercentage === 100) {
+			} else if (qualityValuesArr.every(v => v === 100)) {
 				return 'success';
-			} else if (qualityPercentage === 0) {
+			} else if (qualityValuesArr.every(v => v === 0)) {
 				return 'failure';
 			}
 
