@@ -328,6 +328,9 @@
 					let calcAvgTiming = realPacketsRttValues.length
 						? (realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length).toFixed(2)
 						: PROBE_NO_TIMING_VALUE;
+					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
+					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1];
+					let lastTimingRealValue = realPacketsRttValues[realPacketsRttValues.length - 1];
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
@@ -335,27 +338,18 @@
 						statsPerTarget: [{
 							target: probeData.target,
 							ipAddr: currIpAddr,
-							lastTiming: finalPacketsRtt[finalPacketsRtt.length - 1],
+							lastTiming,
 							minTiming: currMinValue,
 							avgTiming: calcAvgTiming,
 							maxTiming: currMaxValue,
 							statsTotal: finalPacketsRtt.length,
 							statsDrop: finalPacketsDrop,
 							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
-							isOffline: probeData.result.status === PROBE_STATUS_OFFLINE,
+							isOffline,
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
-							qualityStr: this.createQualityString(
-								probeData.result.status === PROBE_STATUS_OFFLINE,
-								realPacketsRttValues.length + finalPacketsDrop,
-								finalPacketsDrop,
-							),
-							timingsStr: this.createTimingsString(
-								realPacketsRttValues[realPacketsRttValues.length - 1],
-								currMaxValue,
-								currMinValue,
-								calcAvgTiming,
-							),
+							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
+							timingsStr: this.createTimingsString(lastTimingRealValue, currMaxValue, currMinValue, calcAvgTiming),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
