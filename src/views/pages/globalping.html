@@ -1671,8 +1671,16 @@
 				this.set('prevProbesMeasId', res.id);
 
 				if (targetsArr[1]) {
-					// order of the parameters below matters, because we need to rewrite locations prop for the re-use case
-					http.postGlobalpingMeasurement({ locations: res.id, ...reqParams, target: targetsArr[1] }).then((res1) => {
+					let secReqParams;
+
+					// prepare params depending whether there is prevProbesMeasId or not
+					if (prevProbesMeasId) {
+						secReqParams = { locations: res.id, ...reqParams, target: targetsArr[1] };
+					} else {
+						secReqParams = { ...reqParams, locations: res.id, target: targetsArr[1] };
+					}
+
+					http.postGlobalpingMeasurement(secReqParams).then((res1) => {
 						this.getTestMeasurementById({ measurementId: res.id });
 						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
 					}).catch((err) => {
