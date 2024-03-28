@@ -18,92 +18,88 @@
 			</div>
 
 			{{#each preparedTestResults:resIdx}}
-				<div class="results-table_column results-table_column_location row-num-{{resIdx}}">
-					<span class="results-table_column_location_status-line {{@this.getStatusLineColorClass(this)}}"></span>
+				<div class="results-table_row row-num-{{resIdx}}">
+					<div class="results-table_row_location">
+						<span class="results-table_row_location_status-line {{@this.getStatusLineColorClass(this)}}"></span>
 
-					<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
+						<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
-					<div class="results-table_column_location_data">
-						<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
-						<span>{{this.network}}</span>
-					</div>
+						<div class="results-table_row_location_data">
+							<span>{{this.city}}, {{this.country}}, {{this.continent}}</span>
+							<span>{{this.network}}</span>
+						</div>
 
-					<div class="results-table_column_location_actions">
-						<div class="results-table_column_location_actions_btn"
-							as-tooltip="'Set as location for the next test', 'right'"
-							on-click="@this.setProbeAsLocation(this)">
-							<i class="fa fa-map-marker" aria-hidden="true"></i>
+						<div class="results-table_row_location_actions">
+							<div class="results-table_row_location_actions_btn"
+								as-tooltip="'Set as location for the next test', 'right'"
+								on-click="@this.setProbeAsLocation(this)">
+								<i class="fa fa-map-marker" aria-hidden="true"></i>
+							</div>
 						</div>
 					</div>
-				</div>
 
-				{{#if targetsCnt > 1}}
-					<div class="results-table_column results-table_column_urls row-num-{{resIdx}}">
-						{{#each this.statsPerTarget}}
-							<div class="results-table_column_urls_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-								{{#if this.target}}
-									<span>{{this.target}}</span>
-								{{else}}
-									<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+					<div class="results-table_row_stats">
+						{{#each preparedTestResults[resIdx].statsPerTarget}}
+							<div class="results-table_row_stats_subrow">
+								{{#if targetsCnt > 1}}
+									<div class="results-table_row_stats_subrow_cell targets">
+										<div class="results-table_row_stats_subrow_cell_value">
+											{{#if this.target}}
+												<span>{{this.target}}</span>
+											{{else}}
+												<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+											{{/if}}
+										</div>
+									</div>
 								{{/if}}
+
+								<div class="results-table_row_stats_subrow_cell quality">
+									<div class="results-table_row_stats_subrow_cell_value">
+										<span class="results-table_row_stats_subrow_cell_value_header">Quality</span>
+										{{#if this.qualityStr}}
+											<span>{{this.qualityStr}}</span>
+										{{else}}
+											<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+										{{/if}}
+									</div>
+								</div>
+
+								<div class="results-table_row_stats_subrow_cell rtt">
+									<div class="results-table_row_stats_subrow_cell_value">
+										<span class="results-table_row_stats_subrow_cell_value_header">rtt last / min / avg / max</span>
+										{{#if this.timingsStr}}
+											<span>{{this.timingsStr}}</span>
+										{{elseif !this.timingStr && !this.isFailed && !this.isOffline}}
+											<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+										{{/if}}
+									</div>
+								</div>
+
+								<div class="results-table_row_stats_subrow_cell ip">
+									<div class="results-table_row_stats_subrow_cell_value">
+										<span class="results-table_row_stats_subrow_cell_value_header">IP</span>
+										{{#if this.ipAddr}}
+											<span>{{this.ipAddr}}</span>
+										{{elseif !this.ipAddr && !this.isFailed && !this.isOffline}}
+											<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+										{{/if}}
+									</div>
+								</div>
+
+								<div class="results-table_row_stats_subrow_cell graph">
+									<div class="results-table_row_stats_subrow_cell_value">
+										<span class="results-table_row_stats_subrow_cell_value_header">Graph</span>
+										{{#if typeof this.packetsRtt !== 'undefined'}}
+											<div>{{{ @this.createGraph(this.packetsRtt) }}}</div>
+										{{else}}
+											<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+										{{/if}}
+									</div>
+								</div>
 							</div>
 						{{/each}}
 					</div>
-				{{/if}}
-
-				<div class="results-table_column results-table_column_quality row-num-{{resIdx}}">
-					{{#each this.statsPerTarget}}
-						<div class="results-table_column_quality_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-							<span class="results-table_column_quality_value_header">Quality</span>
-							{{#if this.qualityStr}}
-								<span>{{this.qualityStr}}</span>
-							{{else}}
-								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
-							{{/if}}
-						</div>
-					{{/each}}
 				</div>
-
-				<div class="results-table_column results-table_column_rtt row-num-{{resIdx}}">
-					{{#each this.statsPerTarget}}
-						<div class="results-table_column_rtt_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-							<span class="results-table_column_rtt_value_header">rtt last / min / avg / max</span>
-							{{#if this.timingsStr}}
-								<span>{{this.timingsStr}}</span>
-							{{elseif !this.timingStr && !this.isFailed && !this.isOffline}}
-								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
-							{{/if}}
-						</div>
-					{{/each}}
-				</div>
-
-				<div class="results-table_column results-table_column_ip row-num-{{resIdx}}">
-					{{#each this.statsPerTarget}}
-						<div class="results-table_column_ip_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-							<span class="results-table_column_ip_value_header">IP</span>
-							{{#if this.ipAddr}}
-								<span>{{this.ipAddr}}</span>
-							{{elseif !this.ipAddr && !this.isFailed && !this.isOffline}}
-								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
-							{{/if}}
-						</div>
-					{{/each}}
-				</div>
-
-				<div class="results-table_column results-table_column_graph row-num-{{resIdx}}">
-					{{#each this.statsPerTarget}}
-						<div class="results-table_column_graph_value {{#if preparedTestResults[resIdx].statsPerTarget.length === 1}}single-cell{{/if}}">
-							<span class="results-table_column_graph_value_header">Graph</span>
-							{{#if typeof this.packetsRtt !== 'undefined'}}
-								<div>{{{ @this.createGraph(this.packetsRtt) }}}</div>
-							{{else}}
-								<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
-							{{/if}}
-						</div>
-					{{/each}}
-				</div>
-
-				<div class="results-table_line"></div>
 			{{/each}}
 		</div>
 	</div>
