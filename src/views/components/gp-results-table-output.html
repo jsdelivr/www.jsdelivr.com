@@ -18,7 +18,7 @@
 			</div>
 
 			{{#each preparedTestResults:resIdx}}
-				<div class="results-table_row row-num-{{resIdx}}">
+				<div class="results-table_row">
 					<div class="results-table_row_location">
 						<span class="results-table_row_location_status-line {{@this.getStatusLineColorClass(this)}}"></span>
 
@@ -139,7 +139,6 @@
 		data () {
 			return {
 				preparedTestResults: [],
-				displayedRowsIdxes: [],
 			};
 		},
 		oninit () {
@@ -166,7 +165,6 @@
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
-					preparedTestResults.forEach((r, rIdx) => this.handleProbeRowActionBtn(rIdx));
 				});
 			}
 		},
@@ -382,47 +380,6 @@
 
 				return prepResultsObj;
 			}, preparedTestResults);
-		},
-		handleProbeRowActionBtn (rowIdx) {
-			let displayedRowsIdxes = this.get('displayedRowsIdxes');
-
-			if (displayedRowsIdxes.includes(rowIdx)) {
-				return;
-			}
-
-			let intervalId = setInterval(() => {
-				let tableEl = document.querySelector('.c-gp-results-table-output .results-table');
-
-				if (!tableEl) {
-					return;
-				}
-
-				let cells = tableEl.querySelectorAll(`.results-table_column.row-num-${rowIdx}`);
-				let actionEl = tableEl.querySelector(`.results-table_column.row-num-${rowIdx} .results-table_column_location_actions_btn`);
-
-				if (!cells || !cells.length || !actionEl) {
-					return;
-				}
-
-				clearInterval(intervalId);
-
-				cells.forEach((c) => {
-					c.addEventListener('mouseover', () => {
-						let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
-
-						allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
-						actionEl.style.visibility = 'visible';
-					});
-				});
-
-				tableEl.addEventListener('mouseleave', () => {
-					let allActionBtnsElements = tableEl.querySelectorAll('.results-table_column_location .results-table_column_location_actions_btn');
-
-					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
-				});
-
-				this.push('displayedRowsIdxes', rowIdx);
-			}, 4);
 		},
 		getAvgTimingValueToDisplay (timing) {
 			// for infinite results timing is an array of avg timing values
