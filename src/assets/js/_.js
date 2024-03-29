@@ -1246,7 +1246,7 @@ module.exports = {
 				value: PROBE_STATUS_OFFLINE,
 				extraValues,
 				fullText: PROBE_STATUS_OFFLINE,
-				isFailed: true,
+				isFailed: false,
 			};
 		}
 
