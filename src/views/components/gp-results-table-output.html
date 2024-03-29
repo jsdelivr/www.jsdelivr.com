@@ -342,7 +342,6 @@
 						: PROBE_NO_TIMING_VALUE;
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
 					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1];
-					let lastTimingRealValue = realPacketsRttValues[realPacketsRttValues.length - 1];
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
@@ -361,7 +360,7 @@
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
 							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
-							timingsStr: this.createTimingsString(lastTimingRealValue, currMaxValue, currMinValue, calcAvgTiming),
+							timingsStr: this.createTimingsString(lastTiming, currMaxValue, currMinValue, calcAvgTiming),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
