@@ -1369,7 +1369,7 @@ module.exports = {
 			value: PROBE_NO_TIMING_VALUE,
 			extraValues,
 			fullText: PROBE_NO_TIMING_VALUE,
-			isFailed: true,
+			isFailed: testResData.result?.status === PROBE_STATUS_FAILED,
 			lastTiming: PROBE_NO_TIMING_VALUE,
 		};
 	},
