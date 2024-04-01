@@ -92,128 +92,95 @@
 
 			<div class="gp_map-block_settings-wrapper">
 				<div class="gp_map-block_settings-wrapper_settings">
-					<div class="gp_dropdown_reg">
-						<span>Test type</span>
+					<div class="gp_map-block_settings-wrapper_settings_grouped">
+						<div class="gp_dropdown_reg">
+							<span>Test type</span>
 
-						<div class="btn-group">
-							<button type="button"
-								class="dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{~/mainOptions.type}}</span>
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/mainOptions.type}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
 
-							<div class="dropdown-menu">
-								{{#each ~/testTypesList}}
-									<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
-								{{/each}}
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
+									{{/each}}
+								</div>
 							</div>
 						</div>
+
+						<c-tags-input
+							inputId="targetInput"
+							value="{{mainOptions.target}}"
+							error="{{inputErrors.target}}"
+							placeholder="e.g. IP or domain"
+							labelText="Target(s)"
+							inputIcon="target-icon.svg">
+						</c-tags-input>
 					</div>
-
-					<c-tags-input
-						inputId="targetInput"
-						value="{{mainOptions.target}}"
-						error="{{inputErrors.target}}"
-						placeholder="e.g. IP or domain"
-						labelText="Target(s)"
-						inputIcon="target-icon.svg">
-					</c-tags-input>
-
-					<c-controlled-input
-						id="locationInput"
-						value="{{mainOptions.location}}"
-						error="{{inputErrors.location}}"
-						placeholder="Enter location"
-						labelText="Location"
-						classList="gp_map-block_settings-wrapper_settings_location gp_input">
-						{{#partial labelIcon}}
-							<img as-tooltip="'This magic field will select the most appropriate location based on your input. Use + to combine inputs and filter results. Use , to select multiple locations.'"
-								width="14"
-								height="14"
-								src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
-						{{/partial}}
-					</c-controlled-input>
 
 					<div class="gp_map-block_settings-wrapper_settings_grouped">
 						<c-controlled-input
-							id="limitInput"
-							value="{{mainOptions.limit}}"
-							error="{{inputErrors.limit}}"
-							placeholder="{{defaultLimit}}"
-							labelText="Limit"
-							classList="gp_map-block_settings-wrapper_settings_limit gp_input">
+							id="locationInput"
+							value="{{mainOptions.location}}"
+							error="{{inputErrors.location}}"
+							placeholder="Enter location"
+							labelText="Location"
+							classList="gp_map-block_settings-wrapper_settings_location gp_input">
+							{{#partial labelIcon}}
+								<img as-tooltip="'This magic field will select the most appropriate location based on your input. Use + to combine inputs and filter results. Use , to select multiple locations.'"
+									width="14"
+									height="14"
+									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+							{{/partial}}
 						</c-controlled-input>
 
-						<div class="gp_map-block_settings-wrapper_settings_grouped_options-block">
-							<button class="{{#if showMeasurementOpts}}active{{/if}}"
-								on-click="@this.handleToggleMeasOpts()">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
+						<div class="gp_map-block_settings-wrapper_settings_subgroup">
+							<c-controlled-input
+								id="limitInput"
+								value="{{mainOptions.limit}}"
+								error="{{inputErrors.limit}}"
+								placeholder="{{defaultLimit}}"
+								labelText="Limit"
+								classList="gp_map-block_settings-wrapper_settings_limit gp_input">
+							</c-controlled-input>
 
-								{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
-									<div class="additional-opts-total">
-										{{modifiedMeasOptsCnt}}
-									</div>
-								{{/if}}
-							</button>
+							<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block">
+								<button class="{{#if showMeasurementOpts}}active{{/if}}"
+									on-click="@this.handleToggleMeasOpts()">
+									<img width="20"
+										height="20"
+										src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-							<div class="gp_map-block_settings-wrapper_settings_grouped_options-block_specific-set">
-								{{#if mainOptions.type === 'ping'}}
-									<div class="typePing">
-										<c-controlled-input
-											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors.packets}}"
-											placeholder="{{defaultPacketsAmount}}"
-											labelText="Packets"
-											classList="gp_input"
-											disabled="{{infiniteSwitchEnabled}}">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'traceroute'}}
-									<div class="typeTraceroute">
-										<div class="pair">
-											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
-											</c-controlled-input>
-
-											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
-
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/tracerouteOpts.protocol}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
-
-													<div class="dropdown-menu">
-														<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
-														<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
-														<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
-													</div>
-												</div>
-											</div>
+									{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
+										<div class="additional-opts-total">
+											{{modifiedMeasOptsCnt}}
 										</div>
-									</div>
-								{{/if}}
+									{{/if}}
+								</button>
 
-								{{#if mainOptions.type === 'DNS'}}
-									<div class="typeDNS">
-										<div class="rows">
-											<div class="rows_row-one">
+								<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block_specific-set">
+									{{#if mainOptions.type === 'ping'}}
+										<div class="typePing">
+											<c-controlled-input
+												value="{{notAppliedOpts.packets}}"
+												error="{{inputErrors.packets}}"
+												placeholder="{{defaultPacketsAmount}}"
+												labelText="Packets"
+												classList="gp_input"
+												disabled="{{infiniteSwitchEnabled}}">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'traceroute'}}
+										<div class="typeTraceroute">
+											<div class="pair">
 												<c-controlled-input
 													value="{{notAppliedOpts.port}}"
 													error="{{inputErrors.port}}"
@@ -231,21 +198,110 @@
 															data-toggle="dropdown"
 															aria-haspopup="true"
 															aria-expanded="false">
-															<span>{{~/dnsOpts.protocol}}</span>
+															<span>{{~/tracerouteOpts.protocol}}</span>
 															<i class="fa fa-angle-down" aria-hidden="true"></i>
 														</button>
 
 														<div class="dropdown-menu">
-															<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
-															<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
 														</div>
 													</div>
 												</div>
 											</div>
+										</div>
+									{{/if}}
 
-											<div class="rows_row-two">
+									{{#if mainOptions.type === 'DNS'}}
+										<div class="typeDNS">
+											<div class="rows">
+												<div class="rows_row-one">
+													<c-controlled-input
+														value="{{notAppliedOpts.port}}"
+														error="{{inputErrors.port}}"
+														placeholder="53"
+														labelText="Port"
+														classList="port-input gp_input">
+													</c-controlled-input>
+
+													<div class="gp_dropdown_reg">
+														<span>Protocol</span>
+
+														<div class="btn-group">
+															<button type="button"
+																class="dropdown-toggle"
+																data-toggle="dropdown"
+																aria-haspopup="true"
+																aria-expanded="false">
+																<span>{{~/dnsOpts.protocol}}</span>
+																<i class="fa fa-angle-down" aria-hidden="true"></i>
+															</button>
+
+															<div class="dropdown-menu">
+																<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
+																<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+															</div>
+														</div>
+													</div>
+												</div>
+
+												<div class="rows_row-two">
+													<div class="gp_dropdown_reg">
+														<span>Type</span>
+
+														<div class="btn-group">
+															<button type="button"
+																class="dropdown-toggle"
+																data-toggle="dropdown"
+																aria-haspopup="true"
+																aria-expanded="false">
+																<span>{{~/dnsOpts.query.type}}</span>
+																<i class="fa fa-angle-down" aria-hidden="true"></i>
+															</button>
+
+															<div class="dropdown-menu">
+																{{#each ~/dnsTypesList}}
+																	<div on-click="@this.set('dnsOpts.query.type', this)">{{this}}</div>
+																{{/each}}
+															</div>
+														</div>
+													</div>
+
+													<div class="rows_row-two_switch-block">
+														<label class="gp_switch">
+															<input type="checkbox" on-click="@this.set('dnsOpts.trace', !dnsOpts.trace)" checked="{{dnsOpts.trace}}">
+															<span class="slider round"></span>
+														</label>
+
+														<span>Trace</span>
+													</div>
+												</div>
+											</div>
+
+											<c-controlled-input
+												value="{{notAppliedOpts.resolver}}"
+												error="{{inputErrors.resolver}}"
+												placeholder="IP address"
+												labelText="Resolver"
+												classList="resolver-input gp_input">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'MTR'}}
+										<div class="typeMTR">
+											<div class="pair">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
 												<div class="gp_dropdown_reg">
-													<span>Type</span>
+													<span>Protocol</span>
 
 													<div class="btn-group">
 														<button type="button"
@@ -253,52 +309,88 @@
 															data-toggle="dropdown"
 															aria-haspopup="true"
 															aria-expanded="false">
-															<span>{{~/dnsOpts.query.type}}</span>
+															<span>{{~/mtrOpts.protocol}}</span>
 															<i class="fa fa-angle-down" aria-hidden="true"></i>
 														</button>
 
 														<div class="dropdown-menu">
-															{{#each ~/dnsTypesList}}
-																<div on-click="@this.set('dnsOpts.query.type', this)">{{this}}</div>
-															{{/each}}
+															<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
 														</div>
 													</div>
 												</div>
-
-												<div class="rows_row-two_switch-block">
-													<label class="gp_switch">
-														<input type="checkbox" on-click="@this.set('dnsOpts.trace', !dnsOpts.trace)" checked="{{dnsOpts.trace}}">
-														<span class="slider round"></span>
-													</label>
-
-													<span>Trace</span>
-												</div>
 											</div>
-										</div>
 
-										<c-controlled-input
-											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
-											placeholder="IP address"
-											labelText="Resolver"
-											classList="resolver-input gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'MTR'}}
-									<div class="typeMTR">
-										<div class="pair">
 											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
+												value="{{notAppliedOpts.packets}}"
+												error="{{inputErrors.packets}}"
+												placeholder="{{defaultPacketsAmount}}"
+												labelText="Packets"
+												classList="gp_input">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'HTTP'}}
+										<div class="typeHTTP">
+											<c-controlled-input
+												value="{{notAppliedOpts.request.host}}"
+												error="{{inputErrors.host}}"
+												placeholder="Host"
+												labelText="Host"
+												classList="gp_input">
 											</c-controlled-input>
 
+											<c-controlled-input
+												value="{{notAppliedOpts.request.path}}"
+												error="{{inputErrors.path}}"
+												placeholder="Path"
+												labelText="Path"
+												classList="gp_input">
+											</c-controlled-input>
+
+											<c-controlled-input
+												value="{{notAppliedOpts.request.query}}"
+												error="{{inputErrors.query}}"
+												placeholder="Query"
+												labelText="Query"
+												classList="gp_input">
+											</c-controlled-input>
+
+											<div class="pair">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
+												<div class="gp_dropdown_reg">
+													<span>Protocol</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/httpOpts.protocol}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
+															<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
+															<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
 											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
+												<span>Method</span>
 
 												<div class="btn-group">
 													<button type="button"
@@ -306,133 +398,45 @@
 														data-toggle="dropdown"
 														aria-haspopup="true"
 														aria-expanded="false">
-														<span>{{~/mtrOpts.protocol}}</span>
+														<span>{{~/httpOpts.request.method}}</span>
 														<i class="fa fa-angle-down" aria-hidden="true"></i>
 													</button>
 
 													<div class="dropdown-menu">
-														<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
-														<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
-														<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
+														<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
+														<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
 													</div>
 												</div>
 											</div>
-										</div>
 
-										<c-controlled-input
-											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors.packets}}"
-											placeholder="{{defaultPacketsAmount}}"
-											labelText="Packets"
-											classList="gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'HTTP'}}
-									<div class="typeHTTP">
-										<c-controlled-input
-											value="{{notAppliedOpts.request.host}}"
-											error="{{inputErrors.host}}"
-											placeholder="Host"
-											labelText="Host"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.request.path}}"
-											error="{{inputErrors.path}}"
-											placeholder="Path"
-											labelText="Path"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.request.query}}"
-											error="{{inputErrors.query}}"
-											placeholder="Query"
-											labelText="Query"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<div class="pair">
 											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
+												value="{{notAppliedOpts.resolver}}"
+												error="{{inputErrors.resolver}}"
+												placeholder="Resolver"
+												labelText="Resolver"
+												classList="gp_input">
 											</c-controlled-input>
-
-											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
-
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/httpOpts.protocol}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
-
-													<div class="dropdown-menu">
-														<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
-														<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
-														<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
-													</div>
-												</div>
-											</div>
 										</div>
+									{{/if}}
 
-										<div class="gp_dropdown_reg">
-											<span>Method</span>
-
-											<div class="btn-group">
-												<button type="button"
-													class="dropdown-toggle"
-													data-toggle="dropdown"
-													aria-haspopup="true"
-													aria-expanded="false">
-													<span>{{~/httpOpts.request.method}}</span>
-													<i class="fa fa-angle-down" aria-hidden="true"></i>
-												</button>
-
-												<div class="dropdown-menu">
-													<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
-													<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
-												</div>
-											</div>
-										</div>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
-											placeholder="Resolver"
-											labelText="Resolver"
-											classList="gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								<button class="gp_btn_green" on-click="@this.applyOptions()">
-									Apply
-								</button>
+									<button class="gp_btn_green" on-click="@this.applyOptions()">
+										Apply
+									</button>
+								</div>
 							</div>
-						</div>
 
-						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block {{#unless @this.isInfiniteOptsCorrect()}}disabled{{/unless}}">
-							<label class="gp_switch">
-								<input type="checkbox"
-									checked="{{infiniteSwitchEnabled}}"
-									on-click="@this.handleInfiniteSwitch()"
-									on-keydown="@this.handleInfiniteSwitchKeyDown(@event)"
-									{{#unless @this.isInfiniteOptsCorrect()}}disabled="true"{{/unless}}>
-								<span class="slider round"></span>
-							</label>
+							<div class="gp_map-block_settings-wrapper_settings_subgroup_switch-block {{#unless @this.isInfiniteOptsCorrect()}}disabled{{/unless}}">
+								<label class="gp_switch">
+									<input type="checkbox"
+										checked="{{infiniteSwitchEnabled}}"
+										on-click="@this.handleInfiniteSwitch()"
+										on-keydown="@this.handleInfiniteSwitchKeyDown(@event)"
+										{{#unless @this.isInfiniteOptsCorrect()}}disabled="true"{{/unless}}>
+									<span class="slider round"></span>
+								</label>
 
-							<span>Infinite</span>
+								<span>Infinite</span>
+							</div>
 						</div>
 					</div>
 
