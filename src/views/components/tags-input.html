@@ -14,22 +14,24 @@
 		{{/if}}
 	</div>
 
-	<div class="c-tags-input_tags-block {{#if error}}has-error{{/if}} " id="{{inputWrapperIdPrefix + inputId}}">
-		<div class="c-tags-input_tags-block_tags-list">
-			{{#each tagsArr:tagIdx}}
-				<div class="c-tags-input_tags-block_tags-list_tag">
-					<span class="c-tags-input_tags-block_tags-list_tag_text">
-						{{this}}
-					</span>
+	<div class="c-tags-input_tags-block  {{#if tagsArr &&tagsArr.length === this.maxTagsAllowed}}full{{/if}} {{#if error}}has-error{{/if}} " id="{{inputWrapperIdPrefix + inputId}}">
+		{{#if tagsArr && tagsArr.length}}
+			<div class="c-tags-input_tags-block_tags-list">
+				{{#each tagsArr:tagIdx}}
+					<div class="c-tags-input_tags-block_tags-list_tag">
+						<span class="c-tags-input_tags-block_tags-list_tag_text">
+							{{this}}
+						</span>
 
-					<img class="c-tags-input_tags-block_tags-list_tag_close-icon"
-						width="16"
-						height="16"
-						on-click="@this.removeTagByIdx(tagIdx)"
-						src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
-				</div>
-			{{/each}}
-		</div>
+						<img class="c-tags-input_tags-block_tags-list_tag_close-icon"
+							width="16"
+							height="16"
+							on-click="@this.removeTagByIdx(tagIdx)"
+							src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
+					</div>
+				{{/each}}
+			</div>
+		{{/if}}
 
 		{{#if !value && inputIcon}}
 			<img class="c-tags-input_input-icon"
