@@ -74,10 +74,57 @@
 
 									<div class="results-table_row_stats_subrow_cell rtt">
 										<div class="results-table_row_stats_subrow_cell_value">
-											<span class="results-table_row_stats_subrow_cell_value_header">rtt last / min / avg / max</span>
-											{{#if this.timingsStr}}
-												<span>{{this.timingsStr}}</span>
-											{{elseif !this.timingStr && !this.isFailed && !this.isOffline}}
+											{{#if this.areTimingsReady}}
+												<span class="timings">
+													<span class="timings_header">
+														<span>rtt&nbsp;</span>
+														<span>last</span>
+													</span>
+													<span>
+														{{this.lastTiming}}
+														<span class="timings_units">ms</span>
+													</span>
+												</span>
+
+												<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+												<span class="timings">
+													<span class="timings_header">
+														<span>rtt&nbsp;</span>
+														<span>min</span>
+													</span>
+													<span>
+														{{this.minTiming}}
+														<span class="timings_units">ms</span>
+													</span>
+												</span>
+
+												<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+												<span class="timings">
+													<span class="timings_header">
+														<span>rtt&nbsp;</span>
+														<span>avg</span>
+													</span>
+													<span>
+														{{this.avgTiming}}
+														<span class="timings_units">ms</span>
+													</span>
+												</span>
+
+												<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+												<span class="timings">
+													<span class="timings_header">
+														<span>rtt&nbsp;</span>
+														<span>max</span>
+													</span>
+													<span>
+														{{this.maxTiming}}
+														<span class="timings_units last-subcell">ms</span>
+													</span>
+												</span>
+											{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
 												<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 											{{/if}}
 										</div>
@@ -214,7 +261,7 @@
 								isOffline,
 								packetsRtt,
 								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-								timingsStr: this.createTimingsString(lastTiming, maxTiming, minTiming, avgTiming),
+								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
 								rawOutput: res.result.rawOutput,
 							}];
 						}
@@ -261,7 +308,7 @@
 									isOffline,
 									packetsRtt,
 									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-									timingsStr: this.createTimingsString(lastTiming, maxTiming, minTiming, avgTiming),
+									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
 									rawOutput: nextReqRes.result.rawOutput,
 								},
 							];
@@ -360,7 +407,7 @@
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
 							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
-							timingsStr: this.createTimingsString(lastTiming, currMaxValue, currMinValue, calcAvgTiming),
+							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
@@ -539,30 +586,17 @@
 
 			return this.createRegularGraph(packetsRtt);
 		},
-		createTimingsString (lastTiming, maxTiming, minTiming, avgTiming) {
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming) {
 			if (
 				typeof lastTiming === 'undefined'
 				|| typeof maxTiming === 'undefined'
 				|| typeof minTiming === 'undefined'
 				|| typeof avgTiming === 'undefined'
 			) {
-				return '';
+				return false;
 			}
 
-			let avgTimingValue = this.getAvgTimingValueToDisplay(avgTiming);
-			let timingStr = `${lastTiming} / ${minTiming} / ${avgTimingValue} / ${maxTiming}`;
-
-			// if probe has timing values - show 'ms', otherwise it is time out
-			if (
-				lastTiming !== PROBE_NO_TIMING_VALUE
-				&& minTiming !== PROBE_NO_TIMING_VALUE
-				&& maxTiming !== PROBE_NO_TIMING_VALUE
-				&& avgTimingValue !== PROBE_NO_TIMING_VALUE
-			) {
-				timingStr += ' ms';
-			}
-
-			return timingStr;
+			return true;
 		},
 		parseIPFromRawOutput (raw) {
 			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
