@@ -82,7 +82,9 @@
 													</span>
 													<span>
 														{{this.lastTiming}}
-														<span class="timings_units">ms</span>
+														{{#if this.lastTiming !== PROBE_NO_TIMING_VALUE}}
+															<span class="timings_units">ms</span>
+														{{/if}}
 													</span>
 												</span>
 
@@ -95,7 +97,9 @@
 													</span>
 													<span>
 														{{this.minTiming}}
-														<span class="timings_units">ms</span>
+														{{#if this.minTiming !== PROBE_NO_TIMING_VALUE}}
+															<span class="timings_units">ms</span>
+														{{/if}}
 													</span>
 												</span>
 
@@ -108,7 +112,9 @@
 													</span>
 													<span>
 														{{this.avgTiming}}
-														<span class="timings_units">ms</span>
+														{{#if this.avgTiming !== PROBE_NO_TIMING_VALUE}}
+															<span class="timings_units">ms</span>
+														{{/if}}
 													</span>
 												</span>
 
@@ -121,7 +127,9 @@
 													</span>
 													<span>
 														{{this.maxTiming}}
-														<span class="timings_units last-subcell">ms</span>
+														{{#if this.maxTiming !== PROBE_NO_TIMING_VALUE}}
+															<span class="timings_units last-subcell">ms</span>
+														{{/if}}
 													</span>
 												</span>
 											{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
@@ -186,6 +194,7 @@
 		data () {
 			return {
 				preparedTestResults: [],
+				PROBE_NO_TIMING_VALUE,
 			};
 		},
 		oninit () {
