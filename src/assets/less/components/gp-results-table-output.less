@@ -98,7 +98,12 @@
 		&_row {
 			position: relative;
 			display: flex;
+			flex-direction: column;
 			border-bottom: 1px solid #e7e7ee;
+
+			@media (min-width: @screen-md-min) {
+				flex-direction: row;
+			}
 
 			&:hover {
 				.results-table_row_location_actions {
@@ -113,9 +118,10 @@
 				align-items: center;
 				column-gap: 8px;
 				padding: 16px;
-				width: 300px;
+				width: 100%;
 
 				@media (min-width: @screen-md-min) {
+					width: 300px;
 					padding: 16px 24px;
 				}
 
@@ -208,12 +214,22 @@
 
 			&_stats {
 				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				flex-grow: 1;
+
+				@media (min-width: @screen-md-min) {
+					flex-direction: column;
+					justify-content: center;
+					flex-grow: 1;
+				}
 
 				&_subrow {
 					display: flex;
+					flex-direction: column;
+					width: 100%;
+
+					@media (min-width: @screen-md-min) {
+						flex-direction: row;
+						width: auto;
+					}
 
 					&:nth-child(2n) {
 						border-top: 1px solid #e7e7ee;
@@ -223,6 +239,11 @@
 						display: flex;
 						align-items: center;
 						height: 44px;
+						padding: 0 16px;
+
+						@media (min-width: @screen-md-min) {
+							padding: 0 0 0 16px;
+						}
 
 						&.probe-failed {
 							display: flex;
@@ -254,19 +275,40 @@
 						}
 
 						&.quality, &.ip {
-							width: 140px;
+							width: 100%;
+
+							@media (min-width: @screen-md-min) {
+								width: 140px;
+							}
 						}
 
 						&.rtt {
-							width: 300px;
+							width: 100%;
+
+							@media (min-width: @screen-md-min) {
+								width: 300px;
+							}
 						}
 
 						&.graph {
-							width: 72px;
+							width: 100%;
+
+							@media (min-width: @screen-md-min) {
+								width: 72px;
+								padding: 0;
+							}
 						}
 
 						&_value {
+							display: flex;
+							align-items: center;
+							flex-grow: 1;
+							justify-content: space-between;
 							width: 100%;
+							font-size: 14px;
+							font-weight: 400;
+							line-height: 20px;
+							color: #17233a;
 
 							&_header {
 								display: inline-flex;
@@ -276,13 +318,6 @@
 								@media (min-width: @screen-md-min) {
 									display: none;
 								}
-							}
-
-							span {
-								font-size: 14px;
-								font-weight: 400;
-								line-height: 20px;
-								color: #17233a;
 							}
 						}
 					}
