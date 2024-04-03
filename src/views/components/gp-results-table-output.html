@@ -74,67 +74,83 @@
 
 									<div class="results-table_row_stats_subrow_cell rtt">
 										<div class="results-table_row_stats_subrow_cell_value">
-											{{#if this.areTimingsReady}}
-												<span class="timings">
-													<span class="timings_header">
-														<span>rtt&nbsp;</span>
-														<span>last</span>
-													</span>
+											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
+												<span class="timings_header">
+													<span>rtt&nbsp;</span>
+													<span>last</span>
+												</span>
+
+												{{#if this.areTimingsReady}}
 													<span>
 														{{this.lastTiming}}
 														{{#if this.lastTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
 													</span>
+												{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
+													<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+												{{/if}}
+											</span>
+
+											<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
+												<span class="timings_header">
+													<span>rtt&nbsp;</span>
+													<span>min</span>
 												</span>
 
-												<span class="timings_separator">&nbsp;/&nbsp;</span>
-
-												<span class="timings">
-													<span class="timings_header">
-														<span>rtt&nbsp;</span>
-														<span>min</span>
-													</span>
+												{{#if this.areTimingsReady}}
 													<span>
 														{{this.minTiming}}
 														{{#if this.minTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
 													</span>
+												{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
+													<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+												{{/if}}
+											</span>
+
+											<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
+												<span class="timings_header">
+													<span>rtt&nbsp;</span>
+													<span>avg</span>
 												</span>
 
-												<span class="timings_separator">&nbsp;/&nbsp;</span>
-
-												<span class="timings">
-													<span class="timings_header">
-														<span>rtt&nbsp;</span>
-														<span>avg</span>
-													</span>
+												{{#if this.areTimingsReady}}
 													<span>
 														{{this.avgTiming}}
 														{{#if this.avgTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
 													</span>
+												{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
+													<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+												{{/if}}
+											</span>
+
+											<span class="timings_separator">&nbsp;/&nbsp;</span>
+
+											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
+												<span class="timings_header">
+													<span>rtt&nbsp;</span>
+													<span>max</span>
 												</span>
 
-												<span class="timings_separator">&nbsp;/&nbsp;</span>
-
-												<span class="timings">
-													<span class="timings_header">
-														<span>rtt&nbsp;</span>
-														<span>max</span>
-													</span>
+												{{#if this.areTimingsReady}}
 													<span>
 														{{this.maxTiming}}
 														{{#if this.maxTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units last-subcell">ms</span>
 														{{/if}}
 													</span>
-												</span>
-											{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
-												<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
-											{{/if}}
+												{{elseif !this.areTimingsReady && !this.isFailed && !this.isOffline}}
+													<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
+												{{/if}}
+											</span>
 										</div>
 									</div>
 
