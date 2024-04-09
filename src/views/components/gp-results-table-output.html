@@ -56,7 +56,7 @@
 								{{#if this.isFailed}}
 									<div class="results-table_row_stats_subrow_cell probe-failed">
 										<span>Probe is failed</span>
-										<div class="" as-tooltip="`${this.rawOutput}`, 'top'">
+										<div class="" as-tooltip="`${this.failureRawOutput}`, 'top'">
 											<img width="20" height="20" src="{{@shared.assetsHost}}/img/globalping/target-icon.svg">
 										</div>
 									</div>
@@ -285,9 +285,9 @@
 								isFailed,
 								isOffline,
 								packetsRtt,
+								failureRawOutput: this.getFailureProbeRawOutput(res),
 								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
 								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
-								rawOutput: res.result.rawOutput,
 							}];
 						}
 
@@ -332,9 +332,9 @@
 									isFailed,
 									isOffline,
 									packetsRtt,
+									failureRawOutput: this.getFailureProbeRawOutput(nextReqRes),
 									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
 									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
-									rawOutput: nextReqRes.result.rawOutput,
 								},
 							];
 						}
