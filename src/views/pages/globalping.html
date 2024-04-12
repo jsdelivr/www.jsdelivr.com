@@ -1476,6 +1476,8 @@
 					let targetsCnt = this.get('targetsArr').length;
 
 					// combine results from response into arrays by target
+					// for the regular flow the amount of results in testResults will be the amount of targets
+					// for the infinite case, since there is only one target, every new result in testResults is updated response
 					let resultsByTarget = testResults.reduce((mData, tr, trIdx) => {
 						if (!tr || !tr.length) {
 							return mData;
@@ -1506,8 +1508,15 @@
 						return mData;
 					}, {});
 
-					// markersData for the first target
+					// markersData for the first target, regular flow
 					let markersData = resultsByTarget[0];
+
+					// in case of infinite flow, get the latest data
+					if (this.get('infiniteSwitchEnabled')) {
+						let lastIdx = Object.keys(resultsByTarget).length - 1;
+
+						markersData = resultsByTarget[lastIdx];
+					}
 
 					// if there are another targets then we should add its data to markersData respectively
 					if (targetsCnt > 1) {
