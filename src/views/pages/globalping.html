@@ -1475,7 +1475,8 @@
 					let testType = this.get('mainOptions.type');
 					let targetsCnt = this.get('targetsArr').length;
 
-					let mDPerReq = testResults.reduce((mData, tr, trIdx) => {
+					// combine results from response into arrays by target
+					let resultsByTarget = testResults.reduce((mData, tr, trIdx) => {
 						if (!tr || !tr.length) {
 							return mData;
 						}
@@ -1505,16 +1506,16 @@
 						return mData;
 					}, {});
 
-					// set the markersData from the first request
-					let markersData = mDPerReq[0];
+					// markersData for the first target
+					let markersData = resultsByTarget[0];
 
-					// if there are another requests then we should add it's timing data to markersData
+					// if there are another targets then we should add its data to markersData respectively
 					if (targetsCnt > 1) {
 						for (let cnt = 1; cnt < targetsCnt; cnt++) {
-							if (!mDPerReq[cnt]) { return; }
+							if (!resultsByTarget[cnt]) { return; }
 
 							markersData = markersData.map((mD) => {
-								let secReqMD = mDPerReq[cnt].find(i => i.clientSideId === mD.clientSideId);
+								let secReqMD = resultsByTarget[cnt].find(i => i.clientSideId === mD.clientSideId);
 
 								return {
 									...mD,
