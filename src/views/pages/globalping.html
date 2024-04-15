@@ -1474,6 +1474,7 @@
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
 					let targetsCnt = this.get('targetsArr').length;
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
 					// combine results from response into arrays by target
 					// for the regular flow the amount of results in testResults will be the amount of targets
@@ -1486,7 +1487,18 @@
 						mData[trIdx] = tr.map((res) => {
 							let calcTiming = null;
 
-							if (res.result.status !== 'in-progress') {
+							if (infiniteSwitchEnabled) {
+								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+
+								if (res.result.status === 'in-progress') {
+									calcTiming =  {
+										value: Math.round(packetsRtt.reduce((sum, rtt) => sum += rtt, 0) / packetsRtt.length),
+										units: ' ms',
+									};
+								} else {
+									calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+								}
+							} else if (res.result.status !== 'in-progress') {
 								calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
 							}
 
@@ -1512,7 +1524,7 @@
 					let markersData = resultsByTarget[0];
 
 					// in case of infinite flow, get the latest data
-					if (this.get('infiniteSwitchEnabled')) {
+					if (infiniteSwitchEnabled) {
 						let lastIdx = Object.keys(resultsByTarget).length - 1;
 
 						markersData = resultsByTarget[lastIdx];
@@ -2542,7 +2554,7 @@
 				infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
 
 				if (targetsCnt === 1) {
-					infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0]}</div>`;
+					infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0] || ''}</div>`;
 					infoWindowContent += `<div class="gp-map_popup_single_network">${markerData.network}</div>`;
 					infoWindowContent += `<div class="gp-map_popup_single_location">(${markerData.city}, ${markerData.country})</div>`;
 				} else {
@@ -2554,7 +2566,7 @@
 						infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
 
 						infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
-							style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx]}</span>`;
+							style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
 
 						infoWindowContent += '</div>';
 					});
