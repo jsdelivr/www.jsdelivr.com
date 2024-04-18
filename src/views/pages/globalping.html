@@ -1490,14 +1490,10 @@
 							if (infiniteSwitchEnabled) {
 								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 
-								if (res.result.status === 'in-progress') {
-									calcTiming =  {
-										value: Math.round(packetsRtt.reduce((sum, rtt) => sum += rtt, 0) / packetsRtt.length),
-										units: ' ms',
-									};
-								} else {
-									calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
-								}
+								calcTiming =  {
+									value: Math.round(packetsRtt.reduce((sum, rtt) => sum += rtt, 0) / packetsRtt.length),
+									units: ' ms',
+								};
 							} else if (res.result.status !== 'in-progress') {
 								calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
 							}
