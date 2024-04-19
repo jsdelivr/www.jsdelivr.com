@@ -1887,8 +1887,7 @@
 					// check if the marker is already present on the map and replace it with the new one, with timing
 					mapMarkers = mapMarkers.map((mm, mmIdx) => {
 						if (markerIdToReplace === mmIdx) {
-							// replace the Marker without timing with the same one but with timing value
-							return this.createMapMarkerWithIW(markerData, currentMarkerIdx);
+							this.updateMapMarkerWithIW(mm, markerData, currentMarkerIdx);
 						}
 
 						return mm;
@@ -2455,6 +2454,17 @@
 				behavior: 'smooth',
 			});
 		},
+		updateMapMarkerWithIW (marker, markerData, currentMarkerIdx) {
+			let updSvg = this.createMapMarkerSvg(markerData);
+			let currIw = infoWindows[currentMarkerIdx];
+			let iwContent = this.createInfoWindowContent(markerData, currentMarkerIdx);
+
+			marker.setIcon({
+				url: `data:image/svg+xml;base64,${updSvg}`,
+			});
+			marker.setMap(map);
+			currIw.setContent(iwContent);
+		},
 		createMapMarkerWithIW (markerData, currentMarkerIdx) {
 			let targetsCnt = this.get('targetsArr').length;
 
@@ -2497,35 +2507,7 @@
 
 			// add Marker to OverlappingMarkerSpiderfier
 			oms.addMarker(marker, () => {
-				let infoWindowContent = '<div class="gp-map_popup">';
-
-				infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
-
-				if (targetsCnt === 1) {
-					infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0] || ''}</div>`;
-					infoWindowContent += `<div class="gp-map_popup_single_network">${markerData.network}</div>`;
-					infoWindowContent += `<div class="gp-map_popup_single_location">(${markerData.city}, ${markerData.country})</div>`;
-				} else {
-					infoWindowContent += `<div class="gp-map_popup_multi_network">${markerData.network}</div>`;
-					infoWindowContent += `<div class="gp-map_popup_multi_location">(${markerData.city}, ${markerData.country})</div>`;
-
-					markerData.targets.forEach((target, targetIdx) => {
-						infoWindowContent += '<div class="gp-map_popup_multi_data">';
-						infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
-
-						infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
-							style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
-
-						infoWindowContent += '</div>';
-					});
-				}
-
-				infoWindowContent += '</div>';
-				infoWindowContent += `<div class="gp-map_popup_see-results ${targetsCnt > 1 ? 'centered' : ''}" id="iw-${currentMarkerIdx}">`;
-				infoWindowContent += `<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">`;
-				infoWindowContent += '<span>Results and Actions</span>';
-				infoWindowContent += '</div>';
-				infoWindowContent += '</div>';
+				let infoWindowContent = this.createInfoWindowContent(markerData, currentMarkerIdx);
 
 				infoWindow.setContent(infoWindowContent);
 
@@ -2754,6 +2736,40 @@
 			}
 
 			return svg;
+		},
+		createInfoWindowContent (markerData, currentMarkerIdx) {
+			let targetsCnt = this.get('targetsArr').length;
+			let infoWindowContent = '<div class="gp-map_popup">';
+
+			infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
+
+			if (targetsCnt === 1) {
+				infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0] || ''}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_single_network">${markerData.network}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_single_location">(${markerData.city}, ${markerData.country})</div>`;
+			} else {
+				infoWindowContent += `<div class="gp-map_popup_multi_network">${markerData.network}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_multi_location">(${markerData.city}, ${markerData.country})</div>`;
+
+				markerData.targets.forEach((target, targetIdx) => {
+					infoWindowContent += '<div class="gp-map_popup_multi_data">';
+					infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
+
+					infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
+						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
+
+					infoWindowContent += '</div>';
+				});
+			}
+
+			infoWindowContent += '</div>';
+			infoWindowContent += `<div class="gp-map_popup_see-results ${targetsCnt > 1 ? 'centered' : ''}" id="iw-${currentMarkerIdx}">`;
+			infoWindowContent += `<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">`;
+			infoWindowContent += '<span>Results and Actions</span>';
+			infoWindowContent += '</div>';
+			infoWindowContent += '</div>';
+
+			return infoWindowContent;
 		},
 	};
 </script>
