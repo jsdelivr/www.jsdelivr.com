@@ -1490,7 +1490,7 @@
 							if (infiniteSwitchEnabled) {
 								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 
-								calcTiming =  {
+								calcTiming = {
 									value: Math.round(packetsRtt.reduce((sum, rtt) => sum += rtt, 0) / packetsRtt.length),
 									units: ' ms',
 								};
@@ -1880,11 +1880,8 @@
 					});
 				}
 
+				// create a new marker and add it to the map or update existing with new data
 				if (markerIdToReplace !== null) {
-					// clear the Map from the Marker which will be replaced
-					mapMarkers[markerIdToReplace].setMap(null);
-
-					// check if the marker is already present on the map and replace it with the new one, with timing
 					mapMarkers = mapMarkers.map((mm, mmIdx) => {
 						if (markerIdToReplace === mmIdx) {
 							this.updateMapMarkerWithIW(mm, markerData, currentMarkerIdx);
@@ -1893,7 +1890,7 @@
 						return mm;
 					});
 				} else if (!mapMarkers[markerData.clientSideId]) {
-					// add new Marker to the Map
+					// collect markers added to the map
 					mapMarkers.push(this.createMapMarkerWithIW(markerData, currentMarkerIdx));
 				}
 			});
@@ -2457,18 +2454,16 @@
 		updateMapMarkerWithIW (marker, markerData, currentMarkerIdx) {
 			let updSvg = this.createMapMarkerSvg(markerData);
 			let currIw = infoWindows[currentMarkerIdx];
-			let iwContent = this.createInfoWindowContent(markerData, currentMarkerIdx);
 
 			marker.setIcon({
 				url: `data:image/svg+xml;base64,${updSvg}`,
 			});
+
 			marker.setMap(map);
-			currIw.setContent(iwContent);
+			currIw.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 		},
 		createMapMarkerWithIW (markerData, currentMarkerIdx) {
-			let targetsCnt = this.get('targetsArr').length;
-
-			// create Popup element
+			// create Popup element which will be shown on click on the marker
 			let infoWindow = new google.maps.InfoWindow();
 
 			// create svg to use as a Marker icon
@@ -2489,8 +2484,9 @@
 
 			// collect IWs
 			infoWindows.push(infoWindow);
+			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 
-			// create the Marker
+			// create a new Marker
 			let marker = new google.maps.Marker({
 				map,
 				icon: {
@@ -2505,12 +2501,8 @@
 				infoWindows.forEach(iw => iw.close());
 			});
 
-			// add Marker to OverlappingMarkerSpiderfier
+			// add Marker to OverlappingMarkerSpiderfier, with listener which will be called on click
 			oms.addMarker(marker, () => {
-				let infoWindowContent = this.createInfoWindowContent(markerData, currentMarkerIdx);
-
-				infoWindow.setContent(infoWindowContent);
-
 				infoWindow.open(map, marker);
 			});
 
