@@ -398,7 +398,7 @@
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerTarget[0] : {};
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
 							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
@@ -432,7 +432,7 @@
 							failureRawOutput: this.getFailureProbeRawOutput(probeData),
 							packetsRtt: finalPacketsRtt,
 							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
-							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming),
+							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming, packetsTotal),
 							parsedData: {
 								keyOrder: updKeyOrder,
 								packetsRttData: {
@@ -611,9 +611,10 @@
 
 			return this.createRegularGraph(packetsRtt);
 		},
-		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming) {
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
 			if (
-				typeof lastTiming === 'undefined'
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
 				|| typeof maxTiming === 'undefined'
 				|| typeof minTiming === 'undefined'
 				|| typeof avgTiming === 'undefined'
