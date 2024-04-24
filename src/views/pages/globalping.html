@@ -1254,6 +1254,10 @@
 			stylers: [{ visibility: 'on' }],
 		},
 	];
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1274,6 +1278,9 @@
 		data () {
 			return {
 				_,
+				PROBE_NO_TIMING_VALUE,
+				PROBE_STATUS_FAILED,
+				PROBE_STATUS_OFFLINE,
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				mainOptions: {
 					...INITIAL_MAIN_OPTS_VALUES,
@@ -1489,11 +1496,21 @@
 
 							if (infiniteSwitchEnabled) {
 								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+								let numericPacketsRtt = packetsRtt.filter(v => typeof v === 'number');
 
-								if (packetsRtt.length) {
+								// TODO: 592
+								// packetsRtt could be an array of values like 'time out' etc. (check for other type of values inside, like failed or something like that)
+								// so current logic is wrong and leads to NaN ms values (this broke marker color logic, IW content values etc)
+								// check out Table logic, then check rawOutput right now it returns NaN ms (infinite google china)
+								// map, raw and table should all use/share the same logic for infinite timins calcs
+								if (numericPacketsRtt.length) {
 									calcTiming = {
-										value: Math.round(packetsRtt.reduce((sum, rtt) => sum += rtt, 0) / packetsRtt.length),
+										value: Math.round(numericPacketsRtt.reduce((sum, rtt) => sum += rtt, 0) / numericPacketsRtt.length),
 										units: ' ms',
+									};
+								} else if (packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
+									calcTiming = {
+										value: _.getProbeTimeOutValue(),
 									};
 								}
 							} else if (res.result.status !== 'in-progress') {
@@ -2012,9 +2029,9 @@
 		pickMarkerColor (timing) {
 			// return default color for timed out probe
 			if (
-				timing === _.getProbeTimeOutValue()
-				|| timing === _.getProbeStatusFailedValue()
-				|| timing === _.getProbeStatusOfflineValue()
+				timing === PROBE_NO_TIMING_VALUE
+				|| timing === PROBE_STATUS_FAILED
+				|| timing === PROBE_STATUS_OFFLINE
 			) {
 				return '#17233A';
 			}
