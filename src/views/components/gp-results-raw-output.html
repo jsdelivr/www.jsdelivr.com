@@ -213,13 +213,16 @@
 							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
 						};
 					}, { finalPacketsRtt: [], finalPacketsDrop: 0, outputLinesArr: [] });
-					let calcAvgTiming = Math.round(finalPacketsRtt.reduce((res, rtt) => res += rtt, 0) / finalPacketsRtt.length);
+					let realPacketsRttValues = finalPacketsRtt.filter(v => typeof v === 'number');
+					let calcAvgTiming = realPacketsRttValues.length
+						? Math.round(realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length)
+						: null;
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData,
-						mainTimingValue: `${calcAvgTiming} ms`,
+						mainTimingValue: calcAvgTiming ? `${calcAvgTiming} ms`: null,
 						extraValues: [{
 							text: 'Loss',
 							value: this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
