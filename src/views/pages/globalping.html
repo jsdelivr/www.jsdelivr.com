@@ -1495,20 +1495,15 @@
 							let calcTiming = null;
 
 							if (infiniteSwitchEnabled) {
-								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+								let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 								let numericPacketsRtt = packetsRtt.filter(v => typeof v === 'number');
 
-								// TODO: 592
-								// packetsRtt could be an array of values like 'time out' etc. (check for other type of values inside, like failed or something like that)
-								// so current logic is wrong and leads to NaN ms values (this broke marker color logic, IW content values etc)
-								// check out Table logic, then check rawOutput right now it returns NaN ms (infinite google china)
-								// map, raw and table should all use/share the same logic for infinite timins calcs
-								if (numericPacketsRtt.length) {
+								if (packetsTotal && numericPacketsRtt.length) {
 									calcTiming = {
 										value: Math.round(numericPacketsRtt.reduce((sum, rtt) => sum += rtt, 0) / numericPacketsRtt.length),
 										units: ' ms',
 									};
-								} else if (packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
+								} else if (packetsTotal && packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
 									calcTiming = {
 										value: _.getProbeTimeOutValue(),
 									};
