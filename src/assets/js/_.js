@@ -1450,6 +1450,7 @@ module.exports = {
 		return {
 			packetsRtt,
 			packetsDrop,
+			packetsTotal: packetsRtt.length + packetsDrop,
 		};
 	},
 };
