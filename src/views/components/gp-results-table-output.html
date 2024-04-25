@@ -266,7 +266,7 @@
 
 						if (res.result.status !== 'in-progress') {
 							let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
-							let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 							let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
 							let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
 							let statsTotal = res.result?.stats?.total;
@@ -287,7 +287,7 @@
 								packetsRtt,
 								failureRawOutput: this.getFailureProbeRawOutput(res),
 								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
+								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
 							}];
 						}
 
@@ -311,7 +311,7 @@
 
 						if (nextReqRes.result.status !== 'in-progress') {
 							let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
-							let { packetsRtt } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
 							let minTiming = nextReqRes.result?.stats?.min || PROBE_NO_TIMING_VALUE;
 							let maxTiming = nextReqRes.result?.stats?.max || PROBE_NO_TIMING_VALUE;
 							let statsTotal = nextReqRes.result?.stats?.total;
@@ -334,7 +334,7 @@
 									packetsRtt,
 									failureRawOutput: this.getFailureProbeRawOutput(nextReqRes),
 									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming),
+									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
 								},
 							];
 						}
