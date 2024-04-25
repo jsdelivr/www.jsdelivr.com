@@ -198,7 +198,7 @@
 		handleInfiniteResults (testResults) {
 			let preparedTestResults = this.get('preparedTestResults');
 
-			let prepResults = testResults.reduce((prepResultsObj, rawRes) => {
+			return testResults.reduce((prepResultsObj, rawRes) => {
 				rawRes.forEach((probeData, probeDataIdx) => {
 					let {
 						parsedData: prevParsedData = {
@@ -255,8 +255,6 @@
 
 				return prepResultsObj;
 			}, preparedTestResults);
-
-			return prepResults;
 		},
 		parseLinesFromRawOutput (raw) {
 			let lines = raw.split('\n').filter(l => l);
