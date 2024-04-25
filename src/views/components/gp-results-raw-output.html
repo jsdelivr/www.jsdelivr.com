@@ -79,6 +79,7 @@
 	const tooltip = require('../../assets/js/decorators/tooltip');
 	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 
 	component.exports = {
 		decorators: {
@@ -89,7 +90,6 @@
 				_,
 				hiddenTestResults: [],
 				preparedTestResults: [],
-				PROBE_NO_TIMING_VALUE,
 			};
 		},
 		onrender () {
@@ -230,7 +230,7 @@
 							value: this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
 							units: '%',
 						}],
-						isFailed: false, // TODO: 592, check maybe there is a case when we should consider it as failed
+						isFailed: probeData.result.status === PROBE_STATUS_FAILED,
 						result: {
 							...probeData.result,
 							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
@@ -284,10 +284,10 @@
 			if (this.get('isInfiniteModeRes')) {
 				let loss = data.extraValues[0].value;
 
-				if (typeof loss !== 'number') {
-					return '';
-				} else if (loss === 100) {
+				if (data.isFailed || loss === 100) {
 					return 'failure';
+				} else if (typeof loss !== 'number') {
+					return '';
 				} else if (loss === 0) {
 					return 'success';
 				}
