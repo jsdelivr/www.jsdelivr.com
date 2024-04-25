@@ -69,7 +69,8 @@ let tooltipDecorator = (
 			if (document.querySelector('#ractive-tooltip-instance') === null) {
 				tooltip = document.createElement(elementName);
 				tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
-				tooltip.textContent = content;
+				content = content.replace(/\n/g, '<br>');
+				tooltip.innerHTML = content;
 				tooltip.id = 'ractive-tooltip-instance';
 				document.body.appendChild(tooltip);
 			}
