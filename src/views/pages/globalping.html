@@ -1486,7 +1486,7 @@
 					// combine results from response into arrays by target
 					// for the regular flow the amount of results in testResults will be the amount of targets
 					// for the infinite case, since there is only one target, every new result in testResults is a new measurement response
-					let resultsByTarget = testResults.reduce((mData, tRes, tResIdx) => {
+					let parsedMeasData = testResults.reduce((mData, tRes, tResIdx) => {
 						if (!tRes || !tRes.length) {
 							return mData;
 						}
@@ -1531,22 +1531,22 @@
 					}, {});
 
 					// markersData for the first target, regular flow
-					let markersData = resultsByTarget[0];
+					let markersData = parsedMeasData[0];
 
 					// in case of infinite flow, get the latest data
 					if (infiniteSwitchEnabled) {
-						let lastIdx = Object.keys(resultsByTarget).length - 1;
+						let lastIdx = Object.keys(parsedMeasData).length - 1;
 
-						markersData = resultsByTarget[lastIdx];
+						markersData = parsedMeasData[lastIdx];
 					}
 
 					// if there are another targets then we should add its data to markersData respectively
 					if (targetsCnt > 1) {
 						for (let cnt = 1; cnt < targetsCnt; cnt++) {
-							if (!resultsByTarget[cnt]) { return; }
+							if (!parsedMeasData[cnt]) { return; }
 
 							markersData = markersData.map((mD) => {
-								let secReqMD = resultsByTarget[cnt].find(i => i.clientSideId === mD.clientSideId);
+								let secReqMD = parsedMeasData[cnt].find(i => i.clientSideId === mD.clientSideId);
 
 								return {
 									...mD,
