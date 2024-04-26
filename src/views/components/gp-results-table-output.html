@@ -398,7 +398,7 @@
 						},
 					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerTarget[0] : {};
 					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal: currPacketsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
 							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
@@ -414,6 +414,7 @@
 						: PROBE_NO_TIMING_VALUE;
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
 					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1];
+					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
@@ -444,6 +445,7 @@
 									[probeData.id]: currPacketsDrop,
 								},
 								ipAddr: currIpAddr,
+								packetsTotal,
 							},
 						}],
 					};
