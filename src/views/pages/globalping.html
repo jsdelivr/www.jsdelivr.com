@@ -1491,12 +1491,29 @@
 							return mData;
 						}
 
-						mData[tResIdx] = tRes.map((res) => {
+						mData[tResIdx] = tRes.map((res, resIdx) => {
 							let calcTiming = null;
+							let data = {
+								id: res.id,
+								clientSideId: res.clientSideId,
+								network: res.probe.network,
+								city: res.probe.city,
+								country: res.probe.country,
+								lat: res.probe.latitude,
+								lng: res.probe.longitude,
+								targets: [ res.target ],
+							}
 
 							if (infiniteSwitchEnabled) {
 								let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
-								let numericPacketsRtt = packetsRtt.filter(v => typeof v === 'number');
+								let prevPacketsRtt = tResIdx - 1 >= 0 ? mData[tResIdx - 1][resIdx].packetsRtt : [];
+								let allCurrPacketsRtt = [ ...prevPacketsRtt, ...packetsRtt ];
+								let numericPacketsRtt = allCurrPacketsRtt.filter(v => typeof v === 'number');
+
+								data = {
+									...data,
+									packetsRtt: allCurrPacketsRtt,
+								};
 
 								if (packetsTotal && numericPacketsRtt.length) {
 									calcTiming = {
@@ -1515,15 +1532,8 @@
 							let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
 
 							return {
-								id: res.id,
-								clientSideId: res.clientSideId,
-								network: res.probe.network,
-								city: res.probe.city,
-								country: res.probe.country,
+								...data,
 								timings: [ resTiming ],
-								lat: res.probe.latitude,
-								lng: res.probe.longitude,
-								targets: [ res.target ],
 							};
 						});
 
