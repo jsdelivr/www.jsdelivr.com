@@ -1483,9 +1483,9 @@
 					let targetsCnt = this.get('targetsArr').length;
 					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
-					// combine results from response into arrays by target
-					// for the regular flow the amount of results in testResults will be the amount of targets
-					// for the infinite case, since there is only one target, every new result in testResults is a new measurement response
+					// combine results
+					// if it is a regular measurement then each array element is corresponds to each target, these arrays elements contain data per probe for this target
+					// if Infinite measurement - each array element is a new request's response, each el inside such array is a data for probe
 					let parsedMeasData = testResults.reduce((mData, tRes, tResIdx) => {
 						if (!tRes || !tRes.length) {
 							return mData;
