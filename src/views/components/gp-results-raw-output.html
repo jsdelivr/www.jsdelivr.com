@@ -207,7 +207,7 @@
 						},
 					} = prepResultsObj[probeDataIdx] || {};
 					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal: currPacketsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let { finalPacketsRtt, finalPacketsDrop, outputLinesArr } = prevParsedData.keyOrder.reduce((final, key) => {
 						return {
 							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
@@ -220,6 +220,7 @@
 						? Math.round(realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length)
 						: null;
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
+					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
@@ -249,6 +250,7 @@
 								...prevParsedData.rawOutputLines,
 								[probeData.id]: packetLines,
 							},
+							packetsTotal,
 						},
 					};
 				});
