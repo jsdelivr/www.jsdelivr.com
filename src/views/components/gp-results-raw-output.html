@@ -221,16 +221,13 @@
 						: null;
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
+					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData,
 						mainTimingValue: !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE,
-						extraValues: [{
-							text: 'Loss',
-							value: this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop),
-							units: '%',
-						}],
+						extraValues: [],
 						isFailed: probeData.result.status === PROBE_STATUS_FAILED,
 						result: {
 							...probeData.result,
@@ -253,6 +250,21 @@
 							packetsTotal,
 						},
 					};
+
+					// when probe's status is failed there is no loss value
+					if (lossValue !== null) {
+						prepResultsObj[probeDataIdx] = {
+							...prepResultsObj[probeDataIdx],
+							extraValues: [
+								...prepResultsObj[probeDataIdx].extraValues,
+								{
+									text: 'Loss',
+									value: lossValue,
+									units: '%',
+								}
+							],
+						};
+					}
 				});
 
 				return prepResultsObj;
@@ -284,7 +296,7 @@
 			if (!data) { return; }
 
 			if (this.get('isInfiniteModeRes')) {
-				let loss = data.extraValues[0].value;
+				let loss = data.extraValues[0] ? data.extraValues[0].value : null;
 
 				if (data.isFailed || loss === 100) {
 					return 'failure';
