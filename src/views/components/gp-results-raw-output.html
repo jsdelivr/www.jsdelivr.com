@@ -30,14 +30,16 @@
 								</span>
 							{{/if}}
 
-							{{#if this.extraValues}}
-								{{#each this.extraValues}}
-									<span class="c-gp-results-raw-output_list_item_header_time">
-										<span>{{this.text}}:</span>
-										<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
-									</span>
-								{{/each}}
-							{{/if}}
+							{{#unless this.isFailed}}
+								{{#if this.extraValues}}
+									{{#each this.extraValues}}
+										<span class="c-gp-results-raw-output_list_item_header_time">
+											<span>{{this.text}}:</span>
+											<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+										</span>
+									{{/each}}
+								{{/if}}
+							{{/unless}}
 
 							<img on-click="@this.hideShowTestResult(idx)"
 								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
