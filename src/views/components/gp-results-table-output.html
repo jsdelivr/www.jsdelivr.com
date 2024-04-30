@@ -60,6 +60,10 @@
 											<img width="20" height="20" src="{{@shared.assetsHost}}/img/globalping/target-icon.svg">
 										</div>
 									</div>
+								{{elseif this.isOffline && !isInfiniteModeRes}}
+									<div class="results-table_row_stats_subrow_cell probe-offline">
+										<span>{{PROBE_OFFLINE_TEXT}}</span>
+									</div>
 								{{else}}
 									<div class="results-table_row_stats_subrow_cell quality">
 										<div class="results-table_row_stats_subrow_cell_value">
@@ -202,6 +206,7 @@
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+	const PROBE_OFFLINE_TEXT = 'Probe offline';
 
 	component.exports = {
 		decorators: {
@@ -211,6 +216,7 @@
 			return {
 				preparedTestResults: [],
 				PROBE_NO_TIMING_VALUE,
+				PROBE_OFFLINE_TEXT,
 			};
 		},
 		oninit () {
@@ -578,7 +584,7 @@
 			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		createQualityString (isOffline, statsTotal, statsDrop) {
-			if (isOffline) { return 'Probe offline'; }
+			if (isOffline) { return PROBE_OFFLINE_TEXT; }
 
 			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
 
