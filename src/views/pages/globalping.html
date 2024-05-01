@@ -2601,10 +2601,10 @@
 		handlePostGPMeasError (err) {
 			this.set('testInProgress', false);
 			this.set('testFailed', true);
+				this.set('runTestBtnText', 'Run Test');
 
 			if (err.responseStatusCode === 429) {
 				this.set('creditsError', true);
-				this.set('runTestBtnText', 'Run Test');
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
 				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
@@ -2632,7 +2632,6 @@
 				this.set('inputErrors', {
 					noProbesFound: err.error.message,
 				});
-				this.set('runTestBtnText', 'Run Test');
 			}
 		},
 		reUseProbesRunTest () {
