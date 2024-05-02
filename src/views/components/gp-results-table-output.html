@@ -422,6 +422,7 @@
 						: PROBE_NO_TIMING_VALUE;
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
 					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1] || PROBE_NO_TIMING_VALUE;
+					// TODO: 592 - incorrect counting, since we do not consider packets that we already received ergo constantly adding more packets than we actually should
 					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 
 					prepResultsObj[probeDataIdx] = {
