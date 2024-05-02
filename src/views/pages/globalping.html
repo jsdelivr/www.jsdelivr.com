@@ -1516,7 +1516,15 @@
 									packetsRtt: allCurrPacketsRtt,
 								};
 
-								if (packetsTotal && numericPacketsRtt.length) {
+								if (res.result.status === PROBE_STATUS_FAILED) {
+									calcTiming = {
+										value: PROBE_STATUS_FAILED,
+									};
+								} else if (res.result.status === PROBE_STATUS_OFFLINE) {
+									calcTiming = {
+										value: PROBE_STATUS_OFFLINE,
+									};
+								} else if (packetsTotal && numericPacketsRtt.length) {
 									calcTiming = {
 										value: Math.round(numericPacketsRtt.reduce((sum, rtt) => sum += rtt, 0) / numericPacketsRtt.length),
 										units: ' ms',
