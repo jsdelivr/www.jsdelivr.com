@@ -30,7 +30,7 @@
 								</span>
 							{{/if}}
 
-							{{#unless this.isFailed}}
+							{{#unless this.isFailed || this.mainTimingValue === PROBE_STATUS_OFFLINE}}
 								{{#if this.extraValues}}
 									{{#each this.extraValues}}
 										<span class="c-gp-results-raw-output_list_item_header_time">
@@ -82,6 +82,7 @@
 	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
 		decorators: {
@@ -93,6 +94,7 @@
 				hiddenTestResults: [],
 				preparedTestResults: [],
 				PROBE_STATUS_FAILED,
+				PROBE_STATUS_OFFLINE,
 			};
 		},
 		onrender () {
@@ -225,11 +227,20 @@
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
+					let mainTimingValue;
+
+					if (probeData.result.status === PROBE_STATUS_FAILED) {
+						mainTimingValue = PROBE_STATUS_FAILED;
+					} else if (probeData.result.status === PROBE_STATUS_OFFLINE) {
+						mainTimingValue = PROBE_STATUS_OFFLINE;
+					} else {
+						mainTimingValue = !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE;
+					}
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData,
-						mainTimingValue: !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE,
+						mainTimingValue,
 						extraValues: [],
 						isFailed: probeData.result.status === PROBE_STATUS_FAILED,
 						result: {
