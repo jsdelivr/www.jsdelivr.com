@@ -421,7 +421,7 @@
 						? (realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length).toFixed(2)
 						: PROBE_NO_TIMING_VALUE;
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
-					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1];
+					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1] || PROBE_NO_TIMING_VALUE;
 					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 
 					prepResultsObj[probeDataIdx] = {
