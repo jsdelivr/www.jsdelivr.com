@@ -231,9 +231,9 @@
 					let updPreparedTestResults;
 
 					if (testType === 'ping' && isInfiniteModeRes) {
-						updPreparedTestResults = this.combineInfiniteResults(testResults);
+						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
-						updPreparedTestResults = this.combineRegularResults(testResults);
+						updPreparedTestResults = this.handleRegularResults(testResults);
 					}
 
 					this.set('preparedTestResults', updPreparedTestResults);
@@ -258,7 +258,7 @@
 				});
 			}
 		},
-		combineRegularResults (results) {
+		handleRegularResults (results) {
 			return results.reduce((prepResults, resArr, resArrIdx) => {
 				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
 
@@ -392,7 +392,7 @@
 
 			return 'some-issues';
 		},
-		combineInfiniteResults (rawResults) {
+		handleInfiniteResults (rawResults) {
 			let preparedTestResults = this.get('preparedTestResults');
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
