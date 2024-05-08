@@ -50,7 +50,7 @@
 
 						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawOutput}}</pre>
 
-						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this)}}"></div>
+						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this.statsPerTarget[activeTargetIdx])}}"></div>
 					</div>
 
 					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
@@ -79,8 +79,6 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
-	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
-	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
@@ -92,29 +90,12 @@
 			return {
 				_,
 				hiddenTestResults: [],
-				preparedTestResults: [],
 				PROBE_STATUS_FAILED,
 				PROBE_STATUS_OFFLINE,
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				this.observe('testResults', (testResults) => {
-					if (!testResults) { return; }
-
-					let testType = this.get('testReqParams.type');
-					let isInfiniteModeRes = this.get('isInfiniteModeRes');
-					let updPreparedTestResults;
-
-					if (testType === 'ping' && isInfiniteModeRes) {
-						updPreparedTestResults = this.handleInfiniteResults(testResults);
-					} else {
-						updPreparedTestResults = testResults;
-					}
-
-					this.set('preparedTestResults', updPreparedTestResults);
-				}, { defer: true });
-
 				// open result under specific index when scrool to this element from the parent called
 				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
 					if (scrolledToResIdx === null) { return; }
@@ -145,10 +126,10 @@
 
 			this.set('hiddenTestResults', hiddenTestResults);
 		},
-		setResultsBlockHeight (testResults) {
+		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
 				let listEl = document.querySelector('.c-gp-results-raw-output_list');
-				let itemsAmount = testResults.length;
+				let itemsAmount = results.length;
 				let listElScrollHeight = listEl.scrollHeight;
 				let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
 
@@ -157,112 +138,6 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
-		},
-		handleInfiniteResults (testResults) {
-			let preparedTestResults = this.get('preparedTestResults');
-
-			return testResults.reduce((prepResultsObj, rawRes) => {
-				rawRes.forEach((probeData, probeDataIdx) => {
-					let {
-						parsedData: prevParsedData = {
-							keyOrder: [],
-							rawOutputLines: [],
-						},
-					} = prepResultsObj[probeDataIdx] || {};
-					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal: currPacketsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
-					let { finalPacketsRtt, finalPacketsDrop, outputLinesArr } = prevParsedData.keyOrder.reduce((final, key) => {
-						return {
-							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
-							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
-							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
-						};
-					}, { finalPacketsRtt: [], finalPacketsDrop: 0, outputLinesArr: [] });
-					let realPacketsRttValues = finalPacketsRtt.filter(v => typeof v === 'number');
-					let calcAvgTiming = realPacketsRttValues.length
-						? Math.round(realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length)
-						: null;
-					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
-					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
-					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
-					let avgTiming;
-
-					if (probeData.result.status === PROBE_STATUS_FAILED) {
-						avgTiming = PROBE_STATUS_FAILED;
-					} else if (probeData.result.status === PROBE_STATUS_OFFLINE) {
-						avgTiming = PROBE_STATUS_OFFLINE;
-					} else {
-						avgTiming = !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE;
-					}
-
-					prepResultsObj[probeDataIdx] = {
-						clientSideId: probeDataIdx,
-						...probeData,
-						avgTiming,
-						extraValues: [],
-						isFailed: probeData.result.status === PROBE_STATUS_FAILED,
-						result: {
-							...probeData.result,
-							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
-						},
-						parsedData: {
-							keyOrder: updKeyOrder,
-							packetsRttData: {
-								...prevParsedData.packetsRttData,
-								[probeData.id]: currPacketsRtt,
-							},
-							packetsDropData: {
-								...prevParsedData.packetsDropData,
-								[probeData.id]: currPacketsDrop,
-							},
-							rawOutputLines: {
-								...prevParsedData.rawOutputLines,
-								[probeData.id]: packetLines,
-							},
-							packetsTotal,
-						},
-					};
-
-					// when probe's status is failed there is no loss value
-					if (lossValue !== null) {
-						prepResultsObj[probeDataIdx] = {
-							...prepResultsObj[probeDataIdx],
-							extraValues: [
-								...prepResultsObj[probeDataIdx].extraValues,
-								{
-									text: 'Loss',
-									value: lossValue,
-									units: '%',
-								},
-							],
-						};
-					}
-				});
-
-				return prepResultsObj;
-			}, preparedTestResults);
-		},
-		parseLinesFromRawOutput (raw) {
-			let lines = raw.split('\n').filter(l => l);
-			let linesHeader;
-			let packetLines = [];
-
-			for (let i = 0; i < lines.length; i++) {
-				if (i === 0) {
-					linesHeader = lines[i];
-
-					continue;
-				}
-
-				if (lines[i].includes('---')) { break; }
-
-				packetLines.push(lines[i]);
-			}
-
-			return {
-				packetLines,
-				linesHeader,
-			};
 		},
 		getStatusLineColorClass (data) {
 			if (!data) { return; }
@@ -289,24 +164,6 @@
 			}
 
 			return '';
-		},
-		calcLoss (statsTotal, statsDrop) {
-			if (
-				typeof statsTotal === 'undefined'
-				|| typeof statsDrop === 'undefined'
-				|| statsTotal === 0
-			) {
-				return null;
-			}
-
-			let actualAmount = Math.max(statsTotal - statsDrop, 0);
-
-			return Math.round(statsDrop / actualAmount * 100);
-		},
-		handleRawOutput (header, lines) {
-			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
-
-			return limitedLines.join('\n');
 		},
 	};
 </script>

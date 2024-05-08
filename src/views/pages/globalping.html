@@ -537,7 +537,7 @@
 					<div class="gp_map-block_test-output_raw-output {{#unless rawOutputMode}}output-hidden{{/unless}}">
 						<c-gp-results-raw-output
 							testReqParams="{{testReqParams}}"
-							testResults="{{prepTestRes}}"
+							preparedTestResults="{{preparedTestResults}}"
 							testInProgress="{{testInProgress}}"
 							scrolledToResIdx="{{scrolledToResIdx}}"
 							currSearchLocation="{{mainOptions.location}}"
@@ -551,7 +551,7 @@
 						<c-gp-results-table-output
 							testReqParams="{{testReqParams}}"
 							testInProgress="{{testInProgress}}"
-							testResults="{{prepTestRes}}"
+							preparedTestResults="{{preparedTestResults}}"
 							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
@@ -1258,6 +1258,7 @@
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
 
 	let map;
 	let oms;
@@ -1330,6 +1331,7 @@
 				infiniteMeasIds: null,
 				isInfiniteMeasStopped: false,
 				prevProbesMeasId: null,
+				preparedTestResults: [],
 			};
 		},
 		onrender () {
@@ -1594,9 +1596,17 @@
 				this.observe('testResults', (testResults) => {
 					if (!testResults) { return; }
 
-					let regRes = this.prepareRegularResults(testResults);
+					let testType = this.get('testReqParams.type');
+					let isInfiniteModeRes = this.get('isInfiniteModeRes');
+					let preparedTestResults;
 
-					this.set('prepTestRes', regRes);
+					if (testType === 'ping' && isInfiniteModeRes) {
+						preparedTestResults = this.prepareInfiniteResults(testResults);
+					} else {
+						preparedTestResults = this.prepareRegularResults(testResults);
+					}
+
+					this.set('preparedTestResults', preparedTestResults);
 				});
 
 				// set initial screenWidth value
@@ -2915,6 +2925,90 @@
 				});
 			}, []);
 		},
+		prepareInfiniteResults (rawResults) {
+			let preparedTestResults = this.get('preparedTestResults');
+
+			return rawResults.reduce((prepResultsObj, rawRes) => {
+				rawRes.forEach((probeData, probeDataIdx) => {
+					let {
+						parsedData: prevParsedData = {
+							keyOrder: [],
+							packetsRttData: {},
+							packetsDropData: {},
+							ipAddr: null,
+							packetsTotalPerMeas: {},
+							rawOutputLines: [],
+						},
+					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerTarget[0] : {};
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
+					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
+					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal: currPacketsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let { finalPacketsRtt, finalPacketsDrop, finalPacketsTotal, outputLinesArr } = prevParsedData.keyOrder.reduce((final, key) => {
+						return {
+							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
+							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
+							finalPacketsTotal: final.finalPacketsTotal + prevParsedData.packetsTotalPerMeas[key],
+							outputLinesArr: [ ...final.outputLinesArr, ...prevParsedData.rawOutputLines[key] ],
+						};
+					}, { finalPacketsRtt: [], finalPacketsDrop: 0, finalPacketsTotal: 0, outputLinesArr: [] });
+					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
+					let realPacketsRttValues = finalPacketsRtt.filter(v => typeof v === 'number');
+					let currMaxValue = realPacketsRttValues.length ? Math.max(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
+					let currMinValue = realPacketsRttValues.length ? Math.min(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
+					let calcAvgTiming = realPacketsRttValues.length
+						? (realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length).toFixed(2)
+						: PROBE_NO_TIMING_VALUE;
+					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
+					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1] || PROBE_NO_TIMING_VALUE;
+					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
+
+					prepResultsObj[probeDataIdx] = {
+						clientSideId: probeDataIdx,
+						...probeData.probe,
+						statsPerTarget: [{
+							target: probeData.target,
+							ipAddr: currIpAddr,
+							lastTiming,
+							minTiming: currMinValue,
+							avgTiming: calcAvgTiming,
+							maxTiming: currMaxValue,
+							statsTotal: finalPacketsRtt.length,
+							statsDrop: finalPacketsDrop,
+							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
+							isOffline,
+							failureRawOutput: this.getFailureProbeRawOutput(probeData),
+							packetsRtt: finalPacketsRtt,
+							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
+							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming, finalPacketsTotal),
+							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
+							extraValues: lossValue !== null ? { text: 'Loss', value: lossValue, units: '%' } : [],
+							parsedData: {
+								keyOrder: updKeyOrder,
+								packetsRttData: {
+									...prevParsedData.packetsRttData,
+									[probeData.id]: currPacketsRtt,
+								},
+								packetsDropData: {
+									...prevParsedData.packetsDropData,
+									[probeData.id]: currPacketsDrop,
+								},
+								ipAddr: currIpAddr,
+								packetsTotalPerMeas: {
+									...prevParsedData.packetsTotalPerMeas,
+									[probeData.id]: currPacketsTotal,
+								},
+								rawOutputLines: {
+									...prevParsedData.rawOutputLines,
+									[probeData.id]: packetLines,
+								},
+							},
+						}],
+					};
+				});
+
+				return prepResultsObj;
+			}, preparedTestResults);
+		},
 		getFailureProbeRawOutput (probeData) {
 			let rawOutput;
 			let { status = null } = probeData.result;
@@ -2964,6 +3058,53 @@
 				qualityPercentage,
 				actualAmount,
 			};
+		},
+		parseIPFromRawOutput (raw) {
+			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
+			let match = raw.match(ipRegex);
+			let ipAddr = match ? match[0] : '';
+
+			return ipAddr;
+		},
+		parseLinesFromRawOutput (raw) {
+			let lines = raw.split('\n').filter(l => l);
+			let linesHeader;
+			let packetLines = [];
+
+			for (let i = 0; i < lines.length; i++) {
+				if (i === 0) {
+					linesHeader = lines[i];
+
+					continue;
+				}
+
+				if (lines[i].includes('---')) { break; }
+
+				packetLines.push(lines[i]);
+			}
+
+			return {
+				packetLines,
+				linesHeader,
+			};
+		},
+		calcLoss (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return null;
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+
+			return Math.round(statsDrop / actualAmount * 100);
+		},
+		handleRawOutput (header, lines) {
+			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
+
+			return limitedLines.join('\n');
 		},
 	};
 </script>

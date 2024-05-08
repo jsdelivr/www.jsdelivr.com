@@ -204,8 +204,6 @@
 	const PROBE_MAX_TIMING = 200;
 	const PROBE_MIN_TIMING = 5;
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
-	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
-	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
 	const PROBE_FAILED_TEXT = 'Probe is failed';
 
@@ -215,30 +213,10 @@
 		},
 		data () {
 			return {
-				preparedTestResults: [],
 				PROBE_NO_TIMING_VALUE,
 				PROBE_OFFLINE_TEXT,
 				PROBE_FAILED_TEXT,
 			};
-		},
-		oninit () {
-			if (!Ractive.isServer) {
-				this.observe('testResults', (testResults) => {
-					if (!testResults) { return; }
-
-					let testType = this.get('testReqParams.type');
-					let isInfiniteModeRes = this.get('isInfiniteModeRes');
-					let updPreparedTestResults;
-
-					if (testType === 'ping' && isInfiniteModeRes) {
-						updPreparedTestResults = this.handleInfiniteResults(testResults);
-					} else {
-						updPreparedTestResults = testResults;
-					}
-
-					this.set('preparedTestResults', updPreparedTestResults);
-				});
-			}
 		},
 		onrender () {
 			if (!Ractive.isServer) {
@@ -295,90 +273,6 @@
 			}
 
 			return 'some-issues';
-		},
-		handleInfiniteResults (rawResults) {
-			let preparedTestResults = this.get('preparedTestResults');
-
-			return rawResults.reduce((prepResultsObj, rawRes) => {
-				rawRes.forEach((probeData, probeDataIdx) => {
-					let {
-						parsedData: prevParsedData = {
-							keyOrder: [],
-							packetsRttData: {},
-							packetsDropData: {},
-							ipAddr: null,
-							packetsTotalPerMeas: {},
-						},
-					} = prepResultsObj[probeDataIdx] ? prepResultsObj[probeDataIdx].statsPerTarget[0] : {};
-					let currIpAddr = prevParsedData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
-					let { packetsRtt: currPacketsRtt, packetsDrop: currPacketsDrop, packetsTotal: currPacketsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
-					let { finalPacketsRtt, finalPacketsDrop, finalPacketsTotal } = prevParsedData.keyOrder.reduce((final, key) => {
-						return {
-							finalPacketsRtt: [ ...final.finalPacketsRtt, ...prevParsedData.packetsRttData[key] ],
-							finalPacketsDrop: final.finalPacketsDrop + prevParsedData.packetsDropData[key],
-							finalPacketsTotal: final.finalPacketsTotal + prevParsedData.packetsTotalPerMeas[key],
-						};
-					}, { finalPacketsRtt: [], finalPacketsDrop: 0, finalPacketsTotal: 0 });
-					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
-					let realPacketsRttValues = finalPacketsRtt.filter(v => typeof v === 'number');
-					let currMaxValue = realPacketsRttValues.length ? Math.max(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
-					let currMinValue = realPacketsRttValues.length ? Math.min(...realPacketsRttValues) : PROBE_NO_TIMING_VALUE;
-					let calcAvgTiming = realPacketsRttValues.length
-						? (realPacketsRttValues.reduce((res, rtt) => res += rtt, 0) / realPacketsRttValues.length).toFixed(2)
-						: PROBE_NO_TIMING_VALUE;
-					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
-					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1] || PROBE_NO_TIMING_VALUE;
-
-					prepResultsObj[probeDataIdx] = {
-						clientSideId: probeDataIdx,
-						...probeData.probe,
-						statsPerTarget: [{
-							target: probeData.target,
-							ipAddr: currIpAddr,
-							lastTiming,
-							minTiming: currMinValue,
-							avgTiming: calcAvgTiming,
-							maxTiming: currMaxValue,
-							statsTotal: finalPacketsRtt.length,
-							statsDrop: finalPacketsDrop,
-							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
-							isOffline,
-							failureRawOutput: this.getFailureProbeRawOutput(probeData),
-							packetsRtt: finalPacketsRtt,
-							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
-							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming, finalPacketsTotal),
-							parsedData: {
-								keyOrder: updKeyOrder,
-								packetsRttData: {
-									...prevParsedData.packetsRttData,
-									[probeData.id]: currPacketsRtt,
-								},
-								packetsDropData: {
-									...prevParsedData.packetsDropData,
-									[probeData.id]: currPacketsDrop,
-								},
-								ipAddr: currIpAddr,
-								packetsTotalPerMeas: {
-									...prevParsedData.packetsTotalPerMeas,
-									[probeData.id]: currPacketsTotal,
-								},
-							},
-						}],
-					};
-				});
-
-				return prepResultsObj;
-			}, preparedTestResults);
-		},
-		getAvgTimingValueToDisplay (timing) {
-			// for infinite results timing is an array of avg timing values
-			if (Array.isArray(timing)) {
-				let sum = timing.reduce((sum, t) => sum + t, 0);
-
-				return Math.round(sum / timing.length * 100) / 100;
-			}
-
-			return timing;
 		},
 		createRealTimeGraph (
 			data,
@@ -493,13 +387,6 @@
 
 			return getColorFromGradient(pureTimingValue / PROBE_MAX_TIMING, '#17d4a7', '#ffb800', '#e64e3d');
 		},
-		createQualityString (isOffline, statsTotal, statsDrop) {
-			if (isOffline) { return PROBE_OFFLINE_TEXT; }
-
-			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
-
-			return qualityPercentage !== null ? `${actualAmount}/${statsTotal} - ${qualityPercentage}%` : '';
-		},
 		calcQuality (statsTotal, statsDrop) {
 			if (
 				typeof statsTotal === 'undefined'
@@ -528,36 +415,6 @@
 			}
 
 			return this.createRegularGraph(packetsRtt);
-		},
-		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
-			if (
-				!packetsTotal
-				|| typeof lastTiming === 'undefined'
-				|| typeof maxTiming === 'undefined'
-				|| typeof minTiming === 'undefined'
-				|| typeof avgTiming === 'undefined'
-			) {
-				return false;
-			}
-
-			return true;
-		},
-		parseIPFromRawOutput (raw) {
-			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
-			let match = raw.match(ipRegex);
-			let ipAddr = match ? match[0] : '';
-
-			return ipAddr;
-		},
-		getFailureProbeRawOutput (probeData) {
-			let rawOutput;
-			let { status = null } = probeData.result;
-
-			if (status === PROBE_STATUS_OFFLINE || status === PROBE_STATUS_FAILED) {
-				rawOutput = probeData.result.rawOutput;
-			}
-
-			return rawOutput;
 		},
 	};
 </script>
