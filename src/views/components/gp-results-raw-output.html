@@ -11,14 +11,14 @@
 								<span>
 									<img width="28"
 										height="20"
-										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.probe.country}}.svg">
-										{{this.probe.city}}, {{this.probe.country}}, {{this.probe.continent}}
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
+										{{this.city}}, {{this.country}}, {{this.continent}}
 								</span>
 								<span>&nbsp;-&nbsp;</span>
-								<span>{{this.probe.network}} (AS{{this.probe.asn}})</span>
+								<span>{{this.network}} (AS{{this.asn}})</span>
 							</span>
 
-							{{#if this.mainTimingValue}}
+							{{#if this.statsPerTarget[activeTargetIdx].avgTiming}}
 								<span class="c-gp-results-raw-output_list_item_header_time main-value">
 									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
 										width="4"
@@ -26,13 +26,13 @@
 										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
 
 									<span>Time:</span>
-									<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.isFailed ? PROBE_STATUS_FAILED : this.mainTimingValue}}</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.isFailed ? PROBE_STATUS_FAILED : this.statsPerTarget[activeTargetIdx].avgTiming}}</span>
 								</span>
 							{{/if}}
 
-							{{#unless this.isFailed || this.mainTimingValue === PROBE_STATUS_OFFLINE}}
-								{{#if this.extraValues}}
-									{{#each this.extraValues}}
+							{{#unless this.statsPerTarget[activeTargetIdx].isFailed || this.statsPerTarget[activeTargetIdx].avgTiming === PROBE_STATUS_OFFLINE}}
+								{{#if this.statsPerTarget[activeTargetIdx].extraValues}}
+									{{#each this.statsPerTarget[activeTargetIdx].extraValues}}
 										<span class="c-gp-results-raw-output_list_item_header_time">
 											<span>{{this.text}}:</span>
 											<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
@@ -48,7 +48,7 @@
 								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
 						</div>
 
-						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.result.rawOutput}}</pre>
+						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawOutput}}</pre>
 
 						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this)}}"></div>
 					</div>
@@ -109,22 +109,11 @@
 					if (testType === 'ping' && isInfiniteModeRes) {
 						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
-						let activeTargetIdx = this.get('activeTargetIdx');
-						let regularResults = typeof activeTargetIdx !== 'undefined' ? testResults[activeTargetIdx] : testResults;
-
-						updPreparedTestResults = this.handleRegularResults(regularResults);
+						updPreparedTestResults = testResults;
 					}
 
 					this.set('preparedTestResults', updPreparedTestResults);
 				}, { defer: true });
-
-				// handle switching tabs when there are more than 1 targets
-				this.observe('activeTargetIdx', (activeTargetIdx) => {
-					let testResults = this.get('testResults');
-					let updPreparedTestResults = this.handleRegularResults(testResults[activeTargetIdx]);
-
-					this.set('preparedTestResults', updPreparedTestResults);
-				}, { init: false });
 
 				// open result under specific index when scrool to this element from the parent called
 				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
@@ -169,37 +158,6 @@
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
 		},
-		handleRegularResults (testResults) {
-			let testType = this.get('testReqParams.type');
-			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
-
-			return testResults.reduce((final, res) => {
-				// if result is yet in-progress do not calc timings
-				if (res.result.status === 'in-progress') {
-					return [
-						...final,
-						{
-							...res,
-							mainTimingValue: null,
-							extraValues: null,
-							isFailed: null,
-						},
-					];
-				}
-
-				let { fullText, extraValues, isFailed = false } = _.calcGpTestResTiming(testType, res, dnsTraceEnabled);
-
-				return [
-					...final,
-					{
-						...res,
-						mainTimingValue: fullText,
-						extraValues,
-						isFailed,
-					},
-				];
-			}, []);
-		},
 		handleInfiniteResults (testResults) {
 			let preparedTestResults = this.get('preparedTestResults');
 
@@ -227,20 +185,20 @@
 					let updKeyOrder = prevParsedData.keyOrder.includes(probeData.id) ? prevParsedData.keyOrder : [ ...prevParsedData.keyOrder, probeData.id ];
 					let packetsTotal = (prevParsedData.packetsTotal || 0) + currPacketsTotal;
 					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
-					let mainTimingValue;
+					let avgTiming;
 
 					if (probeData.result.status === PROBE_STATUS_FAILED) {
-						mainTimingValue = PROBE_STATUS_FAILED;
+						avgTiming = PROBE_STATUS_FAILED;
 					} else if (probeData.result.status === PROBE_STATUS_OFFLINE) {
-						mainTimingValue = PROBE_STATUS_OFFLINE;
+						avgTiming = PROBE_STATUS_OFFLINE;
 					} else {
-						mainTimingValue = !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE;
+						avgTiming = !packetsTotal ? null : calcAvgTiming ? `${calcAvgTiming} ms` : PROBE_NO_TIMING_VALUE;
 					}
 
 					prepResultsObj[probeDataIdx] = {
 						clientSideId: probeDataIdx,
 						...probeData,
-						mainTimingValue,
+						avgTiming,
 						extraValues: [],
 						isFailed: probeData.result.status === PROBE_STATUS_FAILED,
 						result: {

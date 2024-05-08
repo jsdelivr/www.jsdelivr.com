@@ -537,13 +537,13 @@
 					<div class="gp_map-block_test-output_raw-output {{#unless rawOutputMode}}output-hidden{{/unless}}">
 						<c-gp-results-raw-output
 							testReqParams="{{testReqParams}}"
-							testResults="{{testResults}}"
-							activeTargetIdx="{{activeTargetIdx}}"
+							testResults="{{prepTestRes}}"
 							testInProgress="{{testInProgress}}"
 							scrolledToResIdx="{{scrolledToResIdx}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
-							isInfiniteModeRes="{{isInfiniteModeRes}}">
+							isInfiniteModeRes="{{isInfiniteModeRes}}"
+							activeTargetIdx="{{activeTargetIdx}}">
 						</c-gp-results-raw-output>
 					</div>
 
@@ -551,7 +551,7 @@
 						<c-gp-results-table-output
 							testReqParams="{{testReqParams}}"
 							testInProgress="{{testInProgress}}"
-							testResults="{{testResults}}"
+							testResults="{{prepTestRes}}"
 							targetsCnt="{{targetsArr.length}}"
 							currSearchLocation="{{mainOptions.location}}"
 							measurementsMetadata="{{measurementsMetadata}}"
@@ -1257,6 +1257,7 @@
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+	const PROBE_OFFLINE_TEXT = 'Probe offline';
 
 	let map;
 	let oms;
@@ -1587,6 +1588,15 @@
 							return;
 						}
 					}
+				});
+
+				// prepare regular results for gp-results-raw-output
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					let regRes = this.prepareRegularResults(testResults);
+
+					this.set('prepTestRes', regRes);
 				});
 
 				// set initial screenWidth value
@@ -2804,6 +2814,156 @@
 			infoWindowContent += '</div>';
 
 			return infoWindowContent;
+		},
+		prepareRegularResults (testResults) {
+			return testResults.reduce((prepResults, resArr, resArrIdx) => {
+				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+
+				if (resArrIdx === 0) {
+					return resArr.map((res) => {
+						let preparedRes = {
+							clientSideId: res.clientSideId,
+							...res.probe,
+							statsPerTarget: [{
+								target: res.target,
+							}],
+						};
+
+						if (res.result.status !== 'in-progress') {
+							let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+							let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+							let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+							let statsTotal = res.result?.stats?.total;
+							let statsDrop = res.result?.stats?.drop;
+							let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
+
+							preparedRes.statsPerTarget = [{
+								...preparedRes.statsPerTarget[0],
+								ipAddr: res.result.resolvedAddress,
+								lastTiming,
+								minTiming,
+								avgTiming,
+								maxTiming,
+								statsTotal,
+								statsDrop,
+								isFailed,
+								isOffline,
+								packetsRtt,
+								extraValues,
+								failureRawOutput: this.getFailureProbeRawOutput(res),
+								rawOutput: res.result.rawOutput,
+								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+							}];
+						}
+
+						return preparedRes;
+					});
+				}
+
+				return prepResults.map((pR) => {
+					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
+
+					if (nextReqRes) {
+						let preparedNextRes = {
+							...pR,
+							statsPerTarget: [
+								...pR.statsPerTarget,
+								{
+									target: nextReqRes.target,
+								},
+							],
+						};
+
+						if (nextReqRes.result.status !== 'in-progress') {
+							let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
+							let minTiming = nextReqRes.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+							let maxTiming = nextReqRes.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+							let statsTotal = nextReqRes.result?.stats?.total;
+							let statsDrop = nextReqRes.result?.stats?.drop;
+							let isOffline = nextReqRes.result.status === PROBE_STATUS_OFFLINE;
+
+							preparedNextRes.statsPerTarget = [
+								...pR.statsPerTarget,
+								{
+									...preparedNextRes.statsPerTarget[1],
+									ipAddr: nextReqRes.result.resolvedAddress,
+									lastTiming,
+									minTiming,
+									avgTiming,
+									maxTiming,
+									statsTotal,
+									statsDrop,
+									isFailed,
+									isOffline,
+									packetsRtt,
+									extraValues,
+									failureRawOutput: this.getFailureProbeRawOutput(nextReqRes),
+									rawOutput: nextReqRes.result.rawOutput,
+									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+								},
+							];
+						}
+
+						return preparedNextRes;
+					}
+
+					return pR;
+				});
+			}, []);
+		},
+		getFailureProbeRawOutput (probeData) {
+			let rawOutput;
+			let { status = null } = probeData.result;
+
+			if (status === PROBE_STATUS_OFFLINE || status === PROBE_STATUS_FAILED) {
+				rawOutput = probeData.result.rawOutput;
+			}
+
+			return rawOutput;
+		},
+		createQualityString (isOffline, statsTotal, statsDrop) {
+			if (isOffline) { return PROBE_OFFLINE_TEXT; }
+
+			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
+
+			return qualityPercentage !== null ? `${actualAmount}/${statsTotal} - ${qualityPercentage}%` : '';
+		},
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
+			if (
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return false;
+			}
+
+			return true;
+		},
+		calcQuality (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return {
+					qualityPercentage: null,
+					actualAmount: null,
+				};
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+			let qualityPercentage = Math.round(actualAmount / statsTotal * 100);
+
+			return {
+				qualityPercentage,
+				actualAmount,
+			};
 		},
 	};
 </script>

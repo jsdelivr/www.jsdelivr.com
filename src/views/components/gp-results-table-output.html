@@ -233,7 +233,7 @@
 					if (testType === 'ping' && isInfiniteModeRes) {
 						updPreparedTestResults = this.handleInfiniteResults(testResults);
 					} else {
-						updPreparedTestResults = this.handleRegularResults(testResults);
+						updPreparedTestResults = testResults;
 					}
 
 					this.set('preparedTestResults', updPreparedTestResults);
@@ -257,102 +257,6 @@
 					allActionBtnsElements.forEach(el => el.style.visibility = 'hidden');
 				});
 			}
-		},
-		handleRegularResults (results) {
-			return results.reduce((prepResults, resArr, resArrIdx) => {
-				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
-
-				if (resArrIdx === 0) {
-					return resArr.map((res) => {
-						let preparedRes = {
-							clientSideId: res.clientSideId,
-							...res.probe,
-							statsPerTarget: [{
-								target: res.target,
-							}],
-						};
-
-						if (res.result.status !== 'in-progress') {
-							let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
-							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
-							let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
-							let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
-							let statsTotal = res.result?.stats?.total;
-							let statsDrop = res.result?.stats?.drop;
-							let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
-
-							preparedRes.statsPerTarget = [{
-								...preparedRes.statsPerTarget[0],
-								ipAddr: res.result.resolvedAddress,
-								lastTiming,
-								minTiming,
-								avgTiming,
-								maxTiming,
-								statsTotal,
-								statsDrop,
-								isFailed,
-								isOffline,
-								packetsRtt,
-								failureRawOutput: this.getFailureProbeRawOutput(res),
-								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
-							}];
-						}
-
-						return preparedRes;
-					});
-				}
-
-				return prepResults.map((pR) => {
-					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
-
-					if (nextReqRes) {
-						let preparedNextRes = {
-							...pR,
-							statsPerTarget: [
-								...pR.statsPerTarget,
-								{
-									target: nextReqRes.target,
-								},
-							],
-						};
-
-						if (nextReqRes.result.status !== 'in-progress') {
-							let { isFailed = false, lastTiming, value: avgTiming } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
-							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
-							let minTiming = nextReqRes.result?.stats?.min || PROBE_NO_TIMING_VALUE;
-							let maxTiming = nextReqRes.result?.stats?.max || PROBE_NO_TIMING_VALUE;
-							let statsTotal = nextReqRes.result?.stats?.total;
-							let statsDrop = nextReqRes.result?.stats?.drop;
-							let isOffline = nextReqRes.result.status === PROBE_STATUS_OFFLINE;
-
-							preparedNextRes.statsPerTarget = [
-								...pR.statsPerTarget,
-								{
-									...preparedNextRes.statsPerTarget[1],
-									ipAddr: nextReqRes.result.resolvedAddress,
-									lastTiming,
-									minTiming,
-									avgTiming,
-									maxTiming,
-									statsTotal,
-									statsDrop,
-									isFailed,
-									isOffline,
-									packetsRtt,
-									failureRawOutput: this.getFailureProbeRawOutput(nextReqRes),
-									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
-									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
-								},
-							];
-						}
-
-						return preparedNextRes;
-					}
-
-					return pR;
-				});
-			}, []);
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
