@@ -26,7 +26,7 @@
 										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
 
 									<span>Time:</span>
-									<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.isFailed ? PROBE_STATUS_FAILED : this.statsPerTarget[activeTargetIdx].avgTiming}}</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">{{@this.getTimingValueToDisplay(this, activeTargetIdx)}}</span>
 								</span>
 							{{/if}}
 
@@ -164,6 +164,11 @@
 			}
 
 			return '';
+		},
+		getTimingValueToDisplay (data, activeTargetIdx) {
+			let { avgTiming } = data.statsPerTarget[activeTargetIdx];
+
+			return data.isFailed ? PROBE_STATUS_FAILED : typeof avgTiming === 'number' ? `${Math.round(avgTiming)} ms` : avgTiming;
 		},
 	};
 </script>
