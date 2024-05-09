@@ -2981,7 +2981,7 @@
 							packetsRtt: finalPacketsRtt,
 							qualityStr: this.createQualityString(isOffline, realPacketsRttValues.length + finalPacketsDrop, finalPacketsDrop),
 							areTimingsReady: this.checkAreTimingsReady(lastTiming, currMaxValue, currMinValue, calcAvgTiming, finalPacketsTotal),
-							rawOutput: this.handleRawOutput(linesHeader, outputLinesArr),
+							rawOutput: this.handleRawOutput([ linesHeader, ...outputLinesArr ]),
 							extraValues: lossValue !== null ? { loss: { text: 'Loss', value: lossValue, units: '%' } } : {},
 							parsedData: {
 								keyOrder: updKeyOrder,
@@ -3102,7 +3102,7 @@
 
 			return Math.round(statsDrop / actualAmount * 100);
 		},
-		handleRawOutput (header, lines) {
+		handleRawOutput (lines) {
 			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
 
 			return limitedLines.join('\n');
