@@ -32,6 +32,13 @@ const getRollupStream = file => rollupStream({
 		'ractive',
 	],
 	plugins: [
+		{
+			resolveId (source) {
+				if (/^core-js(?:\/|$)/.test(source)) {
+					return require.resolve(source);
+				}
+			},
+		},
 		rollupRactive({ format: 'cjs', parseOptions: { interpolate: { script: true, style: true }, includeLinePositions: false, stripComments: false } }),
 		rollupCommonjs({ extensions: [ '.html', '.js' ], ignore: [ ] }),
 		rollupJson(),
