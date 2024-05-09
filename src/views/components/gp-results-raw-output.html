@@ -138,30 +138,17 @@
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
 		},
 		getStatusLineColorClass (data) {
-			if (!data) { return; }
+			let { value: lossValue } = data && data.extraValues && data.extraValues.loss ? data.extraValues.loss : {};
 
-			if (this.get('isInfiniteModeRes')) {
-				let loss = data.extraValues[0] ? data.extraValues[0].value : null;
-
-				if (data.isFailed || loss === 100) {
-					return 'failure';
-				} else if (typeof loss !== 'number') {
-					return '';
-				} else if (loss === 0) {
-					return 'success';
-				}
-
-				return 'some-issues';
-			}
-
-			// handle status line color for regular measurement outpuy
-			if (data.isFailed === false) {
-				return 'success';
-			} else if (data.isFailed) {
+			if (data.isFailed || data.isOffline || lossValue === 100) {
 				return 'failure';
+			} else if (typeof lossValue !== 'number') {
+				return '';
+			} else if (lossValue === 0) {
+				return 'success';
 			}
 
-			return '';
+			return 'some-issues';
 		},
 		getTimingValueToDisplay (data, activeTargetIdx) {
 			let { avgTiming } = data.statsPerTarget[activeTargetIdx];
