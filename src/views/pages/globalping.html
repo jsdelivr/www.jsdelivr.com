@@ -534,30 +534,32 @@
 						testType="{{mainOptions.type}}">
 					</c-gp-results-controls>
 
-					<div class="gp_map-block_test-output_raw-output {{#unless rawOutputMode}}output-hidden{{/unless}}">
-						<c-gp-results-raw-output
-							testReqParams="{{testReqParams}}"
-							preparedTestResults="{{preparedTestResults}}"
-							testInProgress="{{testInProgress}}"
-							scrolledToResIdx="{{scrolledToResIdx}}"
-							currSearchLocation="{{mainOptions.location}}"
-							measurementsMetadata="{{measurementsMetadata}}"
-							isInfiniteModeRes="{{isInfiniteModeRes}}"
-							activeTargetIdx="{{activeTargetIdx}}">
-						</c-gp-results-raw-output>
-					</div>
-
-					<div class="gp_map-block_test-output_table-output {{#if rawOutputMode}}output-hidden{{/if}}">
-						<c-gp-results-table-output
-							testReqParams="{{testReqParams}}"
-							testInProgress="{{testInProgress}}"
-							preparedTestResults="{{preparedTestResults}}"
-							targetsCnt="{{targetsArr.length}}"
-							currSearchLocation="{{mainOptions.location}}"
-							measurementsMetadata="{{measurementsMetadata}}"
-							isInfiniteModeRes="{{isInfiniteModeRes}}">
-						</c-gp-results-table-output>
-					</div>
+					{{#if rawOutputMode}}
+						<div class="gp_map-block_test-output_raw-output">
+							<c-gp-results-raw-output
+								testReqParams="{{testReqParams}}"
+								preparedTestResults="{{preparedTestResults}}"
+								testInProgress="{{testInProgress}}"
+								scrolledToResIdx="{{scrolledToResIdx}}"
+								currSearchLocation="{{mainOptions.location}}"
+								measurementsMetadata="{{measurementsMetadata}}"
+								isInfiniteModeRes="{{isInfiniteModeRes}}"
+								activeTargetIdx="{{activeTargetIdx}}">
+							</c-gp-results-raw-output>
+						</div>
+					{{else}}
+						<div class="gp_map-block_test-output_table-output">
+							<c-gp-results-table-output
+								testReqParams="{{testReqParams}}"
+								testInProgress="{{testInProgress}}"
+								preparedTestResults="{{preparedTestResults}}"
+								targetsCnt="{{targetsArr.length}}"
+								currSearchLocation="{{mainOptions.location}}"
+								measurementsMetadata="{{measurementsMetadata}}"
+								isInfiniteModeRes="{{isInfiniteModeRes}}">
+							</c-gp-results-table-output>
+						</div>
+					{{/if}}
 				</div>
 			{{else}}
 				<div class="gp_map-block_test-output with-padding">
