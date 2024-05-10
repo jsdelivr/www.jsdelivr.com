@@ -151,9 +151,17 @@
 			return 'some-issues';
 		},
 		getTimingValueToDisplay (data, activeTargetIdx) {
-			let { avgTiming, isFailed } = data.statsPerTarget[activeTargetIdx];
+			let { avgTiming, isFailed, isOffline } = data.statsPerTarget[activeTargetIdx];
 
-			return isFailed ? PROBE_STATUS_FAILED : typeof avgTiming === 'number' ? `${Math.round(avgTiming)} ms` : avgTiming;
+			if (isFailed) {
+				return PROBE_STATUS_FAILED;
+			} else if (isOffline) {
+				return PROBE_STATUS_OFFLINE;
+			} else if (typeof avgTiming === 'number') {
+				return `${Math.round(avgTiming)} ms`;
+			}
+
+			return  avgTiming;
 		},
 	};
 </script>
