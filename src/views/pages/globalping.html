@@ -1509,7 +1509,7 @@
 							};
 
 							if (infiniteSwitchEnabled) {
-								let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 								let prevPacketsRtt = tResIdx - 1 >= 0 ? mData[tResIdx - 1][resIdx].packetsRtt : [];
 								let allCurrPacketsRtt = [ ...prevPacketsRtt, ...packetsRtt ];
 								let numericPacketsRtt = allCurrPacketsRtt.filter(v => typeof v === 'number');
@@ -1527,14 +1527,18 @@
 									calcTiming = {
 										value: PROBE_STATUS_OFFLINE,
 									};
-								} else if (packetsTotal && numericPacketsRtt.length) {
+								} else if (numericPacketsRtt.length) {
 									calcTiming = {
 										value: Math.round(numericPacketsRtt.reduce((sum, rtt) => sum += rtt, 0) / numericPacketsRtt.length),
 										units: ' ms',
 									};
-								} else if (packetsTotal && packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
+								} else if (packetsRtt.length && packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
 									calcTiming = {
 										value: _.getProbeTimeOutValue(),
+									};
+								} else {
+									calcTiming = {
+										value: tResIdx - 1 >= 0 ? mData[tResIdx - 1][resIdx].timings[0] : null,
 									};
 								}
 							} else if (res.result.status !== 'in-progress') {
