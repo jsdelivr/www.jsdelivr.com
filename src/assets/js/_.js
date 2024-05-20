@@ -1453,4 +1453,17 @@ module.exports = {
 			packetsTotal: packetsRtt.length,
 		};
 	},
+	memoize(func) {
+		let cache = new Map();
+
+		return function(...args) {
+			let key = JSON.stringify(args);
+
+			if (!cache.has(key)) {
+				cache.set(key, func.apply(this, args));
+			}
+
+			return cache.get(key);
+		};
+	},
 };
