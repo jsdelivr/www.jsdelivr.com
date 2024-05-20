@@ -296,7 +296,6 @@
 			for (let i = startIndex; i < data.length; i++) {
 				let percentage = data[i] === maxValue || data[i] === PROBE_NO_TIMING_VALUE ? 1 : data[i] / maxValue;
 				let barHeight = percentage * svgHeight;
-
 				let x = svgWidth - ((data.length - 1 - i) * (barWidth + gap)) - barWidth;
 				let y = svgHeight - barHeight;
 
@@ -409,12 +408,16 @@
 		},
 		createGraph (packetsRtt) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
+			let memoizedCreateGraph;
 
 			if (isInfiniteModeRes) {
-				return this.createRealTimeGraph(packetsRtt);
+				memoizedCreateGraph = _.memoize(this.createRealTimeGraph.bind(this));
+			} else {
+				memoizedCreateGraph = _.memoize(this.createRegularGraph.bind(this));
 			}
 
-			return this.createRegularGraph(packetsRtt);
+
+			return memoizedCreateGraph(packetsRtt);
 		},
 	};
 </script>
