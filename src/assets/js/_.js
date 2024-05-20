@@ -1453,10 +1453,10 @@ module.exports = {
 			packetsTotal: packetsRtt.length,
 		};
 	},
-	memoize(func) {
+	memoize (func) {
 		let cache = new Map();
 
-		return function(...args) {
+		return function (...args) {
 			let key = JSON.stringify(args);
 
 			if (!cache.has(key)) {
