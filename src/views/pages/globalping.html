@@ -1954,12 +1954,10 @@
 
 				// create a new marker and add it to the map or update existing with new data
 				if (markerIdToReplace !== null) {
-					mapMarkers = mapMarkers.map((mm, mmIdx) => {
-						if (markerIdToReplace === mmIdx) {
+					mapMarkers.forEach((mm, mmIdx) => {
+						if (markerIdToReplace === mmIdx && JSON.stringify(markerData.timings) !== JSON.stringify(prevMarkersData[markerIdToReplace].timings)) {
 							this.updateMapMarkerWithIW(mm, markerData, currentMarkerIdx);
 						}
-
-						return mm;
 					});
 				} else if (!mapMarkers[markerData.clientSideId]) {
 					// collect markers added to the map
