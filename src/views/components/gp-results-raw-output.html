@@ -18,7 +18,7 @@
 								<span>{{this.network}} (AS{{this.asn}})</span>
 							</span>
 
-							{{#if this.statsPerTarget[activeTargetIdx].avgTiming}}
+							{{#if @this.getTimingValueToDisplay(this, activeTargetIdx)}}
 								<span class="c-gp-results-raw-output_list_item_header_time main-value">
 									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
 										width="4"
@@ -153,7 +153,7 @@
 			return 'some-issues';
 		},
 		getTimingValueToDisplay (data, activeTargetIdx) {
-			let { avgTiming, isFailed, isOffline } = data.statsPerTarget[activeTargetIdx];
+			let { avgTiming, isFailed, isOffline, areTimingsReady } = data.statsPerTarget[activeTargetIdx];
 
 			if (isFailed) {
 				return PROBE_STATUS_FAILED;
@@ -161,9 +161,11 @@
 				return PROBE_STATUS_OFFLINE;
 			} else if (typeof avgTiming === 'number') {
 				return `${Math.round(avgTiming)} ms`;
+			} else if (areTimingsReady) {
+				return avgTiming;
 			}
 
-			return avgTiming;
+			return;
 		},
 	};
 </script>
