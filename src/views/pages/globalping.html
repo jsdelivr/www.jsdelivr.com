@@ -108,7 +108,7 @@
 
 								<div class="dropdown-menu">
 									{{#each ~/testTypesList}}
-										<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
+										<div on-click="@this.setMainOptsTestType(this)">{{this}}</div>
 									{{/each}}
 								</div>
 							</div>
@@ -3112,6 +3112,13 @@
 			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
 
 			return limitedLines.join('\n');
+		},
+		setMainOptsTestType (newTestType) {
+			let testInProgress = this.get('testInProgress');
+
+			if (!testInProgress) {
+				this.set('mainOptions.type', newTestType);
+			}
 		},
 	};
 </script>
