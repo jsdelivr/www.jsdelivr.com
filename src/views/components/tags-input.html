@@ -48,12 +48,14 @@
 				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
 		{{/if}}
 
-		<input
-			id="{{inputId}}"
-			value="{{inputValue}}"
-			type="text"
-			placeholder="{{placeholder}}"
-			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}}">
+		{{#unless isDisabled}}
+			<input
+				id="{{inputId}}"
+				value="{{inputValue}}"
+				type="text"
+				placeholder="{{placeholder}}"
+				class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}}">
+		{{/unless}}
 	</div>
 </label>
 
@@ -75,6 +77,7 @@
 				valuesDelimiter: ',',
 				maxTagsAllowed: 2,
 				tagsArr: [],
+				isDisabled: false,
 			};
 		},
 		oninit () {
@@ -123,6 +126,12 @@
 					let currMaxTagsAllowed = this.get('maxTagsAllowed');
 					let currTagsArr = this.get('tagsArr');
 
+					if (this.get('isDisabled')) {
+						e.preventDefault();
+
+						return;
+					}
+
 					// while there are already max tags and key is not Backspace - ignore input changes
 					if (currTagsArr.length === currMaxTagsAllowed && e.key !== 'Tab' && e.key !== 'Backspace' && e.key !== 'Enter') {
 						e.preventDefault();
@@ -148,19 +157,29 @@
 
 				// add/remove focus styles
 				tagsBlockEl.addEventListener('click', () => {
-					if (!tagsBlockEl.classList.contains('focused')) {
+					let isDisabled = this.get('isDisabled');
+
+					if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
 						tagsBlockEl.classList.add('focused');
 					}
 				});
 
 				inputEl.addEventListener('focus', () => {
-					if (!tagsBlockEl.classList.contains('focused')) {
+					let isDisabled = this.get('isDisabled');
+
+					if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
 						tagsBlockEl.classList.add('focused');
 					}
 				});
 
 				document.addEventListener('click', (e) => {
 					if (!tagsBlockEl.contains(e.target)) {
+						tagsBlockEl.classList.remove('focused');
+					}
+				});
+
+				this.observe('isDisabled', (isDisabled) => {
+					if (isDisabled) {
 						tagsBlockEl.classList.remove('focused');
 					}
 				});
@@ -197,6 +216,8 @@
 			}
 		},
 		removeTagByIdx (tagIdx) {
+			if (this.get('isDisabled')) { return; }
+
 			let valuesDelimiter = this.get('valuesDelimiter');
 			let tagsArr = this.get('tagsArr');
 
