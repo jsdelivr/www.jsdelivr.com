@@ -129,11 +129,14 @@
 		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
 				let listEl = document.querySelector('.c-gp-results-raw-output_list');
-				let itemsAmount = results.length;
-				let listElScrollHeight = listEl.scrollHeight;
-				let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
 
-				listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+				if (listEl) {
+					let itemsAmount = results.length;
+					let listElScrollHeight = listEl.scrollHeight;
+					let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
+
+					listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+				}
 			});
 		},
 		setProbeAsLocation (probeData) {

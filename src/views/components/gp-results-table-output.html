@@ -242,11 +242,14 @@
 		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
 				let listWrapperEl = document.querySelector('.results-table-wrapper');
-				let itemsAmount = results.length;
-				let listElScrollHeight = listWrapperEl.scrollHeight;
-				let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
 
-				listWrapperEl.style.height = `${itemsAmount < 8 ? avgItemElHeight * itemsAmount : avgItemElHeight * 8}px`;
+				if (listWrapperEl) {
+					let itemsAmount = results.length;
+					let listElScrollHeight = listWrapperEl.scrollHeight;
+					let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
+
+					listWrapperEl.style.height = `${itemsAmount < 8 ? avgItemElHeight * itemsAmount : avgItemElHeight * 8}px`;
+				}
 			});
 		},
 		getStatusLineColorClass (probesData) {
