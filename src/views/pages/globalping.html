@@ -3114,11 +3114,9 @@
 			return limitedLines.join('\n');
 		},
 		setMainOptsTestType (newTestType) {
-			let testInProgress = this.get('testInProgress');
+			if (this.get('testInProgress')) { return; }
 
-			if (!testInProgress) {
-				this.set('mainOptions.type', newTestType);
-			}
+			this.set('mainOptions.type', newTestType);
 		},
 	};
 </script>
