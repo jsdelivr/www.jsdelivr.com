@@ -428,13 +428,13 @@
 								</div>
 							</div>
 
-							<div class="gp_map-block_settings-wrapper_settings_subgroup_switch-block {{#unless @this.isInfiniteOptsCorrect()}}disabled{{/unless}}">
+							<div class="gp_map-block_settings-wrapper_settings_subgroup_switch-block {{#unless @this.isInfiniteOptsCorrect()}}turned-off{{/unless}} {{#if testInProgress}}disabled{{/if}}">
 								<label class="gp_switch">
 									<input type="checkbox"
 										checked="{{infiniteSwitchEnabled}}"
 										on-click="@this.handleInfiniteSwitch()"
 										on-keydown="@this.handleInfiniteSwitchKeyDown(@event)"
-										{{#unless @this.isInfiniteOptsCorrect()}}disabled="true"{{/unless}}>
+										{{#unless @this.isInfiniteOptsCorrect() && !testInProgress}}disabled="true"{{/unless}}>
 									<span class="slider round"></span>
 								</label>
 
@@ -2615,18 +2615,18 @@
 			return type === 'ping' && target.split(',').length <= 1;
 		},
 		handleInfiniteSwitch () {
-			if (this.isInfiniteOptsCorrect()) {
-				let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+			if (this.get('testInProgress') || !this.isInfiniteOptsCorrect()) { return; }
 
-				if (infiniteSwitchEnabled) {
-					this.set('notAppliedOpts.packets', '');
-				} else {
-					this.set('notAppliedOpts.packets', 16);
-				}
+			let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
-				this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
-				this.applyOptions();
+			if (infiniteSwitchEnabled) {
+				this.set('notAppliedOpts.packets', '');
+			} else {
+				this.set('notAppliedOpts.packets', 16);
 			}
+
+			this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
+			this.applyOptions();
 		},
 		handleInfiniteSwitchKeyDown (e) {
 			if (e.key === 'Enter') {
