@@ -1612,14 +1612,11 @@
 					let testType = this.get('testReqParams.type');
 					let isInfiniteModeRes = this.get('isInfiniteModeRes');
 					let preparedTestResults;
-					let memoizedPrepareResults;
 
 					if (testType === 'ping' && isInfiniteModeRes) {
-						memoizedPrepareResults = _.memoize(this.prepareInfiniteResults.bind(this));
-						preparedTestResults = memoizedPrepareResults(testResults);
+						preparedTestResults = this.prepareInfiniteResults(testResults);
 					} else {
-						memoizedPrepareResults = _.memoize(this.prepareRegularResults.bind(this));
-						preparedTestResults = memoizedPrepareResults(testResults);
+						preparedTestResults = this.prepareRegularResults(testResults);
 					}
 
 					this.set('preparedTestResults', preparedTestResults);
