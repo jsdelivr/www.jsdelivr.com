@@ -130,6 +130,8 @@
 				inputEl.addEventListener('keydown', (e) => {
 					let currMaxTagsAllowed = this.get('maxTagsAllowed');
 					let currTagsArr = this.get('tagsArr');
+					let inputValue = this.get('inputValue');
+					let defaultValue = this.get('defaultValue');
 
 					if (this.get('isDisabled')) {
 						e.preventDefault();
@@ -144,9 +146,17 @@
 						return;
 					}
 
+					// if input has some value which is not added as tag yet - add tag on Enter, on second Enter run measurement
+					// if user did not passed any value, on Enter add default one, if presented, and run measurement
 					// handle keys for adding new tags, removing tags, allow to bubble event on Enter key etc.
-					if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+					if (e.key === 'Enter' && !inputValue) {
+						if (defaultValue && currTagsArr.length === 0) {
+							this.set('value', defaultValue);
+						}
+					} else if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
 						this.addTag();
+
+						e.preventDefault();
 					} else if (e.key === 'Backspace') {
 						this.removeLastTag();
 					} else if (e.key === 'Tab') {
