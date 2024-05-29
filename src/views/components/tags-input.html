@@ -106,6 +106,13 @@
 
 					this.set('tagsArr', value ? value.split(valuesDelimiter) : []);
 				});
+
+				// set default value is it was passed as prop
+				this.observe('defaultValue', (defaultValue) => {
+					if (defaultValue) {
+						this.set('value', defaultValue);
+					}
+				});
 			}
 		},
 		onrender () {
@@ -150,7 +157,16 @@
 
 				// on focusout add the content of the input as a tag if it matches conditions
 				inputEl.addEventListener('focusout', () => {
-					this.addTag();
+					let inputValue = this.get('inputValue');
+					let tagsArr = this.get('tagsArr');
+					let defaultValue = this.get('defaultValue');
+
+					// set default value if user did not fill in something and focusout
+					if (defaultValue && !inputValue && tagsArr.length === 0) {
+						this.set('value', defaultValue);
+					} else {
+						this.addTag();
+					}
 				});
 
 				// add/remove focus styles
