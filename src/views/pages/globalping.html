@@ -1342,6 +1342,7 @@
 				isInfiniteMeasStopped: false,
 				prevProbesMeasId: null,
 				preparedTestResults: [],
+				ddHandlerSet: false,
 			};
 		},
 		onrender () {
@@ -2697,23 +2698,28 @@
 			this.resetMapAndRunTest(prevProbesMeasId);
 		},
 		handleDropDownRunTestBtnNav () {
+			// set this handler only once
+			if (this.get('ddHandlerSet')) { return };
+
 			setTimeout(() => {
 				let dropdownComponent = document.getElementById('dd-run-test-btn');
-				let button = dropdownComponent.querySelector('.dropdown-toggle');
 
-				button.addEventListener('focusout', (event) => {
+				dropdownComponent.addEventListener('focusout', (event) => {
 					let dropdownMenu = dropdownComponent.querySelector('.dropdown-menu');
+					let button = dropdownComponent.querySelector('.dropdown-toggle');
+					let buttonWrapper = dropdownComponent.querySelector('.gp_map-block_settings-wrapper_split-btn');
 
 					if (dropdownMenu && event.relatedTarget && !dropdownMenu.contains(event.relatedTarget)) {
-						dropdownMenu.querySelectorAll('.dropdown-item.active').forEach(item => item.classList.remove('active'));
+						dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
 						button.setAttribute('aria-expanded', false);
-						dropdownComponent.classList.remove('open');
+						buttonWrapper.classList.remove('open');
 					}
 				});
 
 				dropdownComponent.addEventListener('keydown', (event) => {
 					let dropdownMenu = dropdownComponent.querySelector('.dropdown-menu');
 					let activeItem = dropdownComponent.querySelector('.dropdown-item.active');
+					let button = dropdownComponent.querySelector('.dropdown-toggle');
 
 					if (dropdownMenu) {
 						if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -2741,19 +2747,13 @@
 									button.focus();
 								}
 							}
-						} else if (event.key === 'Enter') {
-							if (activeItem) {
-								activeItem.click();
-							} else if (!(button && document.activeElement === button)) {
-								let firstItem = dropdownMenu.firstElementChild;
-
-								if (firstItem) {
-									firstItem.click();
-								}
-							}
+						} else if (event.key === 'Enter' && activeItem) {
+							activeItem.click();
 						}
 					}
 				});
+
+				this.set('ddHandlerSet', true);
 			}, 4);
 		},
 		createMapMarkerSvg (markerData) {
