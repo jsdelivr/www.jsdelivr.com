@@ -86,7 +86,7 @@
 
 												{{#if this.areTimingsReady}}
 													<span class="timings_value">
-														{{this.lastTiming}}
+														{{@this.formatTimingValue(this.lastTiming)}}
 														{{#if this.lastTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
@@ -106,7 +106,7 @@
 
 												{{#if this.areTimingsReady}}
 													<span class="timings_value">
-														{{this.minTiming}}
+														{{@this.formatTimingValue(this.minTiming)}}
 														{{#if this.minTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
@@ -126,7 +126,7 @@
 
 												{{#if this.areTimingsReady}}
 													<span class="timings_value">
-														{{this.avgTiming}}
+														{{@this.formatTimingValue(this.avgTiming)}}
 														{{#if this.avgTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
@@ -146,7 +146,7 @@
 
 												{{#if this.areTimingsReady}}
 													<span class="timings_value">
-														{{this.maxTiming}}
+														{{@this.formatTimingValue(this.maxTiming)}}
 														{{#if this.maxTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
 														{{/if}}
@@ -156,7 +156,11 @@
 												{{/if}}
 											</span>
 
-											{{#if this.minTiming !== PROBE_NO_TIMING_VALUE && this.avgTiming !== PROBE_NO_TIMING_VALUE && this.maxTiming !== PROBE_NO_TIMING_VALUE}}
+											{{#if this.areTimingsReady
+												&& this.minTiming !== PROBE_NO_TIMING_VALUE
+												&& this.avgTiming !== PROBE_NO_TIMING_VALUE
+												&& this.maxTiming !== PROBE_NO_TIMING_VALUE
+											}}
 												<span class="lg-screen-units">ms</span>
 											{{/if}}
 										</div>
@@ -425,6 +429,19 @@
 
 
 			return memoizedCreateGraph(packetsRtt);
+		},
+		formatTimingValue (value) {
+			if (typeof value !== 'number' || isNaN(value)) {
+				return value;
+			}
+
+			if (value < 10) {
+				return Math.round(value * 100) / 100;
+			} else if (value < 100) {
+				return Math.round(value * 10) / 10;
+			}
+
+			return Math.round(value);
 		},
 	};
 </script>
