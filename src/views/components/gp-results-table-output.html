@@ -85,7 +85,7 @@
 												</span>
 
 												{{#if this.areTimingsReady}}
-													<span>
+													<span class="timings_value">
 														{{this.lastTiming}}
 														{{#if this.lastTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
@@ -96,7 +96,7 @@
 												{{/if}}
 											</span>
 
-											<span class="timings_separator">&nbsp;/&nbsp;</span>
+											<span class="timings_separator">/</span>
 
 											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
 												<span class="timings_header">
@@ -105,7 +105,7 @@
 												</span>
 
 												{{#if this.areTimingsReady}}
-													<span>
+													<span class="timings_value">
 														{{this.minTiming}}
 														{{#if this.minTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
@@ -116,7 +116,7 @@
 												{{/if}}
 											</span>
 
-											<span class="timings_separator">&nbsp;/&nbsp;</span>
+											<span class="timings_separator">/</span>
 
 											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
 												<span class="timings_header">
@@ -125,7 +125,7 @@
 												</span>
 
 												{{#if this.areTimingsReady}}
-													<span>
+													<span class="timings_value">
 														{{this.avgTiming}}
 														{{#if this.avgTiming !== PROBE_NO_TIMING_VALUE}}
 															<span class="timings_units">ms</span>
@@ -136,7 +136,7 @@
 												{{/if}}
 											</span>
 
-											<span class="timings_separator">&nbsp;/&nbsp;</span>
+											<span class="timings_separator">/</span>
 
 											<span class="timings {{#unless areTimingsReady}}no-value{{/unless}}">
 												<span class="timings_header">
@@ -145,16 +145,20 @@
 												</span>
 
 												{{#if this.areTimingsReady}}
-													<span>
+													<span class="timings_value">
 														{{this.maxTiming}}
 														{{#if this.maxTiming !== PROBE_NO_TIMING_VALUE}}
-															<span class="timings_units last-subcell">ms</span>
+															<span class="timings_units">ms</span>
 														{{/if}}
 													</span>
 												{{elseif !this.areTimingsReady}}
 													<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 												{{/if}}
 											</span>
+
+											{{#if this.minTiming !== PROBE_NO_TIMING_VALUE && this.avgTiming !== PROBE_NO_TIMING_VALUE && this.maxTiming !== PROBE_NO_TIMING_VALUE}}
+												<span class="lg-screen-units">ms</span>
+											{{/if}}
 										</div>
 									</div>
 
