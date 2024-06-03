@@ -181,19 +181,11 @@
 
 				// add/remove focus styles
 				tagsBlockEl.addEventListener('click', () => {
-					let isDisabled = this.get('isDisabled');
-
-					if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
-						tagsBlockEl.classList.add('focused');
-					}
+					this.handleInputFocus(tagsBlockEl);
 				});
 
 				inputEl.addEventListener('focus', () => {
-					let isDisabled = this.get('isDisabled');
-
-					if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
-						tagsBlockEl.classList.add('focused');
-					}
+					this.handleInputFocus(tagsBlockEl);
 				});
 
 				document.addEventListener('click', (e) => {
@@ -248,6 +240,20 @@
 			tagsArr.splice(tagIdx, 1);
 
 			this.set('value', tagsArr.join(valuesDelimiter));
+		},
+		handleInputFocus (tagsBlockEl) {
+			let isDisabled = this.get('isDisabled');
+			let defaultValue = this.get('defaultValue');
+			let currentValue = this.get('value');
+
+			if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
+				tagsBlockEl.classList.add('focused');
+
+				// clear default tag on focus
+				if (defaultValue && currentValue && currentValue === defaultValue) {
+					this.set('value', '');
+				}
+			}
 		},
 	};
 </script>
