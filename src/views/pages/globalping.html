@@ -2949,7 +2949,7 @@
 			let preparedTestResults = this.get('preparedTestResults');
 
 			return rawResults.reduce((prepResultsObj, rawRes) => {
-				rawRes.forEach((probeData, probeDataIdx) => {
+				return rawRes.map((probeData, probeDataIdx) => {
 					let {
 						parsedData: prevParsedData = {
 							keyOrder: [],
@@ -2982,7 +2982,7 @@
 					let lastTiming = finalPacketsRtt[finalPacketsRtt.length - 1] || PROBE_NO_TIMING_VALUE;
 					let lossValue = this.calcLoss(finalPacketsRtt.length + finalPacketsDrop, finalPacketsDrop);
 
-					prepResultsObj[probeDataIdx] = {
+					return {
 						clientSideId: probeDataIdx,
 						...probeData.probe,
 						statsPerTarget: [{
@@ -3025,8 +3025,6 @@
 						}],
 					};
 				});
-
-				return prepResultsObj;
 			}, preparedTestResults);
 		},
 		getFailureProbeRawOutput (probeData) {
