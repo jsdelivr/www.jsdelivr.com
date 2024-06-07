@@ -73,18 +73,19 @@
 			let measurementsMetadata = this.get('measurementsMetadata');
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
+			// create and return the texts of the share-results URL
 			if (urlFlow) {
-				// return URL
 				let origin = this.get('@global.location.origin');
-				let textToDisplay = Object.values(measurementsMetadata).map(v => v.measurementId).join('+');
-				let textToCopy = Object.values(measurementsMetadata).map(v => v.measurementId).join('+');
+				// regular measurement IDs should be separated by a comma
+				let idsDelimiter = ',';
 
 				if (isInfiniteModeRes) {
-					return {
-						shareResTextToDisplay: 'Not supported',
-						shareResTextToCopy: 'Not supported',
-					};
+					// the infinite one by a plus sign
+					idsDelimiter = '+';
 				}
+
+				let textToDisplay = Object.values(measurementsMetadata).map(v => v.measurementId).join(idsDelimiter);
+				let textToCopy = Object.values(measurementsMetadata).map(v => v.measurementId).join(idsDelimiter);
 
 				return {
 					shareResTextToDisplay: `${origin}/globalping?measurement=${textToDisplay}`,
@@ -92,7 +93,7 @@
 				};
 			}
 
-			// return CLI cmd
+			// create and return the texts of the CLI command
 			return this.createCliCommand(this.get('testReqParams'), measurementsMetadata);
 		},
 		createCliCommand (params, measurementsMetadata) {
