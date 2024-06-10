@@ -1340,7 +1340,7 @@
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
 				creditsError: false,
-				infiniteMeasIds: null,
+				infiniteMeasIds: [],
 				isInfiniteMeasStopped: false,
 				prevProbesMeasId: null,
 				preparedTestResults: [],
@@ -1366,12 +1366,14 @@
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
 				let { measurement = '' } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
 				let qsMeasurementIdsArr = [];
+				let isInfiniteMeas = false;
 
 				// A separator for IDs for regular link is a comma, for infinite one - plus sign
 				if (measurement && measurement.includes(',')) {
 					qsMeasurementIdsArr = measurement.split(',');
 				} else if (measurement && measurement.includes('*')) {
 					qsMeasurementIdsArr = measurement.split('*');
+					isInfiniteMeas = true;
 
 					this.set('infiniteSwitchEnabled', true);
 					this.set('isInfiniteModeRes', true);
@@ -1383,7 +1385,7 @@
 					this.set('qsMeasurementIdsArr', qsMeasurementIdsArr);
 					this.set('shareResFlow', true);
 
-					this.getMultipleTestMeasurementById(qsMeasurementIdsArr);
+					this.getMultipleTestMeasurementById(qsMeasurementIdsArr, isInfiniteMeas);
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -2179,6 +2181,11 @@
 
 							this.set('mainOptions.target', updTargetsArr.join(','));
 
+							// if infinite measurement we need to set targetsArr ASAP since we know there is only one target
+							if (isInfiniteMeas) {
+								this.set('targetsArr', updTargetsArr);
+							}
+
 							if (isLastShareReq) {
 								this.set('targetsArr', updTargetsArr);
 								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
@@ -2259,7 +2266,7 @@
 						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
 
 						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
-						if (isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
+						if (this.get('shareResFlow') === false && isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
 							let infiniteMeasIds = this.get('infiniteMeasIds');
 
 							if (!infiniteMeasIds.includes(testRes.id)) {
@@ -2605,13 +2612,14 @@
 
 			mapMarkers.push(marker);
 		},
-		async getMultipleTestMeasurementById (idsArr) {
+		async getMultipleTestMeasurementById (idsArr, isInfiniteMeas = false) {
 			for (let i = 0; i < idsArr.length; i++) {
 				await this.getTestMeasurementById({
 					measurementId: idsArr[i],
 					resNumber: i,
 					isShareResCase: true,
 					isLastShareReq: idsArr.length - 1 === i,
+					isInfiniteMeas,
 				});
 			}
 		},
