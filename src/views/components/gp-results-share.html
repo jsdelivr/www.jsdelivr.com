@@ -45,6 +45,7 @@
 			return {
 				shareResultsAsURL: true,
 				shareResultsText: null,
+				shareBlockMsg: null,
 			};
 		},
 		onrender () {
@@ -87,6 +88,11 @@
 
 					// for infinite get last 10 IDs from oldest to newest
 					preparedMeasIDsArr = measIDsArr.slice(-10);
+
+					// show related message for such case
+					if (measIDsArr.length > 10) {
+						this.set('shareBlockMsg', 'For long-running continuous mode measurements, only the last 160 packets are shared.');
+					}
 				}
 
 				let textToDisplay = preparedMeasIDsArr.join(idsDelimiter);
