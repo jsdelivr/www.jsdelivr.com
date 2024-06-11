@@ -21,9 +21,13 @@
 	</div>
 
 	<div class="c-gp-results-share_content">
-		<div id="share-res-text">
+		<div id="share-res-text" class="c-gp-results-share_content_text">
 			{{shareResTextToDisplay}}
 		</div>
+
+		{{#if shareResMsg}}
+			<span class="c-gp-results-share_content_msg">{{shareResMsg}}</span>
+		{{/if}}
 
 		<button as-clipboard data-clipboard-text="{{shareResTextToCopy}}">
 			<img width="20"
@@ -45,14 +49,14 @@
 			return {
 				shareResultsAsURL: true,
 				shareResultsText: null,
-				shareBlockMsg: null,
+				shareResMsg: null,
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
 				// check shareRes state and create URL or CLI cmd respectively
-				this.observe('shareResultsAsURL', (shareResultsAsURL) => {
-					let { shareResTextToDisplay, shareResTextToCopy } = this.createShareResText(shareResultsAsURL);
+				this.observe('shareResultsAsURL measurementsMetadata', () => {
+					let { shareResTextToDisplay, shareResTextToCopy } = this.createShareResText();
 
 					this.set('shareResTextToDisplay', shareResTextToDisplay);
 					this.set('shareResTextToCopy', shareResTextToCopy);
@@ -70,12 +74,13 @@
 				}, { defer: true });
 			}
 		},
-		createShareResText (urlFlow = true) {
+		createShareResText () {
+			let shareResultsAsURL = this.get('shareResultsAsURL');
 			let measurementsMetadata = this.get('measurementsMetadata');
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
 			// create and return the texts of the share-results URL
-			if (urlFlow) {
+			if (shareResultsAsURL) {
 				let origin = this.get('@global.location.origin');
 				// regular measurement IDs should be separated by a comma
 				let idsDelimiter = ',';
@@ -90,8 +95,8 @@
 					preparedMeasIDsArr = measIDsArr.slice(-10);
 
 					// show related message for such case
-					if (measIDsArr.length > 10) {
-						this.set('shareBlockMsg', 'For long-running continuous mode measurements, only the last 160 packets are shared.');
+					if (measIDsArr.length >= 10) {
+						this.set('shareResMsg', 'For long-running continuous mode measurements, only the last 160 packets are shared.');
 					}
 				}
 
