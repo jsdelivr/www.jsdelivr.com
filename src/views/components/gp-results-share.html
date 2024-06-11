@@ -78,14 +78,19 @@
 				let origin = this.get('@global.location.origin');
 				// regular measurement IDs should be separated by a comma
 				let idsDelimiter = ',';
+				let measIDsArr = Object.values(measurementsMetadata).map(v => v.measurementId);
+				let preparedMeasIDsArr = measIDsArr;
 
 				if (isInfiniteModeRes) {
 					// the infinite one by a plus sign
 					idsDelimiter = '*';
+
+					// for infinite get last 10 IDs from oldest to newest
+					preparedMeasIDsArr = measIDsArr.slice(-10);
 				}
 
-				let textToDisplay = Object.values(measurementsMetadata).map(v => v.measurementId).join(idsDelimiter);
-				let textToCopy = Object.values(measurementsMetadata).map(v => v.measurementId).join(idsDelimiter);
+				let textToDisplay = preparedMeasIDsArr.join(idsDelimiter);
+				let textToCopy = preparedMeasIDsArr.join(idsDelimiter);
 
 				return {
 					shareResTextToDisplay: `${origin}/globalping?measurement=${textToDisplay}`,
