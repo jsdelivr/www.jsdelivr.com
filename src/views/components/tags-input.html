@@ -148,22 +148,32 @@
 						return;
 					}
 
-					// if input has some value which is not added as tag yet - add tag on Enter, on second Enter run measurement
+					// if input has some value which is not added as tag yet - add tag on Enter/Tab, on second Enter/Tab run measurement/switch to the next field
 					// if user did not passed any value, on Enter add default one, if presented, and run measurement
 					// handle keys for adding new tags, removing tags, allow to bubble event on Enter key etc.
-					if (e.key === 'Enter' && !inputValue) {
+					if ([ 'Enter', 'Tab' ].includes(e.key) && !inputValue) {
 						if (defaultValue && currTagsArr.length === 0) {
 							this.set('value', defaultValue);
 						}
-					} else if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+
+						tagsBlockEl.classList.remove('focused');
+					} else if ([ 'Enter', 'Tab', ' ', ',' ].includes(e.key)) {
 						this.addTag();
 
-						e.preventDefault();
+						// Prevent Enter always and Tab when only 1 target is filled
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+
+						if (e.key === 'Tab') {
+							if (currTagsArr.length < currMaxTagsAllowed) {
+								e.preventDefault();
+							} else {
+								tagsBlockEl.classList.remove('focused');
+							}
+						}
 					} else if (e.key === 'Backspace') {
 						this.removeLastTag();
-					} else if (e.key === 'Tab') {
-						this.addTag();
-						tagsBlockEl.classList.remove('focused');
 					}
 				});
 
