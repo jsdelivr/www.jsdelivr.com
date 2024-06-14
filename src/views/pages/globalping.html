@@ -152,7 +152,7 @@
 								placeholder="{{defaultLimit}}"
 								labelText="Limit"
 								classList="gp_map-block_settings-wrapper_settings_limit gp_input"
-								disabled="{{testInProgress}}">
+								disabled="{{testInProgress || infiniteSwitchEnabled}}">
 							</c-controlled-input>
 
 							<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block {{#if testInProgress}}disabled{{/if}}">
@@ -1270,6 +1270,8 @@
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
 	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
 	const DEFAULT_TARGET_VALUE = 'cdn.jsdelivr.net';
+	const INFINITE_MEASUREMENT_PACKETS = 16;
+	const INFINITE_MEASUREMENT_LIMIT = 5;
 
 	let map;
 	let oms;
@@ -2653,8 +2655,10 @@
 
 			if (infiniteSwitchEnabled) {
 				this.set('notAppliedOpts.packets', '');
+				this.set('mainOptions.limit', INITIAL_MAIN_OPTS_VALUES.limit);
 			} else {
-				this.set('notAppliedOpts.packets', 16);
+				this.set('notAppliedOpts.packets', INFINITE_MEASUREMENT_PACKETS);
+				this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
 			}
 
 			this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
