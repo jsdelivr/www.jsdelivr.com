@@ -2969,8 +2969,6 @@
 			}, []);
 		},
 		prepareInfiniteResults (rawResults) {
-			let preparedTestResults = this.get('preparedTestResults');
-
 			let probesAmount = rawResults[0].length;
 			let probesMeasurements = [];
 
@@ -2980,11 +2978,11 @@
 			}
 
 			// prepare data for gp-raw-output, gp-table-output components
-			return probesMeasurements.map(pbm => {
+			return probesMeasurements.map((pbm) => {
 				return pbm.reduce((combinedProbeData, probeData) => {
 					let { packetsRtt, packetsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
-					let packetsRttCombined = [ ...(combinedProbeData.packetsRtt || []), ...packetsRtt ];
+					let packetsRttCombined = [ ...combinedProbeData.packetsRtt || [], ...packetsRtt ];
 					let packetsDropCombined = (combinedProbeData.packetsDrop || 0) + packetsDrop;
 					let packetsTotalCombined = (combinedProbeData.packetsTotal || 0) + packetsTotal;
 					let numericPacketsRttCombined = packetsRttCombined.filter(v => typeof v === 'number');
@@ -2996,7 +2994,7 @@
 					let lastTiming = packetsRttCombined[packetsRttCombined.length - 1] || PROBE_NO_TIMING_VALUE;
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
 					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
-					let outputLinesCombined = [ ...(combinedProbeData.rawOutputLines || []), ...packetLines ];
+					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 
 					return {
 						...combinedProbeData,
@@ -3027,8 +3025,6 @@
 					};
 				}, {});
 			});
-
-			return combinedProbeData;
 		},
 		getFailureProbeRawOutput (probeData) {
 			let rawOutput;
