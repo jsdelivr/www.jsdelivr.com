@@ -2995,6 +2995,7 @@
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
 					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
+					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 
 					return {
 						...combinedProbeData,
@@ -3002,11 +3003,12 @@
 						packetsDrop: packetsDropCombined,
 						packetsTotal: packetsTotalCombined,
 						rawOutputLines: outputLinesCombined,
+						ipAddr,
 						clientSideId: probeData.clientSideId,
 						...probeData.probe,
 						statsPerTarget: [{
 							target: probeData.target,
-							ipAddr: this.parseIPFromRawOutput(probeData.result.rawOutput),
+							ipAddr,
 							lastTiming,
 							minTiming,
 							avgTiming,
