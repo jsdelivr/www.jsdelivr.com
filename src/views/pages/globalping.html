@@ -152,7 +152,7 @@
 								placeholder="{{defaultLimit}}"
 								labelText="Limit"
 								classList="gp_map-block_settings-wrapper_settings_limit gp_input"
-								disabled="{{testInProgress || infiniteSwitchEnabled}}">
+								disabled="{{testInProgress || limitInputDisabled}}">
 							</c-controlled-input>
 
 							<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block {{#if testInProgress}}disabled{{/if}}">
@@ -1297,6 +1297,8 @@
 				PROBE_STATUS_FAILED,
 				PROBE_STATUS_OFFLINE,
 				DEFAULT_TARGET_VALUE,
+				INFINITE_MEASUREMENT_LIMIT,
+				INITIAL_MAIN_OPTS_VALUES,
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				mainOptions: {
 					...INITIAL_MAIN_OPTS_VALUES,
@@ -1347,6 +1349,7 @@
 				prevProbesMeasId: null,
 				preparedTestResults: [],
 				ddHandlerSet: false,
+				limitInputDisabled: false,
 			};
 		},
 		onrender () {
@@ -1417,6 +1420,34 @@
 						this.set('rawOutputMode', true);
 					}
 				}, { init: false });
+
+				// when infinite switch is enabled set and disable limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
+				// if less than INFINITE_MEASUREMENT_LIMIT then it is allowed to change
+				this.observe('infiniteSwitchEnabled', (infiniteSwitchEnabled) => {
+					let currentLimit = this.get('mainOptions.limit');
+					let limitInputDisabled = this.get('limitInputDisabled');
+
+					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT && limitInputDisabled === false) {
+						this.set('limitInputDisabled', true);
+						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
+					} else if (infiniteSwitchEnabled && currentLimit < INFINITE_MEASUREMENT_LIMIT) {
+						this.set('limitInputDisabled', false);
+					} else if (infiniteSwitchEnabled === false && currentLimit >= INFINITE_MEASUREMENT_LIMIT) {
+						this.set('limitInputDisabled', false);
+						this.set('mainOptions.limit', INITIAL_MAIN_OPTS_VALUES.limit);
+					}
+				});
+
+				// handle limit changing when infinite switch is enabled - disable input if it is bigger than INFINITE_MEASUREMENT_LIMIT
+				this.observe('mainOptions.limit', (currentLimit) => {
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+					let limitInputDisabled = this.get('limitInputDisabled');
+
+					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT && limitInputDisabled === false) {
+						this.set('limitInputDisabled', true);
+						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
+					}
+				});
 
 				// handle join-network switch and commands content
 				this.observe('joinNetSwitchValue', (joinNetSwitchValue) => {
@@ -2655,10 +2686,8 @@
 
 			if (infiniteSwitchEnabled) {
 				this.set('notAppliedOpts.packets', '');
-				this.set('mainOptions.limit', INITIAL_MAIN_OPTS_VALUES.limit);
 			} else {
 				this.set('notAppliedOpts.packets', INFINITE_MEASUREMENT_PACKETS);
-				this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
 			}
 
 			this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
