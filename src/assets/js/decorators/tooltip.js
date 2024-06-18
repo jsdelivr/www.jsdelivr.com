@@ -2,6 +2,7 @@ let tooltipDecorator = (
 	node,
 	content,
 	position = 'top',
+	rawHtml = false,
 	elementName = 'div',
 	className,
 	offsetX,
@@ -69,8 +70,16 @@ let tooltipDecorator = (
 			if (document.querySelector('#ractive-tooltip-instance') === null) {
 				tooltip = document.createElement(elementName);
 				tooltip.className = `ractive-tooltip ${getPositionClass(position)}${className ? ` ${className}` : ''}`;
-				content = content.replace(/\n/g, '<br>');
-				tooltip.innerHTML = content;
+
+				if (rawHtml) {
+					let preTag = document.createElement('pre');
+
+					preTag.textContent = content;
+					tooltip.appendChild(preTag);
+				} else {
+					tooltip.textContent = content;
+				}
+
 				tooltip.id = 'ractive-tooltip-instance';
 				document.body.appendChild(tooltip);
 			}
