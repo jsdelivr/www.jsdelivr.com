@@ -152,7 +152,7 @@
 								placeholder="{{defaultLimit}}"
 								labelText="Limit"
 								classList="gp_map-block_settings-wrapper_settings_limit gp_input"
-								disabled="{{testInProgress || limitInputDisabled}}">
+								disabled="{{testInProgress}}">
 							</c-controlled-input>
 
 							<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block {{#if testInProgress}}disabled{{/if}}">
@@ -1349,7 +1349,6 @@
 				prevProbesMeasId: null,
 				preparedTestResults: [],
 				ddHandlerSet: false,
-				limitInputDisabled: false,
 			};
 		},
 		onrender () {
@@ -1421,19 +1420,13 @@
 					}
 				}, { init: false });
 
-				// when infinite switch is enabled set and disable limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
-				// if less than INFINITE_MEASUREMENT_LIMIT then it is allowed to change
+				// when infinite switch is enabled set limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
 				this.observe('infiniteSwitchEnabled', (infiniteSwitchEnabled) => {
 					let currentLimit = this.get('mainOptions.limit');
-					let limitInputDisabled = this.get('limitInputDisabled');
 
-					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT && limitInputDisabled === false) {
-						this.set('limitInputDisabled', true);
+					if (infiniteSwitchEnabled && currentLimit > INFINITE_MEASUREMENT_LIMIT) {
 						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
-					} else if (infiniteSwitchEnabled && currentLimit < INFINITE_MEASUREMENT_LIMIT) {
-						this.set('limitInputDisabled', false);
-					} else if (infiniteSwitchEnabled === false && currentLimit >= INFINITE_MEASUREMENT_LIMIT) {
-						this.set('limitInputDisabled', false);
+					} else if (infiniteSwitchEnabled === false && currentLimit > INFINITE_MEASUREMENT_LIMIT) {
 						this.set('mainOptions.limit', INITIAL_MAIN_OPTS_VALUES.limit);
 					}
 				});
@@ -1441,10 +1434,8 @@
 				// handle limit changing when infinite switch is enabled - disable input if it is bigger than INFINITE_MEASUREMENT_LIMIT
 				this.observe('mainOptions.limit', (currentLimit) => {
 					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
-					let limitInputDisabled = this.get('limitInputDisabled');
 
-					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT && limitInputDisabled === false) {
-						this.set('limitInputDisabled', true);
+					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT) {
 						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
 					}
 				});
