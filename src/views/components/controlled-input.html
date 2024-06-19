@@ -2,10 +2,11 @@
 	<div class="c-controlled-input_info">
 		<span class="c-controlled-input_info_label">
 			{{labelText}}
-			{{#if @this.partials.labelIcon}}
+			{{#if @this.partials.labelIcon && !hideLabelIcon}}
 				{{>labelIcon}}
 			{{/if}}
 		</span>
+
 		{{#if error}}
 			<span class="c-controlled-input_info_errorMsg">
 				{{error}}
@@ -18,18 +19,13 @@
 		{{/if}}
 	</div>
 
-	{{#if id}}
-		<input id="{{id}}"
-			value="{{value}}"
-			type="text"
-			placeholder="{{placeholder}}"
-			class="{{#if error}}has-error{{/if}}">
-	{{else}}
-		<input value="{{value}}"
-			type="text"
-			placeholder="{{placeholder}}"
-			class="{{#if error}}has-error{{/if}}">
-	{{/if}}
+	<input
+		{{#if id}}id="{{id}}"{{/if}}
+		value="{{value}}"
+		type="text"
+		placeholder="{{placeholder}}"
+		class="{{#if error}}has-error{{/if}}{{#if disabled}}is-disabled{{/if}}"
+		disabled="{{disabled}}">
 </label>
 
 <script>

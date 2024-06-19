@@ -384,7 +384,7 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
-			onFailReturnStatus = false,
+			// onFailReturnStatus = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
@@ -426,11 +426,11 @@ module.exports = {
 						resolve(response);
 					}
 				} else {
-					if (onFailReturnStatus) {
-						reject(new Error(xhr.status));
-					} else {
-						reject(response);
-					}
+					// eslint-disable-next-line prefer-promise-reject-errors
+					reject({
+						...response,
+						responseStatusCode: xhr.status,
+					});
 				}
 			};
 
@@ -1216,10 +1216,23 @@ module.exports = {
 		return `${text.substr(0, length - 3)}...`;
 	},
 
+	getGpProbeLastTiming (testType, result) {
+		let lastTiming;
+		let { timings = [] } = result;
+
+		if (testType === 'ping') {
+			lastTiming = timings[timings.length - 1] ? timings[timings.length - 1].rtt : PROBE_NO_TIMING_VALUE;
+		}
+
+		return lastTiming;
+	},
+
 	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = ' ms') {
 		let resTiming;
+		let lastTiming;
 		let extraValues = {};
 		let lowCaseTestName = testType.toLowerCase();
+		lastTiming = this.getGpProbeLastTiming(testType, testResData.result);
 
 		if (testResData.result?.status === PROBE_STATUS_FAILED) {
 			return {
@@ -1233,7 +1246,7 @@ module.exports = {
 				value: PROBE_STATUS_OFFLINE,
 				extraValues,
 				fullText: PROBE_STATUS_OFFLINE,
-				isFailed: true,
+				isFailed: false,
 			};
 		}
 
@@ -1348,6 +1361,7 @@ module.exports = {
 				units,
 				note,
 				fullText: note ? `${Math.round(resTiming)}${units} ${note}` : `${Math.round(resTiming)}${units}`,
+				lastTiming,
 			};
 		}
 
@@ -1355,7 +1369,8 @@ module.exports = {
 			value: PROBE_NO_TIMING_VALUE,
 			extraValues,
 			fullText: PROBE_NO_TIMING_VALUE,
-			isFailed: true,
+			isFailed: testResData.result?.status === PROBE_STATUS_FAILED,
+			lastTiming: PROBE_NO_TIMING_VALUE,
 		};
 	},
 
@@ -1394,6 +1409,61 @@ module.exports = {
 		return {
 			top: box.top + window.scrollY - docElem.clientTop,
 			left: box.left + window.scrollX - docElem.clientLeft,
+		};
+	},
+
+	removeDuplicatedTargets (arr) {
+		return arr.reduce((uniquesArr, item) => {
+			if (uniquesArr.indexOf(item) < 0) {
+				uniquesArr.push(item);
+			}
+
+			return uniquesArr;
+		}, []);
+	},
+
+	parseGpRawOutputForTimings (raw) {
+		let packetsRtt = [];
+		let packetsDrop = 0;
+		let timeMatch;
+		let timeRegex = /time=(\d+(\.\d+)?)/;
+		let lines = raw.split('\n').filter(l => l);
+		let currPacketRtt;
+
+		for (let i = 0; i < lines.length; i++) {
+			if (i === 0) { continue; }
+
+			if (lines[i].includes('---')) { break; }
+
+			timeMatch = timeRegex.exec(lines[i]);
+
+			if (timeMatch === null) {
+				packetsDrop++;
+				currPacketRtt = PROBE_NO_TIMING_VALUE;
+			} else {
+				currPacketRtt = parseFloat(timeMatch[1]);
+			}
+
+			packetsRtt.push(currPacketRtt);
+		}
+
+		return {
+			packetsRtt,
+			packetsDrop,
+			packetsTotal: packetsRtt.length,
+		};
+	},
+	memoize (func) {
+		let cache = new Map();
+
+		return function (...args) {
+			let key = JSON.stringify(args);
+
+			if (!cache.has(key)) {
+				cache.set(key, func.apply(this, args));
+			}
+
+			return cache.get(key);
 		};
 	},
 };

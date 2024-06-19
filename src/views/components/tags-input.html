@@ -1,0 +1,271 @@
+<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}} {{#if error}}error{{/if}} {{#if isDisabled}}disabled{{/if}}">
+	<div class="c-tags-input_info">
+		<span class="c-tags-input_info_label">
+			{{labelText}}
+			{{#if @this.partials.labelIcon}}
+				{{>labelIcon}}
+			{{/if}}
+		</span>
+
+		{{#if error}}
+			<span class="c-tags-input_info_errorMsg">
+				{{error}}
+			</span>
+		{{/if}}
+	</div>
+
+	<div class="c-tags-input_tags-block {{#if tagsArr &&tagsArr.length === this.maxTagsAllowed}}full{{/if}} {{#if error}}has-error{{/if}}"
+		id="{{inputWrapperIdPrefix + inputId}}">
+		{{#if tagsArr && tagsArr.length}}
+			<div class="c-tags-input_tags-block_tags-list">
+				{{#each tagsArr:tagIdx}}
+					<div class="c-tags-input_tags-block_tags-list_tag">
+						<span class="c-tags-input_tags-block_tags-list_tag_text">
+							{{this}}
+						</span>
+
+						<img class="c-tags-input_tags-block_tags-list_tag_close-icon"
+							width="16"
+							height="16"
+							on-click="@this.removeTagByIdx(tagIdx)"
+							src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
+					</div>
+				{{/each}}
+			</div>
+		{{/if}}
+
+		{{#if !value && inputIcon}}
+			<img class="c-tags-input_input-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/{{inputIcon}}">
+		{{/if}}
+
+		{{#if error}}
+			<img class="c-tags-input_tags-block_err-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
+		{{/if}}
+
+		<input
+			id="{{inputId}}"
+			value="{{inputValue}}"
+			type="text"
+			placeholder="{{placeholder}}"
+			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
+	</div>
+</label>
+
+<script>
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
+	const tooltip = require('../../assets/js/decorators/tooltip');
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				invalidValue: null,
+				errMsgTopPos: false,
+				inputValue: '',
+				inputWrapperIdPrefix: 'tags-block-',
+				valuesDelimiter: ',',
+				maxTagsAllowed: 2,
+				tagsArr: [],
+				isDisabled: false,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observeOnce('error', () => {
+					this.set('invalidValue', this.get('value'));
+				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
+
+				this.observe('screenWidth', (screenWidth) => {
+					if ((screenWidth || innerWidth) < 768) {
+						this.set('errMsgTopPos', true);
+					} else {
+						this.set('errMsgTopPos', false);
+					}
+				});
+
+				this.observe('value', (value) => {
+					let valuesDelimiter = this.get('valuesDelimiter');
+
+					this.set('tagsArr', value ? value.split(valuesDelimiter) : []);
+				});
+
+				// set default value is it was passed as prop
+				this.observe('defaultValue', (defaultValue) => {
+					let setDefaultValueInitialy = this.get('setDefaultValueInitialy');
+
+					if (defaultValue && setDefaultValueInitialy) {
+						this.set('value', defaultValue);
+					}
+				});
+			}
+		},
+		onrender () {
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				let inputWrapperIdPrefix = this.get('inputWrapperIdPrefix');
+				let inputId = this.get('inputId');
+				let inputEl = this.find(`#${inputId}`);
+				let tagsBlockEl = this.find(`#${inputWrapperIdPrefix + inputId}`);
+
+				// handle input changes
+				inputEl.addEventListener('keydown', (e) => {
+					let currMaxTagsAllowed = this.get('maxTagsAllowed');
+					let currTagsArr = this.get('tagsArr');
+					let inputValue = this.get('inputValue');
+					let defaultValue = this.get('defaultValue');
+
+					if (this.get('isDisabled')) {
+						e.preventDefault();
+
+						return;
+					}
+
+					// while there are already max tags and key is not Backspace - ignore input changes
+					if (currTagsArr.length === currMaxTagsAllowed && e.key !== 'Tab' && e.key !== 'Backspace' && e.key !== 'Enter') {
+						e.preventDefault();
+
+						return;
+					}
+
+					// if input has some value which is not added as tag yet - add tag on Enter/Tab, on second Enter/Tab run measurement/switch to the next field
+					// if user did not passed any value, on Enter add default one, if presented, and run measurement
+					// handle keys for adding new tags, removing tags, allow to bubble event on Enter key etc.
+					if ([ 'Enter', 'Tab' ].includes(e.key) && !inputValue) {
+						if (defaultValue && currTagsArr.length === 0) {
+							this.set('value', defaultValue);
+						}
+
+						tagsBlockEl.classList.remove('focused');
+					} else if ([ 'Enter', 'Tab', ' ', ',' ].includes(e.key)) {
+						this.addTag();
+
+						// Prevent Enter always and Tab when only 1 target is filled
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+
+						if (e.key === 'Tab') {
+							if (currTagsArr.length < currMaxTagsAllowed) {
+								e.preventDefault();
+							} else {
+								tagsBlockEl.classList.remove('focused');
+							}
+						}
+					} else if (e.key === 'Backspace') {
+						this.removeLastTag();
+					}
+				});
+
+				// on focusout add the content of the input as a tag if it matches conditions
+				inputEl.addEventListener('focusout', () => {
+					let inputValue = this.get('inputValue');
+					let tagsArr = this.get('tagsArr');
+					let defaultValue = this.get('defaultValue');
+
+					// set default value if user did not fill in something and focusout
+					if (defaultValue && !inputValue && tagsArr.length === 0) {
+						this.set('value', defaultValue);
+					} else {
+						this.addTag();
+					}
+				});
+
+				// add/remove focus styles
+				tagsBlockEl.addEventListener('click', () => {
+					this.handleInputFocus(tagsBlockEl);
+				});
+
+				inputEl.addEventListener('focus', () => {
+					this.handleInputFocus(tagsBlockEl);
+				});
+
+				document.addEventListener('click', (e) => {
+					if (!tagsBlockEl.contains(e.target)) {
+						tagsBlockEl.classList.remove('focused');
+					}
+				});
+
+				this.observe('isDisabled', (isDisabled) => {
+					if (isDisabled) {
+						tagsBlockEl.classList.remove('focused');
+					}
+				});
+			}
+		},
+		addTag () {
+			let maxTagsAllowed = this.get('maxTagsAllowed');
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let inputValue = this.get('inputValue');
+			let tagsArr = this.get('tagsArr');
+
+			if (tagsArr.length < maxTagsAllowed) {
+				if (!tagsArr.includes(inputValue) && inputValue !== '') {
+					tagsArr.push(inputValue);
+
+					this.set('value', tagsArr.join(valuesDelimiter));
+				}
+
+				// to overwrite inputValues as ',' or '' set by browser we should call it via setTimeout
+				setTimeout(() => {
+					this.set('inputValue', '');
+				}, 4);
+			}
+		},
+		removeLastTag () {
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let inputValue = this.get('inputValue');
+			let tagsArr = this.get('tagsArr');
+
+			if (inputValue === '') {
+				tagsArr.pop();
+
+				this.set('value', tagsArr.join(valuesDelimiter));
+			}
+		},
+		removeTagByIdx (tagIdx) {
+			if (this.get('isDisabled')) { return; }
+
+			let valuesDelimiter = this.get('valuesDelimiter');
+			let tagsArr = this.get('tagsArr');
+
+			tagsArr.splice(tagIdx, 1);
+
+			this.set('value', tagsArr.join(valuesDelimiter));
+		},
+		handleInputFocus (tagsBlockEl) {
+			let isDisabled = this.get('isDisabled');
+			let defaultValue = this.get('defaultValue');
+			let currentValue = this.get('value');
+
+			if (!isDisabled && !tagsBlockEl.classList.contains('focused')) {
+				tagsBlockEl.classList.add('focused');
+
+				// clear default tag on focus
+				if (defaultValue && currentValue && currentValue === defaultValue) {
+					this.set('value', '');
+				}
+			}
+		},
+	};
+</script>

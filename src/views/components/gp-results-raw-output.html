@@ -1,0 +1,173 @@
+<link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
+
+<div class="c-gp-results-raw-output">
+	<div class="c-gp-results-raw-output_list">
+		{{#each preparedTestResults:idx}}
+			<div class="c-gp-results-raw-output_list_item_top-wrapper">
+				<div class="c-gp-results-raw-output_list_item_inner-wrapper">
+					<div class="c-gp-results-raw-output_list_item">
+						<div class="c-gp-results-raw-output_list_item_header">
+							<span class="c-gp-results-raw-output_list_item_header_info">
+								<span>
+									<img width="28"
+										height="20"
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
+										{{this.city}}, {{this.country}}, {{this.continent}}
+								</span>
+								<span>&nbsp;-&nbsp;</span>
+								<span>{{this.network}} (AS{{this.asn}})</span>
+							</span>
+
+							{{#if @this.getTimingValueToDisplay(this, activeTargetIdx)}}
+								<span class="c-gp-results-raw-output_list_item_header_time main-value">
+									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
+										width="4"
+										height="4"
+										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
+
+									<span>Time:</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">
+										{{@this.getTimingValueToDisplay(this, activeTargetIdx)}}
+									</span>
+								</span>
+							{{/if}}
+
+							{{#unless this.statsPerTarget[activeTargetIdx].isFailed || this.statsPerTarget[activeTargetIdx].avgTiming === PROBE_STATUS_OFFLINE}}
+								{{#each this.statsPerTarget[activeTargetIdx].extraValues}}
+									<span class="c-gp-results-raw-output_list_item_header_time">
+										<span>{{this.text}}:</span>
+										<span class="c-gp-results-raw-output_list_item_header_time_value">{{this.value}}{{this.units}}</span>
+									</span>
+								{{/each}}
+							{{/unless}}
+
+							<img on-click="@this.hideShowTestResult(idx)"
+								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+								width="24"
+								height="24"
+								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
+						</div>
+
+						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawOutput}}</pre>
+
+						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this.statsPerTarget[activeTargetIdx])}}"></div>
+					</div>
+
+					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
+				</div>
+
+				<div class="c-gp-results-raw-output_list_item_top-wrapper_actions">
+					<div class="c-gp-results-raw-output_list_item_top-wrapper_actions_btn"
+						as-tooltip="'Set as location for the next test', 'right'"
+						on-click="@this.setProbeAsLocation(this.probe)">
+						<i class="fa fa-map-marker" aria-hidden="true"></i>
+					</div>
+				</div>
+			</div>
+		{{/each}}
+	</div>
+
+	{{#if testReqParams.id && !testInProgress}}
+		<c-gp-results-share
+			testReqParams="{{testReqParams}}"
+			measurementsMetadata="{{measurementsMetadata}}"
+			isInfiniteModeRes="{{isInfiniteModeRes}}"
+			testInProgress="{{testInProgress}}">
+		</c-gp-results-share>
+	{{/if}}
+</div>
+
+<script>
+	const _ = require('../../assets/js/_');
+	const tooltip = require('../../assets/js/decorators/tooltip');
+	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				_,
+				hiddenTestResults: [],
+				PROBE_STATUS_FAILED,
+				PROBE_STATUS_OFFLINE,
+			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				// open result under specific index when scrool to this element from the parent called
+				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
+					if (scrolledToResIdx === null) { return; }
+
+					let hiddenTestResults = this.get('hiddenTestResults');
+
+					if (hiddenTestResults.includes(scrolledToResIdx)) {
+						this.hideShowTestResult(scrolledToResIdx);
+					}
+
+					this.set('scrolledToResIdx', null);
+				}, { init: false });
+
+				this.observe('preparedTestResults', (preparedTestResults) => {
+					// set results block height based on content
+					this.setResultsBlockHeight(preparedTestResults);
+				});
+			}
+		},
+		hideShowTestResult (idx) {
+			let hiddenTestResults = this.get('hiddenTestResults');
+
+			if (hiddenTestResults.includes(idx)) {
+				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
+			} else {
+				hiddenTestResults.push(idx);
+			}
+
+			this.set('hiddenTestResults', hiddenTestResults);
+		},
+		setResultsBlockHeight (results) {
+			requestAnimationFrame(() => {
+				let listEl = document.querySelector('.c-gp-results-raw-output_list');
+
+				if (listEl) {
+					let itemsAmount = results.length;
+					let listElScrollHeight = listEl.scrollHeight;
+					let avgItemElHeight = Math.round(listElScrollHeight / itemsAmount);
+
+					listEl.style.height = `${itemsAmount < 3 ? avgItemElHeight * itemsAmount : avgItemElHeight * 3}px`;
+				}
+			});
+		},
+		setProbeAsLocation (probeData) {
+			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+		getStatusLineColorClass (data) {
+			let { value: lossValue } = data && data.extraValues && data.extraValues.loss ? data.extraValues.loss : {};
+
+			if (data.isFailed || data.isOffline || lossValue === 100) {
+				return 'failure';
+			} else if (typeof lossValue !== 'number') {
+				return '';
+			} else if (lossValue === 0) {
+				return 'success';
+			}
+
+			return 'some-issues';
+		},
+		getTimingValueToDisplay (data, activeTargetIdx) {
+			let { avgTiming, isFailed, isOffline, areTimingsReady } = data.statsPerTarget[activeTargetIdx];
+
+			if (isFailed) {
+				return PROBE_STATUS_FAILED;
+			} else if (isOffline) {
+				return PROBE_STATUS_OFFLINE;
+			} else if (typeof avgTiming === 'number') {
+				return `${Math.round(avgTiming)} ms`;
+			} else if (areTimingsReady) {
+				return avgTiming;
+			}
+		},
+	};
+</script>

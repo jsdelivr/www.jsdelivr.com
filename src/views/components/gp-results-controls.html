@@ -1,0 +1,59 @@
+<div class="c-gp-results-controls">
+	<div class="content-wrapper">
+		<div class="content-wrapper_tabs {{#if targets && targets.length === 1}}single-target{{/if}} {{#unless rawOutputMode}}table-mode{{/unless}}">
+			{{#each targets:idx}}
+				<div on-click="@this.handleTabSwitch(idx)"
+					class="content-wrapper_tabs_tab {{#if idx === activeTargetIdx && rawOutputMode}}active{{/if}} {{#unless rawOutputMode}}disabled{{/unless}}">
+					{{this}}
+					<span class="active-tab-bar"></span>
+				</div>
+			{{/each}}
+		</div>
+
+		<div class="content-wrapper_ctrls">
+			<div class="content-wrapper_ctrls_display-settings">
+				<span>Display settings:</span>
+
+				<div class="content-wrapper_ctrls_display-settings_switch" on-click="@this.handleOutputModeSwitch()">
+					<img width="16"
+						height="16"
+						src="{{@shared.assetsHost}}/img/globalping/raw-output-icon{{#if rawOutputMode}}.active{{/if}}.svg">
+
+					<div class="content-wrapper_ctrls_display-settings_switch_line"></div>
+
+					<img width="16"
+						height="16"
+						src="{{@shared.assetsHost}}/img/globalping/table-output-icon{{#unless rawOutputMode}}.active{{/unless}}.svg"
+						{{#if testType !== 'ping'}}style="opacity: 0.5; cursor: not-allowed;"{{/if}}>
+				</div>
+			</div>
+
+			<div class="content-wrapper_ctrls_map-switch">
+				<span>Map: </span>
+				<div class="content-wrapper_ctrls_map-switch_switch" on-click="@this.set('showMap', !showMap)">
+					<img width="16" height="16" src="{{@shared.assetsHost}}/img/globalping/map-icon{{#if showMap}}.active{{/if}}.svg">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	component.exports = {
+		handleTabSwitch (idx) {
+			let isRawOutputMode = this.get('rawOutputMode');
+
+			if (isRawOutputMode) {
+				this.set('activeTargetIdx', idx);
+			}
+		},
+		handleOutputModeSwitch () {
+			let rawOutputMode = this.get('rawOutputMode');
+			let testType = this.get('testType');
+
+			if (testType === 'ping') {
+				this.set('rawOutputMode', !rawOutputMode);
+			}
+		},
+	};
+</script>

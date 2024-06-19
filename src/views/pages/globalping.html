@@ -3,7 +3,11 @@
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
 <link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
-<link rel="ractive" href="../components/gp-test-results.html" name="c-gp-test-results">
+<link rel="ractive" href="../components/tags-input.html" name="c-tags-input">
+<link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
+<link rel="ractive" href="../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
+<link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
+<link rel="ractive" href="../components/gp-credits-message.html" name="c-gp-credits-message">
 <link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
@@ -88,127 +92,112 @@
 
 			<div class="gp_map-block_settings-wrapper">
 				<div class="gp_map-block_settings-wrapper_settings">
-					<div class="gp_dropdown_reg">
-						<span>Test type</span>
+					<div class="gp_map-block_settings-wrapper_settings_grouped">
+						<div class="gp_dropdown_reg">
+							<span>Test type</span>
 
-						<div class="btn-group">
-							<button type="button"
-								class="dropdown-toggle"
-								data-toggle="dropdown"
-								aria-haspopup="true"
-								aria-expanded="false">
-								<span>{{~/mainOptions.type}}</span>
-								<i class="fa fa-angle-down" aria-hidden="true"></i>
-							</button>
+							<div class="btn-group">
+								<button type="button"
+									class="dropdown-toggle {{#if testInProgress}}disabled{{/if}}"
+									data-toggle="dropdown"
+									aria-haspopup="true"
+									aria-expanded="false">
+									<span>{{~/mainOptions.type}}</span>
+									<i class="fa fa-angle-down" aria-hidden="true"></i>
+								</button>
 
-							<div class="dropdown-menu">
-								{{#each ~/testTypesList}}
-									<div on-click="@this.set('mainOptions.type', this)">{{this}}</div>
-								{{/each}}
+								<div class="dropdown-menu">
+									{{#each ~/testTypesList}}
+										<div on-click="@this.setMainOptsTestType(this)">{{this}}</div>
+									{{/each}}
+								</div>
 							</div>
 						</div>
+
+						<c-tags-input
+							inputId="targetInput"
+							value="{{mainOptions.target}}"
+							defaultValue="{{DEFAULT_TARGET_VALUE}}"
+							error="{{inputErrors.target}}"
+							placeholder="IP or domain"
+							labelText="Target(s)"
+							isDisabled="{{testInProgress}}"
+							setDefaultValueInitialy="{{!shareResFlow}}">
+							{{#partial labelIcon}}
+								<img as-tooltip="'Up to 2 IP addresses or domains'"
+									width="14"
+									height="14"
+									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+							{{/partial}}
+						</c-tags-input>
 					</div>
-
-					<c-controlled-input
-						id="targetInput"
-						value="{{mainOptions.target}}"
-						error="{{inputErrors.target}}"
-						placeholder="e.g. IP or domain"
-						labelText="Target"
-						classList="gp_map-block_settings-wrapper_settings_target gp_input">
-					</c-controlled-input>
-
-					<c-controlled-input
-						id="locationInput"
-						value="{{mainOptions.location}}"
-						error="{{inputErrors.location}}"
-						placeholder="Enter location"
-						labelText="Location"
-						classList="gp_map-block_settings-wrapper_settings_location gp_input">
-						{{#partial labelIcon}}
-							<img as-tooltip="'This magic field will select the most appropriate location based on your input. Use + to combine inputs and filter results. Use , to select multiple locations.'"
-								width="14"
-								height="14"
-								src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
-						{{/partial}}
-					</c-controlled-input>
 
 					<div class="gp_map-block_settings-wrapper_settings_grouped">
 						<c-controlled-input
-							id="limitInput"
-							value="{{mainOptions.limit}}"
-							error="{{inputErrors.limit}}"
-							placeholder="{{defaultLimit}}"
-							labelText="Limit"
-							classList="gp_map-block_settings-wrapper_settings_limit gp_input">
+							id="locationInput"
+							value="{{mainOptions.location}}"
+							error="{{inputErrors.location}}"
+							placeholder="Enter location"
+							labelText="Location"
+							classList="gp_map-block_settings-wrapper_settings_location gp_input"
+							disabled="{{testInProgress}}">
+							{{#partial labelIcon}}
+								<img as-tooltip="'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags. Use + to combine multiple filters. Use , to select multiple locations.'"
+									width="14"
+									height="14"
+									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+							{{/partial}}
 						</c-controlled-input>
 
-						<div class="gp_map-block_settings-wrapper_settings_grouped_options-block">
-							<button class="{{#if showMeasurementOpts}}active{{/if}}"
-								on-click="@this.handleToggleMeasOpts()">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
+						<div class="gp_map-block_settings-wrapper_settings_subgroup">
+							<c-controlled-input
+								id="limitInput"
+								value="{{mainOptions.limit}}"
+								error="{{inputErrors.limit}}"
+								placeholder="{{defaultLimit}}"
+								labelText="Limit"
+								classList="gp_map-block_settings-wrapper_settings_limit gp_input"
+								hideLabelIcon="{{infiniteSwitchEnabled === false}}"
+								disabled="{{testInProgress}}">
+								{{#partial labelIcon}}
+									<img as-tooltip="'Values up to 5 are supported for infinite measurements'"
+										width="14"
+										height="14"
+										src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+								{{/partial}}
+							</c-controlled-input>
 
-								{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
-									<div class="additional-opts-total">
-										{{modifiedMeasOptsCnt}}
-									</div>
-								{{/if}}
-							</button>
+							<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block {{#if testInProgress}}disabled{{/if}}">
+								<button class="{{#if showMeasurementOpts}}active{{/if}}"
+									on-click="@this.handleToggleMeasOpts()">
+									<img width="20"
+										height="20"
+										src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-							<div class="gp_map-block_settings-wrapper_settings_grouped_options-block_specific-set">
-								{{#if mainOptions.type === 'ping'}}
-									<div class="typePing">
-										<c-controlled-input
-											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors.packets}}"
-											placeholder="{{defaultPacketsAmount}}"
-											labelText="Packets"
-											classList="gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'traceroute'}}
-									<div class="typeTraceroute">
-										<div class="pair">
-											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
-											</c-controlled-input>
-
-											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
-
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/tracerouteOpts.protocol}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
-
-													<div class="dropdown-menu">
-														<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
-														<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
-														<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
-													</div>
-												</div>
-											</div>
+									{{#if infiniteSwitchEnabled === false && modifiedMeasOptsCnt && showMeasurementOpts === false}}
+										<div class="additional-opts-total">
+											{{modifiedMeasOptsCnt}}
 										</div>
-									</div>
-								{{/if}}
+									{{/if}}
+								</button>
 
-								{{#if mainOptions.type === 'DNS'}}
-									<div class="typeDNS">
-										<div class="rows">
-											<div class="rows_row-one">
+								<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block_specific-set">
+									{{#if mainOptions.type === 'ping'}}
+										<div class="typePing">
+											<c-controlled-input
+												value="{{notAppliedOpts.packets}}"
+												error="{{inputErrors.packets}}"
+												placeholder="{{defaultPacketsAmount}}"
+												labelText="Packets"
+												classList="gp_input"
+												disabled="{{infiniteSwitchEnabled}}">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'traceroute'}}
+										<div class="typeTraceroute">
+											<div class="pair">
 												<c-controlled-input
 													value="{{notAppliedOpts.port}}"
 													error="{{inputErrors.port}}"
@@ -226,21 +215,110 @@
 															data-toggle="dropdown"
 															aria-haspopup="true"
 															aria-expanded="false">
-															<span>{{~/dnsOpts.protocol}}</span>
+															<span>{{~/tracerouteOpts.protocol}}</span>
 															<i class="fa fa-angle-down" aria-hidden="true"></i>
 														</button>
 
 														<div class="dropdown-menu">
-															<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
-															<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('tracerouteOpts.protocol', 'ICMP')">ICMP</div>
 														</div>
 													</div>
 												</div>
 											</div>
+										</div>
+									{{/if}}
 
-											<div class="rows_row-two">
+									{{#if mainOptions.type === 'DNS'}}
+										<div class="typeDNS">
+											<div class="rows">
+												<div class="rows_row-one">
+													<c-controlled-input
+														value="{{notAppliedOpts.port}}"
+														error="{{inputErrors.port}}"
+														placeholder="53"
+														labelText="Port"
+														classList="port-input gp_input">
+													</c-controlled-input>
+
+													<div class="gp_dropdown_reg">
+														<span>Protocol</span>
+
+														<div class="btn-group">
+															<button type="button"
+																class="dropdown-toggle"
+																data-toggle="dropdown"
+																aria-haspopup="true"
+																aria-expanded="false">
+																<span>{{~/dnsOpts.protocol}}</span>
+																<i class="fa fa-angle-down" aria-hidden="true"></i>
+															</button>
+
+															<div class="dropdown-menu">
+																<div on-click="@this.set('dnsOpts.protocol', 'UDP')">UDP</div>
+																<div on-click="@this.set('dnsOpts.protocol', 'TCP')">TCP</div>
+															</div>
+														</div>
+													</div>
+												</div>
+
+												<div class="rows_row-two">
+													<div class="gp_dropdown_reg">
+														<span>Type</span>
+
+														<div class="btn-group">
+															<button type="button"
+																class="dropdown-toggle"
+																data-toggle="dropdown"
+																aria-haspopup="true"
+																aria-expanded="false">
+																<span>{{~/dnsOpts.query.type}}</span>
+																<i class="fa fa-angle-down" aria-hidden="true"></i>
+															</button>
+
+															<div class="dropdown-menu">
+																{{#each ~/dnsTypesList}}
+																	<div on-click="@this.set('dnsOpts.query.type', this)">{{this}}</div>
+																{{/each}}
+															</div>
+														</div>
+													</div>
+
+													<div class="rows_row-two_switch-block">
+														<label class="gp_switch">
+															<input type="checkbox" on-click="@this.set('dnsOpts.trace', !dnsOpts.trace)" checked="{{dnsOpts.trace}}">
+															<span class="slider round"></span>
+														</label>
+
+														<span>Trace</span>
+													</div>
+												</div>
+											</div>
+
+											<c-controlled-input
+												value="{{notAppliedOpts.resolver}}"
+												error="{{inputErrors.resolver}}"
+												placeholder="IP address"
+												labelText="Resolver"
+												classList="resolver-input gp_input">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'MTR'}}
+										<div class="typeMTR">
+											<div class="pair">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
 												<div class="gp_dropdown_reg">
-													<span>Type</span>
+													<span>Protocol</span>
 
 													<div class="btn-group">
 														<button type="button"
@@ -248,52 +326,88 @@
 															data-toggle="dropdown"
 															aria-haspopup="true"
 															aria-expanded="false">
-															<span>{{~/dnsOpts.query.type}}</span>
+															<span>{{~/mtrOpts.protocol}}</span>
 															<i class="fa fa-angle-down" aria-hidden="true"></i>
 														</button>
 
 														<div class="dropdown-menu">
-															{{#each ~/dnsTypesList}}
-																<div on-click="@this.set('dnsOpts.query.type', this)">{{this}}</div>
-															{{/each}}
+															<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
+															<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
 														</div>
 													</div>
 												</div>
-
-												<div class="rows_row-two_switch-block">
-													<label class="gp_switch">
-														<input type="checkbox" on-click="@this.set('dnsOpts.trace', !dnsOpts.trace)" checked="{{dnsOpts.trace}}">
-														<span class="slider round"></span>
-													</label>
-
-													<span>Trace</span>
-												</div>
 											</div>
-										</div>
 
-										<c-controlled-input
-											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
-											placeholder="IP address"
-											labelText="Resolver"
-											classList="resolver-input gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'MTR'}}
-									<div class="typeMTR">
-										<div class="pair">
 											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
+												value="{{notAppliedOpts.packets}}"
+												error="{{inputErrors.packets}}"
+												placeholder="{{defaultPacketsAmount}}"
+												labelText="Packets"
+												classList="gp_input">
+											</c-controlled-input>
+										</div>
+									{{/if}}
+
+									{{#if mainOptions.type === 'HTTP'}}
+										<div class="typeHTTP">
+											<c-controlled-input
+												value="{{notAppliedOpts.request.host}}"
+												error="{{inputErrors.host}}"
+												placeholder="Host"
+												labelText="Host"
+												classList="gp_input">
 											</c-controlled-input>
 
+											<c-controlled-input
+												value="{{notAppliedOpts.request.path}}"
+												error="{{inputErrors.path}}"
+												placeholder="Path"
+												labelText="Path"
+												classList="gp_input">
+											</c-controlled-input>
+
+											<c-controlled-input
+												value="{{notAppliedOpts.request.query}}"
+												error="{{inputErrors.query}}"
+												placeholder="Query"
+												labelText="Query"
+												classList="gp_input">
+											</c-controlled-input>
+
+											<div class="pair">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
+												<div class="gp_dropdown_reg">
+													<span>Protocol</span>
+
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/httpOpts.protocol}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
+															<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
+															<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
 											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
+												<span>Method</span>
 
 												<div class="btn-group">
 													<button type="button"
@@ -301,146 +415,106 @@
 														data-toggle="dropdown"
 														aria-haspopup="true"
 														aria-expanded="false">
-														<span>{{~/mtrOpts.protocol}}</span>
+														<span>{{~/httpOpts.request.method}}</span>
 														<i class="fa fa-angle-down" aria-hidden="true"></i>
 													</button>
 
 													<div class="dropdown-menu">
-														<div on-click="@this.set('mtrOpts.protocol', 'UDP')">UDP</div>
-														<div on-click="@this.set('mtrOpts.protocol', 'TCP')">TCP</div>
-														<div on-click="@this.set('mtrOpts.protocol', 'ICMP')">ICMP</div>
+														<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
+														<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
 													</div>
 												</div>
 											</div>
-										</div>
 
-										<c-controlled-input
-											value="{{notAppliedOpts.packets}}"
-											error="{{inputErrors.packets}}"
-											placeholder="{{defaultPacketsAmount}}"
-											labelText="Packets"
-											classList="gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								{{#if mainOptions.type === 'HTTP'}}
-									<div class="typeHTTP">
-										<c-controlled-input
-											value="{{notAppliedOpts.request.host}}"
-											error="{{inputErrors.host}}"
-											placeholder="Host"
-											labelText="Host"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.request.path}}"
-											error="{{inputErrors.path}}"
-											placeholder="Path"
-											labelText="Path"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.request.query}}"
-											error="{{inputErrors.query}}"
-											placeholder="Query"
-											labelText="Query"
-											classList="gp_input">
-										</c-controlled-input>
-
-										<div class="pair">
 											<c-controlled-input
-												value="{{notAppliedOpts.port}}"
-												error="{{inputErrors.port}}"
-												placeholder="53"
-												labelText="Port"
-												classList="port-input gp_input">
+												value="{{notAppliedOpts.resolver}}"
+												error="{{inputErrors.resolver}}"
+												placeholder="Resolver"
+												labelText="Resolver"
+												classList="gp_input">
 											</c-controlled-input>
-
-											<div class="gp_dropdown_reg">
-												<span>Protocol</span>
-
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/httpOpts.protocol}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
-
-													<div class="dropdown-menu">
-														<div on-click="@this.set('httpOpts.protocol', 'HTTP')">HTTP</div>
-														<div on-click="@this.set('httpOpts.protocol', 'HTTPS')">HTTPS</div>
-														<div on-click="@this.set('httpOpts.protocol', 'HTTP2')">HTTP2</div>
-													</div>
-												</div>
-											</div>
 										</div>
+									{{/if}}
 
-										<div class="gp_dropdown_reg">
-											<span>Method</span>
+									<button class="gp_btn_green" on-click="@this.applyOptions()">
+										Apply
+									</button>
+								</div>
+							</div>
 
-											<div class="btn-group">
-												<button type="button"
-													class="dropdown-toggle"
-													data-toggle="dropdown"
-													aria-haspopup="true"
-													aria-expanded="false">
-													<span>{{~/httpOpts.request.method}}</span>
-													<i class="fa fa-angle-down" aria-hidden="true"></i>
-												</button>
+							<div class="gp_map-block_settings-wrapper_settings_subgroup_switch-block {{#unless @this.isInfiniteOptsCorrect()}}turned-off{{/unless}} {{#if testInProgress}}disabled{{/if}}">
+								<label class="gp_switch">
+									<input type="checkbox"
+										checked="{{infiniteSwitchEnabled}}"
+										on-click="@this.handleInfiniteSwitch()"
+										on-keydown="@this.handleInfiniteSwitchKeyDown(@event)"
+										{{#unless @this.isInfiniteOptsCorrect() && !testInProgress}}disabled="true"{{/unless}}>
+									<span class="slider round"></span>
+								</label>
 
-												<div class="dropdown-menu">
-													<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
-													<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
-												</div>
-											</div>
-										</div>
-
-										<c-controlled-input
-											value="{{notAppliedOpts.resolver}}"
-											error="{{inputErrors.resolver}}"
-											placeholder="Resolver"
-											labelText="Resolver"
-											classList="gp_input">
-										</c-controlled-input>
-									</div>
-								{{/if}}
-
-								<button class="gp_btn_green" on-click="@this.applyOptions()">
-									Apply
-								</button>
+								<span>Infinite</span>
 							</div>
 						</div>
-
-						<div class="gp_map-block_settings-wrapper_settings_grouped_switch-block">
-							<label class="gp_switch">
-								<input type="checkbox" on-click="@this.set('showMap', !showMap)" checked>
-								<span class="slider round"></span>
-							</label>
-
-							<span>Map</span>
-						</div>
 					</div>
+				</div>
 
-					<button on-click="@this.resetMapAndRunTest()"
-						class="gp_map-block_settings-wrapper_settings_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
-						disabled="{{testInProgress}}">
-						{{#if testInProgress}}
-							<div></div>
-							<div></div>
-							<div></div>
-							<div></div>
-						{{else}}
-							{{runTestBtnText}}
-						{{/if}}
-					</button>
+				<div id="dd-run-test-btn" class="btn-group run-test-btn">
+					{{#if prevProbesMeasId && !testInProgress}}
+						<div class="gp_map-block_settings-wrapper_split-btn">
+							<div class="gp_map-block_settings-wrapper_split-btn_run gp_btn_green" on-click="@this.resetMapAndRunTest()">
+								Run
+							</div>
+
+							<button type="button"
+								class="dropdown-toggle gp_btn_green"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+									<div class="gp_map-block_settings-wrapper_split-btn_icon">
+										<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.white.svg">
+									</div>
+							</button>
+
+							<div class="dropdown-menu gp_map-block_settings-wrapper_split-btn_dropdown">
+								<span class="dropdown-item" on-click="@this.resetMapAndRunTest()">Test</span>
+								<span class="dropdown-item" on-click="@this.reUseProbesRunTest()">Re-use probes</span>
+							</div>
+						</div>
+					{{elseif infiniteSwitchEnabled}}
+						<button on-click="@this.handleInfiniteMeasBtn()"
+							class="gp_map-block_settings-wrapper_btn gp_btn_green {{#if testInProgress}}gp_btn_infinite gp_btn_infinite_loading{{/if}}">
+							{{#if testInProgress}}
+								<span>{{runTestBtnText}}</span>
+								<div class="spinner">
+									<div></div>
+									<div></div>
+									<div></div>
+									<div></div>
+								</div>
+							{{else}}
+								{{runTestBtnText}}
+							{{/if}}
+						</button>
+					{{else}}
+						<button on-click="@this.resetMapAndRunTest()"
+							class="gp_map-block_settings-wrapper_btn gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+							disabled="{{testInProgress}}">
+							{{#if testInProgress}}
+								<div></div>
+								<div></div>
+								<div></div>
+								<div></div>
+							{{else}}
+								{{runTestBtnText}}
+							{{/if}}
+						</button>
+					{{/if}}
 				</div>
 			</div>
+
+			{{#if creditsError}}
+				<c-gp-credits-message></c-gp-credits-message>
+			{{/if}}
 
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
@@ -454,8 +528,12 @@
 				{{/if}}
 			</div>
 
-			<div class="gp_map-block_test-output">
-				{{#if testFailed}}
+			{{#unless showMap}}
+				<div class="gp_map-block_line"></div>
+			{{/unless}}
+
+			{{#if testFailed}}
+				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
 						<img width="56"
 							height="56"
@@ -465,15 +543,46 @@
 							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
 						</p>
 					</div>
-				{{elseif testResults}}
-					<c-gp-test-results
-						testReqParams="{{testReqParams}}"
-						testResults="{{testResults}}"
-						testInProgress="{{testInProgress}}"
-						scrolledToResIdx="{{scrolledToResIdx}}"
-						currSearchLocation="{{mainOptions.location}}">
-					</c-gp-test-results>
-				{{else}}
+				</div>
+			{{elseif testResults}}
+				<div class="gp_map-block_test-output">
+					<c-gp-results-controls
+						showMap="{{showMap}}"
+						targets="{{targetsArr}}"
+						activeTargetIdx="{{activeTargetIdx}}"
+						rawOutputMode="{{rawOutputMode}}"
+						testType="{{testReqParams.type}}">
+					</c-gp-results-controls>
+
+					{{#if rawOutputMode}}
+						<div class="gp_map-block_test-output_raw-output">
+							<c-gp-results-raw-output
+								testReqParams="{{testReqParams}}"
+								preparedTestResults="{{preparedTestResults}}"
+								testInProgress="{{testInProgress}}"
+								scrolledToResIdx="{{scrolledToResIdx}}"
+								currSearchLocation="{{mainOptions.location}}"
+								measurementsMetadata="{{measurementsMetadata}}"
+								activeTargetIdx="{{activeTargetIdx}}"
+								isInfiniteModeRes="{{isInfiniteModeRes}}">
+							</c-gp-results-raw-output>
+						</div>
+					{{else}}
+						<div class="gp_map-block_test-output_table-output">
+							<c-gp-results-table-output
+								testReqParams="{{testReqParams}}"
+								testInProgress="{{testInProgress}}"
+								preparedTestResults="{{preparedTestResults}}"
+								targetsCnt="{{targetsArr.length}}"
+								currSearchLocation="{{mainOptions.location}}"
+								measurementsMetadata="{{measurementsMetadata}}"
+								isInfiniteModeRes="{{isInfiniteModeRes}}">
+							</c-gp-results-table-output>
+						</div>
+					{{/if}}
+				</div>
+			{{else}}
+				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_info">
 						<img width="56"
 							height="56"
@@ -486,8 +595,8 @@
 							Debug and troubleshoot your networking problems and share the test results with others!
 						</p>
 					</div>
-				{{/if}}
-			</div>
+				</div>
+			{{/if}}
 		</div>
 
 		<div class="gp_detalization">
@@ -1083,7 +1192,7 @@
 	};
 	const DEFAULT_PACKETS_AMOUNT = 3;
 	const DEFAULT_LIMIT = 1;
-	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const DOCKER_CMD_CONTENT = 'docker run -d --log-driver local --network host --restart=always --name globalping-probe globalping/globalping-probe';
 	const DOCKER_CMD_CONTENT_FULL = [
 		{
 			cmd: 'docker run -d \\',
@@ -1102,11 +1211,11 @@
 			comment: ' # Restart the container in case it crashes',
 		},
 		{
-			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			cmd: '--name globalping-probe globalping/globalping-probe',
 			comment: '',
 		},
 	];
-	const PODMAN_CMD_CONTENT = 'sudo podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe ghcr.io/jsdelivr/globalping-probe';
+	const PODMAN_CMD_CONTENT = 'sudo podman run -d --cap-add=NET_RAW --network host --restart=always --name globalping-probe globalping/globalping-probe';
 	const PODMAN_CMD_CONTENT_FULL = [
 		{
 			cmd: 'sudo \\',
@@ -1129,13 +1238,13 @@
 			comment: ' # Restart the container in case it crashes',
 		},
 		{
-			cmd: '--name globalping-probe ghcr.io/jsdelivr/globalping-probe',
+			cmd: '--name globalping-probe globalping/globalping-probe',
 			comment: '',
 		},
 	];
 	const INITIAL_MAIN_OPTS_VALUES = {
 		type: 'ping',
-		target: 'cdn.jsdelivr.net',
+		target: '',
 		location: 'World',
 		limit: '10',
 	};
@@ -1167,6 +1276,15 @@
 			stylers: [{ visibility: 'on' }],
 		},
 	];
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+	const PROBE_OFFLINE_TEXT = 'Probe offline';
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
+	const DEFAULT_TARGET_VALUE = 'cdn.jsdelivr.net';
+	const INFINITE_MEASUREMENT_PACKETS = 16;
+	const INFINITE_MEASUREMENT_LIMIT = 5;
+
 	let map;
 	let oms;
 	let infoWindows = [];
@@ -1187,11 +1305,18 @@
 		data () {
 			return {
 				_,
+				PROBE_NO_TIMING_VALUE,
+				PROBE_STATUS_FAILED,
+				PROBE_STATUS_OFFLINE,
+				DEFAULT_TARGET_VALUE,
+				INFINITE_MEASUREMENT_LIMIT,
+				INITIAL_MAIN_OPTS_VALUES,
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				mainOptions: {
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
+				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
 				netDockerCmdText: DOCKER_CMD_CONTENT,
@@ -1218,7 +1343,6 @@
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
 				scrolledToResIdx: null,
-				measurementId: null,
 				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
 				shareResHeaderData: null,
@@ -1226,6 +1350,17 @@
 				testReqParams: null,
 				probesResponse: null,
 				shareResFlow: false,
+				activeTargetIdx: 0,
+				rawOutputMode: true,
+				measurementsMetadata: null,
+				targetsArr: [],
+				qsMeasurementIdsArr: [],
+				creditsError: false,
+				infiniteMeasIds: [],
+				isInfiniteMeasStopped: false,
+				prevProbesMeasId: null,
+				preparedTestResults: [],
+				ddHandlerSet: false,
 			};
 		},
 		onrender () {
@@ -1242,15 +1377,32 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				// check if id is present in query string
-				// if so - should be a share-results-flow logic implemented
+				// check if ids are present in query string
+				// if so - it is a share-results-flow
 				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
-				let { measurement: measurementId } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let { measurement = '' } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let qsMeasurementIdsArr = [];
+				let isInfiniteMeas = false;
 
-				if (measurementId) {
-					this.set('measurementId', measurementId);
+				// A separator for IDs for regular link is a comma, for infinite one - plus sign
+				if (measurement && measurement.includes(',')) {
+					qsMeasurementIdsArr = measurement.split(',');
+				} else if (measurement && measurement.includes('.')) {
+					qsMeasurementIdsArr = measurement.split('.');
+					isInfiniteMeas = true;
+
+					this.set('infiniteSwitchEnabled', true);
+					this.set('isInfiniteModeRes', true);
+					this.set('rawOutputMode', false);
+				} else if (measurement) {
+					qsMeasurementIdsArr = [ measurement ];
+				}
+
+				if (qsMeasurementIdsArr.length) {
+					this.set('qsMeasurementIdsArr', qsMeasurementIdsArr);
 					this.set('shareResFlow', true);
-					this.getTestMeasurementById(measurementId, true);
+
+					this.getMultipleTestMeasurementById(qsMeasurementIdsArr, isInfiniteMeas);
 				}
 
 				// get probes from sessionStorage or fetch them and handle
@@ -1258,8 +1410,8 @@
 
 				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
-					// if measurementId - share-results-flow, so type would be set, we should ignore this case
-					if (this.get('measurementId')) {
+					// if qsMeasurementIdsArr - share-results-flow, so type would be set, we should ignore this case
+					if (this.get('qsMeasurementIdsArr').length) {
 						return;
 					}
 
@@ -1272,7 +1424,33 @@
 					this.set('notAppliedOpts', {});
 					this.set('testFailed', false);
 					this.set('modifiedMeasOptsCnt', 0);
+					this.set('infiniteSwitchEnabled', false);
+
+					// since Table output mode is available only for Ping measurement
+					if (type !== 'ping') {
+						this.set('rawOutputMode', true);
+					}
 				}, { init: false });
+
+				// when infinite switch is enabled set limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
+				this.observe('infiniteSwitchEnabled', (infiniteSwitchEnabled) => {
+					let currentLimit = this.get('mainOptions.limit');
+
+					if (infiniteSwitchEnabled && currentLimit > INFINITE_MEASUREMENT_LIMIT) {
+						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
+					} else if (infiniteSwitchEnabled === false && currentLimit > INFINITE_MEASUREMENT_LIMIT) {
+						this.set('mainOptions.limit', INITIAL_MAIN_OPTS_VALUES.limit);
+					}
+				});
+
+				// handle limit changing when infinite switch is enabled - disable input if it is bigger than INFINITE_MEASUREMENT_LIMIT
+				this.observe('mainOptions.limit', (currentLimit) => {
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+
+					if (infiniteSwitchEnabled && currentLimit >= INFINITE_MEASUREMENT_LIMIT) {
+						this.set('mainOptions.limit', INFINITE_MEASUREMENT_LIMIT);
+					}
+				});
 
 				// handle join-network switch and commands content
 				this.observe('joinNetSwitchValue', (joinNetSwitchValue) => {
@@ -1312,9 +1490,9 @@
 				}, { init: false, defer: true });
 
 				// zoom to results once we get the first response
-				this.observe('realTimeTestResResponse', (response, prevResponse) => {
-					if (!prevResponse && response && response.results.length) {
-						this.zoomToResults(response.locations);
+				this.observe('realTimeTestResResponse', (responses, prevResponses) => {
+					if (!prevResponses && responses && responses.every(r => r.results.length) && responses[0]) {
+						this.zoomToResults(responses[0].locations);
 					}
 				}, { init: false });
 
@@ -1322,8 +1500,26 @@
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
 					if (!realTimeTestResResponse) { return; }
 
-					if (realTimeTestResResponse.status === 'finished') {
-						clearInterval(this.get('testReqInterval'));
+					// clear interval for the related request when it's finished, collect reponses statuses
+					let respStatuses = realTimeTestResResponse.reduce((statusObj, r, rIdx) => {
+						if (r.status === 'finished') {
+							clearInterval(this.get('testReqInterval')[rIdx]);
+
+							return { ...statusObj, [rIdx]: true };
+						}
+
+						return { ...statusObj, [rIdx]: false };
+					}, {});
+
+					// check respStatuses and handle the case when all requests are finished unless it is an infinite flow
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+					let targetsArrLength = this.get('targetsArr').length;
+
+					if (
+						!(targetsArrLength === 1 && infiniteSwitchEnabled)
+						&& Object.values(respStatuses).length === targetsArrLength
+						&& Object.values(respStatuses).every(s => s === true)
+					) {
 						this.set('testInProgress', false);
 
 						// if it is a share-results-flow - scroll mapBlock into the view
@@ -1332,50 +1528,186 @@
 						}
 					}
 
-					let prevTestResults = this.get('testResults');
-					let testResults = realTimeTestResResponse.results.map((res, resIdx) => ({
-						clientSideId: resIdx,
-						...res,
-					}));
+					if (realTimeTestResResponse && realTimeTestResResponse.length) {
+						realTimeTestResResponse.forEach((rtTestRes, rtTestResIdx) => {
+							let prevTestResults = this.get(`testResults[${rtTestResIdx}]`);
+							let testResults = rtTestRes.results.map((res, resIdx) => ({
+								id: rtTestRes.id,
+								clientSideId: resIdx,
+								target: rtTestRes.target,
+								type: rtTestRes.type,
+								...res,
+							}));
 
-					if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
-						this.set('testResults', testResults);
+							if (JSON.stringify(testResults) !== JSON.stringify(prevTestResults)) {
+								this.set(`testResults[${rtTestResIdx}]`, testResults);
+							}
+						});
 					}
 				}, { init: false });
 
 				// prepare data for Markers of the map, timings for the map scale
 				this.observe('testResults', (testResults) => {
-					if (!testResults || !testResults.length) { return; }
+					if (!testResults) { return; }
 
 					let dnsOpts = this.get('dnsOpts');
 					let testType = this.get('mainOptions.type');
-					let markersData = testResults.map((res) => {
-						let calcTiming = null;
+					let targetsCnt = this.get('targetsArr').length;
+					let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
-						if (res.result.status !== 'in-progress') {
-							calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+					// combine results
+					// if it is a regular measurement then each array element is corresponds to each target, these arrays elements contain data per probe for this target
+					// if Infinite measurement - each array element is a new request's response, each el inside such array is a data for probe
+					let parsedMeasData = testResults.reduce((mData, tRes, tResIdx) => {
+						if (!tRes || !tRes.length) {
+							return mData;
 						}
 
-						let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+						let mappedRes = tRes.map((res, resIdx) => {
+							let calcTiming = null;
+							let data = {
+								id: res.id,
+								clientSideId: res.clientSideId,
+								network: res.probe.network,
+								city: res.probe.city,
+								country: res.probe.country,
+								lat: res.probe.latitude,
+								lng: res.probe.longitude,
+								targets: [ res.target ],
+							};
 
-						return {
-							clientSideId: res.clientSideId,
-							network: res.probe.network,
-							city: res.probe.city,
-							country: res.probe.country,
-							timing: resTiming,
-							lat: res.probe.latitude,
-							lng: res.probe.longitude,
-						};
-					});
+							if (infiniteSwitchEnabled) {
+								let { packetsRtt } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+								let prevPacketsRtt = tResIdx - 1 >= 0 ? mData[tResIdx - 1][resIdx].packetsRtt : [];
+								let allCurrPacketsRtt = [ ...prevPacketsRtt, ...packetsRtt ];
+								let numericPacketsRtt = allCurrPacketsRtt.filter(v => typeof v === 'number');
+
+								data = {
+									...data,
+									packetsRtt: allCurrPacketsRtt,
+								};
+
+								if (res.result.status === PROBE_STATUS_FAILED) {
+									calcTiming = {
+										value: PROBE_STATUS_FAILED,
+									};
+								} else if (res.result.status === PROBE_STATUS_OFFLINE) {
+									calcTiming = {
+										value: PROBE_STATUS_OFFLINE,
+									};
+								} else if (numericPacketsRtt.length) {
+									calcTiming = {
+										value: Math.round(numericPacketsRtt.reduce((sum, rtt) => sum += rtt, 0) / numericPacketsRtt.length),
+										units: ' ms',
+									};
+								} else if (packetsRtt.length && packetsRtt.every(v => v === _.getProbeTimeOutValue())) {
+									calcTiming = {
+										value: _.getProbeTimeOutValue(),
+									};
+								} else {
+									calcTiming = {
+										value: tResIdx - 1 >= 0 ? mData[tResIdx - 1][resIdx].timings[0] : null,
+									};
+								}
+							} else if (res.result.status !== 'in-progress') {
+								calcTiming = _.calcGpTestResTiming(testType, res, dnsOpts.trace);
+							}
+
+							let resTiming = !calcTiming ? null : typeof calcTiming.value === 'number' ? `${Math.round(calcTiming.value)}${calcTiming.units}` : calcTiming.value;
+
+							return {
+								...data,
+								timings: [ resTiming ],
+							};
+						});
+
+						return { ...mData, [tResIdx]: mappedRes };
+					}, {});
+
+					// markersData for the first target, regular flow
+					let markersData = parsedMeasData[0];
+
+					// in case of infinite flow, get the latest data
+					if (infiniteSwitchEnabled) {
+						let lastIdx = Object.keys(parsedMeasData).length - 1;
+
+						markersData = parsedMeasData[lastIdx];
+					}
+
+					// if there are another targets then we should add its data to markersData respectively
+					if (targetsCnt > 1) {
+						for (let cnt = 1; cnt < targetsCnt; cnt++) {
+							if (!parsedMeasData[cnt]) { return; }
+
+							markersData = markersData.map((mD) => {
+								let secReqMD = parsedMeasData[cnt].find(i => i.clientSideId === mD.clientSideId);
+
+								return {
+									...mD,
+									timings: [ ...mD.timings, ...secReqMD.timings ],
+									targets: [ ...mD.targets, ...secReqMD.targets ],
+								};
+							});
+						}
+					}
 
 					this.set('markersData', markersData);
 				}, { init: false });
+
+				// check the statuses of probes in the measurement and stop measurement if all of them are failed
+				this.observe('testResults', (testResults) => {
+					for (let i in testResults) {
+						if (testResults[i].every(r => r.result.status === PROBE_STATUS_FAILED)) {
+							this.stopInfiniteTest();
+
+							return;
+						}
+					}
+				});
+
+				// prepare results for gp-results-raw-output and gp-results-table-output, regular or infinite flow
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					let testType = this.get('testReqParams.type');
+					let isInfiniteModeRes = this.get('isInfiniteModeRes');
+					let preparedTestResults;
+
+					if (testType === 'ping' && isInfiniteModeRes) {
+						preparedTestResults = this.prepareInfiniteResults(testResults);
+					} else {
+						preparedTestResults = this.prepareRegularResults(testResults);
+					}
+
+					this.set('preparedTestResults', preparedTestResults);
+				});
 
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
 						this.set('screenWidth', innerWidth);
+					}
+				});
+
+				// disable Infinite switch if there is more than one target
+				this.observe('mainOptions.target', (target) => {
+					if (target.split(',').length > 1) {
+						let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+
+						if (infiniteSwitchEnabled) {
+							this.set('notAppliedOpts.packets', '');
+							this.set('infiniteSwitchEnabled', false);
+							this.applyOptions();
+						}
+					}
+				});
+
+				// add navigation functionality once the Run Test button with dropdown appeared
+				this.observe('testInProgress', (testInProgress) => {
+					let prevProbesMeasId = this.get('prevProbesMeasId');
+
+					if (prevProbesMeasId && !testInProgress) {
+						this.handleDropDownRunTestBtnNav();
 					}
 				});
 			}
@@ -1402,25 +1734,28 @@
 				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
 			}
 		},
-		proceedToTest () {
+		proceedToTest (prevProbesMeasId) {
 			let { type, target, location, limit } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
+			let targetsArr = target.split(',');
+			let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
 
+			// create parameters for the measurement request
 			let reqParams = {
 				type,
 				// to get test results in real time
 				inProgressUpdates: true,
 			};
 
-			if (target) {
-				reqParams.target = target;
-			}
-
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
 			if (location) {
 				reqParams.locations = location.split(',').map(loc => ({ magic: loc }));
+			} else {
+				this.set('mainOptions.location', INITIAL_MAIN_OPTS_VALUES.location);
+
+				reqParams.locations = [{ magic: INITIAL_MAIN_OPTS_VALUES.location }];
 			}
 
 			// since packets field default value is present only for Ping and MTR type
@@ -1460,41 +1795,65 @@
 			this.set('shareResFlow', false);
 			this.set('shareResHeaderData', null);
 			this.set('realTimeTestResResponse', null);
+			this.set('activeTargetIdx', 0);
+			this.set('measurementsMetadata', null);
+			this.set('creditsError', false);
+			this.set('targetsArr', targetsArr);
+			this.set('infiniteMeasIds', []);
+			this.set('isInfiniteMeasStopped', false);
+			this.set('prevProbesMeasId', null);
+			this.set('preparedTestResults', []);
 
-			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				this.getTestMeasurementById(response.id);
-			}).catch((err) => {
-				this.set('testInProgress', false);
-				this.set('testFailed', true);
+			// if it is infinite measurement then we should show TableOutput by default
+			// otherwise leave prev value set by user
+			if (type === 'ping' && infiniteSwitchEnabled) {
+				this.set('rawOutputMode', false);
+			}
 
-				if (err.error.type === 'validation_error') {
-					let measurementOptsErr = false;
-					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let splittedKeyName = key.split('.');
-						let splittedKeyNameLength = splittedKeyName.length;
-						let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+			// is designed to prevent the way the test results are displayed from changing when the user toggles the infinite switch
+			this.set('isInfiniteModeRes', infiniteSwitchEnabled);
 
-						res[fieldName] = errMsg;
+			// re-use probes case
+			if (prevProbesMeasId) {
+				reqParams = {
+					...reqParams,
+					locations: prevProbesMeasId,
+				};
+			}
 
-						if (splittedKeyName[0] === 'measurementOptions') {
-							measurementOptsErr = true;
-						}
+			// run Infinite type of the measurement
+			if (type === 'ping' && targetsArr.length === 1 && infiniteSwitchEnabled) {
+				this.postInfiniteGlobalpingMeasurement({ reqParams, target: targetsArr[0] });
 
-						return res;
-					}, {});
+				return;
+			}
 
-					this.set('inputErrors', inputErrors);
+			// common type of the measurement
+			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
+				// set measurement ID for re-use probes case
+				this.set('prevProbesMeasId', res.id);
 
-					// open measurement options menu if it contains errors
-					if (measurementOptsErr) {
-						this.set('showMeasurementOpts', true);
+				if (targetsArr[1]) {
+					let secReqParams;
+
+					// prepare params depending whether there is prevProbesMeasId or not
+					if (prevProbesMeasId) {
+						secReqParams = { locations: res.id, ...reqParams, target: targetsArr[1] };
+					} else {
+						secReqParams = { ...reqParams, locations: res.id, target: targetsArr[1] };
 					}
-				} else if (err.error.type === 'no_probes_found') {
-					this.set('inputErrors', {
-						noProbesFound: err.error.message,
+
+					http.postGlobalpingMeasurement(secReqParams).then((res1) => {
+						this.getTestMeasurementById({ measurementId: res.id });
+						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
+					}).catch((err) => {
+						this.handlePostGPMeasError(err);
 					});
+				} else {
+					this.getTestMeasurementById({ measurementId: res.id });
 				}
+			}).catch((err) => {
+				this.handlePostGPMeasError(err);
 			});
 		},
 		applyOptions () {
@@ -1643,7 +2002,11 @@
 				if (prevMarkersData) {
 					// stop once we found the match to get proper currentMarkerIdx
 					prevMarkersData.every((pmd) => {
-						if (pmd.clientSideId === markerData.clientSideId && pmd.timing === null && markersData.timing !== null) {
+						if (
+							pmd.clientSideId === markerData.clientSideId
+							&& markerData.timings !== null
+							&& markerData.timings.every(t => t)
+						) {
 							markerIdToReplace = pmd.clientSideId;
 							currentMarkerIdx = pmd.clientSideId;
 
@@ -1654,22 +2017,16 @@
 					});
 				}
 
+				// create a new marker and add it to the map or update existing with new data
 				if (markerIdToReplace !== null) {
-					// clear the Map from the Marker which will be replaced
-					mapMarkers[markerIdToReplace].setMap(null);
-
-					// check if the marker is already present on the map and replace it with the new one, with timing
-					mapMarkers = mapMarkers.map((mm, mmIdx) => {
-						if (markerIdToReplace === mmIdx) {
-							// replace the Marker without timing with the same one but with timing value
-							return this.createMapMarkerWithIW(markerData, currentMarkerIdx);
+					mapMarkers.forEach((mm, mmIdx) => {
+						if (markerIdToReplace === mmIdx && JSON.stringify(markerData.timings) !== JSON.stringify(prevMarkersData[markerIdToReplace].timings)) {
+							this.updateMapMarkerWithIW(mm, markerData, currentMarkerIdx);
 						}
-
-						return mm;
 					});
 				} else if (!mapMarkers[markerData.clientSideId]) {
-					// add new Marker to the Map
-					mapMarkers.push(this.createMapMarkerWithIW(markerData, currentMarkerIdx));
+					// collect markers added to the map
+					this.createMapMarkerWithIW(markerData, currentMarkerIdx);
 				}
 			});
 
@@ -1788,9 +2145,9 @@
 		pickMarkerColor (timing) {
 			// return default color for timed out probe
 			if (
-				timing === _.getProbeTimeOutValue()
-				|| timing === _.getProbeStatusFailedValue()
-				|| timing === _.getProbeStatusOfflineValue()
+				timing === PROBE_NO_TIMING_VALUE
+				|| timing === PROBE_STATUS_FAILED
+				|| timing === PROBE_STATUS_OFFLINE
 			) {
 				return '#17233A';
 			}
@@ -1830,83 +2187,155 @@
 			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 		},
 		handleSeeResults (resIdx) {
-			let el = this.find(`.c-gp-test-results_list .c-gp-test-results_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+			let el;
 
-			// this prop will be passed to c-gp-test-results in order for it to show the specific result element if it was hidden
+			if (this.get('rawOutputMode')) {
+				el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+			} else {
+				el = this.find(`.c-gp-results-table-output .results-table_row.row-num-${resIdx}`);
+			}
+
+			// this prop will be passed to c-gp-results-raw-output in order for it to show the specific result element if it was hidden
 			this.set('scrolledToResIdx', resIdx);
 
-			el.scrollIntoView({ behvior: 'smooth' });
+			el.scrollIntoView({ behavior: 'smooth' });
 		},
-		getTestMeasurementById (measurementId, isShareResCase = false) {
-			let testReqInterval = setInterval(() => {
-				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
-					if (isShareResCase) {
-						this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-						this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-						this.set('mainOptions.target', testRes.target);
-						this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
-						this.set('runTestBtnText', 'Run Again');
+		getTestMeasurementById ({
+			measurementId,
+			resNumber = '0',
+			isShareResCase = false,
+			isLastShareReq = false,
+			isInfiniteMeas = false,
+			reqParams = {},
+		}) {
+			return new Promise((resolve, reject) => {
+				let testReqInterval = setInterval(() => {
+					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+						if (isShareResCase) {
+							let currentTargets = this.get('mainOptions.target');
+							let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
+							let updTargetsArr = currTargetsArr.indexOf(testRes.target) < 0 ? [ ...currTargetsArr, testRes.target ] : currTargetsArr;
 
-						let magicValue = testRes.locations.reduce((res, loc) => {
-							if (loc.magic) {
-								res += res.length ? `, ${loc.magic}` : loc.magic;
+							this.set('mainOptions.target', updTargetsArr.join(','));
 
-								return res;
+							// if infinite measurement we need to set targetsArr ASAP since we know there is only one target
+							if (isInfiniteMeas) {
+								this.set('targetsArr', updTargetsArr);
 							}
 
-							return res;
-						}, '');
+							if (isLastShareReq) {
+								this.set('targetsArr', updTargetsArr);
+								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
-						this.set('mainOptions.location', magicValue);
+								let magicValue = testRes.locations.reduce((res, loc) => {
+									if (loc.magic) {
+										res += res.length ? `, ${loc.magic}` : loc.magic;
 
-						let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
-						let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
-						let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
-						let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
+										return res;
+									}
 
-						this.set('notAppliedOpts', receivedNotPresetOpts);
-						this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
-						this.applyOptions();
+									return res;
+								}, '');
 
-						// clear measurementId so the mainOptions.type observer could work now
-						this.set('measurementId', null);
-					}
+								this.set('mainOptions.location', magicValue);
 
-					// prepare and set request params to pass them to gp-test-results
-					let testReqParams = JSON.parse(JSON.stringify(testRes));
+								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
+								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
+								let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
+								let receivedNotPresetOpts = this.filterForNotPresetOpts(defaultAPIOpts, combinedOptions);
 
-					delete testReqParams.results;
-					delete testReqParams.status;
-					delete testReqParams.updatedAt;
-					delete testReqParams.createdAt;
+								this.set('notAppliedOpts', receivedNotPresetOpts);
+								this.set(`${testRes.type.toLowerCase()}Opts`, receivedInitPresetOpts);
+								this.applyOptions();
 
-					testReqParams = {
-						inProgressUpdates: true,
-						limit: DEFAULT_LIMIT,
-						...testReqParams,
-						measurementOptions: {
-							trace: false,
-							...testReqParams.measurementOptions,
-						},
-					};
+								if (!isInfiniteMeas) {
+									this.set('runTestBtnText', 'Run Again');
+								}
 
-					// set testReqParams to pass them to c-gp-test-results
-					this.set('testReqParams', testReqParams);
+								// clear qsMeasurementIdsArr so the mainOptions.type observer could work now
+								this.set('qsMeasurementIdsArr', []);
+							}
+						}
 
-					// should be after the mainOptions.type was set
-					this.set('realTimeTestResResponse', testRes);
-				}).catch((e) => {
-					clearInterval(testReqInterval);
+						let isInfiniteMeasStopped = this.get('isInfiniteMeasStopped');
 
-					if (e.message === '404') {
-						this.set('shareResHeaderData', 'This measurement has expired!');
-						this.set('runTestBtnText', 'Run Test');
-						this.scrollMapIntoView();
-					}
-				});
-			}, 1000);
+						// check if infinite measurement was stopped
+						if (isInfiniteMeas && isInfiniteMeasStopped) {
+							clearInterval(testReqInterval);
+							resolve();
+						}
 
-			this.set('testReqInterval', testReqInterval);
+						// prepare and set request params to pass them to gp-test-results
+						let testReqParams = JSON.parse(JSON.stringify(testRes));
+
+						delete testReqParams.results;
+						delete testReqParams.status;
+						delete testReqParams.updatedAt;
+						delete testReqParams.createdAt;
+
+						testReqParams = {
+							inProgressUpdates: true,
+							limit: DEFAULT_LIMIT,
+							...testReqParams,
+							measurementOptions: {
+								trace: false,
+								...testReqParams.measurementOptions,
+							},
+						};
+
+						// set testReqParams to pass them to c-gp-results-raw-output
+						this.set('testReqParams', testReqParams);
+
+						// collect IDs of each target's measurement response
+						let updMeasMetadata = {
+							...this.get('measurementsMetadata'),
+							[resNumber]: {
+								target: testReqParams.target,
+								measurementId: testReqParams.id,
+							},
+						};
+
+						this.set('measurementsMetadata', updMeasMetadata);
+
+						// should be after the mainOptions.type was set
+						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
+
+						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
+						if (this.get('shareResFlow') === false && isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
+							let infiniteMeasIds = this.get('infiniteMeasIds');
+
+							if (!infiniteMeasIds.includes(testRes.id)) {
+								this.set('infiniteMeasIds', [ ...infiniteMeasIds, testRes.id ]);
+
+								if (!isInfiniteMeasStopped) {
+									this.postInfiniteGlobalpingMeasurement({
+										reqParams,
+										target: testRes.target,
+										isInfiniteMeas: true,
+										resNumber: infiniteMeasIds.length + 1,
+									});
+								}
+							}
+						}
+
+						resolve(testRes);
+					}).catch((e) => {
+						clearInterval(testReqInterval);
+
+						if (e.responseStatusCode === 404) {
+							this.set('shareResHeaderData', 'This measurement has expired!');
+							this.set('runTestBtnText', 'Run Test');
+							this.scrollMapIntoView();
+						}
+
+						reject(e);
+					});
+				}, 1000);
+
+				this.set(`testReqInterval[${resNumber}]`, testReqInterval);
+			});
 		},
 		handleProbesResponse (isStored) {
 			return (response) => {
@@ -1987,6 +2416,8 @@
 			return JSON.parse(JSON.stringify(res));
 		},
 		handleToggleMeasOpts () {
+			if (this.get('testInProgress')) { return; }
+
 			let prevValue = this.get('showMeasurementOpts');
 
 			this.set('showMeasurementOpts', !prevValue);
@@ -2030,7 +2461,7 @@
 
 			this.set('modifiedMeasOptsCnt', modifiedMeasOptsCnt);
 		},
-		resetMapAndRunTest () {
+		resetMapAndRunTest (prevProbesMeasId = null) {
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			if (mq.matches) {
@@ -2043,7 +2474,7 @@
 
 			// once zoom is ended the idle event will be fired
 			map.addListener('idle', () => {
-				this.proceedToTest();
+				this.proceedToTest(prevProbesMeasId);
 				// remove listener to avoid unintended test runs while zoom
 				google.maps.event.clearListeners(map, 'idle');
 			});
@@ -2162,30 +2593,22 @@
 				behavior: 'smooth',
 			});
 		},
+		updateMapMarkerWithIW (marker, markerData, currentMarkerIdx) {
+			let updSvg = this.createMapMarkerSvg(markerData);
+			let currIw = infoWindows[currentMarkerIdx];
+
+			marker.setIcon({
+				url: `data:image/svg+xml;base64,${updSvg}`,
+			});
+
+			currIw.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
+		},
 		createMapMarkerWithIW (markerData, currentMarkerIdx) {
-			// create Popup element
+			// create Popup element which will be shown on click on the marker
 			let infoWindow = new google.maps.InfoWindow();
 
 			// create svg to use as a Marker icon
-			let svgFillColor = markerData.timing ? this.pickMarkerColor(markerData.timing) : DEFAULT_MARKER_COLOR;
-			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g filter="url(#filter0_d_6106_3045)">
-				<circle cx="12" cy="10" r="6" fill="${svgFillColor}"/>
-				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
-				</g>
-				<defs>
-				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-				<feOffset dy="2"/>
-				<feGaussianBlur stdDeviation="2"/>
-				<feComposite in2="hardAlpha" operator="out"/>
-				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-				</filter>
-				</defs>
-				</svg>`);
+			let svg = this.createMapMarkerSvg(markerData);
 
 			// add listener to IW for Results and Actions button
 			google.maps.event.addListener(infoWindow, 'domready', () => {
@@ -2202,8 +2625,9 @@
 
 			// collect IWs
 			infoWindows.push(infoWindow);
+			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 
-			// create the Marker
+			// create a new Marker
 			let marker = new google.maps.Marker({
 				map,
 				icon: {
@@ -2213,33 +2637,534 @@
 				optimized: false,
 			});
 
-			// handle close all IWs on mMrker click
+			// handle closing of all of IWs on a click on a marker
 			google.maps.event.addListener(marker, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
 			});
 
-			// add Marker to OverlappingMarkerSpiderfier
+			// add Marker to OverlappingMarkerSpiderfier, with listener which will be called on click
 			oms.addMarker(marker, () => {
-				let infoWindowContent = '<div class="gp-map_popup">';
-
-				if (markerData.timing) {
-					infoWindowContent += `<div class="gp-map_popup_header">${markerData.timing}</div>`;
-				}
-
-				infoWindowContent += `<div class="gp-map_popup_descr">${markerData.network}</div>
-					<div class="gp-map_popup_descr">(${markerData.city}, ${markerData.country})</div>
-					<div class="gp-map_popup_see-results" id="iw-${currentMarkerIdx}">
-						<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">
-						<span>Results and Actions</span>
-					</div>
-				</div>`;
-
-				infoWindow.setContent(infoWindowContent);
-
 				infoWindow.open(map, marker);
 			});
 
-			return marker;
+			mapMarkers.push(marker);
+		},
+		async getMultipleTestMeasurementById (idsArr, isInfiniteMeas = false) {
+			for (let i = 0; i < idsArr.length; i++) {
+				await this.getTestMeasurementById({
+					measurementId: idsArr[i],
+					resNumber: i,
+					isShareResCase: true,
+					isLastShareReq: idsArr.length - 1 === i,
+					isInfiniteMeas,
+				});
+			}
+		},
+		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true, resNumber = 0 }) {
+			this.set('runTestBtnText', 'Stop');
+
+			http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
+				// set measurement ID for re-use probes case
+				this.set('prevProbesMeasId', res.id);
+
+				let updReqParams = {
+					...reqParams,
+					locations: res.id,
+				};
+
+				this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
+			}).catch((err) => {
+				this.handlePostGPMeasError(err);
+			});
+		},
+		isInfiniteOptsCorrect () {
+			let { type, target } = this.get('mainOptions');
+
+			return type === 'ping' && target.split(',').length <= 1;
+		},
+		handleInfiniteSwitch () {
+			if (this.get('testInProgress') || !this.isInfiniteOptsCorrect()) { return; }
+
+			let infiniteSwitchEnabled = this.get('infiniteSwitchEnabled');
+
+			if (infiniteSwitchEnabled) {
+				this.set('notAppliedOpts.packets', '');
+			} else {
+				this.set('notAppliedOpts.packets', INFINITE_MEASUREMENT_PACKETS);
+			}
+
+			this.set('infiniteSwitchEnabled', !infiniteSwitchEnabled);
+			this.applyOptions();
+		},
+		handleInfiniteSwitchKeyDown (e) {
+			if (e.key === 'Enter') {
+				this.handleInfiniteSwitch();
+			}
+		},
+		handleInfiniteMeasBtn () {
+			let testInProgress = this.get('testInProgress');
+
+			if (testInProgress) {
+				this.stopInfiniteTest();
+			} else {
+				this.resetMapAndRunTest();
+			}
+		},
+		stopInfiniteTest () {
+			this.set('testInProgress', false);
+			this.set('isInfiniteMeasStopped', true);
+			this.set('runTestBtnText', 'Run Again');
+		},
+		handlePostGPMeasError (err) {
+			this.set('testInProgress', false);
+			this.set('testFailed', true);
+			this.set('runTestBtnText', 'Run Test');
+
+			if (err.responseStatusCode === 429) {
+				this.set('creditsError', true);
+			} else if (err.error.type === 'validation_error') {
+				let measurementOptsErr = false;
+				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+					let splittedKeyName = key.split('.');
+					let splittedKeyNameLength = splittedKeyName.length;
+					let fieldName = splittedKeyName[splittedKeyNameLength - 1];
+					let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+					res[fieldName] = errMsg;
+
+					if (splittedKeyName[0] === 'measurementOptions') {
+						measurementOptsErr = true;
+					}
+
+					return res;
+				}, {});
+
+				this.set('inputErrors', inputErrors);
+
+				// open measurement options menu if it contains errors
+				if (measurementOptsErr) {
+					this.set('showMeasurementOpts', true);
+				}
+			} else if (err.error.type === 'no_probes_found') {
+				this.set('inputErrors', {
+					noProbesFound: err.error.message,
+				});
+			}
+		},
+		reUseProbesRunTest () {
+			let prevProbesMeasId = this.get('prevProbesMeasId');
+
+			this.resetMapAndRunTest(prevProbesMeasId);
+		},
+		handleDropDownRunTestBtnNav () {
+			// set this handler only once
+			if (this.get('ddHandlerSet')) { return; }
+
+			setTimeout(() => {
+				let dropdownComponent = document.getElementById('dd-run-test-btn');
+
+				dropdownComponent.addEventListener('focusout', (event) => {
+					let dropdownMenu = dropdownComponent.querySelector('.dropdown-menu');
+					let button = dropdownComponent.querySelector('.dropdown-toggle');
+					let buttonWrapper = dropdownComponent.querySelector('.gp_map-block_settings-wrapper_split-btn');
+
+					if (dropdownMenu && event.relatedTarget && !dropdownMenu.contains(event.relatedTarget)) {
+						dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
+						button.setAttribute('aria-expanded', false);
+						buttonWrapper.classList.remove('open');
+					}
+				});
+
+				dropdownComponent.addEventListener('keydown', (event) => {
+					let dropdownMenu = dropdownComponent.querySelector('.dropdown-menu');
+					let activeItem = dropdownComponent.querySelector('.dropdown-item.active');
+					let button = dropdownComponent.querySelector('.dropdown-toggle');
+
+					if (dropdownMenu) {
+						if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+							if (!activeItem) {
+								let firstItem = dropdownMenu.firstElementChild;
+
+								if (firstItem) {
+									firstItem.classList.add('active');
+								}
+							} else {
+								let nextItem;
+
+								if (event.key === 'ArrowDown') {
+									nextItem = activeItem.nextElementSibling;
+								} else if (event.key === 'ArrowUp') {
+									nextItem = activeItem.previousElementSibling;
+								}
+
+								if (nextItem) {
+									activeItem.classList.remove('active');
+
+									nextItem.classList.add('active');
+								} else if (event.key === 'ArrowUp') {
+									activeItem.classList.remove('active');
+									button.focus();
+								}
+							}
+						} else if (event.key === 'Enter' && activeItem) {
+							activeItem.click();
+						}
+					}
+				});
+
+				this.set('ddHandlerSet', true);
+			}, 4);
+		},
+		createMapMarkerSvg (markerData) {
+			let svg;
+			let svgFillColors = [];
+			let targetsCnt = this.get('targetsArr').length;
+
+			for (let i = 0; i < targetsCnt; i++) {
+				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
+			}
+
+			if (markerData.timings.length > 1) {
+				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[1]}"/>
+					<clipPath id="cut-off">
+					<rect x="6" y="4" width="6" height="1112"/>
+					</clipPath>
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}" clip-path="url(#cut-off)"/>
+					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+					</g>
+					<defs>
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+					<feOffset dy="2"/>
+					<feGaussianBlur stdDeviation="2"/>
+					<feComposite in2="hardAlpha" operator="out"/>
+					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+					</filter>
+					</defs>
+					</svg>`);
+			} else {
+				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}"/>
+					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+					</g>
+					<defs>
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+					<feOffset dy="2"/>
+					<feGaussianBlur stdDeviation="2"/>
+					<feComposite in2="hardAlpha" operator="out"/>
+					<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+					<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+					<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+					</filter>
+					</defs>
+					</svg>`);
+			}
+
+			return svg;
+		},
+		createInfoWindowContent (markerData, currentMarkerIdx) {
+			let targetsCnt = this.get('targetsArr').length;
+			let infoWindowContent = '<div class="gp-map_popup">';
+
+			infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
+
+			if (targetsCnt === 1) {
+				infoWindowContent += `<div class="gp-map_popup_single_timing">${markerData.timings[0] || ''}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_single_network">${markerData.network}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_single_location">(${markerData.city}, ${markerData.country})</div>`;
+			} else {
+				infoWindowContent += `<div class="gp-map_popup_multi_network">${markerData.network}</div>`;
+				infoWindowContent += `<div class="gp-map_popup_multi_location">(${markerData.city}, ${markerData.country})</div>`;
+
+				markerData.targets.forEach((target, targetIdx) => {
+					infoWindowContent += '<div class="gp-map_popup_multi_data">';
+					infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
+
+					infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
+						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
+
+					infoWindowContent += '</div>';
+				});
+			}
+
+			infoWindowContent += '</div>';
+			infoWindowContent += `<div class="gp-map_popup_see-results ${targetsCnt > 1 ? 'centered' : ''}" id="iw-${currentMarkerIdx}">`;
+			infoWindowContent += `<img width="20" height="20" src="${this.get('@shared.assetsHost')}/img/globalping/see-results-icon.svg">`;
+			infoWindowContent += '<span>Results and Actions</span>';
+			infoWindowContent += '</div>';
+			infoWindowContent += '</div>';
+
+			return infoWindowContent;
+		},
+		prepareRegularResults (testResults) {
+			return testResults.reduce((prepResults, resArr, resArrIdx) => {
+				let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+
+				if (resArrIdx === 0) {
+					return resArr.map((res) => {
+						let preparedRes = {
+							clientSideId: res.clientSideId,
+							...res.probe,
+							statsPerTarget: [{
+								target: res.target,
+							}],
+						};
+
+						if (res.result.status !== 'in-progress') {
+							let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(res.type, res, dnsTraceEnabled);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+							let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+							let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+							let statsTotal = res.result?.stats?.total;
+							let statsDrop = res.result?.stats?.drop;
+							let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
+
+							preparedRes.statsPerTarget = [{
+								...preparedRes.statsPerTarget[0],
+								ipAddr: res.result.resolvedAddress,
+								lastTiming,
+								minTiming,
+								avgTiming,
+								maxTiming,
+								statsTotal,
+								statsDrop,
+								isFailed,
+								isOffline,
+								packetsRtt,
+								extraValues,
+								failureRawOutput: this.getFailureProbeRawOutput(res),
+								rawOutput: res.result.rawOutput,
+								qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+								areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+							}];
+						}
+
+						return preparedRes;
+					});
+				}
+
+				return prepResults.map((pR) => {
+					let nextReqRes = resArr.find(rA => rA.clientSideId === pR.clientSideId);
+
+					if (nextReqRes) {
+						let preparedNextRes = {
+							...pR,
+							statsPerTarget: [
+								...pR.statsPerTarget,
+								{
+									target: nextReqRes.target,
+								},
+							],
+						};
+
+						if (nextReqRes.result.status !== 'in-progress') {
+							let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(nextReqRes.type, nextReqRes, dnsTraceEnabled);
+							let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(nextReqRes.result.rawOutput);
+							let minTiming = nextReqRes.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+							let maxTiming = nextReqRes.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+							let statsTotal = nextReqRes.result?.stats?.total;
+							let statsDrop = nextReqRes.result?.stats?.drop;
+							let isOffline = nextReqRes.result.status === PROBE_STATUS_OFFLINE;
+
+							preparedNextRes.statsPerTarget = [
+								...pR.statsPerTarget,
+								{
+									...preparedNextRes.statsPerTarget[1],
+									ipAddr: nextReqRes.result.resolvedAddress,
+									lastTiming,
+									minTiming,
+									avgTiming,
+									maxTiming,
+									statsTotal,
+									statsDrop,
+									isFailed,
+									isOffline,
+									packetsRtt,
+									extraValues,
+									failureRawOutput: this.getFailureProbeRawOutput(nextReqRes),
+									rawOutput: nextReqRes.result.rawOutput,
+									qualityStr: this.createQualityString(isOffline, statsTotal, statsDrop),
+									areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+								},
+							];
+						}
+
+						return preparedNextRes;
+					}
+
+					return pR;
+				});
+			}, []);
+		},
+		prepareInfiniteResults (rawResults) {
+			let probesAmount = rawResults[0].length;
+			let probesMeasurements = [];
+
+			// gather probe's data from different measurements, with each sub array representing a single probe's data
+			for (let i = 0; i < probesAmount; i++) {
+				probesMeasurements.push(rawResults.map(rr => rr[i]));
+			}
+
+			// prepare data for gp-raw-output, gp-table-output components
+			return probesMeasurements.map((pbm) => {
+				return pbm.reduce((combinedProbeData, probeData) => {
+					let { packetsRtt, packetsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
+					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
+					let packetsRttCombined = [ ...combinedProbeData.packetsRtt || [], ...packetsRtt ];
+					let packetsDropCombined = (combinedProbeData.packetsDrop || 0) + packetsDrop;
+					let packetsTotalCombined = (combinedProbeData.packetsTotal || 0) + packetsTotal;
+					let numericPacketsRttCombined = packetsRttCombined.filter(v => typeof v === 'number');
+					let maxTiming = numericPacketsRttCombined.length ? Math.max(...numericPacketsRttCombined) : PROBE_NO_TIMING_VALUE;
+					let minTiming = numericPacketsRttCombined.length ? Math.min(...numericPacketsRttCombined) : PROBE_NO_TIMING_VALUE;
+					let avgTiming = numericPacketsRttCombined.length
+						? Number((numericPacketsRttCombined.reduce((res, rtt) => res += rtt, 0) / numericPacketsRttCombined.length).toFixed(2))
+						: PROBE_NO_TIMING_VALUE;
+					let lastTiming = packetsRttCombined[packetsRttCombined.length - 1] || PROBE_NO_TIMING_VALUE;
+					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
+					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
+					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
+
+					return {
+						...combinedProbeData,
+						packetsRtt: packetsRttCombined,
+						packetsDrop: packetsDropCombined,
+						packetsTotal: packetsTotalCombined,
+						rawOutputLines: outputLinesCombined,
+						ipAddr,
+						clientSideId: probeData.clientSideId,
+						...probeData.probe,
+						statsPerTarget: [{
+							target: probeData.target,
+							ipAddr,
+							lastTiming,
+							minTiming,
+							avgTiming,
+							maxTiming,
+							statsTotal: packetsRttCombined.length,
+							statsDrop: packetsDropCombined,
+							isFailed: probeData.result.status === PROBE_STATUS_FAILED,
+							isOffline,
+							failureRawOutput: this.getFailureProbeRawOutput(probeData),
+							packetsRtt: packetsRttCombined,
+							qualityStr: this.createQualityString(isOffline, numericPacketsRttCombined.length + packetsDropCombined, packetsDropCombined),
+							areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotalCombined),
+							rawOutput: this.handleRawOutput([ linesHeader, ...outputLinesCombined ]),
+							extraValues: lossValue !== null ? { loss: { text: 'Loss', value: lossValue, units: '%' } } : {},
+						}],
+					};
+				}, {});
+			});
+		},
+		getFailureProbeRawOutput (probeData) {
+			let rawOutput;
+			let { status = null } = probeData.result;
+
+			if (status === PROBE_STATUS_OFFLINE || status === PROBE_STATUS_FAILED) {
+				rawOutput = probeData.result.rawOutput;
+			}
+
+			return rawOutput;
+		},
+		createQualityString (isOffline, statsTotal, statsDrop) {
+			if (isOffline) { return PROBE_OFFLINE_TEXT; }
+
+			let { actualAmount, qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
+
+			return qualityPercentage !== null ? `${actualAmount}/${statsTotal} - ${qualityPercentage}%` : '';
+		},
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
+			if (
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return false;
+			}
+
+			return true;
+		},
+		calcQuality (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return {
+					qualityPercentage: null,
+					actualAmount: null,
+				};
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+			let qualityPercentage = Math.round(actualAmount / statsTotal * 100);
+
+			return {
+				qualityPercentage,
+				actualAmount,
+			};
+		},
+		parseIPFromRawOutput (raw) {
+			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
+			let match = raw.match(ipRegex);
+			let ipAddr = match ? match[0] : '';
+
+			return ipAddr;
+		},
+		parseLinesFromRawOutput (raw) {
+			let lines = raw.split('\n').filter(l => l);
+			let linesHeader;
+			let packetLines = [];
+
+			for (let i = 0; i < lines.length; i++) {
+				if (i === 0) {
+					linesHeader = lines[i];
+
+					continue;
+				}
+
+				if (lines[i].includes('---')) { break; }
+
+				packetLines.push(lines[i]);
+			}
+
+			return {
+				packetLines,
+				linesHeader,
+			};
+		},
+		calcLoss (statsTotal, statsDrop) {
+			if (
+				typeof statsTotal === 'undefined'
+				|| typeof statsDrop === 'undefined'
+				|| statsTotal === 0
+			) {
+				return null;
+			}
+
+			let actualAmount = Math.max(statsTotal - statsDrop, 0);
+
+			return Math.round(statsDrop / actualAmount * 100);
+		},
+		handleRawOutput (lines) {
+			let limitedLines = lines.length > RAW_OUTPUT_LINES_BATCH_LIMIT ? [ '...', ...lines.slice(-RAW_OUTPUT_LINES_BATCH_LIMIT) ] : lines;
+
+			return limitedLines.join('\n');
+		},
+		setMainOptsTestType (newTestType) {
+			if (this.get('testInProgress')) { return; }
+
+			this.set('mainOptions.type', newTestType);
 		},
 	};
 </script>
