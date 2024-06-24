@@ -3015,7 +3015,7 @@
 
 			// prepare data for gp-raw-output, gp-table-output components
 			return probesMeasurements.map((pbm) => {
-				return pbm.reduce((combinedProbeData, probeData, pdIdx) => {
+				return pbm.reduce((combinedProbeData, probeData) => {
 					let { packetsRtt, packetsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
 					let packetsRttCombined = [ ...combinedProbeData.packetsRtt || [], ...packetsRtt ];
@@ -3031,7 +3031,7 @@
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
 					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(
 						probeData.result.rawOutput,
-						combinedProbeData.rawOutputLines ? combinedProbeData.rawOutputLines.length : 0
+						combinedProbeData.rawOutputLines ? combinedProbeData.rawOutputLines.length : 0,
 					);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
