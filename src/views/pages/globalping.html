@@ -3062,7 +3062,16 @@
 							areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotalCombined),
 							rawOutput: this.handleRawOutput([ linesHeader, ...outputLinesCombined ]),
 							extraValues: lossValue !== null ? { loss: { text: 'Loss', value: lossValue, units: '%' } } : {},
-							rawFooter: this.createRawFooter(probeData.target, packetsTotalCombined, numericPacketsRttCombined.length, lossValue, minTiming, avgTiming, maxTiming),
+							rawFooter: this.createRawFooter(
+								probeData.target,
+								packetsRttCombined,
+								packetsTotalCombined,
+								numericPacketsRttCombined.length,
+								lossValue,
+								minTiming,
+								avgTiming,
+								maxTiming,
+							),
 						}],
 					};
 				}, {});
@@ -3172,12 +3181,21 @@
 
 			this.set('mainOptions.type', newTestType);
 		},
-		createRawFooter (target, packetsTotal, packetsReceived, lossValue, minTiming, avgTiming, maxTiming) {
+		createRawFooter (target, rtts, packetsTotal, packetsReceived, lossValue, minTiming, avgTiming, maxTiming) {
+			let mdev = this.calculateMeanDeviation(rtts);
 			let str = `\n--- ${target} ping statistics ---
 ${packetsTotal} packets transmitted, ${packetsReceived} received, ${lossValue}% packet loss, time 1002ms
-rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/mdev ms`;
+rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev} ms`;
 
 			return str;
+		},
+		calculateMeanDeviation (rtts) {
+			let rttsNumber = rtts.length;
+			let rttsSquaredSum = rtts.reduce((sum, rtt) => sum + rtt*rtt, 0);
+			let rttsSum = rtts.reduce((sum, rtt) => sum + rtt, 0);
+			let mdev = Math.sqrt(rttsSquaredSum / rttsNumber - Math.pow(rttsSum / rttsNumber, 2));
+
+			return Math.round(mdev * 1000) / 1000;
 		},
 	};
 </script>
