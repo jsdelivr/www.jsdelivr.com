@@ -3029,7 +3029,10 @@
 						: PROBE_NO_TIMING_VALUE;
 					let lastTiming = packetsRttCombined[packetsRttCombined.length - 1] || PROBE_NO_TIMING_VALUE;
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
-					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput, pdIdx);
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(
+						probeData.result.rawOutput,
+						combinedProbeData.rawOutputLines ? combinedProbeData.rawOutputLines.length : 0
+					);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 
@@ -3121,7 +3124,7 @@
 
 			return ipAddr;
 		},
-		parseLinesFromRawOutput (raw, probeMeasIdx) {
+		parseLinesFromRawOutput (raw, idxShift = 0) {
 			let lines = raw.split('\n').filter(l => l);
 			let linesHeader;
 			let packetLines = [];
@@ -3135,7 +3138,7 @@
 
 				if (lines[i].includes('---')) { break; }
 
-				let numberedLine = lines[i].replace(/icmp_seq=\d+/, `icmp_seq=${probeMeasIdx*16 + i}`)
+				let numberedLine = lines[i].replace(/icmp_seq=\d+/, `icmp_seq=${idxShift + i}`);
 
 				packetLines.push(numberedLine);
 			}
