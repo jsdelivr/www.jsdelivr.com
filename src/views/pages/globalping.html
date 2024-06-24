@@ -3015,7 +3015,7 @@
 
 			// prepare data for gp-raw-output, gp-table-output components
 			return probesMeasurements.map((pbm) => {
-				return pbm.reduce((combinedProbeData, probeData) => {
+				return pbm.reduce((combinedProbeData, probeData, pdIdx) => {
 					let { packetsRtt, packetsDrop, packetsTotal } = _.parseGpRawOutputForTimings(probeData.result.rawOutput);
 					let isOffline = probeData.result.status === PROBE_STATUS_OFFLINE;
 					let packetsRttCombined = [ ...combinedProbeData.packetsRtt || [], ...packetsRtt ];
@@ -3029,7 +3029,7 @@
 						: PROBE_NO_TIMING_VALUE;
 					let lastTiming = packetsRttCombined[packetsRttCombined.length - 1] || PROBE_NO_TIMING_VALUE;
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
-					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput);
+					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(probeData.result.rawOutput, pdIdx);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 
@@ -3121,7 +3121,7 @@
 
 			return ipAddr;
 		},
-		parseLinesFromRawOutput (raw) {
+		parseLinesFromRawOutput (raw, probeMeasIdx) {
 			let lines = raw.split('\n').filter(l => l);
 			let linesHeader;
 			let packetLines = [];
@@ -3135,7 +3135,9 @@
 
 				if (lines[i].includes('---')) { break; }
 
-				packetLines.push(lines[i]);
+				let numberedLine = lines[i].replace(/icmp_seq=\d+/, `icmp_seq=${probeMeasIdx*16 + i}`)
+
+				packetLines.push(numberedLine);
 			}
 
 			return {
