@@ -3064,7 +3064,7 @@
 							extraValues: lossValue !== null ? { loss: { text: 'Loss', value: lossValue, units: '%' } } : {},
 							rawFooter: this.createRawFooter(
 								probeData.target,
-								packetsRttCombined,
+								numericPacketsRttCombined,
 								packetsTotalCombined,
 								numericPacketsRttCombined.length,
 								lossValue,
@@ -3190,6 +3190,10 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev} ms`;
 			return str;
 		},
 		calculateMeanDeviation (rtts) {
+			if (rtts.length === 0) {
+				return PROBE_NO_TIMING_VALUE;
+			}
+
 			let rttsNumber = rtts.length;
 			let rttsSquaredSum = rtts.reduce((sum, rtt) => sum + rtt*rtt, 0);
 			let rttsSum = rtts.reduce((sum, rtt) => sum + rtt, 0);
