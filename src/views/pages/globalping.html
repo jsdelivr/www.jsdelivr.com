@@ -3035,6 +3035,7 @@
 					);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
+					let rawOutputCombined = this.handleRawOutput([ linesHeader, ...outputLinesCombined ]);
 
 					return {
 						...combinedProbeData,
@@ -3060,7 +3061,7 @@
 							packetsRtt: packetsRttCombined,
 							qualityStr: this.createQualityString(isOffline, numericPacketsRttCombined.length + packetsDropCombined, packetsDropCombined),
 							areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotalCombined),
-							rawOutput: this.handleRawOutput([ linesHeader, ...outputLinesCombined ]),
+							rawOutput: rawOutputCombined,
 							extraValues: lossValue !== null ? { loss: { text: 'Loss', value: lossValue, units: '%' } } : {},
 							rawFooter: this.createRawFooter(
 								probeData.target,
@@ -3071,6 +3072,7 @@
 								minTiming,
 								avgTiming,
 								maxTiming,
+								rawOutputCombined,
 							),
 						}],
 					};
@@ -3181,9 +3183,9 @@
 
 			this.set('mainOptions.type', newTestType);
 		},
-		createRawFooter (target, rtts, packetsTotal, packetsReceived, lossValue, minTiming, avgTiming, maxTiming) {
+		createRawFooter (target, rtts, packetsTotal, packetsReceived, lossValue, minTiming, avgTiming, maxTiming, rawOutput) {
 			let mdev = this.calculateMeanDeviation(rtts);
-			let str = `\n--- ${target} ping statistics ---
+			let str = `${rawOutput ? '\n' : '' }--- ${target} ping statistics ---
 ${packetsTotal} packets transmitted, ${packetsReceived} received, ${lossValue || 0}% packet loss, time 1002ms
 rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev} ms`;
 
