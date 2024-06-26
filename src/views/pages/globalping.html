@@ -1536,6 +1536,10 @@
 								clientSideId: resIdx,
 								target: rtTestRes.target,
 								type: rtTestRes.type,
+								clientSideStartedAt: prevTestResults ? prevTestResults[resIdx].clientSideStartedAt : rtTestRes.clientSideStartedAt,
+								clientSideUpdatedAt: rtTestRes.clientSideUpdatedAt,
+								serverTime: new Date(rtTestRes.updatedAt).getTime() - new Date(rtTestRes.createdAt).getTime(),
+								status: rtTestRes.status,
 								...res,
 							}));
 
@@ -2299,8 +2303,16 @@
 
 						this.set('measurementsMetadata', updMeasMetadata);
 
+						// set the local/client time of the response received
+						let currentTimestamp = Date.now();
+						let testResUpd = {
+							...testRes,
+							clientSideStartedAt: currentTimestamp,
+							clientSideUpdatedAt: currentTimestamp,
+						};
+
 						// should be after the mainOptions.type was set
-						this.set(`realTimeTestResResponse[${resNumber}]`, testRes);
+						this.set(`realTimeTestResResponse[${resNumber}]`, testResUpd);
 
 						// handle infinite test flow, once at least one probe is finished we shuld run measurement again
 						if (this.get('shareResFlow') === false && isInfiniteMeas && testRes.results.some(r => r.result.status === 'finished')) {
@@ -3036,6 +3048,16 @@
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
 					let rawOutputCombined = this.handleRawOutput([ linesHeader, ...outputLinesCombined ]);
+					let clientSideMeasTime = probeData.clientSideUpdatedAt - probeData.clientSideStartedAt;
+					let measurementTimeCombined = combinedProbeData.measurementTime || 0;
+
+					// if measurement is finished we should take a server time (updatedAt - createdAt)
+					if (probeData.status === 'finished') {
+						measurementTimeCombined += probeData.serverTime;
+					} else {
+						// otherwise we should take a local time
+						measurementTimeCombined += clientSideMeasTime;
+					}
 
 					return {
 						...combinedProbeData,
@@ -3043,6 +3065,7 @@
 						packetsDrop: packetsDropCombined,
 						packetsTotal: packetsTotalCombined,
 						rawOutputLines: outputLinesCombined,
+						measurementTime: measurementTimeCombined,
 						ipAddr,
 						clientSideId: probeData.clientSideId,
 						...probeData.probe,
@@ -3072,6 +3095,7 @@
 								minTiming,
 								avgTiming,
 								maxTiming,
+								measurementTimeCombined,
 								rawOutputCombined,
 							),
 						}],
@@ -3183,10 +3207,21 @@
 
 			this.set('mainOptions.type', newTestType);
 		},
-		createRawFooter (target, rtts, packetsTotal, packetsReceived, lossValue, minTiming, avgTiming, maxTiming, rawOutput) {
+		createRawFooter (
+			target,
+			rtts,
+			packetsTotal,
+			packetsReceived,
+			lossValue,
+			minTiming,
+			avgTiming,
+			maxTiming,
+			time,
+			rawOutput = '',
+		) {
 			let mdev = this.calculateMeanDeviation(rtts);
 			let str = `${rawOutput ? '\n' : ''}--- ${target} ping statistics ---
-${packetsTotal} packets transmitted, ${packetsReceived} received, ${lossValue || 0}% packet loss, time 1002ms
+${packetsTotal} packets transmitted, ${packetsReceived} received, ${lossValue || 0}% packet loss, time ${time}ms
 rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev} ms`;
 
 			return str;
