@@ -3220,9 +3220,10 @@
 			rawOutput = '',
 		) {
 			let mdev = this.calculateMeanDeviation(rtts);
+			let showRttUnits = [ minTiming, avgTiming, maxTiming, mdev ].some(i => i !== PROBE_NO_TIMING_VALUE);
 			let str = `${rawOutput ? '\n' : ''}--- ${target} ping statistics ---
 ${packetsTotal} packets transmitted, ${packetsReceived} received, ${lossValue || 0}% packet loss, time ${time}ms
-rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev} ms`;
+rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUnits ? ' ms' : ''}`;
 
 			return str;
 		},
