@@ -529,7 +529,12 @@
 				{{/if}}
 			</div>
 
-			<c-gp-credits mapOpened="{{showMap}}"></c-gp-credits>
+			{{#if showCreditsData}}
+				<c-gp-credits
+					mapOpened="{{showMap}}"
+					testInProgress="{{testInProgress}}">
+				</c-gp-credits>
+			{{/if}}
 
 			{{#unless showMap}}
 				<div class="gp_map-block_line"></div>
@@ -1364,6 +1369,7 @@
 				prevProbesMeasId: null,
 				preparedTestResults: [],
 				ddHandlerSet: false,
+				showCreditsData: false,
 			};
 		},
 		onrender () {
@@ -1808,6 +1814,7 @@
 			this.set('targetsArr', targetsArr);
 			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
+			this.set('showCreditsData', true);
 			this.set('prevProbesMeasId', null);
 			this.set('preparedTestResults', []);
 
@@ -2737,6 +2744,7 @@
 
 			if (err.responseStatusCode === 429) {
 				this.set('creditsError', true);
+				this.set('showCreditsData', false);
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
 				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
