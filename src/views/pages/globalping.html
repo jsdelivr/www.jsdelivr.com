@@ -2744,8 +2744,13 @@
 			this.set('runTestBtnText', 'Run Test');
 
 			if (err.responseStatusCode === 429) {
+				let isInfiniteModeRes = this.get('isInfiniteModeRes');
+
 				this.set('creditsError', true);
-				this.set('showCreditsData', false);
+
+				if (isInfiniteModeRes === false) {
+					this.set('showCreditsData', false);
+				}
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
 				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
