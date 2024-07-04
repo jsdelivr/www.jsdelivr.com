@@ -1,57 +1,59 @@
 <div class="c-gp-credits {{#if mapOpened}}over-the-map{{/if}}">
-	<div class="credits-wrapper">
-		<div class="credits_data">
-			<div class="credits_data_rate">
-				<span class="credits_data_rate_header">Rate limit:</span>
-				<span class="credits_data_rate_details">
-					<img as-tooltip="'TODO: number of seconds until the limit resets'"
-						width="14"
+	{{#if remainingRequests && availableRequests && resetsInStr}}
+		<div class="credits-wrapper">
+			<div class="credits_data">
+				<div class="credits_data_rate">
+					<span class="credits_data_rate_header">Rate limit:</span>
+					<span class="credits_data_rate_details">
+						<img as-tooltip="'Resets in ' + resetsInStr"
+							width="14"
+							height="14"
+							src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+
+						<span class="credits_data_rate_details_numbers">
+							<span class="credits_data_rate_details_numbers_credits-count">
+								{{remainingRequests}}/{{availableRequests}}
+							</span>
+
+							<span class="credits_data_rate_details_numbers_probes-count">
+								({{consumedRateLimit}})
+							</span>
+						</span>
+					</span>
+				</div>
+
+				<div class="credits_data_credits">
+					<span class="credits_data_credits_header">
+						Credits:
+					</span>
+
+					<span class="credits_data_rate_details">
+						<span class="credits_data_rate_details_remaining-credits">
+							{{remainingCredits}}
+						</span>
+
+						<span class="credits_data_rate_details_consumed-credits">
+							({{consumedCredits}})
+						</span>
+					</span>
+				</div>
+			</div>
+
+			<div class="credits_add">
+				+ Add Credits
+			</div>
+
+			{{#if testInProgress && isInfiniteModeRes}}
+				<div class="credits_consuming">
+					<img width="14"
 						height="14"
-						src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+						src="{{@shared.assetsHost}}/img/globalping/alert-icon-alt.svg">
 
-					<span class="credits_data_rate_details_numbers">
-						<span class="credits_data_rate_details_numbers_credits-count">
-							{{remainingRequests}}/{{availableRequests}}
-						</span>
-
-						<span class="credits_data_rate_details_numbers_probes-count">
-							({{consumedRateLimit}})
-						</span>
-					</span>
-				</span>
-			</div>
-
-			<div class="credits_data_credits">
-				<span class="credits_data_credits_header">
-					Credits:
-				</span>
-
-				<span class="credits_data_rate_details">
-					<span class="credits_data_rate_details_remaining-credits">
-						{{remainingCredits}}
-					</span>
-
-					<span class="credits_data_rate_details_consumed-credits">
-						({{consumedCredits}})
-					</span>
-				</span>
-			</div>
+					<span>Currently consuming ~{{consumingValue}} credits/minute</span>
+				</div>
+			{{/if}}
 		</div>
-
-		<div class="credits_add">
-			+ Add Credits
-		</div>
-
-		{{#if testInProgress && isInfiniteModeRes}}
-			<div class="credits_consuming">
-				<img width="14"
-					height="14"
-					src="{{@shared.assetsHost}}/img/globalping/alert-icon-alt.svg">
-
-				<span>Currently consuming ~{{consumingValue}} credits/minute</span>
-			</div>
-		{{/if}}
-	</div>
+	{{/if}}
 </div>
 
 <script>
@@ -64,12 +66,33 @@
 		data () {
 			return {
 				consumingValue: 40,
-				remainingRequests: 100,
-				availableRequests: 250,
+				remainingRequests: null,
+				availableRequests: null,
 				remainingCredits: 10000,
 				consumedRateLimit: -10,
 				consumedCredits: -16,
+				resetsInStr: '',
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('responseHeaders', (responseHeaders) => {
+					if (responseHeaders) {
+						this.set('remainingRequests', responseHeaders['x-ratelimit-remaining']);
+						this.set('availableRequests', responseHeaders['x-ratelimit-limit']);
+						this.set('resetsInStr', this.createResetInStr(responseHeaders['x-ratelimit-reset']));
+					}
+				});
+			}
+		},
+		createResetInStr (seconds) {
+			let minutes = seconds / 60;
+
+			if (minutes < 1) {
+				return '< 1 minute';
+			}
+
+			return `${Math.ceil(minutes)} minutes`;
 		},
 	};
 </script>
