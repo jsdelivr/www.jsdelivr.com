@@ -1,5 +1,5 @@
 <div class="c-gp-credits {{#if mapOpened}}over-the-map{{/if}}">
-	{{#if remainingRequests && availableRequests && resetsInStr}}
+	{{#if remainingRequests !== null && availableRequests !== null && resetsInStr !== null}}
 		<div class="credits-wrapper">
 			<div class="credits_data">
 				<div class="credits_data_rate">
@@ -15,28 +15,34 @@
 								{{remainingRequests}}/{{availableRequests}}
 							</span>
 
-							<span class="credits_data_rate_details_numbers_probes-count">
-								({{consumedRateLimit}})
+							{{#if consumedRateLimit}}
+								<span class="credits_data_rate_details_numbers_probes-count">
+									(-{{consumedRateLimit}})
+								</span>
+							{{/if}}
+						</span>
+					</span>
+				</div>
+
+				{{#if creditsDataPresented}}
+					<div class="credits_data_credits">
+						<span class="credits_data_credits_header">
+							Credits:
+						</span>
+
+						<span class="credits_data_rate_details">
+							<span class="credits_data_rate_details_remaining-credits">
+								{{remainingCredits}}
 							</span>
-						</span>
-					</span>
-				</div>
 
-				<div class="credits_data_credits">
-					<span class="credits_data_credits_header">
-						Credits:
-					</span>
-
-					<span class="credits_data_rate_details">
-						<span class="credits_data_rate_details_remaining-credits">
-							{{remainingCredits}}
+							{{#if consumedCredits}}
+								<span class="credits_data_rate_details_consumed-credits">
+									(-{{consumedCredits}})
+								</span>
+							{{/if}}
 						</span>
-
-						<span class="credits_data_rate_details_consumed-credits">
-							({{consumedCredits}})
-						</span>
-					</span>
-				</div>
+					</div>
+				{{/if}}
 			</div>
 
 			<div class="credits_add">
@@ -68,19 +74,31 @@
 				consumingValue: 40,
 				remainingRequests: null,
 				availableRequests: null,
-				remainingCredits: 10000,
-				consumedRateLimit: -10,
+				consumedRateLimit: null,
+				remainingCredits: null,
 				consumedCredits: -16,
 				resetsInStr: '',
+				creditsDataPresented: false,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('responseHeaders', (responseHeaders) => {
-					if (responseHeaders) {
-						this.set('remainingRequests', responseHeaders['x-ratelimit-remaining']);
-						this.set('availableRequests', responseHeaders['x-ratelimit-limit']);
-						this.set('resetsInStr', this.createResetInStr(responseHeaders['x-ratelimit-reset']));
+				this.observe('rateCreditsData', (rateCreditsData) => {
+					if (rateCreditsData) {
+						// handle RateLimit headers
+						this.set('remainingRequests', rateCreditsData['x-ratelimit-remaining']);
+						this.set('availableRequests', rateCreditsData['x-ratelimit-limit']);
+						this.set('resetsInStr', this.createResetInStr(rateCreditsData['x-ratelimit-reset']));
+
+						// handle Credits headers
+						if (typeof rateCreditsData['x-credits-remaining'] !== undefined) {
+							this.set('creditsDataPresented', true);
+							this.set('consumedRateLimit', rateCreditsData.probeCount - rateCreditsData['x-credits-consumed']);
+							this.set('consumedCredits', rateCreditsData['x-credits-consumed']);
+							this.set('remainingCredits', rateCreditsData['x-credits-remaining']);
+						} else {
+							this.set('creditsDataPresented', false);
+						}
 					}
 				});
 			}
