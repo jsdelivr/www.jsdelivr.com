@@ -49,7 +49,7 @@
 				+ Add Credits
 			</div>
 
-			{{#if testInProgress && isInfiniteModeRes}}
+			{{#if testInProgress && isInfiniteModeRes && consumingValue !== null}}
 				<div class="credits_consuming">
 					<img width="14"
 						height="14"
@@ -71,7 +71,7 @@
 		},
 		data () {
 			return {
-				consumingValue: 40,
+				consumingValue: null,
 				remainingRequests: null,
 				availableRequests: null,
 				consumedRateLimit: null,
@@ -79,21 +79,27 @@
 				consumedCredits: -16,
 				resetsInStr: '',
 				creditsDataPresented: false,
+				overallProbesCount: 0,
+				sessionTimestampStart: null,
+				sessionTimestampCurrent: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
+						this.set('sessionTimestampCurrent', Date.now());
+
 						// handle RateLimit headers
 						this.set('remainingRequests', rateCreditsData['x-ratelimit-remaining']);
 						this.set('availableRequests', rateCreditsData['x-ratelimit-limit']);
 						this.set('resetsInStr', this.createResetInStr(rateCreditsData['x-ratelimit-reset']));
+						this.set('overallProbesCount', this.get('overallProbesCount') + rateCreditsData.probesCount);
 
 						// handle Credits headers
 						if (typeof rateCreditsData['x-credits-remaining'] !== 'undefined') {
 							this.set('creditsDataPresented', true);
-							this.set('consumedRateLimit', rateCreditsData.probeCount - rateCreditsData['x-credits-consumed']);
+							this.set('consumedRateLimit', rateCreditsData.probesCount - rateCreditsData['x-credits-consumed']);
 							this.set('consumedCredits', rateCreditsData['x-credits-consumed']);
 							this.set('remainingCredits', rateCreditsData['x-credits-remaining']);
 						} else {
@@ -101,6 +107,23 @@
 						}
 					}
 				});
+
+				// set session start time when test is started
+				this.observe('testInProgress', (testInProgress) => {
+					if (testInProgress) {
+						this.set('sessionTimestampStart', Date.now());
+					}
+				});
+
+				// calculate consuming value
+				this.observe('overallProbesCount', (overallProbesCount) => {
+					let sessionTimestampStart = this.get('sessionTimestampStart');
+					let sessionTimestampCurrent = this.get('sessionTimestampCurrent');
+					let sessionTime = (sessionTimestampCurrent - sessionTimestampStart) / 1000;
+					let consumingValuePerSecond = overallProbesCount / sessionTime;
+
+					this.set('consumingValue', Math.round(consumingValuePerSecond * 60));
+				}, { init: false });
 			}
 		},
 		createResetInStr (seconds) {
