@@ -20,7 +20,7 @@
 			<div class="c-tags-input_tags-block_tags-list">
 				{{#each tagsArr:tagIdx}}
 					<div class="c-tags-input_tags-block_tags-list_tag">
-						<span class="c-tags-input_tags-block_tags-list_tag_text">
+						<span class="c-tags-input_tags-block_tags-list_tag_text" on-click="@this.onTagClick(tagIdx)">
 							{{this}}
 						</span>
 
@@ -213,7 +213,7 @@
 				});
 			}
 		},
-		addTag () {
+		addTag (clearInput = true) {
 			let maxTagsAllowed = this.get('maxTagsAllowed');
 			let valuesDelimiter = this.get('valuesDelimiter');
 			let inputValue = this.get('inputValue');
@@ -227,9 +227,11 @@
 				}
 
 				// to overwrite inputValues as ',' or '' set by browser we should call it via setTimeout
-				setTimeout(() => {
-					this.set('inputValue', '');
-				}, 4);
+				if (clearInput) {
+					setTimeout(() => {
+						this.set('inputValue', '');
+					}, 4);
+				}
 			}
 		},
 		removeLastTag () {
@@ -266,6 +268,11 @@
 					this.set('value', '');
 				}
 			}
+		},
+		onTagClick (index) {
+			this.addTag(false);
+			this.set('inputValue', this.get('tagsArr')[index]);
+			this.removeTagByIdx(index);
 		},
 	};
 </script>
