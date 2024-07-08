@@ -2758,7 +2758,8 @@
 		},
 		handlePostGPMeasError (err) {
 			this.set('testInProgress', false);
-			this.set('testFailed', true);
+			// since 429 is a separate case related to the Credits logic we should not show an error message
+			this.set('testFailed', err.responseStatusCode !== 429);
 			this.set('runTestBtnText', 'Run Test');
 
 			if (err.responseStatusCode === 429) {
