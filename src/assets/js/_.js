@@ -1423,12 +1423,11 @@ module.exports = {
 	},
 
 	parseGpRawOutputForTimings (raw) {
-		let packetsRtt = [];
-		let packetsDrop = 0;
-		let timeMatch;
-		let timeRegex = /time=(\d+(\.\d+)?)/;
+		let packets = [];
+		let timeMatch, noAnswerMatch;
+		let timeRegex = /icmp_seq=(\d+).*time=(\d+(\.\d+)?)/;
+		let noAnswerRegex = /no answer yet for icmp_seq=(\d+)/;
 		let lines = raw.split('\n').filter(l => l);
-		let currPacketRtt;
 
 		for (let i = 0; i < lines.length; i++) {
 			if (i === 0) { continue; }
@@ -1436,21 +1435,23 @@ module.exports = {
 			if (lines[i].includes('---')) { break; }
 
 			timeMatch = timeRegex.exec(lines[i]);
+			noAnswerMatch = noAnswerRegex.exec(lines[i]);
 
-			if (timeMatch === null) {
-				packetsDrop++;
-				currPacketRtt = PROBE_NO_TIMING_VALUE;
+			if (timeMatch) {
+				packets[timeMatch[1] - 1] = parseFloat(timeMatch[2]);
+			} else if (noAnswerMatch) {
+				if (!packets[noAnswerMatch[1] - 1]) {
+					packets[noAnswerMatch[1] - 1] = PROBE_NO_TIMING_VALUE;
+				}
 			} else {
-				currPacketRtt = parseFloat(timeMatch[1]);
+				// unknown line, no-op
 			}
-
-			packetsRtt.push(currPacketRtt);
 		}
 
 		return {
-			packetsRtt,
-			packetsDrop,
-			packetsTotal: packetsRtt.length,
+			packetsRtt: packets,
+			packetsDrop: packets.filter(p => p === PROBE_NO_TIMING_VALUE).length,
+			packetsTotal: packets.length,
 		};
 	},
 	memoize (func) {
