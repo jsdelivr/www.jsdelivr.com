@@ -545,7 +545,7 @@
 				<div class="gp_map-block_line"></div>
 			{{/unless}}
 
-			{{#if testFailed}}
+			{{#if showMeasErrorMsg}}
 				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
 						<img width="56"
@@ -1354,7 +1354,7 @@
 				httpOpts: CLIENT_DEFAULT_HTTP_OPTS,
 				inputErrors: {},
 				testResults: null,
-				testFailed: false,
+				showMeasErrorMsg: false,
 				testInProgress: false,
 				testReqInterval: null,
 				notAppliedOpts: {},
@@ -1445,7 +1445,7 @@
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
-					this.set('testFailed', false);
+					this.set('showMeasErrorMsg', false);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
 
@@ -1816,7 +1816,7 @@
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
-			this.set('testFailed', false);
+			this.set('showMeasErrorMsg', false);
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
@@ -1862,7 +1862,7 @@
 				// set measurement ID for re-use probes case
 				this.set('prevProbesMeasId', res.response.id);
 
-				// set response headers for gp-credits
+				// set response headers for gp-credits/gp-credits-message
 				this.set('rateCreditsData', { ...res.responseHeaders, probesCount: res.response.probesCount });
 
 				if (targetsArr[1]) {
@@ -1876,7 +1876,7 @@
 					}
 
 					http.postGlobalpingMeasurement(secReqParams, RATE_LIMIT_HEADERS).then((res1) => {
-						// set response headers for gp-credits
+						// set response headers for gp-credits/gp-credits-message
 						this.set('rateCreditsData', { ...res.responseHeaders, probesCount: res1.response.probesCount });
 						this.getTestMeasurementById({ measurementId: res.response.id });
 						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
@@ -2706,7 +2706,7 @@
 			this.set('runTestBtnText', 'Stop');
 
 			http.postGlobalpingMeasurement({ ...reqParams, target }, RATE_LIMIT_HEADERS).then((res) => {
-				// set response headers for gp-credits
+				// set response headers for gp-credits/gp-credits-message
 				this.set('rateCreditsData', { ...res.responseHeaders, probesCount: res.response.probesCount });
 
 				// set measurement ID for re-use probes case
@@ -2761,14 +2761,17 @@
 			this.set('runTestBtnText', 'Run Again');
 		},
 		handlePostGPMeasError (err) {
+			let isInfiniteModeRes = this.get('isInfiniteModeRes');
+
 			this.set('testInProgress', false);
-			// since 429 is a separate case related to the Credits logic we should not show an error message
-			this.set('testFailed', err.responseStatusCode !== 429);
+			// we show the error block under the map block only if it is not an infinite measurement
+			this.set('showMeasErrorMsg', isInfiniteModeRes === false);
 			this.set('runTestBtnText', 'Run Test');
 
-			if (err.responseStatusCode === 429) {
-				let isInfiniteModeRes = this.get('isInfiniteModeRes');
+			// set response headers (from error) for gp-credits/gp-credits-message
+			this.set('rateCreditsData', { ...err.responseHeaders });
 
+			if (err.responseStatusCode === 429) {
 				if (isInfiniteModeRes) {
 					this.set('creditsError', true);
 				} else {
