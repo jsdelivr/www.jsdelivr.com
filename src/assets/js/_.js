@@ -409,27 +409,40 @@ module.exports = {
 					}
 				}
 
+				let responseHeaders = responseHeadersToGet ? responseHeadersToGet.reduce((headerValuePairs, headerName) => {
+					headerValuePairs[headerName] = xhr.getResponseHeader(headerName);
+
+					return headerValuePairs;
+				}, {}) : null;
+
 				if (xhr.status >= 200 && xhr.status < 300) {
-					if (responseHeadersToGet && responseHeadersToGet.length) {
-						let responseHeaders = responseHeadersToGet.reduce((headerValuePairs, headerName) => {
-							headerValuePairs[headerName] = xhr.getResponseHeader(headerName);
+					let resolveData;
 
-							return headerValuePairs;
-						}, {});
-
-						resolve({
+					if (responseHeaders && Object.keys(responseHeaders).length) {
+						resolveData = {
 							response,
 							responseHeaders,
-						});
+						};
 					} else {
-						resolve(response);
+						resolveData = response;
 					}
+
+					resolve(resolveData);
 				} else {
-					// eslint-disable-next-line prefer-promise-reject-errors
-					reject({
+					let rejectData = {
 						...response,
 						responseStatusCode: xhr.status,
-					});
+					}
+
+					if (responseHeaders && Object.keys(responseHeaders).length) {
+						rejectData = {
+							...rejectData,
+							responseHeaders,
+						};
+					}
+
+					// eslint-disable-next-line prefer-promise-reject-errors
+					reject(rejectData);
 				}
 			};
 
