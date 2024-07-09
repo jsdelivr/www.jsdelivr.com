@@ -432,7 +432,7 @@ module.exports = {
 					let rejectData = {
 						...response,
 						responseStatusCode: xhr.status,
-					}
+					};
 
 					if (responseHeaders && Object.keys(responseHeaders).length) {
 						rejectData = {
