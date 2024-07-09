@@ -514,7 +514,10 @@
 			</div>
 
 			{{#if creditsError}}
-				<c-gp-credits-message></c-gp-credits-message>
+				<c-gp-credits-message
+					hasToken="{{true}}"
+					rateCreditsData="{{rateCreditsData}}">
+				</c-gp-credits-message>
 			{{/if}}
 
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
@@ -2766,8 +2769,9 @@
 			if (err.responseStatusCode === 429) {
 				let isInfiniteModeRes = this.get('isInfiniteModeRes');
 
-				if (isInfiniteModeRes === false) {
+				if (isInfiniteModeRes) {
 					this.set('creditsError', true);
+				} else {
 					this.set('showCreditsData', false);
 				}
 			} else if (err.error.type === 'validation_error') {
