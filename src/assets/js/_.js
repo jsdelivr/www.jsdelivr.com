@@ -384,7 +384,6 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
-			// onFailReturnStatus = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
