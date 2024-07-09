@@ -552,9 +552,7 @@
 							height="56"
 							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
-						<p>
-							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
-						</p>
+						<p>{{measurementErrMsg}}</p>
 					</div>
 				</div>
 			{{elseif testResults}}
@@ -1305,6 +1303,7 @@
 		'x-credits-remaining',
 		'x-credits-required',
 	];
+	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
 
 	let map;
 	let oms;
@@ -1384,6 +1383,7 @@
 				ddHandlerSet: false,
 				showCreditsData: false,
 				rateCreditsData: null,
+				measurementErrMsg: null,
 			};
 		},
 		onrender () {
@@ -2763,16 +2763,18 @@
 		handlePostGPMeasError (err) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 			let testResults = this.get('testResults');
+			let hasToken = true; // TODO: 639, this.get('hasToken')
 
 			this.set('testInProgress', false);
 			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
 			this.set('showMeasErrorMsg', testResults ? isInfiniteModeRes === false : true);
 			this.set('runTestBtnText', 'Run Test');
-
 			// set response headers (from error) for gp-credits/gp-credits-message
-			this.set('rateCreditsData', { ...err.responseHeaders });
+			this.set('rateCreditsData', err.responseHeaders);
 
 			if (err.responseStatusCode === 429) {
+				this.set('measurementErrMsg', this.createMeasurementErrMsg(err.responseHeaders, isInfiniteModeRes, hasToken));
+
 				if (isInfiniteModeRes && testResults) {
 					this.set('showCreditsError', true);
 				} else {
@@ -2802,9 +2804,7 @@
 					this.set('showMeasurementOpts', true);
 				}
 			} else if (err.error.type === 'no_probes_found') {
-				this.set('inputErrors', {
-					noProbesFound: err.error.message,
-				});
+				this.set('measurementErrMsg', err.error.message);
 			}
 		},
 		reUseProbesRunTest () {
@@ -3284,6 +3284,35 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			let mdev = Math.sqrt(rttsSquaredSum / rttsNumber - Math.pow(rttsSum / rttsNumber, 2));
 
 			return Math.round(mdev * 1000) / 1000;
+		},
+		createResetInStr (seconds) {
+			let minutes = seconds / 60;
+
+			if (minutes < 1) {
+				return '< 1 minute';
+			}
+
+			return `${Math.ceil(minutes)} minutes`;
+		},
+		createMeasurementErrMsg (responseHeaders, isInfinite, hasToken) {
+			if (isInfinite === false) {
+				let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
+				let requiredCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) - Number(responseHeaders['x-credits-required'] || 0);
+				let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
+				let msg = `You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.`;
+
+				msg += ` Try requesting fewer probes or wait ${timeToReset} for the limit to reset.`;
+
+				if (hasToken) {
+					msg += ' You can get higher limits by sponsoring us or hosting probes';
+				} else {
+					msg += ' You can get higher limits by creating an account. Sign up';
+				}
+
+				return msg;
+			}
+
+			return DEFAULT_MEASUREMENT_ERR_MSG;
 		},
 	};
 </script>
