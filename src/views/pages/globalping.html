@@ -3041,9 +3041,9 @@
 						: PROBE_NO_TIMING_VALUE;
 					let lastTiming = packetsRttCombined[packetsRttCombined.length - 1] || PROBE_NO_TIMING_VALUE;
 					let lossValue = this.calcLoss(packetsRttCombined.length + packetsDropCombined, packetsDropCombined);
-					let { packetLines, linesHeader } = this.parseLinesFromRawOutput(
+					let { packetLines, linesHeader, lastLineIdx } = this.parseLinesFromRawOutput(
 						probeData.result.rawOutput,
-						combinedProbeData.rawOutputLines ? combinedProbeData.rawOutputLines.length : 0,
+						combinedProbeData.lastLineIdx || 0,
 					);
 					let outputLinesCombined = [ ...combinedProbeData.rawOutputLines || [], ...packetLines ];
 					let ipAddr = combinedProbeData.ipAddr || this.parseIPFromRawOutput(probeData.result.rawOutput);
@@ -3061,6 +3061,7 @@
 
 					return {
 						...combinedProbeData,
+						lastLineIdx,
 						packetsRtt: packetsRttCombined,
 						packetsDrop: packetsDropCombined,
 						packetsTotal: packetsTotalCombined,
@@ -3164,6 +3165,7 @@
 			let lines = raw.split('\n').filter(l => l);
 			let linesHeader;
 			let packetLines = [];
+			let lastLineIdx = idxShift;
 
 			for (let i = 0; i < lines.length; i++) {
 				if (i === 0) {
@@ -3175,7 +3177,8 @@
 				if (lines[i].includes('---')) { break; }
 
 				let match = lines[i].match(/icmp_seq=(\d+)/);
-				let substitute = `icmp_seq=${idxShift + Number(match[1])}`;
+				lastLineIdx = idxShift + Number(match[1]);
+				let substitute = `icmp_seq=${lastLineIdx}`;
 				let numberedLine = lines[i].replace(/icmp_seq=\d+/, substitute);
 
 				packetLines.push(numberedLine);
@@ -3184,6 +3187,7 @@
 			return {
 				packetLines,
 				linesHeader,
+				lastLineIdx,
 			};
 		},
 		calcLoss (statsTotal, statsDrop) {
