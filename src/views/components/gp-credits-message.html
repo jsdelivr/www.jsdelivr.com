@@ -1,18 +1,59 @@
 <div class="c-gp-credits-message">
-	<div class="msg-wrapper">
-		<span class="msg-wrapper_msg">You have run out of credits for this session. They reset every hour. You can wait or get more by creating an account.</span>
-		<a class="msg-wrapper_sign-up" href="/">Sign up</a>
-	</div>
+	{{#if message}}
+		<div class="msg-wrapper">
+			<span class="msg-wrapper_msg">{{message}}</span>
+			<a class="msg-wrapper_sign-up" href="/">Sign up</a>
+		</div>
+	{{/if}}
 </div>
 
 <script>
 	component.exports = {
+		data () {
+			return {
+				message: null,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('rateCreditsData', (rateCreditsData) => {
+					if (rateCreditsData) {
+						let message;
+						let hasToken = this.get('hasToken');
+						let resetsInPart = this.createResetInStr(rateCreditsData['x-ratelimit-reset']);
+
+						if (hasToken) {
+							message = this.createTokenCaseMsg(resetsInPart);
+						} else {
+							message = this.createNoTokenCaseMsg(resetsInPart);
+						}
+
+						this.set('message', message);
+					}
+				});
+			}
+		},
 		oncomplete () {
 			let el = document.querySelector('.c-gp-credits-message');
 
 			setTimeout(() => {
 				el.classList.add('show-msg');
 			}, 200);
+		},
+		createResetInStr (seconds) {
+			let minutes = seconds / 60;
+
+			if (minutes < 1) {
+				return '< 1 minute';
+			}
+
+			return `${Math.ceil(minutes)} minutes`;
+		},
+		createNoTokenCaseMsg (resetPart) {
+			return `Updated version of the text - for requests made without a token: You have run out of credits for this session. You can wait ${resetPart} for the limit to reset or get higher limits by creating an account. Sign up`;
+		},
+		createTokenCaseMsg (resetPart) {
+			return `Updated version of the text - for requests made with a token: You have run out of credits for this session. You can wait ${resetPart} minutes for the limit to reset or get higher limits by sponsoring us or hosting probes.`;
 		},
 	};
 </script>
