@@ -513,7 +513,7 @@
 				</div>
 			</div>
 
-			{{#if creditsError}}
+			{{#if showCreditsError}}
 				<c-gp-credits-message
 					hasToken="{{true}}"
 					rateCreditsData="{{rateCreditsData}}">
@@ -1376,7 +1376,7 @@
 				measurementsMetadata: null,
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
-				creditsError: false,
+				showCreditsError: false,
 				infiniteMeasIds: [],
 				isInfiniteMeasStopped: false,
 				prevProbesMeasId: null,
@@ -1824,7 +1824,7 @@
 			this.set('realTimeTestResResponse', null);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
-			this.set('creditsError', false);
+			this.set('showCreditsError', false);
 			this.set('targetsArr', targetsArr);
 			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
@@ -2762,18 +2762,19 @@
 		},
 		handlePostGPMeasError (err) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
+			let testResults = this.get('testResults');
 
 			this.set('testInProgress', false);
-			// we show the error block under the map block only if it is not an infinite measurement
-			this.set('showMeasErrorMsg', isInfiniteModeRes === false);
+			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
+			this.set('showMeasErrorMsg', testResults ? isInfiniteModeRes === false : true);
 			this.set('runTestBtnText', 'Run Test');
 
 			// set response headers (from error) for gp-credits/gp-credits-message
 			this.set('rateCreditsData', { ...err.responseHeaders });
 
 			if (err.responseStatusCode === 429) {
-				if (isInfiniteModeRes) {
-					this.set('creditsError', true);
+				if (isInfiniteModeRes && testResults) {
+					this.set('showCreditsError', true);
 				} else {
 					this.set('showCreditsData', false);
 				}
