@@ -552,7 +552,7 @@
 							height="56"
 							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
-						<p>{{measurementErrMsg}}</p>
+						<p>{{{measurementErrMsg}}}</p>
 					</div>
 				</div>
 			{{elseif testResults}}
@@ -3308,24 +3308,26 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			if (isInfinite === false) {
 				let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
 				let requiredCredits = responseHeaders['x-credits-required'];
-				let msg = `You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.`;
+				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
 
-				msg += ` Try requesting fewer probes or wait ${timeToReset} for the limit to reset.`;
+				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
 
 				if (hasToken) {
-					msg += ' You can get higher limits by sponsoring us or hosting probes';
+					msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
 				} else {
-					msg += ' You can get higher limits by creating an account. Sign up';
+					msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
 				}
 
 				return msg;
 			} else if (isInfinite && !testResults) {
-				let msg = `You have run out of credits for this session. You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+				let msg = `<span>You have run out of credits for this session.</span>`;
+
+				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
 
 				if (hasToken) {
-					msg += ` sponsoring us or hosting probes.`;
+					msg += ` sponsoring us or hosting probes.</span>`;
 				} else {
-					msg += ` creating an account. Sign up`;
+					msg += ` creating an account. <a href='/'>Sign up</a></span>`;
 				}
 
 				return msg;
