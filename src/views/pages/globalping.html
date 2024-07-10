@@ -3307,7 +3307,7 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			if (isInfinite === false) {
 				let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
-				let requiredCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) - Number(responseHeaders['x-credits-required'] || 0);
+				let requiredCredits = responseHeaders['x-credits-required'];
 				let msg = `You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.`;
 
 				msg += ` Try requesting fewer probes or wait ${timeToReset} for the limit to reset.`;
