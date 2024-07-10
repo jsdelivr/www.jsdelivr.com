@@ -88,8 +88,6 @@
 			if (!Ractive.isServer) {
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
-						this.set('sessionTimestampCurrent', Date.now());
-
 						// TODO: 639, check nad fix if needed - stats should be correct when it was an infinite meas with results and an error occured while measurement
 						// TODO: 639, since we return headers in case of error and stats could be calculated wrong
 						// handle RateLimit headers
@@ -114,15 +112,24 @@
 				this.observe('testInProgress', (testInProgress) => {
 					if (testInProgress) {
 						this.set('sessionTimestampStart', Date.now());
+						this.set('sessionTimestampCurrent', Date.now());
+					}
+				});
+
+				// update current timestamp on receiving testRResults
+				this.observe('testResults', (testResults) => {
+					if (testResults) {
+						this.set('sessionTimestampCurrent', Date.now());
 					}
 				});
 
 				// calculate consuming value
-				this.observe('overallProbesCount', (overallProbesCount) => {
-					let sessionTimestampStart = this.get('sessionTimestampStart');
+				this.observe('overallProbesCount sessionTimestampCurrent', () => {
 					let sessionTimestampCurrent = this.get('sessionTimestampCurrent');
+					let overallProbesCount = this.get('overallProbesCount');
+					let sessionTimestampStart = this.get('sessionTimestampStart');
 					let sessionTime = (sessionTimestampCurrent - sessionTimestampStart) / 1000;
-					let consumingValuePerSecond = overallProbesCount / sessionTime;
+					let consumingValuePerSecond = overallProbesCount / (sessionTime || 1);
 
 					this.set('consumingValue', Math.round(consumingValuePerSecond * 60));
 				}, { init: false });
