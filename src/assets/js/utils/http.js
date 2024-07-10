@@ -263,10 +263,9 @@ module.exports.postGlobalpingMeasurement = (opts, responseHeadersToGet) => {
 		method: 'POST',
 		url: `${GLOBALPING_HOST}/v1/measurements`,
 		body: opts,
-		// TODO: 639 temp header below
-		headers: {
-			Authorization: 'Bearer YOUR_TOKEN',
-		},
+		// headers: {
+		// 	Authorization: 'Bearer YOUR_TOKEN',
+		// },
 	};
 
 	if (responseHeadersToGet) {
