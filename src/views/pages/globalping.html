@@ -545,7 +545,7 @@
 				<div class="gp_map-block_line"></div>
 			{{/unless}}
 
-			{{#if showMeasErrorMsg}}
+			{{#if measurementErrMsg}}
 				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
 						<img width="56"
@@ -1353,7 +1353,6 @@
 				httpOpts: CLIENT_DEFAULT_HTTP_OPTS,
 				inputErrors: {},
 				testResults: null,
-				showMeasErrorMsg: false,
 				testInProgress: false,
 				testReqInterval: null,
 				notAppliedOpts: {},
@@ -1445,7 +1444,7 @@
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
-					this.set('showMeasErrorMsg', false);
+					this.set('measurementErrMsg', null);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
 
@@ -1816,7 +1815,7 @@
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
-			this.set('showMeasErrorMsg', false);
+			this.set('measurementErrMsg', null);
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
@@ -2767,14 +2766,12 @@
 
 			this.set('testInProgress', false);
 			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
-			// TODO: 639, get rid of this variable, use measurementErrMsg instead
-			this.set('showMeasErrorMsg', testResults ? isInfiniteModeRes === false : true);
 			this.set('runTestBtnText', 'Run Test');
 			// set response headers (from error) for gp-credits/gp-credits-message
 			this.set('rateCreditsData', err.responseHeaders);
 
 			if (err.responseStatusCode === 429) {
-				let measurementErrMsg = this.createMeasurementErrMsg(
+				let measurementErrMsg = this.createMeasCreditsErrMsg(
 					err.responseHeaders,
 					isInfiniteModeRes,
 					hasToken,
@@ -3302,7 +3299,10 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			return `${Math.ceil(minutes)} minutes`;
 		},
-		createMeasurementErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+		createMeasCreditsErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+			// do not show err msg if while infinite meas we've got the 429's err and we already have results
+			if (testResults && isInfinite) { return null; }
+
 			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
 
 			if (isInfinite === false) {
