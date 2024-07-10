@@ -2763,17 +2763,25 @@
 		handlePostGPMeasError (err) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 			let testResults = this.get('testResults');
-			let hasToken = true; // TODO: 639, this.get('hasToken')
+			let hasToken = false; // TODO: 639, this.get('hasToken')
 
 			this.set('testInProgress', false);
 			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
+			// TODO: 639, get rid of this variable, use measurementErrMsg instead
 			this.set('showMeasErrorMsg', testResults ? isInfiniteModeRes === false : true);
 			this.set('runTestBtnText', 'Run Test');
 			// set response headers (from error) for gp-credits/gp-credits-message
 			this.set('rateCreditsData', err.responseHeaders);
 
 			if (err.responseStatusCode === 429) {
-				this.set('measurementErrMsg', this.createMeasurementErrMsg(err.responseHeaders, isInfiniteModeRes, hasToken));
+				let measurementErrMsg = this.createMeasurementErrMsg(
+					err.responseHeaders,
+					isInfiniteModeRes,
+					hasToken,
+					testResults,
+				);
+
+				this.set('measurementErrMsg', measurementErrMsg);
 
 				if (isInfiniteModeRes && testResults) {
 					this.set('showCreditsError', true);
@@ -3294,11 +3302,12 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			return `${Math.ceil(minutes)} minutes`;
 		},
-		createMeasurementErrMsg (responseHeaders, isInfinite, hasToken) {
+		createMeasurementErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
+
 			if (isInfinite === false) {
 				let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
 				let requiredCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) - Number(responseHeaders['x-credits-required'] || 0);
-				let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
 				let msg = `You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.`;
 
 				msg += ` Try requesting fewer probes or wait ${timeToReset} for the limit to reset.`;
@@ -3307,6 +3316,16 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 					msg += ' You can get higher limits by sponsoring us or hosting probes';
 				} else {
 					msg += ' You can get higher limits by creating an account. Sign up';
+				}
+
+				return msg;
+			} else if (isInfinite && !testResults) {
+				let msg = `You have run out of credits for this session. You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+
+				if (hasToken) {
+					msg += ` sponsoring us or hosting probes.`;
+				} else {
+					msg += ` creating an account. Sign up`;
 				}
 
 				return msg;
