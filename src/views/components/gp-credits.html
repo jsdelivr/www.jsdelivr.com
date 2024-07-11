@@ -88,20 +88,25 @@
 			if (!Ractive.isServer) {
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
-						// TODO: 639, check nad fix if needed - stats should be correct when it was an infinite meas with results and an error occured while measurement
-						// TODO: 639, since we return headers in case of error and stats could be calculated wrong
+						let rateLimitRemaning = rateCreditsData['x-ratelimit-remaining'] || 0;
+						let rateLimitLimit = rateCreditsData['x-ratelimit-limit'] || 0;
+						let rateLimitReset = rateCreditsData['x-ratelimit-reset'] || 0;
+						let currentProbesCount = rateCreditsData.probesCount || 0;
+						let rateCreditsConsumed = rateCreditsData['x-credits-consumed'] || 0;
+						let rateCreditsRemaning = rateCreditsData['x-credits-remaining'] || 0;
+
 						// handle RateLimit headers
-						this.set('remainingRequests', rateCreditsData['x-ratelimit-remaining']);
-						this.set('availableRequests', rateCreditsData['x-ratelimit-limit']);
-						this.set('resetsInStr', this.createResetInStr(rateCreditsData['x-ratelimit-reset']));
-						this.set('overallProbesCount', this.get('overallProbesCount') + rateCreditsData.probesCount);
+						this.set('remainingRequests', rateLimitRemaning);
+						this.set('availableRequests', rateLimitLimit);
+						this.set('resetsInStr', this.createResetInStr(rateLimitReset));
+						this.set('overallProbesCount', this.get('overallProbesCount') + currentProbesCount);
 
 						// handle Credits headers
-						if (rateCreditsData['x-credits-remaining'] !== null) {
+						if (rateCreditsRemaning !== null) {
 							this.set('creditsDataPresented', true);
-							this.set('consumedRateLimit', rateCreditsData.probesCount - rateCreditsData['x-credits-consumed']);
-							this.set('consumedCredits', rateCreditsData['x-credits-consumed']);
-							this.set('remainingCredits', rateCreditsData['x-credits-remaining']);
+							this.set('consumedRateLimit', currentProbesCount - rateCreditsConsumed);
+							this.set('consumedCredits', rateCreditsConsumed);
+							this.set('remainingCredits', rateCreditsRemaning);
 						} else {
 							this.set('creditsDataPresented', false);
 						}
