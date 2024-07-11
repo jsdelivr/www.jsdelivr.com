@@ -76,8 +76,8 @@
 				availableRequests: null,
 				consumedRateLimit: null,
 				remainingCredits: null,
-				consumedCredits: -16,
-				resetsInStr: '',
+				consumedCredits: null,
+				resetsInStr: null,
 				creditsDataPresented: false,
 				overallProbesCount: 0,
 				sessionTimestampStart: null,
@@ -88,12 +88,12 @@
 			if (!Ractive.isServer) {
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
-						let rateLimitRemaning = rateCreditsData['x-ratelimit-remaining'] || 0;
-						let rateLimitLimit = rateCreditsData['x-ratelimit-limit'] || 0;
-						let rateLimitReset = rateCreditsData['x-ratelimit-reset'] || 0;
-						let currentProbesCount = rateCreditsData.probesCount || 0;
-						let rateCreditsConsumed = rateCreditsData['x-credits-consumed'] || 0;
-						let rateCreditsRemaning = rateCreditsData['x-credits-remaining'] || 0;
+						let rateLimitRemaning = Number(rateCreditsData['x-ratelimit-remaining']) || 0;
+						let rateLimitLimit = Number(rateCreditsData['x-ratelimit-limit']) || 0;
+						let rateLimitReset = Number(rateCreditsData['x-ratelimit-reset']) || 0;
+						let currentProbesCount = Number(rateCreditsData.probesCount) || 0;
+						let rateCreditsConsumed = Number(rateCreditsData['x-credits-consumed']) || 0;
+						let rateCreditsRemaning = Number(rateCreditsData['x-credits-remaining']) || 0;
 
 						// handle RateLimit headers
 						this.set('remainingRequests', rateLimitRemaning);
@@ -118,6 +118,10 @@
 					if (testInProgress) {
 						this.set('sessionTimestampStart', Date.now());
 						this.set('sessionTimestampCurrent', Date.now());
+					} else {
+						this.set('sessionTimestampStart', null);
+						this.set('sessionTimestampCurrent', null);
+						this.set('overallProbesCount', 0);
 					}
 				});
 
@@ -133,7 +137,7 @@
 					let sessionTimestampCurrent = this.get('sessionTimestampCurrent');
 					let overallProbesCount = this.get('overallProbesCount');
 					let sessionTimestampStart = this.get('sessionTimestampStart');
-					let sessionTime = (sessionTimestampCurrent - sessionTimestampStart) / 1000;
+					let sessionTime = Math.round((sessionTimestampCurrent - sessionTimestampStart) / 1000);
 					let consumingValuePerSecond = overallProbesCount / (sessionTime || 1);
 
 					this.set('consumingValue', Math.round(consumingValuePerSecond * 60));
