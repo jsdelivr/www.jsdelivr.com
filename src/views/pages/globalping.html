@@ -3321,10 +3321,10 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			if (testResults && isInfinite) { return null; }
 
 			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
+			let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
+			let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
 
-			if (isInfinite === false) {
-				let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
-				let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
+			if (isInfinite === false && remainingCredits) {
 				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
 
 				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
@@ -3336,7 +3336,7 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				}
 
 				return msg;
-			} else if (isInfinite && !testResults) {
+			} else if ((isInfinite && !testResults) || !remainingCredits) {
 				let msg = `<span>You have run out of credits for this session.</span>`;
 
 				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
