@@ -1887,8 +1887,18 @@
 					}
 
 					http.postGlobalpingMeasurement(secReqParams, RATE_LIMIT_HEADERS).then((res1) => {
+						let combinedHeaders = { ...res1.responseHeaders };
+
+						[
+							'x-ratelimit-consumed',
+							'x-credits-consumed',
+							'x-request-cost',
+						].forEach((header) => {
+							combinedHeaders[header] = (Number(res.responseHeaders[header]) || 0) + (Number(res1.responseHeaders[header]) || 0);
+						});
+
 						// set response headers for gp-credits/gp-credits-message
-						this.set('rateCreditsData', { ...res.responseHeaders, probesCount: res1.response.probesCount });
+						this.set('rateCreditsData', combinedHeaders);
 						this.getTestMeasurementById({ measurementId: res.response.id });
 						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
 					}).catch((err) => {
