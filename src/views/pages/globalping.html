@@ -36,7 +36,7 @@
 				});
 			}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&loading=async" async></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -1302,7 +1302,7 @@
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
-	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 40;
 	const DEFAULT_TARGET_VALUE = 'cdn.jsdelivr.net';
 	const INFINITE_MEASUREMENT_PACKETS = 16;
 	const INFINITE_MEASUREMENT_LIMIT = 5;
@@ -3328,24 +3328,28 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
 
 				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-
-				if (hasToken) {
-					msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
-				} else {
-					msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
-				}
+				// TODO: uncomment when accounts are live
+				// msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
+				//
+				// if (hasToken) {
+				// 	msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
+				// } else {
+				// 	msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
+				// }
 
 				return msg;
 			} else if ((isInfinite && !testResults) || !remainingCredits) {
 				let msg = `<span>You have run out of credits for this session.</span>`;
 
-				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
-
-				if (hasToken) {
-					msg += ` sponsoring us or hosting probes.</span>`;
-				} else {
-					msg += ` creating an account. <a href='/'>Sign up</a></span>`;
-				}
+				msg += `<span>Please wait ${timeToReset} for the limit to reset.`;
+				// TODO: uncomment when accounts are live
+				// msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+				//
+				// if (hasToken) {
+				// 	msg += ` sponsoring us or hosting probes.</span>`;
+				// } else {
+				// 	msg += ` creating an account. <a href='/'>Sign up</a></span>`;
+				// }
 
 				return msg;
 			}
