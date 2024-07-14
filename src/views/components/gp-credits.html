@@ -50,7 +50,7 @@
 <!--				+ Add Credits-->
 <!--			</a>-->
 
-			{{#if testInProgress && isInfiniteModeRes && consumingValue !== null}}
+			{{#if testInProgress && isInfiniteModeRes && consumingValue}}
 				<div class="credits_consuming">
 					<img width="14"
 						height="14"
@@ -87,6 +87,21 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				// set session start time when test is started
+				// SHOULD BE THE FIRST OBSERVE
+				this.observe('testInProgress', (testInProgress) => {
+					if (testInProgress) {
+						this.set('sessionTimestampStart', Date.now());
+						this.set('sessionTimestampCurrent', Date.now());
+						this.set('consumedRateLimit', 0);
+						this.set('consumedCredits', 0);
+					} else {
+						this.set('sessionTimestampStart', null);
+						this.set('sessionTimestampCurrent', null);
+						this.set('overallProbesCount', 0);
+					}
+				});
+
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
 						let rateLimitConsumed = Number(rateCreditsData['x-ratelimit-consumed']) || 0;
