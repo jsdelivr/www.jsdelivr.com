@@ -5,11 +5,6 @@
 				<div class="credits_data_rate">
 					<span class="credits_data_rate_header">Rate limit:</span>
 					<span class="credits_data_rate_details">
-						<img as-tooltip="'Resets in ' + resetsInStr"
-							width="14"
-							height="14"
-							src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
-
 						<span class="credits_data_rate_details_numbers">
 							<span class="credits_data_rate_details_numbers_credits-count">
 								{{remainingRequests}}/{{availableRequests}}
@@ -21,6 +16,11 @@
 								</span>
 							{{/if}}
 						</span>
+
+						<img as-tooltip="'Resets in ' + resetsInStr"
+							width="14"
+							height="14"
+							src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
 					</span>
 				</div>
 
@@ -45,9 +45,10 @@
 				{{/if}}
 			</div>
 
-			<a href="/" class="credits_add">
-				+ Add Credits
-			</a>
+<!-- TODO: uncomment when the dashboard is live -->
+<!--			<a href="/" class="credits_add">-->
+<!--				+ Add Credits-->
+<!--			</a>-->
 
 			{{#if testInProgress && isInfiniteModeRes && consumingValue !== null}}
 				<div class="credits_consuming">
@@ -55,7 +56,7 @@
 						height="14"
 						src="{{@shared.assetsHost}}/img/globalping/alert-icon-alt.svg">
 
-					<span>Currently consuming ~{{consumingValue}} credits/minute</span>
+					<span>Consuming ~{{consumingValue}} API credits/minute</span>
 				</div>
 			{{/if}}
 		</div>
@@ -88,40 +89,37 @@
 			if (!Ractive.isServer) {
 				this.observe('rateCreditsData', (rateCreditsData) => {
 					if (rateCreditsData) {
-						let rateLimitRemaning = Number(rateCreditsData['x-ratelimit-remaining']) || 0;
+						let rateLimitConsumed = Number(rateCreditsData['x-ratelimit-consumed']) || 0;
+						let rateLimitRemaining = Number(rateCreditsData['x-ratelimit-remaining']) || 0;
 						let rateLimitLimit = Number(rateCreditsData['x-ratelimit-limit']) || 0;
 						let rateLimitReset = Number(rateCreditsData['x-ratelimit-reset']) || 0;
-						let currentProbesCount = Number(rateCreditsData.probesCount) || 0;
+						let currentProbesCount = Number(rateCreditsData['x-request-cost']) || 0;
 						let rateCreditsConsumed = Number(rateCreditsData['x-credits-consumed']) || 0;
-						let rateCreditsRemaning = Number(rateCreditsData['x-credits-remaining']) || 0;
+						let rateCreditsRemaining = Number(rateCreditsData['x-credits-remaining']) || 0;
+
+						if (this.get('isInfiniteModeRes')) {
+							rateLimitConsumed += this.get('consumedRateLimit') || 0;
+							rateCreditsConsumed += this.get('consumedCredits') || 0;
+						}
+
+						this.set('currentProbesCount', currentProbesCount);
 
 						// handle RateLimit headers
-						this.set('remainingRequests', rateLimitRemaning);
+						this.set('remainingRequests', rateLimitRemaining);
 						this.set('availableRequests', rateLimitLimit);
 						this.set('resetsInStr', this.createResetInStr(rateLimitReset));
 						this.set('overallProbesCount', this.get('overallProbesCount') + currentProbesCount);
+						this.set('consumedRateLimit', rateLimitConsumed);
 
 						// handle Credits headers
-						if (rateCreditsRemaning) {
+
+						if (rateCreditsRemaining) {
 							this.set('creditsDataPresented', true);
-							this.set('consumedRateLimit', currentProbesCount - rateCreditsConsumed);
 							this.set('consumedCredits', rateCreditsConsumed);
-							this.set('remainingCredits', rateCreditsRemaning);
+							this.set('remainingCredits', rateCreditsRemaining);
 						} else {
 							this.set('creditsDataPresented', false);
 						}
-					}
-				});
-
-				// set session start time when test is started
-				this.observe('testInProgress', (testInProgress) => {
-					if (testInProgress) {
-						this.set('sessionTimestampStart', Date.now());
-						this.set('sessionTimestampCurrent', Date.now());
-					} else {
-						this.set('sessionTimestampStart', null);
-						this.set('sessionTimestampCurrent', null);
-						this.set('overallProbesCount', 0);
 					}
 				});
 
@@ -133,12 +131,18 @@
 				});
 
 				// calculate consuming value
-				this.observe('overallProbesCount sessionTimestampCurrent', () => {
+				this.observe('testResults.length', () => {
+					let measurementsCount = this.get('testResults.length');
+
+					if (measurementsCount < 2) {
+						return;
+					}
+
 					let sessionTimestampCurrent = this.get('sessionTimestampCurrent');
 					let overallProbesCount = this.get('overallProbesCount');
 					let sessionTimestampStart = this.get('sessionTimestampStart');
 					let sessionTime = Math.round((sessionTimestampCurrent - sessionTimestampStart) / 1000);
-					let consumingValuePerSecond = overallProbesCount / (sessionTime || 1);
+					let consumingValuePerSecond = (overallProbesCount - this.get('currentProbesCount')) / (sessionTime || 1);
 
 					this.set('consumingValue', Math.round(consumingValuePerSecond * 60));
 				}, { init: false });
