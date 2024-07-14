@@ -258,8 +258,24 @@ module.exports.fetchGlobalpingProbes = () => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/probes` });
 };
 
-module.exports.postGlobalpingMeasurement = (opts) => {
-	return _.makeHTTPRequest({ method: 'POST', url: `${GLOBALPING_HOST}/v1/measurements`, body: opts });
+module.exports.postGlobalpingMeasurement = (opts, responseHeadersToGet) => {
+	let params = {
+		method: 'POST',
+		url: `${GLOBALPING_HOST}/v1/measurements`,
+		body: opts,
+		// headers: {
+		// 	Authorization: 'Bearer YOUR_TOKEN',
+		// },
+	};
+
+	if (responseHeadersToGet) {
+		params = {
+			...params,
+			responseHeadersToGet,
+		};
+	}
+
+	return _.makeHTTPRequest(params);
 };
 
 module.exports.getGlobalpingMeasurement = (id) => {

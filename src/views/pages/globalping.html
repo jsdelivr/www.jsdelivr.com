@@ -9,6 +9,7 @@
 <link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
 <link rel="ractive" href="../components/gp-credits-message.html" name="c-gp-credits-message">
 <link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
+<link rel="ractive" href="../components/gp-credits.html" name="c-gp-credits">
 <link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
@@ -35,7 +36,7 @@
 				});
 			}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&loading=async" async></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -512,8 +513,11 @@
 				</div>
 			</div>
 
-			{{#if creditsError}}
-				<c-gp-credits-message></c-gp-credits-message>
+			{{#if showCreditsError}}
+				<c-gp-credits-message
+					hasToken="{{true}}"
+					rateCreditsData="{{rateCreditsData}}">
+				</c-gp-credits-message>
 			{{/if}}
 
 			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
@@ -528,20 +532,38 @@
 				{{/if}}
 			</div>
 
+			{{#if showCreditsData}}
+				{{#unless showMap}}
+					<div class="gp_map-block_line"></div>
+				{{/unless}}
+
+				<c-gp-credits
+					mapOpened="{{showMap}}"
+					testInProgress="{{testInProgress}}"
+					isInfiniteModeRes="{{isInfiniteModeRes}}"
+					rateCreditsData="{{rateCreditsData}}"
+					testResults="{{testResults}}"
+					measurementsStartedCount="{{Object.keys(measurementsMetadata).length}}"
+				>
+				</c-gp-credits>
+
+				{{#if showMap}}
+					<div class="gp_map-block_line"></div>
+				{{/if}}
+			{{/if}}
+
 			{{#unless showMap}}
 				<div class="gp_map-block_line"></div>
 			{{/unless}}
 
-			{{#if testFailed}}
+			{{#if measurementErrMsg}}
 				<div class="gp_map-block_test-output with-padding">
 					<div class="gp_map-block_test-output_fail-msg">
 						<img width="56"
 							height="56"
 							src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
-						<p>
-							{{inputErrors.noProbesFound ? inputErrors.noProbesFound : 'All tests failed. Maybe you specified a non existing endpoint?'}}
-						</p>
+						<p>{{{measurementErrMsg}}}</p>
 					</div>
 				</div>
 			{{elseif testResults}}
@@ -1280,10 +1302,20 @@
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
-	const RAW_OUTPUT_LINES_BATCH_LIMIT = 20;
+	const RAW_OUTPUT_LINES_BATCH_LIMIT = 40;
 	const DEFAULT_TARGET_VALUE = 'cdn.jsdelivr.net';
 	const INFINITE_MEASUREMENT_PACKETS = 16;
 	const INFINITE_MEASUREMENT_LIMIT = 5;
+	const RATE_LIMIT_HEADERS = [
+		'x-ratelimit-limit',
+		'x-ratelimit-consumed',
+		'x-ratelimit-remaining',
+		'x-ratelimit-reset',
+		'x-credits-consumed',
+		'x-credits-remaining',
+		'x-request-cost',
+	];
+	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
 
 	let map;
 	let oms;
@@ -1333,7 +1365,6 @@
 				httpOpts: CLIENT_DEFAULT_HTTP_OPTS,
 				inputErrors: {},
 				testResults: null,
-				testFailed: false,
 				testInProgress: false,
 				testReqInterval: null,
 				notAppliedOpts: {},
@@ -1355,12 +1386,15 @@
 				measurementsMetadata: null,
 				targetsArr: [],
 				qsMeasurementIdsArr: [],
-				creditsError: false,
+				showCreditsError: false,
 				infiniteMeasIds: [],
 				isInfiniteMeasStopped: false,
 				prevProbesMeasId: null,
 				preparedTestResults: [],
 				ddHandlerSet: false,
+				showCreditsData: false,
+				rateCreditsData: null,
+				measurementErrMsg: null,
 			};
 		},
 		onrender () {
@@ -1422,7 +1456,7 @@
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
-					this.set('testFailed', false);
+					this.set('measurementErrMsg', null);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
 
@@ -1793,7 +1827,7 @@
 			this.set('probesResponse', null);
 			this.set('showMeasurementOpts', false);
 			this.set('testInProgress', true);
-			this.set('testFailed', false);
+			this.set('measurementErrMsg', null);
 			this.set('shareResHeaderDate', null);
 			this.set('testReqParams', null);
 			this.set('shareResFlow', false);
@@ -1801,12 +1835,14 @@
 			this.set('realTimeTestResResponse', null);
 			this.set('activeTargetIdx', 0);
 			this.set('measurementsMetadata', null);
-			this.set('creditsError', false);
+			this.set('showCreditsError', false);
 			this.set('targetsArr', targetsArr);
 			this.set('infiniteMeasIds', []);
 			this.set('isInfiniteMeasStopped', false);
+			this.set('showCreditsData', true);
 			this.set('prevProbesMeasId', null);
 			this.set('preparedTestResults', []);
+			this.set('rateCreditsData', null);
 
 			// if it is infinite measurement then we should show TableOutput by default
 			// otherwise leave prev value set by user
@@ -1833,28 +1869,43 @@
 			}
 
 			// common type of the measurement
-			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }).then((res) => {
+			http.postGlobalpingMeasurement({ ...reqParams, target: targetsArr[0] }, RATE_LIMIT_HEADERS).then((res) => {
 				// set measurement ID for re-use probes case
-				this.set('prevProbesMeasId', res.id);
+				this.set('prevProbesMeasId', res.response.id);
+
+				// set response headers for gp-credits/gp-credits-message
+				this.set('rateCreditsData', { ...res.responseHeaders });
 
 				if (targetsArr[1]) {
 					let secReqParams;
 
 					// prepare params depending whether there is prevProbesMeasId or not
 					if (prevProbesMeasId) {
-						secReqParams = { locations: res.id, ...reqParams, target: targetsArr[1] };
+						secReqParams = { locations: res.response.id, ...reqParams, target: targetsArr[1] };
 					} else {
 						secReqParams = { ...reqParams, locations: res.id, target: targetsArr[1] };
 					}
 
-					http.postGlobalpingMeasurement(secReqParams).then((res1) => {
-						this.getTestMeasurementById({ measurementId: res.id });
-						this.getTestMeasurementById({ measurementId: res1.id, resNumber: 1 });
+					http.postGlobalpingMeasurement(secReqParams, RATE_LIMIT_HEADERS).then((res1) => {
+						let combinedHeaders = { ...res1.responseHeaders };
+
+						[
+							'x-ratelimit-consumed',
+							'x-credits-consumed',
+							'x-request-cost',
+						].forEach((header) => {
+							combinedHeaders[header] = (Number(res.responseHeaders[header]) || 0) + (Number(res1.responseHeaders[header]) || 0);
+						});
+
+						// set response headers for gp-credits/gp-credits-message
+						this.set('rateCreditsData', combinedHeaders);
+						this.getTestMeasurementById({ measurementId: res.response.id });
+						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
 					}).catch((err) => {
 						this.handlePostGPMeasError(err);
 					});
 				} else {
-					this.getTestMeasurementById({ measurementId: res.id });
+					this.getTestMeasurementById({ measurementId: res.response.id });
 				}
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
@@ -2675,16 +2726,19 @@
 		postInfiniteGlobalpingMeasurement ({ reqParams, target, isInfiniteMeas = true, resNumber = 0 }) {
 			this.set('runTestBtnText', 'Stop');
 
-			http.postGlobalpingMeasurement({ ...reqParams, target }).then((res) => {
+			http.postGlobalpingMeasurement({ ...reqParams, target }, RATE_LIMIT_HEADERS).then((res) => {
+				// set response headers for gp-credits/gp-credits-message
+				this.set('rateCreditsData', { ...res.responseHeaders, probesCount: res.response.probesCount });
+
 				// set measurement ID for re-use probes case
-				this.set('prevProbesMeasId', res.id);
+				this.set('prevProbesMeasId', res.response.id);
 
 				let updReqParams = {
 					...reqParams,
-					locations: res.id,
+					locations: res.response.id,
 				};
 
-				this.getTestMeasurementById({ measurementId: res.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
+				this.getTestMeasurementById({ measurementId: res.response.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
 			});
@@ -2728,12 +2782,32 @@
 			this.set('runTestBtnText', 'Run Again');
 		},
 		handlePostGPMeasError (err) {
+			let isInfiniteModeRes = this.get('isInfiniteModeRes');
+			let testResults = this.get('testResults');
+			// for now we send this token directly via postGlobalpingMeasurement, credits data handling depend on a fact whether user has token or not
+			let hasToken = false;
+
 			this.set('testInProgress', false);
-			this.set('testFailed', true);
+			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
 			this.set('runTestBtnText', 'Run Test');
+			// set response headers (from error) for gp-credits/gp-credits-message
+			this.set('rateCreditsData', err.responseHeaders);
 
 			if (err.responseStatusCode === 429) {
-				this.set('creditsError', true);
+				let measurementErrMsg = this.createMeasCreditsErrMsg(
+					err.responseHeaders,
+					isInfiniteModeRes,
+					hasToken,
+					testResults,
+				);
+
+				this.set('measurementErrMsg', measurementErrMsg);
+
+				if (isInfiniteModeRes && testResults) {
+					this.set('showCreditsError', true);
+				} else {
+					this.set('showCreditsData', false);
+				}
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
 				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
@@ -2758,9 +2832,7 @@
 					this.set('showMeasurementOpts', true);
 				}
 			} else if (err.error.type === 'no_probes_found') {
-				this.set('inputErrors', {
-					noProbesFound: err.error.message,
-				});
+				this.set('measurementErrMsg', err.error.message);
 			}
 		},
 		reUseProbesRunTest () {
@@ -3244,6 +3316,55 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			let mdev = Math.sqrt(rttsSquaredSum / rttsNumber - Math.pow(rttsSum / rttsNumber, 2));
 
 			return Math.round(mdev * 1000) / 1000;
+		},
+		createResetInStr (seconds) {
+			let minutes = seconds / 60;
+
+			if (minutes < 1) {
+				return '< 1 minute';
+			}
+
+			return `${Math.ceil(minutes)} minutes`;
+		},
+		createMeasCreditsErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+			// do not show err msg if while infinite meas we've got the 429's err and we already have results
+			if (testResults && isInfinite) { return null; }
+
+			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
+			let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
+			let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
+
+			if (isInfinite === false && remainingCredits) {
+				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
+
+				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
+				// TODO: uncomment when accounts are live
+				// msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
+				//
+				// if (hasToken) {
+				// 	msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
+				// } else {
+				// 	msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
+				// }
+
+				return msg;
+			} else if ((isInfinite && !testResults) || !remainingCredits) {
+				let msg = `<span>You have run out of credits for this session.</span>`;
+
+				msg += `<span>Please wait ${timeToReset} for the limit to reset.`;
+				// TODO: uncomment when accounts are live
+				// msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+				//
+				// if (hasToken) {
+				// 	msg += ` sponsoring us or hosting probes.</span>`;
+				// } else {
+				// 	msg += ` creating an account. <a href='/'>Sign up</a></span>`;
+				// }
+
+				return msg;
+			}
+
+			return DEFAULT_MEASUREMENT_ERR_MSG;
 		},
 	};
 </script>
