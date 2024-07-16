@@ -218,12 +218,17 @@
 			let valuesDelimiter = this.get('valuesDelimiter');
 			let inputValue = this.get('inputValue');
 			let tagsArr = this.get('tagsArr');
+			let addTagCb = this.get('addTagCb');
 
 			if (tagsArr.length < maxTagsAllowed) {
 				if (!tagsArr.includes(inputValue) && inputValue !== '') {
 					tagsArr.push(inputValue);
 
 					this.set('value', tagsArr.join(valuesDelimiter));
+
+					if (addTagCb) {
+						addTagCb(inputValue);
+					}
 				}
 
 				// to overwrite inputValues as ',' or '' set by browser we should call it via setTimeout

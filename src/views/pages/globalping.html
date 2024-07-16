@@ -123,7 +123,8 @@
 							placeholder="IP or domain"
 							labelText="Target(s)"
 							isDisabled="{{testInProgress}}"
-							setDefaultValueInitialy="{{!shareResFlow}}">
+							setDefaultValueInitialy="{{!shareResFlow}}"
+							addTagCb="{{@this.handleOptsOnTargetInputFullURL}}">
 							{{#partial labelIcon}}
 								<img as-tooltip="'Up to 2 IP addresses or domains'"
 									width="14"
@@ -2608,12 +2609,9 @@
 				map.fitBounds(bounds);
 			}, 400);
 		},
-		handleTargetInputPaste (event) {
-			event.preventDefault();
-			let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
-
+		handleOptsOnTargetInputFullURL (content) {
 			try {
-				let { protocol, port, pathname, hostname, search } = new URL(rawPasteContent);
+				let { protocol, port, pathname, hostname, search } = new URL(content);
 
 				this.set('mainOptions.type', 'HTTP');
 				this.set('mainOptions.target', hostname);
@@ -2624,7 +2622,7 @@
 			} catch (err) {
 				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
 
-				this.set('mainOptions.target', rawPasteContent);
+				this.set('mainOptions.target', content);
 
 				if (this.get('mainOptions.type') === 'HTTP') {
 					this.set('httpOpts.protocol', defaultClientProtocol);
@@ -2635,6 +2633,12 @@
 			} finally {
 				this.applyOptions();
 			}
+		},
+		handleTargetInputPaste (event) {
+			event.preventDefault();
+			let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
+
+			this.handleOptsOnTargetInputFullURL(rawPasteContent);
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
