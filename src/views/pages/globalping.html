@@ -2609,12 +2609,12 @@
 				map.fitBounds(bounds);
 			}, 400);
 		},
-		handleOptsOnTargetInputFullURL (content) {
+		handleOptsOnTargetInputFullURL (url, tagsArr = null, delimiter = null) {
 			try {
-				let { protocol, port, pathname, hostname, search } = new URL(content);
+				let { protocol, port, pathname, hostname, search } = new URL(url);
 
 				this.set('mainOptions.type', 'HTTP');
-				this.set('mainOptions.target', hostname);
+				this.set('mainOptions.target', tagsArr ? [ ...tagsArr, hostname].join(delimiter) : hostname);
 				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
 				this.set('notAppliedOpts.port', port);
 				this.set('notAppliedOpts.request.path', pathname !== '/' ? pathname : '');
@@ -2622,13 +2622,15 @@
 			} catch (err) {
 				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
 
-				this.set('mainOptions.target', content);
+				this.set('mainOptions.target', tagsArr ? [ ...tagsArr, url].join(delimiter) : url);
 
 				if (this.get('mainOptions.type') === 'HTTP') {
-					this.set('httpOpts.protocol', defaultClientProtocol);
-					this.set('notAppliedOpts.port', '');
-					this.set('notAppliedOpts.request.path', '');
-					this.set('notAppliedOpts.request.query', '');
+					if (!tagsArr || !tagsArr.length) {
+						this.set('httpOpts.protocol', defaultClientProtocol);
+						this.set('notAppliedOpts.port', '');
+						this.set('notAppliedOpts.request.path', '');
+						this.set('notAppliedOpts.request.query', '');
+					}
 				}
 			} finally {
 				this.applyOptions();
