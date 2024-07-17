@@ -222,12 +222,15 @@
 
 			if (tagsArr.length < maxTagsAllowed) {
 				if (!tagsArr.includes(inputValue) && inputValue !== '') {
-					tagsArr.push(inputValue);
-
-					this.set('value', tagsArr.join(valuesDelimiter));
+					let updTagsArr = [ ...tagsArr, inputValue];
+					let targetInputValue = updTagsArr.join(valuesDelimiter);
 
 					if (addTagCb) {
-						addTagCb(inputValue);
+						addTagCb(inputValue, tagsArr, valuesDelimiter);
+
+						this.set('tagsArr', updTagsArr);
+					} else {
+						this.set('value', targetInputValue);
 					}
 				}
 
