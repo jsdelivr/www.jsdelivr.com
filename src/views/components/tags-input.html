@@ -76,6 +76,7 @@
 				maxTagsAllowed: 2,
 				tagsArr: [],
 				isDisabled: false,
+				useGpTargetHandler: false,
 			};
 		},
 		oninit () {
@@ -211,6 +212,16 @@
 						tagsBlockEl.classList.remove('focused');
 					}
 				});
+
+				// handle paste event
+				inputEl.addEventListener('paste', (event) => {
+					event.preventDefault();
+					let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
+					let tagsArr = this.get('tagsArr');
+					let valuesDelimiter = this.get('valuesDelimiter');
+
+					this.handleOptsOnTargetInputFullURL(rawPasteContent, tagsArr, valuesDelimiter);
+				});
 			}
 		},
 		addTag (clearInput = true) {
@@ -218,17 +229,14 @@
 			let valuesDelimiter = this.get('valuesDelimiter');
 			let inputValue = this.get('inputValue');
 			let tagsArr = this.get('tagsArr');
-			let addTagCb = this.get('addTagCb');
 
 			if (tagsArr.length < maxTagsAllowed) {
 				if (!tagsArr.includes(inputValue) && inputValue !== '') {
 					let updTagsArr = [ ...tagsArr, inputValue ];
 					let targetInputValue = updTagsArr.join(valuesDelimiter);
 
-					if (addTagCb) {
-						addTagCb(inputValue, tagsArr, valuesDelimiter);
-
-						this.set('tagsArr', updTagsArr);
+					if (this.get('useGpTargetHandler')) {
+						this.handleOptsOnTargetInputFullURL(inputValue, tagsArr, valuesDelimiter);
 					} else {
 						this.set('value', targetInputValue);
 					}
@@ -281,6 +289,36 @@
 			this.addTag(false);
 			this.set('inputValue', this.get('tagsArr')[index]);
 			this.removeTagByIdx(index);
+		},
+		handleOptsOnTargetInputFullURL (url, tagsArr = null, delimiter = null) {
+			try {
+				let { protocol, port, pathname, hostname, search } = new URL(url);
+
+				this.set('gpMainOpts.type', 'HTTP');
+				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, hostname ].join(delimiter) : hostname);
+				this.set('gpHttpOpts.protocol', protocol.replace(':', '').toUpperCase());
+				this.set('gpNotAppliedOpts.port', port);
+				this.set('gpNotAppliedOpts.request.path', pathname !== '/' ? pathname : '');
+				this.set('gpNotAppliedOpts.request.query', search.replace('?', ''));
+
+				this.set('tagsArr', tagsArr ? [ ...tagsArr, hostname ] : [ hostname ]);
+			} catch (err) {
+				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, url ].join(delimiter) : url);
+				this.set('tagsArr', tagsArr ? [ ...tagsArr, url ] : [ url ]);
+
+				if (this.get('gpMainOpts.type') === 'HTTP') {
+					if (!tagsArr || !tagsArr.length) {
+						this.set('gpHttpOpts.protocol', 'HTTPS');
+						this.set('gpNotAppliedOpts.port', '');
+						this.set('gpNotAppliedOpts.request.path', '');
+						this.set('gpNotAppliedOpts.request.query', '');
+					}
+				}
+			} finally {
+				let urlHandlerCb = this.get('urlHandlerCb');
+
+				urlHandlerCb();
+			}
 		},
 	};
 </script>
