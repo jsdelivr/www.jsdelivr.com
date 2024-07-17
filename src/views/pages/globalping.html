@@ -2261,6 +2261,7 @@
 			measurementId,
 			resNumber = '0',
 			isShareResCase = false,
+			isFirstShareReq = false,
 			isLastShareReq = false,
 			isInfiniteMeas = false,
 			reqParams = {},
@@ -2280,12 +2281,8 @@
 								this.set('targetsArr', updTargetsArr);
 							}
 
-							if (isLastShareReq) {
-								this.set('targetsArr', updTargetsArr);
-								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
-
+							// only the first target's response returns locations
+							if (isFirstShareReq) {
 								let magicValue = testRes.locations.reduce((res, loc) => {
 									if (loc.magic) {
 										res += res.length ? `, ${loc.magic}` : loc.magic;
@@ -2297,6 +2294,13 @@
 								}, '');
 
 								this.set('mainOptions.location', magicValue);
+							}
+
+							if (isLastShareReq) {
+								this.set('targetsArr', updTargetsArr);
+								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
 								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
 								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
@@ -2692,6 +2696,7 @@
 					measurementId: idsArr[i],
 					resNumber: i,
 					isShareResCase: true,
+					isFirstShareReq: i === 0,
 					isLastShareReq: idsArr.length - 1 === i,
 					isInfiniteMeas,
 				});
