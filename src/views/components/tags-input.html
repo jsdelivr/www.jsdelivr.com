@@ -300,15 +300,14 @@
 				this.set('gpNotAppliedOpts.port', port);
 				this.set('gpNotAppliedOpts.request.path', pathname !== '/' ? pathname : '');
 				this.set('gpNotAppliedOpts.request.query', search.replace('?', ''));
-
 				this.set('tagsArr', tagsArr ? [ ...tagsArr, hostname ] : [ hostname ]);
 			} catch (err) {
 				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, url ].join(delimiter) : url);
 				this.set('tagsArr', tagsArr ? [ ...tagsArr, url ] : [ url ]);
 			} finally {
-				let urlHandlerCb = this.get('urlHandlerCb');
+				let gpUrlHandlerCb = this.get('gpUrlHandlerCb');
 
-				urlHandlerCb();
+				gpUrlHandlerCb();
 			}
 		},
 	};
