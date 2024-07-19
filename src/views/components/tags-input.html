@@ -76,6 +76,7 @@
 				maxTagsAllowed: 2,
 				tagsArr: [],
 				isDisabled: false,
+				useGpTargetHandler: false,
 			};
 		},
 		oninit () {
@@ -211,6 +212,16 @@
 						tagsBlockEl.classList.remove('focused');
 					}
 				});
+
+				// handle paste event
+				inputEl.addEventListener('paste', (event) => {
+					event.preventDefault();
+					let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
+					let tagsArr = this.get('tagsArr');
+					let valuesDelimiter = this.get('valuesDelimiter');
+
+					this.handleOptsOnTargetInputFullURL(rawPasteContent, tagsArr, valuesDelimiter);
+				});
 			}
 		},
 		addTag (clearInput = true) {
@@ -221,9 +232,14 @@
 
 			if (tagsArr.length < maxTagsAllowed) {
 				if (!tagsArr.includes(inputValue) && inputValue !== '') {
-					tagsArr.push(inputValue);
+					let updTagsArr = [ ...tagsArr, inputValue ];
+					let targetInputValue = updTagsArr.join(valuesDelimiter);
 
-					this.set('value', tagsArr.join(valuesDelimiter));
+					if (this.get('useGpTargetHandler')) {
+						this.handleOptsOnTargetInputFullURL(inputValue, tagsArr, valuesDelimiter);
+					} else {
+						this.set('value', targetInputValue);
+					}
 				}
 
 				// to overwrite inputValues as ',' or '' set by browser we should call it via setTimeout
@@ -273,6 +289,26 @@
 			this.addTag(false);
 			this.set('inputValue', this.get('tagsArr')[index]);
 			this.removeTagByIdx(index);
+		},
+		handleOptsOnTargetInputFullURL (url, tagsArr = null, delimiter = null) {
+			try {
+				let { protocol, port, pathname, hostname, search } = new URL(url);
+
+				this.set('gpMainOpts.type', 'HTTP');
+				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, hostname ].join(delimiter) : hostname);
+				this.set('gpHttpOpts.protocol', protocol.replace(':', '').toUpperCase());
+				this.set('gpNotAppliedOpts.port', port);
+				this.set('gpNotAppliedOpts.request.path', pathname !== '/' ? pathname : '');
+				this.set('gpNotAppliedOpts.request.query', search.replace('?', ''));
+				this.set('tagsArr', tagsArr ? [ ...tagsArr, hostname ] : [ hostname ]);
+			} catch (err) {
+				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, url ].join(delimiter) : url);
+				this.set('tagsArr', tagsArr ? [ ...tagsArr, url ] : [ url ]);
+			} finally {
+				let gpUrlHandlerCb = this.get('gpUrlHandlerCb');
+
+				gpUrlHandlerCb();
+			}
 		},
 	};
 </script>

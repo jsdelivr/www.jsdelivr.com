@@ -123,7 +123,12 @@
 							placeholder="IP or domain"
 							labelText="Target(s)"
 							isDisabled="{{testInProgress}}"
-							setDefaultValueInitialy="{{!shareResFlow}}">
+							setDefaultValueInitialy="{{!shareResFlow}}"
+							useGpTargetHandler="{{true}}"
+							gpMainOpts="{{mainOptions}}"
+							gpHttpOpts="{{httpOpts}}"
+							gpNotAppliedOpts="{{notAppliedOpts}}"
+							gpUrlHandlerCb="{{@this.applyOptions}}">
 							{{#partial labelIcon}}
 								<img as-tooltip="'Up to 2 IP addresses or domains'"
 									width="14"
@@ -1767,9 +1772,6 @@
 				targetInput.addEventListener('keypress', handleEnterBtn);
 				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
-
-				let boundHandleTargetInputPaste = this.handleTargetInputPaste.bind(this);
-				targetInput.addEventListener('paste', boundHandleTargetInputPaste);
 			}
 		},
 		proceedToTest (prevProbesMeasId) {
@@ -2259,6 +2261,7 @@
 			measurementId,
 			resNumber = '0',
 			isShareResCase = false,
+			isFirstShareReq = false,
 			isLastShareReq = false,
 			isInfiniteMeas = false,
 			reqParams = {},
@@ -2278,12 +2281,8 @@
 								this.set('targetsArr', updTargetsArr);
 							}
 
-							if (isLastShareReq) {
-								this.set('targetsArr', updTargetsArr);
-								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
-								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
-								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
-
+							// only the first target's response returns locations
+							if (isFirstShareReq) {
 								let magicValue = testRes.locations.reduce((res, loc) => {
 									if (loc.magic) {
 										res += res.length ? `, ${loc.magic}` : loc.magic;
@@ -2295,6 +2294,13 @@
 								}, '');
 
 								this.set('mainOptions.location', magicValue);
+							}
+
+							if (isLastShareReq) {
+								this.set('targetsArr', updTargetsArr);
+								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
+								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
 								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
 								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
@@ -2608,34 +2614,6 @@
 				map.fitBounds(bounds);
 			}, 400);
 		},
-		handleTargetInputPaste (event) {
-			event.preventDefault();
-			let rawPasteContent = (event.clipboardData || window.clipboardData).getData('text');
-
-			try {
-				let { protocol, port, pathname, hostname, search } = new URL(rawPasteContent);
-
-				this.set('mainOptions.type', 'HTTP');
-				this.set('mainOptions.target', hostname);
-				this.set('httpOpts.protocol', protocol.replace(':', '').toUpperCase());
-				this.set('notAppliedOpts.port', port);
-				this.set('notAppliedOpts.request.path', pathname !== '/' ? pathname : '');
-				this.set('notAppliedOpts.request.query', search.replace('?', ''));
-			} catch (err) {
-				let { protocol: defaultClientProtocol } = this.getDefaultClientMeasOptsByTestName('http');
-
-				this.set('mainOptions.target', rawPasteContent);
-
-				if (this.get('mainOptions.type') === 'HTTP') {
-					this.set('httpOpts.protocol', defaultClientProtocol);
-					this.set('notAppliedOpts.port', '');
-					this.set('notAppliedOpts.request.path', '');
-					this.set('notAppliedOpts.request.query', '');
-				}
-			} finally {
-				this.applyOptions();
-			}
-		},
 		getProbesData () {
 			if (has.sessionStorage()) {
 				let probesResponse = sessionStorage.getItem('probesResponse');
@@ -2718,6 +2696,7 @@
 					measurementId: idsArr[i],
 					resNumber: i,
 					isShareResCase: true,
+					isFirstShareReq: i === 0,
 					isLastShareReq: idsArr.length - 1 === i,
 					isInfiniteMeas,
 				});
