@@ -1,0 +1,72 @@
+<label class="c-controlled-textarea {{classList}}">
+	<div class="c-controlled-textarea_info">
+		<span class="c-controlled-textarea_info_label">
+			{{labelText}}
+			{{#if @this.partials.labelIcon && !hideLabelIcon}}
+				{{>labelIcon}}
+			{{/if}}
+		</span>
+
+		{{#if error}}
+			<span class="c-controlled-textarea_info_errorMsg">
+				{{error}}
+			</span>
+
+			<img class="c-controlled-textarea_err-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
+		{{/if}}
+	</div>
+
+	<textarea
+		{{#if id}}id="{{id}}"{{/if}}
+		value="{{value}}"
+		type="text"
+		placeholder="{{placeholder}}"
+		class="{{#if error}}has-error{{/if}}{{#if disabled}}is-disabled{{/if}}"
+		disabled="{{disabled}}">
+	</textarea>
+</label>
+
+<script>
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
+
+	component.exports = {
+		data () {
+			return {
+				invalidValue: null,
+				errMsgTopPos: false,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observeOnce('error', () => {
+					this.set('invalidValue', this.get('value'));
+				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
+
+				this.observe('screenWidth', (screenWidth) => {
+					if ((screenWidth || innerWidth) < 768) {
+						this.set('errMsgTopPos', true);
+					} else {
+						this.set('errMsgTopPos', false);
+					}
+				});
+			}
+		},
+		onrender () {
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+		},
+	};
+</script>
