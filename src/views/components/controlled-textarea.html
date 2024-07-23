@@ -21,8 +21,8 @@
 
 	<textarea
 		{{#if id}}id="{{id}}"{{/if}}
-		value="{{value}}"
-		type="text"
+		rows="{{taRowsAmount}}"
+		value="{{taValue}}"
 		placeholder="{{placeholder}}"
 		class="{{#if error}}has-error{{/if}}{{#if disabled}}is-disabled{{/if}}"
 		disabled="{{disabled}}">
@@ -32,12 +32,15 @@
 <script>
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
+	const DEFAULT_TEXTAREA_ROWS_AMOUNT = 2;
 
 	component.exports = {
 		data () {
 			return {
 				invalidValue: null,
 				errMsgTopPos: false,
+				taRowsAmount: DEFAULT_TEXTAREA_ROWS_AMOUNT,
+				taValue: null,
 			};
 		},
 		oninit () {
@@ -61,6 +64,23 @@
 					} else {
 						this.set('errMsgTopPos', false);
 					}
+				});
+
+				// handle teaxtarea values, rows amount
+				this.observe('value', (value = '') => {
+					this.set('taValue', value);
+				});
+
+				// handle Textarea rows value based on the content
+				this.observe('taValue', (taValue = '') => {
+					let taRowsAmount = DEFAULT_TEXTAREA_ROWS_AMOUNT;
+					let newLines = taValue.match(/(\r\n|\n|\r)/g);
+
+					if (newLines && newLines.length + 1 >= DEFAULT_TEXTAREA_ROWS_AMOUNT) {
+						taRowsAmount = newLines.length + 2;
+					}
+
+					this.set('taRowsAmount', taRowsAmount);
 				});
 			}
 		},
