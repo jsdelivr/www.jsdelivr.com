@@ -2515,6 +2515,14 @@
 			let defaultOpts = this.getDefaultClientMeasOptsByTestName(type);
 			let modifiedMeasOptsCnt = Object.keys(notPresetOpts).reduce((cnt, key) => {
 				if (typeof notPresetOpts[key] === 'object') {
+					if (key === 'request' && notPresetOpts[key].headers) {
+						// each header should be treated as 1 modified option
+						let headersCnt = Object.keys(notPresetOpts[key].headers).length;
+						let otherPropsCnt = Object.keys(notPresetOpts[key]).length - 1; // -1 for headers
+
+						return cnt + headersCnt + otherPropsCnt;
+					}
+
 					return cnt + Object.keys(notPresetOpts[key]).length;
 				}
 
