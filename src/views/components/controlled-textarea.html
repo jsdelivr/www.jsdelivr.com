@@ -67,20 +67,22 @@
 				});
 
 				// parse passed teaxtarea value (expected input { <any-key>: string }) to taValue
-				this.observe('value', (value = '') => {
-					let taValue = '';
+				this.observe('value', (value) => {
+					let currTaElCnt = (this.get('taValue') || '').split(/(\r\n|\n|\r)/).filter(Boolean);
 
-					if (value) {
-						taValue = Object.keys(value).reduce((str, key) => {
+					if (value && Object.keys(value) && currTaElCnt < Object.keys(value).length) {
+						let taValue = Object.keys(value).reduce((str, key) => {
 							return str += `${key}: ${value[key]}\n`;
 						}, '');
-					}
 
-					this.set('taValue', taValue);
+						this.set('taValue', taValue);
+					}
 				});
 
 				// handle Textarea rows value based on the content
 				this.observe('taValue', (taValue = '') => {
+					if (taValue === null) { return; }
+
 					let taRowsAmount = DEFAULT_TEXTAREA_ROWS_AMOUNT;
 					let newLines = taValue.match(/(\r\n|\n|\r)/g);
 
@@ -93,6 +95,8 @@
 
 				// parse Textarea taValue and set value
 				this.observe('taValue', (taValue = '') => {
+					if (taValue === null) { return; }
+
 					let rows = taValue.split(/(\r\n|\n|\r)/).filter(Boolean);
 					let parsedHeaders = rows.reduce((res, row) => {
 						let keyValueRegex = /^([^:]+):(.+)$/;
