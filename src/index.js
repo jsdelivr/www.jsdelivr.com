@@ -392,6 +392,10 @@ koaElasticUtils.addRoutes(router, [
 ], ogImage);
 
 koaElasticUtils.addRoutes(router, [
+	[ '/globalping/open-graph/image/measurement/:id', '/globalping/open-graph/image/measurement/:id' ],
+], ogImage.globalping);
+
+koaElasticUtils.addRoutes(router, [
 	[ '/readme/npm/:name/:version', '/readme/:type(npm)/:scope(@[^/@]+)?/:name/:version?' ],
 	[ '/readme/gh/:user/:repo/:version', '/readme/:type(gh)/:user/:repo/:version?' ],
 ], readme);
