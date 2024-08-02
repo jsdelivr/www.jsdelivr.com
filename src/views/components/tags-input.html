@@ -62,7 +62,7 @@
 					twoway="false"
 					class="switch-input {{#unless isIpv4}}checked{{/unless}}">
 
-				<label for="switch-ip" on-click="@this.handleIpVersionSwitch()">
+				<label for="switch-ip" on-click="@this.handleIpVersionSwitch(ipSwitchDisabled)">
 					<span>IPv4</span>
 					<span>IPv6</span>
 				</label>
@@ -348,7 +348,9 @@
 				gpUrlHandlerCb();
 			}
 		},
-		handleIpVersionSwitch () {
+		handleIpVersionSwitch (isDisabled = false) {
+			if (isDisabled) { return; }
+
 			this.toggle('isIpv4');
 		},
 	};
