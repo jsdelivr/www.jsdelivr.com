@@ -56,7 +56,7 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-wrapper">
+			<div class="switch-wrapper {{#if ipSwitchDisabled}}disabled{{/if}}">
 				<input id="switch-ip"
 					type="checkbox"
 					twoway="false"
@@ -92,6 +92,7 @@
 				isDisabled: false,
 				useGpTargetHandler: false,
 				isIpv4: true,
+				ipSwitchDisabled: false,
 			};
 		},
 		oninit () {
@@ -121,6 +122,28 @@
 					let valuesDelimiter = this.get('valuesDelimiter');
 
 					this.set('tagsArr', value ? value.split(valuesDelimiter) : []);
+				});
+
+				this.observe('tagsArr', (tagsArr) => {
+					if (tagsArr.length !== 1) {
+						this.set('isIpv4', true);
+						this.set('ipSwitchDisabled', true);
+
+						return;
+					}
+
+					let ipv4regex = new RegExp(/^((?:\d+\.){3}\d+)$/);
+					let ipv6regex = new RegExp(/^[\da-fA-F:]+$/);
+
+					if (ipv4regex.test(tagsArr[0])) {
+						this.set('isIpv4', true);
+						this.set('ipSwitchDisabled', false);
+					}
+
+					if (ipv6regex.test(tagsArr[0])) {
+						this.set('isIpv4', false);
+						this.set('ipSwitchDisabled', false);
+					}
 				});
 
 				// set default value is it was passed as prop
