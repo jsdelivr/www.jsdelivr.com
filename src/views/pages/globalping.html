@@ -130,7 +130,8 @@
 							gpHttpOpts="{{httpOpts}}"
 							gpNotAppliedOpts="{{notAppliedOpts}}"
 							gpUrlHandlerCb="{{@this.applyOptions}}"
-							showIPSwitch="{{mainOptions.type !== 'DNS'}}">
+							showIPSwitch="{{mainOptions.type !== 'DNS'}}"
+							ipVersion="{{mainOptions.ipVersion}}">
 							{{#partial labelIcon}}
 								<img as-tooltip="'Up to 2 IP addresses or domains'"
 									width="14"
@@ -1785,7 +1786,7 @@
 			}
 		},
 		proceedToTest (prevProbesMeasId) {
-			let { type, target, location, limit } = this.get('mainOptions');
+			let { type, target, location, limit, ipVersion } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 			let targetsArr = target.split(',');
@@ -1796,6 +1797,11 @@
 				type,
 				// to get test results in real time
 				inProgressUpdates: true,
+			};
+
+			measurementOpts = {
+				...measurementOpts,
+				ipVersion,
 			};
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
