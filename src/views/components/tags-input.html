@@ -60,11 +60,11 @@
 				<input id="switch-ip"
 					type="checkbox"
 					twoway="false"
-					class="switch-input {{#unless isIpv4}}checked{{/unless}}">
+					class="switch-input {{#unless ipVersion === 4}}checked{{/unless}}">
 
-				<label for="switch-ip" on-click="@this.handleIpVersionSwitch(ipSwitchDisabled)">
-					<span>IPv4</span>
-					<span>IPv6</span>
+				<label for="switch-ip">
+					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchDisabled)">IPv4</span>
+					<span on-click="@this.handleIpVersionSwitch(6, ipSwitchDisabled)">IPv6</span>
 				</label>
 			</div>
 		{{/if}}
@@ -91,7 +91,7 @@
 				tagsArr: [],
 				isDisabled: false,
 				useGpTargetHandler: false,
-				isIpv4: true,
+				ipVersion: 4,
 				ipSwitchDisabled: false,
 			};
 		},
@@ -126,7 +126,7 @@
 
 				this.observe('tagsArr', (tagsArr) => {
 					if (tagsArr.length !== 1) {
-						this.set('isIpv4', true);
+						this.set('ipVersion', 4);
 						this.set('ipSwitchDisabled', true);
 
 						return;
@@ -136,12 +136,12 @@
 					let ipv6regex = new RegExp(/^[\da-fA-F:]+$/);
 
 					if (ipv4regex.test(tagsArr[0])) {
-						this.set('isIpv4', true);
+						this.set('ipVersion', 4);
 						this.set('ipSwitchDisabled', false);
 					}
 
 					if (ipv6regex.test(tagsArr[0])) {
-						this.set('isIpv4', false);
+						this.set('ipVersion', 6);
 						this.set('ipSwitchDisabled', false);
 					}
 				});
@@ -348,10 +348,10 @@
 				gpUrlHandlerCb();
 			}
 		},
-		handleIpVersionSwitch (isDisabled = false) {
+		handleIpVersionSwitch (ipVersion, isDisabled = false) {
 			if (isDisabled) { return; }
 
-			this.toggle('isIpv4');
+			this.set('ipVersion', ipVersion);
 		},
 	};
 </script>
