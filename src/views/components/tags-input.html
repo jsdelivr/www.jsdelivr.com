@@ -56,13 +56,13 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-wrapper {{#if ipSwitchDisabled}}disabled{{/if}}">
-				<input id="switch-ip"
+			<div class="switch-ip-type-wrapper {{#if ipSwitchDisabled}}disabled{{/if}}">
+				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
 					class="switch-input {{#unless ipVersion === 4}}checked{{/unless}}">
 
-				<label for="switch-ip">
+				<label for="switch-ip-type">
 					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchDisabled)">IPv4</span>
 					<span on-click="@this.handleIpVersionSwitch(6, ipSwitchDisabled)">IPv6</span>
 				</label>
@@ -233,9 +233,9 @@
 
 				// handle focus styles
 				tagsBlockEl.addEventListener('click', (e) => {
-					let switchDiv = this.find('.switch-wrapper');
+					let switchIpTypeEl = this.find('.switch-ip-type-wrapper');
 
-					if (!switchDiv.contains(e.target)) {
+					if (!switchIpTypeEl.contains(e.target)) {
 						this.handleInputFocus(tagsBlockEl);
 					}
 				});
