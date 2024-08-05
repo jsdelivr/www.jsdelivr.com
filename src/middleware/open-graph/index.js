@@ -187,7 +187,9 @@ const composeTemplate = async (name, scope = null) => {
 };
 
 const render = async (svg) => {
-	return sharp(Buffer.from(svg))
+	return sharp(Buffer.from(svg), {
+		density: 76.8, // scale from 1200x600 to 1280x640
+	})
 		.png()
 		.toBuffer();
 };

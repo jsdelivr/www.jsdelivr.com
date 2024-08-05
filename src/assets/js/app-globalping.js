@@ -25,7 +25,7 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/globalping', cGlobalping);
+app.router.addRoute('/globalping', cGlobalping, { qs: [ 'measurement' ] });
 app.router.addRoute('/globalping/cli', cGlobalpingCli);
 app.router.addRoute('/globalping/slack', cGlobalpingSlack);
 app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
