@@ -2,33 +2,32 @@
 // process.env.PANGOCAIRO_BACKEND = 'fontconfig';
 process.env.FONTCONFIG_PATH = 'fonts';
 
+const fs = require('fs');
 const path = require('path');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
-const entities = require('entities');
-const FontsProcessor = require('./fonts');
+
 const algoliaNode = require('../../lib/algolia-node');
 const got = require('../../lib/got');
-const { readFileSync } = require('fs');
 
-const generatePingOG = require('./lib/generate-ping-og');
-const generateMtrOG = require('./lib/generate-mtr-og');
-const generateTracerouteOG = require('./lib/generate-traceroute-og');
-const generateHttpOG = require('./lib/generate-http-og');
-const generateDnsOG = require('./lib/generate-dns-og');
+const { cleanString, truncateString, fontsProcessor } = require('./utils');
 
-const globalpingOG = readFileSync(path.resolve(__dirname, '../../assets/img/og-globalping.png'));
+const gpGenerators = {
+	dns: require('./globalping/dns'),
+	http: require('./globalping/http'),
+	mtr: require('./globalping/mtr'),
+	ping: require('./globalping/ping'),
+	traceroute: require('./globalping/traceroute'),
+};
+
+const globalpingOG = fs.readFileSync(path.resolve(__dirname, '../../assets/img/og-globalping.png'));
 
 const API_HOST = 'https://data.jsdelivr.com';
 const GLOBALPING_API_HOST = 'https://api.globalping.io';
 const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
-
-const fontsProcessor = new FontsProcessor();
-fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
-fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
 	let [{ hits: requests, bandwidth }] = await Promise.all([
@@ -39,8 +38,7 @@ const fetchStats = async (name, type = 'npm', period = 'month') => {
 };
 
 const fetchGlobalpingStats = async (id) => {
-	return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id}`).json().catch(() => {
-	});
+	return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id}`).json().catch(() => {});
 };
 
 const fetchLogo = async (url) => {
@@ -75,44 +73,6 @@ const fetchLogo = async (url) => {
 			logo.push(chunk);
 		});
 	});
-};
-
-/**
- *
- * @param {string} input
- * @returns {string}
- */
-const cleanString = (input) => {
-	return entities.decodeHTML(input).replace(/\p{Cc}/gu, '');
-};
-
-/**
- * @param {string} input
- * @param {string} fontFamily
- * @param {number} fontSize
- * @param {number} maxWidth
- * @param {number} letterSpacing
- * @return {{width: number, text: string}}
- */
-const truncateString = (input, fontFamily, fontSize, maxWidth, letterSpacing = 0) => {
-	let width = str => fontsProcessor.computeWidth(str, fontFamily, fontSize, letterSpacing);
-	let truncate = (str) => {
-		let strWidth = width(str);
-		let dotsWidth = width('...');
-
-		if (strWidth <= maxWidth) {
-			return { text: str, width: strWidth };
-		}
-
-		while (strWidth > maxWidth - dotsWidth) {
-			str = str.substr(0, str.length - 1);
-			strWidth = width(str);
-		}
-
-		return { text: str + '...', width: strWidth + dotsWidth };
-	};
-
-	return truncate(cleanString(input));
 };
 
 const processDescription = (description) => {
@@ -235,7 +195,7 @@ const render = async (svg) => {
 module.exports = async (ctx) => {
 	try {
 		let data = await composeTemplate(ctx.params.name, ctx.params.scope);
-		let svg = await ctx.render('og-image-template.svg.ractive', data);
+		let svg = await ctx.render('open-graph/jsdelivr-package.svg', data);
 
 		ctx.body = await render(svg);
 		ctx.type = 'image/png';
@@ -253,56 +213,19 @@ module.exports.globalping = async (ctx) => {
 	try {
 		let data = await fetchGlobalpingStats(ctx.params.id.split(',')[0].split('.')[0]);
 
-		if (!data || data.status !== 'finished') {
+		if (!data || data.status !== 'finished' || !gpGenerators[data.type]) {
 			ctx.body = globalpingOG;
 			ctx.type = 'image/png';
 			ctx.maxAge = 60;
 			return;
 		}
 
-		let svg;
-
-		switch (data.type) {
-			case 'ping': {
-				svg = await generatePingOG(ctx, data);
-				break;
-			}
-
-			case 'mtr': {
-				svg = await generateMtrOG(ctx, data);
-				break;
-			}
-
-			case 'http': {
-				svg = await generateHttpOG(ctx, data);
-				break;
-			}
-
-			case 'traceroute': {
-				svg = await generateTracerouteOG(ctx, data);
-				break;
-			}
-
-			case 'dns': {
-				svg = await generateDnsOG(ctx, data);
-				break;
-			}
-
-			default: {
-				ctx.body = globalpingOG;
-				ctx.type = 'image/png';
-				ctx.maxAge = 60;
-				return;
-			}
-		}
-
+		let svg = await gpGenerators[data.type](ctx, data);
 		ctx.body = await render(svg);
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
 	} catch (error) {
-		console.log(error);
-
-		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
+		if (error?.statusCode === 404) {
 			return; // 404 response
 		}
 
