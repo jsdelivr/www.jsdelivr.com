@@ -137,11 +137,12 @@
 
 					if (ipv4regex.test(tagsArr[0])) {
 						this.set('ipVersion', 4);
-						this.set('ipSwitchDisabled', false);
-					}
-
-					if (ipv6regex.test(tagsArr[0])) {
+						this.set('ipSwitchDisabled', true);
+					} else if (ipv6regex.test(tagsArr[0])) {
 						this.set('ipVersion', 6);
+						this.set('ipSwitchDisabled', true);
+					} else {
+						this.set('ipVersion', 4);
 						this.set('ipSwitchDisabled', false);
 					}
 				});
