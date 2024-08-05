@@ -56,15 +56,15 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-ip-type-wrapper {{#if ipSwitchDisabled}}disabled{{/if}}">
+			<div class="switch-ip-type-wrapper {{#if ipSwitchDisabled}}disabled{{/if}} {{#if ipSwitchLocked && !ipSwitchDisabled}}locked{{/if}}">
 				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
 					class="switch-input {{#unless ipVersion === 4}}checked{{/unless}}">
 
 				<label for="switch-ip-type">
-					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchDisabled)">IPv4</span>
-					<span on-click="@this.handleIpVersionSwitch(6, ipSwitchDisabled)">IPv6</span>
+					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchLocked)">IPv4</span>
+					<span on-click="@this.handleIpVersionSwitch(6, ipSwitchLocked)">IPv6</span>
 				</label>
 			</div>
 		{{/if}}
@@ -93,6 +93,7 @@
 				useGpTargetHandler: false,
 				ipVersion: 4,
 				ipSwitchDisabled: false,
+				ipSwitchLocked: false,
 			};
 		},
 		oninit () {
@@ -124,10 +125,12 @@
 					this.set('tagsArr', value ? value.split(valuesDelimiter) : []);
 				});
 
+				// handle ip type switch
 				this.observe('tagsArr', (tagsArr) => {
 					if (tagsArr.length !== 1) {
 						this.set('ipVersion', 4);
 						this.set('ipSwitchDisabled', true);
+						this.set('ipSwitchLocked', true);
 
 						return;
 					}
@@ -137,12 +140,15 @@
 
 					if (ipv4regex.test(tagsArr[0])) {
 						this.set('ipVersion', 4);
-						this.set('ipSwitchDisabled', true);
+						this.set('ipSwitchLocked', true);
+						this.set('ipSwitchDisabled', false);
 					} else if (ipv6regex.test(tagsArr[0])) {
 						this.set('ipVersion', 6);
-						this.set('ipSwitchDisabled', true);
+						this.set('ipSwitchLocked', true);
+						this.set('ipSwitchDisabled', false);
 					} else {
 						this.set('ipVersion', 4);
+						this.set('ipSwitchLocked', false);
 						this.set('ipSwitchDisabled', false);
 					}
 				});
