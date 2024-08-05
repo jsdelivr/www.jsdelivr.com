@@ -3,6 +3,7 @@
 <link rel="ractive" href="../components/footer.html" name="c-footer">
 <link rel="ractive" href="../components/notification.html" name="c-notification">
 <link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../components/controlled-textarea.html" name="c-controlled-textarea">
 <link rel="ractive" href="../components/tags-input.html" name="c-tags-input">
 <link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
 <link rel="ractive" href="../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
@@ -382,14 +383,6 @@
 											</c-controlled-input>
 
 											<div class="pair">
-												<c-controlled-input
-													value="{{notAppliedOpts.port}}"
-													error="{{inputErrors.port}}"
-													placeholder="53"
-													labelText="Port"
-													classList="port-input gp_input">
-												</c-controlled-input>
-
 												<div class="gp_dropdown_reg">
 													<span>Protocol</span>
 
@@ -410,35 +403,53 @@
 														</div>
 													</div>
 												</div>
+
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="53"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
 											</div>
 
-											<div class="gp_dropdown_reg">
-												<span>Method</span>
+											<div class="pair">
+												<div class="gp_dropdown_reg">
+													<span>Method</span>
 
-												<div class="btn-group">
-													<button type="button"
-														class="dropdown-toggle"
-														data-toggle="dropdown"
-														aria-haspopup="true"
-														aria-expanded="false">
-														<span>{{~/httpOpts.request.method}}</span>
-														<i class="fa fa-angle-down" aria-hidden="true"></i>
-													</button>
+													<div class="btn-group">
+														<button type="button"
+															class="dropdown-toggle"
+															data-toggle="dropdown"
+															aria-haspopup="true"
+															aria-expanded="false">
+															<span>{{~/httpOpts.request.method}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
 
-													<div class="dropdown-menu">
-														<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
-														<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
+														<div class="dropdown-menu">
+															<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
+															<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
+														</div>
 													</div>
 												</div>
+
+												<c-controlled-input
+													value="{{notAppliedOpts.resolver}}"
+													error="{{inputErrors.resolver}}"
+													placeholder="Resolver"
+													labelText="Resolver"
+													classList="gp_input">
+												</c-controlled-input>
 											</div>
 
-											<c-controlled-input
-												value="{{notAppliedOpts.resolver}}"
-												error="{{inputErrors.resolver}}"
-												placeholder="Resolver"
-												labelText="Resolver"
+											<c-controlled-textarea
+												value="{{notAppliedOpts.request.headers}}"
+												error="{{inputErrors.headers}}"
+												placeholder="Header: Value"
+												labelText="Headers"
 												classList="gp_input">
-											</c-controlled-input>
+											</c-controlled-textarea>
 										</div>
 									{{/if}}
 
@@ -547,9 +558,7 @@
 					testInProgress="{{testInProgress}}"
 					isInfiniteModeRes="{{isInfiniteModeRes}}"
 					rateCreditsData="{{rateCreditsData}}"
-					testResults="{{testResults}}"
-					measurementsStartedCount="{{Object.keys(measurementsMetadata).length}}"
-				>
+					testResults="{{testResults}}">
 				</c-gp-credits>
 
 				{{#if showMap}}
@@ -2510,6 +2519,14 @@
 			let defaultOpts = this.getDefaultClientMeasOptsByTestName(type);
 			let modifiedMeasOptsCnt = Object.keys(notPresetOpts).reduce((cnt, key) => {
 				if (typeof notPresetOpts[key] === 'object') {
+					if (key === 'request' && notPresetOpts[key].headers) {
+						// each header should be treated as 1 modified option
+						let headersCnt = Object.keys(notPresetOpts[key].headers).length;
+						let otherPropsCnt = Object.keys(notPresetOpts[key]).length - 1; // -1 for headers
+
+						return cnt + headersCnt + otherPropsCnt;
+					}
+
 					return cnt + Object.keys(notPresetOpts[key]).length;
 				}
 
