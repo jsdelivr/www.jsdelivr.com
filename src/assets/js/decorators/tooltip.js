@@ -77,7 +77,14 @@ let tooltipDecorator = (
 					preTag.textContent = content;
 					tooltip.appendChild(preTag);
 				} else {
-					tooltip.textContent = content;
+					if (!Array.isArray(content)) {
+						tooltip.textContent = content;
+					} else {
+						content.forEach((line) => {
+							tooltip.appendChild(document.createTextNode(line));
+							tooltip.appendChild(document.createElement('br'));
+						});
+					}
 				}
 
 				tooltip.id = 'ractive-tooltip-instance';
