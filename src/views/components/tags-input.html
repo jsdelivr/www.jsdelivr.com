@@ -56,11 +56,11 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-ip-type-wrapper {{#if ipSwitchHidden}}hidden{{/if}} {{#if ipSwitchLocked && !ipSwitchHidden}}locked{{/if}}">
+			<div class="switch-ip-type-wrapper {{#unless ipVersionDisplayed}}hidden{{/unless}} {{#if ipSwitchLocked}}locked{{/if}}">
 				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
-					class="switch-input {{#unless ipVersion === 4}}checked{{/unless}}">
+					class="switch-input {{#unless ipVersionDisplayed === 4}}checked{{/unless}}">
 
 				<label for="switch-ip-type">
 					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchLocked)">IPv4</span>
@@ -91,7 +91,9 @@
 				tagsArr: [],
 				isDisabled: false,
 				useGpTargetHandler: false,
-				ipVersion: 4,
+				// ipVersion should be set only for 1 target when it is a domain name
+				ipVersion: null,
+				ipVersionDisplayed: null,
 				ipSwitchHidden: false,
 				ipSwitchLocked: false,
 			};
@@ -128,8 +130,8 @@
 				// handle ip type switch
 				this.observe('tagsArr', (tagsArr) => {
 					if (tagsArr.length !== 1) {
-						this.set('ipVersion', 4);
-						this.set('ipSwitchHidden', true);
+						this.set('ipVersion', null);
+						this.set('ipVersionDisplayed', null);
 						this.set('ipSwitchLocked', true);
 
 						return;
@@ -139,17 +141,17 @@
 					let ipv6regex = new RegExp(/^[\da-fA-F:]+$/);
 
 					if (ipv4regex.test(tagsArr[0])) {
-						this.set('ipVersion', 4);
+						this.set('ipVersion', null);
+						this.set('ipVersionDisplayed', 4);
 						this.set('ipSwitchLocked', true);
-						this.set('ipSwitchHidden', false);
 					} else if (ipv6regex.test(tagsArr[0])) {
-						this.set('ipVersion', 6);
+						this.set('ipVersion', null);
+						this.set('ipVersionDisplayed', 6);
 						this.set('ipSwitchLocked', true);
-						this.set('ipSwitchHidden', false);
 					} else {
 						this.set('ipVersion', 4);
+						this.set('ipVersionDisplayed', 4);
 						this.set('ipSwitchLocked', false);
-						this.set('ipSwitchHidden', false);
 					}
 				});
 
@@ -363,6 +365,7 @@
 			if (isDisabled) { return; }
 
 			this.set('ipVersion', ipVersion);
+			this.set('ipVersionDisplayed', ipVersion);
 		},
 	};
 </script>
