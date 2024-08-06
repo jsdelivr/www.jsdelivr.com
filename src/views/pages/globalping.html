@@ -1799,10 +1799,13 @@
 				inProgressUpdates: true,
 			};
 
-			measurementOpts = {
-				...measurementOpts,
-				ipVersion,
-			};
+			// ipVersion should be passed only if there is 1 target and it is a domain name
+			if (ipVersion) {
+				measurementOpts = {
+					...measurementOpts,
+					ipVersion,
+				};
+			}
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
