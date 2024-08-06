@@ -60,11 +60,11 @@
 				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
-					class="switch-input {{#unless ipVersionDisplayed === 4}}checked{{/unless}}">
+					class="switch-input {{#unless ipVersionDisplayed === IP_V4_VALUE}}checked{{/unless}}">
 
 				<label for="switch-ip-type">
-					<span on-click="@this.handleIpVersionSwitch(4)">IPv4</span>
-					<span on-click="@this.handleIpVersionSwitch(6)">IPv6</span>
+					<span on-click="@this.handleIpVersionSwitch(IP_V4_VALUE)">IPv4</span>
+					<span on-click="@this.handleIpVersionSwitch(IP_V6_VALUE)">IPv6</span>
 				</label>
 			</div>
 		{{/if}}
@@ -75,6 +75,8 @@
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
 	const tooltip = require('../../assets/js/decorators/tooltip');
+	const IP_V4_VALUE = 4;
+	const IP_V6_VALUE = 6;
 
 	component.exports = {
 		decorators: {
@@ -95,6 +97,8 @@
 				ipVersion: null,
 				ipVersionDisplayed: null,
 				ipSwitchLocked: false,
+				IP_V4_VALUE,
+				IP_V6_VALUE,
 			};
 		},
 		oninit () {
@@ -143,15 +147,15 @@
 
 					if (ipv4regex.test(tagsArr[0])) {
 						this.set('ipVersion', null);
-						this.set('ipVersionDisplayed', 4);
+						this.set('ipVersionDisplayed', IP_V4_VALUE);
 						this.set('ipSwitchLocked', true);
 					} else if (ipv6regex.test(tagsArr[0])) {
 						this.set('ipVersion', null);
-						this.set('ipVersionDisplayed', 6);
+						this.set('ipVersionDisplayed', IP_V6_VALUE);
 						this.set('ipSwitchLocked', true);
 					} else {
-						this.set('ipVersion', 4);
-						this.set('ipVersionDisplayed', 4);
+						this.set('ipVersion', IP_V4_VALUE);
+						this.set('ipVersionDisplayed', IP_V4_VALUE);
 						this.set('ipSwitchLocked', false);
 					}
 				});
