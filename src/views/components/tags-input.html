@@ -56,15 +56,15 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-ip-type-wrapper {{#unless ipVersionDisplayed}}hidden{{/unless}} {{#if ipSwitchLocked}}locked{{/if}}">
+			<div class="switch-ip-type-wrapper {{#if isDisabled}}disabled{{/if}} {{#unless ipVersionDisplayed}}hidden{{/unless}} {{#if ipSwitchLocked}}locked{{/if}}">
 				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
 					class="switch-input {{#unless ipVersionDisplayed === 4}}checked{{/unless}}">
 
 				<label for="switch-ip-type">
-					<span on-click="@this.handleIpVersionSwitch(4, ipSwitchLocked)">IPv4</span>
-					<span on-click="@this.handleIpVersionSwitch(6, ipSwitchLocked)">IPv6</span>
+					<span on-click="@this.handleIpVersionSwitch(4)">IPv4</span>
+					<span on-click="@this.handleIpVersionSwitch(6)">IPv6</span>
 				</label>
 			</div>
 		{{/if}}
@@ -367,8 +367,11 @@
 				gpUrlHandlerCb();
 			}
 		},
-		handleIpVersionSwitch (ipVersion, isDisabled = false) {
-			if (isDisabled) { return; }
+		handleIpVersionSwitch (ipVersion) {
+		let isDisabled = this.get('isDisabled');
+		let ipSwitchLocked = this.get('ipSwitchLocked');
+
+		if (isDisabled || ipSwitchLocked) { return; }
 
 			this.set('ipVersion', ipVersion);
 			this.set('ipVersionDisplayed', ipVersion);
