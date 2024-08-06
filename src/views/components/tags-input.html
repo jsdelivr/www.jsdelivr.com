@@ -134,10 +134,16 @@
 
 				// handle ip type switch
 				this.observe('tagsArr', (tagsArr) => {
+					let currIpVersionDisplayed = this.get('ipVersionDisplayed');
+
 					if (tagsArr.length > 1) {
 						this.set('ipVersion', null);
 						this.set('ipVersionDisplayed', null);
 						this.set('ipSwitchLocked', true);
+
+						if (currIpVersionDisplayed) {
+							this.set('prevIpVersionDisplayed', currIpVersionDisplayed);
+						}
 
 						return;
 					}
@@ -154,8 +160,10 @@
 						this.set('ipVersionDisplayed', IP_V6_VALUE);
 						this.set('ipSwitchLocked', true);
 					} else {
-						this.set('ipVersion', IP_V4_VALUE);
-						this.set('ipVersionDisplayed', IP_V4_VALUE);
+						let ipVersionDisplayed = currIpVersionDisplayed || this.get('prevIpVersionDisplayed') || IP_V4_VALUE;
+
+						this.set('ipVersion', ipVersionDisplayed);
+						this.set('ipVersionDisplayed', ipVersionDisplayed);
 						this.set('ipSwitchLocked', false);
 					}
 				});
