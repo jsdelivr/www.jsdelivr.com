@@ -2326,6 +2326,13 @@
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
+								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
+								if (testRes.measurementOptions.ipVersion) {
+									this.set('mainOptions.ipVersion', testRes.measurementOptions.ipVersion);
+
+									delete testRes.measurementOptions.ipVersion;
+								}
+
 								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
 								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
 								let receivedInitPresetOpts = this.filterForInitPresetOpts(defaultAPIOpts, combinedOptions);
