@@ -56,7 +56,7 @@
 			class="{{#if tagsArr.length >= maxTagsAllowed}}tags-limit{{/if}} {{#if isDisabled}}disabled-input{{/if}}">
 
 		{{#if showIPSwitch}}
-			<div class="switch-ip-type-wrapper {{#if ipSwitchDisabled}}disabled{{/if}} {{#if ipSwitchLocked && !ipSwitchDisabled}}locked{{/if}}">
+			<div class="switch-ip-type-wrapper {{#if ipSwitchHidden}}hidden{{/if}} {{#if ipSwitchLocked && !ipSwitchHidden}}locked{{/if}}">
 				<input id="switch-ip-type"
 					type="checkbox"
 					twoway="false"
@@ -92,7 +92,7 @@
 				isDisabled: false,
 				useGpTargetHandler: false,
 				ipVersion: 4,
-				ipSwitchDisabled: false,
+				ipSwitchHidden: false,
 				ipSwitchLocked: false,
 			};
 		},
@@ -129,7 +129,7 @@
 				this.observe('tagsArr', (tagsArr) => {
 					if (tagsArr.length !== 1) {
 						this.set('ipVersion', 4);
-						this.set('ipSwitchDisabled', true);
+						this.set('ipSwitchHidden', true);
 						this.set('ipSwitchLocked', true);
 
 						return;
@@ -141,15 +141,15 @@
 					if (ipv4regex.test(tagsArr[0])) {
 						this.set('ipVersion', 4);
 						this.set('ipSwitchLocked', true);
-						this.set('ipSwitchDisabled', false);
+						this.set('ipSwitchHidden', false);
 					} else if (ipv6regex.test(tagsArr[0])) {
 						this.set('ipVersion', 6);
 						this.set('ipSwitchLocked', true);
-						this.set('ipSwitchDisabled', false);
+						this.set('ipSwitchHidden', false);
 					} else {
 						this.set('ipVersion', 4);
 						this.set('ipSwitchLocked', false);
-						this.set('ipSwitchDisabled', false);
+						this.set('ipSwitchHidden', false);
 					}
 				});
 
