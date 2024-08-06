@@ -94,14 +94,15 @@
 				// ipVersion should be set only for 1 target when it is a domain name
 				ipVersion: null,
 				ipVersionDisplayed: null,
-				ipSwitchHidden: false,
 				ipSwitchLocked: false,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observeOnce('error', () => {
+				this.observe('error', () => {
 					this.set('invalidValue', this.get('value'));
+					this.set('ipVersion', null);
+					this.set('ipVersionDisplayed', null);
 				}, { init: false });
 
 				this.observe('value', (value) => {
