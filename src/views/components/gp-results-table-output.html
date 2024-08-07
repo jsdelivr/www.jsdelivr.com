@@ -21,7 +21,7 @@
 					<span class="rtt_separator">/</span>
 					<span class="rtt_text">max</span>
 				</div>
-				<div class="results-table_header_cell ip">IP</div>
+				<div class="results-table_header_cell ip">Resolved IP</div>
 				<div class="results-table_header_cell graph">Graph</div>
 			</div>
 
@@ -176,9 +176,19 @@
 
 									<div class="results-table_row_stats_subrow_cell ip">
 										<div class="results-table_row_stats_subrow_cell_value">
-											<span class="results-table_row_stats_subrow_cell_value_header">IP</span>
+											<span class="results-table_row_stats_subrow_cell_value_header">Resolved IP</span>
 											{{#if this.ipAddr}}
-												<span>{{this.ipAddr}}</span>
+												<span class="visible-lg"> <!-- We break in two lines if the value has more than 4 non-empty groups. -->
+													{{#if this.ipAddr.split(':').filter(Boolean).length > 4}}
+														<span>
+															{{this.ipAddr.split(':').slice(0, 4).join(':')}}<br>
+															:{{this.ipAddr.split(':').slice(4).join(':')}}
+														</span>
+													{{else}}
+														<span>{{this.ipAddr}}</span>
+													{{/if}}
+												</span>
+												<span class="hidden-lg">{{this.ipAddr}}</span>
 											{{elseif !this.ipAddr}}
 												<c-placeholder-skeleton type="subheader"></c-placeholder-skeleton>
 											{{/if}}
