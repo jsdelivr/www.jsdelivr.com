@@ -192,6 +192,7 @@
 				let inputWrapperIdPrefix = this.get('inputWrapperIdPrefix');
 				let inputId = this.get('inputId');
 				let inputEl = this.find(`#${inputId}`);
+				let ipTypeSwitchEl = this.find('.switch-ip-type-wrapper');
 				let tagsBlockEl = this.find(`#${inputWrapperIdPrefix + inputId}`);
 
 				// handle input changes
@@ -291,6 +292,29 @@
 
 					this.handleOptsOnTargetInputFullURL(rawPasteContent, tagsArr, valuesDelimiter);
 				});
+
+				// toggle IP version switch on SPACE
+				ipTypeSwitchEl.addEventListener('keydown', (e) => {
+					if ([ ' ' ].includes(e.key)) {
+						e.stopPropagation();
+						e.preventDefault();
+
+						let ipVersion = this.get('ipVersion');
+						let ipVersionDisplayed = this.get('ipVersionDisplayed') || IP_V4_VALUE;
+						let ipSwitchLocked = this.get('ipSwitchLocked');
+
+						if (!ipSwitchLocked) {
+							let toggledIpVDisplayed = ipVersion === IP_V4_VALUE ? IP_V6_VALUE : IP_V4_VALUE;
+
+							this.set('ipVersion', ipVersion === null ? ipVersion : ipVersion === IP_V4_VALUE ? IP_V6_VALUE : IP_V4_VALUE);
+							this.set('ipVersionDisplayed', toggledIpVDisplayed);
+						}
+					}
+				});
+
+				ipTypeSwitchEl.addEventListener('focus', (e) => {
+					this.handleIpTypeSwitchFocus(e);
+				});
 			}
 		},
 		addTag (clearInput = true) {
@@ -387,6 +411,11 @@
 
 			this.set('ipVersion', ipVersion);
 			this.set('ipVersionDisplayed', ipVersion);
+		},
+		handleIpTypeSwitchFocus (e) {
+			console.log('+++++ e', e);
+			console.log('+++++ e.target', e.target);
+			console.log('________________________');
 		},
 	};
 </script>
