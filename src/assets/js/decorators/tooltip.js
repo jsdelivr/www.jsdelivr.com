@@ -73,6 +73,7 @@ let tooltipDecorator = (
 
 				if (rawHtml) {
 					let preTag = document.createElement('pre');
+					tooltip.classList.add('raw');
 
 					preTag.textContent = content;
 					tooltip.appendChild(preTag);
