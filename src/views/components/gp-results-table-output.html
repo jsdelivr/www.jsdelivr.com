@@ -179,14 +179,9 @@
 											<span class="results-table_row_stats_subrow_cell_value_header">Resolved IP</span>
 											{{#if this.ipAddr}}
 												<span class="visible-lg"> <!-- We break in two lines if the value has more than 4 non-empty groups. -->
-													{{#if this.ipAddr.split(':').filter(Boolean).length > 4}}
-														<span>
-															{{this.ipAddr.split(':').slice(0, 4).join(':')}}<br>
-															:{{this.ipAddr.split(':').slice(4).join(':')}}
-														</span>
-													{{else}}
-														<span>{{this.ipAddr}}</span>
-													{{/if}}
+													{{#each splitIPv6(ipAddr)}}
+														{{this}}<br>
+													{{/each}}
 												</span>
 												<span class="hidden-lg">{{this.ipAddr}}</span>
 											{{elseif !this.ipAddr}}
@@ -242,6 +237,17 @@
 				PROBE_NO_TIMING_VALUE,
 				PROBE_OFFLINE_TEXT,
 				PROBE_FAILED_TEXT,
+				splitIPv6 (address) {
+					let segments = address.split(':');
+
+					if (segments.filter(Boolean).length <= 4) {
+						return [ address ];
+					}
+
+					let splitAt = segments[3] ? 4 : 3;
+
+					return [ segments.slice(0, splitAt).join(':'), ':' + segments.slice(splitAt).join(':') ];
+				},
 			};
 		},
 		onrender () {
