@@ -541,7 +541,7 @@
 				</c-gp-credits-message>
 			{{/if}}
 
-			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
+			<div class="gp_map-block_map-wrapper {{#unless showMap || tempShowMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
 				{{#if testResults}}
@@ -554,24 +554,24 @@
 			</div>
 
 			{{#if showCreditsData}}
-				{{#unless showMap}}
+				{{#unless showMap || tempShowMap}}
 					<div class="gp_map-block_line"></div>
 				{{/unless}}
 
 				<c-gp-credits
-					mapOpened="{{showMap}}"
+					mapOpened="{{showMap || tempShowMap}}"
 					testInProgress="{{testInProgress}}"
 					isInfiniteModeRes="{{isInfiniteModeRes}}"
 					rateCreditsData="{{rateCreditsData}}"
 					testResults="{{testResults}}">
 				</c-gp-credits>
 
-				{{#if showMap}}
+				{{#if showMap || tempShowMap}}
 					<div class="gp_map-block_line"></div>
 				{{/if}}
 			{{/if}}
 
-			{{#unless showMap}}
+			{{#unless showMap || tempShowMap}}
 				<div class="gp_map-block_line"></div>
 			{{/unless}}
 
@@ -1367,6 +1367,7 @@
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
+				tempShowMap: false, // if after the meas the map were closed and then meas type sitched - we should show the map temp and then hide it once results received
 				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
@@ -1478,7 +1479,7 @@
 					this.set('measurementErrMsg', null);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
-					this.set('showMap', true);
+					this.set('tempShowMap', true);
 					this.set('showCreditsData', false);
 
 					// since Table output mode is available only for Ping measurement
@@ -2285,6 +2286,8 @@
 			return new Promise((resolve, reject) => {
 				let testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+						this.set('tempShowMap', false);
+
 						if (isShareResCase) {
 							let currentTargets = this.get('mainOptions.target');
 							let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
