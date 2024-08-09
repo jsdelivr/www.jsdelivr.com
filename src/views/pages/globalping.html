@@ -134,7 +134,9 @@
 							gpMainOpts="{{mainOptions}}"
 							gpHttpOpts="{{httpOpts}}"
 							gpNotAppliedOpts="{{notAppliedOpts}}"
-							gpUrlHandlerCb="{{@this.applyOptions}}">
+							gpUrlHandlerCb="{{@this.applyOptions}}"
+							showIPSwitch="{{mainOptions.type !== 'DNS'}}"
+							ipVersion="{{mainOptions.ipVersion}}">
 							{{#partial labelIcon}}
 								<img as-tooltip="'Up to 2 IP addresses or domains'"
 									width="14"
@@ -1789,7 +1791,7 @@
 			}
 		},
 		proceedToTest (prevProbesMeasId) {
-			let { type, target, location, limit } = this.get('mainOptions');
+			let { type, target, location, limit, ipVersion } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 			let targetsArr = target.split(',');
@@ -1801,6 +1803,14 @@
 				// to get test results in real time
 				inProgressUpdates: true,
 			};
+
+			// ipVersion should be passed only if there is 1 target and it is a domain name and test type is not a DNS
+			if (ipVersion && type.toLowerCase() !== 'dns') {
+				measurementOpts = {
+					...measurementOpts,
+					ipVersion,
+				};
+			}
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
@@ -2315,6 +2325,13 @@
 								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+
+								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
+								if (testRes.measurementOptions.ipVersion) {
+									this.set('mainOptions.ipVersion', testRes.measurementOptions.ipVersion);
+
+									delete testRes.measurementOptions.ipVersion;
+								}
 
 								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
 								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
@@ -3228,11 +3245,21 @@
 			};
 		},
 		parseIPFromRawOutput (raw) {
-			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
-			let match = raw.match(ipRegex);
-			let ipAddr = match ? match[0] : '';
+			let ipv4Regex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
+			let ipv6Regex = /\b([a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\b|\b((?:[a-fA-F0-9]{1,4}:){1,7}|::)(?:[a-fA-F0-9]{1,4})?\b/;
+			let matchIPv4 = raw.match(ipv4Regex);
 
-			return ipAddr;
+			if (matchIPv4) {
+				return matchIPv4[0];
+			}
+
+			let matchIPv6 = raw.match(ipv6Regex);
+
+			if (matchIPv6) {
+				return matchIPv6[0];
+			}
+
+			return '';
 		},
 		parseLinesFromRawOutput (raw, idxShift = 0) {
 			let lines = raw.split('\n').filter(l => l);
