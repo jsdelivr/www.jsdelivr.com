@@ -72,6 +72,7 @@
 </label>
 
 <script>
+	const ipRegex = require('../../assets/js/utils/ip-regex');
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
 	const tooltip = require('../../assets/js/decorators/tooltip');
@@ -148,8 +149,8 @@
 						return;
 					}
 
-					let ipv4regex = new RegExp(/^((?:\d+\.){3}\d+)$/);
-					let ipv6regex = new RegExp(/^[\da-fA-F:]+$/);
+					let ipv4regex = ipRegex.v4({ exact: true });
+					let ipv6regex = ipRegex.v6({ exact: true });
 
 					if (ipv4regex.test(tagsArr[0])) {
 						this.set('ipVersion', null);
