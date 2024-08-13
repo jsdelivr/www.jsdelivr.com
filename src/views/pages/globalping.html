@@ -541,7 +541,7 @@
 				</c-gp-credits-message>
 			{{/if}}
 
-			<div class="gp_map-block_map-wrapper {{#unless showMap || tempShowMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
+			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
 				{{#if testResults}}
@@ -554,24 +554,24 @@
 			</div>
 
 			{{#if showCreditsData}}
-				{{#unless showMap || tempShowMap}}
+				{{#unless showMap}}
 					<div class="gp_map-block_line"></div>
 				{{/unless}}
 
 				<c-gp-credits
-					mapOpened="{{showMap || tempShowMap}}"
+					mapOpened="{{showMap}}"
 					testInProgress="{{testInProgress}}"
 					isInfiniteModeRes="{{isInfiniteModeRes}}"
 					rateCreditsData="{{rateCreditsData}}"
 					testResults="{{testResults}}">
 				</c-gp-credits>
 
-				{{#if showMap || tempShowMap}}
+				{{#if showMap}}
 					<div class="gp_map-block_line"></div>
 				{{/if}}
 			{{/if}}
 
-			{{#unless showMap || tempShowMap}}
+			{{#unless showMap}}
 				<div class="gp_map-block_line"></div>
 			{{/unless}}
 
@@ -1348,11 +1348,6 @@
 		decorators: {
 			clipboard,
 		},
-		computed: {
-			probesMaxTiming () {
-				return this.get('mainOptions.type').toLowerCase() === 'http' ? 1000 : 200;
-			},
-		},
 		data () {
 			return {
 				_,
@@ -1367,7 +1362,6 @@
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
-				tempShowMap: false, // if after the meas the map were closed and then meas type sitched - we should show the map temp and then hide it once results received
 				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
@@ -1415,6 +1409,7 @@
 				showCreditsData: false,
 				rateCreditsData: null,
 				measurementErrMsg: null,
+				probesMaxTiming: 200,
 			};
 		},
 		onrender () {
@@ -1471,21 +1466,12 @@
 
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('testResults', null);
-					this.set('markersData', null);
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
 					this.set('measurementErrMsg', null);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
-					this.set('tempShowMap', true);
-					this.set('showCreditsData', false);
-
-					// since Table output mode is available only for Ping measurement
-					if (type !== 'ping') {
-						this.set('rawOutputMode', true);
-					}
 				}, { init: false });
 
 				// when infinite switch is enabled set limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
@@ -1840,7 +1826,7 @@
 				};
 			}
 
-			// clear all data from the previous test, close additional options menu, show spinner
+			// clear all data from the previous test, close additional options menu, show spinner, set up Map's data etc.
 			this.set('testResults', null);
 			this.set('markersData', null);
 			this.set('probesResponse', null);
@@ -1862,6 +1848,12 @@
 			this.set('prevProbesMeasId', null);
 			this.set('preparedTestResults', []);
 			this.set('rateCreditsData', null);
+			this.set('probesMaxTiming', type.toLowerCase() === 'http' ? 1000 : 200);
+
+			// since Table output mode is available only for the Ping measurement
+			if (type !== 'ping') {
+				this.set('rawOutputMode', true);
+			}
 
 			// if it is infinite measurement then we should show TableOutput by default
 			// otherwise leave prev value set by user
@@ -2286,8 +2278,6 @@
 			return new Promise((resolve, reject) => {
 				let testReqInterval = setInterval(() => {
 					http.getGlobalpingMeasurement(measurementId).then((testRes) => {
-						this.set('tempShowMap', false);
-
 						if (isShareResCase) {
 							let currentTargets = this.get('mainOptions.target');
 							let currTargetsArr = _.removeDuplicatedTargets(currentTargets ? currentTargets.split(',') : []);
