@@ -134,7 +134,9 @@
 							gpMainOpts="{{mainOptions}}"
 							gpHttpOpts="{{httpOpts}}"
 							gpNotAppliedOpts="{{notAppliedOpts}}"
-							gpUrlHandlerCb="{{@this.applyOptions}}">
+							gpUrlHandlerCb="{{@this.applyOptions}}"
+							showIPSwitch="{{mainOptions.type !== 'DNS'}}"
+							ipVersion="{{mainOptions.ipVersion}}">
 							{{#partial labelIcon}}
 								<img as-tooltip="'Up to 2 IP addresses or domains'"
 									width="14"
@@ -1185,6 +1187,7 @@
 
 <script>
 	const _ = require('../../assets/js/_.js');
+	const ipRegex = require('../../assets/js/utils/ip-regex');
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
 	const INITIAL_MAP_STYLES = require('../../assets/js/map/styles.json');
@@ -1778,7 +1781,7 @@
 			}
 		},
 		proceedToTest (prevProbesMeasId) {
-			let { type, target, location, limit } = this.get('mainOptions');
+			let { type, target, location, limit, ipVersion } = this.get('mainOptions');
 			let appliedMeasOpts = this.get('appliedMeasOpts');
 			let measurementOpts = _.deepExtend({}, appliedMeasOpts.initPresetOpts, appliedMeasOpts.notPresetOpts);
 			let targetsArr = target.split(',');
@@ -1790,6 +1793,14 @@
 				// to get test results in real time
 				inProgressUpdates: true,
 			};
+
+			// ipVersion should be passed only if there is 1 target and it is a domain name and test type is not a DNS
+			if (ipVersion && type.toLowerCase() !== 'dns') {
+				measurementOpts = {
+					...measurementOpts,
+					ipVersion,
+				};
+			}
 
 			reqParams.limit = limit || DEFAULT_LIMIT;
 
@@ -2310,6 +2321,13 @@
 								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+
+								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
+								if (testRes.measurementOptions.ipVersion) {
+									this.set('mainOptions.ipVersion', testRes.measurementOptions.ipVersion);
+
+									delete testRes.measurementOptions.ipVersion;
+								}
 
 								let defaultAPIOpts = this.getDefaultAPIMeasOptsByTestName(testRes.type);
 								let combinedOptions = _.deepExtend({}, defaultAPIOpts, testRes.measurementOptions);
@@ -3223,11 +3241,14 @@
 			};
 		},
 		parseIPFromRawOutput (raw) {
-			let ipRegex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
-			let match = raw.match(ipRegex);
-			let ipAddr = match ? match[0] : '';
+			let regex = ipRegex();
+			let match = raw.match(regex);
 
-			return ipAddr;
+			if (match) {
+				return match[0];
+			}
+
+			return '';
 		},
 		parseLinesFromRawOutput (raw, idxShift = 0) {
 			let lines = raw.split('\n').filter(l => l);
