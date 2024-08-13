@@ -1351,11 +1351,6 @@
 		decorators: {
 			clipboard,
 		},
-		computed: {
-			probesMaxTiming () {
-				return this.get('mainOptions.type').toLowerCase() === 'http' ? 1000 : 200;
-			},
-		},
 		data () {
 			return {
 				_,
@@ -1417,6 +1412,7 @@
 				showCreditsData: false,
 				rateCreditsData: null,
 				measurementErrMsg: null,
+				probesMaxTiming: 200,
 			};
 		},
 		onrender () {
@@ -1473,19 +1469,12 @@
 
 					this.set('showMeasurementOpts', false);
 					this.set('inputErrors', {});
-					this.set('testResults', null);
-					this.set('markersData', null);
 					this.set(`${type.toLowerCase()}Opts`, this.getDefaultClientMeasOptsByTestName(type));
 					this.set('appliedMeasOpts', {});
 					this.set('notAppliedOpts', {});
 					this.set('measurementErrMsg', null);
 					this.set('modifiedMeasOptsCnt', 0);
 					this.set('infiniteSwitchEnabled', false);
-
-					// since Table output mode is available only for Ping measurement
-					if (type !== 'ping') {
-						this.set('rawOutputMode', true);
-					}
 				}, { init: false });
 
 				// when infinite switch is enabled set limit to INFINITE_MEASUREMENT_LIMIT if limit is bigger than INFINITE_MEASUREMENT_LIMIT
@@ -1848,7 +1837,7 @@
 				};
 			}
 
-			// clear all data from the previous test, close additional options menu, show spinner
+			// clear all data from the previous test, close additional options menu, show spinner, set up Map's data etc.
 			this.set('testResults', null);
 			this.set('markersData', null);
 			this.set('probesResponse', null);
@@ -1870,6 +1859,12 @@
 			this.set('prevProbesMeasId', null);
 			this.set('preparedTestResults', []);
 			this.set('rateCreditsData', null);
+			this.set('probesMaxTiming', type.toLowerCase() === 'http' ? 1000 : 200);
+
+			// since Table output mode is available only for the Ping measurement
+			if (type !== 'ping') {
+				this.set('rawOutputMode', true);
+			}
 
 			// if it is infinite measurement then we should show TableOutput by default
 			// otherwise leave prev value set by user
