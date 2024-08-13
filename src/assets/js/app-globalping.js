@@ -31,6 +31,12 @@ app.router.addRoute('/globalping/slack', cGlobalpingSlack);
 app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
 app.router.addRoute('/globalping/integrations', cGlobalpingIntegrations);
 
+app.router.replaceQueryParam = function (name, newValue) {
+	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
+	this.route.view.set(name, newValue);
+	return this;
+};
+
 _.onDocumentReady(() => {
 	let state = {};
 	let ractive = new Ractive();
