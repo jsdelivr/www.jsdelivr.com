@@ -57,8 +57,32 @@ module.exports = {
 		return files;
 	},
 
-	formatDate (date) {
-		return `${MONTHS_SHORT_NAMES_LIST[date.getUTCMonth()]} ${date.getUTCDate()}`;
+	formatDate (date, format = 'long') {
+		if (!date) {
+			return '';
+		}
+
+		if (typeof date === 'string') {
+			date = new Date(date);
+		}
+
+		if (format === 'short') {
+			return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+		}
+
+		return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+	},
+
+	formatDateTime (date) {
+		if (!date) {
+			return '';
+		}
+
+		if (typeof date === 'string') {
+			date = new Date(date);
+		}
+
+		return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false });
 	},
 
 	formatHits (hits) {

@@ -3,7 +3,7 @@ require('./polyfills');
 const http = require('./utils/http');
 
 const _ = require('./_');
-const cGlobalping = require('../../views/pages/globalping.html');
+const cGlobalping = require('../../views/pages/globalping/index.html');
 const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
@@ -30,6 +30,12 @@ app.router.addRoute('/globalping/cli', cGlobalpingCli);
 app.router.addRoute('/globalping/slack', cGlobalpingSlack);
 app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
 app.router.addRoute('/globalping/integrations', cGlobalpingIntegrations);
+
+app.router.replaceQueryParam = function (name, newValue) {
+	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
+	this.route.view.set(name, newValue);
+	return this;
+};
 
 _.onDocumentReady(() => {
 	let state = {};

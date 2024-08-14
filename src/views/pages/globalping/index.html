@@ -1,17 +1,17 @@
-<link rel="ractive" href="../r-page-globalping.html" name="r-page">
-<link rel="ractive" href="../components/header.html" name="c-header">
-<link rel="ractive" href="../components/footer.html" name="c-footer">
-<link rel="ractive" href="../components/notification.html" name="c-notification">
-<link rel="ractive" href="../components/controlled-input.html" name="c-controlled-input">
-<link rel="ractive" href="../components/controlled-textarea.html" name="c-controlled-textarea">
-<link rel="ractive" href="../components/tags-input.html" name="c-tags-input">
-<link rel="ractive" href="../components/gp-results-controls.html" name="c-gp-results-controls">
-<link rel="ractive" href="../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
-<link rel="ractive" href="../components/gp-results-table-output.html" name="c-gp-results-table-output">
-<link rel="ractive" href="../components/gp-credits-message.html" name="c-gp-credits-message">
-<link rel="ractive" href="../components/gp-top-navigation.html" name="c-gp-top-navigation">
-<link rel="ractive" href="../components/gp-credits.html" name="c-gp-credits">
-<link rel="ractive" href="../components/gp-jumbotron.html" name="c-gp-jumbotron">
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/header.html" name="c-header">
+<link rel="ractive" href="../../components/footer.html" name="c-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/controlled-textarea.html" name="c-controlled-textarea">
+<link rel="ractive" href="../../components/tags-input.html" name="c-tags-input">
+<link rel="ractive" href="../../components/gp-results-controls.html" name="c-gp-results-controls">
+<link rel="ractive" href="../../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
+<link rel="ractive" href="../../components/gp-results-table-output.html" name="c-gp-results-table-output">
+<link rel="ractive" href="../../components/gp-credits-message.html" name="c-gp-credits-message">
+<link rel="ractive" href="../../components/gp-top-navigation.html" name="c-gp-top-navigation">
+<link rel="ractive" href="../../components/gp-credits.html" name="c-gp-credits">
+<link rel="ractive" href="../../components/gp-jumbotron.html" name="c-gp-jumbotron">
 
 <r-page
 	noYield="{{noYield}}"
@@ -1186,14 +1186,14 @@
 </r-page>
 
 <script>
-	const _ = require('../../assets/js/_.js');
-	const ipRegex = require('../../assets/js/utils/ip-regex');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
-	const INITIAL_MAP_STYLES = require('../../assets/js/map/styles.json');
-	const clipboard = require('../../assets/js/decorators/clipboard');
-	const http = require('../../assets/js/utils/http');
-	const has = require('../../assets/js/utils/has');
+	const _ = require('../../../assets/js/_.js');
+	const ipRegex = require('../../../assets/js/utils/ip-regex');
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
+	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
+	const clipboard = require('../../../assets/js/decorators/clipboard');
+	const http = require('../../../assets/js/utils/http');
+	const has = require('../../../assets/js/utils/has');
 	const CLIENT_DEFAULT_PING_OPTS = {};
 	const API_DEFAULT_PING_OPTS = {};
 	const CLIENT_DEFAULT_TRACEROUTE_OPTS = {
@@ -1429,10 +1429,14 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				this.on('c-header.main-logo-click c-gp-top-navigation.main-logo-click', () => {
+					this.set('measurement', '');
+					return false;
+				});
+
 				// check if ids are present in query string
 				// if so - it is a share-results-flow
-				let qsStringsArr = this.get('@shared.app.router.uri.qs').replace('?', '').split('&');
-				let { measurement = '' } = Object.fromEntries(qsStringsArr.map(s => s.split('=')));
+				let measurement = this.get('measurement');
 				let qsMeasurementIdsArr = [];
 				let isInfiniteMeas = false;
 
@@ -1895,6 +1899,9 @@
 				// set measurement ID for re-use probes case
 				this.set('prevProbesMeasId', res.response.id);
 
+				// Update the URL.
+				this.set('measurement', res.response.id);
+
 				// set response headers for gp-credits/gp-credits-message
 				this.set('rateCreditsData', { ...res.responseHeaders });
 
@@ -1923,6 +1930,9 @@
 						this.set('rateCreditsData', combinedHeaders);
 						this.getTestMeasurementById({ measurementId: res.response.id });
 						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
+
+						// Update the URL without creating a new history entry.
+						app.router.replaceQueryParam('measurement', `${this.get('measurement')},${res1.response.id}`);
 					}).catch((err) => {
 						this.handlePostGPMeasError(err);
 					});
@@ -2318,12 +2328,12 @@
 
 							if (isLastShareReq) {
 								this.set('targetsArr', updTargetsArr);
-								this.set('shareResHeaderData', `Showing results from ${new Date(testRes.createdAt).toUTCString()}`);
+								this.set('shareResHeaderData', `Showing results from ${_.formatDateTime(new Date(testRes.createdAt))}`);
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
 								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
-								if (testRes.measurementOptions.ipVersion) {
+								if (testRes.measurementOptions?.ipVersion) {
 									this.set('mainOptions.ipVersion', testRes.measurementOptions.ipVersion);
 
 									delete testRes.measurementOptions.ipVersion;
@@ -2746,6 +2756,13 @@
 
 				// set measurement ID for re-use probes case
 				this.set('prevProbesMeasId', res.response.id);
+
+				// Update the URL.
+				if (resNumber === 0) {
+					this.set('measurement', res.response.id);
+				} else {
+					app.router.replaceQueryParam('measurement', `${this.get('measurement').split('.').slice(-9).join('.')}.${res.response.id}`);
+				}
 
 				let updReqParams = {
 					...reqParams,

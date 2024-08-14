@@ -13,7 +13,7 @@ let packagesPromise = updatePackages();
 
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let pages = (await readDirRecursive(viewsPath + '/pages', [ '_*' ])).map(p => path.relative(viewsPath + '/pages', p).replace(/\\/g, '/').slice(0, -5));
+	let pages = (await readDirRecursive(viewsPath + '/pages', [ '_*' ])).map(p => path.relative(viewsPath + '/pages', p).replace(/\\/g, '/').slice(0, -5).replace(/\/index$/, ''));
 	let packages = await packagesPromise;
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
