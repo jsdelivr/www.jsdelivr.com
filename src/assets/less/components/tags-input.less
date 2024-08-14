@@ -234,16 +234,26 @@
 
 	.switch-ip-type-wrapper {
 		align-items: center;
-		margin: 0 1px 0 4px;
-		width: 92px;
+		width: 100%;
+		margin: 4px 0 0;
+
+		@media (min-width: @screen-sm-min) {
+			margin: 0 1px 0 4px;
+			width: 92px;
+		}
 
 		&:focus {
-			margin: 0 0 0 3px;
 			box-sizing: content-box;
 			box-shadow: 0 2px 2px rgba(0, 0, 0, .04), 0 0 0 1px #fff, 0 0 0 4px rgba(23, 212, 167, .48);
 			border: 1.5px solid #e7e7ee;
 			border-radius: 8px;
 			outline: none;
+			width: calc(100% - 2px);
+
+			@media (min-width: @screen-sm-min) {
+				margin: 0 0 0 3px;
+				width: 92px;
+			}
 		}
 
 		.switch-input {
@@ -253,8 +263,7 @@
 				position: relative;
 				display: flex;
 				align-items: center;
-				padding: 0 2px;
-				width: 92px;
+				width: 100%;
 				height: 28px;
 				cursor: pointer;
 				font-weight: 400;
@@ -264,6 +273,10 @@
 				box-sizing: border-box;
 				border-radius: 10px;
 				margin-bottom: 0;
+
+				@media (min-width: @screen-sm-min) {
+					width: 92px;
+				}
 
 				&.disabled {
 					cursor: default;
@@ -279,7 +292,7 @@
 					top: 2px;
 					background: transparent;
 					z-index: 2;
-					width: 44px;
+					width: 50%;
 					color: #17233a;
 					font-size: 12px;
 					font-weight: 400;
@@ -300,18 +313,25 @@
 				}
 
 				&:before {
+					position: relative;
+					transition-property: left;
+					transition-duration: 500ms;
 					display: flex;
-					width: 44px;
+					left: 2px;
+					width: calc(50% - 2px);
 					height: 24px;
 					content: "";
 					background: #fff;
 					border-radius: 8px;
+					border: 1px solid #e7e7ee;
 					z-index: 1;
 				}
 			}
 
 			&.checked + label {
-				padding-left: 46px;
+				&:before {
+					left: 50%;
+				}
 			}
 		}
 
