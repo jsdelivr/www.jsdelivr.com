@@ -441,7 +441,7 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path === '/globalping' ? 'globalping/index' : ctx.path) + '.html', data);
+		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path === '/globalping' ? 'globalping/_index' : ctx.path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
