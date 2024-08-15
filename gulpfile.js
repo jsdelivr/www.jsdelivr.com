@@ -18,7 +18,7 @@ const rollupJson = require('rollup-plugin-json');
 const buffer = require('vinyl-buffer');
 const source = require('vinyl-source-stream');
 
-const site = process.env.site === 'globalping' ? 'globalping' : 'jsdelivr';
+const site = process.env.SITE === 'globalping' ? 'globalping' : 'jsdelivr';
 const liveReloadOptions = { port: site === 'globalping' ? 35730 : 35729 };
 
 const srcDir = './src';

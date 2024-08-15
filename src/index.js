@@ -24,7 +24,7 @@ const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
 const assetsVersion = require('./lib/assets').version;
 
-const site = process.env.site === 'globalping' ? 'globalping' : 'jsdelivr';
+const site = process.env.SITE === 'globalping' ? 'globalping' : 'jsdelivr';
 const serverConfig = config.get(site === 'globalping' ? 'globalping.server' : 'server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
