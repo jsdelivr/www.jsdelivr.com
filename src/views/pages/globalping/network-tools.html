@@ -158,9 +158,10 @@
 			{{elseif testResults}}
 				<c-gp-results-raw-output
 					testReqParams="{{testReqParams}}"
-					testResults="{{testResults}}"
 					testInProgress="{{testInProgress}}"
-					measurementsMetadata="{{measurementsMetadata}}">
+					measurementsMetadata="{{measurementsMetadata}}"
+					preparedTestResults="{{preparedTestResults}}"
+					activeTargetIdx="0">
 				</c-gp-results-raw-output>
 			{{else}}
 				<div class="gp-nettools_demo-tools_descr">
@@ -219,6 +220,8 @@
 		target: 'cdn.jsdelivr.net',
 	};
 	const CAPITALIZE_EXCLUDE_LIST = [ 'and', 'or', 'from', 'ltd', 'of' ];
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
 		data () {
@@ -392,6 +395,13 @@
 					};
 
 					this.set('measurementsMetadata', measurementsMetadata);
+				});
+
+				// prepare results for gp-results-raw-output
+				this.observe('testResults', (testResults) => {
+					if (!testResults) { return; }
+
+					this.set('preparedTestResults', this.prepareRegularResults(testResults));
 				});
 			}
 		},
@@ -831,6 +841,52 @@
 			description += ' or globally.';
 
 			return description;
+		},
+		prepareRegularResults (testResults) {
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+			let selectedTestType = this.get('selectedTestType');
+
+			return testResults.map((res) => {
+				let preparedRes = {
+					...res.probe,
+					statsPerTarget: [{
+						target: res.target,
+					}],
+				};
+
+				if (res.result.status !== 'in-progress') {
+					let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(selectedTestType, res, dnsTraceEnabled);
+					let { packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+					let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+					let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+					let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
+
+					preparedRes.statsPerTarget = [{
+						...preparedRes.statsPerTarget[0],
+						avgTiming,
+						isFailed,
+						isOffline,
+						extraValues,
+						rawOutput: res.result.rawOutput,
+						areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+					}];
+				}
+
+				return preparedRes;
+			});
+		},
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
+			if (
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return false;
+			}
+
+			return true;
 		},
 	};
 </script>
