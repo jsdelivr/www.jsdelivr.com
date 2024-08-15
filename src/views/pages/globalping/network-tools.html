@@ -223,7 +223,6 @@
 	};
 	const CAPITALIZE_EXCLUDE_LIST = [ 'and', 'or', 'from', 'ltd', 'of' ];
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
-	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
@@ -859,7 +858,7 @@
 
 				if (res.result.status !== 'in-progress') {
 					let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(selectedTestType, res, dnsTraceEnabled);
-					let { packetsRtt, packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+					let { packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
 					let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
 					let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
 					let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
