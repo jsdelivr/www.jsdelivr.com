@@ -1,4 +1,4 @@
-<label class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}} {{#if error}}error{{/if}} {{#if isDisabled}}disabled{{/if}}">
+<div class="c-tags-input {{classList}} {{#if inputIcon}}with-input-icon{{/if}} {{#unless value}}no-values{{/unless}} {{#if error}}error{{/if}} {{#if isDisabled}}disabled{{/if}}">
 	<div class="c-tags-input_info">
 		<span class="c-tags-input_info_label">
 			{{labelText}}
@@ -69,7 +69,7 @@
 			</div>
 		{{/if}}
 	</div>
-</label>
+</div>
 
 <script>
 	const ipRegex = require('../../assets/js/utils/ip-regex');
@@ -273,7 +273,7 @@
 				});
 
 				document.addEventListener('click', (e) => {
-					if (!tagsBlockEl.contains(e.target)) {
+					if (e.target.isConnected && !tagsBlockEl.contains(e.target)) {
 						tagsBlockEl.classList.remove('focused');
 					}
 				});
@@ -362,6 +362,12 @@
 			tagsArr.splice(tagIdx, 1);
 
 			this.set('value', tagsArr.join(valuesDelimiter));
+
+			// set back focus to the input
+			let inputId = this.get('inputId');
+			let inputEl = this.find(`#${inputId}`);
+
+			inputEl.focus();
 		},
 		handleInputFocus (tagsBlockEl) {
 			let isDisabled = this.get('isDisabled');
