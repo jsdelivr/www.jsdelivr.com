@@ -1,6 +1,6 @@
-# www.jsdelivr.com Contributing Guide
+# www.jsdelivr.com & globalping.io Contributing Guide
 
-Hi! We're really excited that you're interested in contributing to www.jsdelivr.com! Before submitting your contribution, please read through the following guide.
+Hi! We're really excited that you're interested in contributing! Before submitting your contribution, please read through the following guide.
 
 ## Overview
 
@@ -18,7 +18,12 @@ To get started, you need to have Node.js with NPM installed. Then run the follow
 
 ```bash
 npm install
+
+# to start the jsDelivr site
 npm start
+
+# to start the Globalping site
+npm run start:gp
 ```
 
 Configuration for IntelliJ based IDEs is also available in this repository. If you use one, it is a good idea to add https://github.com/MartinKolarik/idea-config as a [read-only settings repository](https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#share-more-settings-through-read-only-repo). It contains code style and inspection profiles used by this project.

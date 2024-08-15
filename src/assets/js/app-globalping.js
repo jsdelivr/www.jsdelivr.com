@@ -25,11 +25,11 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/globalping', cGlobalping, { qs: [ 'measurement' ] });
-app.router.addRoute('/globalping/cli', cGlobalpingCli);
-app.router.addRoute('/globalping/slack', cGlobalpingSlack);
-app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
-app.router.addRoute('/globalping/integrations', cGlobalpingIntegrations);
+app.router.addRoute('/', cGlobalping, { qs: [ 'measurement' ] });
+app.router.addRoute('/cli', cGlobalpingCli);
+app.router.addRoute('/slack', cGlobalpingSlack);
+app.router.addRoute('/network-tools/:params?', cGlobalpingNetworkTools);
+app.router.addRoute('/integrations', cGlobalpingIntegrations);
 
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
@@ -73,6 +73,11 @@ _.onDocumentReady(() => {
 		.init({ noScroll: true, state: { ...state, ...app.router.data() } })
 		.watchLinks()
 		.watchState();
+
+	// open navbar dropdowns on hover
+	$(document)
+		.on('mouseenter', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown:not(.open)').find('.dropdown-toggle').dropdown('toggle')))
+		.on('mouseleave', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown.open').find('.dropdown-toggle').dropdown('toggle')));
 });
 
 app.injectGlobalStyle = (href) => {
