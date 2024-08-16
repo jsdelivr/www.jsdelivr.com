@@ -86,6 +86,7 @@
 	const tooltip = require('../../assets/js/decorators/tooltip');
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 
 	component.exports = {
 		decorators: {
@@ -148,17 +149,29 @@
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
 		},
 		getStatusLineColorClass (data) {
+			let testType = this.get('testReqParams.type');
 			let { value: lossValue } = data && data.extraValues && data.extraValues.loss ? data.extraValues.loss : {};
 
-			if (data.isFailed || data.isOffline || lossValue === 100) {
-				return 'failure';
-			} else if (typeof lossValue !== 'number') {
-				return '';
-			} else if (lossValue === 0) {
-				return 'success';
+			if (testType.toLowerCase() === 'ping') {
+				if (data.isFailed || data.isOffline || lossValue === 100) {
+					return 'failure';
+				} else if (typeof lossValue !== 'number') {
+					return '';
+				} else if (lossValue === 0) {
+					return 'success';
+				}
+
+				return 'some-issues';
 			}
 
-			return 'some-issues';
+			// for all other types of measurements
+			if (data.isFailed || data.isOffline || data.avgTiming === PROBE_NO_TIMING_VALUE) {
+				return 'failure';
+			} else if (typeof data.avgTiming === 'number') {
+				return 'success';
+			} else if (!data.avgTiming) {
+				return '';
+			}
 		},
 		getTimingValueToDisplay (data, activeTargetIdx) {
 			let { avgTiming, isFailed, isOffline, areTimingsReady } = data.statsPerTarget[activeTargetIdx];
