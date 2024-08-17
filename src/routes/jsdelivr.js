@@ -172,4 +172,13 @@ koaElasticUtils.addRoutes(router, [
 	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
 ], ogImage);
 
+
+/**
+ * Redirect previous Globalping pages.
+ */
+router.get('/globalping/:path(.*)?', async (ctx) => {
+	ctx.status = 301;
+	return ctx.redirect(`https://globalping.io/${ctx.params.path || ''}`);
+});
+
 module.exports = router;
