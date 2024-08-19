@@ -2227,8 +2227,11 @@
 				});
 			});
 		},
-		pickMarkerColor (timing) {
-			// return default color for timed out probe
+		pickMarkerColor (timing, probesMaxTiming = 200, probesMinTiming = 5) {
+			// return default GREY color while probe has no timing yet
+			if (!timing) { return '#c0c0c0'; }
+
+			// return DARK color for timed out/failed/offline probe
 			if (
 				timing === PROBE_NO_TIMING_VALUE
 				|| timing === PROBE_STATUS_FAILED
@@ -2255,8 +2258,6 @@
 				return color.toString(16).padStart(2, '0');
 			}
 
-			let probesMaxTiming = this.get('probesMaxTiming');
-			let probesMinTiming = this.get('probesMinTiming');
 			let pureTimingValue = parseInt(timing);
 
 
@@ -2932,9 +2933,11 @@
 			let svg;
 			let svgFillColors = [];
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 
 			for (let i = 0; i < targetsCnt; i++) {
-				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
+				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i], probesMaxTiming, probesMinTiming) : DEFAULT_MARKER_COLOR);
 			}
 
 			if (markerData.timings.length > 1) {
@@ -2985,6 +2988,8 @@
 		},
 		createInfoWindowContent (markerData, currentMarkerIdx) {
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 			let infoWindowContent = '<div class="gp-map_popup">';
 
 			infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
@@ -3002,7 +3007,7 @@
 					infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
 
 					infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
-						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
+						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx], probesMaxTiming, probesMinTiming)}'>${markerData.timings[targetIdx] || ''}</span>`;
 
 					infoWindowContent += '</div>';
 				});
