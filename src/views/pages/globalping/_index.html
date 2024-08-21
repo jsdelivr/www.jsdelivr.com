@@ -536,7 +536,6 @@
 
 			{{#if showCreditsError}}
 				<c-gp-credits-message
-					hasToken="{{true}}"
 					rateCreditsData="{{rateCreditsData}}">
 				</c-gp-credits-message>
 			{{/if}}
@@ -2811,8 +2810,6 @@
 		handlePostGPMeasError (err) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 			let testResults = this.get('testResults');
-			// for now we send this token directly via postGlobalpingMeasurement, credits data handling depend on a fact whether user has token or not
-			let hasToken = false;
 
 			this.set('testInProgress', false);
 			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
@@ -2824,7 +2821,6 @@
 				let measurementErrMsg = this.createMeasCreditsErrMsg(
 					err.responseHeaders,
 					isInfiniteModeRes,
-					hasToken,
 					testResults,
 				);
 
@@ -3360,10 +3356,11 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			return `${Math.ceil(minutes)} minutes`;
 		},
-		createMeasCreditsErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+		createMeasCreditsErrMsg (responseHeaders, isInfinite, testResults) {
 			// do not show err msg if while infinite meas we've got the 429's err and we already have results
 			if (testResults && isInfinite) { return null; }
 
+			let hasToken = this.get('@shared.user');
 			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
 			let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
 			let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
@@ -3372,28 +3369,24 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
 
 				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-				// TODO: uncomment when accounts are live
-				// msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-				//
-				// if (hasToken) {
-				// 	msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
-				// } else {
-				// 	msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
-				// }
+
+				if (hasToken) {
+					msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
+				} else {
+					msg += '<span>You can get higher limits by creating an account. <a href="https://dash.globalping.io">Sign up</a><span>';
+				}
 
 				return msg;
 			} else if ((isInfinite && !testResults) || !remainingCredits) {
 				let msg = `<span>You have run out of credits for this session.</span>`;
 
-				msg += `<span>Please wait ${timeToReset} for the limit to reset.`;
-				// TODO: uncomment when accounts are live
-				// msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
-				//
-				// if (hasToken) {
-				// 	msg += ` sponsoring us or hosting probes.</span>`;
-				// } else {
-				// 	msg += ` creating an account. <a href='/'>Sign up</a></span>`;
-				// }
+				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+
+				if (hasToken) {
+					msg += ` sponsoring us or hosting probes.</span>`;
+				} else {
+					msg += ` creating an account. <a href='https://dash.globalping.io'>Sign up</a></span>`;
+				}
 
 				return msg;
 			}
