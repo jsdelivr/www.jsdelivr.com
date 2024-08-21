@@ -28,7 +28,16 @@
 			{{#each preparedTestResults:resIdx}}
 				<div class="results-table_row row-num-{{resIdx}}">
 					<div class="results-table_row_location">
-						<span class="results-table_row_location_status-line {{@this.getStatusLineColorClass(this)}}"></span>
+						<span class="results-table_row_location_status-line">
+							<span
+								class="results-table_row_location_status-line_top"
+								style="background-color: {{_.getGpProbeStatusColor(this.statsPerTarget[0].avgTiming)}}">
+							</span>
+							<span
+								class="results-table_row_location_status-line_bottom"
+								style="background-color: {{_.getGpProbeStatusColor(this.statsPerTarget[1] ? this.statsPerTarget[1].avgTiming : this.statsPerTarget[0].avgTiming)}}">
+							</span>
+						</span>
 
 						<img width="28" height="20" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.country}}.svg">
 
@@ -234,6 +243,7 @@
 		},
 		data () {
 			return {
+				_,
 				PROBE_NO_TIMING_VALUE,
 				PROBE_OFFLINE_TEXT,
 				PROBE_FAILED_TEXT,
@@ -283,31 +293,6 @@
 					listWrapperEl.style.height = `${itemsAmount < 8 ? avgItemElHeight * itemsAmount : avgItemElHeight * 8}px`;
 				}
 			});
-		},
-		getStatusLineColorClass (probesData) {
-			if (!probesData) { return; }
-
-			let qualityValuesArr = probesData.statsPerTarget.map((stats) => {
-				let { statsTotal, statsDrop, isFailed, isOffline } = stats;
-				let { qualityPercentage } = this.calcQuality(statsTotal, statsDrop);
-
-				// if probe is failed or offline treat quality as 0, so the status line will have failure (or mayber some-issues if 2 targets) class
-				if (isFailed || isOffline) {
-					return 0;
-				}
-
-				return qualityPercentage;
-			});
-
-			if (qualityValuesArr.some(v => v === null)) {
-				return '';
-			} else if (qualityValuesArr.every(v => v === 100)) {
-				return 'success';
-			} else if (qualityValuesArr.every(v => v === 0)) {
-				return 'failure';
-			}
-
-			return 'some-issues';
 		},
 		createRealTimeGraph (
 			data,
