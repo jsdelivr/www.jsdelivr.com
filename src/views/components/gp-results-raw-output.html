@@ -54,7 +54,10 @@
 							<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawFooter}}</pre>
 						{{/if}}
 
-						<div class="c-gp-results-raw-output_list_item_status-line {{@this.getStatusLineColorClass(this.statsPerTarget[activeTargetIdx])}}"></div>
+						<div
+							class="c-gp-results-raw-output_list_item_status-line"
+							style="background-color: {{_.getGpProbeStatusColor(this.statsPerTarget[activeTargetIdx].avgTiming, testReqParams.type === 'http' ? 1000 : 200) || ''}}">
+						</div>
 					</div>
 
 					<div class="c-gp-results-raw-output_list_item_inner-wrapper_bottom-line"></div>
@@ -146,19 +149,6 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
-		},
-		getStatusLineColorClass (data) {
-			let { value: lossValue } = data && data.extraValues && data.extraValues.loss ? data.extraValues.loss : {};
-
-			if (data.isFailed || data.isOffline || lossValue === 100) {
-				return 'failure';
-			} else if (typeof lossValue !== 'number') {
-				return '';
-			} else if (lossValue === 0) {
-				return 'success';
-			}
-
-			return 'some-issues';
 		},
 		getTimingValueToDisplay (data, activeTargetIdx) {
 			let { avgTiming, isFailed, isOffline, areTimingsReady } = data.statsPerTarget[activeTargetIdx];

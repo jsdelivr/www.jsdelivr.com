@@ -2227,50 +2227,6 @@
 				});
 			});
 		},
-		pickMarkerColor (timing) {
-			// return default color for timed out probe
-			if (
-				timing === PROBE_NO_TIMING_VALUE
-				|| timing === PROBE_STATUS_FAILED
-				|| timing === PROBE_STATUS_OFFLINE
-			) {
-				return '#17233A';
-			}
-
-			function getColorFromGradient (quotient, start, middle, end) {
-				return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
-			}
-
-			function linear (startColor, endColor, quotient) {
-				let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
-				let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
-				let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
-
-				return `#${redColor}${greenColor}${blueColor}`;
-			}
-
-			function byteLinear (partOne, partTwo, quotient) {
-				let color = Math.floor(('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient);
-
-				return color.toString(16).padStart(2, '0');
-			}
-
-			let probesMaxTiming = this.get('probesMaxTiming');
-			let probesMinTiming = this.get('probesMinTiming');
-			let pureTimingValue = parseInt(timing);
-
-
-			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
-			if (pureTimingValue <= probesMinTiming) {
-				return '#17d4a7';
-			}
-
-			if (pureTimingValue >= probesMaxTiming) {
-				return '#e64e3d';
-			}
-
-			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
-		},
 		handleSeeResults (resIdx) {
 			let el;
 
@@ -2932,9 +2888,11 @@
 			let svg;
 			let svgFillColors = [];
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 
 			for (let i = 0; i < targetsCnt; i++) {
-				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
+				svgFillColors.push(markerData.timings[i] ? _.getGpProbeStatusColor(markerData.timings[i], probesMaxTiming, probesMinTiming) : DEFAULT_MARKER_COLOR);
 			}
 
 			if (markerData.timings.length > 1) {
@@ -2985,6 +2943,8 @@
 		},
 		createInfoWindowContent (markerData, currentMarkerIdx) {
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 			let infoWindowContent = '<div class="gp-map_popup">';
 
 			infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
@@ -3002,7 +2962,7 @@
 					infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
 
 					infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
-						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
+						style='color: ${_.getGpProbeStatusColor(markerData.timings[targetIdx], probesMaxTiming, probesMinTiming)}'>${markerData.timings[targetIdx] || ''}</span>`;
 
 					infoWindowContent += '</div>';
 				});
