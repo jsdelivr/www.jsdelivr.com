@@ -8,7 +8,7 @@ const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
-const cGlobalpingAbout = require('../../views/pages/globalping/about.html');
+const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
