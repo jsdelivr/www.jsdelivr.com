@@ -303,3 +303,13 @@ module.exports.getGlobalpingUser = () => {
 	// just set the production cookie "dash_session_token" (.globalping.io) to SameSite=None via devtools.
 	return _.makeHTTPRequest({ url: `${GLOBALPING_DASH_HOST}/users/me`, withCredentials: true }).then(body => body.data).catch(() => null);
 };
+
+module.exports.gpLogOut = () => {
+	return _.makeHTTPRequest({
+		method: 'POST',
+		url: `${GLOBALPING_DASH_HOST}/auth/logout`,
+		body: { mode: 'session' },
+		withCredentials: true,
+		rawResponse: true,
+	});
+};

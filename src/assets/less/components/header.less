@@ -261,7 +261,7 @@
 
 	.navbar-nav {
 		& > li {
-			& > a {
+			& > a, button {
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -416,33 +416,82 @@
 	}
 
 	.dashboard-section {
+		display: flex;
+
+		&.open {
+			> a, > a:hover {
+				background-color: transparent;
+			}
+		}
+
 		.btn {
+			color: #fff;
+
 			&:active {
 				box-shadow: none;
+			}
+
+			@media (max-width: @screen-sm-max) {
+				border: none;
 			}
 		}
 
 		@media (min-width: @screen-md-min) {
-			min-width: 125px;
+			min-width: 166px;
 			text-align: right;
+			justify-content: center;
 
-			.btn {
+			a.btn {
 				display: inline-flex;
 				padding: 12px;
-				border: 1px solid #2c3b59;
+				border: 1px solid @gp-green;
 				border-radius: 8px;
 				transition: background-color 200ms, border-color 200ms;
 
-				&:hover {
-					border: 1px solid @gp-green;
+				&.btn-dash {
+					border-radius: 8px 0 0 8px;
 				}
-			}
 
-			.btn-sign-in {
-				border: 1px solid @gp-green;
+				&.btn-sign-in {
+					padding: 12px 24px;
+				}
 
 				&:hover {
 					background-color: @gp-green;
+				}
+			}
+
+			button.btn {
+				border-radius: 0 8px 8px 0;
+				padding: 6px 8px 6px 6px;
+				background-color: transparent;
+				display: inline-flex;
+				border: 1px solid @gp-green;
+				border-left: 1px solid transparent;
+				transition: background-color 200ms, border-color 200ms;
+
+				&:hover {
+					background-color: @gp-green;
+				}
+			}
+
+			.dropdown {
+				margin-left: -1px;
+
+				.dropdown-menu {
+					margin-top: -1px;
+					border-top-width: 2px;
+					border-color: transparent;
+					text-align: right;
+
+					.current-user {
+						padding: 4px 18px;
+						color: #79849a;
+					}
+
+					a {
+						justify-content: flex-end;
+					}
 				}
 			}
 		}
