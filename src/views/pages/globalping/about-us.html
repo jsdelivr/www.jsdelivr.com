@@ -283,7 +283,7 @@
 					response = JSON.parse(response);
 				}
 
-				let { totalCities, totalCountries } = response.reduce((res, item) => {
+				let { totalCities, totalCountries, totalASNs } = response.reduce((res, item) => {
 					if (!res.citiesList.includes(item.location.city)) {
 						res.citiesList.push(item.location.city);
 					}
@@ -292,19 +292,24 @@
 						res.countriesList.push(item.location.country);
 					}
 
+					if (!res.ASNsList.includes(item.location.asn)) {
+						res.ASNsList.push(item.location.asn);
+					}
+
 					res.totalCities = res.citiesList.length;
 					res.totalCountries = res.countriesList.length;
+					res.totalASNs = res.ASNsList.length;
 
 					return res;
-				}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+				}, { citiesList: [], countriesList: [], ASNsList: [], totalCities: 0, totalCountries: 0, totalASNs: 0 });
 
 				this.animate('totalProbes', response.length, { duration: 2000 });
 				this.animate('totalCities', totalCities, { duration: 2000 });
 				this.animate('totalCountries', totalCountries, { duration: 2000 });
+				this.animate('totalASNs', totalASNs, { duration: 2000 });
 
-				// TODO: 670 temp
+				// TODO: 670 temp as static values
 				this.animate('totalMeasurements', 300, { duration: 2000 });
-				this.animate('totalASNs', 400, { duration: 2000 });
 				this.animate('responseTime', 14, { duration: 2000 });
 			};
 		},
