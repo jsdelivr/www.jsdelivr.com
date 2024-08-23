@@ -127,81 +127,45 @@
 				</p>
 
 				<div class="gp-about_people-behind_wrapper">
-					<div class="gp-about_people-behind_wrapper_collaborators">
-						<h3 class="gp-about_people-behind_wrapper_collaborators_title">Core Team</h3>
+					{{#each collaborators}}
+						<div class="gp-about_people-behind_wrapper_collaborators">
+							<h3 class="gp-about_people-behind_wrapper_collaborators_title">{{this.title}}</h3>
 
-						<div class="gp-about_people-behind_wrapper_collaborators_list">
-							{{#each coreTeamList}}
-								<div class="gp-about_people-behind_wrapper_collaborators_list_item">
-									<div class="gp-about_people-behind_wrapper_collaborators_list_item_img-wrapper">
-										<img width="48"
-											height="48"
-											src="{{@shared.assetsHost}}{{this.imgSrc}}"
-											{{#if this.imgSrc2}}
-												srcset="{{@shared.assetsHost}}{{this.imgSrc2}}"
-											{{/if}}
-											loading="lazy"/>
+							<div class="gp-about_people-behind_wrapper_collaborators_list">
+								{{#each this.data}}
+									<div class="gp-about_people-behind_wrapper_collaborators_list_item">
+										<div class="gp-about_people-behind_wrapper_collaborators_list_item_img-wrapper">
+											<img width="48"
+												height="48"
+												src="{{@shared.assetsHost}}{{this.imgSrc}}"
+												{{#if this.imgSrc2}}
+													srcset="{{@shared.assetsHost}}{{this.imgSrc2}}"
+												{{/if}}
+												loading="lazy"/>
+										</div>
+
+										<div class="gp-about_people-behind_wrapper_collaborators_list_item_info">
+											<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_name">
+												{{this.name}}
+											</span>
+
+											<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_position">
+												{{this.position}}
+											</span>
+
+											<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_social">
+												<a target="_blank" rel="noopener noreferrer" href="{{this.social.url}}">
+													<img width="24"
+														height="24"
+														src="{{@shared.assetsHost}}{{this.social.imgSrc}}">
+												</a>
+											</span>
+										</div>
 									</div>
-
-									<div class="gp-about_people-behind_wrapper_collaborators_list_item_info">
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_name">
-											{{this.name}}
-										</span>
-
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_position">
-											{{this.position}}
-										</span>
-
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_social">
-											<a target="_blank" rel="noopener noreferrer" href="{{this.social.url}}">
-												<img width="24"
-													height="24"
-													src="{{@shared.assetsHost}}{{this.social.imgSrc}}">
-											</a>
-										</span>
-									</div>
-								</div>
-							{{/each}}
+								{{/each}}
+							</div>
 						</div>
-					</div>
-
-					<div class="gp-about_people-behind_wrapper_collaborators">
-						<h3 class="gp-about_people-behind_wrapper_collaborators_title">Frequent Contributors</h3>
-
-						<div class="gp-about_people-behind_wrapper_collaborators_list">
-							{{#each contributorsList}}
-								<div class="gp-about_people-behind_wrapper_collaborators_list_item">
-									<div class="gp-about_people-behind_wrapper_collaborators_list_item_img-wrapper">
-										<img width="48"
-											height="48"
-											src="{{@shared.assetsHost}}{{this.imgSrc}}"
-											{{#if this.imgSrc2}}
-												srcset="{{@shared.assetsHost}}{{this.imgSrc2}}"
-											{{/if}}
-											loading="lazy"/>
-									</div>
-
-									<div class="gp-about_people-behind_wrapper_collaborators_list_item_info">
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_name">
-											{{this.name}}
-										</span>
-
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_position">
-											{{this.position}}
-										</span>
-
-										<span class="gp-about_people-behind_wrapper_collaborators_list_item_info_social">
-											<a target="_blank" rel="noopener noreferrer" href="{{this.social.url}}">
-												<img width="24"
-													height="24"
-													src="{{@shared.assetsHost}}{{this.social.imgSrc}}">
-											</a>
-										</span>
-									</div>
-								</div>
-							{{/each}}
-						</div>
-					</div>
+					{{/each}}
 				</div>
 			</div>
 		</div>
@@ -214,65 +178,73 @@
 	component.exports = {
 		data () {
 			return {
-				coreTeamList: [
+				collaborators: [
 					{
-						name: 'Dmitriy Akulov',
-						position: 'Founder',
-						imgSrc: '/img/about/dmitriy-akulov.png',
-						imgSrc2: '/img/about/dmitriy-akulov@2x.png 2x',
-						social: {
-							url: 'https://twitter.com/jimaek',
-							imgSrc: '/img/about/twitter-icon.svg',
-						},
+						title: 'Core Team',
+						data: [
+							{
+								name: 'Dmitriy Akulov',
+								position: 'Founder',
+								imgSrc: '/img/about/dmitriy-akulov.png',
+								imgSrc2: '/img/about/dmitriy-akulov@2x.png 2x',
+								social: {
+									url: 'https://twitter.com/jimaek',
+									imgSrc: '/img/about/twitter-icon.svg',
+								},
+							},
+							{
+								name: 'Martin Kolarik',
+								position: 'Core Developer',
+								imgSrc: '/img/about/martin-kolarik.png',
+								imgSrc2: '/img/about/martin-kolarik@2x.png 2x',
+								social: {
+									url: 'https://twitter.com/makolarik',
+									imgSrc: '/img/about/twitter-icon.svg',
+								},
+							},
+							{
+								name: 'Alexey Yarmosh',
+								position: 'Software Engineer',
+								imgSrc: '/img/globalping/about/alexey-yarmosh.jpeg',
+								social: {
+									url: 'https://www.linkedin.com/in/alexey-yarmosh/',
+									imgSrc: '/img/about/linkedin-icon.svg',
+								},
+							},
+						],
 					},
 					{
-						name: 'Martin Kolarik',
-						position: 'Core Developer',
-						imgSrc: '/img/about/martin-kolarik.png',
-						imgSrc2: '/img/about/martin-kolarik@2x.png 2x',
-						social: {
-							url: 'https://twitter.com/makolarik',
-							imgSrc: '/img/about/twitter-icon.svg',
-						},
-					},
-					{
-						name: 'Alexey Yarmosh',
-						position: 'Software Engineer',
-						imgSrc: '/img/globalping/about/alexey-yarmosh.jpeg',
-						social: {
-							url: 'https://www.linkedin.com/in/alexey-yarmosh/',
-							imgSrc: '/img/about/linkedin-icon.svg',
-						},
-					},
-				],
-				contributorsList: [
-					{
-						name: 'Artem Stoianov',
-						position: 'Developer',
-						imgSrc: '/img/about/artem-stoianov.png',
-						imgSrc2: '/img/about/artem-stoianov@2x.png 2x',
-						social: {
-							url: 'https://twitter.com/zarianec',
-							imgSrc: '/img/about/twitter-icon.svg',
-						},
-					},
-					{
-						name: 'Kyrylo Chyzhov',
-						position: 'Developer',
-						imgSrc: '/img/globalping/about/kyrylo-chyzhov.jpeg',
-						social: {
-							url: 'https://www.linkedin.com/in/kyrylo-chyzhov-092ab7107',
-							imgSrc: '/img/about/linkedin-icon.svg',
-						},
-					},
-					{
-						name: 'Robert Zygmuntowski',
-						position: 'UI/UX Designer',
-						imgSrc: '/img/globalping/about/robert-zygmuntowski.jpeg',
-						social: {
-							url: 'https://www.linkedin.com/in/robert-zygmuntowski-144865a9',
-							imgSrc: '/img/about/linkedin-icon.svg',
-						},
+						title: 'Frequent Contributors',
+						data: [
+							{
+								name: 'Artem Stoianov',
+								position: 'Developer',
+								imgSrc: '/img/about/artem-stoianov.png',
+								imgSrc2: '/img/about/artem-stoianov@2x.png 2x',
+								social: {
+									url: 'https://twitter.com/zarianec',
+									imgSrc: '/img/about/twitter-icon.svg',
+								},
+							},
+							{
+								name: 'Kyrylo Chyzhov',
+								position: 'Developer',
+								imgSrc: '/img/globalping/about/kyrylo-chyzhov.jpeg',
+								social: {
+									url: 'https://www.linkedin.com/in/kyrylo-chyzhov-092ab7107',
+									imgSrc: '/img/about/linkedin-icon.svg',
+								},
+							},
+							{
+								name: 'Robert Zygmuntowski',
+								position: 'UI/UX Designer',
+								imgSrc: '/img/globalping/about/robert-zygmuntowski.jpeg',
+								social: {
+									url: 'https://www.linkedin.com/in/robert-zygmuntowski-144865a9',
+									imgSrc: '/img/about/linkedin-icon.svg',
+								},
+							},
+						],
 					},
 				],
 			};
