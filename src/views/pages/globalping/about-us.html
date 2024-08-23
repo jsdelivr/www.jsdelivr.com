@@ -69,34 +69,46 @@
 					<div class="gp-about_in-numbers_list_block">
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">Eyeball and DC</span>
-							<span class="gp-about_in-numbers_list_block_item_value">{{probesAmount}}+ probes</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								{{ Math.floor(totalProbes) }}{{#if totalProbes}}+{{/if}} probes
+							</span>
 						</div>
 
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">Unique and global</span>
-							<span class="gp-about_in-numbers_list_block_item_value">{{cities}}+ cities</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								{{ Math.floor(totalCities) }}{{#if totalCities}}+{{/if}} cities
+							</span>
 						</div>
 
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">Every day</span>
-							<span class="gp-about_in-numbers_list_block_item_value">{{measurementsAmount}}+ measurements</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								{{ Math.floor(totalMeasurements) }}{{#if totalMeasurements}}k+{{/if}} measurements
+							</span>
 						</div>
 					</div>
 
 					<div class="gp-about_in-numbers_list_block">
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">Global ISP reach</span>
-							<span class="gp-about_in-numbers_list_block_item_value">{{asnAmount}}+ ASNs</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								{{ Math.floor(totalASNs) }}{{#if totalASNs}}+{{/if}} ASNs
+							</span>
 						</div>
 
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">And growing</span>
-							<span class="gp-about_in-numbers_list_block_item_value">{{countries}}+ countries</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								{{ Math.floor(totalCountries) }}{{#if totalCountries}}+{{/if}} countries
+							</span>
 						</div>
 
 						<div class="gp-about_in-numbers_list_block_item">
 							<span class="gp-about_in-numbers_list_block_item_name">Low latency API</span>
-							<span class="gp-about_in-numbers_list_block_item_value">&lt;{{responseTime}} response time</span>
+							<span class="gp-about_in-numbers_list_block_item_value">
+								&lt;{{ Math.floor(responseTime) }}{{#if totalCountries}}ms{{/if}} response time
+							</span>
 						</div>
 					</div>
 				</div>
@@ -175,15 +187,18 @@
 </r-page>
 
 <script>
+	const http = require('../../../assets/js/utils/http');
+	const has = require('../../../assets/js/utils/has');
+
 	component.exports = {
 		data () {
 			return {
-				probesAmount: 1000,
-				cities: 300,
-				measurementsAmount: '300k',
-				asnAmount: 400,
-				countries: 80,
-				responseTime: '14ms',
+				totalProbes: 0,
+				totalCities: 0,
+				totalCountries: 0,
+				totalMeasurements: 0,
+				totalASNs: 0,
+				responseTime: 0,
 				collaborators: [
 					{
 						title: 'Core Team',
@@ -254,6 +269,57 @@
 					},
 				],
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.getProbesData();
+			}
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				let { totalCities, totalCountries } = response.reduce((res, item) => {
+					if (!res.citiesList.includes(item.location.city)) {
+						res.citiesList.push(item.location.city);
+					}
+
+					if (!res.countriesList.includes(item.location.country)) {
+						res.countriesList.push(item.location.country);
+					}
+
+					res.totalCities = res.citiesList.length;
+					res.totalCountries = res.countriesList.length;
+
+					return res;
+				}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
+
+				this.animate('totalProbes', response.length, { duration: 2000 });
+				this.animate('totalCities', totalCities, { duration: 2000 });
+				this.animate('totalCountries', totalCountries, { duration: 2000 });
+
+				// TODO: 670 temp
+				this.animate('totalMeasurements', 300, { duration: 2000 });
+				this.animate('totalASNs', 400, { duration: 2000 });
+				this.animate('responseTime', 14, { duration: 2000 });
+			};
+		},
+		getProbesData () {
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
 		},
 	};
 </script>
