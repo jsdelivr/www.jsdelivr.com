@@ -408,6 +408,7 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
+			withCredentials = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
@@ -420,6 +421,10 @@ module.exports = {
 
 			if (headers) {
 				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+			}
+
+			if (withCredentials) {
+				xhr.withCredentials = true;
 			}
 
 			xhr.onerror = xhr.onload = () => {

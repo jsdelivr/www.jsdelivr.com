@@ -4,6 +4,7 @@ const GITHUB_API_HOST = 'https://api.github.com';
 const SNYK_API_HOST = 'https://snyk-widget.herokuapp.com';
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const GLOBALPING_HOST = 'https://api.globalping.io';
+const GLOBALPING_DASH_HOST = 'https://dash-directus.globalping.io';
 const HTTP_CACHE = new Map();
 
 const getWithCache = (url, params = {}, responseHeadersToGet = null) => {
@@ -263,9 +264,7 @@ module.exports.postGlobalpingMeasurement = (opts, responseHeadersToGet) => {
 		method: 'POST',
 		url: `${GLOBALPING_HOST}/v1/measurements`,
 		body: opts,
-		// headers: {
-		// 	Authorization: 'Bearer YOUR_TOKEN',
-		// },
+		withCredentials: true,
 	};
 
 	if (responseHeadersToGet) {
@@ -296,4 +295,21 @@ module.exports.getCdnOssFiles = (
 	let responseHeadersToGet = [ 'x-total-count', 'x-total-pages' ];
 
 	return getWithCache(`${API_HOST}/v1/stats/proxies/${name}/files`, { page, limit, by }, responseHeadersToGet);
+};
+
+module.exports.getGlobalpingUser = () => {
+	// Note: The authentication won't work out of the box on localhost because the cookie is set with SameSite=Strict
+	// If you need to test the page as an authenticated user (and don't want to set up a local dash and API),
+	// just set the production cookie "dash_session_token" (.globalping.io) to SameSite=None via devtools.
+	return _.makeHTTPRequest({ url: `${GLOBALPING_DASH_HOST}/users/me`, withCredentials: true }).then(body => body.data).catch(() => null);
+};
+
+module.exports.gpLogOut = () => {
+	return _.makeHTTPRequest({
+		method: 'POST',
+		url: `${GLOBALPING_DASH_HOST}/auth/logout`,
+		body: { mode: 'session' },
+		withCredentials: true,
+		rawResponse: true,
+	});
 };

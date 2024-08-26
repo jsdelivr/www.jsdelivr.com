@@ -9,6 +9,7 @@ const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
 const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
+const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -52,6 +53,10 @@ _.onDocumentReady(() => {
 			.replace(/\u2028/g, '\\u2028')
 			.replace(/\u2029/g, '\\u2029');
 	}
+
+	getGlobalpingUser().then((user) => {
+		ractive.set('@shared.user', user);
+	});
 
 	try {
 		let shared = JSON.parse(document.querySelector('#ractive-shared').innerHTML.trim());
