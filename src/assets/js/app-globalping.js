@@ -8,6 +8,7 @@ const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
+const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
 const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
@@ -31,6 +32,7 @@ app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
 app.router.addRoute('/network-tools/:params?', cGlobalpingNetworkTools);
 app.router.addRoute('/integrations', cGlobalpingIntegrations);
+app.router.addRoute('/about-us', cGlobalpingAbout);
 
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
