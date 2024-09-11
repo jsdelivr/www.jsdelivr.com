@@ -1,5 +1,10 @@
 <div class="c-range-slider">
+	<div id="slider-container" class="range-slider">
+		<div id="slider-line" class="range-slider_line"></div>
+		<div id="slider-knob" class="range-slider_knob"></div>
+	</div>
 
+	<p id="result"></p>
 </div>
 
 <script>
@@ -8,9 +13,102 @@
 			return {
 			};
 		},
-		oninit () {
+		onrender () {
 			if (!Ractive.isServer) {
+				let sliderContainer = document.getElementById('slider-container');
+				let sliderKnob = document.getElementById('slider-knob');
+				let sliderLine = document.getElementById('slider-line');
+				let partCount = 9; // TODO: mv to component props
+				let partGap = 2; // TODO:  mv to component props
+				let parts = [];
 
+				// divide the line with parts and gaps
+				for (let i = 0; i < partCount; i++) {
+					let part = document.createElement('div');
+					part.className = 'part';
+					parts.push(part);
+					sliderLine.appendChild(part);
+
+					// add gap except after the last part
+					if (i < partCount - 1) {
+						let gap = document.createElement('div');
+						gap.className = 'gap';
+						sliderLine.appendChild(gap);
+					}
+				}
+
+				let sliderPosition = 0;
+				let partWidth = parts[0].offsetWidth + partGap;
+				let maxSliderPosition = (partWidth * partCount);
+
+				// set slider with mouse click
+				sliderContainer.addEventListener('click', function (event) {
+					let rect = sliderContainer.getBoundingClientRect();
+					let x = event.clientX - rect.left;
+
+					moveSliderToClosestPart(x);
+				});
+
+				// handle the sliderKnob dragging
+				sliderKnob.addEventListener('mousedown', function (event) {
+					event.preventDefault();
+
+					function onMouseMove(event) {
+						let rect = sliderContainer.getBoundingClientRect();
+						let x = event.clientX - rect.left;
+
+						moveSliderToClosestPart(x);
+					}
+
+					function onMouseUp() {
+						document.removeEventListener('mousemove', onMouseMove);
+						document.removeEventListener('mouseup', onMouseUp);
+					}
+
+					document.addEventListener('mousemove', onMouseMove);
+					document.addEventListener('mouseup', onMouseUp);
+				});
+
+				// handle keyboard controls
+				document.addEventListener('keydown', function (event) {
+					if (event.key === 'ArrowLeft') {
+						sliderPosition = Math.max(0, sliderPosition - partWidth);
+					} else if (event.key === 'ArrowRight') {
+						sliderPosition = Math.min(maxSliderPosition, sliderPosition + partWidth);
+					}
+
+					updateSliderPosition();
+				});
+
+				function moveSliderToClosestPart(x) {
+					// calculate closest part
+					sliderPosition = Math.round(x / partWidth) * partWidth;
+
+					// snap to the exact start or end of the slider line
+					if (sliderPosition < 0) {
+						sliderPosition = 0;
+					} else if (sliderPosition > maxSliderPosition) {
+						sliderPosition = maxSliderPosition;
+					}
+
+					updateSliderPosition();
+				}
+
+				function updateSliderPosition() {
+					sliderKnob.style.left = `${sliderPosition}px`;
+
+					// highlight parts to the left of the sliderKnob
+					parts.forEach((part, index) => {
+						if (index * partWidth < sliderPosition) {
+							part.style.backgroundColor = '#17d4a7';
+						} else {
+							part.style.backgroundColor = '#e7e7ee';
+						}
+					});
+				}
+
+				// initiate the slider
+				updateSliderPosition();
 			}
 		},
 	};
