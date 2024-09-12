@@ -1,8 +1,10 @@
 <div class="c-range-slider">
 	{{#if useDefaultHeader}}
-		<div class="range-slider-header">
-			{{creditsPerDollar * donationValue}} credits/donation
-		</div>
+			<div class="range-slider-header">
+				{{#if donationValue}}
+						{{creditsPerDollar * donationValue}} credits/donation
+				{{/if}}
+			</div>
 	{{elseif @this.partials.customHeader}}
 		{{>customHeader}}
 	{{/if}}
@@ -23,7 +25,7 @@
 			return {
 				useDefaultHeader: true,
 				creditsPerDollar: 200,
-				donationValue: 1,
+				donationValue: null,
 				partsCount: 9,
 				partsGap: 2,
 				sliderPosition: 0,
@@ -172,17 +174,29 @@
 
 				// initiate the slider
 				this.updateSliderPosition();
+
+				this.observe('sliderPosition', (sliderPosition) => {
+					let partWidth = this.get('partWidth');
+					let partsLabelsData = this.get('partsLabelsData');
+					let partIdx = Math.round(sliderPosition / partWidth) - 1;
+
+					if (partIdx < 0) {
+						this.set('donationValue', null);
+					} else {
+						this.set('donationValue', partsLabelsData[partIdx].value);
+					}
+				});
 			}
 		},
 		updateSliderPosition () {
 			let sliderPosition = this.get('sliderPosition');
 			let partsElements = this.get('partsElements');
 			let partWidth = this.get('partWidth');
-			let sliderKnob = document.getElementById('slider-knob');
+			let sliderKnobEl = document.getElementById('slider-knob');
 
-			sliderKnob.style.left = `${sliderPosition}px`;
+			sliderKnobEl.style.left = `${sliderPosition}px`;
 
-			// highlight parts to the left of the sliderKnob
+			// highlight parts to the left of the sliderKnobEl
 			partsElements.forEach((partEl, idx) => {
 				if (idx * partWidth < sliderPosition) {
 					partEl.style.backgroundColor = '#17d4a7';
