@@ -1,4 +1,12 @@
 <div class="c-range-slider">
+	{{#if useDefaultHeader}}
+		<div class="range-slider-header">
+			{{availableCredits}} credits/donation
+		</div>
+	{{elseif @this.partials.customHeader}}
+		{{>customHeader}}
+	{{/if}}
+
 	<div id="slider-container" class="range-slider">
 		<div id="slider-line" class="range-slider_line"></div>
 		<div id="slider-knob" class="range-slider_knob"></div>
@@ -13,6 +21,8 @@
 	component.exports = {
 		data () {
 			return {
+				useDefaultHeader: true,
+				availableCredits: 200,
 				partsCount: 9,
 				partsGap: 2,
 				partClassname: 'range-slider_part',
