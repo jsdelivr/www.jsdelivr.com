@@ -39,48 +39,22 @@
 
 				let sliderPosition = 0;
 				let partWidth = parts[0].offsetWidth + partGap;
-				let maxSliderPosition = (partWidth * partCount);
+				let maxSliderPosition = partWidth * partCount;
 
-				// set slider with mouse click
-				sliderContainer.addEventListener('click', function (event) {
-					let rect = sliderContainer.getBoundingClientRect();
-					let x = event.clientX - rect.left;
+				let updateSliderPosition = () => {
+					sliderKnob.style.left = `${sliderPosition}px`;
 
-					moveSliderToClosestPart(x);
-				});
+					// highlight parts to the left of the sliderKnob
+					parts.forEach((part, index) => {
+						if (index * partWidth < sliderPosition) {
+							part.style.backgroundColor = '#17d4a7';
+						} else {
+							part.style.backgroundColor = '#e7e7ee';
+						}
+					});
+				};
 
-				// handle the sliderKnob dragging
-				sliderKnob.addEventListener('mousedown', function (event) {
-					event.preventDefault();
-
-					function onMouseMove(event) {
-						let rect = sliderContainer.getBoundingClientRect();
-						let x = event.clientX - rect.left;
-
-						moveSliderToClosestPart(x);
-					}
-
-					function onMouseUp() {
-						document.removeEventListener('mousemove', onMouseMove);
-						document.removeEventListener('mouseup', onMouseUp);
-					}
-
-					document.addEventListener('mousemove', onMouseMove);
-					document.addEventListener('mouseup', onMouseUp);
-				});
-
-				// handle keyboard controls
-				document.addEventListener('keydown', function (event) {
-					if (event.key === 'ArrowLeft') {
-						sliderPosition = Math.max(0, sliderPosition - partWidth);
-					} else if (event.key === 'ArrowRight') {
-						sliderPosition = Math.min(maxSliderPosition, sliderPosition + partWidth);
-					}
-
-					updateSliderPosition();
-				});
-
-				function moveSliderToClosestPart(x) {
+				let moveSliderToClosestPart = (x) => {
 					// calculate closest part
 					sliderPosition = Math.round(x / partWidth) * partWidth;
 
@@ -92,20 +66,46 @@
 					}
 
 					updateSliderPosition();
-				}
+				};
 
-				function updateSliderPosition() {
-					sliderKnob.style.left = `${sliderPosition}px`;
+				// set slider with mouse click
+				sliderContainer.addEventListener('click', (event) => {
+					let rect = sliderContainer.getBoundingClientRect();
+					let x = event.clientX - rect.left;
 
-					// highlight parts to the left of the sliderKnob
-					parts.forEach((part, index) => {
-						if (index * partWidth < sliderPosition) {
-							part.style.backgroundColor = '#17d4a7';
-						} else {
-							part.style.backgroundColor = '#e7e7ee';
-						}
-					});
-				}
+					moveSliderToClosestPart(x);
+				});
+
+				// handle the sliderKnob dragging
+				sliderKnob.addEventListener('mousedown', (event) => {
+					event.preventDefault();
+
+					let onMouseMove = (event) => {
+						let rect = sliderContainer.getBoundingClientRect();
+						let x = event.clientX - rect.left;
+
+						moveSliderToClosestPart(x);
+					};
+
+					let onMouseUp = () => {
+						document.removeEventListener('mousemove', onMouseMove);
+						document.removeEventListener('mouseup', onMouseUp);
+					};
+
+					document.addEventListener('mousemove', onMouseMove);
+					document.addEventListener('mouseup', onMouseUp);
+				});
+
+				// handle keyboard controls
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'ArrowLeft') {
+						sliderPosition = Math.max(0, sliderPosition - partWidth);
+					} else if (event.key === 'ArrowRight') {
+						sliderPosition = Math.min(maxSliderPosition, sliderPosition + partWidth);
+					}
+
+					updateSliderPosition();
+				});
 
 				// initiate the slider
 				updateSliderPosition();
