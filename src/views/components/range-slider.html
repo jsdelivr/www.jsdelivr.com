@@ -3,6 +3,10 @@
 		<div id="slider-line" class="range-slider_line"></div>
 		<div id="slider-knob" class="range-slider_knob"></div>
 	</div>
+
+	{{#if partsLabelsData && partsLabelsData.length === partsCount}}
+		<div id="slider-labels" class="range-slider_labels"></div>
+	{{/if}}
 </div>
 
 <script>
@@ -13,20 +17,63 @@
 				partsGap: 2,
 				partClassname: 'range-slider_part',
 				gapClassname: 'range-slider_gap',
+				partLabelClassname: 'range-slider_labels_label',
+				partsLabelsData: [
+					{
+						displayed: '1$',
+						value: '1',
+					},
+					{
+						displayed: '2$',
+						value: '2',
+					},
+					{
+						displayed: '4$',
+						value: '4',
+					},
+					{
+						displayed: '8$',
+						value: '8',
+					},
+					{
+						displayed: '16$',
+						value: '16',
+					},
+					{
+						displayed: '32$',
+						value: '32',
+					},
+					{
+						displayed: '64$',
+						value: '64',
+					},
+					{
+						displayed: '128$',
+						value: '128',
+					},
+					{
+						displayed: 'Custom',
+						value: '0',
+					},
+				],
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				let partsCount = this.get('partsCount');
+				let partsGap = this.get('partsGap');
+				let partsLabelsData = this.get('partsLabelsData');
 				let sliderContainer = document.getElementById('slider-container');
 				let sliderKnob = document.getElementById('slider-knob');
 				let sliderLine = document.getElementById('slider-line');
+				let sliderLabels = document.getElementById('slider-labels');
 				let parts = [];
-				let partsCount = this.get('partsCount');
-				let partsGap = this.get('partsGap');
+				let partsLabels = [];
 
 				// divide the line with parts and gaps
 				for (let i = 0; i < partsCount; i++) {
 					let partEl = document.createElement('div');
+
 					partEl.className = this.get('partClassname');
 					parts.push(partEl);
 					sliderLine.appendChild(partEl);
@@ -34,8 +81,26 @@
 					// add gap except after the last part
 					if (i < partsCount - 1) {
 						let gapEl = document.createElement('div');
+
 						gapEl.className = this.get('gapClassname');
 						sliderLine.appendChild(gapEl);
+					}
+
+					if (partsLabelsData && partsLabelsData.length === partsCount) {
+						let partLabelEl = document.createElement('div');
+
+						partLabelEl.className = this.get('partLabelClassname');
+						partLabelEl.textContent = partsLabelsData[i].displayed;
+						partsLabels.push(partLabelEl);
+						sliderLabels.appendChild(partLabelEl);
+
+						// add gap except after the last part
+						if (i < partsLabelsData.length - 1) {
+							let gapEl = document.createElement('div');
+
+							gapEl.className = this.get('gapClassname');
+							sliderLabels.appendChild(gapEl);
+						}
 					}
 				}
 
