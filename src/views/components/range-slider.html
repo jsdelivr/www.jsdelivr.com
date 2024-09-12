@@ -11,6 +11,10 @@
 	component.exports = {
 		data () {
 			return {
+				partsCount: 9,
+				partsGap: 2,
+				partClassname: 'range-slider_part',
+				gapClassname: 'range-slider_gap',
 			};
 		},
 		onrender () {
@@ -18,28 +22,28 @@
 				let sliderContainer = document.getElementById('slider-container');
 				let sliderKnob = document.getElementById('slider-knob');
 				let sliderLine = document.getElementById('slider-line');
-				let partCount = 9; // TODO: mv to component props
-				let partGap = 2; // TODO:  mv to component props
 				let parts = [];
+				let partsCount = this.get('partsCount');
+				let partsGap = this.get('partsGap');
 
 				// divide the line with parts and gaps
-				for (let i = 0; i < partCount; i++) {
-					let part = document.createElement('div');
-					part.className = 'part';
-					parts.push(part);
-					sliderLine.appendChild(part);
+				for (let i = 0; i < partsCount; i++) {
+					let partEl = document.createElement('div');
+					partEl.className = this.get('partClassname');
+					parts.push(partEl);
+					sliderLine.appendChild(partEl);
 
 					// add gap except after the last part
-					if (i < partCount - 1) {
-						let gap = document.createElement('div');
-						gap.className = 'gap';
-						sliderLine.appendChild(gap);
+					if (i < partsCount - 1) {
+						let gapEl = document.createElement('div');
+						gapEl.className = this.get('gapClassname');
+						sliderLine.appendChild(gapEl);
 					}
 				}
 
 				let sliderPosition = 0;
-				let partWidth = parts[0].offsetWidth + partGap;
-				let maxSliderPosition = partWidth * partCount;
+				let partWidth = parts[0].offsetWidth + partsGap;
+				let maxSliderPosition = partWidth * partsCount;
 
 				let updateSliderPosition = () => {
 					sliderKnob.style.left = `${sliderPosition}px`;
