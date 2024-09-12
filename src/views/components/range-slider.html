@@ -26,6 +26,10 @@
 				donationValue: 1,
 				partsCount: 9,
 				partsGap: 2,
+				sliderPosition: 0,
+				partsElements: [],
+				partWidth: null,
+				maxSliderPosition: null,
 				partClassname: 'range-slider_line_part',
 				gapClassname: 'range-slider_line_gap',
 				partLabelClassname: 'range-slider-labels_label',
@@ -81,7 +85,7 @@
 				let parts = [];
 				let partsLabels = [];
 
-				// divide the line with parts and gaps
+				// divide the line with parts and gaps, create parts labels
 				for (let i = 0; i < partsCount; i++) {
 					let partEl = document.createElement('div');
 
@@ -97,6 +101,7 @@
 						sliderLine.appendChild(gapEl);
 					}
 
+					// create parts labels
 					if (partsLabelsData && partsLabelsData.length === partsCount) {
 						let partLabelEl = document.createElement('div');
 
@@ -115,43 +120,19 @@
 					}
 				}
 
-				let sliderPosition = 0;
-				let partWidth = parts[0].offsetWidth + partsGap;
-				let maxSliderPosition = partWidth * partsCount;
+				let partWidth =  parts[0].offsetWidth + partsGap;
+				let maxSliderPosition =  partWidth * partsCount;
 
-				let updateSliderPosition = () => {
-					sliderKnob.style.left = `${sliderPosition}px`;
-
-					// highlight parts to the left of the sliderKnob
-					parts.forEach((part, index) => {
-						if (index * partWidth < sliderPosition) {
-							part.style.backgroundColor = '#17d4a7';
-						} else {
-							part.style.backgroundColor = '#e7e7ee';
-						}
-					});
-				};
-
-				let moveSliderToClosestPart = (x) => {
-					// calculate closest part
-					sliderPosition = Math.round(x / partWidth) * partWidth;
-
-					// snap to the exact start or end of the slider line
-					if (sliderPosition < 0) {
-						sliderPosition = 0;
-					} else if (sliderPosition > maxSliderPosition) {
-						sliderPosition = maxSliderPosition;
-					}
-
-					updateSliderPosition();
-				};
+				this.set('partsElements', parts);
+				this.set('partWidth', partWidth);
+				this.set('maxSliderPosition', maxSliderPosition);
 
 				// set slider with mouse click
 				sliderContainer.addEventListener('click', (event) => {
 					let rect = sliderContainer.getBoundingClientRect();
 					let x = event.clientX - rect.left;
 
-					moveSliderToClosestPart(x);
+					this.moveSliderToClosestPart(x);
 				});
 
 				// handle the sliderKnob dragging
@@ -162,7 +143,7 @@
 						let rect = sliderContainer.getBoundingClientRect();
 						let x = event.clientX - rect.left;
 
-						moveSliderToClosestPart(x);
+						this.moveSliderToClosestPart(x);
 					};
 
 					let onMouseUp = () => {
@@ -176,18 +157,57 @@
 
 				// handle keyboard controls
 				document.addEventListener('keydown', (event) => {
+					let sliderPosition = this.get('sliderPosition');
+
 					if (event.key === 'ArrowLeft') {
 						sliderPosition = Math.max(0, sliderPosition - partWidth);
 					} else if (event.key === 'ArrowRight') {
 						sliderPosition = Math.min(maxSliderPosition, sliderPosition + partWidth);
 					}
 
-					updateSliderPosition();
+					this.set('sliderPosition', sliderPosition);
+
+					this.updateSliderPosition();
 				});
 
 				// initiate the slider
-				updateSliderPosition();
+				this.updateSliderPosition();
 			}
+		},
+		updateSliderPosition () {
+			let sliderPosition = this.get('sliderPosition');
+			let partsElements = this.get('partsElements');
+			let partWidth = this.get('partWidth');
+			let sliderKnob = document.getElementById('slider-knob');
+
+			sliderKnob.style.left = `${sliderPosition}px`;
+
+			// highlight parts to the left of the sliderKnob
+			partsElements.forEach((partEl, idx) => {
+				if (idx * partWidth < sliderPosition) {
+					partEl.style.backgroundColor = '#17d4a7';
+				} else {
+					partEl.style.backgroundColor = '#e7e7ee';
+				}
+			});
+		},
+		moveSliderToClosestPart (x) {
+			let partWidth = this.get('partWidth');
+			let maxSliderPosition = this.get('maxSliderPosition');
+
+			// calculate closest part
+			let sliderPosition = Math.round(x / partWidth) * partWidth;
+
+			// snap to the exact start or end of the slider line
+			if (sliderPosition < 0) {
+				sliderPosition = 0;
+			} else if (sliderPosition > maxSliderPosition) {
+				sliderPosition = maxSliderPosition;
+			}
+
+			this.set('sliderPosition', sliderPosition);
+
+			this.updateSliderPosition();
 		},
 	};
 </script>
