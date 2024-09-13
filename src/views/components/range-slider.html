@@ -31,7 +31,6 @@
 				sliderPosition: 0,
 				partsElements: [],
 				partWidth: null,
-				maxSliderPosition: null,
 				partClassname: 'range-slider_line_part',
 				gapClassname: 'range-slider_line_gap',
 				partLabelClassname: 'range-slider-labels_label',
@@ -123,11 +122,9 @@
 				}
 
 				let partWidth = parts[0].offsetWidth + partsGap;
-				let maxSliderPosition = partWidth * partsCount;
 
 				this.set('partsElements', parts);
 				this.set('partWidth', partWidth);
-				this.set('maxSliderPosition', partsCount);
 
 				// set slider with mouse click
 				sliderContainer.addEventListener('click', (event) => {
@@ -160,12 +157,12 @@
 				// handle keyboard controls
 				document.addEventListener('keydown', (event) => {
 					let sliderPosition = this.get('sliderPosition');
-					let maxSliderPosition = this.get('maxSliderPosition');
+					let partsCount = this.get('partsCount');
 
 					if (event.key === 'ArrowLeft') {
 						sliderPosition = sliderPosition - 1 < 0 ? 0 : sliderPosition - 1;
 					} else if (event.key === 'ArrowRight') {
-						sliderPosition = sliderPosition + 1 > maxSliderPosition ? maxSliderPosition : sliderPosition + 1;
+						sliderPosition = sliderPosition + 1 > partsCount ? partsCount : sliderPosition + 1;
 					}
 
 					this.set('sliderPosition', sliderPosition);
@@ -208,7 +205,7 @@
 		},
 		moveSliderToClosestPart (x) {
 			let partWidth = this.get('partWidth');
-			let maxSliderPosition = this.get('maxSliderPosition');
+			let partsCount = this.get('partsCount');
 
 			// calculate closest part
 			let sliderPosition = Math.round(x / partWidth);
@@ -216,8 +213,8 @@
 			// snap to the exact start or end of the slider line
 			if (sliderPosition < 0) {
 				sliderPosition = 0;
-			} else if (sliderPosition > maxSliderPosition) {
-				sliderPosition = maxSliderPosition;
+			} else if (sliderPosition > partsCount) {
+				sliderPosition = partsCount;
 			}
 
 			this.set('sliderPosition', sliderPosition);
