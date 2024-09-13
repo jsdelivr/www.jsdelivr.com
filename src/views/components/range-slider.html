@@ -127,7 +127,7 @@
 
 				this.set('partsElements', parts);
 				this.set('partWidth', partWidth);
-				this.set('maxSliderPosition', maxSliderPosition);
+				this.set('maxSliderPosition', partsCount);
 
 				// set slider with mouse click
 				sliderContainer.addEventListener('click', (event) => {
@@ -160,11 +160,12 @@
 				// handle keyboard controls
 				document.addEventListener('keydown', (event) => {
 					let sliderPosition = this.get('sliderPosition');
+					let maxSliderPosition = this.get('maxSliderPosition');
 
 					if (event.key === 'ArrowLeft') {
-						sliderPosition = Math.max(0, sliderPosition - partWidth);
+						sliderPosition = sliderPosition - 1 < 0 ? 0 : sliderPosition - 1;
 					} else if (event.key === 'ArrowRight') {
-						sliderPosition = Math.min(maxSliderPosition, sliderPosition + partWidth);
+						sliderPosition = sliderPosition + 1 > maxSliderPosition ? maxSliderPosition : sliderPosition + 1;
 					}
 
 					this.set('sliderPosition', sliderPosition);
@@ -178,7 +179,7 @@
 				this.observe('sliderPosition', (sliderPosition) => {
 					let partWidth = this.get('partWidth');
 					let partsLabelsData = this.get('partsLabelsData');
-					let partIdx = Math.round(sliderPosition / partWidth) - 1;
+					let partIdx = sliderPosition - 1;
 
 					if (partIdx < 0) {
 						this.set('donationValue', null);
@@ -194,11 +195,11 @@
 			let partWidth = this.get('partWidth');
 			let sliderKnobEl = document.getElementById('slider-knob');
 
-			sliderKnobEl.style.left = `${sliderPosition}px`;
+			sliderKnobEl.style.left = `${sliderPosition * partWidth}px`;
 
 			// highlight parts to the left of the sliderKnobEl
 			partsElements.forEach((partEl, idx) => {
-				if (idx * partWidth < sliderPosition) {
+				if (idx < sliderPosition) {
 					partEl.style.backgroundColor = '#17d4a7';
 				} else {
 					partEl.style.backgroundColor = '#e7e7ee';
@@ -210,7 +211,7 @@
 			let maxSliderPosition = this.get('maxSliderPosition');
 
 			// calculate closest part
-			let sliderPosition = Math.round(x / partWidth) * partWidth;
+			let sliderPosition = Math.round(x / partWidth);
 
 			// snap to the exact start or end of the slider line
 			if (sliderPosition < 0) {
