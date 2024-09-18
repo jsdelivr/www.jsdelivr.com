@@ -159,11 +159,15 @@
 				document.addEventListener('keydown', (event) => {
 					let sliderPosition = this.get('sliderPosition');
 					let partsCount = this.get('partsCount');
+					let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 
 					if (event.key === 'ArrowLeft') {
 						sliderPosition = sliderPosition - 1 < 0 ? 0 : sliderPosition - 1;
 					} else if (event.key === 'ArrowRight') {
-						sliderPosition = sliderPosition + 1 > partsCount ? partsCount : sliderPosition + 1;
+						let newPos = sliderPosition + 1;
+						let rangeRightLimit = zeroSliderPosAsActive ? partsCount - 1 : partsCount;
+
+						sliderPosition = newPos > rangeRightLimit ? rangeRightLimit : newPos;
 					}
 
 					this.set('sliderPosition', sliderPosition);
