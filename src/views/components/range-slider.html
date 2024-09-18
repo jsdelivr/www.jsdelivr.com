@@ -215,6 +215,7 @@
 			let partWidth = this.get('partWidth');
 			let partsCount = this.get('partsCount');
 			let currSliderPos = this.get('sliderPosition');
+			let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 			let newSliderPos = Math.round(x / partWidth);
 			let updSliderPos;
 
@@ -228,6 +229,11 @@
 				updSliderPos = currSliderPos - 1;
 			} else {
 				updSliderPos = newSliderPos;
+			}
+
+			// if the most left position of slider has value (zeroSliderPosAsActive is true) then we should not be able to choose the last part of the slider
+			if (zeroSliderPosAsActive && updSliderPos >= partsCount - 1) {
+				updSliderPos = partsCount - 1;
 			}
 
 			this.set('sliderPosition', updSliderPos);
