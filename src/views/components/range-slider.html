@@ -180,10 +180,10 @@
 					let partsLabelsData = this.get('partsLabelsData');
 					let partIdx;
 
-					if (zeroSliderPosAsActive && sliderPosition === 0) {
+					if (zeroSliderPosAsActive) {
 						partIdx = sliderPosition;
 					} else {
-						partIdx = sliderPosition - 1;
+						partIdx = sliderPosition + 1;
 					}
 
 					if (partIdx < 0) {
@@ -214,18 +214,23 @@
 		moveSliderToClosestPart (x) {
 			let partWidth = this.get('partWidth');
 			let partsCount = this.get('partsCount');
+			let currSliderPos = this.get('sliderPosition');
+			let newSliderPos = Math.round(x / partWidth);
+			let updSliderPos;
 
-			// calculate closest part
-			let sliderPosition = Math.round(x / partWidth);
-
-			// snap to the exact start or end of the slider line
-			if (sliderPosition < 0) {
-				sliderPosition = 0;
-			} else if (sliderPosition > partsCount) {
-				sliderPosition = partsCount;
+			if (newSliderPos < 0) {
+				updSliderPos = 0;
+			} else if (newSliderPos > partsCount) {
+				updSliderPos = partsCount;
+			} else if (x - currSliderPos * partWidth < partWidth && x - currSliderPos * partWidth > 0) {
+				updSliderPos = currSliderPos + 1;
+			} else if (currSliderPos * partWidth - x < partWidth && currSliderPos * partWidth - x > 0) {
+				updSliderPos = currSliderPos - 1;
+			} else {
+				updSliderPos = newSliderPos;
 			}
 
-			this.set('sliderPosition', sliderPosition);
+			this.set('sliderPosition', updSliderPos);
 
 			this.updateSliderPosition();
 		},
