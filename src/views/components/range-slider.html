@@ -24,6 +24,7 @@
 		data () {
 			return {
 				useDefaultHeader: true,
+				zeroSliderPosAsActive: true,
 				creditsPerDollar: 200,
 				donationValue: null,
 				partsCount: 9,
@@ -173,9 +174,17 @@
 				// initiate the slider
 				this.updateSliderPosition();
 
+				// handle slider position
 				this.observe('sliderPosition', (sliderPosition) => {
+					let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 					let partsLabelsData = this.get('partsLabelsData');
-					let partIdx = sliderPosition - 1;
+					let partIdx;
+
+					if (zeroSliderPosAsActive && sliderPosition === 0) {
+						partIdx = sliderPosition;
+					} else {
+						partIdx = sliderPosition - 1;
+					}
 
 					if (partIdx < 0) {
 						this.set('donationValue', null);
