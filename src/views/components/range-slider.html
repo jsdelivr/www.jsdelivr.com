@@ -78,6 +78,7 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				let isSliderDragging = false;
 				let partsCount = this.get('partsCount');
 				let partsGap = this.get('partsGap');
 				let partsLabelsData = this.get('partsLabelsData');
@@ -130,6 +131,16 @@
 
 				// set slider with mouse click
 				sliderContainer.addEventListener('click', (event) => {
+					if (isSliderDragging) {
+						// while dragging we need to prevent the click event from being triggered
+						event.stopPropagation();
+						event.preventDefault();
+
+						isSliderDragging = false;
+
+						return;
+					}
+
 					let rect = sliderContainer.getBoundingClientRect();
 					let x = event.clientX - rect.left;
 
@@ -140,16 +151,29 @@
 				sliderKnob.addEventListener('mousedown', (event) => {
 					event.preventDefault();
 
+					isSliderDragging = false;
+
 					let onMouseMove = (event) => {
+						isSliderDragging = true;
 						let rect = sliderContainer.getBoundingClientRect();
 						let x = event.clientX - rect.left;
 
-						this.moveSliderToClosestPart(x);
+						this.handleSliderOnMouseDown(x);
 					};
 
-					let onMouseUp = () => {
+					let onMouseUp = (event) => {
 						document.removeEventListener('mousemove', onMouseMove);
 						document.removeEventListener('mouseup', onMouseUp);
+
+						let rect = sliderContainer.getBoundingClientRect();
+						let x = event.clientX - rect.left;
+
+						this.handleSliderOnMouseUp(x);
+
+						// reset isSliderDragging with a next tick to avoid conflicts with an occasional click event
+						setTimeout(() => {
+							isSliderDragging = false;
+						}, 0);
 					};
 
 					document.addEventListener('mousemove', onMouseMove);
@@ -257,6 +281,30 @@
 			this.set('sliderPosition', updSliderPos);
 
 			this.updateSliderPosition();
+		},
+		handleSliderOnMouseDown (x) {
+			let partsElements = this.get('partsElements');
+			let partWidth = this.get('partWidth');
+			let sliderKnobEl = document.getElementById('slider-knob');
+
+			let division = Math.round(x / partWidth);
+
+			sliderKnobEl.style.left = `${division * partWidth}px`;
+
+			// highlight parts to the left of the sliderKnobEl
+			partsElements.forEach((partEl, idx) => {
+				if (idx < division) {
+					partEl.style.backgroundColor = '#17d4a7';
+				} else {
+					partEl.style.backgroundColor = '#e7e7ee';
+				}
+			});
+		},
+		handleSliderOnMouseUp (x) {
+			let partWidth = this.get('partWidth');
+			let quotient = Math.round(x / partWidth);
+
+			this.set('sliderPosition', quotient);
 		},
 	};
 </script>
