@@ -282,18 +282,19 @@
 
 			this.updateSliderPosition();
 		},
+		// TODO: 673, while dragging it is possible to move out of available ranges fix it
 		handleSliderOnMouseDown (x) {
 			let partsElements = this.get('partsElements');
 			let partWidth = this.get('partWidth');
 			let sliderKnobEl = document.getElementById('slider-knob');
 
-			let division = Math.round(x / partWidth);
+			let quotient = Math.round(x / partWidth);
 
-			sliderKnobEl.style.left = `${division * partWidth}px`;
+			sliderKnobEl.style.left = `${quotient * partWidth}px`;
 
 			// highlight parts to the left of the sliderKnobEl
 			partsElements.forEach((partEl, idx) => {
-				if (idx < division) {
+				if (idx < quotient) {
 					partEl.style.backgroundColor = '#17d4a7';
 				} else {
 					partEl.style.backgroundColor = '#e7e7ee';
