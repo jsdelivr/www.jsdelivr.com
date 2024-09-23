@@ -90,13 +90,14 @@
 
 				// divide the line with parts and gaps, create parts labels
 				for (let i = 0; i < partsCount; i++) {
+					// create slider line
 					let partEl = document.createElement('div');
 
 					partEl.className = this.get('partClassname');
 					parts.push(partEl);
 					sliderLine.appendChild(partEl);
 
-					// add gap except after the last part
+					// add gap between slider parts, except after the last part
 					if (i < partsCount - 1) {
 						let gapEl = document.createElement('div');
 
@@ -104,29 +105,28 @@
 						sliderLine.appendChild(gapEl);
 					}
 
-					// create parts labels
-					if (partsLabelsData) {
-						let partLabelEl = document.createElement('div');
+					// create labels line
+					let partLabelEl = document.createElement('div');
 
-						partLabelEl.className = this.get('partLabelClassname');
-						partLabelEl.textContent = partsLabelsData[i].displayed;
-						partsLabels.push(partLabelEl);
-						sliderLabels.appendChild(partLabelEl);
+					partLabelEl.className = this.get('partLabelClassname');
+					partLabelEl.textContent = partsLabelsData[i].displayed;
+					partsLabels.push(partLabelEl);
+					sliderLabels.appendChild(partLabelEl);
 
-						// add gap except after the last part
-						if (i < partsCount - 1) {
-							let gapEl = document.createElement('div');
+					// add gap between slider labels, except after the last part
+					if (i < partsCount - 1) {
+						let gapEl = document.createElement('div');
 
-							gapEl.className = this.get('gapClassname');
-							sliderLabels.appendChild(gapEl);
-						}
+						gapEl.className = this.get('gapClassname');
+						sliderLabels.appendChild(gapEl);
 					}
 				}
 
-				let partWidth = parts[0].offsetWidth + partsGap;
-
+				// collect parts elements o the slider line
 				this.set('partsElements', parts);
-				this.set('partWidth', partWidth);
+
+				// calculate and set slider part width
+				this.set('partWidth', parts[0].offsetWidth + partsGap);
 
 				// set slider with mouse click
 				sliderContainer.addEventListener('click', (event) => {
