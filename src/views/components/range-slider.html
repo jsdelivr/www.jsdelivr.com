@@ -184,7 +184,7 @@
 						let rect = sliderContainer.getBoundingClientRect();
 						let x = event.clientX - rect.left;
 
-						this.handleSliderOnMouseUp(x);
+						// this.handleSliderOnMouseUp(x);
 
 						// reset isSliderDragging with a next tick to avoid conflicts with an occasional click event
 						setTimeout(() => {
@@ -284,13 +284,19 @@
 			this.updateSliderPosition();
 		},
 		handleSliderOnMouseDown (x) {
+			let currentSliderPos = this.get('sliderPosition');
 			let partsElements = this.get('partsElements');
 			let partWidth = this.get('partWidth');
 			let sliderKnobEl = document.getElementById('slider-knob');
 			let quotient = Math.round((x < 0 ? 0 : x) / partWidth);
-			let shiftLeft = quotient > partsElements.length ? `${partsElements.length * partWidth}px` : `${quotient * partWidth}px`;
+			let updSliderPos = quotient > partsElements.length ? partsElements.length : quotient;
+			let shiftLeft = `${updSliderPos * partWidth}px`;
 
 			sliderKnobEl.style.left = shiftLeft;
+
+			if (updSliderPos !== currentSliderPos) {
+				this.set('sliderPosition', updSliderPos);
+			}
 
 			// highlight parts to the left of the sliderKnobEl
 			partsElements.forEach((partEl, idx) => {
