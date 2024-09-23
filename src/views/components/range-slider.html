@@ -75,21 +75,12 @@
 				],
 			};
 		},
-		oninit () {
-			if (!Ractive.isServer) {
-				this.observe('partsLabelsData', (partsLabelsData) => {
-					console.log('+++++ partsLabelsData', partsLabelsData);
-					console.log('__________________________');
-					this.set('partsCount', partsLabelsData.length || 0);
-				});
-			}
-		},
 		onrender () {
 			if (!Ractive.isServer) {
 				let isSliderDragging = false;
-				let partsCount = this.get('partsCount');
 				let partsGap = this.get('partsGap');
 				let partsLabelsData = this.get('partsLabelsData');
+				let partsCount = partsLabelsData.length;
 				let sliderContainer = document.getElementById('slider-container');
 				let sliderKnob = document.getElementById('slider-knob');
 				let sliderLine = document.getElementById('slider-line');
@@ -114,7 +105,7 @@
 					}
 
 					// create parts labels
-					if (partsLabelsData && partsLabelsData.length === partsCount) {
+					if (partsLabelsData) {
 						let partLabelEl = document.createElement('div');
 
 						partLabelEl.className = this.get('partLabelClassname');
@@ -123,7 +114,7 @@
 						sliderLabels.appendChild(partLabelEl);
 
 						// add gap except after the last part
-						if (i < partsLabelsData.length - 1) {
+						if (i < partsCount - 1) {
 							let gapEl = document.createElement('div');
 
 							gapEl.className = this.get('gapClassname');
@@ -191,7 +182,6 @@
 				// handle keyboard controls
 				document.addEventListener('keydown', (event) => {
 					let sliderPosition = this.get('sliderPosition');
-					let partsCount = this.get('partsCount');
 
 					if (event.key === 'ArrowLeft') {
 						sliderPosition = sliderPosition - 1 < 0 ? 0 : sliderPosition - 1;
@@ -255,7 +245,7 @@
 		},
 		moveSliderToClosestPart (x) {
 			let partWidth = this.get('partWidth');
-			let partsCount = this.get('partsCount');
+			let partsCount = this.get('partsLabelsData').length;
 			let currSliderPos = this.get('sliderPosition');
 			let newSliderPos = Math.round((x < 0 ? 0 : x) / partWidth);
 			let updSliderPos;
