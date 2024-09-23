@@ -19,7 +19,11 @@
 
 <script>
 	const CUSTOM_DONATION_VALUE = 'custom';
-	const FREE_VALUE = 'free';
+	const NO_DONATION = {
+		value: 'free',
+		displayed: 'Free',
+		msg: 'TODO: 500 free tests/hour',
+	};
 
 	component.exports = {
 		data () {
@@ -107,9 +111,21 @@
 
 					// create labels line
 					let partLabelEl = document.createElement('div');
-
 					partLabelEl.className = this.get('partLabelClassname');
-					partLabelEl.textContent = partsLabelsData[i].displayed;
+
+					if (i === 0) {
+						let freeLabelElPart = document.createElement('span');
+						let firstLabelElPart = document.createElement('span');
+
+						partLabelEl.className = `${partLabelEl.className} first-label`;
+						freeLabelElPart.textContent = NO_DONATION.displayed;
+						firstLabelElPart.textContent = partsLabelsData[i].displayed;
+						partLabelEl.appendChild(freeLabelElPart);
+						partLabelEl.appendChild(firstLabelElPart);
+					} else {
+						partLabelEl.textContent = partsLabelsData[i].displayed;
+					}
+
 					partsLabels.push(partLabelEl);
 					sliderLabels.appendChild(partLabelEl);
 
@@ -203,10 +219,10 @@
 				this.observe('sliderPosition', (sliderPosition) => {
 					let partsLabelsData = this.get('partsLabelsData');
 
-					if (sliderPosition < 0) {
-						this.set('donationValue', null);
+					if (sliderPosition - 1 < 0) {
+						this.set('donationValue', NO_DONATION.value);
 					} else {
-						this.set('donationValue', partsLabelsData[sliderPosition].value);
+						this.set('donationValue', partsLabelsData[sliderPosition - 1].value);
 					}
 				});
 
@@ -216,8 +232,8 @@
 
 					if (donationValue === CUSTOM_DONATION_VALUE) {
 						defaultHeaderValue = 'Customizable';
-					} else if (donationValue === FREE_VALUE) {
-						defaultHeaderValue = 'TODO: add availbale for free msg';
+					} else if (donationValue === NO_DONATION.value) {
+						defaultHeaderValue = NO_DONATION.msg;
 					} else if (donationValue) {
 						defaultHeaderValue = `${creditsPerDollar * donationValue} credits/donation`;
 					}
