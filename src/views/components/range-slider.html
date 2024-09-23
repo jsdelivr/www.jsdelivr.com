@@ -12,23 +12,22 @@
 		<div id="slider-knob" class="range-slider_knob"></div>
 	</div>
 
-	{{#if partsLabelsData && partsLabelsData.length === partsCount}}
+	{{#if partsLabelsData}}
 		<div id="slider-labels" class="range-slider-labels"></div>
 	{{/if}}
 </div>
 
 <script>
 	const CUSTOM_DONATION_VALUE = 'custom';
+	const FREE_VALUE = 'free';
 
 	component.exports = {
 		data () {
 			return {
 				useDefaultHeader: true,
-				zeroSliderPosAsActive: true,
 				creditsPerDollar: 2000,
 				donationValue: null,
 				defaultHeaderValue: null,
-				partsCount: 9,
 				partsGap: 2,
 				sliderPosition: 0,
 				partsElements: [],
@@ -75,6 +74,15 @@
 					},
 				],
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observe('partsLabelsData', (partsLabelsData) => {
+					console.log('+++++ partsLabelsData', partsLabelsData);
+					console.log('__________________________');
+					this.set('partsCount', partsLabelsData.length || 0);
+				});
+			}
 		},
 		onrender () {
 			if (!Ractive.isServer) {
@@ -184,15 +192,13 @@
 				document.addEventListener('keydown', (event) => {
 					let sliderPosition = this.get('sliderPosition');
 					let partsCount = this.get('partsCount');
-					let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 
 					if (event.key === 'ArrowLeft') {
 						sliderPosition = sliderPosition - 1 < 0 ? 0 : sliderPosition - 1;
 					} else if (event.key === 'ArrowRight') {
 						let newPos = sliderPosition + 1;
-						let rangeRightLimit = zeroSliderPosAsActive ? partsCount - 1 : partsCount;
 
-						sliderPosition = newPos > rangeRightLimit ? rangeRightLimit : newPos;
+						sliderPosition = newPos > partsCount ? partsCount : newPos;
 					}
 
 					this.set('sliderPosition', sliderPosition);
@@ -205,20 +211,12 @@
 
 				// handle slider position
 				this.observe('sliderPosition', (sliderPosition) => {
-					let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 					let partsLabelsData = this.get('partsLabelsData');
-					let partIdx;
 
-					if (zeroSliderPosAsActive) {
-						partIdx = sliderPosition;
-					} else {
-						partIdx = sliderPosition + 1;
-					}
-
-					if (partIdx < 0) {
+					if (sliderPosition < 0) {
 						this.set('donationValue', null);
 					} else {
-						this.set('donationValue', partsLabelsData[partIdx].value);
+						this.set('donationValue', partsLabelsData[sliderPosition].value);
 					}
 				});
 
@@ -228,6 +226,8 @@
 
 					if (donationValue === CUSTOM_DONATION_VALUE) {
 						defaultHeaderValue = 'Customizable';
+					} else if (donationValue === FREE_VALUE) {
+						defaultHeaderValue = 'TODO: add availbale for free msg';
 					} else if (donationValue) {
 						defaultHeaderValue = `${creditsPerDollar * donationValue} credits/donation`;
 					}
@@ -257,7 +257,6 @@
 			let partWidth = this.get('partWidth');
 			let partsCount = this.get('partsCount');
 			let currSliderPos = this.get('sliderPosition');
-			let zeroSliderPosAsActive = this.get('zeroSliderPosAsActive');
 			let newSliderPos = Math.round((x < 0 ? 0 : x) / partWidth);
 			let updSliderPos;
 
@@ -271,11 +270,6 @@
 				updSliderPos = currSliderPos - 1;
 			} else {
 				updSliderPos = newSliderPos;
-			}
-
-			// if the most left position of slider has value (zeroSliderPosAsActive is true) then we should not be able to choose the last part of the slider
-			if (zeroSliderPosAsActive && updSliderPos >= partsCount - 1) {
-				updSliderPos = partsCount - 1;
 			}
 
 			this.set('sliderPosition', updSliderPos);
