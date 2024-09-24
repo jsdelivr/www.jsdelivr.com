@@ -1,7 +1,12 @@
 <div class="c-range-slider">
 	{{#if useDefaultHeader}}
 			<div class="range-slider-header">
-				{{defaultHeaderValue}}
+				{{#if defaultHeaderNumber}}
+					{{_.formatNumber(Math.round(defaultHeaderNumber))}}
+				{{elseif defaultHeaderText}}
+					{{defaultHeaderText}}
+				{{/if}}
+				{{defaultHeaderAdditional}}
 			</div>
 	{{elseif @this.partials.customHeader}}
 		{{>customHeader}}
@@ -31,10 +36,13 @@
 	component.exports = {
 		data () {
 			return {
+				_,
 				useDefaultHeader: true,
 				creditsPerDollar: 2000,
 				donationValue: null,
-				defaultHeaderValue: null,
+				defaultHeaderNumber: null,
+				defaultHeaderText: null,
+				defaultHeaderAdditional: null,
 				partsGap: 2,
 				sliderPosition: 0,
 				partsElements: [],
@@ -253,19 +261,25 @@
 					}
 				});
 
+				// create default header based on the Slider value
 				this.observe('donationValue', (donationValue) => {
 					let creditsPerDollar = this.get('creditsPerDollar');
-					let defaultHeaderValue = null;
+					let defaultHeaderNumber = null;
+					let defaultHeaderText = null;
+					let defaultHeaderAdditional = null;
 
 					if (donationValue === CUSTOM_DONATION_VALUE) {
-						defaultHeaderValue = 'Customizable';
+						defaultHeaderText = 'Customizable';
 					} else if (donationValue === NO_DONATION.value) {
-						defaultHeaderValue = NO_DONATION.msg;
+						defaultHeaderText = NO_DONATION.msg;
 					} else if (donationValue) {
-						defaultHeaderValue = `${_.formatNumber(creditsPerDollar * donationValue)} credits/donation`;
+						defaultHeaderNumber = creditsPerDollar * donationValue;
+						defaultHeaderAdditional = ' credits/donation';
 					}
 
-					this.set('defaultHeaderValue', defaultHeaderValue);
+					this.animate('defaultHeaderNumber', defaultHeaderNumber);
+					this.set('defaultHeaderText', defaultHeaderText);
+					this.set('defaultHeaderAdditional', defaultHeaderAdditional);
 				});
 
 				// detect window resize and update partWidth and slider knob posision
