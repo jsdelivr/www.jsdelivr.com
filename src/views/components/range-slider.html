@@ -165,7 +165,7 @@
 					this.moveSliderToClosestPart(x);
 				});
 
-				// handle the sliderKnob dragging
+				// handle the sliderKnob dragging with a mouse move
 				sliderKnob.addEventListener('mousedown', (event) => {
 					event.preventDefault();
 
@@ -191,6 +191,35 @@
 
 					document.addEventListener('mousemove', onMouseMove);
 					document.addEventListener('mouseup', onMouseUp);
+				});
+
+				// handle the sliderKnob dragging with a touch move
+				sliderKnob.addEventListener('touchstart', (event) => {
+					event.preventDefault();
+
+					isSliderDragging = false;
+
+					let onTouchMove = (event) => {
+						isSliderDragging = true;
+
+						let rect = sliderContainer.getBoundingClientRect();
+						let x = event.touches[0].clientX - rect.left;
+
+						this.handleSliderOnMouseDown(x);
+					};
+
+					let onTouchEnd = () => {
+						document.removeEventListener('touchmove', onTouchMove);
+						document.removeEventListener('touchend', onTouchEnd);
+
+						// reset isSliderDragging with a next tick to avoid conflicts with an occasional tap
+						setTimeout(() => {
+							isSliderDragging = false;
+						}, 0);
+					};
+
+					document.addEventListener('touchmove', onTouchMove);
+					document.addEventListener('touchend', onTouchEnd);
 				});
 
 				// handle keyboard controls
