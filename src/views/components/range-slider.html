@@ -19,6 +19,8 @@
 
 <script>
 	const _ = require('../../assets/js/_');
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
 	const CUSTOM_DONATION_VALUE = 'custom';
 	const NO_DONATION = {
 		value: 'free',
@@ -236,6 +238,18 @@
 
 					this.set('defaultHeaderValue', defaultHeaderValue);
 				});
+
+				// detect window resize and update partWidth and slider knob posision
+				window.addEventListener('resize', debounce(throttle(() => {
+					let partsGap = this.get('partsGap');
+					let sliderPosition = this.get('sliderPosition');
+					let updPartWidth = this.get('partsElements')[0].offsetWidth + partsGap;
+					let sliderKnobEl = document.getElementById('slider-knob');
+
+					sliderKnobEl.style.left = `${sliderPosition * updPartWidth}px`;
+
+					this.set('partWidth', updPartWidth);
+				}, 200)));
 			}
 		},
 		updateSliderPosition () {
