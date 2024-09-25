@@ -93,69 +93,16 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				let isSliderDragging = false;
-				let partsGap = this.get('partsGap');
 				let partsLabelsData = this.get('partsLabelsData');
 				let partsCount = partsLabelsData.length;
 				let sliderContainer = document.getElementById('slider-container');
 				let sliderKnob = document.getElementById('slider-knob');
-				let sliderLine = document.getElementById('slider-line');
-				let sliderLabels = document.getElementById('slider-labels');
-				let parts = [];
-				let partsLabels = [];
 
-				// divide the line with parts and gaps, create parts labels
-				for (let i = 0; i < partsCount; i++) {
-					// create slider line
-					let partEl = document.createElement('div');
+				// create Slider line and labels
+				this.createSliderLine();
+				this.createSliderLabels();
 
-					partEl.className = this.get('partClassname');
-					parts.push(partEl);
-					sliderLine.appendChild(partEl);
-
-					// add gap between slider parts, except after the last part
-					if (i < partsCount - 1) {
-						let gapEl = document.createElement('div');
-
-						gapEl.className = this.get('gapClassname');
-						sliderLine.appendChild(gapEl);
-					}
-
-					// create labels line
-					let partLabelEl = document.createElement('div');
-					partLabelEl.className = this.get('partLabelClassname');
-
-					if (i === 0) {
-						let freeLabelElPart = document.createElement('span');
-						let firstLabelElPart = document.createElement('span');
-
-						partLabelEl.className = `${partLabelEl.className} first-label`;
-						freeLabelElPart.textContent = NO_DONATION.displayed;
-						firstLabelElPart.textContent = partsLabelsData[i].displayed;
-						partLabelEl.appendChild(freeLabelElPart);
-						partLabelEl.appendChild(firstLabelElPart);
-					} else {
-						partLabelEl.textContent = partsLabelsData[i].displayed;
-					}
-
-					partsLabels.push(partLabelEl);
-					sliderLabels.appendChild(partLabelEl);
-
-					// add gap between slider labels, except after the last part
-					if (i < partsCount - 1) {
-						let gapEl = document.createElement('div');
-
-						gapEl.className = this.get('gapClassname');
-						sliderLabels.appendChild(gapEl);
-					}
-				}
-
-				// collect parts elements o the slider line
-				this.set('partsElements', parts);
-
-				// calculate and set slider part width
-				this.set('partWidth', parts[0].offsetWidth + partsGap);
-
-				// set slider with mouse click
+				// handle mouse click on the slider line
 				sliderContainer.addEventListener('click', (event) => {
 					if (isSliderDragging) {
 						// while dragging we need to prevent the click event from being triggered
@@ -358,6 +305,72 @@
 					partEl.style.backgroundColor = '#e7e7ee';
 				}
 			});
+		},
+		createSliderLine () {
+			let sliderLine = document.getElementById('slider-line');
+			let partsGap = this.get('partsGap');
+			let partsLabelsData = this.get('partsLabelsData');
+			let partsCount = partsLabelsData.length;
+			let parts = [];
+
+			// divide the line with parts and gaps, create parts labels
+			for (let i = 0; i < partsCount; i++) {
+				// create slider line
+				let partEl = document.createElement('div');
+
+				partEl.className = this.get('partClassname');
+				parts.push(partEl);
+				sliderLine.appendChild(partEl);
+
+				// add gap between slider parts, except after the last part
+				if (i < partsCount - 1) {
+					let gapEl = document.createElement('div');
+
+					gapEl.className = this.get('gapClassname');
+					sliderLine.appendChild(gapEl);
+				}
+			}
+
+			// collect parts elements of the slider line
+			this.set('partsElements', parts);
+
+			// calculate and set slider part width
+			this.set('partWidth', parts[0].offsetWidth + partsGap);
+		},
+		createSliderLabels () {
+			let sliderLabels = document.getElementById('slider-labels');
+			let partsLabelsData = this.get('partsLabelsData');
+			let partsCount = partsLabelsData.length;
+
+			// divide the line with parts and gaps, create parts labels
+			for (let i = 0; i < partsCount; i++) {
+				// create labels line
+				let partLabelEl = document.createElement('div');
+				partLabelEl.className = this.get('partLabelClassname');
+
+				if (i === 0) {
+					let freeLabelElPart = document.createElement('span');
+					let firstLabelElPart = document.createElement('span');
+
+					partLabelEl.className = `${partLabelEl.className} first-label`;
+					freeLabelElPart.textContent = NO_DONATION.displayed;
+					firstLabelElPart.textContent = partsLabelsData[i].displayed;
+					partLabelEl.appendChild(freeLabelElPart);
+					partLabelEl.appendChild(firstLabelElPart);
+				} else {
+					partLabelEl.textContent = partsLabelsData[i].displayed;
+				}
+
+				sliderLabels.appendChild(partLabelEl);
+
+				// add gap between slider labels, except after the last part
+				if (i < partsCount - 1) {
+					let gapEl = document.createElement('div');
+
+					gapEl.className = this.get('gapClassname');
+					sliderLabels.appendChild(gapEl);
+				}
+			}
 		},
 	};
 </script>
