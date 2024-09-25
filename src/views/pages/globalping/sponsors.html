@@ -104,26 +104,27 @@
 				<div class="gp-sponsors_sponsors-list_gold_title">GOLD</div>
 
 				<div class="gp-sponsors_sponsors-list_gold_list">
-					<div class="gp-sponsors_sponsors-list_gold_list_item">
-						<div class="gp-sponsors_sponsors-list_gold_list_item_logo">
-							<!-- height="60" -->
-							<img title="Sponsored by Zenlayer"
-								width="128"
-								height="28"
-								src="{{@shared.assetsHost}}/img/globalping/sponsors/zenlayer.svg"
-								loading="lazy"/>
+					{{#each goldSponsors}}
+						<div class="gp-sponsors_sponsors-list_gold_list_item">
+							<div class="gp-sponsors_sponsors-list_gold_list_item_logo">
+								<img title="{{this.imgTitle}}"
+									width="{{this.imgWidth}}"
+									height="{{this.imgHeight}}"
+									src="{{@shared.assetsHost}}{{this.imgSrc[0]}}"
+									loading="lazy"/>
+							</div>
+
+							<p class="gp-sponsors_sponsors-list_gold_list_item_descr">
+								{{this.spDescr}}
+							</p>
+
+							<span class="gp-sponsors_sponsors-list_gold_list_item_link">
+								<img src="{{@shared.assetsHost}}/img/globalping/mail-icon.svg" width="20" height="20">
+
+								<a href="{{this.href}}">{{this.linkDisplayed}}</a>
+							</span>
 						</div>
-
-						<p class="gp-sponsors_sponsors-list_gold_list_item_descr">
-							Deploy and run your applications on the #1 hyperconnected cloud for emerging markets.
-						</p>
-
-						<span class="gp-sponsors_sponsors-list_gold_list_item_link">
-							<img src="{{@shared.assetsHost}}/img/globalping/mail-icon.svg" width="20" height="20">
-
-							<a href="https://www.zenlayer.com/">www.zenlayer.com</a>
-						</span>
-					</div>
+					{{/each}}
 
 					<div class="gp-sponsors_sponsors-list_gold_list_item become-a-sponsor">
 						<span class="gp-sponsors_sponsors-list_gold_list_item_title">Become a sponsor</span>
@@ -199,7 +200,17 @@
 					// 	spDescr: 'Sponsor description',
 					// },
 				],
-				goldSponsors: [],
+				goldSponsors: [
+					{
+						href: 'https://www.zenlayer.com/',
+						linkDisplayed: 'www.zenlayer.com',
+						imgTitle: 'Sponsored by Zenlayer',
+						imgWidth: 128,
+						imgHeight: 28,
+						imgSrc: [ '/img/globalping/sponsors/zenlayer.svg' ],
+						spDescr: 'Deploy and run your applications on the #1 hyperconnected cloud for emerging markets.',
+					},
+				],
 				bronzeSponsors: [
 					{
 						href: 'https://gcore.com',
