@@ -68,24 +68,27 @@
 				<div class="gp-sponsors_sponsors-list_platinum_title">PLATINUM</div>
 
 				<div class="gp-sponsors_sponsors-list_platinum_list">
-					<!-- <div class="gp-sponsors_sponsors-list_platinum_list_item">
-						<div class="gp-sponsors_sponsors-list_platinum_list_item_logo">
-							<img width="168"
-								height="60"
-								src="{{@shared.assetsHost}}/img/about/cloudflare.svg"
-								loading="lazy"/>
+					{{#each platinumSponsors}}
+						<div class="gp-sponsors_sponsors-list_platinum_list_item">
+							<div class="gp-sponsors_sponsors-list_platinum_list_item_logo">
+								<img title="{{this.imgTitle}}"
+									width="{{this.imgWidth}}"
+									height="{{this.imgHeight}}"
+									src="{{@shared.assetsHost}}{{this.imgSrc[0]}}"
+									loading="lazy"/>
+							</div>
+
+							<p class="gp-sponsors_sponsors-list_platinum_list_item_descr">
+								{{this.spDescr}}
+							</p>
+
+							<span class="gp-sponsors_sponsors-list_platinum_list_item_link">
+								<img src="{{@shared.assetsHost}}/img/globalping/mail-icon.svg" width="20" height="20">
+
+								<a href="{{this.href}}">{{this.linkDisplayed}}</a>
+							</span>
 						</div>
-
-						<p class="gp-sponsors_sponsors-list_platinum_list_item_descr">
-							Main backend CDN for jsDelivr offering unlimited bandwidth and locations. "Offers free and commercial, cloud-based services to help secure and accelerate websites."
-						</p>
-
-						<span class="gp-sponsors_sponsors-list_platinum_list_item_link">
-							<img src="{{@shared.assetsHost}}/img/globalping/mail-icon.svg" width="20" height="20">
-
-							<a href="https://www.cloudflare.com/">www.cloudflare.com</a>
-						</span>
-					</div> -->
+					{{/each}}
 
 					<div class="gp-sponsors_sponsors-list_platinum_list_item become-a-sponsor">
 						<span class="gp-sponsors_sponsors-list_platinum_list_item_title">Become a sponsor</span>
@@ -185,6 +188,18 @@
 			return {
 				title: 'Globalping Sponsors - Join the team to expand the network',
 				description: 'Globalping Sponsors - Join the team to expand the network',
+				platinumSponsors: [
+					// {
+					// 	href: 'https://www.sponsor-example.domain/',
+					// 	linkDisplayed: 'www.sponsor-example.domain',
+					// 	imgTitle: 'Title example',
+					// 	imgWidth: 0,
+					// 	imgHeight: 0,
+					// 	imgSrc: [ '/path/to/img.ext' ],
+					// 	spDescr: 'Sponsor description',
+					// },
+				],
+				goldSponsors: [],
 				bronzeSponsors: [
 					{
 						href: 'https://gcore.com',
