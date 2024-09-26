@@ -90,6 +90,11 @@
 				],
 			};
 		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.set('screenWidth', screen.width);
+			}
+		},
 		onrender () {
 			if (!Ractive.isServer) {
 				let isSliderDragging = false;
@@ -200,12 +205,17 @@
 				// handle slider position
 				this.observe('sliderPosition', (sliderPosition) => {
 					let partsLabelsData = this.get('partsLabelsData');
+					let donationValue;
 
 					if (sliderPosition - 1 < 0) {
-						this.set('donationValue', NO_DONATION.value);
+						donationValue = NO_DONATION.value;
 					} else {
-						this.set('donationValue', partsLabelsData[sliderPosition - 1].value);
+						donationValue = partsLabelsData[sliderPosition - 1].value;
 					}
+
+					this.set('donationValue', donationValue);
+
+					this.updateSliderSelectedValue();
 				});
 
 				// create default header based on the Slider value
@@ -239,6 +249,8 @@
 					sliderKnobEl.style.left = `${sliderPosition * updPartWidth}px`;
 
 					this.set('partWidth', updPartWidth);
+					this.set('screenWidth', screen.width);
+					this.createSliderLabels();
 				}, 200)));
 			}
 		},
@@ -340,37 +352,78 @@
 		createSliderLabels () {
 			let sliderLabels = document.getElementById('slider-labels');
 			let partsLabelsData = this.get('partsLabelsData');
+			let screenWidth = this.get('screenWidth');
+			let partLabelClassname = this.get('partLabelClassname');
 			let partsCount = partsLabelsData.length;
 
-			// divide the line with parts and gaps, create parts labels
-			for (let i = 0; i < partsCount; i++) {
-				// create labels line
-				let partLabelEl = document.createElement('div');
-				partLabelEl.className = this.get('partLabelClassname');
+			// if there are labels - remove them
+			let labels = sliderLabels.querySelectorAll('div');
 
-				if (i === 0) {
-					let freeLabelElPart = document.createElement('span');
-					let firstLabelElPart = document.createElement('span');
+			if (labels.length > 0) {
+				labels.forEach(label => sliderLabels.removeChild(label));
+			}
 
-					partLabelEl.className = `${partLabelEl.className} first-label`;
-					freeLabelElPart.textContent = NO_DONATION.displayed;
-					firstLabelElPart.textContent = partsLabelsData[i].displayed;
-					partLabelEl.appendChild(freeLabelElPart);
-					partLabelEl.appendChild(firstLabelElPart);
-				} else {
-					partLabelEl.textContent = partsLabelsData[i].displayed;
-				}
+			// create labels line
+			if (screenWidth < 576) {
+				let firstLabelEl = document.createElement('div');
+				let middleLabelEl = document.createElement('div');
+				let lastLabelEl = document.createElement('div');
 
-				sliderLabels.appendChild(partLabelEl);
+				firstLabelEl.className = `${partLabelClassname} m-first-label`;
+				middleLabelEl.className = `${partLabelClassname} m-middle-label`;
+				lastLabelEl.className = `${partLabelClassname} m-last-label`;
 
-				// add gap between slider labels, except after the last part
-				if (i < partsCount - 1) {
-					let gapEl = document.createElement('div');
+				firstLabelEl.textContent = NO_DONATION.displayed;
+				middleLabelEl.textContent = this.getMiddleLabelText();
+				lastLabelEl.textContent = partsLabelsData[partsCount - 1].displayed;
 
-					gapEl.className = this.get('gapClassname');
-					sliderLabels.appendChild(gapEl);
+				sliderLabels.appendChild(firstLabelEl);
+				sliderLabels.appendChild(middleLabelEl);
+				sliderLabels.appendChild(lastLabelEl);
+			} else {
+				// divide the line with parts and gaps, create parts labels
+				for (let i = 0; i < partsCount; i++) {
+					let partLabelEl = document.createElement('div');
+					partLabelEl.className = partLabelClassname;
+
+					if (i === 0) {
+						let freeLabelElPart = document.createElement('span');
+						let firstLabelElPart = document.createElement('span');
+
+						partLabelEl.className = `${partLabelEl.className} first-label`;
+						freeLabelElPart.textContent = NO_DONATION.displayed;
+						firstLabelElPart.textContent = partsLabelsData[i].displayed;
+						partLabelEl.appendChild(freeLabelElPart);
+						partLabelEl.appendChild(firstLabelElPart);
+					} else {
+						partLabelEl.textContent = partsLabelsData[i].displayed;
+					}
+
+					sliderLabels.appendChild(partLabelEl);
+
+					// add gap between slider labels, except after the last part
+					if (i < partsCount - 1) {
+						let gapEl = document.createElement('div');
+
+						gapEl.className = this.get('gapClassname');
+						sliderLabels.appendChild(gapEl);
+					}
 				}
 			}
+		},
+		updateSliderSelectedValue () {
+			let middleLabel = document.querySelector('.m-middle-label');
+
+			if (middleLabel) {
+				middleLabel.textContent = this.getMiddleLabelText();
+			}
+		},
+		getMiddleLabelText () {
+			let sliderPosition = this.get('sliderPosition');
+			let partsLabelsData = this.get('partsLabelsData');
+			let newLabelData = partsLabelsData[sliderPosition - 1] ? partsLabelsData[sliderPosition - 1] : null;
+
+			return newLabelData === null ? '' : newLabelData.value === CUSTOM_DONATION_VALUE ? '' : newLabelData.displayed;
 		},
 	};
 </script>
