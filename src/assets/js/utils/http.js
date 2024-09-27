@@ -281,9 +281,12 @@ module.exports.getGlobalpingMeasurement = (id) => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_HOST}/v1/measurements/${id}` });
 };
 
-
 module.exports.getBlogRss = () => {
 	return _.makeHTTPRequest({ url: `/blog/rss`, rawResponse: true });
+};
+
+module.exports.getGPBlogRss = () => {
+	return _.makeHTTPRequest({ url: `https://blog.globalping.io/rss`, rawResponse: true });
 };
 
 module.exports.getCdnOssFiles = (
