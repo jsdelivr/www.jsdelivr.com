@@ -44,7 +44,7 @@
 				defaultHeaderText: null,
 				defaultHeaderAdditional: null,
 				partsGap: 2,
-				sliderPosition: 0,
+				sliderPosition: 1,
 				partsElements: [],
 				partWidth: null,
 				partClassname: 'range-slider_line_part',
@@ -353,6 +353,7 @@
 			let sliderLabels = document.getElementById('slider-labels');
 			let partsLabelsData = this.get('partsLabelsData');
 			let screenWidth = this.get('screenWidth');
+			let partWidth = this.get('partWidth');
 			let partLabelClassname = this.get('partLabelClassname');
 			let partsCount = partsLabelsData.length;
 
@@ -364,7 +365,7 @@
 			}
 
 			// create labels line
-			if (screenWidth < 576) {
+			if (screenWidth < 768) {
 				let firstLabelEl = document.createElement('div');
 				let middleLabelEl = document.createElement('div');
 				let lastLabelEl = document.createElement('div');
@@ -381,33 +382,30 @@
 				sliderLabels.appendChild(middleLabelEl);
 				sliderLabels.appendChild(lastLabelEl);
 			} else {
-				// divide the line with parts and gaps, create parts labels
 				for (let i = 0; i < partsCount; i++) {
-					let partLabelEl = document.createElement('div');
-					partLabelEl.className = partLabelClassname;
-
 					if (i === 0) {
-						let freeLabelElPart = document.createElement('span');
-						let firstLabelElPart = document.createElement('span');
+						let firstLabelEl = document.createElement('div');
 
-						partLabelEl.className = `${partLabelEl.className} first-label`;
-						freeLabelElPart.textContent = NO_DONATION.displayed;
-						firstLabelElPart.textContent = partsLabelsData[i].displayed;
-						partLabelEl.appendChild(freeLabelElPart);
-						partLabelEl.appendChild(firstLabelElPart);
+						firstLabelEl.className = partLabelClassname;
+						firstLabelEl.textContent = NO_DONATION.displayed;
+						sliderLabels.appendChild(firstLabelEl);
+					}
+
+					let partLabelEl = document.createElement('div');
+
+					partLabelEl.className = partLabelClassname;
+					partLabelEl.textContent = partsLabelsData[i].displayed;
+					partLabelEl.style.position = 'absolute';
+
+					if (i === partsCount - 1) {
+						partLabelEl.className = partLabelClassname;
+						partLabelEl.style.right = 0;
 					} else {
-						partLabelEl.textContent = partsLabelsData[i].displayed;
+						partLabelEl.style.left = `${(i + 1) * partWidth - 1}px`;
+						partLabelEl.style.transform = 'translateX(-50%)';
 					}
 
 					sliderLabels.appendChild(partLabelEl);
-
-					// add gap between slider labels, except after the last part
-					if (i < partsCount - 1) {
-						let gapEl = document.createElement('div');
-
-						gapEl.className = this.get('gapClassname');
-						sliderLabels.appendChild(gapEl);
-					}
 				}
 			}
 		},
