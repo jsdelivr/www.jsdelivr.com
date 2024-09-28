@@ -30,7 +30,7 @@
 	const NO_DONATION = {
 		value: 'free',
 		displayed: 'Free',
-		msg: 'TODO: 500 free tests/hour',
+		msg: '250 free tests/hour',
 	};
 
 	component.exports = {
@@ -274,7 +274,6 @@
 		moveSliderToClosestPart (x) {
 			let partWidth = this.get('partWidth');
 			let partsCount = this.get('partsLabelsData').length;
-			let currSliderPos = this.get('sliderPosition');
 			let newSliderPos = Math.round((x < 0 ? 0 : x) / partWidth);
 			let updSliderPos;
 
@@ -282,10 +281,6 @@
 				updSliderPos = 0;
 			} else if (newSliderPos > partsCount) {
 				updSliderPos = partsCount;
-			} else if (x - currSliderPos * partWidth < partWidth && x - currSliderPos * partWidth > 0) {
-				updSliderPos = currSliderPos + 1;
-			} else if (currSliderPos * partWidth - x < partWidth && currSliderPos * partWidth - x > 0) {
-				updSliderPos = currSliderPos - 1;
 			} else {
 				updSliderPos = newSliderPos;
 			}
