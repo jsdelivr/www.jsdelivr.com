@@ -286,7 +286,7 @@ module.exports.getBlogRss = () => {
 };
 
 module.exports.getGPBlogRss = () => {
-	return _.makeHTTPRequest({ url: `https://blog.globalping.io/rss`, rawResponse: true });
+	return _.makeHTTPRequest({ url: `https://blog.globalping.io/rss/`, rawResponse: true });
 };
 
 module.exports.getCdnOssFiles = (
