@@ -178,7 +178,7 @@ koaElasticUtils.addRoutes(router, [
  */
 router.get('/globalping/:path(.*)?', async (ctx) => {
 	ctx.status = 301;
-	return ctx.redirect(`https://globalping.io/${ctx.params.path || ''}`);
+	return ctx.redirect(`https://globalping.io${ctx.url.replace(/^\/[^/?]+/, '')}`);
 });
 
 module.exports = router;

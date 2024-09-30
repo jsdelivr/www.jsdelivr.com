@@ -184,7 +184,7 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				http.getBlogRss().then((response) => {
+				http.getGPBlogRss().then((response) => {
 					if (response) {
 						let document = new window.DOMParser().parseFromString(response, 'text/xml');
 						let items = document.documentElement.childNodes[0].getElementsByTagName('item');
@@ -208,7 +208,7 @@
 
 							data.push({
 								text: currItemTitle,
-								url: `/blog${new URL(currItemLink, 'https://www.jsdelivr.com').pathname}`,
+								url: currItemLink,
 								date: new Date(currItemPubDate).getTime(),
 							});
 						}
