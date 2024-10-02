@@ -1,6 +1,6 @@
 module.exports = {
 	active: process.env.NODE_ENV === 'production',
-	serviceName: 'jsdelivr-website',
+	serviceName: process.env.SITE === 'globalping' ? 'globalping-website' : 'jsdelivr-website',
 	serviceVersion: require('./package.json').version,
 	logLevel: 'fatal',
 	centralConfig: false,

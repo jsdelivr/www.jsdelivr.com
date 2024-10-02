@@ -1,6 +1,6 @@
 <link rel="ractive" href="../../r-page-globalping.html" name="r-page">
-<link rel="ractive" href="../../components/header.html" name="c-header">
-<link rel="ractive" href="../../components/footer.html" name="c-footer">
+<link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
 <link rel="ractive" href="../../components/controlled-textarea.html" name="c-controlled-textarea">
@@ -17,7 +17,7 @@
 	noYield="{{noYield}}"
 	title="{{title}}"
 	description="{{description}}"
-	openGraphImage="{{#if measurement}}{{@shared.serverHost}}/globalping/open-graph/image/measurement/{{measurement}}{{/if}}"
+	openGraphImage="{{#if measurement}}{{@shared.serverHost}}/open-graph/image/measurement/{{measurement}}{{/if}}"
 >
 	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.0.15/dist/index.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
@@ -47,12 +47,10 @@
 
 	<c-notification></c-notification>
 
-	<c-header additionalClasses="header-with-globalping-bg"></c-header>
+	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
 
 	<div class="p-globalping">
-		<c-gp-top-navigation useDarkBg="true" currentName="globalping"></c-gp-top-navigation>
-
-		<c-gp-jumbotron className="main"></c-gp-jumbotron>
+		<c-gp-jumbotron className="main" gridType="type1"></c-gp-jumbotron>
 
 		<div class="gp_main-info">
 			<div class="gp_main-info_descr">
@@ -538,7 +536,6 @@
 
 			{{#if showCreditsError}}
 				<c-gp-credits-message
-					hasToken="{{true}}"
 					rateCreditsData="{{rateCreditsData}}">
 				</c-gp-credits-message>
 			{{/if}}
@@ -731,7 +728,7 @@
 		</div>
 
 		<div class="gp_installation">
-			<a href="/globalping/cli" class="gp_installation_item">
+			<a href="/cli" class="gp_installation_item">
 				<img width="61"
 					height="53"
 					src="{{@shared.assetsHost}}/img/globalping/cli-icon.svg">
@@ -774,7 +771,49 @@
 			</a>
 		</div>
 
-		<div class="gp_join-network">
+		<div class="gp_our-users">
+			<div class="gp_our-users_title">Our users:</div>
+			<div class="gp_our-users_list">
+				<div class="gp_our-users_list_user">
+					<a target="_blank" rel="noopener noreferrer" href="https://gcore.com">
+						<img title="Used by G-Core"
+							height="48"
+							src="{{@shared.assetsHost}}/img/globalping/sponsors/g-core.svg"
+							loading="lazy">
+					</a>
+				</div>
+
+				<div class="gp_our-users_list_user">
+					<a target="_blank" rel="noopener noreferrer" href="https://www.fastly.com">
+						<img title="Used by Fastly"
+							height="48"
+							src="{{@shared.assetsHost}}/img/globalping/sponsors/fastly.png"
+							srcset="{{@shared.assetsHost}}/img/globalping/sponsors/fastly@2x.png 2x"
+							loading="lazy">
+					</a>
+				</div>
+
+				<div class="gp_our-users_list_user">
+					<a target="_blank" rel="noopener noreferrer" href="https://he.net">
+						<img title="Used by Hurricane Electric"
+							height="48"
+							src="{{@shared.assetsHost}}/img/globalping/sponsors/hurricane_electric.png"
+							loading="lazy">
+					</a>
+				</div>
+
+				<div class="gp_our-users_list_user">
+					<a target="_blank" rel="noopener noreferrer" href="https://www.dnsfilter.com/">
+						<img title="Used by DNSFilter"
+							height="48"
+							src="{{@shared.assetsHost}}/img/globalping/sponsors/dnsfilter.png"
+							loading="lazy">
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="gp_join-network" id="join-the-network">
 			<span class="gp_join-network_title">Join the network</span>
 			<span class="gp_join-network_subtitle">
 				To join the Globalping probe network all you have to do is run our container.
@@ -1027,7 +1066,7 @@
 								<img title="Sponsored by GCore"
 									width="120"
 									height="34"
-									src="{{@shared.assetsHost}}/img/globalping/sponsors/gcore.svg">
+									src="{{@shared.assetsHost}}/img/globalping/sponsors/g-core.svg">
 							</a>
 							<a target="_blank" rel="noopener noreferrer" href="https://xtom.com">
 								<img title="Sponsored by xTom"
@@ -1182,7 +1221,7 @@
 		</div>
 	</div>
 
-	<c-footer></c-footer>
+	<c-gp-footer></c-gp-footer>
 </r-page>
 
 <script>
@@ -2229,50 +2268,6 @@
 				});
 			});
 		},
-		pickMarkerColor (timing) {
-			// return default color for timed out probe
-			if (
-				timing === PROBE_NO_TIMING_VALUE
-				|| timing === PROBE_STATUS_FAILED
-				|| timing === PROBE_STATUS_OFFLINE
-			) {
-				return '#17233A';
-			}
-
-			function getColorFromGradient (quotient, start, middle, end) {
-				return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
-			}
-
-			function linear (startColor, endColor, quotient) {
-				let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
-				let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
-				let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
-
-				return `#${redColor}${greenColor}${blueColor}`;
-			}
-
-			function byteLinear (partOne, partTwo, quotient) {
-				let color = Math.floor(('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient);
-
-				return color.toString(16).padStart(2, '0');
-			}
-
-			let probesMaxTiming = this.get('probesMaxTiming');
-			let probesMinTiming = this.get('probesMinTiming');
-			let pureTimingValue = parseInt(timing);
-
-
-			// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
-			if (pureTimingValue <= probesMinTiming) {
-				return '#17d4a7';
-			}
-
-			if (pureTimingValue >= probesMaxTiming) {
-				return '#e64e3d';
-			}
-
-			return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
-		},
 		handleSeeResults (resIdx) {
 			let el;
 
@@ -2815,8 +2810,6 @@
 		handlePostGPMeasError (err) {
 			let isInfiniteModeRes = this.get('isInfiniteModeRes');
 			let testResults = this.get('testResults');
-			// for now we send this token directly via postGlobalpingMeasurement, credits data handling depend on a fact whether user has token or not
-			let hasToken = false;
 
 			this.set('testInProgress', false);
 			// we show the error block under the map block only if it is not an infinite measurement or the one with no results
@@ -2828,7 +2821,6 @@
 				let measurementErrMsg = this.createMeasCreditsErrMsg(
 					err.responseHeaders,
 					isInfiniteModeRes,
-					hasToken,
 					testResults,
 				);
 
@@ -2934,9 +2926,11 @@
 			let svg;
 			let svgFillColors = [];
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 
 			for (let i = 0; i < targetsCnt; i++) {
-				svgFillColors.push(markerData.timings[i] ? this.pickMarkerColor(markerData.timings[i]) : DEFAULT_MARKER_COLOR);
+				svgFillColors.push(markerData.timings[i] ? _.getGpProbeStatusColor(markerData.timings[i], probesMaxTiming, probesMinTiming) : DEFAULT_MARKER_COLOR);
 			}
 
 			if (markerData.timings.length > 1) {
@@ -2987,6 +2981,8 @@
 		},
 		createInfoWindowContent (markerData, currentMarkerIdx) {
 			let targetsCnt = this.get('targetsArr').length;
+			let probesMaxTiming = this.get('probesMaxTiming');
+			let probesMinTiming = this.get('probesMinTiming');
 			let infoWindowContent = '<div class="gp-map_popup">';
 
 			infoWindowContent += `<div class="gp-map_popup${targetsCnt > 1 ? '_multi' : '_single'}">`;
@@ -3004,7 +3000,7 @@
 					infoWindowContent += `<span class="gp-map_popup_multi_data_target">${target}</span>`;
 
 					infoWindowContent += `<span class="gp-map_popup_multi_data_timing"
-						style='color: ${this.pickMarkerColor(markerData.timings[targetIdx])}'>${markerData.timings[targetIdx] || ''}</span>`;
+						style='color: ${_.getGpProbeStatusColor(markerData.timings[targetIdx], probesMaxTiming, probesMinTiming)}'>${markerData.timings[targetIdx] || ''}</span>`;
 
 					infoWindowContent += '</div>';
 				});
@@ -3360,10 +3356,11 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			return `${Math.ceil(minutes)} minutes`;
 		},
-		createMeasCreditsErrMsg (responseHeaders, isInfinite, hasToken, testResults) {
+		createMeasCreditsErrMsg (responseHeaders, isInfinite, testResults) {
 			// do not show err msg if while infinite meas we've got the 429's err and we already have results
 			if (testResults && isInfinite) { return null; }
 
+			let hasToken = this.get('@shared.user');
 			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
 			let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
 			let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
@@ -3372,28 +3369,24 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
 
 				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-				// TODO: uncomment when accounts are live
-				// msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-				//
-				// if (hasToken) {
-				// 	msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
-				// } else {
-				// 	msg += '<span>You can get higher limits by creating an account. <a href="/">Sign up</a><span>';
-				// }
+
+				if (hasToken) {
+					msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
+				} else {
+					msg += '<span>You can get higher limits by creating an account. <a href="https://dash.globalping.io">Sign up</a><span>';
+				}
 
 				return msg;
 			} else if ((isInfinite && !testResults) || !remainingCredits) {
 				let msg = `<span>You have run out of credits for this session.</span>`;
 
-				msg += `<span>Please wait ${timeToReset} for the limit to reset.`;
-				// TODO: uncomment when accounts are live
-				// msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
-				//
-				// if (hasToken) {
-				// 	msg += ` sponsoring us or hosting probes.</span>`;
-				// } else {
-				// 	msg += ` creating an account. <a href='/'>Sign up</a></span>`;
-				// }
+				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+
+				if (hasToken) {
+					msg += ` sponsoring us or hosting probes.</span>`;
+				} else {
+					msg += ` creating an account. <a href='https://dash.globalping.io'>Sign up</a></span>`;
+				}
 
 				return msg;
 			}

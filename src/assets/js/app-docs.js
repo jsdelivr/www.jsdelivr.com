@@ -2,7 +2,7 @@ require('./polyfills');
 
 const _ = require('./_');
 const cDocsData = require('../../views/pages/docs/data.jsdelivr.com.html');
-const cDocsGP = require('../../views/pages/docs/api.globalping.io.html');
+const cDocsGP = require('../../views/pages/globalping/docs/api.globalping.io.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -27,9 +27,6 @@ Ractive.Router.prototype.dispatch = function (...args) {
 	if (!app.router.route.view) {
 		return;
 	}
-
-	document.title = app.router.route.view.get('title') || 'jsDelivr - A free, fast, and reliable CDN for JS and open source';
-	document.querySelector('meta[name=description]').setAttribute('content', app.router.route.view.get('description') || 'Optimized for JS and ESM delivery from npm and GitHub. Works with all web formats. Serving more than 150 billion requests per month.');
 
 	return this;
 };
@@ -66,6 +63,11 @@ _.onDocumentReady(() => {
 	} catch (e) {}
 
 	app.router.init({ noScroll: true, state });
+
+	// open navbar dropdowns on hover
+	$(document)
+		.on('mouseenter', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown:not(.open)').find('.dropdown-toggle').dropdown('toggle')))
+		.on('mouseleave', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown.open').find('.dropdown-toggle').dropdown('toggle')));
 });
 
 module.exports = app;

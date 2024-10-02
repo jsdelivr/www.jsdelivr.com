@@ -24,15 +24,13 @@ const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
 const assetsVersion = require('./lib/assets').version;
 
-const serverConfig = config.get('server');
+const site = process.env.SITE === 'globalping' ? 'globalping' : 'jsdelivr';
+const serverConfig = config.get(site === 'globalping' ? 'globalping.server' : 'server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
-const sitemap = require('./middleware/sitemap');
-const globalpingSitemap = require('./middleware/sitemap/globalping');
-const ogImage = require('./middleware/open-graph');
-const readme = require('./middleware/readme');
 const debugHandler = require('./routes/debug');
-const algoliaNode = require('./lib/algolia-node');
+const jsDelivrRouter = require('./routes/jsdelivr');
+const globalpingRouter = require('./routes/globalping');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
 
@@ -58,7 +56,7 @@ app.use(async (ctx, next) => {
 /**
  * Handle favicon requests before anything else.
  */
-app.use(koaFavicon(__dirname + '/public/favicon.ico'));
+app.use(koaFavicon(`${__dirname}/public/${site === 'globalping' ? 'globalping/' : ''}favicon.ico`));
 
 /**
  * Log requests during development.
@@ -101,7 +99,7 @@ app.use(async (ctx, next) => {
  * Livereload support during development.
  */
 if (app.env === 'development') {
-	app.use(koaLivereload());
+	app.use(koaLivereload({ port: site === 'globalping' ? 35730 : 35729 }));
 }
 
 /**
@@ -155,18 +153,20 @@ app.use(render({
 /**
  * Redirect old URLs #1.
  */
-app.use(async (ctx, next) => {
-	if (!ctx.query._escaped_fragment_) {
-		return next();
-	}
+if (site === 'jsdelivr') {
+	app.use(async (ctx, next) => {
+		if (!ctx.query._escaped_fragment_) {
+			return next();
+		}
 
-	let name = ctx.query._escaped_fragment_.trim();
+		let name = ctx.query._escaped_fragment_.trim();
 
-	if (Object.hasOwn(legacyMapping, name)) {
-		ctx.status = 301;
-		return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
-	}
-});
+		if (Object.hasOwn(legacyMapping, name)) {
+			ctx.status = 301;
+			return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
+		}
+	});
+}
 
 /**
  * More accurate APM route names.
@@ -190,7 +190,7 @@ router.use(
 
 		return next();
 	},
-	koaStatic(__dirname + '/../dist/assets', {
+	koaStatic(__dirname + `/../dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}/assets`, {
 		index: false,
 		maxage: 365 * 24 * 60 * 60 * 1000,
 		setHeaders (res) {
@@ -207,7 +207,7 @@ router.use(
 	},
 );
 
-router.use(koaStatic(__dirname + '/../dist', {
+router.use(koaStatic(__dirname + `/../dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}`, {
 	index: false,
 	maxage: 60 * 60 * 1000,
 	setHeaders (res) {
@@ -232,202 +232,19 @@ router.use(async (ctx, next) => {
 });
 
 /**
- * Redirect old URLs #2.
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/projects/:name', '/projects/:name' ],
-], async (ctx) => {
-	if (Object.hasOwn(legacyMapping, ctx.params.name)) {
-		ctx.status = 301;
-		return ctx.redirect(`/package/${legacyMapping[ctx.params.name].type}/${legacyMapping[ctx.params.name].name}`);
-	}
-});
-
-/**
- * Additional redirects
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/acceptable-use-policy-jsdelivr-net', '/acceptable-use-policy-jsdelivr-net' ],
-	[ '/privacy-policy-jsdelivr-com', '/privacy-policy-jsdelivr-com' ],
-	[ '/privacy-policy-jsdelivr-net', '/privacy-policy-jsdelivr-net' ],
-], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect(`/terms${ctx.path}`);
-});
-
-koaElasticUtils.addRoutes(router, [ [ '/terms/acceptable-use-policy-jsdelivr-net' ] ], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect(`/terms/terms-of-use`);
-});
-
-koaElasticUtils.addRoutes(router, [
-	[ '/terms/privacy-policy-jsdelivr-com' ],
-	[ '/terms/privacy-policy-jsdelivr-net' ],
-], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect(`/terms/privacy-policy`);
-});
-
-koaElasticUtils.addRoutes(router, [ [ '/terms/acceptable-use-policy-jsdelivr-net' ] ], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect(`/terms/terms-of-use`);
-});
-
-koaElasticUtils.addRoutes(router, [ [ '/discord', '/discord' ] ], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect('https://discord.gg/by8AcrjvRB');
-});
-
-koaElasticUtils.addRoutes(router, [ [ '/globalping/install/discord', '/globalping/install/discord' ] ], async (ctx) => {
-	ctx.status = 301;
-	return ctx.redirect('https://discord.com/api/oauth2/authorize?client_id=1005192010283630649&permissions=380104617024&scope=applications.commands%20bot');
-});
-
-/**
- * terms pages
- */
-koaElasticUtils.addRoutes(router, [
-	[ 'terms', '/terms/:currentPolicy' ],
-], async (ctx) => {
-	let data = {
-		currentPolicy: ctx.params.currentPolicy,
-	};
-
-	try {
-		ctx.body = await ctx.render('pages/terms.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
-});
-
-/**
- * Sitemap
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/sitemap/:page', '/sitemap/:page' ],
-], sitemap);
-
-koaElasticUtils.addRoutes(router, [
-	[ '/globalping/sitemap/:page', '/globalping/sitemap/:page' ],
-], globalpingSitemap);
-
-/**
- * Package pages.
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/package/npm/:name', '/package/:type(npm)/:scope?/:name' ],
-	[ '/package/gh/:user/:repo', '/package/:type(gh)/:user/:repo' ],
-], async (ctx) => {
-	let data = {
-		type: ctx.params.type,
-		name: ctx.params.name,
-		user: ctx.params.user,
-		repo: ctx.params.repo,
-		scope: ctx.params.scope,
-		actualPath: ctx.path,
-		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'slide' ]),
-	};
-
-	try {
-		let packageFullName = data.scope ? `${data.scope}/${data.name}` : data.name;
-
-		if (data.type === 'npm') {
-			data.package = await algoliaNode.getObjectWithCache(packageFullName);
-		} else {
-			data.package = Object.assign({}, ctx.params, { owner: { name: data.user, avatar: data.user } });
-			packageFullName = `${data.user}/${data.repo}`;
-		}
-
-		if (data.package) {
-			data.description = `A free, fast, and reliable CDN for ${packageFullName}. ${data.package.description || ''}`;
-			data.package.readme = ' ';
-		}
-	} catch {}
-
-	try {
-		ctx.body = await ctx.render('pages/_package.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
-});
-
-/**
- * Custom CDN OSS pages.
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/oss-cdn/:name', '/oss-cdn/:name' ],
-], async (ctx) => {
-	let data = {
-		name: ctx.params.name,
-		actualPath: ctx.path,
-	};
-
-	try {
-		ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
-});
-
-koaElasticUtils.addRoutes(router, [
-	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
-], ogImage);
-
-koaElasticUtils.addRoutes(router, [
-	[ '/globalping/open-graph/image/measurement/:id', '/globalping/open-graph/image/measurement/:id' ],
-], ogImage.globalping);
-
-koaElasticUtils.addRoutes(router, [
-	[ '/readme/npm/:name/:version', '/readme/:type(npm)/:scope(@[^/@]+)?/:name/:version?' ],
-	[ '/readme/gh/:user/:repo/:version', '/readme/:type(gh)/:user/:repo/:version?' ],
-], readme);
-
-/**
- * Globalping network-tools page
- */
-koaElasticUtils.addRoutes(router, [
-	[ '/globalping/network-tools', '/globalping/network-tools/:params' ],
-], async (ctx) => {
-	let data = {
-		params: ctx.params.params || '',
-	};
-
-	try {
-		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
-});
-
-/**
  * Debug endpoints.
  */
 router.get('/debug/' + serverConfig.debugToken, debugHandler);
 router.get('/debug/status/:status/:maxAge?/:delay?', debugHandler.status);
+
+/**
+ * Site-specific routes.
+ */
+if (site === 'globalping') {
+	router.use(globalpingRouter.routes(), globalpingRouter.allowedMethods());
+} else {
+	router.use(jsDelivrRouter.routes(), jsDelivrRouter.allowedMethods());
+}
 
 /**
  * All other pages.
@@ -435,13 +252,14 @@ router.get('/debug/status/:status/:maxAge?/:delay?', debugHandler.status);
 koaElasticUtils.addRoutes(router, [
 	[ '/(.*)', '/(.*)' ],
 ], async (ctx) => {
+	let root = site === 'globalping' ? 'globalping/' : '';
 	let data = {
 		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style', 'measurement' ]),
 		actualPath: ctx.path,
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/' + (ctx.path === '/' ? '_index' : ctx.path === '/globalping' ? 'globalping/_index' : ctx.path) + '.html', data);
+		ctx.body = await ctx.render(`pages/${root}` + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {

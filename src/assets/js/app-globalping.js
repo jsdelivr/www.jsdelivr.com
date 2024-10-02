@@ -8,6 +8,10 @@ const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
+const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
+const cGlobalpingSponsors = require('../../views/pages/globalping/sponsors.html');
+const cGlobalpingCredits = require('../../views/pages/globalping/credits.html');
+const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -25,11 +29,14 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/globalping', cGlobalping, { qs: [ 'measurement' ] });
-app.router.addRoute('/globalping/cli', cGlobalpingCli);
-app.router.addRoute('/globalping/slack', cGlobalpingSlack);
-app.router.addRoute('/globalping/network-tools/:params?', cGlobalpingNetworkTools);
-app.router.addRoute('/globalping/integrations', cGlobalpingIntegrations);
+app.router.addRoute('/', cGlobalping, { qs: [ 'measurement' ] });
+app.router.addRoute('/cli', cGlobalpingCli);
+app.router.addRoute('/slack', cGlobalpingSlack);
+app.router.addRoute('/network-tools/:params?', cGlobalpingNetworkTools);
+app.router.addRoute('/integrations', cGlobalpingIntegrations);
+app.router.addRoute('/about-us', cGlobalpingAbout);
+app.router.addRoute('/sponsors', cGlobalpingSponsors);
+app.router.addRoute('/credits', cGlobalpingCredits);
 
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
@@ -50,6 +57,10 @@ _.onDocumentReady(() => {
 			.replace(/\u2028/g, '\\u2028')
 			.replace(/\u2029/g, '\\u2029');
 	}
+
+	getGlobalpingUser().then((user) => {
+		ractive.set('@shared.user', user);
+	});
 
 	try {
 		let shared = JSON.parse(document.querySelector('#ractive-shared').innerHTML.trim());
@@ -73,6 +84,11 @@ _.onDocumentReady(() => {
 		.init({ noScroll: true, state: { ...state, ...app.router.data() } })
 		.watchLinks()
 		.watchState();
+
+	// open navbar dropdowns on hover
+	$(document)
+		.on('mouseenter', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown:not(.open)').find('.dropdown-toggle').dropdown('toggle')))
+		.on('mouseleave', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown.open').find('.dropdown-toggle').dropdown('toggle')));
 });
 
 app.injectGlobalStyle = (href) => {

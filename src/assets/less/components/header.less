@@ -1,6 +1,7 @@
 @import "../variables.less";
 
 .c-header {
+	--link-highlight-color: #f65128;
 	font-family: Lexend, sans-serif;
 	font-style: normal;
 	font-weight: 400;
@@ -20,7 +21,9 @@
 		}
 	}
 
-	&.header-with-globalping-bg {
+	&.header-with-globalping-bg, &.header-with-gp-translucent-bg {
+		--link-highlight-color: @gp-green;
+
 		.navbar {
 			background: #17233a;
 			border-bottom: 1.5px solid #202f4a;
@@ -37,12 +40,71 @@
 				color: #fff;
 			}
 		}
+
+		.dropdown-menu {
+			width: auto;
+		}
+	}
+
+	&.header-with-gp-translucent-bg {
+		.navbar {
+			@media (max-width: (@screen-sm-min - 1)) {
+				position: relative;
+				background-image: url("../../img/globalping/header-grid.svg");
+				background-blend-mode: overlay;
+				background-size: cover;
+				background-position: 0 0;
+			}
+		}
 	}
 
 	&.header-with-dark-bg {
 		.navbar {
 			background-color: #323334;
 			border: 1px solid #232425;
+		}
+	}
+
+	&.gp-about-us-header {
+		position: absolute;
+		width: 100%;
+
+		.navbar {
+			background-color: transparent;
+			border: none;
+
+			.main-logo_text.globalping {
+				color: #fff;
+				opacity: .8;
+			}
+		}
+
+		.dropdown-menu {
+			width: auto;
+		}
+
+		.dashboard-section {
+			@media (min-width: @screen-md-min) {
+				a.btn {
+					border-color: #fff;
+					transition: background-color 200ms, border-color 200ms;
+
+					&:hover {
+						color: @gp-green;
+						background-color: #fff;
+					}
+				}
+
+				button.btn {
+					border-color: #fff;
+					border-left-color: transparent;
+
+					&:hover {
+						color: @gp-green;
+						background-color: #fff;
+					}
+				}
+			}
 		}
 	}
 
@@ -91,7 +153,7 @@
 							padding: 14px 16px;
 
 							&:hover {
-								color: #ff5627;
+								color: var(--link-highlight-color);
 								background: #fff;
 							}
 						}
@@ -105,19 +167,24 @@
 
 				> ul {
 					display: flex;
-					column-gap: 22px;
 					align-items: center;
 
 					> li {
 						margin-right: 0;
 						white-space: nowrap;
+
+						& + li {
+							margin-left: 22px;
+						}
 					}
 				}
 			}
 
 			> ul {
 				@media (min-width: @screen-lg-min) {
-					column-gap: 32px;
+					> li + li {
+						margin-left: 32px;
+					}
 				}
 			}
 
@@ -207,7 +274,7 @@
 
 		li.dropdown.open > a.dropdown-toggle {
 			background: transparent;
-			color: #f65128;
+			color: var(--link-highlight-color);
 
 			@media (min-width: @screen-md-min) {
 				color: #fff;
@@ -228,7 +295,7 @@
 		}
 
 		li.dropdown.open > a.dropdown-toggle {
-			color: #f65128;
+			color: var(--link-highlight-color);
 		}
 	}
 
@@ -249,7 +316,7 @@
 
 	.navbar-nav {
 		& > li {
-			& > a {
+			& > a, button {
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -398,6 +465,87 @@
 
 				@media (min-width: @screen-sm-min) {
 					margin-left: -16px;
+				}
+			}
+		}
+	}
+
+	.dashboard-section {
+		display: flex;
+
+		&.open {
+			> a, > a:hover {
+				background-color: transparent;
+			}
+		}
+
+		.btn {
+			&:active {
+				box-shadow: none;
+			}
+
+			@media (max-width: @screen-sm-max) {
+				border: none;
+			}
+		}
+
+		@media (min-width: @screen-md-min) {
+			min-width: 166px;
+			text-align: right;
+			justify-content: center;
+
+			a.btn {
+				display: inline-flex;
+				padding: 12px;
+				border: 1px solid @gp-green;
+				border-radius: 8px;
+				transition: background-color 200ms, border-color 200ms;
+
+				&.btn-dash {
+					border-radius: 8px 0 0 8px;
+				}
+
+				&.btn-sign-in {
+					padding: 12px 24px;
+				}
+
+				&:hover {
+					background-color: @gp-green;
+				}
+			}
+
+			button.btn {
+				color: #fff;
+				border-radius: 0 8px 8px 0;
+				padding: 6px 8px 6px 6px;
+				background-color: transparent;
+				display: inline-flex;
+				border: 1px solid @gp-green;
+				border-left: 1px solid transparent;
+				transition: background-color 200ms, border-color 200ms;
+
+				&:hover {
+					background-color: @gp-green;
+				}
+			}
+
+			.dropdown {
+				margin-left: -1px;
+
+				.dropdown-menu {
+					margin-top: -1px;
+					border-top-width: 2px;
+					border-color: transparent;
+					text-align: right;
+
+					.current-user {
+						padding: 4px 18px;
+						color: #79849a;
+					}
+
+					a {
+						justify-content: flex-end;
+					}
 				}
 			}
 		}

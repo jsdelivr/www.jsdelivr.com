@@ -408,6 +408,7 @@ module.exports = {
 			url,
 			headers,
 			responseHeadersToGet = null,
+			withCredentials = false,
 		} = obj;
 
 		return new Promise((resolve, reject) => {
@@ -420,6 +421,10 @@ module.exports = {
 
 			if (headers) {
 				Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+			}
+
+			if (withCredentials) {
+				xhr.withCredentials = true;
 			}
 
 			xhr.onerror = xhr.onload = () => {
@@ -1502,5 +1507,49 @@ module.exports = {
 
 			return cache.get(key);
 		};
+	},
+	getGpProbeStatusColor (timing, probesMaxTiming = 200, probesMinTiming = 5) {
+		// return default GREY color while probe has no timing yet
+		if (!timing) { return '#c0c0c0'; }
+
+		// return default color for timed out probe
+		if (
+			timing === PROBE_NO_TIMING_VALUE
+			|| timing === PROBE_STATUS_FAILED
+			|| timing === PROBE_STATUS_OFFLINE
+		) {
+			return '#17233A';
+		}
+
+		function getColorFromGradient (quotient, start, middle, end) {
+			return quotient >= 0.5 ? linear(middle, end, (quotient - 0.5) * 2) : linear(start, middle, quotient * 2);
+		}
+
+		function linear (startColor, endColor, quotient) {
+			let redColor = byteLinear(startColor[1] + startColor[2], endColor[1] + endColor[2], quotient);
+			let greenColor = byteLinear(startColor[3] + startColor[4], endColor[3] + endColor[4], quotient);
+			let blueColor = byteLinear(startColor[5] + startColor[6], endColor[5] + endColor[6], quotient);
+
+			return `#${redColor}${greenColor}${blueColor}`;
+		}
+
+		function byteLinear (partOne, partTwo, quotient) {
+			let color = Math.floor(('0x' + partOne) * (1 - quotient) + ('0x' + partTwo) * quotient);
+
+			return color.toString(16).padStart(2, '0');
+		}
+
+		let pureTimingValue = parseInt(timing);
+
+		// '#17d4a7', '#ffb800', '#e64e3d' - colors are used for timings scale on the map
+		if (pureTimingValue <= probesMinTiming) {
+			return '#17d4a7';
+		}
+
+		if (pureTimingValue >= probesMaxTiming) {
+			return '#e64e3d';
+		}
+
+		return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 	},
 };
