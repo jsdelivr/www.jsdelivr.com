@@ -266,8 +266,8 @@ koaElasticUtils.addRoutes(router, [
 			console.error(e);
 		}
 
-		ctx.status = 301;
-		return ctx.redirect('/');
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/${root}/404.html`, { actualPath: ctx.path });
 	}
 });
 
