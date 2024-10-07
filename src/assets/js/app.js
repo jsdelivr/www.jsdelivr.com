@@ -84,8 +84,12 @@ app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
 
 app.router.addRoute('/(.*)', (route) => {
+	let newUrl = new URL(`${route.uri.path}${route.uri.qs}${route.uri.hash}`, location.href);
+
 	if (!route?.data?.title?.toLowerCase().includes('not found')) {
-		throw new Error('reload');
+		setTimeout(() => {
+			location.href = newUrl.href;
+		});
 	}
 });
 
