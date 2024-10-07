@@ -252,6 +252,7 @@ if (site === 'globalping') {
 koaElasticUtils.addRoutes(router, [
 	[ '/(.*)', '/(.*)' ],
 ], async (ctx) => {
+	let path = ctx.path.startsWith('/_') ? '/_404' : ctx.path;
 	let root = site === 'globalping' ? 'globalping/' : '';
 	let data = {
 		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style', 'measurement' ]),
@@ -259,15 +260,15 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	try {
-		ctx.body = await ctx.render(`pages/${root}` + (ctx.path === '/' ? '_index' : ctx.path) + '.html', data);
+		ctx.body = await ctx.render(`pages/${root}` + (path === '/' ? '_index' : path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (app.env === 'development') {
 			console.error(e);
 		}
 
-		ctx.status = 301;
-		return ctx.redirect('/');
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/${root}_404.html`, { actualPath: ctx.path });
 	}
 });
 
