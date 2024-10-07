@@ -238,6 +238,21 @@ router.get('/debug/' + serverConfig.debugToken, debugHandler);
 router.get('/debug/status/:status/:maxAge?/:delay?', debugHandler.status);
 
 /**
+ * Auth callback
+ */
+router.get('/auth/callback', '/auth/callback', async (ctx) => {
+	let url = new URL(serverConfig.host);
+	let redirect = ctx.query.redirect || '/';
+	let redirectUrl = new URL(redirect, serverConfig.host);
+
+	if (redirectUrl.origin !== url.origin) {
+		redirectUrl = url;
+	}
+
+	ctx.redirect(redirectUrl.toString());
+});
+
+/**
  * Site-specific routes.
  */
 if (site === 'globalping') {

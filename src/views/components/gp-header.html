@@ -91,7 +91,7 @@
 						<li class="hidden-md hidden-lg"><a on-click="@this.signOut()"><i class="fa fa-sign-out" style="margin-right: 8px;"></i>Sign Out</a></li>
 					{{elseif @shared.user === null}}
 						<li class="dashboard-section">
-							<a href="https://dash-directus.globalping.io/auth/login/github?redirect={{@global.location.href}}" class="btn btn-sign-in">
+							<a class="btn btn-sign-in" on-click="@this.signIn()">
 								<i class="fa fa-sign-in hidden-md hidden-lg" style="margin-right: 8px;"></i>
 								Sign in
 								<span class="hidden-md hidden-lg">&nbsp;with GitHub</span><i class="fa fa-github hidden-xs hidden-sm" style="margin-left: 8px;"></i>
@@ -119,6 +119,11 @@
 			} else {
 				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
 			}
+		},
+		signIn () {
+			let url = new URL('https://dash-directus.globalping.io/auth/login/github');
+			url.searchParams.set('redirect', `${this.get('@shared.serverHost')}/auth/callback?redirect=${encodeURIComponent(location.href)}`);
+			location.href = url.toString();
 		},
 		signOut () {
 			http.gpLogOut().then(() => this.set('@shared.user', null));
