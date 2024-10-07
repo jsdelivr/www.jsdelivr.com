@@ -83,16 +83,6 @@ app.router.addRoute('/oss-cdn', cCustomCdnOss);
 app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
 
-app.router.addRoute('/(.*)', (route) => {
-	let newUrl = new URL(`${route.uri.path}${route.uri.qs}${route.uri.hash}`, location.href);
-
-	if (!route?.data?.title?.toLowerCase().includes('not found')) {
-		setTimeout(() => {
-			location.href = newUrl.href;
-		});
-	}
-});
-
 _.onDocumentReady(() => {
 	let state = {};
 	let ractive = new Ractive();
@@ -125,10 +115,12 @@ _.onDocumentReady(() => {
 		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
 	} catch (e) {}
 
-	app.router
-		.init({ noScroll: true, state: { ...state, ...app.router.data() } })
-		.watchLinks()
-		.watchState();
+	if (!document.title.includes('not found')) {
+		app.router
+			.init({ noScroll: true, state: { ...state, ...app.router.data() } })
+			.watchLinks()
+			.watchState();
+	}
 });
 
 app.injectGlobalStyle = (href) => {

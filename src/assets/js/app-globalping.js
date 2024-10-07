@@ -38,16 +38,6 @@ app.router.addRoute('/about-us', cGlobalpingAbout);
 app.router.addRoute('/sponsors', cGlobalpingSponsors);
 app.router.addRoute('/credits', cGlobalpingCredits);
 
-app.router.addRoute('/(.*)', (route) => {
-	let newUrl = new URL(`${route.uri.path}${route.uri.qs}${route.uri.hash}`, location.href);
-
-	if (!route?.data?.title?.toLowerCase().includes('not found')) {
-		setTimeout(() => {
-			location.href = newUrl.href;
-		});
-	}
-});
-
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
 	this.route.view.set(name, newValue);
@@ -90,10 +80,12 @@ _.onDocumentReady(() => {
 		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
 	} catch (e) {}
 
-	app.router
-		.init({ noScroll: true, state: { ...state, ...app.router.data() } })
-		.watchLinks()
-		.watchState();
+	if (!document.title.includes('not found')) {
+		app.router
+			.init({ noScroll: true, state: { ...state, ...app.router.data() } })
+			.watchLinks()
+			.watchState();
+	}
 
 	// open navbar dropdowns on hover
 	$(document)

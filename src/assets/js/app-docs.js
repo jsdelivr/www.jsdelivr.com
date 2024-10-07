@@ -62,7 +62,7 @@ _.onDocumentReady(() => {
 		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
 	} catch (e) {}
 
-	app.router.init({ noScroll: true, state }).watchState();
+	app.router.init({ noScroll: true, state });
 
 	// open navbar dropdowns on hover
 	$(document)
