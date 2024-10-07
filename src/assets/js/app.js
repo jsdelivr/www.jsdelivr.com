@@ -28,7 +28,6 @@ const cEsmsh = require('../../views/pages/esmsh.html');
 const cCustomCdnOss = require('../../views/pages/oss-cdn.html');
 const cCustomCdnOssProject = require('../../views/pages/_oss-cdn-project.html');
 const cDocumentation = require('../../views/pages/documentation.html');
-const cError = require('../../views/pages/_404.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -83,7 +82,12 @@ app.router.addRoute('/esmsh', cEsmsh);
 app.router.addRoute('/oss-cdn', cCustomCdnOss);
 app.router.addRoute('/oss-cdn/:name', cCustomCdnOssProject);
 app.router.addRoute('/documentation', cDocumentation);
-app.router.addRoute('/(.*)', cError);
+
+app.router.addRoute('/(.*)', (route) => {
+	if (!route?.data?.title?.toLowerCase().includes('not found')) {
+		throw new Error('reload');
+	}
+});
 
 _.onDocumentReady(() => {
 	let state = {};
