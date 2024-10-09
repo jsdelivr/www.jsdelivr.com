@@ -8,7 +8,6 @@ module.exports = {
 		blogHost: 'https://jsdelivr-blog.ghost.io',
 		assetsHost: `/assets/${assetsVersion}`,
 		apiDocsHost: 'https://data.jsdelivr.com',
-		globalpingApiDocsHost: 'https://api.globalping.io',
 		userAgent: `www.jsdelivr.com/${version} (https://github.com/jsdelivr/www.jsdelivr.com)`,
 		headers: {
 			'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -38,8 +37,7 @@ module.exports = {
 			host: 'https://globalping.io',
 			blogHost: 'https://jsdelivr-blog.ghost.io',
 			assetsHost: `/assets/${assetsVersion}`,
-			apiDocsHost: 'https://data.jsdelivr.com',
-			globalpingApiDocsHost: 'https://api.globalping.io',
+			apiDocsHost: 'https://api.globalping.io',
 			userAgent: `globalping.io/${version} (https://github.com/jsdelivr/www.jsdelivr.com)`,
 			headers: {
 				'Cache-Control': 'no-cache, no-store, must-revalidate',
