@@ -4,14 +4,41 @@
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
+		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			}
+			/* eslint-disable */
+			function initMap () {
+				onDocumentReady(function () {
+					app.loaded = true;
+
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&loading=async" async></script>
+	{{/if}}
+
 	<c-notification></c-notification>
 
 	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
 
 	<div class="p-globalping-network">
 		<div class="gp-network">
-			<div class="gp-network_map"></div>
+			<div class="gp-network_map-wrapper">
+				<div id="gp-map" class="gp-network_map-wrapper_map"></div>
+			</div>
+
 			<div class="gp-network_filters"></div>
+
 			<div class="gp-network_list"></div>
 		</div>
 	</div>
@@ -20,12 +47,101 @@
 </r-page>
 
 <script>
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
+	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
+	const MAP_MIN_ZOOM = 2;
+	const MAP_MAX_ZOOM = 22;
+	const MAP_ZOOM_REG = 3.74;
+	const MAP_ZOOM_ALT = 2.14;
+	const MAP_CENTER_REG = { lat: 48, lng: 16 };
+	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
+	const MODERATE_MAP_STYLES = [
+		...INITIAL_MAP_STYLES,
+		{
+			elementType: 'labels.text.stroke',
+			stylers: [{ visibility: 'on' }],
+		},
+		{
+			elementType: 'labels.text.fill',
+			stylers: [
+				{ visibility: 'on' },
+				{ color: '#989b9e' },
+			],
+		},
+	];
+	const DETAILED_MAP_STYLES = [
+		...MODERATE_MAP_STYLES,
+		{
+			featureType: 'road',
+			stylers: [{ visibility: 'on' }],
+		},
+	];
+	let map;
+
 	component.exports = {
 		data () {
 			return {
 				title: 'Network - Globalping',
 				description: 'Network - Globalping',
 			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				// set initial screenWidth value
+				this.observe('screenWidth', (screenWidth) => {
+					if (!screenWidth) {
+						this.set('screenWidth', innerWidth);
+					}
+				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.set('@shared.googleMapsLoaded', true);
+
+				if (app.loaded) {
+					this.initMap();
+				}
+
+				// detect window resize
+				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			}
+		},
+		initMap () {
+			let mq = window.matchMedia('(min-width: 768px)');
+
+			map = new google.maps.Map(this.find('#gp-map'), {
+				styles: INITIAL_MAP_STYLES,
+				zoom: MAP_ZOOM_REG,
+				center: MAP_CENTER_REG,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
+				minZoom: MAP_MIN_ZOOM,
+				maxZoom: MAP_MAX_ZOOM,
+			});
+
+			if (mq.matches) {
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
+			}
+
+			// while zooming handle marker positions for those with the same coordinates
+			map.addListener('zoom_changed', () => {
+				let currZoom = map.getZoom();
+
+				// handle map detalization on zoom
+				if (currZoom >= 14) {
+					map.setOptions({ styles: DETAILED_MAP_STYLES });
+				} else if (currZoom >= 5) {
+					map.setOptions({ styles: MODERATE_MAP_STYLES });
+				} else {
+					map.setOptions({ styles: INITIAL_MAP_STYLES });
+				}
+			});
 		},
 	};
 </script>
