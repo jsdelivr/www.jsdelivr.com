@@ -58,7 +58,12 @@
 							<img width="17"
 								height="12"
 								src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{probe.location.country}}.svg">
+
 							<span>{{probe.location.country}}, {{probe.location.city}}</span>
+
+							{{#if probe.probesInCity && probe.probesInCity !== 1}}
+								<span>(x{{probe.probesInCity}})</span>
+							{{/if}}
 						</span>
 					{{/each}}
 				{{/each}}
@@ -227,7 +232,14 @@
 					res[contName] = [];
 				}
 
-				res[contName].push(probe);
+				// check if there are probes in the same country and city already presented and count them
+				let alreadyExisted = res[contName].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
+
+				if (alreadyExisted) {
+					alreadyExisted.probesInCity += 1;
+				} else {
+					res[contName].push({ ...probe, probesInCity: 1 });
+				}
 
 				return res;
 			}, {});
