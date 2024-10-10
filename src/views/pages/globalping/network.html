@@ -219,7 +219,8 @@
 			};
 		},
 		sortByContinents (probes) {
-			return probes.reduce((res, probe) => {
+			// sort by continents
+			let probesByContinent = probes.reduce((res, probe) => {
 				let contName = this.getContinentName(probe.location.continent);
 
 				if (!Object.hasOwn(res, contName)) {
@@ -227,6 +228,13 @@
 				}
 
 				res[contName].push(probe);
+
+				return res;
+			}, {});
+
+			// sort by countries
+			return Object.keys(probesByContinent).reduce((res, key) => {
+				res[key] = probesByContinent[key].sort((a, b) => a.location.country.localeCompare(b.location.country));
 
 				return res;
 			}, {});
