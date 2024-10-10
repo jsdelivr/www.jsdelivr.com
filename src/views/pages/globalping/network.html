@@ -50,7 +50,14 @@
 				</div>
 			</div>
 
-			<div class="gp-network_list"></div>
+			<div class="gp-network_list">
+				{{#each probesByContinents as data}}
+					<span class="gp-network_list_item cont-header">{{@key}}</span>
+					{{#each data as probe}}
+						<span class="gp-network_list_item">{{probe.location.country}}, {{probe.location.city}}</span>
+					{{/each}}
+				{{/each}}
+			</div>
 		</div>
 	</div>
 
@@ -60,6 +67,9 @@
 <script>
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
+	const has = require('../../../assets/js/utils/has');
+	const http = require('../../../assets/js/utils/http');
+	const CONTINENTS = require('../../../assets/json/continents.json');
 	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
@@ -107,14 +117,27 @@
 					'Google Cloud',
 					'AWS Cloud',
 				],
+				probesResponse: null,
+				probesByContinents: null,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				// get probes from sessionStorage or fetch them and handle
+				this.getProbesData();
+
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
 						this.set('screenWidth', innerWidth);
+					}
+				});
+
+				this.observe('probesResponse', (probesResponse) => {
+					if (probesResponse) {
+						let probesByContinents = this.sortByContinents(probesResponse);
+
+						this.set('probesByContinents', probesByContinents);
 					}
 				});
 			}
@@ -165,6 +188,48 @@
 					map.setOptions({ styles: INITIAL_MAP_STYLES });
 				}
 			});
+		},
+		getProbesData () {
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				this.set('probesResponse', response);
+			};
+		},
+		sortByContinents (probes) {
+			return probes.reduce((res, probe) => {
+				let contName = this.getContinentName(probe.location.continent);
+
+				if (!Object.hasOwn(res, contName)) {
+					res[contName] = [];
+				}
+
+				res[contName].push(probe);
+
+				return res;
+			}, {});
+		},
+		getContinentName (code) {
+			let cData = CONTINENTS.find(c => c.code === code);
+
+			return cData ? cData.name : null;
 		},
 	};
 </script>
