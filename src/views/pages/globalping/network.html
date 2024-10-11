@@ -44,8 +44,23 @@
 				</span>
 
 				<div class="gp-network_filters_list">
+					{{#each filtersSet}}
+						<span class="gp-network_filters_list_selected">
+							{{this.displayed}}
+
+							<img on-click="@this.rmFilterRule(@key)"
+								width="16"
+								height="16"
+								src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
+						</span>
+					{{/each}}
+
 					{{#each availableFilters}}
-						<span class="gp-network_filters_list_item">{{this}}</span>
+						{{#unless this.selected}}
+							<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_list_item">
+								{{this.displayed}}
+							</span>
+						{{/unless}}
 					{{/each}}
 				</div>
 			</div>
@@ -116,16 +131,56 @@
 				title: 'Network - Globalping',
 				description: 'Network - Globalping',
 				availableFilters: [
-					'Europe',
-					'North America',
-					'South America',
-					'Africa',
-					'Asia',
-					'Oceania',
-					'eyeball network',
-					'datacenter',
-					'Google Cloud',
-					'AWS Cloud',
+					{
+						displayed: 'Europe',
+						value: 'EU',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'North America',
+						value: 'NA',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'South America',
+						value: 'SA',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'Africa',
+						value: 'AF',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'Asia',
+						value: 'AS',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'Oceania',
+						value: 'OC',
+						type: 'byContinent',
+					},
+					{
+						displayed: 'eyeball network',
+						value: 'eyeball-network',
+						type: 'byTag',
+					},
+					{
+						displayed: 'datacenter',
+						value: 'datacenter-network',
+						type: 'byTag',
+					},
+					{
+						displayed: 'Google Cloud',
+						value: 'TODO',
+						type: 'TODO',
+					},
+					{
+						displayed: 'AWS Cloud',
+						value: 'TODO',
+						type: 'TODO',
+					},
 				],
 				probesResponse: null,
 				probesByContinents: null,
@@ -155,10 +210,12 @@
 				});
 
 				// use filters for the probesByContinents before render
-				this.observe((filtersSet) => {
+				this.observe('filtersSet', (filtersSet) => {
 					let probesByContinents = this.get('probesByContinents');
 
 					if (filtersSet) {
+						// temp
+						return probesByContinents;
 						// filter and return filteredProbes
 					}
 
@@ -269,6 +326,34 @@
 			let cData = CONTINENTS.find(c => c.code === code);
 
 			return cData ? cData.name : null;
+		},
+		setFilterRule (fIdx) {
+			let filtersSet = this.get('filtersSet');
+			let availableFilters = this.get('availableFilters');
+			let filterRule = availableFilters[fIdx];
+
+			if (filtersSet) {
+				filtersSet.push(filterRule);
+			} else {
+				filtersSet = [ filterRule ];
+			}
+
+			filterRule.selected = true;
+
+			this.set('filtersSet', filtersSet);
+			this.set('availableFilters', availableFilters);
+		},
+		rmFilterRule (fIdx) {
+			let filtersSet = this.get('filtersSet');
+			let availableFilters = this.get('availableFilters');
+			let setFilterRule = filtersSet[fIdx];
+			let avFiltersRule = availableFilters.find(af => af.value === setFilterRule.value);
+
+			avFiltersRule.selected = false;
+			filtersSet.splice(fIdx, 1);
+
+			this.set('filtersSet', filtersSet);
+			this.set('availableFilters', availableFilters);
 		},
 	};
 </script>
