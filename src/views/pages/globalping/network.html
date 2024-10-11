@@ -44,7 +44,7 @@
 				</span>
 
 				<div class="gp-network_filters_list">
-					{{#each filtersList}}
+					{{#each availableFilters}}
 						<span class="gp-network_filters_list_item">{{this}}</span>
 					{{/each}}
 				</div>
@@ -115,7 +115,7 @@
 			return {
 				title: 'Network - Globalping',
 				description: 'Network - Globalping',
-				filtersList: [
+				availableFilters: [
 					'Europe',
 					'North America',
 					'South America',
@@ -129,6 +129,8 @@
 				],
 				probesResponse: null,
 				probesByContinents: null,
+				filteredProbes: null,
+				filtersSet: null,
 			};
 		},
 		oninit () {
@@ -143,12 +145,24 @@
 					}
 				});
 
+				// sort probes by continents, and each list by country name
 				this.observe('probesResponse', (probesResponse) => {
 					if (probesResponse) {
 						let probesByContinents = this.sortByContinents(probesResponse);
 
 						this.set('probesByContinents', probesByContinents);
 					}
+				});
+
+				// use filters for the probesByContinents before render
+				this.observe((filtersSet) => {
+					let probesByContinents = this.get('probesByContinents');
+
+					if (filtersSet) {
+						// filter and return filteredProbes
+					}
+
+					return probesByContinents;
 				});
 			}
 		},
