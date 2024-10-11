@@ -46,7 +46,7 @@
 				<div class="gp-network_filters_list">
 					{{#each filtersSet}}
 						<span class="gp-network_filters_list_selected">
-							{{this.displayed}}
+							{{this.name}}
 
 							<img on-click="@this.rmFilterRule(@key)"
 								width="16"
@@ -58,7 +58,7 @@
 					{{#each availableFilters}}
 						{{#unless this.selected}}
 							<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_list_item">
-								{{this.displayed}}
+								{{this.name}}
 							</span>
 						{{/unless}}
 					{{/each}}
@@ -66,7 +66,7 @@
 			</div>
 
 			<div class="gp-network_list">
-				{{#each probesByContinents as data}}
+				{{#each filteredProbes as data}}
 					<span class="gp-network_list_item cont-header">{{@key}}</span>
 					{{#each data as probe}}
 						<span class="gp-network_list_item">
@@ -132,52 +132,52 @@
 				description: 'Network - Globalping',
 				availableFilters: [
 					{
-						displayed: 'Europe',
+						name: 'Europe',
 						value: 'EU',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'North America',
+						name: 'North America',
 						value: 'NA',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'South America',
+						name: 'South America',
 						value: 'SA',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'Africa',
+						name: 'Africa',
 						value: 'AF',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'Asia',
+						name: 'Asia',
 						value: 'AS',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'Oceania',
+						name: 'Oceania',
 						value: 'OC',
 						type: 'byContinent',
 					},
 					{
-						displayed: 'eyeball network',
+						name: 'eyeball network',
 						value: 'eyeball-network',
 						type: 'byTag',
 					},
 					{
-						displayed: 'datacenter',
+						name: 'datacenter',
 						value: 'datacenter-network',
 						type: 'byTag',
 					},
 					{
-						displayed: 'Google Cloud',
+						name: 'Google Cloud',
 						value: 'TODO',
 						type: 'TODO',
 					},
 					{
-						displayed: 'AWS Cloud',
+						name: 'AWS Cloud',
 						value: 'TODO',
 						type: 'TODO',
 					},
@@ -212,14 +212,15 @@
 				// use filters for the probesByContinents before render
 				this.observe('filtersSet', (filtersSet) => {
 					let probesByContinents = this.get('probesByContinents');
+					let filteredProbes = this.get('filteredProbes') || probesByContinents;
 
 					if (filtersSet) {
-						// temp
-						return probesByContinents;
-						// filter and return filteredProbes
+						filteredProbes = this.getFilteredProbesList(filtersSet, filteredProbes);
+					} else {
+						filteredProbes = probesByContinents;
 					}
 
-					return probesByContinents;
+					this.set('filteredProbes', filteredProbes);
 				});
 			}
 		},
@@ -352,8 +353,19 @@
 			avFiltersRule.selected = false;
 			filtersSet.splice(fIdx, 1);
 
-			this.set('filtersSet', filtersSet);
+			this.set('filtersSet', filtersSet.length ? filtersSet : null);
 			this.set('availableFilters', availableFilters);
+		},
+		getFilteredProbesList (filtersSet, probesList) {
+			let filtered = {};
+
+			filtersSet.forEach((f) => {
+				if (f.type === 'byContinent') {
+					filtered[f.name] = probesList[f.name];
+				}
+			});
+
+			return filtered;
 		},
 	};
 </script>
