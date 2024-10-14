@@ -124,6 +124,8 @@
 		},
 	];
 	let map;
+	let infoWindows = [];
+	let mapMarkers = [];
 
 	component.exports = {
 		data () {
@@ -270,6 +272,14 @@
 					map.setOptions({ styles: INITIAL_MAP_STYLES });
 				}
 			});
+
+			this.observe('markersData', (markersData) => {
+				if (markersData) {
+					markersData.forEach((mD, mDIdx) => {
+						this.createMapMarkerWithIW(markersData, mDIdx);
+					});
+				}
+			}, { init: false });
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
@@ -296,6 +306,7 @@
 			};
 		},
 		sortByContinents (probes) {
+			// TODO: maybe here? sort by cities too and set markersData for the map?
 			// sort by continents
 			let probesByContinent = probes.reduce((res, probe) => {
 				let contName = this.getContinentName(probe.location.continent);
@@ -366,6 +377,59 @@
 			});
 
 			return filtered;
+		},
+		createMapMarkerWithIW (markerData, currentMarkerIdx) {
+			let infoWindow = new google.maps.InfoWindow();
+			let svg = this.createMapMarkerSvg(markerData);
+
+			// Collect InfoWindows
+			infoWindows.push(infoWindow);
+			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
+
+			// Create a new AdvancedMarkerView
+			let marker = new google.maps.marker.AdvancedMarkerView({
+				map,
+				content: `<div style="background-image: url('data:image/svg+xml;base64,${svg}'); width: 32px; height: 32px;"></div>`,
+				position: { lat: markerData.lat, lng: markerData.lng },
+				zIndex: 1,
+			});
+
+			// Handle closing of all InfoWindows on a click on a marker
+			marker.addListener('gmp-click', () => {
+				infoWindows.forEach(iw => iw.close());
+				infoWindow.open({ map, anchor: marker });
+			});
+
+			// Store marker in the array
+			mapMarkers.push(marker);
+		},
+		createMapMarkerSvg () {
+			return window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g filter="url(#filter0_d_6106_3045)">
+				<circle cx="12" cy="10" r="6" fill="#17D4A7"/>
+				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
+				</g>
+				<defs>
+				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+				<feOffset dy="2"/>
+				<feGaussianBlur stdDeviation="2"/>
+				<feComposite in2="hardAlpha" operator="out"/>
+				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+				</filter>
+				</defs>
+				</svg>`);
+		},
+		createInfoWindowContent (markerData, currentMarkerIdx) {
+			console.log('createInfoWindowContent markerData:', markerData);
+			console.log('createInfoWindowContent currentMarkerIdx:', currentMarkerIdx);
+			// TODO: 672
+			let infoWindowContent = `<div class="TODO-iw-class-name">TODO: CONTENT</div>`;
+
+			return infoWindowContent;
 		},
 	};
 </script>
