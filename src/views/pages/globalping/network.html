@@ -422,9 +422,20 @@
 				</defs>
 				</svg>`);
 		},
-		createInfoWindowContent (markerData) {
-			// TODO: 672
-			let infoWindowContent = `<div class="TODO-iw-class-name">TODO: CONTENT</div>`;
+		createInfoWindowContent (markersByCoords) {
+			let markersCnt = markersByCoords.length;
+
+			let infoWindowContent = `<div class="gp-network_iw">`;
+
+			if (markersCnt === 1) {
+				infoWindowContent += `<span>${markersByCoords[0].location.network}</span>`;
+			} else {
+				markersByCoords.forEach(m => {
+					infoWindowContent += `<span>${m.location.network}</span>`;
+				});
+			}
+
+			infoWindowContent += '</div>';
 
 			return infoWindowContent;
 		},
