@@ -95,34 +95,12 @@
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
 	const CONTINENTS = require('../../../assets/json/continents.json');
-	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_REG = { lat: 48, lng: 16 };
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
-	const MODERATE_MAP_STYLES = [
-		...INITIAL_MAP_STYLES,
-		{
-			elementType: 'labels.text.stroke',
-			stylers: [{ visibility: 'on' }],
-		},
-		{
-			elementType: 'labels.text.fill',
-			stylers: [
-				{ visibility: 'on' },
-				{ color: '#989b9e' },
-			],
-		},
-	];
-	const DETAILED_MAP_STYLES = [
-		...MODERATE_MAP_STYLES,
-		{
-			featureType: 'road',
-			stylers: [{ visibility: 'on' }],
-		},
-	];
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -251,7 +229,6 @@
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
-				styles: INITIAL_MAP_STYLES,
 				zoom: MAP_ZOOM_REG,
 				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
@@ -268,20 +245,6 @@
 				map.setCenter(MAP_CENTER_ALT);
 				map.setZoom(MAP_ZOOM_ALT);
 			}
-
-			// while zooming handle marker positions for those with the same coordinates
-			map.addListener('zoom_changed', () => {
-				let currZoom = map.getZoom();
-
-				// handle map detalization on zoom
-				if (currZoom >= 14) {
-					map.setOptions({ styles: DETAILED_MAP_STYLES });
-				} else if (currZoom >= 5) {
-					map.setOptions({ styles: MODERATE_MAP_STYLES });
-				} else {
-					map.setOptions({ styles: INITIAL_MAP_STYLES });
-				}
-			});
 
 			this.observe('filteredMarkersData', (markersData) => {
 				if (markersData) {
@@ -456,7 +419,6 @@
 				</svg>`);
 		},
 		createInfoWindowContent (markerData) {
-			console.log('createInfoWindowContent markerData:', markerData);
 			// TODO: 672
 			let infoWindowContent = `<div class="TODO-iw-class-name">TODO: CONTENT</div>`;
 
