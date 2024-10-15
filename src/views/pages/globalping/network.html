@@ -253,7 +253,11 @@
 					});
 				}
 			});
-		// }, { init: false });
+
+			// close IWs on click on Map
+			google.maps.event.addListener(map, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
+			});
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
@@ -390,7 +394,7 @@
 			});
 
 			// Handle closing of all InfoWindows on a click on a marker
-			marker.addListener('gmp-click', () => {
+			marker.addListener('click', () => {
 				infoWindows.forEach(iw => iw.close());
 				infoWindow.open({ map, anchor: marker });
 			});
