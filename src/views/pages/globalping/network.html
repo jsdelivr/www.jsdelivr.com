@@ -24,7 +24,7 @@
 				});
 			}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&loading=async" async></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&&libraries=marker&loading=async" async></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -184,10 +184,12 @@
 						type: 'TODO',
 					},
 				],
+				filtersSet: null,
 				probesResponse: null,
 				probesByContinents: null,
+				probesByCoords: null,
 				filteredProbes: null,
-				filtersSet: null,
+				filteredMarkersData: null,
 			};
 		},
 		oninit () {
@@ -205,24 +207,31 @@
 				// sort probes by continents, and each list by country name
 				this.observe('probesResponse', (probesResponse) => {
 					if (probesResponse) {
-						let probesByContinents = this.sortByContinents(probesResponse);
+						let { groupedByContinents, groupedByCoords } = this.groupProbes(probesResponse);
+						let probesByContinents = this.sortByCountries(groupedByContinents);
 
 						this.set('probesByContinents', probesByContinents);
+						this.set('probesByCoords', groupedByCoords);
 					}
 				});
 
 				// use filters for the probesByContinents before render
 				this.observe('filtersSet', (filtersSet) => {
 					let probesByContinents = this.get('probesByContinents');
+					let probesByCoords = this.get('probesByCoords');
 					let filteredProbes = this.get('filteredProbes') || probesByContinents;
+					let filteredMarkersData = this.get('filteredMarkersData') || probesByCoords;
 
 					if (filtersSet) {
 						filteredProbes = this.getFilteredProbesList(filtersSet, filteredProbes);
+						filteredMarkersData = this.getFilteredMarkersData(filtersSet, filteredMarkersData);
 					} else {
 						filteredProbes = probesByContinents;
+						filteredMarkersData = probesByCoords;
 					}
 
 					this.set('filteredProbes', filteredProbes);
+					this.set('filteredMarkersData', filteredMarkersData);
 				});
 			}
 		},
@@ -252,6 +261,7 @@
 				fullscreenControl: false,
 				minZoom: MAP_MIN_ZOOM,
 				maxZoom: MAP_MAX_ZOOM,
+				mapId: "DEMO_MAP_ID", // TODO: 672
 			});
 
 			if (mq.matches) {
@@ -273,13 +283,14 @@
 				}
 			});
 
-			this.observe('markersData', (markersData) => {
+			this.observe('filteredMarkersData', (markersData) => {
 				if (markersData) {
-					markersData.forEach((mD, mDIdx) => {
-						this.createMapMarkerWithIW(markersData, mDIdx);
+					Object.keys(markersData).forEach((key) => {
+						this.createMapMarkerWithIW(key, markersData[key]);
 					});
 				}
-			}, { init: false });
+			});
+		// }, { init: false });
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
@@ -305,31 +316,43 @@
 				this.set('probesResponse', response);
 			};
 		},
-		sortByContinents (probes) {
-			// TODO: maybe here? sort by cities too and set markersData for the map?
-			// sort by continents
-			let probesByContinent = probes.reduce((res, probe) => {
+		groupProbes (probes) {
+			// group probes by Continents and Coordinates
+			return probes.reduce((res, probe) => {
 				let contName = this.getContinentName(probe.location.continent);
+				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
 
-				if (!Object.hasOwn(res, contName)) {
-					res[contName] = [];
+				// group by Continents
+				if (!Object.hasOwn(res.groupedByContinents, contName)) {
+					res.groupedByContinents[contName] = [];
 				}
 
 				// check if there are probes in the same country and city already presented and count them
-				let alreadyExisted = res[contName].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
+				let alreadyExisted = res.groupedByContinents[contName].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
 
 				if (alreadyExisted) {
 					alreadyExisted.probesInCity += 1;
 				} else {
-					res[contName].push({ ...probe, probesInCity: 1 });
+					res.groupedByContinents[contName].push({ ...probe, probesInCity: 1 });
 				}
 
-				return res;
-			}, {});
+				// group by Coordinates
+				if (!Object.hasOwn(res.groupedByCoords, coords)) {
+					res.groupedByCoords[coords] = [];
+				}
 
+				res.groupedByCoords[coords].push(probe);
+
+				return res;
+			}, {
+				groupedByContinents: {},
+				groupedByCoords: {},
+			});
+		},
+		sortByCountries (groupedProbes) {
 			// sort by countries
-			return Object.keys(probesByContinent).reduce((res, key) => {
-				res[key] = probesByContinent[key].sort((a, b) => a.location.country.localeCompare(b.location.country));
+			return Object.keys(groupedProbes).reduce((res, key) => {
+				res[key] = groupedProbes[key].sort((a, b) => a.location.country.localeCompare(b.location.country));
 
 				return res;
 			}, {});
@@ -378,19 +401,28 @@
 
 			return filtered;
 		},
-		createMapMarkerWithIW (markerData, currentMarkerIdx) {
+		createMapMarkerWithIW (key, markerData) {
 			let infoWindow = new google.maps.InfoWindow();
 			let svg = this.createMapMarkerSvg(markerData);
+			let [ lat, lng ] = key.split(', ');
 
 			// Collect InfoWindows
 			infoWindows.push(infoWindow);
-			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
+			infoWindow.setContent(this.createInfoWindowContent(markerData));
+
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.width = '32px';
+			markerContent.style.height = '32px';
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
 
 			// Create a new AdvancedMarkerView
-			let marker = new google.maps.marker.AdvancedMarkerView({
+			let marker = new google.maps.marker.AdvancedMarkerElement({
 				map,
-				content: `<div style="background-image: url('data:image/svg+xml;base64,${svg}'); width: 32px; height: 32px;"></div>`,
-				position: { lat: markerData.lat, lng: markerData.lng },
+				content: markerContent,
+				position: { lat: Number(lat), lng: Number(lng) },
 				zIndex: 1,
 			});
 
@@ -423,13 +455,16 @@
 				</defs>
 				</svg>`);
 		},
-		createInfoWindowContent (markerData, currentMarkerIdx) {
+		createInfoWindowContent (markerData) {
 			console.log('createInfoWindowContent markerData:', markerData);
-			console.log('createInfoWindowContent currentMarkerIdx:', currentMarkerIdx);
 			// TODO: 672
 			let infoWindowContent = `<div class="TODO-iw-class-name">TODO: CONTENT</div>`;
 
 			return infoWindowContent;
+		},
+		getFilteredMarkersData (filtersSet, markersData) {
+			// TODO: add filtration
+			return markersData;
 		},
 	};
 </script>
