@@ -325,7 +325,22 @@
 			filterRule.avFiltersIdx = fIdx;
 
 			if (filtersSet) {
-				filtersSet.push(filterRule);
+				let isReplaced = false;
+
+				filtersSet = filtersSet.map((fR) => {
+					if (fR.type === filterRule.type) {
+						isReplaced = true;
+						availableFilters[fR.avFiltersIdx].selected = false;
+
+						return filterRule;
+					}
+
+					return fR;
+				});
+
+				if (!isReplaced) {
+					filtersSet.push(filterRule);
+				}
 			} else {
 				filtersSet = [ filterRule ];
 			}
