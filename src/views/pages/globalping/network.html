@@ -373,6 +373,16 @@
 				if (f.type === 'byContinent') {
 					filtered[f.name] = probesByContinents[f.name];
 				}
+
+				if (f.type === 'byNetwork') {
+					let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
+
+					filtered = Object.keys(toFilter).reduce((res, key) => {
+						res[key] = toFilter[key].filter(p => p.tags.includes(f.value));
+
+						return res;
+					}, filtered);
+				}
 			});
 
 			return filtered;
