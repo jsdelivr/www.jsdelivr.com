@@ -379,8 +379,8 @@
 
 			let markerContent = document.createElement('div');
 			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-			markerContent.style.width = '24px';
-			markerContent.style.height = '24px';
+			markerContent.style.width = markerData.length === 1 ? '16px' : '24px';
+			markerContent.style.height = markerData.length === 1 ? '16px' : '24px';
 			markerContent.style.backgroundRepeat = 'no-repeat';
 			markerContent.style.backgroundPosition = 'center';
 			markerContent.style.backgroundSize = 'contain';
@@ -441,12 +441,12 @@
 				// in this case we should render a list of probes
 				markersByCoords.forEach((m, mIdx) => {
 					if (mIdx === 0) {
-					// add header content
-					infoWindowContent += '<span class="gp-network_iw_header">';
-					infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/filter-icon.svg">`;
-					infoWindowContent += `<span class="gp-network_iw_header_location">${m.location.city}, ${m.location.country}</span>`;
-					infoWindowContent += `<span class="gp-network_iw_header_cnt">${markersByCoords.length}</span>`;
-					infoWindowContent += '</span>';
+						// add header content
+						infoWindowContent += '<span class="gp-network_iw_header">';
+						infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/filter-icon.svg">`;
+						infoWindowContent += `<span class="gp-network_iw_header_location">${m.location.city}, ${m.location.country}</span>`;
+						infoWindowContent += `<span class="gp-network_iw_header_cnt">${markersByCoords.length}</span>`;
+						infoWindowContent += '</span>';
 					}
 
 					// render the list of the probes, grouped by the same network
