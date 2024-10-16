@@ -195,21 +195,8 @@
 
 				// use filters for the probesByContinents before render
 				this.observe('filtersSet', (filtersSet) => {
-					let probesByContinents = this.get('probesByContinents');
-					let probesByCoords = this.get('probesByCoords');
-					let filteredProbes = this.get('filteredProbes') || probesByContinents;
-					let filteredMarkersData = this.get('filteredMarkersData') || probesByCoords;
-
-					if (filtersSet) {
-						filteredProbes = this.getFilteredProbesList(filtersSet, filteredProbes);
-						filteredMarkersData = this.getFilteredMarkersData(filtersSet, filteredMarkersData);
-					} else {
-						filteredProbes = probesByContinents;
-						filteredMarkersData = probesByCoords;
-					}
-
-					this.set('filteredProbes', filteredProbes);
-					this.set('filteredMarkersData', filteredMarkersData);
+					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
+					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
 				});
 			}
 		},
@@ -357,12 +344,16 @@
 			this.set('filtersSet', filtersSet.length ? filtersSet : null);
 			this.set('availableFilters', availableFilters);
 		},
-		getFilteredProbesList (filtersSet, probesList) {
+		getFilteredProbesList (filtersSet) {
+			let probesByContinents = this.get('probesByContinents');
+
+			if (filtersSet === null) return probesByContinents;
+
 			let filtered = {};
 
 			filtersSet.forEach((f) => {
 				if (f.type === 'byContinent') {
-					filtered[f.name] = probesList[f.name];
+					filtered[f.name] = probesByContinents[f.name];
 				}
 			});
 
@@ -458,9 +449,10 @@
 
 			return infoWindowContent;
 		},
-		getFilteredMarkersData (filtersSet, markersData) {
+		getFilteredMarkersData (filtersSet) {
+			let probesByCoords = this.get('probesByCoords');
 			// TODO: add filtration
-			return markersData;
+			return probesByCoords;
 		},
 	};
 </script>
