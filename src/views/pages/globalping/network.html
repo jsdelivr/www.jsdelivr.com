@@ -371,38 +371,53 @@
 			}
 
 			// to store filtered probes
-			let filtered = {};
+			let filteredProbes = {};
 
 			// get the filter rules
 			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
 			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
 			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
 
+			// filter by Continent
 			if (byContinentFilerRule) {
-				filtered[byContinentFilerRule.name] = probesByContinents[byContinentFilerRule.name];
+				filteredProbes[byContinentFilerRule.name] = probesByContinents[byContinentFilerRule.name];
 			}
 
+			// filter by Network
 			if (byNetworkFilerRule) {
-				let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
 
-				filtered = Object.keys(toFilter).reduce((res, key) => {
-					res[key] = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
 
 					return res;
-				}, filtered);
+				}, filteredProbes);
 			}
 
+			// filter by Cloud provider
 			if (byCloudFilerRule) {
-				let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
 
-				filtered = Object.keys(toFilter).reduce((res, key) => {
-					res[key] = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
 
 					return res;
-				}, filtered);
+				}, filteredProbes);
 			}
 
-			return filtered;
+			return filteredProbes;
 		},
 		createMapMarkerWithIW (key, markerData) {
 			let infoWindow = new google.maps.InfoWindow();
