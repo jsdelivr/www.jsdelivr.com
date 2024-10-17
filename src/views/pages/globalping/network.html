@@ -492,6 +492,17 @@
 		},
 		createInfoWindowContent (markersByCoords) {
 			let markersCnt = markersByCoords.length;
+			let groupedNetworks = markersByCoords.reduce((res, m) => {
+				let marker = res.find(i => i.location.network === m.location.network);
+
+				if (marker) {
+					marker.cnt += 1;
+				} else {
+					res.push({ ...m, cnt: 1 });
+				}
+
+				return res;
+			}, []);
 
 			let infoWindowContent = `<div class="gp-network_iw">`;
 
@@ -501,7 +512,7 @@
 				infoWindowContent += `<span>${network} (${city}, ${country})</span>`;
 			} else {
 				// in this case we should render a list of probes
-				markersByCoords.forEach((m, mIdx) => {
+				groupedNetworks.forEach((m, mIdx) => {
 					if (mIdx === 0) {
 						// add header content
 						infoWindowContent += '<span class="gp-network_iw_header">';
@@ -512,7 +523,7 @@
 					}
 
 					// render the list of the probes, grouped by the same network
-					infoWindowContent += `<span>${m.location.network}</span>`;
+					infoWindowContent += `<span class="gp-network_iw_row">${m.location.network} ${m.cnt > 1 ? `<span class="gp-network_iw_row_network-cnt">${m.cnt}</span>` : ''}</span>`;
 				});
 			}
 
