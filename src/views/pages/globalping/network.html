@@ -367,33 +367,37 @@
 				return probesByContinents;
 			}
 
+			// to store filtered probes
 			let filtered = {};
 
-			filtersSet.forEach((f) => {
-				if (f.type === 'byContinent') {
-					filtered[f.name] = probesByContinents[f.name];
-				}
+			// get the filter rules
+			let byContinentFilerRule = filtersSet.find(fR => fR.type === 'byContinent');
+			let byNetworkFilerRule = filtersSet.find(fR => fR.type === 'byNetwork');
+			let byCloudFilerRule = filtersSet.find(fR => fR.type === 'byCloud');
 
-				if (f.type === 'byNetwork') {
-					let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
+			if (byContinentFilerRule) {
+				filtered[byContinentFilerRule.name] = probesByContinents[byContinentFilerRule.name];
+			}
 
-					filtered = Object.keys(toFilter).reduce((res, key) => {
-						res[key] = toFilter[key].filter(p => p.tags.includes(f.value));
+			if (byNetworkFilerRule) {
+				let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
 
-						return res;
-					}, filtered);
-				}
+				filtered = Object.keys(toFilter).reduce((res, key) => {
+					res[key] = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
 
-				if (f.type === 'byCloud') {
-					let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
+					return res;
+				}, filtered);
+			}
 
-					filtered = Object.keys(toFilter).reduce((res, key) => {
-						res[key] = toFilter[key].filter(p => p.tags.some(v => v.startsWith(f.value)));
+			if (byCloudFilerRule) {
+				let toFilter = Object.keys(filtered).length ? filtered : probesByContinents;
 
-						return res;
-					}, filtered);
-				}
-			});
+				filtered = Object.keys(toFilter).reduce((res, key) => {
+					res[key] = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+					return res;
+				}, filtered);
+			}
 
 			return filtered;
 		},
