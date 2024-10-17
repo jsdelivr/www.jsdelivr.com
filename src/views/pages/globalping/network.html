@@ -101,6 +101,9 @@
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_REG = { lat: 48, lng: 16 };
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
+	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
+	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
+	const FILTER_TYPE_BY_CLOUD = 'byCloud';
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -114,52 +117,52 @@
 					{
 						name: 'Europe',
 						value: 'EU',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'North America',
 						value: 'NA',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'South America',
 						value: 'SA',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'Africa',
 						value: 'AF',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'Asia',
 						value: 'AS',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'Oceania',
 						value: 'OC',
-						type: 'byContinent',
+						type: FILTER_TYPE_BY_CONTINENT,
 					},
 					{
 						name: 'eyeball network',
 						value: 'eyeball-network',
-						type: 'byNetwork',
+						type: FILTER_TYPE_BY_NETWORK,
 					},
 					{
 						name: 'datacenter',
 						value: 'datacenter-network',
-						type: 'byNetwork',
+						type: FILTER_TYPE_BY_NETWORK,
 					},
 					{
 						name: 'Google Cloud',
 						value: 'gcp',
-						type: 'byCloud',
+						type: FILTER_TYPE_BY_CLOUD,
 					},
 					{
 						name: 'AWS Cloud',
 						value: 'aws',
-						type: 'byCloud',
+						type: FILTER_TYPE_BY_CLOUD,
 					},
 				],
 				filtersSet: null,
@@ -371,9 +374,9 @@
 			let filtered = {};
 
 			// get the filter rules
-			let byContinentFilerRule = filtersSet.find(fR => fR.type === 'byContinent');
-			let byNetworkFilerRule = filtersSet.find(fR => fR.type === 'byNetwork');
-			let byCloudFilerRule = filtersSet.find(fR => fR.type === 'byCloud');
+			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
+			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
+			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
 
 			if (byContinentFilerRule) {
 				filtered[byContinentFilerRule.name] = probesByContinents[byContinentFilerRule.name];
