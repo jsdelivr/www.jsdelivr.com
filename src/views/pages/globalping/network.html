@@ -239,8 +239,22 @@
 			this.observe('filteredMarkersData', (markersData, prevMarkersData) => {
 				// if (markersData) { // TODO: the row below is the temp fix to prevent recreation of existing markers
 				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					mapMarkers.forEach(mm => mm.map = null);
+
 					Object.keys(markersData).forEach((key) => {
-						this.createMapMarkerWithIW(key, markersData[key]);
+						let [ lat, lng ] = key.split(', ');
+
+						let marker = mapMarkers.find(mm => {
+							if (mm.position.lat === lat && mm.position.lng === lng) {
+								return mm;
+							}
+						});
+
+						if (marker) {
+							marker.map = map;
+						} else {
+							this.createMapMarkerWithIW(key, markersData[key]);
+						}
 					});
 				}
 			});
@@ -512,13 +526,70 @@
 		},
 		getFilteredMarkersData (filtersSet) {
 			let probesByCoords = this.get('probesByCoords');
+			// to store filtered probes
+			let filteredProbes = {};
 
 			if (filtersSet === null) {
 				return probesByCoords;
 			}
 
-			// TODO: add filtration
-			return probesByCoords;
+			// get the filter rules
+			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
+			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
+			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
+
+			// filter by Continent
+			if (byContinentFilerRule) {
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
+
+					return res;
+				}, filteredProbes);
+			}
+
+			// filter by Network
+			if (byNetworkFilerRule) {
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
+
+					return res;
+				}, filteredProbes);
+			}
+
+			// filter by Cloud provider
+			if (byCloudFilerRule) {
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
+
+					return res;
+				}, filteredProbes);
+			}
+
+			return filteredProbes;
 		},
 	};
 </script>
