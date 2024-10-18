@@ -67,7 +67,7 @@
 
 			<div class="gp-network_list">
 				{{#each filteredProbes as data}}
-					<span class="gp-network_list_item cont-header">{{@key}}</span>
+					<span class="gp-network_list_item cont-header">{{@this.getContinentName(@key)}}</span>
 					{{#each data as probe}}
 						<span class="gp-network_list_item">
 							<img width="17"
@@ -287,21 +287,20 @@
 		groupProbes (probes) {
 			// group probes by Continents and Coordinates
 			return probes.reduce((res, probe) => {
-				let contName = this.getContinentName(probe.location.continent);
 				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
 
 				// group by Continents
-				if (!Object.hasOwn(res.groupedByContinents, contName)) {
-					res.groupedByContinents[contName] = [];
+				if (!Object.hasOwn(res.groupedByContinents, probe.location.continent)) {
+					res.groupedByContinents[probe.location.continent] = [];
 				}
 
 				// check if there are probes in the same country and city already presented and count them
-				let alreadyExisted = res.groupedByContinents[contName].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
+				let alreadyExisted = res.groupedByContinents[probe.location.continent].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
 
 				if (alreadyExisted) {
 					alreadyExisted.probesInCity += 1;
 				} else {
-					res.groupedByContinents[contName].push({ ...probe, probesInCity: 1 });
+					res.groupedByContinents[probe.location.continent].push({ ...probe, probesInCity: 1 });
 				}
 
 				// group by Coordinates
@@ -391,7 +390,19 @@
 
 			// filter by Continent
 			if (byContinentFilerRule) {
-				filteredProbes[byContinentFilerRule.name] = probesByContinents[byContinentFilerRule.name];
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
+
+				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+					let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
+
+					if (filtered.length) {
+						res[key] = filtered;
+					} else {
+						delete res[key];
+					}
+
+					return res;
+				}, filteredProbes);
 			}
 
 			// filter by Network
