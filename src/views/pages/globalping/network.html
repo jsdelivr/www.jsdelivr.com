@@ -545,17 +545,35 @@
 			if (byCloudFilerRule) {
 				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
 
-				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-					let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+				if (forProbes) {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let continentProbes = Object.keys(res[key]).reduce((cRes, loc) => {
+							let locFiltered = res[key][loc].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
 
-					if (filtered.length) {
-						res[key] = filtered;
-					} else {
-						delete res[key];
-					}
+							if (locFiltered.length) {
+								cRes[loc] = locFiltered;
+							}
 
-					return res;
-				}, filteredProbes);
+							return cRes;
+						}, {});
+
+						res[key] = continentProbes;
+
+						return res;
+					}, filteredProbes);
+				} else {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+						if (filtered.length) {
+							res[key] = filtered;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, filteredProbes);
+				}
 			}
 
 			return filteredProbes;
