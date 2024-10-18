@@ -295,7 +295,9 @@
 				}
 
 				// check if there are probes in the same country and city already presented and count them
-				let alreadyExisted = res.groupedByContinents[probe.location.continent].find(p => p.location.city === probe.location.city && p.location.country === probe.location.country);
+				let alreadyExisted = res.groupedByContinents[probe.location.continent].find(p => {
+					return p.location.city === probe.location.city && p.location.country === probe.location.country;
+				});
 
 				if (alreadyExisted) {
 					alreadyExisted.probesInCity += 1;
