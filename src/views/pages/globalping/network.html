@@ -66,18 +66,18 @@
 			</div>
 
 			<div class="gp-network_list">
-				{{#each filteredProbes as data}}
+				{{#each filteredProbes as probesByContinent}}
 					<span class="gp-network_list_item cont-header">{{@this.getContinentName(@key)}}</span>
-					{{#each data as probe}}
+					{{#each probesByContinent as probesByLocation}}
 						<span class="gp-network_list_item">
 							<img width="17"
 								height="12"
-								src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{probe.location.country}}.svg">
+								src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{probesByLocation[0].location.country}}.svg">
 
-							<span>{{probe.location.country}}, {{probe.location.city}}</span>
+							<span>{{probesByLocation[0].location.country}}, {{probesByLocation[0].location.city}}</span>
 
-							{{#if probe.probesInCity && probe.probesInCity !== 1}}
-								<span>(x{{probe.probesInCity}})</span>
+							{{#if probesByLocation.length !== 1}}
+								<span>(x{{probesByLocation.length}})</span>
 							{{/if}}
 						</span>
 					{{/each}}
@@ -189,9 +189,8 @@
 				this.observe('probesResponse', (probesResponse) => {
 					if (probesResponse) {
 						let { groupedByContinents, groupedByCoords } = this.groupProbes(probesResponse);
-						let probesByContinents = this.sortByCountries(groupedByContinents);
 
-						this.set('probesByContinents', probesByContinents);
+						this.set('probesByContinents', groupedByContinents);
 						this.set('probesByCoords', groupedByCoords);
 					}
 				});
@@ -288,22 +287,18 @@
 			// group probes by Continents and Coordinates
 			return probes.reduce((res, probe) => {
 				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
+				let location = `${probe.location.country}, ${probe.location.city}`;
 
 				// group by Continents
 				if (!Object.hasOwn(res.groupedByContinents, probe.location.continent)) {
-					res.groupedByContinents[probe.location.continent] = [];
+					res.groupedByContinents[probe.location.continent] = {};
 				}
 
-				// check if there are probes in the same country and city already presented and count them
-				let alreadyExisted = res.groupedByContinents[probe.location.continent].find(p => {
-					return p.location.city === probe.location.city && p.location.country === probe.location.country;
-				});
-
-				if (alreadyExisted) {
-					alreadyExisted.probesInCity += 1;
-				} else {
-					res.groupedByContinents[probe.location.continent].push({ ...probe, probesInCity: 1 });
+				if (!Object.hasOwn(res.groupedByContinents[probe.location.continent], location)) {
+					res.groupedByContinents[probe.location.continent][location] = [];
 				}
+
+				res.groupedByContinents[probe.location.continent][location].push(probe);
 
 				// group by Coordinates
 				if (!Object.hasOwn(res.groupedByCoords, coords)) {
@@ -317,14 +312,6 @@
 				groupedByContinents: {},
 				groupedByCoords: {},
 			});
-		},
-		sortByCountries (groupedProbes) {
-			// sort by countries
-			return Object.keys(groupedProbes).reduce((res, key) => {
-				res[key] = groupedProbes[key].sort((a, b) => a.location.country.localeCompare(b.location.country));
-
-				return res;
-			}, {});
 		},
 		getContinentName (code) {
 			let cData = CONTINENTS.find(c => c.code === code);
@@ -479,14 +466,14 @@
 		getFilteredProbesList (filtersSet) {
 			let probesByContinents = this.get('probesByContinents');
 
-			return this.applyFiltersToData(probesByContinents, filtersSet);
+			return this.applyFiltersToData(probesByContinents, filtersSet, true);
 		},
 		getFilteredMarkersData (filtersSet) {
 			let probesByCoords = this.get('probesByCoords');
 
 			return this.applyFiltersToData(probesByCoords, filtersSet);
 		},
-		applyFiltersToData (data, filtersSet) {
+		applyFiltersToData (data, filtersSet, forProbes = false) {
 			let filteredProbes = {};
 
 			if (filtersSet === null) {
@@ -500,19 +487,23 @@
 
 			// filter by Continent
 			if (byContinentFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
+				if (forProbes) {
+					filteredProbes[byContinentFilerRule.value] = data[byContinentFilerRule.value];
+				} else {
+					let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
 
-				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-					let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
 
-					if (filtered.length) {
-						res[key] = filtered;
-					} else {
-						delete res[key];
-					}
+						if (filtered.length) {
+							res[key] = filtered;
+						} else {
+							delete res[key];
+						}
 
-					return res;
-				}, filteredProbes);
+						return res;
+					}, filteredProbes);
+				}
 			}
 
 			// filter by Network
