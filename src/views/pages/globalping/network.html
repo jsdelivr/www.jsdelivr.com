@@ -373,74 +373,6 @@
 			this.set('filtersSet', filtersSet.length ? filtersSet : null);
 			this.set('availableFilters', availableFilters);
 		},
-		getFilteredProbesList (filtersSet) {
-			let probesByContinents = this.get('probesByContinents');
-
-			if (filtersSet === null) {
-				return probesByContinents;
-			}
-
-			// to store filtered probes
-			let filteredProbes = {};
-
-			// get the filter rules
-			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
-			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
-			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
-
-			// filter by Continent
-			if (byContinentFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
-
-				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-					let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
-
-					if (filtered.length) {
-						res[key] = filtered;
-					} else {
-						delete res[key];
-					}
-
-					return res;
-				}, filteredProbes);
-			}
-
-			// filter by Network
-			if (byNetworkFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
-
-				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-					let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
-
-					if (filtered.length) {
-						res[key] = filtered;
-					} else {
-						delete res[key];
-					}
-
-					return res;
-				}, filteredProbes);
-			}
-
-			// filter by Cloud provider
-			if (byCloudFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByContinents;
-
-				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-					let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
-
-					if (filtered.length) {
-						res[key] = filtered;
-					} else {
-						delete res[key];
-					}
-
-					return res;
-				}, filteredProbes);
-			}
-
-			return filteredProbes;
-		},
 		createMapMarkerWithIW (key, markerData) {
 			let infoWindow = new google.maps.InfoWindow();
 			let svg = this.createMapMarkerSvg(markerData);
@@ -542,13 +474,21 @@
 
 			return infoWindowContent;
 		},
+		getFilteredProbesList (filtersSet) {
+			let probesByContinents = this.get('probesByContinents');
+
+			return this.applyFiltersToData(probesByContinents, filtersSet);
+		},
 		getFilteredMarkersData (filtersSet) {
 			let probesByCoords = this.get('probesByCoords');
-			// to store filtered probes
+
+			return this.applyFiltersToData(probesByCoords, filtersSet);
+		},
+		applyFiltersToData (data, filtersSet) {
 			let filteredProbes = {};
 
 			if (filtersSet === null) {
-				return probesByCoords;
+				return data;
 			}
 
 			// get the filter rules
@@ -558,7 +498,7 @@
 
 			// filter by Continent
 			if (byContinentFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
 
 				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 					let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
@@ -575,7 +515,7 @@
 
 			// filter by Network
 			if (byNetworkFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
 
 				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 					let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
@@ -592,7 +532,7 @@
 
 			// filter by Cloud provider
 			if (byCloudFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : probesByCoords;
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
 
 				filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 					let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
