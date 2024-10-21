@@ -197,7 +197,10 @@
 
 				// use filters for the probesByContinents before render
 				this.observe('filtersSet', (filtersSet) => {
-					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
+					let filteredProbes = this.getFilteredProbesList(filtersSet);
+					let sortedFilteredProbes = this.sortProbesByCountries(filteredProbes);
+
+					this.set('filteredProbes', sortedFilteredProbes);
 					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
 				});
 			}
@@ -586,5 +589,26 @@
 
 			return filteredProbes;
 		},
+		sortProbesByCountries (obj) {
+			let sortedObj = {};
+
+			// iterate over Continent keys
+			Object.keys(obj).forEach(continent => {
+				// sort the keys based on the country code
+				let sortedLocations = Object.keys(obj[continent]).sort((a, b) => {
+					let countryA = a.split(', ')[0];
+					let countryB = b.split(', ')[0];
+
+					return countryA.localeCompare(countryB);
+				});
+
+				sortedObj[continent] = {};
+				sortedLocations.forEach(location => {
+					sortedObj[continent][location] = obj[continent][location];
+				});
+			});
+
+			return sortedObj;
+		}
 	};
 </script>
