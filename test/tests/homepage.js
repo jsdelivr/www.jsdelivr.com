@@ -48,6 +48,7 @@ describe('homepage', () => {
 
 	it('top packages table loads', async () => {
 		await browser.navigate().to(`${BASE_URL}`);
+		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.stats-table-table :nth-child(2)' }).getText()).to.eventually.contain('npm');
 	});
 });
