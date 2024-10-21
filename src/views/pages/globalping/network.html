@@ -260,6 +260,8 @@
 						}
 					});
 				}
+
+				this.focusMapOnMarkers(markersData);
 			});
 
 			// close IWs on click on Map
@@ -367,7 +369,7 @@
 			avFiltersRule.selected = false;
 			filtersSet.splice(fIdx, 1);
 
-			this.set('filtersSet', filtersSet.length ? filtersSet : null);
+			this.set('filtersSet', filtersSet.length ? filtersSet : []);
 			this.set('availableFilters', availableFilters);
 		},
 		createMapMarkerWithIW (key, markerData) {
@@ -484,7 +486,7 @@
 		applyFiltersToData (data, filtersSet, forProbes = false) {
 			let filteredProbes = {};
 
-			if (filtersSet === null) {
+			if (filtersSet === null || filtersSet.length === 0) {
 				return data;
 			}
 
@@ -615,6 +617,33 @@
 			});
 
 			return sortedObj;
+		},
+		focusMapOnMarkers (markersData) {
+			let locationStrings = Object.keys(markersData);
+
+			if (locationStrings.length === 0) {
+				return;
+			}
+
+			let positions = locationStrings.map((str) => {
+				let [ lat, lng ] = str.split(', ');
+
+				return { lat: Number(lat), lng: Number(lng) };
+			});
+
+			let bounds = new google.maps.LatLngBounds();
+
+			positions.forEach(position => bounds.extend(position));
+
+			// temp limit for zooming
+			map.setOptions({ maxZoom: 12 });
+
+			map.fitBounds(bounds);
+
+			google.maps.event.addListenerOnce(map, 'idle', () => {
+				// resore zooming to inital
+				map.setOptions({ maxZoom: MAP_MAX_ZOOM });
+			});
 		},
 	};
 </script>
