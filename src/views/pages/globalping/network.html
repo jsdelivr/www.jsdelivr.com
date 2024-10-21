@@ -521,8 +521,8 @@
 
 				if (forProbes) {
 					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let continentProbes = Object.keys(res[key]).reduce((cRes, loc) => {
-							let locFiltered = res[key][loc].filter(p => p.tags.includes(byNetworkFilerRule.value));
+						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
+							let locFiltered = toFilter[key][loc].filter(p => p.tags.includes(byNetworkFilerRule.value));
 
 							if (locFiltered.length) {
 								cRes[loc] = locFiltered;
@@ -538,7 +538,7 @@
 						}
 
 						return res;
-					}, filteredProbes);
+					}, {});
 				} else {
 					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 						let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
@@ -560,8 +560,8 @@
 
 				if (forProbes) {
 					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let continentProbes = Object.keys(res[key]).reduce((cRes, loc) => {
-							let locFiltered = res[key][loc].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
+							let locFiltered = toFilter[key][loc].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
 
 							if (locFiltered.length) {
 								cRes[loc] = locFiltered;
@@ -577,7 +577,7 @@
 						}
 
 						return res;
-					}, filteredProbes);
+					}, {});
 				} else {
 					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 						let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
