@@ -331,33 +331,75 @@
 		setFilterRule (fIdx) {
 			let filtersSet = this.get('filtersSet');
 			let availableFilters = this.get('availableFilters');
-			let filterRule = availableFilters[fIdx];
+			let newFilterRule = availableFilters[fIdx];
+			let updFiltersSet;
 
-			filterRule.selected = true;
-			filterRule.avFiltersIdx = fIdx;
+			newFilterRule.selected = true;
+			newFilterRule.avFiltersIdx = fIdx;
 
 			if (filtersSet) {
-				let isReplaced = false;
+				if (newFilterRule.value === 'eyeball-network') {
+					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
+						if (f.type !== FILTER_TYPE_BY_CLOUD) {
+							acc.filtered.push(f);
+						} else {
+							acc.filteredOut.push(f);
+						}
 
-				filtersSet = filtersSet.map((fR) => {
-					if (fR.type === filterRule.type) {
-						isReplaced = true;
-						availableFilters[fR.avFiltersIdx].selected = false;
+						return acc;
+					}, { filtered: [], filteredOut: [] });
 
-						return filterRule;
+					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_NETWORK);
+
+					if (index !== -1) {
+						availableFilters[filtered[index].avFiltersIdx].selected = false;
+						filtered[index] = newFilterRule;
+					} else {
+						filtered.push(newFilterRule);
 					}
 
-					return fR;
-				});
+					updFiltersSet = filtered;
+					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
+				} else if (newFilterRule.type === FILTER_TYPE_BY_CLOUD) {
+					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
+						if (f.value !== 'eyeball-network') {
+							acc.filtered.push(f);
+						} else {
+							acc.filteredOut.push(f);
+						}
 
-				if (!isReplaced) {
-					filtersSet.push(filterRule);
+						return acc;
+					}, { filtered: [], filteredOut: [] });
+
+					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_CLOUD);
+
+					if (index !== -1) {
+						availableFilters[filtered[index].avFiltersIdx].selected = false;
+						filtered[index] = newFilterRule;
+					} else {
+						filtered.push(newFilterRule);
+					}
+
+					updFiltersSet = filtered;
+					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
+				} else if (filtersSet.find(f => f.type === newFilterRule.type)) {
+					updFiltersSet = filtersSet.map((f) => {
+						if (f.type === newFilterRule.type) {
+							availableFilters[f.avFiltersIdx].selected = false;
+
+							return newFilterRule;
+						}
+
+						return f;
+					});
+				} else {
+					updFiltersSet = [ ...filtersSet, newFilterRule ];
 				}
 			} else {
-				filtersSet = [ filterRule ];
+				updFiltersSet = [ newFilterRule ];
 			}
 
-			this.set('filtersSet', filtersSet);
+			this.set('filtersSet', updFiltersSet);
 			this.set('availableFilters', availableFilters);
 		},
 		rmFilterRule (fIdx) {
