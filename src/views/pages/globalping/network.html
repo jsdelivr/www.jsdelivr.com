@@ -338,6 +338,7 @@
 			newFilterRule.avFiltersIdx = fIdx;
 
 			if (filtersSet) {
+				// if user sets the Eyeball filter we should deselect any byCloud filters and replace the previous byNetwork filter
 				if (newFilterRule.value === 'eyeball-network') {
 					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
 						if (f.type !== FILTER_TYPE_BY_CLOUD) {
@@ -360,6 +361,7 @@
 
 					updFiltersSet = filtered;
 					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
+				// if user sets the byCloud filter we should deselect Eyeball filter and replace the previous byCloud filter
 				} else if (newFilterRule.type === FILTER_TYPE_BY_CLOUD) {
 					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
 						if (f.value !== 'eyeball-network') {
