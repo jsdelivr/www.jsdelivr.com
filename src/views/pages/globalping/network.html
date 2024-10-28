@@ -246,6 +246,10 @@
 				map.setZoom(MAP_ZOOM_ALT);
 			}
 
+			map.addListener('zoom_changed', () => {
+				infoWindows.forEach(iw => iw.close());
+			});
+
 			this.observe('filteredMarkersData', (markersData, prevMarkersData) => {
 				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
 					// hide all existing markers from the map
