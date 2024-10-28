@@ -25,6 +25,7 @@
 			}
 		</script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&libraries=marker&loading=async" async></script>
+		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -113,6 +114,7 @@
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
+	let markerCluster;
 
 	component.exports = {
 		data () {
@@ -246,23 +248,68 @@
 
 			this.observe('filteredMarkersData', (markersData, prevMarkersData) => {
 				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					// hide all existing markers from the map
 					mapMarkers.forEach(mm => mm.map = null);
 
-					Object.keys(markersData).forEach((key) => {
+					// show the marker or create one if it is missing
+					let filteredMarkers = Object.keys(markersData).map((key) => {
 						let [ lat, lng ] = key.split(', ');
-
 						let marker = mapMarkers.find(mm => mm.position.lat === lat && mm.position.lng === lng);
 
-						if (marker) {
-							marker.map = map;
-						} else {
-							this.createMapMarkerWithIW(key, markersData[key]);
+						if (!marker) {
+							marker = this.createMapMarkerWithIW(key, markersData[key]);
+							mapMarkers.push(marker);
 						}
-					});
-				}
 
-				this.focusMapOnMarkers(markersData);
+						marker.map = map;
+
+						return marker;
+					});
+
+					let createClusterMarkerSVG = this.createClusterMarkerSVG;
+
+					if (markerCluster) {
+						markerCluster.clearMarkers();
+						markerCluster.addMarkers(filteredMarkers);
+					} else {
+						// eslint-disable-next-line no-undef
+						markerCluster = new markerClusterer.MarkerClusterer({
+							map,
+							markers: filteredMarkers,
+							renderer: {
+								render ({ count, position }) {
+									let svgWidth = 40;
+									let svgHeight = 40;
+									let circleRadius = 15;
+									let svg = createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, count);
+
+									let clusterDiv = document.createElement('div');
+
+									clusterDiv.style.position = 'relative';
+									clusterDiv.style.width = `${svgWidth}px`;
+									clusterDiv.style.height = `${svgHeight}px`;
+									clusterDiv.style.background = 'transparent';
+
+									let clusterImg = document.createElement('img');
+
+									clusterImg.src = `data:image/svg+xml;base64,${svg}`;
+									clusterImg.width = svgWidth;
+									clusterImg.height = svgHeight;
+									clusterDiv.appendChild(clusterImg);
+
+									return new google.maps.marker.AdvancedMarkerElement({
+										position,
+										content: clusterDiv,
+									});
+								},
+							},
+						});
+					}
+
+					this.focusMapOnMarkers(markersData);
+				}
 			});
+
 
 			// close IWs on click on Map
 			google.maps.event.addListener(map, 'click', () => {
@@ -447,8 +494,7 @@
 				infoWindow.open({ map, anchor: marker });
 			});
 
-			// Store marker in the array
-			mapMarkers.push(marker);
+			return marker;
 		},
 		createMapMarkerSvg (markerData) {
 			let elementsCnt = markerData.length;
