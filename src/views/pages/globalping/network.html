@@ -277,11 +277,12 @@
 							map,
 							markers: filteredMarkers,
 							renderer: {
-								render ({ count, position }) {
+								render ({ markers, position }) {
 									let svgWidth = 40;
 									let svgHeight = 40;
 									let circleRadius = 15;
-									let svg = createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, count);
+									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
+									let svg = createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, totalCustomNumber);
 
 									let clusterDiv = document.createElement('div');
 
@@ -303,6 +304,10 @@
 									});
 								},
 							},
+							// eslint-disable-next-line no-undef
+							algorithm: new markerClusterer.SuperClusterAlgorithm({
+								radius: 100,
+							}),
 						});
 					}
 
@@ -487,6 +492,8 @@
 				position: { lat: Number(lat), lng: Number(lng) },
 				zIndex: 1,
 			});
+
+			marker.markersCount = markerData.length || 0;
 
 			// Handle closing of all InfoWindows on a click on a marker
 			marker.addListener('click', () => {
