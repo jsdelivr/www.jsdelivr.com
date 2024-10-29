@@ -225,6 +225,15 @@
 				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 			}
 		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				map = null;
+				map;
+				markerCluster = null;
+				infoWindows = [];
+				mapMarkers = [];
+			}
+		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
 
