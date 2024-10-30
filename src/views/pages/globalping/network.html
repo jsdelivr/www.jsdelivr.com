@@ -114,6 +114,12 @@
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
 	const FILTER_TYPE_BY_CLOUD = 'byCloud';
+	const CLUSTER_SVG_DIMENSIONS = 40;
+	const CLUSTER_SVG_CIRCLE_RADIUS = 15;
+	const MARKER_SVG_DIMENSIONS = 16;
+	const MARKER_SVG_DIMENSIONS_ALT = 20;
+	const MARKER_SVG_CIRCLE_RADIUS = 6;
+	const MARKER_SVG_CIRCLE_RADIUS_ALT = 8;
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -299,9 +305,9 @@
 							markers: filteredMarkers,
 							renderer: {
 								render ({ markers, position }) {
-									let svgWidth = 40;
-									let svgHeight = 40;
-									let circleRadius = 15;
+									let svgWidth = CLUSTER_SVG_DIMENSIONS;
+									let svgHeight = CLUSTER_SVG_DIMENSIONS;
+									let circleRadius = CLUSTER_SVG_CIRCLE_RADIUS;
 									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
 									let svg = createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, totalCustomNumber);
 
@@ -526,9 +532,9 @@
 		},
 		createMapMarkerSvg (markerData) {
 			let elementsCnt = markerData.length;
-			let svgWidth = elementsCnt === 1 ? 16 : 20;
-			let svgHeight = elementsCnt === 1 ? 16 : 20;
-			let circleRadius = elementsCnt === 1 ? 6 : 8;
+			let svgWidth = elementsCnt === 1 ? MARKER_SVG_DIMENSIONS : MARKER_SVG_DIMENSIONS_ALT;
+			let svgHeight = elementsCnt === 1 ? MARKER_SVG_DIMENSIONS : MARKER_SVG_DIMENSIONS_ALT;
+			let circleRadius = elementsCnt === 1 ? MARKER_SVG_CIRCLE_RADIUS : MARKER_SVG_CIRCLE_RADIUS_ALT;
 
 			return this.createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, elementsCnt);
 		},
