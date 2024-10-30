@@ -67,24 +67,27 @@
 			</div>
 
 			<div class="gp-network_list">
-				{{#each filteredProbes as probesByContinent}}
-					<span class="gp-network_list_item cont-header">{{@this.getContinentName(@key)}}</span>
-					{{#each probesByContinent as probesByLocation}}
-						<span class="gp-network_list_item">
-							<img width="17"
-								height="12"
-								src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{probesByLocation[0].location.country}}.svg">
-
-							<span>{{probesByLocation[0].location.country}}, {{probesByLocation[0].location.city}}</span>
-
-							{{#if probesByLocation.length !== 1}}
-								<span>(x{{probesByLocation.length}})</span>
-							{{/if}}
+				{{#each preparedProbesData:index}}
+					{{#if index === 0 || (index > 0 && this.continent !== preparedProbesData[index - 1].continent)}}
+						<span class="gp-network_list_item cont-header">
+							{{@this.getContinentName(this.continent)}}
 						</span>
-					{{/each}}
+					{{/if}}
+
+					<span class="gp-network_list_item">
+						<img width="17"
+							height="12"
+							src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.location.split(', ')[0]}}.svg">
+
+						<span>{{this.location}}</span>
+
+						{{#if this.probes.length !== 1}}
+							<span>(x{{this.probes.length}})</span>
+						{{/if}}
+					</span>
 				{{/each}}
 
-				{{#if filteredProbes && Object.keys(filteredProbes).length === 0}}
+				{{#if preparedProbesData && preparedProbesData.length === 0}}
 					<div class="gp-network_list_no-result">
 						No results found. Try adjusting your filters.
 					</div>
@@ -178,6 +181,7 @@
 				probesByContinents: null,
 				probesByCoords: null,
 				filteredProbes: null,
+				preparedProbesData: null,
 				filteredMarkersData: null,
 			};
 		},
@@ -205,11 +209,16 @@
 
 				// use filters for the probesByContinents before render
 				this.observe('filtersSet', (filtersSet) => {
-					let filteredProbes = this.getFilteredProbesList(filtersSet);
-					let sortedFilteredProbes = this.sortProbesByCountriesAndCities(filteredProbes);
-
-					this.set('filteredProbes', sortedFilteredProbes);
+					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
 					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
+				});
+
+
+				// prepare probes data for rendering
+				this.observe('filteredProbes', (filteredProbes) => {
+					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+
+					this.set('preparedProbesData', sorted);
 				});
 			}
 		},
@@ -688,25 +697,24 @@
 			return filteredProbes;
 		},
 		sortProbesByCountriesAndCities (obj) {
-			let sortedObj = {};
+			let sortedArray = [];
 
 			Object.keys(obj).forEach((continent) => {
 				let sortedLocations = Object.keys(obj[continent]).sort((a, b) => {
 					let [ countryA, cityA ] = a.split(', ');
 					let [ countryB, cityB ] = b.split(', ');
-					let countryComparison = countryA.localeCompare(countryB);
 
-					return countryComparison !== 0 ? countryComparison : cityA.localeCompare(cityB);
+					return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
 				});
 
-				sortedObj[continent] = {};
-
-				sortedLocations.forEach((location) => {
-					sortedObj[continent][location] = obj[continent][location];
-				});
+				sortedArray.push(...sortedLocations.map(location => ({
+					continent,
+					location,
+					probes: obj[continent][location],
+				})));
 			});
 
-			return sortedObj;
+			return sortedArray;
 		},
 		focusMapOnMarkers (markersData) {
 			let locationStrings = Object.keys(markersData);
