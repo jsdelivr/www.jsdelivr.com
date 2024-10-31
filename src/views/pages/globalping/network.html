@@ -69,10 +69,10 @@
 			<div class="gp-network_list">
 				{{#each preparedProbesColumns as column}}
 					<div class="gp-network_list_column">
-						{{#each column:itemIdx}}
-							{{#if itemIdx === 0 || (itemIdx > 0 && this.continent !== column[itemIdx - 1].continent)}}
+						{{#each column as item}}
+							{{#if item.continent !== null}}
 								<span class="gp-network_list_column_item cont-header">
-									{{@this.getContinentName(this.continent)}}
+									{{@this.getContinentName(item.continent)}}
 								</span>
 							{{/if}}
 
@@ -80,14 +80,14 @@
 								<span class="gp-network_list_column_item_img">
 									<img width="17"
 										height="12"
-										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.location.split(', ')[0]}}.svg">
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
 								</span>
 
 								<span class="gp-network_list_column_item_location">
-									{{this.location}}
+									{{item.location}}
 
-									{{#if this.probes.length !== 1}}
-										<span>(x{{this.probes.length}})</span>
+									{{#if item.probes.length !== 1}}
+										<span>(x{{item.probes.length}})</span>
 									{{/if}}
 								</span>
 							</span>
@@ -232,6 +232,9 @@
 				this.observe('filteredProbes', (filteredProbes) => {
 					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
 					let preparedProbesColumns = this.splitDataIntoColumns(sorted);
+
+					console.log('+++++ preparedProbesColumns', preparedProbesColumns);
+					console.log('___________________________');
 
 					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
@@ -783,23 +786,36 @@
 		},
 		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
 			let totalItems = data.length;
-			let columns = Array.from({ length: columnsCnt }, () => []);
 			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
 
-			let currentColumnIndex = 0;
-			let currentCount = 0;
+			let columnNumber = 0;
+			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
 
-			data.forEach((item) => {
-				columns[currentColumnIndex].push(item);
-				currentCount++;
-
-				if (currentCount >= itemsPerColumn && currentColumnIndex < columnsCnt - 1) {
-					currentColumnIndex++;
-					currentCount = 0;
+			return data.reduce((res, item) => {
+				if (!res[columnNumber]) {
+					res[columnNumber] = [];
 				}
-			});
 
-			return columns;
+				let currCont = item.continent;
+
+				if (res[columnNumber].length < columnMax) {
+					let isPresent = res.some(i => i.some(k => k.continent === currCont));
+
+					if (isPresent) {
+						res[columnNumber].push({ ...item, continent: null });
+					} else {
+						if (res[columnNumber].length + 1 !== columnMax) {
+							res[columnNumber].push(item);
+						} else {
+							columnNumber += 1;
+						}
+					}
+				} else {
+					columnNumber += 1;
+				}
+
+				return res;
+			}, []);
 		},
 	};
 </script>
