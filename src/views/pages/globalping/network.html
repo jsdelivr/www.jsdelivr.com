@@ -67,27 +67,35 @@
 			</div>
 
 			<div class="gp-network_list">
-				{{#each preparedProbesData:index}}
-					{{#if index === 0 || (index > 0 && this.continent !== preparedProbesData[index - 1].continent)}}
-						<span class="gp-network_list_item cont-header">
-							{{@this.getContinentName(this.continent)}}
-						</span>
-					{{/if}}
+				{{#each preparedProbesColumns as column}}
+					<div class="gp-network_list_column">
+						{{#each column:itemIdx}}
+							{{#if itemIdx === 0 || (itemIdx > 0 && this.continent !== column[itemIdx - 1].continent)}}
+								<span class="gp-network_list_column_item cont-header">
+									{{@this.getContinentName(this.continent)}}
+								</span>
+							{{/if}}
 
-					<span class="gp-network_list_item">
-						<img width="17"
-							height="12"
-							src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.location.split(', ')[0]}}.svg">
+							<span class="gp-network_list_column_item">
+								<span class="gp-network_list_column_item_img">
+									<img width="17"
+										height="12"
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.location.split(', ')[0]}}.svg">
+								</span>
 
-						<span>{{this.location}}</span>
+								<span class="gp-network_list_column_item_location">
+									{{this.location}}
 
-						{{#if this.probes.length !== 1}}
-							<span>(x{{this.probes.length}})</span>
-						{{/if}}
-					</span>
+									{{#if this.probes.length !== 1}}
+										<span>(x{{this.probes.length}})</span>
+									{{/if}}
+								</span>
+							</span>
+						{{/each}}
+					</div>
 				{{/each}}
 
-				{{#if preparedProbesData && preparedProbesData.length === 0}}
+				{{#if preparedProbesColumns && preparedProbesColumns.length === 0}}
 					<div class="gp-network_list_no-result">
 						No results found. Try adjusting your filters.
 					</div>
@@ -187,7 +195,7 @@
 				probesByContinents: null,
 				probesByCoords: null,
 				filteredProbes: null,
-				preparedProbesData: null,
+				preparedProbesColumns: null,
 				filteredMarkersData: null,
 			};
 		},
@@ -223,8 +231,9 @@
 				// prepare probes data for rendering
 				this.observe('filteredProbes', (filteredProbes) => {
 					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+					let preparedProbesColumns = this.splitDataIntoColumns(sorted);
 
-					this.set('preparedProbesData', sorted);
+					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
 			}
 		},
@@ -771,6 +780,26 @@
 					</defs>
 				</svg>
 			`);
+		},
+		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
+			let totalItems = data.length;
+			let columns = Array.from({ length: columnsCnt }, () => []);
+			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
+
+			let currentColumnIndex = 0;
+			let currentCount = 0;
+
+			data.forEach((item) => {
+				columns[currentColumnIndex].push(item);
+				currentCount++;
+
+				if (currentCount >= itemsPerColumn && currentColumnIndex < columnsCnt - 1) {
+					currentColumnIndex++;
+					currentCount = 0;
+				}
+			});
+
+			return columns;
 		},
 	};
 </script>
