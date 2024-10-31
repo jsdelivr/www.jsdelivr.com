@@ -208,6 +208,13 @@
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
 						this.set('screenWidth', innerWidth);
+					} else {
+						let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+						let filteredProbes = this.get('filteredProbes');
+						let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+						let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
+
+						this.set('preparedProbesColumns', preparedProbesColumns);
 					}
 				});
 
@@ -227,11 +234,13 @@
 					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
 				});
 
-
 				// prepare probes data for rendering
 				this.observe('filteredProbes', (filteredProbes) => {
+					let screenWidth = this.get('screenWidth');
+					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+
 					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
-					let preparedProbesColumns = this.splitDataIntoColumns(sorted);
+					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
 
 					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
@@ -781,7 +790,7 @@
 				</svg>
 			`);
 		},
-		splitDataIntoColumns (data, minItemsPerColumn = 30, columnsCnt = 4) {
+		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
 			let totalItems = data.length;
 			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
 
@@ -813,6 +822,19 @@
 
 				return res;
 			}, []);
+		},
+		getLayoutColumnsAmount (screenWidth) {
+			let columnsAmount = 1;
+
+			if (screenWidth >= 576 && screenWidth < 768) {
+				columnsAmount = 2;
+			} else if (screenWidth >= 768 && screenWidth < 992) {
+				columnsAmount = 3;
+			} else if (screenWidth >= 992) {
+				columnsAmount = 4;
+			}
+
+			return columnsAmount;
 		},
 	};
 </script>
