@@ -122,12 +122,36 @@
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
 	const FILTER_TYPE_BY_CLOUD = 'byCloud';
-	const CLUSTER_SVG_DIMENSIONS = 20;
-	const CLUSTER_SVG_CIRCLE_RADIUS = 6;
-	const MARKER_SVG_DIMENSIONS = 16;
-	const MARKER_SVG_DIMENSIONS_ALT = 20;
-	const MARKER_SVG_CIRCLE_RADIUS = 4;
-	const MARKER_SVG_CIRCLE_RADIUS_ALT = 6;
+
+	const getMarkerSize = (probeCount, zoom) => {
+		let size = {
+			svgWidth: 16,
+			svgHeight: 16,
+			circleRadius: 4.5,
+			strokeWidth: 1.5,
+		};
+
+		if (probeCount > 1) {
+			let scalingFactor = probeCount.toString().length;
+			size.svgWidth += 4 * scalingFactor + 4;
+			size.svgHeight += 4 * scalingFactor + 4;
+			size.circleRadius += 2 * scalingFactor + 1.5;
+			size.strokeWidth += .5;
+		}
+
+		if (zoom >= 5) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		if (zoom >= 10) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		return size;
+	};
+
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -288,6 +312,20 @@
 			}
 
 			map.addListener('zoom_changed', () => {
+				markerCluster.clusters.forEach((c) => {
+					let m = c.marker;
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+				});
+
+				mapMarkers.forEach((m) => {
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+					m.content.setAttribute('data-zoom', map.zoom);
+				});
+
 				infoWindows.forEach(iw => iw.close());
 			});
 
@@ -323,25 +361,27 @@
 							markers: filteredMarkers,
 							renderer: {
 								render ({ markers, position }) {
-									let svgWidth = CLUSTER_SVG_DIMENSIONS;
-									let svgHeight = CLUSTER_SVG_DIMENSIONS;
-									let circleRadius = CLUSTER_SVG_CIRCLE_RADIUS;
 									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
-									let svg = createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, totalCustomNumber);
+									let svg = createClusterMarkerSVG(totalCustomNumber);
 
 									let clusterDiv = document.createElement('div');
+									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
+									clusterDiv.setAttribute('data-zoom', map.zoom);
+									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
+
+									clusterDiv.style.width = `${svgWidth}px`;
+									clusterDiv.style.height = `${svgHeight}px`;
 
 									clusterDiv.style.position = 'relative';
-									clusterDiv.style.background = 'transparent';
-
-									let clusterImg = document.createElement('img');
-
-									clusterImg.src = `data:image/svg+xml;base64,${svg}`;
-									clusterDiv.appendChild(clusterImg);
+									clusterDiv.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+									clusterDiv.style.backgroundRepeat = 'no-repeat';
+									clusterDiv.style.backgroundPosition = 'center';
+									clusterDiv.style.backgroundSize = 'contain';
 
 									return new google.maps.marker.AdvancedMarkerElement({
 										position,
 										content: clusterDiv,
+										zIndex: totalCustomNumber,
 									});
 								},
 							},
@@ -520,8 +560,6 @@
 
 			let markerContent = document.createElement('div');
 			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-			markerContent.style.width = markerData.length === 1 ? '16px' : '24px';
-			markerContent.style.height = markerData.length === 1 ? '16px' : '24px';
 			markerContent.style.backgroundRepeat = 'no-repeat';
 			markerContent.style.backgroundPosition = 'center';
 			markerContent.style.backgroundSize = 'contain';
@@ -545,12 +583,7 @@
 			return marker;
 		},
 		createMapMarkerSvg (markerData) {
-			let elementsCnt = markerData.length;
-			let svgWidth = elementsCnt === 1 ? MARKER_SVG_DIMENSIONS : MARKER_SVG_DIMENSIONS_ALT;
-			let svgHeight = elementsCnt === 1 ? MARKER_SVG_DIMENSIONS : MARKER_SVG_DIMENSIONS_ALT;
-			let circleRadius = elementsCnt === 1 ? MARKER_SVG_CIRCLE_RADIUS : MARKER_SVG_CIRCLE_RADIUS_ALT;
-
-			return this.createClusterMarkerSVG(svgWidth, svgHeight, circleRadius, elementsCnt);
+			return this.createClusterMarkerSVG(markerData.length);
 		},
 		createInfoWindowContent (markersByCoords) {
 			let markersCnt = markersByCoords.length;
@@ -763,17 +796,14 @@
 				map.setOptions({ maxZoom: MAP_MAX_ZOOM });
 			});
 		},
-		createClusterMarkerSVG (svgWidth, svgHeight, circleRadius, elementsCnt) {
-			let digits = elementsCnt.toString().length;
-			svgWidth += 4 * digits;
-			svgHeight += 4 * digits;
-			circleRadius += 2 * digits;
+		createClusterMarkerSVG (elementsCnt) {
+			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
 
 			return window.btoa(`
 				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
-						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="2"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
 					</g>
 					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
 					<defs>
