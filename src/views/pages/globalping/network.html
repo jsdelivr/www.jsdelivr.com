@@ -122,12 +122,12 @@
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
 	const FILTER_TYPE_BY_CLOUD = 'byCloud';
-	const CLUSTER_SVG_DIMENSIONS = 40;
-	const CLUSTER_SVG_CIRCLE_RADIUS = 15;
+	const CLUSTER_SVG_DIMENSIONS = 20;
+	const CLUSTER_SVG_CIRCLE_RADIUS = 6;
 	const MARKER_SVG_DIMENSIONS = 16;
 	const MARKER_SVG_DIMENSIONS_ALT = 20;
-	const MARKER_SVG_CIRCLE_RADIUS = 6;
-	const MARKER_SVG_CIRCLE_RADIUS_ALT = 8;
+	const MARKER_SVG_CIRCLE_RADIUS = 4;
+	const MARKER_SVG_CIRCLE_RADIUS_ALT = 6;
 	let map;
 	let infoWindows = [];
 	let mapMarkers = [];
@@ -332,15 +332,11 @@
 									let clusterDiv = document.createElement('div');
 
 									clusterDiv.style.position = 'relative';
-									clusterDiv.style.width = `${svgWidth}px`;
-									clusterDiv.style.height = `${svgHeight}px`;
 									clusterDiv.style.background = 'transparent';
 
 									let clusterImg = document.createElement('img');
 
 									clusterImg.src = `data:image/svg+xml;base64,${svg}`;
-									clusterImg.width = svgWidth;
-									clusterImg.height = svgHeight;
 									clusterDiv.appendChild(clusterImg);
 
 									return new google.maps.marker.AdvancedMarkerElement({
@@ -351,7 +347,7 @@
 							},
 							// eslint-disable-next-line no-undef
 							algorithm: new markerClusterer.SuperClusterAlgorithm({
-								radius: 100,
+								radius: 40,
 							}),
 						});
 					}
@@ -768,6 +764,11 @@
 			});
 		},
 		createClusterMarkerSVG (svgWidth, svgHeight, circleRadius, elementsCnt) {
+			let digits = elementsCnt.toString().length;
+			svgWidth += 4 * digits;
+			svgHeight += 4 * digits;
+			circleRadius += 2 * digits;
+
 			return window.btoa(`
 				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
