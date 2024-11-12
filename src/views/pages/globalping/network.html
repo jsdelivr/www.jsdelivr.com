@@ -367,16 +367,16 @@
 									let clusterDiv = document.createElement('div');
 									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
 									clusterDiv.setAttribute('data-zoom', map.zoom);
-									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
-
-									clusterDiv.style.width = `${svgWidth}px`;
-									clusterDiv.style.height = `${svgHeight}px`;
 
 									clusterDiv.style.position = 'relative';
 									clusterDiv.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
 									clusterDiv.style.backgroundRepeat = 'no-repeat';
 									clusterDiv.style.backgroundPosition = 'center';
 									clusterDiv.style.backgroundSize = 'contain';
+
+									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
+									clusterDiv.style.width = `${svgWidth}px`;
+									clusterDiv.style.height = `${svgHeight}px`;
 
 									return new google.maps.marker.AdvancedMarkerElement({
 										position,
@@ -569,6 +569,10 @@
 			markerContent.style.backgroundPosition = 'center';
 			markerContent.style.backgroundSize = 'contain';
 			markerContent.setAttribute('data-probe-count', markerData.length);
+
+			let { svgWidth, svgHeight } = getMarkerSize(markerData.length, map.zoom);
+			markerContent.style.width = `${svgWidth}px`;
+			markerContent.style.height = `${svgHeight}px`;
 
 			// Create a new AdvancedMarkerView
 			let marker = new google.maps.marker.AdvancedMarkerElement({
