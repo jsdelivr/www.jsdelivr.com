@@ -392,7 +392,19 @@
 						});
 					}
 
-					this.focusMapOnMarkers(markersData);
+					let byContinentFilerRule = this.get('filtersSet').find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
+
+					if (byContinentFilerRule) {
+						this.focusMapOnMarkers(markersData);
+					} else {
+						if (!mq.matches) {
+							map.setCenter(MAP_CENTER_REG);
+							map.setZoom(MAP_ZOOM_REG);
+						} else {
+							map.setCenter(MAP_CENTER_ALT);
+							map.setZoom(MAP_ZOOM_ALT);
+						}
+					}
 				}
 			});
 
