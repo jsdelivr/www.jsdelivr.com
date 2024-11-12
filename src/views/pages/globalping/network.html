@@ -428,7 +428,7 @@
 		},
 		groupProbes (probes) {
 			// group probes by Continents and Coordinates
-			return probes.reduce((res, probe) => {
+			let groups = probes.reduce((res, probe) => {
 				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
 				let location = `${probe.location.country}, ${probe.location.city}`;
 
@@ -455,6 +455,11 @@
 				groupedByContinents: {},
 				groupedByCoords: {},
 			});
+
+			let byContinentSorted = Object.entries(groups.groupedByContinents).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
+			groups.groupedByContinents = Object.fromEntries(byContinentSorted);
+
+			return groups;
 		},
 		getContinentName (code) {
 			let cData = CONTINENTS.find(c => c.code === code);
