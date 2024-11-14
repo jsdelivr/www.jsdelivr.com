@@ -615,11 +615,11 @@
 				if (marker) {
 					marker.cnt += 1;
 				} else {
-					res.push({ ...m, cnt: 1 });
+					res.push({ ...m, cnt: 1, sortKey: m.location.network.toLowerCase() });
 				}
 
 				return res;
-			}, []);
+			}, []).sort((a, b) => a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey);
 
 			let infoWindowContent = `<div class="gp-network_iw">`;
 
