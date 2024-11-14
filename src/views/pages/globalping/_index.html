@@ -2018,7 +2018,6 @@
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
-				styles: INITIAL_MAP_STYLES,
 				zoom: MAP_ZOOM_REG,
 				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
@@ -2028,6 +2027,7 @@
 				fullscreenControl: false,
 				minZoom: MAP_MIN_ZOOM,
 				maxZoom: MAP_MAX_ZOOM,
+				mapId: 'ce04bbf9d49b6f34',
 			});
 
 			// eslint-disable-next-line no-undef
@@ -2188,11 +2188,19 @@
 						</div>`,
 				});
 
-				let probeMarker = new google.maps.Marker({
+				let markerContent = document.createElement('div');
+				markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+				markerContent.style.width = '24px';
+				markerContent.style.height = '24px';
+				markerContent.style.backgroundRepeat = 'no-repeat';
+				markerContent.style.backgroundPosition = 'center';
+				markerContent.style.backgroundSize = 'contain';
+
+				let probeMarker = new google.maps.marker.AdvancedMarkerElement({
 					map,
-					icon: { url: `data:image/svg+xml;base64,${svg}` },
+					content: markerContent,
 					position: { lat: probe.location.latitude, lng: probe.location.longitude },
-					optimized: false,
+					zIndex: 1,
 				});
 
 				google.maps.event.addListener(probeMarker, 'click', () => {
@@ -2209,14 +2217,40 @@
 				markers: probesMarkers,
 				map,
 				renderer: {
-					render: ({ markers, _position: position }) => {
-						return new google.maps.Marker({
-							position: {
-								lat: position.lat(),
-								lng: position.lng(),
-							},
-							icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
-							label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+					render ({ markers, position }) {
+						// cluster creation
+						let clusterSvg = window.btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="68" height="68" fill="none">
+							<g clip-path="url(#a)">
+							<path fill="url(#b)" d="M30 2.31a8 8 0 0 1 8 0l21.445 12.38a8 8 0 0 1 4 6.929V46.38a8 8 0 0 1-4 6.928L38 65.691a8 8 0 0 1-8 0L8.555 53.309a8 8 0 0 1-4-6.928V21.62a8 8 0 0 1 4-6.928z"/>
+							<path stroke="#69E7C8" stroke-width="1.5" d="M30.375 4.959a7.25 7.25 0 0 1 7.25 0L57.338 16.34a7.25 7.25 0 0 1 3.625 6.279V45.38a7.25 7.25 0 0 1-3.625 6.279L37.625 63.04a7.25 7.25 0 0 1-7.25 0L10.662 51.66a7.25 7.25 0 0 1-3.625-6.279V22.62a7.25 7.25 0 0 1 3.625-6.279L30.375 4.96Z"/>
+							</g>
+							<defs>
+							<linearGradient id="b" x1="34" x2="34" y1="0" y2="68" gradientUnits="userSpaceOnUse">
+							<stop stop-color="#17D4A7"/>
+							<stop offset="1" stop-color="#17D4A7"/>
+							</linearGradient>
+							<clipPath id="a">
+							<path fill="#fff" d="M0 0h68v68H0z"/>
+							</clipPath>
+							</defs>
+							</svg>`);
+						let clusterDiv = document.createElement('div');
+						let clusterImg = document.createElement('img');
+
+						clusterDiv.style.position = 'relative';
+						clusterDiv.style.width = '68px';
+						clusterDiv.style.height = '68px';
+						clusterDiv.style.background = 'transparent';
+						clusterImg.src = `data:image/svg+xml;base64,${clusterSvg}`;
+						clusterImg.width = '68';
+						clusterImg.height = '68';
+						clusterDiv.appendChild(clusterImg);
+
+						return new google.maps.marker.AdvancedMarkerElement({
+							position,
+							content: clusterDiv,
+							// icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
+							// label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
 						});
 					},
 				},
@@ -2225,6 +2259,10 @@
 					radius: 200,
 				}),
 			});
+
+			console.log('++++ clusterDiv', clusterDiv);
+			console.log('++++ probeCluster', probeCluster);
+			console.log('____________________________________');
 
 			mapProbesClusters.push(probeCluster);
 
@@ -2707,14 +2745,20 @@
 			infoWindows.push(infoWindow);
 			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.width = '24px';
+			markerContent.style.height = '24px';
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
+
 			// create a new Marker
-			let marker = new google.maps.Marker({
+			let marker = new google.maps.marker.AdvancedMarkerElement({
 				map,
-				icon: {
-					url: `data:image/svg+xml;base64,${svg}`,
-				},
+				content: markerContent,
 				position: { lat: markerData.lat, lng: markerData.lng },
-				optimized: false,
+				zIndex: 1,
 			});
 
 			// handle closing of all of IWs on a click on a marker
