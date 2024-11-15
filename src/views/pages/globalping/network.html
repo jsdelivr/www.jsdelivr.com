@@ -249,6 +249,12 @@
 
 						this.set('probesByContinents', groupedByContinents);
 						this.set('probesByCoords', groupedByCoords);
+
+						// set initial probes and marker data values
+						let filtersSet = this.get('filtersSet');
+
+						this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
+						this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
 					}
 				});
 
@@ -260,6 +266,8 @@
 
 				// prepare probes data for rendering
 				this.observe('filteredProbes', (filteredProbes) => {
+					if (!filteredProbes) { return; }
+
 					let screenWidth = this.get('screenWidth');
 					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 
@@ -312,7 +320,7 @@
 			}
 
 			map.addListener('zoom_changed', () => {
-				markerCluster.clusters.forEach((c) => {
+				markerCluster?.clusters.forEach((c) => {
 					let m = c.marker;
 					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
 					m.content.style.width = `${svgWidth}px`;
