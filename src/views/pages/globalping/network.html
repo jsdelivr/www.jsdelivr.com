@@ -1,0 +1,893 @@
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
+		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			}
+			/* eslint-disable */
+			function initMap () {
+				onDocumentReady(function () {
+					app.loaded = true;
+
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&libraries=marker&loading=async" async></script>
+		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
+	{{/if}}
+
+	<c-notification></c-notification>
+
+	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
+
+	<div class="p-globalping-network">
+		<div class="gp-network">
+			<div class="gp-network_map-wrapper">
+				<div id="gp-map" class="gp-network_map-wrapper_map"></div>
+			</div>
+
+			<div class="gp-network_filters">
+				<span class="gp-network_filters_title">
+					<img width="20" height="20" src="{{@shared.assetsHost}}/img/globalping/filter-icon.svg">
+					<span>Filters:</span>
+				</span>
+
+				<div class="gp-network_filters_list">
+					{{#each filtersSet}}
+						<span class="gp-network_filters_list_selected">
+							{{this.name}}
+
+							<img on-click="@this.rmFilterRule(@key)"
+								width="16"
+								height="16"
+								src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
+						</span>
+					{{/each}}
+
+					{{#each availableFilters}}
+						{{#unless this.selected}}
+							<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_list_item">
+								{{this.name}}
+							</span>
+						{{/unless}}
+					{{/each}}
+				</div>
+			</div>
+
+			<div class="gp-network_list">
+				{{#each preparedProbesColumns as column}}
+					<div class="gp-network_list_column">
+						{{#each column as item}}
+							{{#if item.continent !== null}}
+								<span class="gp-network_list_column_item cont-header">
+									{{@this.getContinentName(item.continent)}}
+								</span>
+							{{/if}}
+
+							<span class="gp-network_list_column_item">
+								<span class="gp-network_list_column_item_img">
+									<img width="17"
+										height="12"
+										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
+								</span>
+
+								<span class="gp-network_list_column_item_location">
+									{{item.location}}
+
+									{{#if item.probes.length !== 1}}
+										<span>(x{{item.probes.length}})</span>
+									{{/if}}
+								</span>
+							</span>
+						{{/each}}
+					</div>
+				{{/each}}
+
+				{{#if preparedProbesColumns && preparedProbesColumns.length === 0}}
+					<div class="gp-network_list_no-result">
+						No results found. Try adjusting your filters.
+					</div>
+				{{/if}}
+			</div>
+		</div>
+	</div>
+
+	<c-gp-footer></c-gp-footer>
+</r-page>
+
+<script>
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
+	const has = require('../../../assets/js/utils/has');
+	const http = require('../../../assets/js/utils/http');
+	const CONTINENTS = require('../../../assets/json/continents.json');
+	const MAP_MIN_ZOOM = 2;
+	const MAP_MAX_ZOOM = 22;
+	const MAP_ZOOM_REG = 3.74;
+	const MAP_ZOOM_ALT = 2.14;
+	const MAP_CENTER_REG = { lat: 48, lng: 16 };
+	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
+	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
+	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
+	const FILTER_TYPE_BY_CLOUD = 'byCloud';
+
+	const getMarkerSize = (probeCount, zoom) => {
+		let size = {
+			svgWidth: 16,
+			svgHeight: 16,
+			circleRadius: 4.5,
+			strokeWidth: 1.5,
+		};
+
+		if (probeCount > 1) {
+			let scalingFactor = probeCount.toString().length;
+			size.svgWidth += 4 * scalingFactor + 4;
+			size.svgHeight += 4 * scalingFactor + 4;
+			size.circleRadius += 2 * scalingFactor + 1.5;
+			size.strokeWidth += .5;
+		}
+
+		if (zoom >= 5) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		if (zoom >= 10) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		return size;
+	};
+
+	let map;
+	let infoWindows = [];
+	let mapMarkers = [];
+	let markerCluster;
+
+	component.exports = {
+		data () {
+			return {
+				title: 'Network - Globalping',
+				description: 'Network - Globalping',
+				availableFilters: [
+					{
+						name: 'Europe',
+						value: 'EU',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'North America',
+						value: 'NA',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'South America',
+						value: 'SA',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'Africa',
+						value: 'AF',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'Asia',
+						value: 'AS',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'Oceania',
+						value: 'OC',
+						type: FILTER_TYPE_BY_CONTINENT,
+					},
+					{
+						name: 'eyeball network',
+						value: 'eyeball-network',
+						type: FILTER_TYPE_BY_NETWORK,
+					},
+					{
+						name: 'datacenter',
+						value: 'datacenter-network',
+						type: FILTER_TYPE_BY_NETWORK,
+					},
+					{
+						name: 'Google Cloud',
+						value: 'gcp',
+						type: FILTER_TYPE_BY_CLOUD,
+					},
+					{
+						name: 'AWS Cloud',
+						value: 'aws',
+						type: FILTER_TYPE_BY_CLOUD,
+					},
+				],
+				filtersSet: null,
+				probesResponse: null,
+				probesByContinents: null,
+				probesByCoords: null,
+				filteredProbes: null,
+				preparedProbesColumns: null,
+				filteredMarkersData: null,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				// get probes from sessionStorage or fetch them and handle
+				this.getProbesData();
+
+				// set initial screenWidth value
+				this.observe('screenWidth', (screenWidth) => {
+					if (!screenWidth) {
+						this.set('screenWidth', innerWidth);
+					} else {
+						let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+						let filteredProbes = this.get('filteredProbes');
+						let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+						let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
+
+						this.set('preparedProbesColumns', preparedProbesColumns);
+					}
+				});
+
+				// sort probes by continents, and each list by country name
+				this.observe('probesResponse', (probesResponse) => {
+					if (probesResponse) {
+						let { groupedByContinents, groupedByCoords } = this.groupProbes(probesResponse);
+
+						this.set('probesByContinents', groupedByContinents);
+						this.set('probesByCoords', groupedByCoords);
+					}
+				});
+
+				// use filters for the probesByContinents before render
+				this.observe('filtersSet', (filtersSet) => {
+					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
+					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
+				});
+
+				// prepare probes data for rendering
+				this.observe('filteredProbes', (filteredProbes) => {
+					let screenWidth = this.get('screenWidth');
+					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+
+					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
+
+					this.set('preparedProbesColumns', preparedProbesColumns);
+				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.set('@shared.googleMapsLoaded', true);
+
+				if (app.loaded) {
+					this.initMap();
+				}
+
+				// detect window resize
+				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			}
+		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				map = null;
+				markerCluster = null;
+				infoWindows = [];
+				mapMarkers = [];
+			}
+		},
+		initMap () {
+			let mq = window.matchMedia('(min-width: 768px)');
+
+			map = new google.maps.Map(this.find('#gp-map'), {
+				zoom: MAP_ZOOM_REG,
+				center: MAP_CENTER_REG,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
+				minZoom: MAP_MIN_ZOOM,
+				maxZoom: MAP_MAX_ZOOM,
+				mapId: 'ce04bbf9d49b6f34',
+			});
+
+			if (mq.matches) {
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
+			}
+
+			map.addListener('zoom_changed', () => {
+				markerCluster.clusters.forEach((c) => {
+					let m = c.marker;
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+				});
+
+				mapMarkers.forEach((m) => {
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+					m.content.setAttribute('data-zoom', map.zoom);
+				});
+
+				infoWindows.forEach(iw => iw.close());
+			});
+
+			this.observe('filteredMarkersData', (markersData, prevMarkersData) => {
+				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					// hide all existing markers from the map
+					mapMarkers.forEach(mm => mm.map = null);
+
+					// show the marker or create one if it is missing
+					let filteredMarkers = Object.keys(markersData).map((key) => {
+						let [ lat, lng ] = key.split(', ');
+						let marker = mapMarkers.find(mm => mm.position.lat === lat && mm.position.lng === lng);
+
+						if (!marker) {
+							marker = this.createMapMarkerWithIW(key, markersData[key]);
+							mapMarkers.push(marker);
+						}
+
+						marker.map = map;
+
+						return marker;
+					});
+
+					let createClusterMarkerSVG = this.createClusterMarkerSVG;
+
+					if (markerCluster) {
+						markerCluster.clearMarkers();
+						markerCluster.addMarkers(filteredMarkers);
+					} else {
+						// eslint-disable-next-line no-undef
+						markerCluster = new markerClusterer.MarkerClusterer({
+							map,
+							markers: filteredMarkers,
+							renderer: {
+								render ({ markers, position }) {
+									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
+									let svg = createClusterMarkerSVG(totalCustomNumber);
+
+									let clusterDiv = document.createElement('div');
+									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
+									clusterDiv.setAttribute('data-zoom', map.zoom);
+
+									clusterDiv.style.position = 'relative';
+									clusterDiv.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+									clusterDiv.style.backgroundRepeat = 'no-repeat';
+									clusterDiv.style.backgroundPosition = 'center';
+									clusterDiv.style.backgroundSize = 'contain';
+
+									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
+									clusterDiv.style.width = `${svgWidth}px`;
+									clusterDiv.style.height = `${svgHeight}px`;
+
+									return new google.maps.marker.AdvancedMarkerElement({
+										position,
+										content: clusterDiv,
+										zIndex: totalCustomNumber,
+									});
+								},
+							},
+							// eslint-disable-next-line no-undef
+							algorithm: new markerClusterer.SuperClusterAlgorithm({
+								radius: 40,
+							}),
+						});
+					}
+
+					let byContinentFilerRule = this.get('filtersSet').find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
+
+					if (byContinentFilerRule) {
+						this.focusMapOnMarkers(markersData);
+					} else {
+						if (!mq.matches) {
+							map.setCenter(MAP_CENTER_REG);
+							map.setZoom(MAP_ZOOM_REG);
+						} else {
+							map.setCenter(MAP_CENTER_ALT);
+							map.setZoom(MAP_ZOOM_ALT);
+						}
+					}
+				}
+			});
+
+
+			// close IWs on click on Map
+			google.maps.event.addListener(map, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
+			});
+		},
+		getProbesData () {
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				this.set('probesResponse', response);
+			};
+		},
+		groupProbes (probes) {
+			// group probes by Continents and Coordinates
+			let groups = probes.reduce((res, probe) => {
+				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
+				let location = `${probe.location.country}, ${probe.location.city}`;
+
+				// group by Continents
+				if (!Object.hasOwn(res.groupedByContinents, probe.location.continent)) {
+					res.groupedByContinents[probe.location.continent] = {};
+				}
+
+				if (!Object.hasOwn(res.groupedByContinents[probe.location.continent], location)) {
+					res.groupedByContinents[probe.location.continent][location] = [];
+				}
+
+				res.groupedByContinents[probe.location.continent][location].push(probe);
+
+				// group by Coordinates
+				if (!Object.hasOwn(res.groupedByCoords, coords)) {
+					res.groupedByCoords[coords] = [];
+				}
+
+				res.groupedByCoords[coords].push(probe);
+
+				return res;
+			}, {
+				groupedByContinents: {},
+				groupedByCoords: {},
+			});
+
+			let byContinentSorted = Object.entries(groups.groupedByContinents).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
+			groups.groupedByContinents = Object.fromEntries(byContinentSorted);
+
+			return groups;
+		},
+		getContinentName (code) {
+			let cData = CONTINENTS.find(c => c.code === code);
+
+			return cData ? cData.name : null;
+		},
+		setFilterRule (fIdx) {
+			let filtersSet = this.get('filtersSet');
+			let availableFilters = this.get('availableFilters');
+			let newFilterRule = availableFilters[fIdx];
+			let updFiltersSet;
+
+			newFilterRule.selected = true;
+			newFilterRule.avFiltersIdx = fIdx;
+
+			if (filtersSet) {
+				// if user sets the Eyeball filter we should deselect any byCloud filters and replace the previous byNetwork filter
+				if (newFilterRule.value === 'eyeball-network') {
+					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
+						if (f.type !== FILTER_TYPE_BY_CLOUD) {
+							acc.filtered.push(f);
+						} else {
+							acc.filteredOut.push(f);
+						}
+
+						return acc;
+					}, { filtered: [], filteredOut: [] });
+
+					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_NETWORK);
+
+					if (index !== -1) {
+						availableFilters[filtered[index].avFiltersIdx].selected = false;
+						filtered[index] = newFilterRule;
+					} else {
+						filtered.push(newFilterRule);
+					}
+
+					updFiltersSet = filtered;
+					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
+				// if user sets the byCloud filter we should deselect Eyeball filter and replace the previous byCloud filter
+				} else if (newFilterRule.type === FILTER_TYPE_BY_CLOUD) {
+					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
+						if (f.value !== 'eyeball-network') {
+							acc.filtered.push(f);
+						} else {
+							acc.filteredOut.push(f);
+						}
+
+						return acc;
+					}, { filtered: [], filteredOut: [] });
+
+					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_CLOUD);
+
+					if (index !== -1) {
+						availableFilters[filtered[index].avFiltersIdx].selected = false;
+						filtered[index] = newFilterRule;
+					} else {
+						filtered.push(newFilterRule);
+					}
+
+					updFiltersSet = filtered;
+					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
+				} else if (filtersSet.find(f => f.type === newFilterRule.type)) {
+					updFiltersSet = filtersSet.map((f) => {
+						if (f.type === newFilterRule.type) {
+							availableFilters[f.avFiltersIdx].selected = false;
+
+							return newFilterRule;
+						}
+
+						return f;
+					});
+				} else {
+					updFiltersSet = [ ...filtersSet, newFilterRule ];
+				}
+			} else {
+				updFiltersSet = [ newFilterRule ];
+			}
+
+			this.set('filtersSet', updFiltersSet);
+			this.set('availableFilters', availableFilters);
+		},
+		rmFilterRule (fIdx) {
+			let filtersSet = this.get('filtersSet');
+			let availableFilters = this.get('availableFilters');
+			let setFilterRule = filtersSet[fIdx];
+			let avFiltersRule = availableFilters.find(af => af.value === setFilterRule.value);
+
+			avFiltersRule.selected = false;
+			filtersSet.splice(fIdx, 1);
+
+			this.set('filtersSet', filtersSet.length ? filtersSet : []);
+			this.set('availableFilters', availableFilters);
+		},
+		createMapMarkerWithIW (key, markerData) {
+			let infoWindow = new google.maps.InfoWindow();
+			let svg = this.createMapMarkerSvg(markerData);
+			let [ lat, lng ] = key.split(', ');
+
+			// Collect InfoWindows
+			infoWindows.push(infoWindow);
+			infoWindow.setContent(this.createInfoWindowContent(markerData));
+
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
+			markerContent.setAttribute('data-probe-count', markerData.length);
+
+			let { svgWidth, svgHeight } = getMarkerSize(markerData.length, map.zoom);
+			markerContent.style.width = `${svgWidth}px`;
+			markerContent.style.height = `${svgHeight}px`;
+
+			// Create a new AdvancedMarkerView
+			let marker = new google.maps.marker.AdvancedMarkerElement({
+				map,
+				content: markerContent,
+				position: { lat: Number(lat), lng: Number(lng) },
+				zIndex: 1,
+			});
+
+			marker.markersCount = markerData.length || 0;
+
+			// Handle closing of all InfoWindows on a click on a marker
+			marker.addListener('click', () => {
+				infoWindows.forEach(iw => iw.close());
+				infoWindow.open({ map, anchor: marker });
+			});
+
+			return marker;
+		},
+		createMapMarkerSvg (markerData) {
+			return this.createClusterMarkerSVG(markerData.length);
+		},
+		createInfoWindowContent (markersByCoords) {
+			let markersCnt = markersByCoords.length;
+			let groupedNetworks = markersByCoords.reduce((res, m) => {
+				let marker = res.find(i => i.location.network === m.location.network);
+
+				if (marker) {
+					marker.cnt += 1;
+				} else {
+					res.push({ ...m, cnt: 1, sortKey: m.location.network.toLowerCase() });
+				}
+
+				return res;
+			}, []).sort((a, b) => a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey);
+
+			let infoWindowContent = `<div class="gp-network_iw">`;
+
+			if (markersCnt === 1) {
+				let { network, city, country } = markersByCoords[0].location;
+
+				infoWindowContent += `<span>${network} (${city}, ${country})</span>`;
+			} else {
+				// in this case we should render a list of probes
+				groupedNetworks.forEach((m, mIdx) => {
+					if (mIdx === 0) {
+						// add header content
+						infoWindowContent += '<span class="gp-network_iw_header">';
+						infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/location-icon.svg">`;
+						infoWindowContent += `<span class="gp-network_iw_header_location">${m.location.city}, ${m.location.country}</span>`;
+						infoWindowContent += `<span class="gp-network_iw_header_cnt">${markersByCoords.length}</span>`;
+						infoWindowContent += '</span>';
+					}
+
+					// render the list of the probes, grouped by the same network
+					infoWindowContent += `<span class="gp-network_iw_row">${m.location.network} ${m.cnt > 1 ? `<span class="gp-network_iw_row_network-cnt">${m.cnt}</span>` : ''}</span>`;
+				});
+			}
+
+			infoWindowContent += '</div>';
+
+			return infoWindowContent;
+		},
+		getFilteredProbesList (filtersSet) {
+			let probesByContinents = this.get('probesByContinents');
+
+			return this.applyFiltersToData(probesByContinents, filtersSet, true);
+		},
+		getFilteredMarkersData (filtersSet) {
+			let probesByCoords = this.get('probesByCoords');
+
+			return this.applyFiltersToData(probesByCoords, filtersSet);
+		},
+		applyFiltersToData (data, filtersSet, forProbes = false) {
+			let filteredProbes = {};
+
+			if (filtersSet === null || filtersSet.length === 0) {
+				return data;
+			}
+
+			// get the filter rules
+			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
+			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
+			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
+
+			// filter by Continent
+			if (byContinentFilerRule) {
+				if (forProbes) {
+					filteredProbes[byContinentFilerRule.value] = data[byContinentFilerRule.value];
+				} else {
+					let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
+
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
+
+						if (filtered.length) {
+							res[key] = filtered;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, filteredProbes);
+				}
+			}
+
+			// filter by Network
+			if (byNetworkFilerRule) {
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
+
+				if (forProbes) {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
+							let locFiltered = toFilter[key][loc].filter(p => p.tags.includes(byNetworkFilerRule.value));
+
+							if (locFiltered.length) {
+								cRes[loc] = locFiltered;
+							}
+
+							return cRes;
+						}, {});
+
+						if (Object.keys(continentProbes).length) {
+							res[key] = continentProbes;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, {});
+				} else {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
+
+						if (filtered.length) {
+							res[key] = filtered;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, filteredProbes);
+				}
+			}
+
+			// filter by Cloud provider
+			if (byCloudFilerRule) {
+				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
+
+				if (forProbes) {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
+							let locFiltered = toFilter[key][loc].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+							if (locFiltered.length) {
+								cRes[loc] = locFiltered;
+							}
+
+							return cRes;
+						}, {});
+
+						if (Object.keys(continentProbes).length) {
+							res[key] = continentProbes;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, {});
+				} else {
+					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
+						let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
+
+						if (filtered.length) {
+							res[key] = filtered;
+						} else {
+							delete res[key];
+						}
+
+						return res;
+					}, filteredProbes);
+				}
+			}
+
+			return filteredProbes;
+		},
+		sortProbesByCountriesAndCities (obj) {
+			let sortedArray = [];
+
+			Object.keys(obj).forEach((continent) => {
+				let sortedLocations = Object.keys(obj[continent]).sort((a, b) => {
+					let [ countryA, cityA ] = a.split(', ');
+					let [ countryB, cityB ] = b.split(', ');
+
+					return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
+				});
+
+				sortedArray.push(...sortedLocations.map(location => ({
+					continent,
+					location,
+					probes: obj[continent][location],
+				})));
+			});
+
+			return sortedArray;
+		},
+		focusMapOnMarkers (markersData) {
+			let locationStrings = Object.keys(markersData);
+
+			if (locationStrings.length === 0) {
+				return;
+			}
+
+			let positions = locationStrings.map((str) => {
+				let [ lat, lng ] = str.split(', ');
+
+				return { lat: Number(lat), lng: Number(lng) };
+			});
+
+			let bounds = new google.maps.LatLngBounds();
+
+			positions.forEach(position => bounds.extend(position));
+
+			// temp limit for zooming
+			map.setOptions({ maxZoom: 12 });
+
+			map.fitBounds(bounds);
+
+			google.maps.event.addListenerOnce(map, 'idle', () => {
+				// resore zooming to inital
+				map.setOptions({ maxZoom: MAP_MAX_ZOOM });
+			});
+		},
+		createClusterMarkerSVG (elementsCnt) {
+			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
+
+			return window.btoa(`
+				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
+					</g>
+					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
+					<defs>
+						<filter id="filter0_d_6106_3045" x="0" y="0" width="${svgWidth}" height="${svgHeight}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+							<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+							<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+							<feOffset dy="1"/>
+							<feGaussianBlur stdDeviation="1"/>
+							<feComposite in2="hardAlpha" operator="out"/>
+							<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+							<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+							<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+						</filter>
+					</defs>
+				</svg>
+			`);
+		},
+		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
+			let totalItems = data.length;
+			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
+
+			let columnNumber = 0;
+			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
+
+			return data.reduce((res, item) => {
+				if (!res[columnNumber]) {
+					res[columnNumber] = [];
+				}
+
+				let currCont = item.continent;
+
+				if (res[columnNumber].length < columnMax) {
+					let isPresent = res.some(i => i.some(k => k.continent === currCont));
+
+					if (isPresent) {
+						res[columnNumber].push({ ...item, continent: null });
+					} else {
+						if (res[columnNumber].length + 1 !== columnMax) {
+							res[columnNumber].push(item);
+						} else {
+							columnNumber += 1;
+						}
+					}
+				} else {
+					columnNumber += 1;
+				}
+
+				return res;
+			}, []);
+		},
+		getLayoutColumnsAmount (screenWidth) {
+			let columnsAmount = 1;
+
+			if (screenWidth >= 576 && screenWidth < 768) {
+				columnsAmount = 2;
+			} else if (screenWidth >= 768 && screenWidth < 992) {
+				columnsAmount = 3;
+			} else if (screenWidth >= 992) {
+				columnsAmount = 4;
+			}
+
+			return columnsAmount;
+		},
+	};
+</script>
