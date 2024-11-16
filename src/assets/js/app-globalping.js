@@ -12,6 +12,7 @@ const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
 const cGlobalpingSponsors = require('../../views/pages/globalping/sponsors.html');
 const cGlobalpingCredits = require('../../views/pages/globalping/credits.html');
 const cGlobalpingNetwork = require('../../views/pages/globalping/network.html');
+const cPP = require('../../views/pages/globalping/terms.html');
 const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
@@ -39,6 +40,9 @@ app.router.addRoute('/about-us', cGlobalpingAbout);
 app.router.addRoute('/sponsors', cGlobalpingSponsors);
 app.router.addRoute('/credits', cGlobalpingCredits);
 app.router.addRoute('/network', cGlobalpingNetwork);
+app.router.addRoute('/terms', cPP);
+app.router.addRoute('/terms/:currentPolicy', cPP);
+
 
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));

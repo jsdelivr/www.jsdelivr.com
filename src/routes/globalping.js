@@ -15,6 +15,29 @@ koaElasticUtils.addRoutes(router, [ [ '/install/discord', '/install/discord' ] ]
 });
 
 /**
+ * Terms pages
+ */
+koaElasticUtils.addRoutes(router, [
+	[ 'terms', '/terms/:currentPolicy' ],
+], async (ctx) => {
+	let data = {
+		currentPolicy: ctx.params.currentPolicy,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/terms.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 301;
+		return ctx.redirect('/');
+	}
+});
+
+/**
  * Sitemap.
  */
 koaElasticUtils.addRoutes(router, [

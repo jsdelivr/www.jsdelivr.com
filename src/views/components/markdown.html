@@ -26,6 +26,14 @@
 					// eslint-disable-next-line n/no-missing-import
 					import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.7.0/es/highlight.min.js'),
 				]).then(([{ marked }, { default: hljs }]) => {
+					marked.use({
+						renderer: {
+							table (...rows) {
+								return `<div class="table-responsive"><table class="table table-striped">${rows.join('')}</table></div>`;
+							},
+						},
+					});
+
 					marked.setOptions({
 						langPrefix: 'hljs language-',
 						headerIds: true,
