@@ -1,0 +1,32 @@
+<div class="c-tiles c-tiles-community">
+	{{#each tilesData}}
+		<div class="c-tiles_tile {{#if status}}disabled{{/if}}">
+			<div class="c-tiles_tile_header">{{header}}</div>
+			<div class="c-tiles_tile_img {{imgClass}}">
+				<img
+					width="{{imgW || defaultImgW}}"
+					height="{{imgH || defaultImgH}}"
+					src="{{@shared.assetsHost}}{{baseImgSrc}}/{{imgName}}{{imgExt}}">
+				<span>{{authorName}}</span>
+			</div>
+
+			<div class="c-tiles_tile_descr">{{descr}}</div>
+
+			<a href="{{href}}" class="c-tiles_tile_link" {{#if externalLink}}target="_blank" rel="noopener noreferrer"{{/if}}>
+				{{defaultLinkText}}
+			</a>
+		</div>
+	{{/each}}
+</div>
+
+<script>
+	component.exports = {
+		data () {
+			return {
+				defaultLinkText: 'Learn more',
+				defaultImgW: '24',
+				defaultImgH: '24',
+			};
+		},
+	};
+</script>
