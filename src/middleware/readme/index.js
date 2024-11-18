@@ -10,6 +10,14 @@ const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const JSDELIVR_HOST = 'https://cdn.jsdelivr.net';
 const ID_PREFIX = 'id-';
 
+marked.use({
+	renderer: {
+		table (...rows) {
+			return `<div class="table-responsive"><table class="table table-striped">${rows.join('')}</table></div>`;
+		},
+	},
+});
+
 marked.setOptions({
 	langPrefix: 'hljs language-',
 	headerIds: true,
