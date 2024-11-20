@@ -1228,7 +1228,6 @@
 	const ipRegex = require('../../../assets/js/utils/ip-regex');
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
-	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
@@ -1337,27 +1336,6 @@
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	const DEFAULT_MARKER_COLOR = '#C0C0C0';
-	const MODERATE_MAP_STYLES = [
-		...INITIAL_MAP_STYLES,
-		{
-			elementType: 'labels.text.stroke',
-			stylers: [{ visibility: 'on' }],
-		},
-		{
-			elementType: 'labels.text.fill',
-			stylers: [
-				{ visibility: 'on' },
-				{ color: '#989b9e' },
-			],
-		},
-	];
-	const DETAILED_MAP_STYLES = [
-		...MODERATE_MAP_STYLES,
-		{
-			featureType: 'road',
-			stylers: [{ visibility: 'on' }],
-		},
-	];
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
@@ -2058,15 +2036,6 @@
 				let currZoom = map.getZoom();
 				infoWindows.forEach(iw => iw.close());
 				probesInfoWindows.forEach(piw => piw.close());
-
-				// handle map detalization on zoom
-				if (currZoom >= 14) {
-					map.setOptions({ styles: DETAILED_MAP_STYLES });
-				} else if (currZoom >= 5) {
-					map.setOptions({ styles: MODERATE_MAP_STYLES });
-				} else {
-					map.setOptions({ styles: INITIAL_MAP_STYLES });
-				}
 
 				// handle markers on zoom
 				if (currZoom > 16) {
