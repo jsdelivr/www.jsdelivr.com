@@ -328,33 +328,35 @@ server.use((req, res, next) => {
 	next();
 });
 
-server.use('/blog/robots.txt', (req, res) => {
-	res.set('Content-Type', 'text/plain');
-	return res.send(`User-agent: *
+if (site === 'jsdelivr') {
+	server.use('/blog/robots.txt', (req, res) => {
+		res.set('Content-Type', 'text/plain');
+		return res.send(`User-agent: *
 Sitemap: ${serverConfig.host}/blog/sitemap.xml
 Disallow: /ghost/
 Disallow: /p/
 Disallow: /email/
 Disallow: /r/`);
-});
+	});
 
-/**
- * Redirect old blog posts.
- */
-server.use('/blog', (req, res, next) => {
-	if (Object.hasOwn(serverConfig.blogRewrite, req.path)) {
-		return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
-	} else if (req.hostname === 'blog.jsdelivr.com') {
-		return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
-	}
+	/**
+	 * Redirect old blog posts.
+	 */
+	server.use('/blog', (req, res, next) => {
+		if (Object.hasOwn(serverConfig.blogRewrite, req.path)) {
+			return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
+		} else if (req.hostname === 'blog.jsdelivr.com') {
+			return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
+		}
 
-	next();
-});
+		next();
+	});
 
-/**
- * Proxy blog requests to ghost.
- */
-server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
+	/**
+	 * Proxy blog requests to ghost.
+	 */
+	server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
+}
 
 /**
  * Forward everything else to Koa (main website).
