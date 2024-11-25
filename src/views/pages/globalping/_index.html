@@ -1354,6 +1354,34 @@
 		'x-request-cost',
 	];
 	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
+	const getMarkerSize = (probeCount, zoom) => {
+		let size = {
+			svgWidth: 16,
+			svgHeight: 16,
+			circleRadius: 4.5,
+			strokeWidth: 1.5,
+		};
+
+		if (probeCount > 1) {
+			let scalingFactor = probeCount.toString().length;
+			size.svgWidth += 4 * scalingFactor + 4;
+			size.svgHeight += 4 * scalingFactor + 4;
+			size.circleRadius += 2 * scalingFactor + 1.5;
+			size.strokeWidth += .5;
+		}
+
+		if (zoom >= 5) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		if (zoom >= 10) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		return size;
+	};
 
 	let map;
 	let oms;
@@ -2062,6 +2090,14 @@
 						}
 					}
 				}
+
+				// scale cluster's markers size on zoom
+				probesMarkers.forEach((m) => {
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+				});
 			});
 
 			// draw probes Clusers or clear the map from them
@@ -3382,25 +3418,7 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 		},
 		createMapClusterMarkerWithIW (key, markersByCoords) {
 			let [ lat, lng ] = key.split(', ');
-			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g filter="url(#filter0_d_6106_3045)">
-				<circle cx="12" cy="10" r="6" fill="#17D4A7"/>
-				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
-				</g>
-				<defs>
-				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-				<feOffset dy="2"/>
-				<feGaussianBlur stdDeviation="2"/>
-				<feComposite in2="hardAlpha" operator="out"/>
-				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-				</filter>
-				</defs>
-				</svg>`);
-
+			let svg = this.createClusterMarkerSVG(markersByCoords.length);
 			let probeInfoWindow = new google.maps.InfoWindow();
 
 			// Collect InfoWindows
@@ -3409,11 +3427,14 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 
 			let markerContent = document.createElement('div');
 			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-			markerContent.style.width = '24px';
-			markerContent.style.height = '24px';
 			markerContent.style.backgroundRepeat = 'no-repeat';
 			markerContent.style.backgroundPosition = 'center';
 			markerContent.style.backgroundSize = 'contain';
+			markerContent.setAttribute('data-probe-count', markersByCoords.length);
+
+			let { svgWidth, svgHeight } = getMarkerSize(markersByCoords.length, map.zoom);
+			markerContent.style.width = `${svgWidth}px`;
+			markerContent.style.height = `${svgHeight}px`;
 
 			let probeMarker = new google.maps.marker.AdvancedMarkerElement({
 				map,
@@ -3471,6 +3492,31 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			infoWindowContent += '</div>';
 
 			return infoWindowContent;
+		},
+		createClusterMarkerSVG (elementsCnt) {
+			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
+
+			return window.btoa(`
+				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
+					</g>
+					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
+					<defs>
+						<filter id="filter0_d_6106_3045" x="0" y="0" width="${svgWidth}" height="${svgHeight}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+							<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+							<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+							<feOffset dy="1"/>
+							<feGaussianBlur stdDeviation="1"/>
+							<feComposite in2="hardAlpha" operator="out"/>
+							<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+							<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+							<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+						</filter>
+					</defs>
+				</svg>
+			`);
 		},
 	};
 </script>
