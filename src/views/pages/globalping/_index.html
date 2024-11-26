@@ -2704,9 +2704,10 @@
 				zIndex: 1,
 			});
 
-			// handle closing of all of IWs on a click on a marker
-			google.maps.event.addListener(marker, 'click', () => {
+			// open IW on click, close all other IWs
+			marker.addListener('click', () => {
 				infoWindows.forEach(iw => iw.close());
+				infoWindow.open({ map, anchor: marker });
 			});
 
 			mapMarkers.push(marker);
