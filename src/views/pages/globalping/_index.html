@@ -19,7 +19,6 @@
 	openGraphImage="{{#if measurement}}{{@shared.serverHost}}/open-graph/image/measurement/{{measurement}}{{/if}}"
 >
 	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
 
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
@@ -1384,7 +1383,6 @@
 	};
 
 	let map;
-	let oms;
 	let infoWindows = [];
 	let mapMarkers = [];
 	let probesMarkers = [];
@@ -2034,24 +2032,6 @@
 				minZoom: MAP_MIN_ZOOM,
 				maxZoom: MAP_MAX_ZOOM,
 				mapId: 'ce04bbf9d49b6f34',
-			});
-
-			// eslint-disable-next-line no-undef
-			oms = new OverlappingMarkerSpiderfier(map, {
-				keepSpiderfied: true,
-				markersWontMove: true,
-				markersWontHide: true,
-				basicFormatEvents: true,
-				nearbyDistance: 24,
-				legWeight: .1,
-				legColors: {
-					usual: {
-						roadmap: 'rgba(255, 255, 255, 0)',
-					},
-					highlighted: {
-						roadmap: 'rgba(255, 255, 255, 0)',
-					},
-				},
 			});
 
 			if (mq.matches) {
@@ -2727,11 +2707,6 @@
 			// handle closing of all of IWs on a click on a marker
 			google.maps.event.addListener(marker, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
-			});
-
-			// add Marker to OverlappingMarkerSpiderfier, with listener which will be called on click
-			oms.addMarker(marker, () => {
-				infoWindow.open(map, marker);
 			});
 
 			mapMarkers.push(marker);
