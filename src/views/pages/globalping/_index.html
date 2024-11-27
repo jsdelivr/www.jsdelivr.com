@@ -1381,6 +1381,8 @@
 
 		return size;
 	};
+	const originalMapMarkersPos = new Map();
+	const DEFAULT_MARKER_DIMENSIONS = 24;
 
 	let map;
 	let infoWindows = [];
@@ -2117,6 +2119,8 @@
 			// close IWs on click on Map
 			google.maps.event.addListener(map, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
+
+				this.despiderifyMapMarkers(mapMarkers);
 			});
 		},
 		updateClusters (probes) {
@@ -2664,8 +2668,8 @@
 
 			let markerContent = document.createElement('div');
 			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-			markerContent.style.width = '24px';
-			markerContent.style.height = '24px';
+			markerContent.style.width = `${DEFAULT_MARKER_DIMENSIONS}px`;
+			markerContent.style.height = `${DEFAULT_MARKER_DIMENSIONS}px`;
 			markerContent.style.backgroundRepeat = 'no-repeat';
 			markerContent.style.backgroundPosition = 'center';
 			markerContent.style.backgroundSize = 'contain';
@@ -2678,13 +2682,18 @@
 				zIndex: 1,
 			});
 
+			// keep original markers positions
+			originalMapMarkersPos.set(marker, marker.position);
+
+			mapMarkers.push(marker);
+
 			// open IW on click, close all other IWs
 			marker.addListener('click', () => {
 				infoWindows.forEach(iw => iw.close());
 				infoWindow.open({ map, anchor: marker });
-			});
 
-			mapMarkers.push(marker);
+				this.spiderifyMapMarkers(marker, mapMarkers, map);
+			});
 		},
 		async getMultipleTestMeasurementById (idsArr, isInfiniteMeas = false) {
 			for (let i = 0; i < idsArr.length; i++) {
@@ -2890,7 +2899,7 @@
 			}
 
 			if (markerData.timings.length > 1) {
-				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				svg = window.btoa(`<svg width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" viewBox="0 0 ${DEFAULT_MARKER_DIMENSIONS} ${DEFAULT_MARKER_DIMENSIONS}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColors[1]}"/>
 					<clipPath id="cut-off">
@@ -2900,7 +2909,7 @@
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
-					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
 					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 					<feOffset dy="2"/>
@@ -2913,13 +2922,13 @@
 					</defs>
 					</svg>`);
 			} else {
-				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				svg = window.btoa(`<svg width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" viewBox="0 0 ${DEFAULT_MARKER_DIMENSIONS} ${DEFAULT_MARKER_DIMENSIONS}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}"/>
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
-					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
 					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 					<feOffset dy="2"/>
@@ -3467,6 +3476,38 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 					</defs>
 				</svg>
 			`);
+		},
+		spiderifyMapMarkers (clickedMarker, markers, map) {
+			let projection = map.getProjection();
+			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
+			let baseSpread = 0.00001;
+			let spreadDistance = baseSpread * Math.pow(2, MAP_MAX_ZOOM - map.zoom);
+
+			markers.forEach((marker, index) => {
+				if (marker !== clickedMarker) {
+					let markerPos = projection.fromLatLngToPoint(marker.position);
+					let distance = Math.sqrt(
+						Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)
+					);
+
+					if (distance < DEFAULT_MARKER_DIMENSIONS / 2) {
+						let angle = (Math.PI * 2 * index) / markers.length;
+						let newLat = Number(clickedMarker.position.lat) + spreadDistance * Math.sin(angle);
+						let newLng = Number(clickedMarker.position.lng) + spreadDistance * Math.cos(angle);
+
+						marker.position = new google.maps.LatLng(newLat, newLng);
+					}
+				}
+			});
+		},
+		despiderifyMapMarkers (markers) {
+			markers.forEach(m => {
+				let originalPos = originalMapMarkersPos.get(m);
+
+				if (originalPos) {
+					m.position = originalPos;
+				}
+			});
 		},
 	};
 </script>
