@@ -2050,8 +2050,8 @@
 					let markersData = this.get('markersData');
 					let bounds = map.getBounds();
 					let visibleMarkers = (markersData ? mapMarkers : probesMarkers).filter(m => bounds.contains(m.position));
-					let getFixedLat = m => m.position.lat().toFixed(4);
-					let getFixedLng = m => m.position.lng().toFixed(4);
+					let getFixedLat = m => m.position.lat.toFixed(4);
+					let getFixedLng = m => m.position.lng.toFixed(4);
 
 					if (visibleMarkers.length > 1) {
 						if (visibleMarkers.every((m, index, arr) => (getFixedLat(m) === getFixedLat(arr[0])) && (getFixedLng(m) === getFixedLng(arr[0])))) {
@@ -2059,10 +2059,10 @@
 								let existingMarker = visibleMarkers[i];
 								let pos = existingMarker.position;
 								let quotient = 360 / visibleMarkers.length;
-								let newLat = pos.lat() + -.00008 * Math.cos(quotient * i);
-								let newLng = pos.lng() + -.00008 * Math.sin(quotient * i);
+								let newLat = pos.lat + -.00008 * Math.cos(quotient * i);
+								let newLng = pos.lng + -.00008 * Math.sin(quotient * i);
 
-								existingMarker.setPosition(new google.maps.LatLng(newLat, newLng));
+								existingMarker.position = new google.maps.LatLng(newLat, newLng);
 							}
 
 							map.setZoom(currZoom - 1);
