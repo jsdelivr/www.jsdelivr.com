@@ -2689,12 +2689,20 @@
 
 			mapMarkers.push(marker);
 
-			// open IW on click, close all other IWs
+			// open IW on click, close all other IWs, handle markers spiderifying
 			marker.addListener('click', () => {
 				infoWindows.forEach(iw => iw.close());
-				infoWindow.open({ map, anchor: marker });
 
-				this.spiderifyMapMarkers(marker, mapMarkers, map);
+				// check if marker is overlapping with other and should be spiderified
+				if (this.shouldMapMarkersSpiderify(marker, mapMarkers, map)) {
+					// despiderify markers
+					this.despiderifyMapMarkers(mapMarkers);
+					// spiderify overlapping markers
+					this.spiderifyMapMarkers(marker, mapMarkers, map);
+				} else {
+					// open InfoWindow if marker is already spiderified or do not needed to be
+					infoWindow.open({ map, anchor: marker });
+				}
 			});
 		},
 		async getMultipleTestMeasurementById (idsArr, isInfiniteMeas = false) {
@@ -3508,6 +3516,22 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				if (originalPos) {
 					m.position = originalPos;
 				}
+			});
+		},
+		shouldMapMarkersSpiderify (clickedMarker, markers, map) {
+			let projection = map.getProjection();
+			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
+			let overlapThreshold = DEFAULT_MARKER_DIMENSIONS / 2;
+
+			return markers.some(marker => {
+				if (marker !== clickedMarker) {
+					let markerPos = projection.fromLatLngToPoint(marker.position);
+					let pixelDistance = Math.sqrt(Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)) * Math.pow(2, map.zoom);
+
+					return pixelDistance <= overlapThreshold;
+				}
+
+				return false;
 			});
 		},
 	};
