@@ -3490,22 +3490,38 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 		spiderifyMapMarkers (clickedMarker, markers, map) {
 			let projection = map.getProjection();
 			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
-			let baseSpread = 0.00001;
-			let spreadDistance = baseSpread * Math.pow(2, MAP_MAX_ZOOM - map.zoom);
-			let overlapThreshold = DEFAULT_MARKER_DIMENSIONS / 2;
+			let markerWidth = DEFAULT_MARKER_DIMENSIONS;
+			let a = 1.5 * markerWidth;
+			let b = 0.5 * markerWidth;
+			let theta = 0;
 
-			markers.forEach((marker, index) => {
-				if (marker !== clickedMarker) {
-					let markerPos = projection.fromLatLngToPoint(marker.position);
-					let pixelDistance = Math.sqrt(Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)) * Math.pow(2, map.zoom);
+			let overlappedMarkers = markers.filter((marker) => {
+				if (marker === clickedMarker) { return false; }
 
-					if (pixelDistance <= overlapThreshold) {
-						let angle = (Math.PI * 2 * index) / markers.length;
-						let newLat = Number(clickedMarker.position.lat) + spreadDistance * Math.sin(angle);
-						let newLng = Number(clickedMarker.position.lng) + spreadDistance * Math.cos(angle);
+				let markerPos = projection.fromLatLngToPoint(marker.position);
+				let pixelDistance = Math.sqrt(Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)) * Math.pow(2, map.zoom);
 
-						marker.position = new google.maps.LatLng(newLat, newLng);
-					}
+				return pixelDistance <= markerWidth;
+			});
+
+			let spiderMarkers = [ clickedMarker, ...overlappedMarkers ];
+
+			spiderMarkers.forEach((marker, index) => {
+				if (index === 0) {
+					// keep the clicked marker in place
+					marker.position = clickedMarker.position;
+				} else {
+					// spiral calculation
+					let r = a + b * theta;
+					let offsetX = r * Math.cos(theta);
+					let offsetY = r * Math.sin(theta);
+					let newLat = clickedMarker.position.lat + offsetY / Math.pow(2, map.zoom);
+					let newLng = clickedMarker.position.lng + offsetX / Math.pow(2, map.zoom);
+
+					marker.position = new google.maps.LatLng(newLat, newLng);
+
+					// increment angle
+					theta += markerWidth / r;
 				}
 			});
 		},
