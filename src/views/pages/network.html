@@ -42,7 +42,7 @@
 				});
 			}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&amp;libraries=marker&amp;loading=async" async></script>
 	{{/if}}
 
 	<c-notification></c-notification>
@@ -140,7 +140,6 @@
 </r-page>
 
 <script>
-	const styles = require('../../assets/js/map/styles.json');
 	const providers = Object.values(require('../../assets/json/net-providers.json')).filter(provider => provider.enabled);
 	const xIndexes = { GCore: 1, Cloudflare: 2, Fastly: 3, Bunny: 4 };
 	const getProvider = location => providers.find(provider => location.title.startsWith(provider.name));
@@ -183,7 +182,6 @@
 			let mq = window.matchMedia('(min-width: 768px)');
 			let CENTER = { lat: 48, lng: 16 };
 			map = new google.maps.Map(this.find('.network-map'), {
-				styles,
 				zoom: 3.74,
 				center: CENTER,
 				mapTypeId: 'roadmap',
@@ -191,6 +189,7 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
+				mapId: 'ce04bbf9d49b6f34',
 			});
 
 			if (mq.matches) {
@@ -245,12 +244,19 @@
 					content: location.title,
 				});
 
-				let marker = new google.maps.Marker({
+				let markerContent = document.createElement('div');
+				markerContent.style.backgroundImage = `url(${this.get('@shared.assetsHost')}/img/features/map-${getProvider(location).name.toLowerCase()}.svg)`;
+				markerContent.style.backgroundRepeat = 'no-repeat';
+				markerContent.style.backgroundPosition = 'center';
+				markerContent.style.backgroundSize = 'contain';
+				markerContent.style.width = '14px';
+				markerContent.style.height = '14px';
+				markerContent.title = location.title;
+
+				let marker = new google.maps.marker.AdvancedMarkerElement({
 					map,
-					icon: `${this.get('@shared.assetsHost')}/img/features/map-${getProvider(location).name.toLowerCase()}.svg`,
+					content: markerContent,
 					position: new google.maps.LatLng(location.latitude, location.longitude),
-					title: location.title,
-					optimized: false,
 					zIndex: xIndexes[getProvider(location).name],
 				});
 
