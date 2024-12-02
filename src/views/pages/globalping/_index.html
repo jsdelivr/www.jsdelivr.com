@@ -2694,7 +2694,7 @@
 				infoWindows.forEach(iw => iw.close());
 
 				// check if marker is overlapping with other and should be spiderified
-				if (this.shouldMapMarkersSpiderify(marker, mapMarkers, map)) {
+				if (this.shouldMapMarkersSpiderify(marker, mapMarkers, map) && marker.isSpiderPart !== true) {
 					// despiderify markers
 					this.despiderifyMapMarkers(mapMarkers);
 					// spiderify overlapping markers
@@ -3491,8 +3491,8 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			let projection = map.getProjection();
 			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
 			let markerWidth = DEFAULT_MARKER_DIMENSIONS;
-			let a = 1.5 * markerWidth;
-			let b = 0.5 * markerWidth;
+			let a = markerWidth;
+			let b = 0.2 * markerWidth;
 			let theta = 0;
 
 			let overlappedMarkers = markers.filter((marker) => {
@@ -3507,6 +3507,8 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			let spiderMarkers = [ clickedMarker, ...overlappedMarkers ];
 
 			spiderMarkers.forEach((marker, index) => {
+				marker.isSpiderPart = true;
+
 				if (index === 0) {
 					// keep the clicked marker in place
 					marker.position = clickedMarker.position;
@@ -3533,6 +3535,7 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 				if (originalPos) {
 					m.position = originalPos;
 					m.zIndex = 1;
+					m.isSpiderPart = false;
 				}
 			});
 		},
