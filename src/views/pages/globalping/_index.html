@@ -3517,10 +3517,12 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 					let r = a + b * theta;
 					let offsetX = r * Math.cos(theta);
 					let offsetY = r * Math.sin(theta);
-					let newLat = clickedMarker.position.lat + offsetY / Math.pow(2, map.zoom);
-					let newLng = clickedMarker.position.lng + offsetX / Math.pow(2, map.zoom);
+					let x = clickedPos.x + offsetX / Math.pow(2, map.zoom);
+					let y = clickedPos.y + offsetY / Math.pow(2, map.zoom);
+					let point = new google.maps.Point(x, y);
+					let latLng = projection.fromPointToLatLng(point);
 
-					marker.position = new google.maps.LatLng(newLat, newLng);
+					marker.position = new google.maps.LatLng(latLng.lat(), latLng.lng());
 					marker.zIndex = 99999;
 
 					// increment angle
