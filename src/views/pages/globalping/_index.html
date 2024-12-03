@@ -19,7 +19,6 @@
 	openGraphImage="{{#if measurement}}{{@shared.serverHost}}/open-graph/image/measurement/{{measurement}}{{/if}}"
 >
 	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
 
 	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
@@ -1228,7 +1227,6 @@
 	const ipRegex = require('../../../assets/js/utils/ip-regex');
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
-	const INITIAL_MAP_STYLES = require('../../../assets/js/map/styles.json');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
@@ -1337,27 +1335,6 @@
 	const MAP_ZOOM_ALT = 2.14;
 	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	const DEFAULT_MARKER_COLOR = '#C0C0C0';
-	const MODERATE_MAP_STYLES = [
-		...INITIAL_MAP_STYLES,
-		{
-			elementType: 'labels.text.stroke',
-			stylers: [{ visibility: 'on' }],
-		},
-		{
-			elementType: 'labels.text.fill',
-			stylers: [
-				{ visibility: 'on' },
-				{ color: '#989b9e' },
-			],
-		},
-	];
-	const DETAILED_MAP_STYLES = [
-		...MODERATE_MAP_STYLES,
-		{
-			featureType: 'road',
-			stylers: [{ visibility: 'on' }],
-		},
-	];
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_FAILED = _.getProbeStatusFailedValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
@@ -1376,9 +1353,38 @@
 		'x-request-cost',
 	];
 	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
+	const getMarkerSize = (probeCount, zoom) => {
+		let size = {
+			svgWidth: 16,
+			svgHeight: 16,
+			circleRadius: 4.5,
+			strokeWidth: 1.5,
+		};
+
+		if (probeCount > 1) {
+			let scalingFactor = probeCount.toString().length;
+			size.svgWidth += 4 * scalingFactor + 4;
+			size.svgHeight += 4 * scalingFactor + 4;
+			size.circleRadius += 2 * scalingFactor + 1.5;
+			size.strokeWidth += .5;
+		}
+
+		if (zoom >= 5) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		if (zoom >= 10) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		return size;
+	};
+	const originalMapMarkersPos = new Map();
+	const DEFAULT_MARKER_DIMENSIONS = 24;
 
 	let map;
-	let oms;
 	let infoWindows = [];
 	let mapMarkers = [];
 	let probesMarkers = [];
@@ -2018,7 +2024,6 @@
 			let mq = window.matchMedia('(min-width: 768px)');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
-				styles: INITIAL_MAP_STYLES,
 				zoom: MAP_ZOOM_REG,
 				center: MAP_CENTER_REG,
 				mapTypeId: 'roadmap',
@@ -2028,24 +2033,7 @@
 				fullscreenControl: false,
 				minZoom: MAP_MIN_ZOOM,
 				maxZoom: MAP_MAX_ZOOM,
-			});
-
-			// eslint-disable-next-line no-undef
-			oms = new OverlappingMarkerSpiderfier(map, {
-				keepSpiderfied: true,
-				markersWontMove: true,
-				markersWontHide: true,
-				basicFormatEvents: true,
-				nearbyDistance: 24,
-				legWeight: .1,
-				legColors: {
-					usual: {
-						roadmap: 'rgba(255, 255, 255, 0)',
-					},
-					highlighted: {
-						roadmap: 'rgba(255, 255, 255, 0)',
-					},
-				},
+				mapId: 'ce04bbf9d49b6f34',
 			});
 
 			if (mq.matches) {
@@ -2053,46 +2041,21 @@
 				map.setZoom(MAP_ZOOM_ALT);
 			}
 
-			// while zooming handle marker positions for those with the same coordinates
+			// handle map changes on zoom
 			map.addListener('zoom_changed', () => {
-				let currZoom = map.getZoom();
+				// close all IWs on zoom
 				infoWindows.forEach(iw => iw.close());
 				probesInfoWindows.forEach(piw => piw.close());
 
-				// handle map detalization on zoom
-				if (currZoom >= 14) {
-					map.setOptions({ styles: DETAILED_MAP_STYLES });
-				} else if (currZoom >= 5) {
-					map.setOptions({ styles: MODERATE_MAP_STYLES });
-				} else {
-					map.setOptions({ styles: INITIAL_MAP_STYLES });
-				}
+				this.despiderifyMapMarkers(mapMarkers);
 
-				// handle markers on zoom
-				if (currZoom > 16) {
-					let markersData = this.get('markersData');
-					let bounds = map.getBounds();
-					let visibleMarkers = (markersData ? mapMarkers : probesMarkers).filter(m => bounds.contains(m.getPosition()));
-					let getFixedLat = m => m.getPosition().lat().toFixed(4);
-					let getFixedLng = m => m.getPosition().lng().toFixed(4);
+				// scale cluster's markers size on zoom
+				probesMarkers.forEach((m) => {
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
 
-					if (visibleMarkers.length > 1) {
-						if (visibleMarkers.every((m, index, arr) => (getFixedLat(m) === getFixedLat(arr[0])) && (getFixedLng(m) === getFixedLng(arr[0])))) {
-							for (let i = 1; i < visibleMarkers.length; i++) {
-								let existingMarker = visibleMarkers[i];
-								let pos = existingMarker.getPosition();
-								let quotient = 360 / visibleMarkers.length;
-								let newLat = pos.lat() + -.00008 * Math.cos(quotient * i);
-								let newLng = pos.lng() + -.00008 * Math.sin(quotient * i);
-
-								existingMarker.setPosition(new google.maps.LatLng(newLat, newLng));
-							}
-
-							map.setZoom(currZoom - 1);
-							map.setZoom(currZoom + 1);
-						}
-					}
-				}
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+				});
 			});
 
 			// draw probes Clusers or clear the map from them
@@ -2158,65 +2121,65 @@
 			// close IWs on click on Map
 			google.maps.event.addListener(map, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
+
+				this.despiderifyMapMarkers(mapMarkers);
 			});
 		},
 		updateClusters (probes) {
-			let svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g filter="url(#filter0_d_6106_3045)">
-				<circle cx="12" cy="10" r="6" fill="#17D4A7"/>
-				<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
-				</g>
-				<defs>
-				<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-				<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-				<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-				<feOffset dy="2"/>
-				<feGaussianBlur stdDeviation="2"/>
-				<feComposite in2="hardAlpha" operator="out"/>
-				<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-				<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-				<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-				</filter>
-				</defs>
-				</svg>`);
+			let preparedMarkers = Object.keys(probes).map((key) => {
+				let [ lat, lng ] = key.split(', ');
+				let marker = probesMarkers.find(pm => pm.position.lat === lat && pm.position.lng === lng);
 
-			probes.forEach((probe) => {
-				let probeInfoWindow = new google.maps.InfoWindow({
-					content: `<div class="gp-map_popup">
-							<div class="gp-map_popup_descr">${probe.location.network}</div>
-							<div class="gp-map_popup_descr">(${probe.location.city}, ${probe.location.country})</div>
-						</div>`,
-				});
+				if (!marker) {
+					marker = this.createMapClusterMarkerWithIW(key, probes[key]);
+					probesMarkers.push(marker);
+				}
 
-				let probeMarker = new google.maps.Marker({
-					map,
-					icon: { url: `data:image/svg+xml;base64,${svg}` },
-					position: { lat: probe.location.latitude, lng: probe.location.longitude },
-					optimized: false,
-				});
+				marker.map = map;
 
-				google.maps.event.addListener(probeMarker, 'click', () => {
-					probesInfoWindows.forEach(piw => piw.close());
-					probeInfoWindow.open(map, probeMarker);
-				});
-
-				probesInfoWindows.push(probeInfoWindow);
-				probesMarkers.push(probeMarker);
+				return marker;
 			});
 
 			// eslint-disable-next-line no-undef
 			let probeCluster = new markerClusterer.MarkerClusterer({
-				markers: probesMarkers,
+				markers: preparedMarkers,
 				map,
 				renderer: {
-					render: ({ markers, _position: position }) => {
-						return new google.maps.Marker({
-							position: {
-								lat: position.lat(),
-								lng: position.lng(),
-							},
-							icon: `${this.get('@shared.assetsHost')}/img/globalping/map_cluster.svg`,
-							label: { text: String(markers.length), color: '#fff', fontSize: '16px', fontWeight: '600' },
+					render ({ markers, position }) {
+						let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
+						let clusterSvg = window.btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="68" height="68" fill="none">
+							<g clip-path="url(#a)">
+							<path fill="url(#b)" d="M30 2.31a8 8 0 0 1 8 0l21.445 12.38a8 8 0 0 1 4 6.929V46.38a8 8 0 0 1-4 6.928L38 65.691a8 8 0 0 1-8 0L8.555 53.309a8 8 0 0 1-4-6.928V21.62a8 8 0 0 1 4-6.928z"/>
+							<path stroke="#69E7C8" stroke-width="1.5" d="M30.375 4.959a7.25 7.25 0 0 1 7.25 0L57.338 16.34a7.25 7.25 0 0 1 3.625 6.279V45.38a7.25 7.25 0 0 1-3.625 6.279L37.625 63.04a7.25 7.25 0 0 1-7.25 0L10.662 51.66a7.25 7.25 0 0 1-3.625-6.279V22.62a7.25 7.25 0 0 1 3.625-6.279L30.375 4.96Z"/>
+							</g>
+							<text x="34" y="40" fill="#fff" font-family="Lexend, sans-serif" font-size="16px" font-weight="600" text-anchor="middle">
+							${totalCustomNumber}
+							</text>
+							<defs>
+							<linearGradient id="b" x1="34" x2="34" y1="0" y2="68" gradientUnits="userSpaceOnUse">
+							<stop stop-color="#17D4A7"/>
+							<stop offset="1" stop-color="#17D4A7"/>
+							</linearGradient>
+							<clipPath id="a">
+							<path fill="#fff" d="M0 0h68v68H0z"/>
+							</clipPath>
+							</defs>
+						</svg>`);
+						let clusterDiv = document.createElement('div');
+						let clusterImg = document.createElement('img');
+
+						clusterDiv.style.position = 'relative';
+						clusterDiv.style.width = '68px';
+						clusterDiv.style.height = '68px';
+						clusterDiv.style.background = 'transparent';
+						clusterImg.src = `data:image/svg+xml;base64,${clusterSvg}`;
+						clusterImg.width = '68';
+						clusterImg.height = '68';
+						clusterDiv.appendChild(clusterImg);
+
+						return new google.maps.marker.AdvancedMarkerElement({
+							position,
+							content: clusterDiv,
 						});
 					},
 				},
@@ -2463,7 +2426,7 @@
 				this.animate('totalProbes', response.length, { duration: 2000 });
 				this.animate('totalCities', totalCities, { duration: 2000 });
 				this.animate('totalCountries', totalCountries, { duration: 2000 });
-				this.set('probesResponse', response);
+				this.set('probesResponse', this.groupProbes(response));
 			};
 		},
 		translateTestTypeName (name) {
@@ -2641,7 +2604,7 @@
 				let bounds = new google.maps.LatLngBounds();
 
 				mapMarkers.forEach((mm) => {
-					bounds.extend(mm.getPosition());
+					bounds.extend(mm.position);
 				});
 
 				google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
@@ -2677,9 +2640,7 @@
 			let updSvg = this.createMapMarkerSvg(markerData);
 			let currIw = infoWindows[currentMarkerIdx];
 
-			marker.setIcon({
-				url: `data:image/svg+xml;base64,${updSvg}`,
-			});
+			marker.content.style.backgroundImage = `url('data:image/svg+xml;base64,${updSvg}')`;
 
 			currIw.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 		},
@@ -2707,27 +2668,42 @@
 			infoWindows.push(infoWindow);
 			infoWindow.setContent(this.createInfoWindowContent(markerData, currentMarkerIdx));
 
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.width = `${DEFAULT_MARKER_DIMENSIONS}px`;
+			markerContent.style.height = `${DEFAULT_MARKER_DIMENSIONS}px`;
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
+
 			// create a new Marker
-			let marker = new google.maps.Marker({
+			let marker = new google.maps.marker.AdvancedMarkerElement({
 				map,
-				icon: {
-					url: `data:image/svg+xml;base64,${svg}`,
-				},
+				content: markerContent,
 				position: { lat: markerData.lat, lng: markerData.lng },
-				optimized: false,
+				zIndex: 1,
 			});
 
-			// handle closing of all of IWs on a click on a marker
-			google.maps.event.addListener(marker, 'click', () => {
-				infoWindows.forEach(iw => iw.close());
-			});
-
-			// add Marker to OverlappingMarkerSpiderfier, with listener which will be called on click
-			oms.addMarker(marker, () => {
-				infoWindow.open(map, marker);
-			});
+			// keep original markers positions
+			originalMapMarkersPos.set(marker, marker.position);
 
 			mapMarkers.push(marker);
+
+			// open IW on click, close all other IWs, handle markers spiderifying
+			marker.addListener('click', () => {
+				infoWindows.forEach(iw => iw.close());
+
+				// check if marker is overlapping with other and should be spiderified
+				if (this.shouldMapMarkersSpiderify(marker, mapMarkers, map) && marker.isSpiderPart !== true) {
+					// despiderify markers
+					this.despiderifyMapMarkers(mapMarkers);
+					// spiderify overlapping markers
+					this.spiderifyMapMarkers(marker, mapMarkers, map);
+				} else {
+					// open InfoWindow if marker is already spiderified or do not needed to be
+					infoWindow.open({ map, anchor: marker });
+				}
+			});
 		},
 		async getMultipleTestMeasurementById (idsArr, isInfiniteMeas = false) {
 			for (let i = 0; i < idsArr.length; i++) {
@@ -2933,7 +2909,7 @@
 			}
 
 			if (markerData.timings.length > 1) {
-				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				svg = window.btoa(`<svg width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" viewBox="0 0 ${DEFAULT_MARKER_DIMENSIONS} ${DEFAULT_MARKER_DIMENSIONS}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColors[1]}"/>
 					<clipPath id="cut-off">
@@ -2943,7 +2919,7 @@
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
-					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
 					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 					<feOffset dy="2"/>
@@ -2956,13 +2932,13 @@
 					</defs>
 					</svg>`);
 			} else {
-				svg = window.btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				svg = window.btoa(`<svg width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" viewBox="0 0 ${DEFAULT_MARKER_DIMENSIONS} ${DEFAULT_MARKER_DIMENSIONS}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
 					<circle cx="12" cy="10" r="6" fill="${svgFillColors[0]}"/>
 					<circle cx="12" cy="10" r="7" stroke="white" stroke-width="2"/>
 					</g>
 					<defs>
-					<filter id="filter0_d_6106_3045" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+					<filter id="filter0_d_6106_3045" x="0" y="0" width="${DEFAULT_MARKER_DIMENSIONS}" height="${DEFAULT_MARKER_DIMENSIONS}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 					<feFlood flood-opacity="0" result="BackgroundImageFix"/>
 					<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 					<feOffset dy="2"/>
@@ -3391,6 +3367,195 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			}
 
 			return DEFAULT_MEASUREMENT_ERR_MSG;
+		},
+		groupProbes (probes) {
+			// group probes by Continents and Coordinates
+			let groups = probes.reduce((res, probe) => {
+				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
+
+				// group by Coordinates
+				if (!Object.hasOwn(res, coords)) {
+					res[coords] = [];
+				}
+
+				res[coords].push(probe);
+
+				return res;
+			}, {});
+
+			return groups;
+		},
+		createMapClusterMarkerWithIW (key, markersByCoords) {
+			let [ lat, lng ] = key.split(', ');
+			let svg = this.createClusterMarkerSVG(markersByCoords.length);
+			let probeInfoWindow = new google.maps.InfoWindow();
+
+			// Collect InfoWindows
+			probesInfoWindows.push(probeInfoWindow);
+			probeInfoWindow.setContent(this.createClusterMarkerInfoWindowContent(markersByCoords));
+
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
+			markerContent.setAttribute('data-probe-count', markersByCoords.length);
+
+			let { svgWidth, svgHeight } = getMarkerSize(markersByCoords.length, map.zoom);
+			markerContent.style.width = `${svgWidth}px`;
+			markerContent.style.height = `${svgHeight}px`;
+
+			let probeMarker = new google.maps.marker.AdvancedMarkerElement({
+				map,
+				content: markerContent,
+				position: { lat: Number(lat), lng: Number(lng) },
+				zIndex: 1,
+			});
+
+			probeMarker.addListener('click', () => {
+				probesInfoWindows.forEach(iw => iw.close());
+				probeInfoWindow.open({ map, anchor: probeMarker });
+			});
+
+			probeMarker.markersCount = markersByCoords.length || 0;
+
+			return probeMarker;
+		},
+		createClusterMarkerInfoWindowContent (markersByCoords) {
+			let markersCnt = markersByCoords.length;
+			let groupedNetworks = markersByCoords.reduce((res, m) => {
+				let marker = res.find(i => i.location.network === m.location.network);
+
+				if (marker) {
+					marker.cnt += 1;
+				} else {
+					res.push({ ...m, cnt: 1, sortKey: m.location.network.toLowerCase() });
+				}
+
+				return res;
+			}, []).sort((a, b) => a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey);
+
+			let infoWindowContent = `<div class="gp_map-cluster-iw">`;
+
+			if (markersCnt === 1) {
+				let { network, city, country } = markersByCoords[0].location;
+
+				infoWindowContent += `<span>${network} (${city}, ${country})</span>`;
+			} else {
+				// in this case we should render a list of probes
+				groupedNetworks.forEach((m, mIdx) => {
+					if (mIdx === 0) {
+						// add header content
+						infoWindowContent += '<span class="gp_map-cluster-iw_header">';
+						infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/location-icon.svg">`;
+						infoWindowContent += `<span class="gp_map-cluster-iw_header_location">${m.location.city}, ${m.location.country}</span>`;
+						infoWindowContent += `<span class="gp_map-cluster-iw_header_cnt">${markersByCoords.length}</span>`;
+						infoWindowContent += '</span>';
+					}
+
+					// render the list of the probes, grouped by the same network
+					infoWindowContent += `<span class="gp_map-cluster-iw_row">${m.location.network} ${m.cnt > 1 ? `<span class="gp_map-cluster-iw_row_network-cnt">${m.cnt}</span>` : ''}</span>`;
+				});
+			}
+
+			infoWindowContent += '</div>';
+
+			return infoWindowContent;
+		},
+		createClusterMarkerSVG (elementsCnt) {
+			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
+
+			return window.btoa(`
+				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
+					</g>
+					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
+					<defs>
+						<filter id="filter0_d_6106_3045" x="0" y="0" width="${svgWidth}" height="${svgHeight}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+							<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+							<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+							<feOffset dy="1"/>
+							<feGaussianBlur stdDeviation="1"/>
+							<feComposite in2="hardAlpha" operator="out"/>
+							<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+							<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+							<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+						</filter>
+					</defs>
+				</svg>
+			`);
+		},
+		spiderifyMapMarkers (clickedMarker, markers, map) {
+			let projection = map.getProjection();
+			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
+			let markerWidth = DEFAULT_MARKER_DIMENSIONS;
+			let a = markerWidth;
+			let b = 0.2 * markerWidth;
+			let theta = 0;
+
+			let overlappedMarkers = markers.filter((marker) => {
+				if (marker === clickedMarker) { return false; }
+
+				let markerPos = projection.fromLatLngToPoint(marker.position);
+				let pixelDistance = Math.sqrt(Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)) * Math.pow(2, map.zoom);
+
+				return pixelDistance <= markerWidth;
+			});
+
+			let spiderMarkers = [ clickedMarker, ...overlappedMarkers ];
+
+			spiderMarkers.forEach((marker, index) => {
+				marker.isSpiderPart = true;
+
+				if (index === 0) {
+					// keep the clicked marker in place
+					marker.position = clickedMarker.position;
+				} else {
+					// spiral calculation
+					let r = a + b * theta;
+					let offsetX = r * Math.cos(theta);
+					let offsetY = r * Math.sin(theta);
+					let x = clickedPos.x + offsetX / Math.pow(2, map.zoom);
+					let y = clickedPos.y + offsetY / Math.pow(2, map.zoom);
+					let point = new google.maps.Point(x, y);
+					let latLng = projection.fromPointToLatLng(point);
+
+					marker.position = new google.maps.LatLng(latLng.lat(), latLng.lng());
+					marker.zIndex = 99999;
+
+					// increment angle
+					theta += markerWidth / r;
+				}
+			});
+		},
+		despiderifyMapMarkers (markers) {
+			markers.forEach((m) => {
+				let originalPos = originalMapMarkersPos.get(m);
+
+				if (originalPos) {
+					m.position = originalPos;
+					m.zIndex = 1;
+					m.isSpiderPart = false;
+				}
+			});
+		},
+		shouldMapMarkersSpiderify (clickedMarker, markers, map) {
+			let projection = map.getProjection();
+			let clickedPos = projection.fromLatLngToPoint(clickedMarker.position);
+			let overlapThreshold = DEFAULT_MARKER_DIMENSIONS / 2;
+
+			return markers.some((marker) => {
+				if (marker !== clickedMarker) {
+					let markerPos = projection.fromLatLngToPoint(marker.position);
+					let pixelDistance = Math.sqrt(Math.pow(clickedPos.x - markerPos.x, 2) + Math.pow(clickedPos.y - markerPos.y, 2)) * Math.pow(2, map.zoom);
+
+					return pixelDistance <= overlapThreshold;
+				}
+
+				return false;
+			});
 		},
 	};
 </script>
