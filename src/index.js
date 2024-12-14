@@ -149,10 +149,11 @@ app.use(render({
 	assetsVersion,
 }, app));
 
-/**
- * Redirect old URLs #1.
- */
+
 if (site === 'jsdelivr') {
+	/**
+	 * Redirect old URLs #1.
+	 */
 	app.use(async (ctx, next) => {
 		if (!ctx.query._escaped_fragment_) {
 			return next();
@@ -164,6 +165,18 @@ if (site === 'jsdelivr') {
 			ctx.status = 301;
 			return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
 		}
+	});
+
+	/**
+	 * Redirect previous Globalping pages.
+	 */
+	app.use(async (ctx, next) => {
+		if (/^\/globalping(?:\/|$)/.test(ctx.path)) {
+			ctx.status = 301;
+			return ctx.redirect(`https://globalping.io${ctx.url.replace(/^\/[^/?]+/, '')}`);
+		}
+
+		return next();
 	});
 }
 
