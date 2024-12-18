@@ -223,11 +223,41 @@
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
+		computed: {
+			titleAndDescr () {
+				let rawParamsValue = this.get('params');
+
+				// return unique title and descr for the /network-tools page, required by GA
+				if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
+					return {
+						title: 'Free network tools to run network commands globally',
+						description: 'Run free networking and latency tests using ping, traceroute, HTTP and DNS resolve from any location in the world',
+					};
+				}
+
+				let clearParamsValue = rawParamsValue.replace(/\/network-tools\/?/, '').toLowerCase();
+				let splitPoint = '-from-';
+				let splitPointIdx = clearParamsValue.indexOf(splitPoint);
+				let [ rawTestType, rawLocation ] = splitPointIdx === -1
+					? clearParamsValue.split(splitPoint)
+					: [ clearParamsValue.slice(0, splitPointIdx), clearParamsValue.slice(splitPointIdx + splitPoint.length) ];
+				let placeholderLocation = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
+
+				// set temp meta tag title, descr
+				let title = this.createMetaTitle(rawTestType, placeholderLocation);
+				let description = this.createMetaDescr(rawTestType, placeholderLocation);
+
+				return {
+					title,
+					description,
+				};
+			},
+		},
 		data () {
 			return {
 				_,
-				title: 'Free network tools to run network commands globally',
-				description: 'Run free networking and latency tests using ping, traceroute, HTTP and DNS resolve from any location in the world',
+				title: '',
+				description: '',
 				selectedTestType: null,
 				displayingTestType: INITIAL_OPTS_VALUES.type,
 				btnTestType: INITIAL_OPTS_VALUES.type,
@@ -282,6 +312,11 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
+				let { title, description } = this.get('titleAndDescr');
+
+				this.set('title', title);
+				this.set('description', description);
+
 				this.getGlobalpingProbesData();
 
 				this.getParamsFromUrl();
@@ -798,13 +833,6 @@
 			this.set('rawLocation', rawLocation || 'world');
 			let placeholderLocation = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
 			this.set('placeholerLocation', placeholderLocation);
-
-			// set temp meta tag title, descr
-			let title = this.createMetaTitle(rawTestType, placeholderLocation);
-			let description = this.createMetaDescr(rawTestType, placeholderLocation);
-
-			this.set('title', title);
-			this.set('description', description);
 		},
 		checkIfTestTypeCorrect (testType) {
 			if (!testType) { return false; }
