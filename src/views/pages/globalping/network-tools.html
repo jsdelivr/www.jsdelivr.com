@@ -282,10 +282,18 @@
 		},
 		onconfig () {
 			if (!Ractive.isServer) {
+				let title, description;
 				let { rawTestType, rawLocation } = this.getInitialRawDataFromUrl();
-				// create temp title, descr before any checks, required by GA
-				let title = this.createMetaTitle(rawTestType, rawLocation);
-				let description = this.createMetaDescr(rawTestType, rawLocation);
+
+				// return unique title and descr for the /network-tools page, required by GA
+				if (rawTestType === null && rawLocation === null) {
+					title = 'Free network tools to run network commands globally';
+					description = 'Run free networking and latency tests using ping, traceroute, HTTP and DNS resolve from any location in the world';
+				} else {
+					// create temp title, descr before any checks, required by GA
+					title = this.createMetaTitle(rawTestType, rawLocation);
+					description = this.createMetaDescr(rawTestType, rawLocation);
+				}
 
 				this.set('title', title);
 				this.set('description', description);
@@ -895,11 +903,10 @@
 		getInitialRawDataFromUrl () {
 			let rawParamsValue = this.get('params');
 
-			// return unique title and descr for the /network-tools page, required by GA
 			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
 				return {
-					title: 'Free network tools to run network commands globally',
-					description: 'Run free networking and latency tests using ping, traceroute, HTTP and DNS resolve from any location in the world',
+					rawTestType: null,
+					rawLocation: null,
 				};
 			}
 
