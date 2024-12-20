@@ -58,11 +58,12 @@ koaElasticUtils.addRoutes(router, [
 	[ '/network-tools', '/network-tools/:params' ],
 ], async (ctx) => {
 	let data;
+	let { params = '' } = ctx.params;
 	let splitPoint = '-from-';
-	let splitPointIdx = ctx.params.params.indexOf(splitPoint);
+	let splitPointIdx = params.indexOf(splitPoint);
 	let [ testType, target ] = splitPointIdx === -1
-		? ctx.params.params.split(splitPoint)
-		: [ ctx.params.params.slice(0, splitPointIdx), ctx.params.params.slice(splitPointIdx + splitPoint.length) ];
+		? params.split(splitPoint)
+		: [ params.slice(0, splitPointIdx), params.slice(splitPointIdx + splitPoint.length) ];
 
 	try {
 		// check if test type is correct
@@ -82,7 +83,7 @@ koaElasticUtils.addRoutes(router, [
 		}
 
 		// if there is -from- part in the path but no target provided by user
-		if (splitPointIdx === -1 && !target) {
+		if (splitPointIdx !== -1 && !target) {
 			throw new Error('Target was not provided!');
 		}
 
@@ -95,6 +96,7 @@ koaElasticUtils.addRoutes(router, [
 		// }
 
 		ctx.status = 301;
+
 		// redirect conserving the target or just to default ping test page
 		let newPath = target ? `ping-from-${target}` : 'ping';
 
