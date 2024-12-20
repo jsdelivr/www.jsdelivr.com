@@ -76,6 +76,7 @@ koaElasticUtils.addRoutes(router, [
 				data = {
 					params: ctx.params.params || '',
 				};
+
 				break;
 
 			default:
@@ -92,7 +93,7 @@ koaElasticUtils.addRoutes(router, [
 	} catch (e) {
 		// TODO: 715 app call leas to Reference error: undefined
 		// if (app.env === 'development') {
-			// console.error(e);
+		// console.error(e);
 		// }
 
 		ctx.status = 301;
