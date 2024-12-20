@@ -65,7 +65,7 @@ koaElasticUtils.addRoutes(router, [
 		: [ ctx.params.params.slice(0, splitPointIdx), ctx.params.params.slice(splitPointIdx + splitPoint.length) ];
 
 	try {
-		switch (testType) {
+		switch (testType.toLowerCase()) {
 			case 'ping':
 			case 'dns':
 			case 'mtr':
