@@ -62,11 +62,11 @@
 
 						<span>test</span>
 					</div>
-				{{elseif placeholderLocation}}
+				{{elseif rawLocation}}
 					<h1>{{displayingTestType}} from multiple locations in </h1>
 					<span class="gp-nettools_main-info_content_temp-location">
-						{{#if placeholderLocation.toLowerCase() !== 'world'}}
-							{{placeholderLocation}},
+						{{#if rawLocation.toLowerCase() !== 'world'}}
+							{{rawLocation}},
 						{{/if}}
 
 						<a target="_blank" rel="noopener noreferrer" href="{{global.location.origin}}/network-tools/{{selectedTestType}}-from-world" class="gp-nettools_green-text">
@@ -285,25 +285,19 @@
 				let title, description;
 				let { rawTestType, rawLocation } = this.getInitialRawDataFromUrl();
 
-				// return unique title and descr for the /network-tools page, required by GA
-				if (rawTestType === null && rawLocation === null) {
-					title = 'Free network tools to run network commands globally';
-					description = 'Run free networking and latency tests using ping, traceroute, HTTP and DNS resolve from any location in the world';
-				} else {
-					// create temp title, descr before any checks, required by GA
-					title = this.createMetaTitle(rawTestType, rawLocation);
-					description = this.createMetaDescr(rawTestType, rawLocation);
-				}
+				// create temp title, descr before any checks, required by GA
+				title = this.createMetaTitle(rawTestType, rawLocation);
+				description = this.createMetaDescr(rawTestType, rawLocation);
 
 				this.set('title', title);
 				this.set('description', description);
+				this.set('selectedTestType', rawTestType);
+				this.set('rawLocation', rawLocation);
 			}
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.getGlobalpingProbesData();
-
-				this.getParamsFromUrl();
 
 				this.observe('selectedTestType', (selectedTestType) => {
 					if (selectedTestType) {
@@ -777,20 +771,6 @@
 				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
 		},
-		getParamsFromUrl () {
-			let rawParamsValue = this.get('params') || '';
-			let clearParamsValue = rawParamsValue.replace(/\/network-tools\/?/, '').toLowerCase();
-			let splitPoint = '-from-';
-			let splitPointIdx = clearParamsValue.indexOf(splitPoint);
-			let [ rawTestType, rawLocation ] = splitPointIdx === -1
-				? clearParamsValue.split(splitPoint)
-				: [ clearParamsValue.slice(0, splitPointIdx), clearParamsValue.slice(splitPointIdx + splitPoint.length) ];
-
-			this.set('selectedTestType', rawTestType);
-			this.set('rawLocation', rawLocation || 'world');
-			let placeholderLocation = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
-			this.set('placeholderLocation', placeholderLocation);
-		},
 		checkIfTestTypeCorrect (testType) {
 			if (!testType) { return false; }
 
@@ -875,14 +855,6 @@
 		},
 		getInitialRawDataFromUrl () {
 			let rawParamsValue = this.get('params');
-
-			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
-				return {
-					rawTestType: null,
-					rawLocation: null,
-				};
-			}
-
 			let clearParamsValue = rawParamsValue.replace(/\/network-tools\/?/, '').toLowerCase();
 			let splitPoint = '-from-';
 			let splitPointIdx = clearParamsValue.indexOf(splitPoint);
