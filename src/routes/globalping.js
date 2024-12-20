@@ -65,6 +65,7 @@ koaElasticUtils.addRoutes(router, [
 		: [ ctx.params.params.slice(0, splitPointIdx), ctx.params.params.slice(splitPointIdx + splitPoint.length) ];
 
 	try {
+		// check if test type is correct
 		switch (testType.toLowerCase()) {
 			case 'ping':
 			case 'dns':
@@ -77,7 +78,12 @@ koaElasticUtils.addRoutes(router, [
 				break;
 
 			default:
-				throw new Error(`Measurement type ${testType} is incorrect`);
+				throw new Error(`Measurement type ${testType} is incorrect!`);
+		}
+
+		// if there is -from- part in the path but no target provided by user
+		if (splitPointIdx === -1 && !target) {
+			throw new Error('Target was not provided!');
 		}
 
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
@@ -89,6 +95,7 @@ koaElasticUtils.addRoutes(router, [
 		// }
 
 		ctx.status = 301;
+		// redirect conserving the target or just to default ping test page
 		let newPath = target ? `ping-from-${target}` : 'ping';
 
 		return ctx.redirect(`/network-tools/${newPath}`);
