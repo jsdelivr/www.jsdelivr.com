@@ -778,40 +778,13 @@
 			}
 		},
 		getParamsFromUrl () {
-			let rawParamsValue = this.get('params');
-
-			// if user tries to get the network-tools page without providing at least testType
-			// navigate to default network-tools page
-			if (rawParamsValue === null || typeof rawParamsValue === 'undefined') {
-				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, null, true);
-
-				return;
-			}
-
+			let rawParamsValue = this.get('params') || '';
 			let clearParamsValue = rawParamsValue.replace(/\/network-tools\/?/, '').toLowerCase();
 			let splitPoint = '-from-';
 			let splitPointIdx = clearParamsValue.indexOf(splitPoint);
 			let [ rawTestType, rawLocation ] = splitPointIdx === -1
 				? clearParamsValue.split(splitPoint)
 				: [ clearParamsValue.slice(0, splitPointIdx), clearParamsValue.slice(splitPointIdx + splitPoint.length) ];
-
-			// if testType provided by user is incorrect
-			// navigate to default network-tools testType page but conserve the location
-			if (!this.checkIfTestTypeCorrect(rawTestType)) {
-				let isFullParam = clearParamsValue.includes(splitPoint) && rawLocation && rawTestType;
-
-				this.moveToNewPageURL(INITIAL_OPTS_VALUES.type, isFullParam ? rawLocation : null, !isFullParam);
-
-				return;
-			}
-
-			// if testType provided by user is correct but there is no location provided
-			// navigate to provided by user testType network-tools page
-			if (clearParamsValue.includes(splitPoint) && !rawLocation) {
-				this.moveToNewPageURL(rawTestType, null, true);
-
-				return;
-			}
 
 			this.set('selectedTestType', rawTestType);
 			this.set('rawLocation', rawLocation || 'world');
