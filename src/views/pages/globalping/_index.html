@@ -2270,7 +2270,7 @@
 
 							// only the first target's response returns locations
 							if (isFirstShareReq) {
-								let magicValue = testRes.locations.reduce((res, loc) => {
+								let magicValue = testRes.locations?.reduce((res, loc) => {
 									if (loc.magic) {
 										res += res.length ? `, ${loc.magic}` : loc.magic;
 
@@ -2592,8 +2592,11 @@
 			setTimeout(() => {
 				// do not zoom if test was done for the World.
 				if (
-					locations.length === 1
-					&& (locations[0].magic.toLowerCase() === 'world' || locations[0].magic === '')
+					!locations
+					|| (
+						locations.length === 1
+							&& (locations[0].magic.toLowerCase() === 'world' || locations[0].magic === '')
+					)
 				) {
 					return;
 				}
