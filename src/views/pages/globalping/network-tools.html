@@ -380,13 +380,13 @@
 							this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, locationData.fromAsUrlPart)}`);
 						} else {
 							// when testType correct but location absent at the moment among the probes or incorrect
-							this.moveToNewPageURL(selectedTestType, null, true);
+							this.moveToNewPageURL(selectedTestType);
 
 							return;
 						}
 					} else {
 						this.set('locationData', { from: 'World', probesCnt: this.get('totalProbesCnt') });
-						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType, null, true)}`);
+						this.set('highLevelLocationHref', `${global.location.origin}${this.modifyQueryPart(selectedTestType)}`);
 					}
 
 					// handle meta tag title and description once location is confirmed as presented
@@ -738,18 +738,16 @@
 
 			app.router.dispatch(newPath, { noScroll: true });
 		},
-		moveToNewPageURL (testType, newLocation = null, leaveTestOnly = false) {
-			let newPath = this.modifyQueryPart(testType, newLocation, leaveTestOnly);
+		moveToNewPageURL (testType, newLocation = 'world') {
+			let newPath = this.modifyQueryPart(testType, newLocation);
 
 			window.location.replace(newPath);
 		},
-		modifyQueryPart (testType = 'ping', newLocation = null, leaveTestOnly = false) {
+		modifyQueryPart (testType = 'ping', newLocation = null) {
 			let newQueryTestFromValue = '';
 
 			if (newLocation) {
 				newQueryTestFromValue = `${testType}-from-${newLocation}`;
-			} else if (leaveTestOnly) {
-				newQueryTestFromValue = testType;
 			} else {
 				let splittedQueryTestFrom = app.router.uri.path.split('/');
 				let currQueryTestFromValue = splittedQueryTestFrom[splittedQueryTestFrom.length - 1];
