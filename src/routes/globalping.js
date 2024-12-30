@@ -66,7 +66,7 @@ koaElasticUtils.addRoutes(router, [
 		? params.split(splitPoint)
 		: [ params.slice(0, splitPointIdx), params.slice(splitPointIdx + splitPoint.length) ];
 	let allowedTestTypes = [ 'ping', 'dns', 'mtr', 'http', 'traceroute' ];
-	let isTestTypeValid = allowedTestTypes.includes(testType.toLowerCase());
+	let isTestTypeValid = allowedTestTypes.includes(testType);
 
 	try {
 		// check if test type is correct
@@ -82,7 +82,7 @@ koaElasticUtils.addRoutes(router, [
 			};
 		} else {
 			// redirect conserving the target or just to default ping-from-world test page
-			newPath = target ? `ping-from-${target}` : 'ping-from-world';
+			newPath = target ? `ping-from-${target.toLowerCase()}` : 'ping-from-world';
 
 			throw new Error(`Measurement type ${testType} is incorrect! Redirecting to ${newPath}!`);
 		}
