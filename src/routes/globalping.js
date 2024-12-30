@@ -91,10 +91,9 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		// TODO: 715 app call leas to Reference error: undefined
-		// if (app.env === 'development') {
-		// console.error(e);
-		// }
+		if (ctx.app.env === 'development') {
+			console.error(e);
+		}
 
 		ctx.status = 301;
 
