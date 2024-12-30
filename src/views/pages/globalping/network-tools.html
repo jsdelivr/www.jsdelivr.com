@@ -62,11 +62,11 @@
 
 						<span>test</span>
 					</div>
-				{{elseif rawLocation}}
+				{{elseif rawLocationToDisplay}}
 					<h1>{{displayingTestType}} from multiple locations in </h1>
 					<span class="gp-nettools_main-info_content_temp-location">
-						{{#if rawLocation.toLowerCase() !== 'world'}}
-							{{rawLocation}},
+						{{#if rawLocationToDisplay.toLowerCase() !== 'world'}}
+							{{rawLocationToDisplay}},
 						{{/if}}
 
 						<a target="_blank" rel="noopener noreferrer" href="{{global.location.origin}}/network-tools/{{selectedTestType}}-from-world" class="gp-nettools_green-text">
@@ -277,22 +277,24 @@
 				probesParsed: false,
 				testReqParams: null,
 				rawLocation: null,
+				rawLocationToDisplay: null,
 				allRequiredDataReady: false,
 			};
 		},
 		onconfig () {
 			if (!Ractive.isServer) {
 				let title, description;
-				let { rawTestType, rawLocation } = this.getInitialRawDataFromUrl();
+				let { rawTestType, rawLocation, rawLocationToDisplay } = this.getInitialRawDataFromUrl();
 
 				// create temp title, descr before any checks, required by GA
-				title = this.createMetaTitle(rawTestType, rawLocation);
-				description = this.createMetaDescr(rawTestType, rawLocation);
+				title = this.createMetaTitle(rawTestType, rawLocationToDisplay);
+				description = this.createMetaDescr(rawTestType, rawLocationToDisplay);
 
 				this.set('title', title);
 				this.set('description', description);
 				this.set('selectedTestType', rawTestType);
 				this.set('rawLocation', rawLocation);
+				this.set('rawLocationToDisplay', rawLocationToDisplay);
 			}
 		},
 		oninit () {
@@ -861,11 +863,12 @@
 			let [ rawTestType, rawLocation ] = splitPointIdx === -1
 				? clearParamsValue.split(splitPoint)
 				: [ clearParamsValue.slice(0, splitPointIdx), clearParamsValue.slice(splitPointIdx + splitPoint.length) ];
-			let rawLocationPrepared = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
+			let rawLocationToDisplay = _.capitalizeStrEveryFirstLetter((rawLocation || 'world').split('-').join(' '), CAPITALIZE_EXCLUDE_LIST);
 
 			return {
 				rawTestType,
-				rawLocation: rawLocationPrepared,
+				rawLocation,
+				rawLocationToDisplay,
 			};
 		},
 	};
