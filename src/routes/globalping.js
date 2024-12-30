@@ -55,7 +55,7 @@ koaElasticUtils.addRoutes(router, [
  * Network tools pages.
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/network-tools/:params?' ],
+	[ '/network-tools', '/network-tools/:params?' ],
 ], async (ctx) => {
 	let data;
 	let newPath;
