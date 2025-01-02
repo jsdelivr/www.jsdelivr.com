@@ -58,34 +58,33 @@ koaElasticUtils.addRoutes(router, [
 	[ '/network-tools', '/network-tools/:params?' ],
 ], async (ctx) => {
 	let data;
+	let newPath;
 	let { params = '' } = ctx.params;
 	let splitPoint = '-from-';
 	let splitPointIdx = params.indexOf(splitPoint);
 	let [ testType, target ] = splitPointIdx === -1
 		? params.split(splitPoint)
 		: [ params.slice(0, splitPointIdx), params.slice(splitPointIdx + splitPoint.length) ];
+	let allowedTestTypes = [ 'ping', 'dns', 'mtr', 'http', 'traceroute' ];
+	let isTestTypeValid = allowedTestTypes.includes(testType);
 
 	try {
 		// check if test type is correct
-		switch (testType.toLowerCase()) {
-			case 'ping':
-			case 'dns':
-			case 'mtr':
-			case 'http':
-			case 'traceroute':
-				data = {
-					params: ctx.params.params || '',
-				};
+		if (isTestTypeValid) {
+			if (!target) {
+				newPath = `${testType}-from-world`;
 
-				break;
+				throw new Error(`Redirecting to ${newPath}!`);
+			}
 
-			default:
-				throw new Error(`Measurement type ${testType} is incorrect!`);
-		}
+			data = {
+				params: ctx.params.params || '',
+			};
+		} else {
+			// redirect conserving the target or just to default ping-from-world test page
+			newPath = target ? `ping-from-${target.toLowerCase()}` : 'ping-from-world';
 
-		// if there is -from- part in the path but no target provided by user
-		if (splitPointIdx !== -1 && !target) {
-			throw new Error('Target was not provided!');
+			throw new Error(`Measurement type ${testType} is incorrect! Redirecting to ${newPath}!`);
 		}
 
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
@@ -96,9 +95,6 @@ koaElasticUtils.addRoutes(router, [
 		}
 
 		ctx.status = 301;
-
-		// redirect conserving the target or just to default ping test page
-		let newPath = target ? `ping-from-${target}` : 'ping';
 
 		return ctx.redirect(`/network-tools/${newPath}`);
 	}
