@@ -55,22 +55,48 @@ koaElasticUtils.addRoutes(router, [
  * Network tools pages.
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/network-tools', '/network-tools/:params' ],
+	[ '/network-tools', '/network-tools/:params?' ],
 ], async (ctx) => {
-	let data = {
-		params: ctx.params.params || '',
-	};
+	let data;
+	let newPath;
+	let { params = '' } = ctx.params;
+	let splitPoint = '-from-';
+	let splitPointIdx = params.indexOf(splitPoint);
+	let [ testType, target ] = splitPointIdx === -1
+		? params.split(splitPoint)
+		: [ params.slice(0, splitPointIdx), params.slice(splitPointIdx + splitPoint.length) ];
+	let allowedTestTypes = [ 'ping', 'dns', 'mtr', 'http', 'traceroute' ];
+	let isTestTypeValid = allowedTestTypes.includes(testType);
 
 	try {
+		// check if test type is correct
+		if (isTestTypeValid) {
+			if (!target) {
+				newPath = `${testType}-from-world`;
+
+				throw new Error(`Redirecting to ${newPath}!`);
+			}
+
+			data = {
+				params: ctx.params.params || '',
+			};
+		} else {
+			// redirect conserving the target or just to default ping-from-world test page
+			newPath = target ? `ping-from-${target.toLowerCase()}` : 'ping-from-world';
+
+			throw new Error(`Measurement type ${testType} is incorrect! Redirecting to ${newPath}!`);
+		}
+
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
 		ctx.status = 301;
-		return ctx.redirect('/');
+
+		return ctx.redirect(`/network-tools/${newPath}`);
 	}
 });
 
