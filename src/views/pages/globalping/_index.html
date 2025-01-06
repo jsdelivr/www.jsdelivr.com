@@ -1793,14 +1793,18 @@
 				this.observe('screenWidth', (screenWidth) => {
 					let ttPositions = {};
 
-					if (screenWidth < 768) {
-						ttPositions.targetTtPos = 'right';
-						ttPositions.locationTtPos = 'right';
-						ttPositions.limitTtPos = 'right';
-					} else {
+					if (screenWidth >= 1272) {
 						ttPositions.targetTtPos = 'top';
 						ttPositions.locationTtPos = 'top';
 						ttPositions.limitTtPos = 'top';
+					} else if (screenWidth >= 768) {
+						ttPositions.targetTtPos = 'top';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'top';
+					} else {
+						ttPositions.targetTtPos = 'right';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'right';
 					}
 
 					this.set('ttPositions', ttPositions);
