@@ -132,9 +132,10 @@
 							gpNotAppliedOpts="{{notAppliedOpts}}"
 							gpUrlHandlerCb="{{@this.applyOptions}}"
 							showIPSwitch="{{mainOptions.type !== 'DNS'}}"
-							ipVersion="{{mainOptions.ipVersion}}">
+							ipVersion="{{mainOptions.ipVersion}}"
+							ttPos="{{ttPositions.targetTtPos}}">
 							{{#partial labelIcon}}
-								<img as-tooltip="'Up to 2 IP addresses or domains'"
+								<img as-tooltip="'Up to 2 IP addresses or domains', ttPos"
 									width="14"
 									height="14"
 									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
@@ -150,9 +151,10 @@
 							placeholder="Enter location"
 							labelText="Location"
 							classList="gp_map-block_settings-wrapper_settings_location gp_input"
-							disabled="{{testInProgress}}">
+							disabled="{{testInProgress}}"
+							ttPos="{{ttPositions.locationTtPos}}">
 							{{#partial labelIcon}}
-								<img as-tooltip="[ 'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags.', '', 'Use + to combine multiple filters.', 'Use , to select multiple locations.' ], undefined, undefined, undefined, 'multiline'"
+								<img as-tooltip="[ 'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags.', '', 'Use + to combine multiple filters.', 'Use , to select multiple locations.' ], ttPos, undefined, undefined, 'multiline'"
 									width="14"
 									height="14"
 									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
@@ -168,9 +170,10 @@
 								labelText="Limit"
 								classList="gp_map-block_settings-wrapper_settings_limit gp_input"
 								hideLabelIcon="{{infiniteSwitchEnabled === false}}"
-								disabled="{{testInProgress}}">
+								disabled="{{testInProgress}}"
+								ttPos="{{ttPositions.limitTtPos}}">
 								{{#partial labelIcon}}
-									<img as-tooltip="'Values up to 5 are supported for infinite measurements'"
+									<img as-tooltip="'Values up to 5 are supported for infinite measurements', ttPos, undefined, undefined, 'gp_tt-limit'"
 										width="14"
 										height="14"
 										src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
@@ -1784,6 +1787,27 @@
 					if (!screenWidth) {
 						this.set('screenWidth', innerWidth);
 					}
+				});
+
+				// handle tooltips positions depending on the screen size
+				this.observe('screenWidth', (screenWidth) => {
+					let ttPositions = {};
+
+					if (screenWidth >= 1272) {
+						ttPositions.targetTtPos = 'top';
+						ttPositions.locationTtPos = 'top';
+						ttPositions.limitTtPos = 'top';
+					} else if (screenWidth >= 768) {
+						ttPositions.targetTtPos = 'top';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'top';
+					} else {
+						ttPositions.targetTtPos = 'right';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'right';
+					}
+
+					this.set('ttPositions', ttPositions);
 				});
 
 				// disable Infinite switch if there is more than one target
