@@ -2314,6 +2314,11 @@
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
 
+								// handle map max timing for HTTP measurement
+								if (testRes.type.toLowerCase() === 'http') {
+									this.set('probesMaxTiming', 1000);
+								}
+
 								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
 								if (testRes.measurementOptions?.ipVersion) {
 									this.set('mainOptions.ipVersion', testRes.measurementOptions.ipVersion);
