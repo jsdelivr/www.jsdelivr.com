@@ -436,6 +436,7 @@
 														<div class="dropdown-menu">
 															<div on-click="@this.set('httpOpts.request.method', 'GET')">GET</div>
 															<div on-click="@this.set('httpOpts.request.method', 'HEAD')">HEAD</div>
+															<div on-click="@this.set('httpOpts.request.method', 'OPTIONS')">OPTIONS</div>
 														</div>
 													</div>
 												</div>
@@ -2312,6 +2313,11 @@
 								this.set('shareResHeaderData', `Showing results from ${_.formatDateTime(new Date(testRes.createdAt))}`);
 								this.set('mainOptions.type', this.translateTestTypeName(testRes.type));
 								this.set('mainOptions.limit', testRes.limit || DEFAULT_LIMIT);
+
+								// handle map max timing for HTTP measurement
+								if (testRes.type.toLowerCase() === 'http') {
+									this.set('probesMaxTiming', 1000);
+								}
 
 								// ipVersion (target ip-type-switch) came with the measurementOptions but should be treated as the mainOptions
 								if (testRes.measurementOptions?.ipVersion) {
