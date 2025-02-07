@@ -104,10 +104,16 @@
 		},
 		oninit () {
 			if (!Ractive.isServer) {
-				this.observe('error', () => {
-					this.set('invalidValue', this.get('value'));
-					this.set('ipVersion', null);
-					this.set('ipVersionDisplayed', null);
+				this.observe('error', (error) => {
+					if (error) {
+						this.set('invalidValue', this.get('value'));
+						this.set('ipVersion', null);
+						this.set('ipVersionDisplayed', null);
+					} else {
+						let tagsArr = this.get('tagsArr');
+
+						this.handleIpSwitchState(tagsArr[0]);
+					}
 				}, { init: false });
 
 				this.observe('value', (value) => {
@@ -149,24 +155,7 @@
 						return;
 					}
 
-					let ipv4regex = ipRegex.v4({ exact: true });
-					let ipv6regex = ipRegex.v6({ exact: true });
-
-					if (ipv4regex.test(tagsArr[0])) {
-						this.set('ipVersion', null);
-						this.set('ipVersionDisplayed', IP_V4_VALUE);
-						this.set('ipSwitchLocked', true);
-					} else if (ipv6regex.test(tagsArr[0])) {
-						this.set('ipVersion', null);
-						this.set('ipVersionDisplayed', IP_V6_VALUE);
-						this.set('ipSwitchLocked', true);
-					} else {
-						let ipVersionDisplayed = currIpVersionDisplayed || this.get('prevIpVersionDisplayed') || IP_V4_VALUE;
-
-						this.set('ipVersion', ipVersionDisplayed);
-						this.set('ipVersionDisplayed', ipVersionDisplayed);
-						this.set('ipSwitchLocked', false);
-					}
+					this.handleIpSwitchState(tagsArr[0]);
 				});
 
 				// set default value is it was passed as prop
@@ -420,5 +409,25 @@
 		handleIpTypeSwitchFocus (e, tagsBlockEl) {
 			tagsBlockEl.classList.remove('focused');
 		},
+		handleIpSwitchState (target) {
+			let ipv4regex = ipRegex.v4({ exact: true });
+			let ipv6regex = ipRegex.v6({ exact: true });
+
+			if (ipv4regex.test(target)) {
+				this.set('ipVersion', null);
+				this.set('ipVersionDisplayed', IP_V4_VALUE);
+				this.set('ipSwitchLocked', true);
+			} else if (ipv6regex.test(target)) {
+				this.set('ipVersion', null);
+				this.set('ipVersionDisplayed', IP_V6_VALUE);
+				this.set('ipSwitchLocked', true);
+			} else {
+				let ipVersionDisplayed = this.get('ipVersionDisplayed') || this.get('prevIpVersionDisplayed') || IP_V4_VALUE;
+
+				this.set('ipVersion', ipVersionDisplayed);
+				this.set('ipVersionDisplayed', ipVersionDisplayed);
+				this.set('ipSwitchLocked', false);
+			}
+		}
 	};
 </script>
