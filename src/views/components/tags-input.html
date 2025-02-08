@@ -381,6 +381,11 @@
 			try {
 				let { protocol, port, pathname, hostname, search } = new URL(url);
 
+				if (!hostname) {
+					// Just one extra check. The constructor above may throw too.
+					throw new Error('Invalid URL');
+				}
+
 				this.set('gpMainOpts.type', 'HTTP');
 				this.set('gpMainOpts.target', tagsArr ? [ ...tagsArr, hostname ].join(delimiter) : hostname);
 				this.set('gpHttpOpts.protocol', protocol.replace(':', '').toUpperCase());
