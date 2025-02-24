@@ -1,0 +1,83 @@
+{{#if tls}}
+	<button type="button" class="btn" title="TLS details" data-content="{{@this.getTlsString(tls)}}" data-html="true" data-container=".c-gp-results-raw-output_list">
+		<i class="fa fa-lock" aria-hidden="true"></i> TLS details
+	</button>
+{{/if}}
+
+<script>
+	const _ = require('../../assets/js/_');
+
+	component.exports = {
+		data () {
+			return {
+				_,
+			};
+		},
+		computed: {
+			placement () {
+				return this.get('screenWidth') >= 1200 ? 'right' : 'top';
+			},
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				this.observe('placement', () => {
+					let button = this.find('button');
+
+					$(button).popover('destroy');
+
+					setTimeout(() => {
+						$(button).popover({ placement: this.get('placement') });
+
+						let closeHandler = (e) => {
+							if (e.target !== button && $(e.target).closest('.popover').length === 0) {
+								button.click();
+							}
+						};
+
+						$(button).on('show.bs.popover', () => {
+							console.log('show');
+							$(document).on('click', closeHandler);
+							$(document).on('resize', closeHandler);
+							$('.c-gp-results-raw-output_list').on('scroll', closeHandler);
+						}).on('hide.bs.popover', () => {
+							console.log('hide');
+							$(document).off('click', closeHandler);
+							$(document).off('resize', closeHandler);
+							$('.c-gp-results-raw-output_list').off('scroll', closeHandler);
+						});
+					}, 600);
+				});
+			}
+		},
+		getTlsString (tls) {
+			return `
+				<table class="table" style="margin-bottom: 0; overflow-wrap: anywhere;">
+					<tr>
+						<th style="border-top: 0; min-width: 86px;">Subject</th>
+						<td style="border-top: 0;">${tls.subject.CN}; ${tls.subject.alt}</td>
+					</tr>
+					<tr>
+						<th>Issuer</th>
+						<td>${tls.issuer.CN}; ${tls.issuer.O}; ${tls.issuer.C}</td>
+					</tr>
+					<tr>
+						<th>Validity</th>
+						<td>${_.formatDateTime(tls.createdAt)}; ${_.formatDateTime(tls.expiresAt)}</td>
+					</tr>
+					<tr>
+						<th>Serial number</th>
+						<td>${tls.serialNumber}</td>
+					</tr>
+					<tr>
+						<th>Fingerprint</th>
+						<td>${tls.fingerprint256}</td>
+					</tr>
+					<tr>
+						<th>Key type</th>
+						<td>${tls.keyType}${tls.keyBits}</td>
+					</tr>
+				</table>
+			`;
+		},
+	};
+</script>
