@@ -264,7 +264,7 @@ module.exports.postGlobalpingMeasurement = (opts, responseHeadersToGet) => {
 		method: 'POST',
 		url: `${GLOBALPING_HOST}/v1/measurements`,
 		body: opts,
-		withCredentials: true,
+		withCredentials: /(?:^|\.)globalping\.io$/.test(location.hostname),
 	};
 
 	if (responseHeadersToGet) {
