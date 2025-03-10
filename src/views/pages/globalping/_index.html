@@ -3,6 +3,7 @@
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/location-input.html" name="c-location-input">
 <link rel="ractive" href="../../components/controlled-textarea.html" name="c-controlled-textarea">
 <link rel="ractive" href="../../components/tags-input.html" name="c-tags-input">
 <link rel="ractive" href="../../components/gp-results-controls.html" name="c-gp-results-controls">
@@ -144,8 +145,9 @@
 					</div>
 
 					<div class="gp_map-block_settings-wrapper_settings_grouped">
-						<c-controlled-input
-							id="locationInput"
+						<c-location-input
+							on-enter="@this.resetMapAndRunTest()"
+							rawProbes="{{rawProbes}}"
 							value="{{mainOptions.location}}"
 							error="{{inputErrors.location}}"
 							placeholder="Enter location"
@@ -159,7 +161,7 @@
 									height="14"
 									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
 							{{/partial}}
-						</c-controlled-input>
+						</c-location-input>
 
 						<div class="gp_map-block_settings-wrapper_settings_subgroup">
 							<c-controlled-input
@@ -1403,6 +1405,7 @@
 		data () {
 			return {
 				_,
+				rawProbes: '',
 				PROBE_NO_TIMING_VALUE,
 				PROBE_STATUS_FAILED,
 				PROBE_STATUS_OFFLINE,
@@ -1839,7 +1842,6 @@
 			if (!Ractive.isServer) {
 				// run the test if user is pressed Enter inside of any of main options inputs
 				let targetInput = this.find('#targetInput');
-				let locationInput = this.find('#locationInput');
 				let limitInput = this.find('#limitInput');
 
 				let handleEnterBtn = (event) => {
@@ -1850,7 +1852,6 @@
 				};
 
 				targetInput.addEventListener('keypress', handleEnterBtn);
-				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
 			}
 		},
@@ -2442,6 +2443,8 @@
 					response = JSON.parse(response);
 				}
 
+				this.set('rawProbes', response);
+
 				let { totalCities, totalCountries } = response.reduce((res, item) => {
 					if (!res.citiesList.includes(item.location.city)) {
 						res.citiesList.push(item.location.city);
@@ -2849,9 +2852,12 @@
 					let splittedKeyName = key.split('.');
 					let splittedKeyNameLength = splittedKeyName.length;
 					let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-					let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
-					res[fieldName] = errMsg;
+					if ([ 'locations', 'magic' ].includes(fieldName)) {
+						fieldName = 'location';
+					}
+
+					res[fieldName] = err.error.params[key].replace(/".*"/, fieldName);
 
 					if (splittedKeyName[0] === 'measurementOptions') {
 						measurementOptsErr = true;
