@@ -544,7 +544,7 @@
 				</c-gp-credits-message>
 			{{/if}}
 
-			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
+			<div class="gp_map-block_map-wrapper {{#unless transitionMap}}transition-none{{/unless}} {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
 				{{#if testResults}}
@@ -592,6 +592,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
+						originalShowMap="{{originalShowMap}}"
 						targets="{{targetsArr}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}"
@@ -1417,6 +1418,8 @@
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
+				originalShowMap: true,
+				transitionMap: true,
 				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
@@ -1836,6 +1839,17 @@
 						this.handleDropDownRunTestBtnNav();
 					}
 				});
+
+				this.observe('showMap', (newValue) => {
+					if (!newValue && this.get('originalShowMap')) {
+						this.set('transitionMap', false);
+					} else {
+						// using a deferred observer somehow isn't sufficient here
+						setTimeout(() => {
+							this.set('transitionMap', true);
+						}, 100);
+					}
+				});
 			}
 		},
 		oncomplete () {
@@ -2001,6 +2015,7 @@
 						this.set('rateCreditsData', combinedHeaders);
 						this.getTestMeasurementById({ measurementId: res.response.id });
 						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
+						this.set('showMap', this.get('originalShowMap'));
 
 						// Update the URL without creating a new history entry.
 						app.router.replaceQueryParam('measurement', `${this.get('measurement')},${res1.response.id}`);
@@ -2009,6 +2024,7 @@
 					});
 				} else {
 					this.getTestMeasurementById({ measurementId: res.response.id });
+					this.set('showMap', this.get('originalShowMap'));
 				}
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
@@ -2780,6 +2796,7 @@
 				};
 
 				this.getTestMeasurementById({ measurementId: res.response.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
+				this.set('showMap', this.get('originalShowMap'));
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
 			});
@@ -2845,6 +2862,7 @@
 					this.set('showCreditsError', true);
 				} else {
 					this.set('showCreditsData', false);
+					this.set('showMap', false);
 				}
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
@@ -2872,8 +2890,9 @@
 				if (measurementOptsErr) {
 					this.set('showMeasurementOpts', true);
 				}
-			} else if (err.error.type === 'no_probes_found') {
+			} else {
 				this.set('measurementErrMsg', err.error.message);
+				this.set('showMap', false);
 			}
 		},
 		reUseProbesRunTest () {
