@@ -1,0 +1,454 @@
+<div class="c-controlled-input {{classList}}">
+	<div class="c-controlled-input_info">
+		<span class="c-controlled-input_info_label">
+			{{labelText}}
+			{{#if @this.partials.labelIcon && !hideLabelIcon}}
+				{{>labelIcon}}
+			{{/if}}
+		</span>
+
+		{{#if error}}
+			<span class="c-controlled-input_info_errorMsg">
+				{{error}}
+			</span>
+
+			<img class="c-controlled-input_err-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
+		{{/if}}
+	</div>
+
+	<!-- Use a server-rendered input and swap it for the real on init to avoid having visible empty space here during init. -->
+	<input
+		type="text"
+		value="{{value}}"
+		placeholder="{{placeholder}}"
+		class="{{#if swapInputs}}hidden{{/if}}">
+
+	<div class="aa-gp-container {{#unless swapInputs}}hidden{{/unless}}"></div>
+</div>
+
+<script>
+	const _ = require('../../assets/js/_');
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
+	const tooltip = require('../../assets/js/decorators/tooltip');
+
+	const states = require('../../assets/json/usa-states.json');
+	const countries = require('../../assets/json/countries.json');
+	const continents = require('../../assets/json/continents.json');
+
+	const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
+	const escapeRegExp = string => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				invalidValue: null,
+				errMsgTopPos: false,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observeOnce('error', () => {
+					this.set('invalidValue', this.get('value'));
+				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
+
+				this.observe('screenWidth', (screenWidth) => {
+					if ((screenWidth || innerWidth) < 768) {
+						this.set('errMsgTopPos', true);
+					} else {
+						this.set('errMsgTopPos', false);
+					}
+				});
+			}
+		},
+		onrender () {
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+
+			if (!Ractive.isServer) {
+				let index = {
+					tags: [],
+					global: [],
+					cities: [],
+					countries: [],
+					continents: [],
+					regions: [],
+					networks: [],
+				};
+
+				let initLimit = value => function runLimit (rawSources) {
+					let sources = rawSources.flat().filter(Boolean);
+					let nonEmptySources = 0;
+					let totalItems = 0;
+
+					sources.forEach((source) => {
+						nonEmptySources += source.count ? 1 : 0;
+						totalItems += source.count;
+					});
+
+					if (totalItems === 0) {
+						return [];
+					}
+
+					let minLimitPerSource = Math.ceil(value / nonEmptySources);
+					let maxLimitPerSource = Math.max(Math.min(totalItems, value), minLimitPerSource);
+					let limitedSources;
+
+					for (let currentLimit = minLimitPerSource; currentLimit <= maxLimitPerSource; currentLimit++) {
+						let sharedLimitRemaining = value;
+
+						limitedSources = sources.map((source, index) => {
+							let isLastSource = index === sources.length - 1;
+							let sourceLimit = isLastSource
+								? sharedLimitRemaining
+								: Math.min(currentLimit, sharedLimitRemaining);
+							let items = source.getItems().slice(0, sourceLimit);
+							sharedLimitRemaining = Math.max(sharedLimitRemaining - items.length, 0);
+
+							return {
+								...source,
+								getItems () {
+									return items;
+								},
+							};
+						});
+
+						if (!sharedLimitRemaining) {
+							return limitedSources;
+						}
+					}
+
+					return limitedSources;
+				};
+
+				let initNonEqual = isEqual => function runNonEqual (query, rawSources) {
+					let sources = rawSources.flat().filter(Boolean).filter((source) => {
+						return !(!source.count || (source.count === 1 && isEqual(query, source.getItems()[0])));
+					});
+
+					return sources.length ? rawSources : [];
+				};
+
+				let columns = (html, left, right) => html`
+					<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+						<div>${left}</div>
+						<div class="aa-gp-item-count">${right}</div>
+					</div>
+				`;
+
+				let limit = initLimit(12);
+				let nonEqual = initNonEqual((query, item) => item.normalizedValue === query.toLowerCase());
+				let { autocomplete } = window['@algolia/autocomplete-js'];
+
+				let { setQuery } = autocomplete({
+					container: this.find('.aa-gp-container'),
+					onStateChange: ({ state }) => { this.set('value', state.isOpen ? state.query : state.completion || state.query); },
+					detachedMediaQuery: 'none',
+					placeholder: this.get('placeholder'),
+					openOnFocus: true,
+					classNames: {
+						panelLayout: 'dropdown-menu',
+						input: this.get('error') ? 'has-error' : '',
+					},
+					render ({ sections, render, html }, root) {
+						render(
+							html`
+							<div class="aa-PanelLayout aa-Panel--scrollable">
+								<section class="aa-gp-info"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Try one of these suggestions or use your own value</section>
+								${sections}
+							</div>`,
+							root,
+						);
+					},
+					reshape ({ sources, state }) {
+						return [
+							limit(nonEqual(state.query, sources)),
+						];
+					},
+					getSources ({ query }) {
+						let lastQuery = query.split(',').at(-1);
+						let queryGroup = lastQuery.split('+').map(q => q.trim()).filter(Boolean);
+
+						let rankedPatternsPerGroup = queryGroup.map((query) => {
+							let escapedQuery = escapeRegExp(query);
+
+							return [
+								new RegExp(`^${escapedQuery}$`, 'im'),
+								new RegExp(`^${escapedQuery}\\b`, 'im'),
+								new RegExp(`^${escapedQuery}`, 'im'),
+								new RegExp(`\\b${escapedQuery}\\b`, 'im'),
+								new RegExp(`\\b${escapedQuery}`, 'im'),
+								new RegExp(`${escapedQuery}`, 'im'),
+							];
+						});
+
+						let initSource = (name, properties) => {
+							return _.deepExtend({
+								sourceId: name,
+								getItems: () => {
+									return index[name];
+								},
+								getItemInputValue ({ item }) {
+									return item.value;
+								},
+								templates: {
+									header () {
+										return _.capitalizeFirstLetter(name);
+									},
+								},
+							}, properties);
+						};
+
+						let filterSourceResults = (source) => {
+							let filtered = [];
+							let bestRank = Infinity;
+
+							items:
+							for (let item of source.getItems()) {
+								let firstGroupRank = Infinity;
+
+								groups:
+								for (let rankedPatterns of rankedPatternsPerGroup) {
+									for (let i = 0; i < rankedPatterns.length; i++) {
+										if (rankedPatterns[i].test(item.normalizedValue)) {
+											firstGroupRank = i;
+											continue groups;
+										}
+									}
+
+									continue items;
+								}
+
+								filtered.push({ ...item, rank: firstGroupRank });
+
+								if (firstGroupRank < bestRank) {
+									bestRank = firstGroupRank;
+								}
+							}
+
+							filtered.sort((a, b) => {
+								if (a.rank === b.rank) {
+									return b.count - a.count;
+								}
+
+								return a.rank - b.rank;
+							});
+
+							return {
+								...source,
+								getItems: () => filtered,
+								count: filtered.length,
+								rank: bestRank,
+							};
+						};
+
+						return [
+							initSource('tags', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, item.value, `${item.count}`);
+									},
+								},
+							}),
+							initSource('countries', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.value}<span class="aa-gp-item-extra"> (${item.countryCode})</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('continents', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('cities', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.displayValue}<span class="aa-gp-item-extra">, ${item.state || item.country}</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('regions', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('states', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.displayValue}<span class="aa-gp-item-extra"> (${item.stateCode})</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('networks', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+						].map((source) => {
+							return filterSourceResults(source);
+						}).sort((a, b) => {
+							// For sections with the same rank, order by the number of probes in the first location.
+							if (a.rank === b.rank) {
+								return (b.getItems()[0]?.count || 0) - (a.getItems()[0]?.count || 0);
+							}
+
+							return a.rank - b.rank;
+						});
+					},
+				});
+
+				let input = this.el.querySelector('.aa-Input');
+
+				// Enter handling.
+				let handleEnterBtn = (event) => {
+					if (event.key === 'Enter') {
+						this.fire('enter');
+					}
+				};
+
+				input.addEventListener('keypress', handleEnterBtn);
+				this.on('unrender', () => input.removeEventListener('keypress', handleEnterBtn));
+
+				// Propagate state changes.
+				this.observe('value', (newValue) => {
+					setQuery(newValue);
+				}, { init: false });
+
+				this.observe('disabled', (newValue) => {
+					input.classList.toggle('is-disabled', !!newValue);
+					input.disabled = !!newValue;
+				}, { init: false });
+
+				this.observe('error', (newValue) => {
+					input.classList.toggle('has-error', !!newValue);
+				}, { init: false });
+
+				// Fill in the initial value and show the input.
+				setQuery(this.get('value') || '');
+
+				setTimeout(() => {
+					this.set('swapInputs', true);
+				});
+
+
+				// Prepare the source data.
+				let uniqCountSortNormalize = (values) => {
+					let countValues = values.reduce((acc, value) => {
+						acc[value] = (acc[value] || 0) + 1;
+						return acc;
+					}, {});
+
+					return Object.keys(countValues).map(key => ({
+						value: key,
+						normalizedValue: key.toLowerCase(),
+						count: countValues[key],
+					})).sort((a, b) => b.count - a.count);
+				};
+
+				this.observe('rawProbes', (probes) => {
+					index.global = [
+						'World',
+					];
+
+					index.cities = probes.map(probe => `${probe.location.city}\n${probe.location.state}\n${probe.location.country}`);
+					index.countries = probes.map(probe => probe.location.country);
+					index.continents = probes.map(probe => probe.location.continent);
+					index.regions = probes.map(probe => probe.location.region);
+					index.states = probes.map(probe => probe.location.state).filter(v => v);
+					index.tags = probes.map(probe => probe.tags.filter(tag => !tag.startsWith('u-'))).flat();
+
+					index.networks = probes.map(probe => probe.location.network).map((network) => {
+						return network.replace(networkNameCleanupPattern, '').trim();
+					}).filter(network => !network.includes(','));
+
+					Object.keys(index).forEach((key) => {
+						index[key] = uniqCountSortNormalize(index[key]);
+					});
+
+					index.cities = index.cities.map((cityRow) => {
+						let [ city, stateCode, countryCode ] = cityRow.value.split('\n');
+						let country = countries.find(c => c.code === countryCode).name || countryCode;
+						let stateName = states.find(s => s.code === stateCode)?.name || '';
+
+						return {
+							...cityRow,
+							value: `${city}+${stateName ? `US-${stateCode}` : countryCode}`,
+							normalizedValue: `${city}\n${stateName ? `${stateName}\nUS-${stateCode}\n${stateCode}\n` : ''}${country}\n${countryCode}`.toLowerCase(),
+							displayValue: `${city}`,
+							country: `${country} (${countryCode})`,
+							state: stateName ? `${stateName} (US-${stateCode})` : '',
+						};
+					});
+
+					index.countries = index.countries.map((country) => {
+						let value = countries.find(c => c.code === country.value).name || country.value;
+
+						return {
+							...country,
+							value,
+							normalizedValue: `${value}\n${country.normalizedValue}`.toLowerCase(),
+							countryCode: country.value,
+						};
+					}).map((country) => {
+						if (country.countryCode === 'GB') {
+							return {
+								...country,
+								normalizedValue: `${country.value}\nUK\nGreat Britain\nEngland`.toLowerCase(),
+							};
+						}
+
+						return country;
+					});
+
+					index.continents = index.continents.map((continent) => {
+						let value = continents.find(c => c.code === continent.value).name || continent.value;
+
+						return {
+							...continent,
+							value,
+							normalizedValue: `${value}\n${continent.value}`.toLowerCase(),
+						};
+					});
+
+					index.states = index.states.map((state) => {
+						let name = states.find(c => c.code === state.value).name || state.value;
+
+						return {
+							...state,
+							value: `US-${state.value}`,
+							displayValue: name,
+							normalizedValue: `${name}\nUS-${state.value}\n${state.value}\nUnited States\nUS`.toLowerCase(),
+							stateCode: `US-${state.value}`,
+						};
+					});
+
+					index.tags.unshift(...index.global);
+					index.tags[0].count = probes.length;
+				});
+			}
+		},
+	};
+</script>

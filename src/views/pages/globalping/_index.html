@@ -3,6 +3,7 @@
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/location-input.html" name="c-location-input">
 <link rel="ractive" href="../../components/controlled-textarea.html" name="c-controlled-textarea">
 <link rel="ractive" href="../../components/tags-input.html" name="c-tags-input">
 <link rel="ractive" href="../../components/gp-results-controls.html" name="c-gp-results-controls">
@@ -144,8 +145,9 @@
 					</div>
 
 					<div class="gp_map-block_settings-wrapper_settings_grouped">
-						<c-controlled-input
-							id="locationInput"
+						<c-location-input
+							on-enter="@this.resetMapAndRunTest()"
+							rawProbes="{{rawProbes}}"
 							value="{{mainOptions.location}}"
 							error="{{inputErrors.location}}"
 							placeholder="Enter location"
@@ -159,7 +161,7 @@
 									height="14"
 									src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
 							{{/partial}}
-						</c-controlled-input>
+						</c-location-input>
 
 						<div class="gp_map-block_settings-wrapper_settings_subgroup">
 							<c-controlled-input
@@ -542,7 +544,7 @@
 				</c-gp-credits-message>
 			{{/if}}
 
-			<div class="gp_map-block_map-wrapper {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
+			<div class="gp_map-block_map-wrapper {{#unless transitionMap}}transition-none{{/unless}} {{#unless showMap}}gp_map-block_map-wrapper_hidden{{/unless}}">
 				<div id="gp-map" class="gp_map-block_map-wrapper_map"></div>
 
 				{{#if testResults}}
@@ -590,6 +592,7 @@
 				<div class="gp_map-block_test-output">
 					<c-gp-results-controls
 						showMap="{{showMap}}"
+						originalShowMap="{{originalShowMap}}"
 						targets="{{targetsArr}}"
 						activeTargetIdx="{{activeTargetIdx}}"
 						rawOutputMode="{{rawOutputMode}}"
@@ -1403,6 +1406,7 @@
 		data () {
 			return {
 				_,
+				rawProbes: '',
 				PROBE_NO_TIMING_VALUE,
 				PROBE_STATUS_FAILED,
 				PROBE_STATUS_OFFLINE,
@@ -1414,6 +1418,8 @@
 					...INITIAL_MAIN_OPTS_VALUES,
 				},
 				showMap: true,
+				originalShowMap: true,
+				transitionMap: true,
 				infiniteSwitchEnabled: false,
 				showMeasurementOpts: false,
 				dnsTypesList: [ 'A', 'AAAA', 'ANY', 'CNAME', 'DNSKEY', 'DS', 'MX', 'NS', 'NSEC', 'PTR', 'RRSIG', 'SOA', 'TXT', 'SRV' ],
@@ -1833,13 +1839,23 @@
 						this.handleDropDownRunTestBtnNav();
 					}
 				});
+
+				this.observe('showMap', (newValue) => {
+					if (!newValue && this.get('originalShowMap')) {
+						this.set('transitionMap', false);
+					} else {
+						// using a deferred observer somehow isn't sufficient here
+						setTimeout(() => {
+							this.set('transitionMap', true);
+						}, 100);
+					}
+				});
 			}
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
 				// run the test if user is pressed Enter inside of any of main options inputs
 				let targetInput = this.find('#targetInput');
-				let locationInput = this.find('#locationInput');
 				let limitInput = this.find('#limitInput');
 
 				let handleEnterBtn = (event) => {
@@ -1850,7 +1866,6 @@
 				};
 
 				targetInput.addEventListener('keypress', handleEnterBtn);
-				locationInput.addEventListener('keypress', handleEnterBtn);
 				limitInput.addEventListener('keypress', handleEnterBtn);
 			}
 		},
@@ -2000,6 +2015,7 @@
 						this.set('rateCreditsData', combinedHeaders);
 						this.getTestMeasurementById({ measurementId: res.response.id });
 						this.getTestMeasurementById({ measurementId: res1.response.id, resNumber: 1 });
+						this.set('showMap', this.get('originalShowMap'));
 
 						// Update the URL without creating a new history entry.
 						app.router.replaceQueryParam('measurement', `${this.get('measurement')},${res1.response.id}`);
@@ -2008,6 +2024,7 @@
 					});
 				} else {
 					this.getTestMeasurementById({ measurementId: res.response.id });
+					this.set('showMap', this.get('originalShowMap'));
 				}
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
@@ -2442,6 +2459,8 @@
 					response = JSON.parse(response);
 				}
 
+				this.set('rawProbes', response);
+
 				let { totalCities, totalCountries } = response.reduce((res, item) => {
 					if (!res.citiesList.includes(item.location.city)) {
 						res.citiesList.push(item.location.city);
@@ -2777,6 +2796,7 @@
 				};
 
 				this.getTestMeasurementById({ measurementId: res.response.id, resNumber, isInfiniteMeas, reqParams: updReqParams });
+				this.set('showMap', this.get('originalShowMap'));
 			}).catch((err) => {
 				this.handlePostGPMeasError(err);
 			});
@@ -2842,6 +2862,7 @@
 					this.set('showCreditsError', true);
 				} else {
 					this.set('showCreditsData', false);
+					this.set('showMap', false);
 				}
 			} else if (err.error.type === 'validation_error') {
 				let measurementOptsErr = false;
@@ -2849,9 +2870,12 @@
 					let splittedKeyName = key.split('.');
 					let splittedKeyNameLength = splittedKeyName.length;
 					let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-					let errMsg = err.error.params[key].replace(/".*"/, fieldName);
 
-					res[fieldName] = errMsg;
+					if ([ 'locations', 'magic' ].includes(fieldName)) {
+						fieldName = 'location';
+					}
+
+					res[fieldName] = err.error.params[key].replace(/".*"/, fieldName);
 
 					if (splittedKeyName[0] === 'measurementOptions') {
 						measurementOptsErr = true;
@@ -2866,8 +2890,9 @@
 				if (measurementOptsErr) {
 					this.set('showMeasurementOpts', true);
 				}
-			} else if (err.error.type === 'no_probes_found') {
+			} else {
 				this.set('measurementErrMsg', err.error.message);
+				this.set('showMap', false);
 			}
 		},
 		reUseProbesRunTest () {
