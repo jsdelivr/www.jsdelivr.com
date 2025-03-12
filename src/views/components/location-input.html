@@ -39,6 +39,10 @@
 	const countries = require('../../assets/json/countries.json');
 	const continents = require('../../assets/json/continents.json');
 
+	const statesByCode = Object.fromEntries(states.map(state => [ state.code, state ]));
+	const countriesByCode = Object.fromEntries(countries.map(country => [ country.code, country ]));
+	const continentsByCode = Object.fromEntries(continents.map(continent => [ continent.code, continent ]));
+
 	const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
 	const escapeRegExp = string => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
@@ -50,6 +54,7 @@
 			return {
 				invalidValue: null,
 				errMsgTopPos: false,
+				rawProbes: [],
 			};
 		},
 		oninit () {
@@ -81,15 +86,8 @@
 			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 
 			if (!Ractive.isServer) {
-				let index = {
-					tags: [],
-					global: [],
-					cities: [],
-					countries: [],
-					continents: [],
-					regions: [],
-					networks: [],
-				};
+				let normalizedProbes;
+				let indexForConditions;
 
 				let initLimit = value => function runLimit (rawSources) {
 					let sources = rawSources.flat().filter(Boolean);
@@ -181,21 +179,47 @@
 						];
 					},
 					getSources ({ query }) {
-						let lastQuery = query.split(',').at(-1);
-						let queryGroup = lastQuery.split('+').map(q => q.trim()).filter(Boolean);
+						// The input allows several queries separated by a comma.
+						// Each query may have multiple parts separated by a plus sign.
+						// We always operate on the last part of the last query but need to preserve anything before it.
+						let queries = query.split(',');
+						let previousQueries = queries.length > 1 ? queries.slice(0, -1) : [];
+						let currentQuery = queries.at(-1);
 
-						let rankedPatternsPerGroup = queryGroup.map((query) => {
-							let escapedQuery = escapeRegExp(query);
+						let currentQueryParts = currentQuery.split('+');
+						let currentQueryPrevParts = currentQueryParts.length > 1 ? currentQueryParts.slice(0, -1) : [];
+						let currentQueryPrevPartsNormalized = currentQueryPrevParts.map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
+						let currentQueryPrevPartsNormalizedString = currentQueryPrevPartsNormalized.join('+');
+						let currentQueryCurrentPart = currentQueryParts.at(-1) || '';
+						let currentQueryCurrentPartLeadingWhitespace = currentQueryCurrentPart.match(/^\s+/)?.[0] || '';
+						let currentQueryCurrentPartTrimmed = currentQueryCurrentPart.trim();
 
-							return [
-								new RegExp(`^${escapedQuery}$`, 'im'),
-								new RegExp(`^${escapedQuery}\\b`, 'im'),
-								new RegExp(`^${escapedQuery}`, 'im'),
-								new RegExp(`\\b${escapedQuery}\\b`, 'im'),
-								new RegExp(`\\b${escapedQuery}`, 'im'),
-								new RegExp(`${escapedQuery}`, 'im'),
-							];
-						});
+						let escapedQuery = escapeRegExp(currentQueryCurrentPartTrimmed);
+						let queryPrefix = previousQueries.join(',');
+
+						if (queryPrefix) {
+							queryPrefix += ',';
+						}
+
+						if (currentQueryPrevParts.length) {
+							queryPrefix += `${currentQueryPrevParts.join('+')}+`;
+						}
+
+						queryPrefix += currentQueryCurrentPartLeadingWhitespace;
+
+						if (!indexForConditions[currentQueryPrevPartsNormalizedString]) {
+							createIndexFor(currentQueryPrevPartsNormalized);
+						}
+
+						let index = indexForConditions[currentQueryPrevPartsNormalizedString];
+						let rankedPatterns = escapedQuery ? [
+							new RegExp(`^${escapedQuery}$`, 'im'),
+							new RegExp(`^${escapedQuery}\\b`, 'im'),
+							new RegExp(`^${escapedQuery}`, 'im'),
+							new RegExp(`\\b${escapedQuery}\\b`, 'im'),
+							new RegExp(`\\b${escapedQuery}`, 'im'),
+							new RegExp(`${escapedQuery}`, 'im'),
+						] : [ /./ ];
 
 						let initSource = (name, properties) => {
 							return _.deepExtend({
@@ -204,7 +228,7 @@
 									return index[name];
 								},
 								getItemInputValue ({ item }) {
-									return item.value;
+									return queryPrefix + item.value;
 								},
 								templates: {
 									header () {
@@ -218,26 +242,21 @@
 							let filtered = [];
 							let bestRank = Infinity;
 
-							items:
 							for (let item of source.getItems()) {
-								let firstGroupRank = Infinity;
-
-								groups:
-								for (let rankedPatterns of rankedPatternsPerGroup) {
-									for (let i = 0; i < rankedPatterns.length; i++) {
-										if (rankedPatterns[i].test(item.normalizedValue)) {
-											firstGroupRank = i;
-											continue groups;
-										}
-									}
-
-									continue items;
+								if (item.count > index.countCap) {
+									continue;
 								}
 
-								filtered.push({ ...item, rank: firstGroupRank });
+								for (let i = 0; i < rankedPatterns.length; i++) {
+									if (rankedPatterns[i].test(item.normalizedValue)) {
+										filtered.push({ ...item, rank: i });
 
-								if (firstGroupRank < bestRank) {
-									bestRank = firstGroupRank;
+										if (i < bestRank) {
+											bestRank = i;
+										}
+
+										break;
+									}
 								}
 							}
 
@@ -353,7 +372,6 @@
 					this.set('swapInputs', true);
 				});
 
-
 				// Prepare the source data.
 				let uniqCountSortNormalize = (values) => {
 					let countValues = values.reduce((acc, value) => {
@@ -368,85 +386,134 @@
 					})).sort((a, b) => b.count - a.count);
 				};
 
-				this.observe('rawProbes', (probes) => {
+				let createNormalizedProbeList = (probes) => {
+					normalizedProbes = probes.map((probe) => {
+						let stateName = statesByCode[probe.location.state]?.name || probe.location.state;
+						let countryName = countriesByCode[probe.location.country]?.name || probe.location.country;
+						let continentName = continentsByCode[probe.location.continent]?.name || probe.location.continent;
+
+						let normalizedProbe = {
+							city: `${probe.location.city}\n${stateName ? `${stateName}\nUS-${probe.location.state}\n` : '\n\n'}${countryName}\n${probe.location.country}`,
+							region: probe.location.region,
+							state: stateName ? `${stateName}\nUS-${probe.location.state}` : '',
+							country: `${countryName}\n${probe.location.country}`,
+							continent: `${continentName}\n${probe.location.continent}`,
+							network: probe.location.network.replace(networkNameCleanupPattern, '').trim(),
+							tags: probe.tags.filter(tag => !tag.startsWith('u-')),
+						};
+
+						if (probe.location.country === 'GB') {
+							normalizedProbe.country += `\nUK\nGreat Britain\nEngland`.toLowerCase();
+						}
+
+						return {
+							...normalizedProbe,
+							allValues: Object.values(normalizedProbe).map(value => Array.isArray(value) ? value.join('\n').toLowerCase() : value.toLowerCase()).join('\n'),
+						};
+					});
+
+					indexForConditions = Object.create(null);
+				};
+
+				let createIndexFor = (conditions) => {
+					let index = {};
+
+					let filteredProbes = conditions.reduce((filteredProbes, condition) => {
+						let exactPattern = new RegExp(`(?:^|\n)${escapeRegExp(condition)}(?:$|\n)`, 'm');
+
+						let exactMatchFound = false;
+						let looseMatchFound = false;
+
+						filteredProbes = filteredProbes.filter((probe) => {
+							if (!probe.allValues.includes(condition)) {
+								return false;
+							}
+
+							if (exactPattern.test(probe.allValues)) {
+								exactMatchFound = true;
+							} else {
+								looseMatchFound = true;
+							}
+
+							return true;
+						});
+
+						if (exactMatchFound && looseMatchFound) {
+							filteredProbes = filteredProbes.filter(probe => exactPattern.test(probe.allValues));
+						}
+
+						return filteredProbes;
+					}, normalizedProbes);
+
 					index.global = [
 						'World',
 					];
 
-					index.cities = probes.map(probe => `${probe.location.city}\n${probe.location.state}\n${probe.location.country}`);
-					index.countries = probes.map(probe => probe.location.country);
-					index.continents = probes.map(probe => probe.location.continent);
-					index.regions = probes.map(probe => probe.location.region);
-					index.states = probes.map(probe => probe.location.state).filter(v => v);
-					index.tags = probes.map(probe => probe.tags.filter(tag => !tag.startsWith('u-'))).flat();
-
-					index.networks = probes.map(probe => probe.location.network).map((network) => {
-						return network.replace(networkNameCleanupPattern, '').trim();
-					}).filter(network => !network.includes(','));
+					index.tags = filteredProbes.map(probe => probe.tags).flat();
+					index.cities = filteredProbes.map(probe => probe.city);
+					index.countries = filteredProbes.map(probe => probe.country);
+					index.continents = filteredProbes.map(probe => probe.continent);
+					index.regions = filteredProbes.map(probe => probe.region);
+					index.states = filteredProbes.map(probe => probe.state).filter(v => v);
+					index.networks = filteredProbes.map(probe => probe.network).filter(network => network && !network.includes(','));
 
 					Object.keys(index).forEach((key) => {
 						index[key] = uniqCountSortNormalize(index[key]);
 					});
 
 					index.cities = index.cities.map((cityRow) => {
-						let [ city, stateCode, countryCode ] = cityRow.value.split('\n');
-						let country = countries.find(c => c.code === countryCode).name || countryCode;
-						let stateName = states.find(s => s.code === stateCode)?.name || '';
+						let [ city, stateName, stateCode, countryName, countryCode ] = cityRow.value.split('\n');
 
 						return {
 							...cityRow,
-							value: `${city}+${stateName ? `US-${stateCode}` : countryCode}`,
-							normalizedValue: `${city}\n${stateName ? `${stateName}\nUS-${stateCode}\n${stateCode}\n` : ''}${country}\n${countryCode}`.toLowerCase(),
+							value: `${city}+${stateName ? stateCode : countryCode}`,
 							displayValue: `${city}`,
-							country: `${country} (${countryCode})`,
-							state: stateName ? `${stateName} (US-${stateCode})` : '',
+							country: `${countryName} (${countryCode})`,
+							state: stateName ? `${stateName} (${stateCode})` : '',
 						};
 					});
 
-					index.countries = index.countries.map((country) => {
-						let value = countries.find(c => c.code === country.value).name || country.value;
+					index.countries = index.countries.map((countryRow) => {
+						let [ countryName, countryCode ] = countryRow.value.split('\n');
 
 						return {
-							...country,
-							value,
-							normalizedValue: `${value}\n${country.normalizedValue}`.toLowerCase(),
-							countryCode: country.value,
+							...countryRow,
+							value: countryName,
+							countryCode,
 						};
-					}).map((country) => {
-						if (country.countryCode === 'GB') {
-							return {
-								...country,
-								normalizedValue: `${country.value}\nUK\nGreat Britain\nEngland`.toLowerCase(),
-							};
-						}
-
-						return country;
 					});
 
-					index.continents = index.continents.map((continent) => {
-						let value = continents.find(c => c.code === continent.value).name || continent.value;
+					index.continents = index.continents.map((continentRow) => {
+						let [ continentName ] = continentRow.value.split('\n');
 
 						return {
-							...continent,
-							value,
-							normalizedValue: `${value}\n${continent.value}`.toLowerCase(),
+							...continentRow,
+							value: continentName,
 						};
 					});
 
-					index.states = index.states.map((state) => {
-						let name = states.find(c => c.code === state.value).name || state.value;
+					index.states = index.states.map((stateRow) => {
+						let [ stateName, stateCode ] = stateRow.value.split('\n');
 
 						return {
-							...state,
-							value: `US-${state.value}`,
-							displayValue: name,
-							normalizedValue: `${name}\nUS-${state.value}\n${state.value}\nUnited States\nUS`.toLowerCase(),
-							stateCode: `US-${state.value}`,
+							...stateRow,
+							value: stateCode,
+							displayValue: stateName,
+							stateCode,
 						};
 					});
+
+					index.count = filteredProbes.length;
+					index.countCap = conditions.length ? index.count - 1 : index.count;
 
 					index.tags.unshift(...index.global);
-					index.tags[0].count = probes.length;
+					index.tags[0].count = filteredProbes.length;
+
+					indexForConditions[conditions.join('+')] = index;
+				};
+
+				this.observe('rawProbes', (probes) => {
+					createNormalizedProbeList(probes);
 				});
 			}
 		},
