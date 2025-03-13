@@ -134,14 +134,6 @@
 					return limitedSources;
 				};
 
-				let initNonEqual = isEqual => function runNonEqual (query, rawSources) {
-					let sources = rawSources.flat().filter(Boolean).filter((source) => {
-						return !(!source.count || (source.count === 1 && isEqual(query, source.getItems()[0])));
-					});
-
-					return sources.length ? rawSources : [];
-				};
-
 				let columns = (html, left, right) => html`
 					<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
 						<div>${left}</div>
@@ -150,7 +142,6 @@
 				`;
 
 				let limit = initLimit(12);
-				let nonEqual = initNonEqual((query, item) => item.normalizedValue === query.toLowerCase());
 				let { autocomplete } = window['@algolia/autocomplete-js'];
 
 				let { setQuery } = autocomplete({
@@ -173,9 +164,9 @@
 							root,
 						);
 					},
-					reshape ({ sources, state }) {
+					reshape ({ sources }) {
 						return [
-							limit(nonEqual(state.query, sources)),
+							limit(sources),
 						];
 					},
 					getSources ({ query }) {
