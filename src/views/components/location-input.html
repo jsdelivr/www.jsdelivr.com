@@ -188,7 +188,7 @@
 						render(
 							html`
 							<div class="aa-PanelLayout aa-Panel--scrollable">
-								<section class="aa-gp-info"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Try one of these suggestions or use your own value</section>
+								<section class="aa-gp-info"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Try one of these suggestions or use your own value.</section>
 								${sections}
 							</div>`,
 							root,
@@ -406,6 +406,16 @@
 
 				input.addEventListener('keydown', handleTab);
 				this.on('unrender', () => input.removeEventListener('keydown', handleTab));
+
+				// Focus handling - select the text.
+				let handleFocus = () => {
+					if (this.get('value').toLowerCase() === 'world') {
+						input.select();
+					}
+				};
+
+				input.addEventListener('focus', handleFocus);
+				this.on('unrender', () => input.removeEventListener('focus', handleFocus));
 
 				// Propagate state changes.
 				this.observe('value', (newValue) => {
