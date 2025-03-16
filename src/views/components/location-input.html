@@ -142,11 +142,41 @@
 				`;
 
 				let limit = initLimit(12);
-				let { autocomplete } = window['@algolia/autocomplete-js'];
+				let { autocomplete, destroy } = window['@algolia/autocomplete-js'];
 
-				let { setQuery } = autocomplete({
+				let customTabHandlingActive = false;
+				let overrideState = false;
+				let isAsyncOpen = false;
+
+				let activeItemId;
+				let currentCompletion;
+				let currentCollections;
+
+				let { setQuery, setActiveItemId } = autocomplete({
 					container: this.find('.aa-gp-container'),
-					onStateChange: ({ state }) => { this.set('value', state.isOpen ? state.query : state.completion || state.query); },
+					onStateChange: ({ state }) => {
+						activeItemId = state.activeItemId;
+						setTimeout(() => isAsyncOpen = state.isOpen);
+
+						if (overrideState) {
+							overrideState = false;
+							return;
+						}
+
+						if (state.isOpen) {
+							currentCompletion = state.completion;
+							currentCollections = state.collections;
+
+							if (state.query && !currentCompletion && activeItemId === null) {
+								setActiveItemId(0);
+								customTabHandlingActive = true;
+							} else if (state.activeItemId !== 0) {
+								customTabHandlingActive = false;
+							}
+						}
+
+						this.set('value', state.isOpen ? state.query : state.completion || state.query);
+					},
 					detachedMediaQuery: 'none',
 					placeholder: this.get('placeholder'),
 					openOnFocus: true,
@@ -346,15 +376,36 @@
 
 				let input = this.el.querySelector('.aa-Input');
 
-				// Enter handling.
-				let handleEnterBtn = (event) => {
-					if (event.key === 'Enter') {
+				// Enter handling - run the measurement.
+				let handleEnter = (event) => {
+					if (event.key === 'Enter' && !isAsyncOpen) {
 						this.fire('enter');
 					}
 				};
 
-				input.addEventListener('keypress', handleEnterBtn);
-				this.on('unrender', () => input.removeEventListener('keypress', handleEnterBtn));
+				input.addEventListener('keydown', handleEnter);
+				this.on('unrender', () => input.removeEventListener('keydown', handleEnter));
+
+				// Tab handling - autocomplete.
+				let handleTab = (event) => {
+					if (event.key === 'Tab' && customTabHandlingActive) {
+						let firstItem = currentCollections.find(c => c.items.length)?.items[0];
+
+						if (firstItem) {
+							setQuery(firstItem.value);
+						}
+					} else if ([ 'ArrowDown', 'ArrowUp' ].includes(event.key)) {
+						// Preserve the original unfinished query at "null" position (default behavior without our modifications).
+						if (activeItemId === 0 && !currentCompletion) {
+							overrideState = true;
+							customTabHandlingActive = false;
+							setActiveItemId(null);
+						}
+					}
+				};
+
+				input.addEventListener('keydown', handleTab);
+				this.on('unrender', () => input.removeEventListener('keydown', handleTab));
 
 				// Propagate state changes.
 				this.observe('value', (newValue) => {
@@ -520,6 +571,8 @@
 				this.observe('rawProbes', (probes) => {
 					createNormalizedProbeList(probes);
 				});
+
+				this.on('unrender', () => destroy());
 			}
 		},
 	};
