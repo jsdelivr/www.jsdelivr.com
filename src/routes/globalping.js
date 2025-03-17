@@ -38,6 +38,29 @@ koaElasticUtils.addRoutes(router, [
 });
 
 /**
+ * Users pages
+ */
+koaElasticUtils.addRoutes(router, [
+	[ 'users', '/users/:username' ],
+], async (ctx) => {
+	let data = {
+		username: ctx.params.username,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/users.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 301;
+		return ctx.redirect('/');
+	}
+});
+
+/**
  * Sitemap.
  */
 koaElasticUtils.addRoutes(router, [

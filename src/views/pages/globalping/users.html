@@ -1,0 +1,445 @@
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-notification></c-notification>
+	<c-gp-header additionalClasses="header-with-gp-translucent-bg"></c-gp-header>
+
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded && username}}
+		<script>
+			function onDocumentReady (fn) {
+				if (document.readyState !== 'loading') {
+					fn();
+				} else {
+					document.addEventListener('DOMContentLoaded', fn);
+				}
+			}
+			/* eslint-disable */
+			function initMap () {
+				onDocumentReady(function () {
+					app.loaded = true;
+
+					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
+						app.router.route.view.initMap();
+					}
+				});
+			}
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&libraries=marker&loading=async" async></script>
+		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
+	{{/if}}
+
+	<div class="p-users">
+		<div class="please-wait-sign {{#if username.length}} not-displayed{{/if}}">
+			Please wait while user data loads.
+		</div>
+
+		<div class="page-content {{#unless username.length}} not-displayed{{/unless}}">
+			<div class="page-content_side-menu">
+				<div class="menu-section">
+					<div class="section-list">
+						<div>
+							{{username}}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="page-content_main">
+				<div class="page-content_main_section">
+					<div class="p-users_map-wrapper">
+						<div id="gp-map" class="p-users_map-wrapper_map"></div>
+					</div>
+				</div>
+
+				<div class="page-content_main_section">
+					<h2 class="page-content_main_section_title">List of probes</h2>
+					{{#each userProbes}}
+						<div class="page-content_main_section_probe">
+							<div class="page-content_main_section_probe_details">
+								<div class="page-content_main_section_probe_details_icon">
+									<img width="24"
+									height="24"
+									src="{{@shared.assetsHost}}/img/globalping/globalping-probe.svg">
+								</div>
+								<div class="page-content_main_section_probe_details_info">
+									<div class="page-content_main_section_probe_details_info_city">
+										<img width="16.8" height="12" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{location.country}}.svg">
+										<span class="page-content_main_section_probe_details_info_city_name">
+											{{location.city}}, {{location.country}}
+										</span>
+									</div>
+									<span class="page-content_main_section_probe_details_info_location">
+										{{location.network}}
+									</span>
+								</div>
+							</div>
+							<div class="page-content_main_section_probe_tag">
+								{{#each tags}}
+									<span>
+										{{this}}
+									</span>
+								{{/each}}
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<c-gp-footer></c-gp-footer>
+</r-page>
+
+<script>
+	const has = require('../../../assets/js/utils/has');
+	const http = require('../../../assets/js/utils/http');
+	const MAP_MIN_ZOOM = 2;
+	const MAP_MAX_ZOOM = 22;
+	const MAP_ZOOM_REG = 3.74;
+	const MAP_ZOOM_ALT = 2.14;
+	const MAP_CENTER_REG = { lat: 48, lng: 16 };
+	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
+
+	const getMarkerSize = (probeCount, zoom) => {
+		let size = {
+			svgWidth: 16,
+			svgHeight: 16,
+			circleRadius: 4.5,
+			strokeWidth: 1.5,
+		};
+
+		if (probeCount > 1) {
+			let scalingFactor = probeCount.toString().length;
+			size.svgWidth += 4 * scalingFactor + 4;
+			size.svgHeight += 4 * scalingFactor + 4;
+			size.circleRadius += 2 * scalingFactor + 1.5;
+			size.strokeWidth += .5;
+		}
+
+		if (zoom >= 5) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		if (zoom >= 10) {
+			size.svgWidth *= 1.1;
+			size.svgHeight *= 1.1;
+		}
+
+		return size;
+	};
+
+	let map;
+	let infoWindows = [];
+	let mapMarkers = [];
+	let markerCluster;
+
+	component.exports = {
+		data () {
+			return {
+				title: 'Terms & Policies - Globalping',
+				description: 'Learn about the terms of usage of the global network testing platform Globalping.',
+				username: 'mahdi',
+				userProbes: [],
+				probesByCoords: null,
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer && this.get('username')) {
+				this.getProbesData();
+
+				this.observe('userProbes', (probes) => {
+					if (probes) {
+						let { groupedByCoords } = this.groupProbes(probes);
+
+						this.set('probesByCoords', groupedByCoords);
+					}
+				});
+
+				this.observe('probesByCoords', (probesByCoords) => {
+					console.log(probesByCoords);
+				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				if (app.loaded) {
+					this.initMap();
+				}
+			}
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				let user = `u-${this.get('username')}`.toLowerCase();
+				let userProbes = response.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user));
+
+				this.set('userProbes', userProbes);
+			};
+		},
+		getProbesData () {
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		groupProbes (probes) {
+			// group probes by Coordinates
+			let groups = probes.reduce((res, probe) => {
+				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
+
+				if (!Object.hasOwn(res.groupedByCoords, coords)) {
+					res.groupedByCoords[coords] = [];
+				}
+
+				res.groupedByCoords[coords].push(probe);
+
+				return res;
+			}, {
+				groupedByCoords: {},
+			});
+
+			return groups;
+		},
+		initMap () {
+			let mq = window.matchMedia('(min-width: 768px)');
+
+			map = new google.maps.Map(this.find('#gp-map'), {
+				zoom: MAP_ZOOM_REG,
+				center: MAP_CENTER_REG,
+				mapTypeId: 'roadmap',
+				draggableCursor: 'default',
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
+				minZoom: MAP_MIN_ZOOM,
+				maxZoom: MAP_MAX_ZOOM,
+				mapId: 'ce04bbf9d49b6f34',
+			});
+
+			if (mq.matches) {
+				map.setCenter(MAP_CENTER_ALT);
+				map.setZoom(MAP_ZOOM_ALT);
+			}
+
+			map.addListener('zoom_changed', () => {
+				markerCluster?.clusters.forEach((c) => {
+					let m = c.marker;
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+				});
+
+				mapMarkers.forEach((m) => {
+					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
+					m.content.style.width = `${svgWidth}px`;
+					m.content.style.height = `${svgHeight}px`;
+					m.content.setAttribute('data-zoom', map.zoom);
+				});
+
+				infoWindows.forEach(iw => iw.close());
+			});
+
+			this.observe('probesByCoords', (markersData, prevMarkersData) => {
+				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
+					// hide all existing markers from the map
+					mapMarkers.forEach(mm => mm.map = null);
+
+					// show the marker or create one if it is missing
+					let filteredMarkers = Object.keys(markersData).map((key) => {
+						let [ lat, lng ] = key.split(', ');
+						let marker = mapMarkers.find(mm => mm.position.lat === lat && mm.position.lng === lng);
+
+						if (!marker) {
+							marker = this.createMapMarkerWithIW(key, markersData[key]);
+							mapMarkers.push(marker);
+						}
+
+						marker.map = map;
+
+						return marker;
+					});
+
+					let createClusterMarkerSVG = this.createClusterMarkerSVG;
+
+					if (markerCluster) {
+						markerCluster.clearMarkers();
+						markerCluster.addMarkers(filteredMarkers);
+					} else {
+						// eslint-disable-next-line no-undef
+						markerCluster = new markerClusterer.MarkerClusterer({
+							map,
+							markers: filteredMarkers,
+							renderer: {
+								render ({ markers, position }) {
+									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
+									let svg = createClusterMarkerSVG(totalCustomNumber);
+
+									let clusterDiv = document.createElement('div');
+									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
+									clusterDiv.setAttribute('data-zoom', map.zoom);
+
+									clusterDiv.style.position = 'relative';
+									clusterDiv.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+									clusterDiv.style.backgroundRepeat = 'no-repeat';
+									clusterDiv.style.backgroundPosition = 'center';
+									clusterDiv.style.backgroundSize = 'contain';
+
+									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
+									clusterDiv.style.width = `${svgWidth}px`;
+									clusterDiv.style.height = `${svgHeight}px`;
+
+									return new google.maps.marker.AdvancedMarkerElement({
+										position,
+										content: clusterDiv,
+										zIndex: totalCustomNumber,
+									});
+								},
+							},
+							// eslint-disable-next-line no-undef
+							algorithm: new markerClusterer.SuperClusterAlgorithm({
+								radius: 40,
+							}),
+						});
+					}
+
+					if (!mq.matches) {
+						map.setCenter(MAP_CENTER_REG);
+						map.setZoom(MAP_ZOOM_REG);
+					} else {
+						map.setCenter(MAP_CENTER_ALT);
+						map.setZoom(MAP_ZOOM_ALT);
+					}
+				}
+			});
+
+
+			// close IWs on click on Map
+			google.maps.event.addListener(map, 'click', () => {
+				infoWindows.forEach(iw => iw.close());
+			});
+		},
+		createMapMarkerWithIW (key, markerData) {
+			let infoWindow = new google.maps.InfoWindow();
+			let svg = this.createMapMarkerSvg(markerData);
+			let [ lat, lng ] = key.split(', ');
+
+			// Collect InfoWindows
+			infoWindows.push(infoWindow);
+			infoWindow.setContent(this.createInfoWindowContent(markerData));
+
+			let markerContent = document.createElement('div');
+			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+			markerContent.style.backgroundRepeat = 'no-repeat';
+			markerContent.style.backgroundPosition = 'center';
+			markerContent.style.backgroundSize = 'contain';
+			markerContent.setAttribute('data-probe-count', markerData.length);
+
+			let { svgWidth, svgHeight } = getMarkerSize(markerData.length, map.zoom);
+			markerContent.style.width = `${svgWidth}px`;
+			markerContent.style.height = `${svgHeight}px`;
+
+			// Create a new AdvancedMarkerView
+			let marker = new google.maps.marker.AdvancedMarkerElement({
+				map,
+				content: markerContent,
+				position: { lat: Number(lat), lng: Number(lng) },
+				zIndex: 1,
+			});
+
+			marker.markersCount = markerData.length || 0;
+
+			// Handle closing of all InfoWindows on a click on a marker
+			marker.addListener('click', () => {
+				infoWindows.forEach(iw => iw.close());
+				infoWindow.open({ map, anchor: marker });
+			});
+
+			return marker;
+		},
+		createMapMarkerSvg (markerData) {
+			return this.createClusterMarkerSVG(markerData.length);
+		},
+		createInfoWindowContent (markersByCoords) {
+			let markersCnt = markersByCoords.length;
+			let groupedNetworks = markersByCoords.reduce((res, m) => {
+				let marker = res.find(i => i.location.network === m.location.network);
+
+				if (marker) {
+					marker.cnt += 1;
+				} else {
+					res.push({ ...m, cnt: 1, sortKey: m.location.network.toLowerCase() });
+				}
+
+				return res;
+			}, []).sort((a, b) => a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey);
+
+			let infoWindowContent = `<div class="p-users_iw">`;
+
+			if (markersCnt === 1) {
+				let { network, city, country } = markersByCoords[0].location;
+
+				infoWindowContent += `<span>${network} (${city}, ${country})</span>`;
+			} else {
+				// in this case we should render a list of probes
+				groupedNetworks.forEach((m, mIdx) => {
+					if (mIdx === 0) {
+						// add header content
+						infoWindowContent += '<span class="p-users_iw_header">';
+						infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/location-icon.svg">`;
+						infoWindowContent += `<span class="p-users_iw_header_location">${m.location.city}, ${m.location.country}</span>`;
+						infoWindowContent += `<span class="p-users_iw_header_cnt">${markersByCoords.length}</span>`;
+						infoWindowContent += '</span>';
+					}
+
+					// render the list of the probes, grouped by the same network
+					infoWindowContent += `<span class="p-users_iw_row">${m.location.network} ${m.cnt > 1 ? `<span class="p-users_iw_row_network-cnt">${m.cnt}</span>` : ''}</span>`;
+				});
+			}
+
+			infoWindowContent += '</div>';
+
+			return infoWindowContent;
+		},
+		createClusterMarkerSVG (elementsCnt) {
+			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
+
+			return window.btoa(`
+				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g filter="url(#filter0_d_6106_3045)">
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
+					</g>
+					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
+					<defs>
+						<filter id="filter0_d_6106_3045" x="0" y="0" width="${svgWidth}" height="${svgHeight}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+							<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+							<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+							<feOffset dy="1"/>
+							<feGaussianBlur stdDeviation="1"/>
+							<feComposite in2="hardAlpha" operator="out"/>
+							<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+							<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
+							<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
+						</filter>
+					</defs>
+				</svg>
+			`);
+		},
+	};
+</script>
