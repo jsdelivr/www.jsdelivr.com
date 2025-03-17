@@ -43,7 +43,6 @@ app.router.addRoute('/credits', cGlobalpingCredits);
 app.router.addRoute('/network', cGlobalpingNetwork);
 app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/:currentPolicy', cPP);
-app.router.addRoute('/users', cGlobalpingUsers);
 app.router.addRoute('/users/:username', cGlobalpingUsers);
 
 

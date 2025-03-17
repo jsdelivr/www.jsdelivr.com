@@ -40,8 +40,31 @@
 			<div class="page-content_side-menu">
 				<div class="menu-section">
 					<div class="section-list">
-						<div>
-							{{username}}
+						<div class="user-section">
+							<img width="124"
+								height="124"
+								src="https://github.com/{{username}}.png"
+								class="user-avatar">
+							<span class="user-data">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/icons/github-outline.svg">
+								{{username}}
+							</span>
+						</div>
+						<div class="user-section">
+							<span class="user-data">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/icons/radio.svg">
+								{{userProbes.length}} probes
+							</span>
+							<span class="user-data">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/icons/file-text.svg">
+								{{asn}} ASN
+							</span>
 						</div>
 					</div>
 				</div>
@@ -145,6 +168,7 @@
 				username: 'mahdi',
 				userProbes: [],
 				probesByCoords: null,
+				asn: 0,
 			};
 		},
 		oninit () {
@@ -160,10 +184,6 @@
 
 						this.set('probesByCoords', groupedByCoords);
 					}
-				});
-
-				this.observe('probesByCoords', (probesByCoords) => {
-					console.log(probesByCoords);
 				});
 			}
 		},
@@ -186,6 +206,10 @@
 				let userProbes = response.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user));
 
 				this.set('userProbes', userProbes);
+
+				this.set('asn', [
+					...new Set(userProbes.map(probe => probe.location.asn)),
+				].length);
 			};
 		},
 		getProbesData () {
