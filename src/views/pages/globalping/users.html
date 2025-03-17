@@ -203,7 +203,13 @@
 				}
 
 				let user = `u-${this.get('username')}`.toLowerCase();
-				let userProbes = response.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user));
+				let userProbes = response
+					.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user))
+					.sort((a, b) => {
+						let aLocation = `${a.location.country}${a.location.city}`;
+						let bLocation = `${b.location.country}${b.location.city}`;
+						return aLocation < bLocation ? -1 : aLocation > bLocation ? 1 : 0;
+					});
 
 				this.set('userProbes', userProbes);
 
