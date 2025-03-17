@@ -140,8 +140,8 @@
 	component.exports = {
 		data () {
 			return {
-				title: 'Terms & Policies - Globalping',
-				description: 'Learn about the terms of usage of the global network testing platform Globalping.',
+				title: 'User Probes - Globalping',
+				description: 'Find specific user\'s Globalping probes.',
 				username: 'mahdi',
 				userProbes: [],
 				probesByCoords: null,
@@ -150,6 +150,9 @@
 		oninit () {
 			if (!Ractive.isServer && this.get('username')) {
 				this.getProbesData();
+
+				this.set('title', `User Probes - Globalping | ${this.get('username')}`);
+				this.set('description', `Find ${this.get('username')}'s Globalping probes.`);
 
 				this.observe('userProbes', (probes) => {
 					if (probes) {
