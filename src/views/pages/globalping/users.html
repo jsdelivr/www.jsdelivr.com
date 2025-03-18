@@ -106,11 +106,20 @@
 								</div>
 							</div>
 							<div class="page-content_main_section_probe_tag">
-								{{#each tags}}
-									<span>
-										{{this}}
-									</span>
+								{{#each tags: index}}
+									{{#if index < maxTagCount}}
+										<span class="page-content_main_section_probe_tag_item" as-tooltip="this">
+											{{this}}
+										</span>
+									{{/if}}
 								{{/each}}
+								{{#if tags.length > maxTagCount}}
+									<span
+										class="page-content_main_section_probe_tag_item"
+										as-tooltip="tags.slice(maxTagCount).join(', ')">
+										+{{tags.length - maxTagCount}}
+									</span>
+								{{/if}}
 							</div>
 						</div>
 					{{/each}}
@@ -123,8 +132,11 @@
 </r-page>
 
 <script>
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
+	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
@@ -167,6 +179,9 @@
 	let markerCluster;
 
 	component.exports = {
+		decorators: {
+			tooltip,
+		},
 		data () {
 			return {
 				title: 'User Probes - Globalping',
@@ -175,13 +190,14 @@
 				userProbes: [],
 				probesByCoords: null,
 				asn: 0,
+				maxTagCount: 2,
 			};
 		},
 		oninit () {
 			if (!Ractive.isServer && this.get('username')) {
 				this.getProbesData();
 
-				this.set('title', `User Probes - Globalping | ${this.get('username')}`);
+				this.set('title', `${this.get('username')}'s Probes - Globalping`);
 				this.set('description', `Find ${this.get('username')}'s Globalping probes.`);
 
 				this.observe('userProbes', (probes) => {
@@ -198,7 +214,17 @@
 				if (app.loaded) {
 					this.initMap();
 				}
+
+				window.addEventListener('resize', debounce(throttle(() => this.calculateMaxTagCount(), 200)));
+
+				this.calculateMaxTagCount();
 			}
+		},
+		calculateMaxTagCount () {
+			let tagContainer = $('.page-content_main_section_probe_tag').get(0);
+			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
+			let maxTagCount = Math.floor(tagContainerWidth / 100);
+			this.set('maxTagCount', maxTagCount);
 		},
 		handleProbesResponse (isStored) {
 			return (response) => {
