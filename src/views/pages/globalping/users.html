@@ -230,6 +230,14 @@
 			} else {
 				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
+
+			setTimeout(() => {
+				if (has.sessionStorage()) {
+					sessionStorage.removeItem('probesResponse');
+				}
+
+				this.getProbesData();
+			}, 60 * 1000);
 		},
 		groupProbes (probes) {
 			// group probes by Coordinates
