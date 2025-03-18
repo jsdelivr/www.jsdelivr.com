@@ -266,7 +266,14 @@
 									return index[name];
 								},
 								getItemInputValue ({ item }) {
-									return queryPrefix + item.value;
+									// Some items have multiple valid ways to refer to them, e.g., EU and Europe. Preserve the existing value in that case.
+									let allowedValue = item.inputValues?.find(v => v.toLowerCase() === currentQueryCurrentPartTrimmed.toLowerCase());
+
+									// Cities are composed of two parts, which requires special handling to avoid duplicating one of them.
+									let valueToAdd = allowedValue || item.value;
+									let partsToAdd = valueToAdd.split('+').filter(v => !currentQueryPrevPartsNormalized.includes(v.toLowerCase()));
+
+									return queryPrefix + partsToAdd.join('+');
 								},
 								templates: {
 									header () {
@@ -281,7 +288,7 @@
 							let bestRank = Infinity;
 
 							for (let item of source.getItems()) {
-								if (item.count > index.countCap) {
+								if (source.sourceId !== 'cities' && item.count > index.countCap) {
 									continue;
 								}
 
@@ -392,10 +399,10 @@
 				// Tab handling - autocomplete.
 				let handleTab = (event) => {
 					if (event.key === 'Tab' && customTabHandlingActive) {
-						let firstItem = currentCollections.find(c => c.items.length)?.items[0];
+						let collection = currentCollections.find(c => c.items.length);
 
-						if (firstItem) {
-							setQuery(firstItem.value);
+						if (collection) {
+							setQuery(collection.source.getItemInputValue({ item: collection.items[0] }));
 						}
 					} else if ([ 'ArrowDown', 'ArrowUp' ].includes(event.key)) {
 						// Preserve the original unfinished query at "null" position (default behavior without our modifications).
@@ -548,16 +555,18 @@
 						return {
 							...countryRow,
 							value: countryName,
+							inputValues: [ countryName, countryCode ],
 							countryCode,
 						};
 					});
 
 					index.continents = index.continents.map((continentRow) => {
-						let [ continentName ] = continentRow.value.split('\n');
+						let [ continentName, continentCode ] = continentRow.value.split('\n');
 
 						return {
 							...continentRow,
 							value: continentName,
+							inputValues: [ continentName, continentCode ],
 						};
 					});
 
