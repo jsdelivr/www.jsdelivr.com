@@ -19,15 +19,17 @@ let probesPromise = updateProbesData();
 
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let pages = (await readDirRecursive(viewsPath + '/pages/globalping', [ '_*' ])).map(p => path.relative(viewsPath + '/pages/globalping', p).replace(/\\/g, '/').slice(0, -5));
-	let probes = await probesPromise;
-	let maxPage = Math.ceil(probes.length / 50000);
+	let pages = (await readDirRecursive(viewsPath + '/pages/globalping', [ '_*' ])).filter(p => ![ 'globalping/users.html' ].some(path => p.endsWith(path))).map(p => path.relative(viewsPath + '/pages/globalping', p).replace(/\\/g, '/').slice(0, -5));
+	let response = await probesPromise;
+	let maxPage = Math.ceil(response.probes.length / 50000);
 	let page = Number(ctx.params.page);
 
 	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 1) });
-	} else if (page > 0 && page <= maxPage) {
-		ctx.body = siteMapTemplate({ probes: probes.slice((page - 1) * 50000, page * 50000) });
+		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 2) });
+	} else if (page > 1 && page <= maxPage + 1) {
+		ctx.body = siteMapTemplate({ probes: response.probes.slice((page - 2) * 50000, (page - 1) * 50000) });
+	} else if (page === 1) {
+		ctx.body = siteMapTemplate({ users: response.users });
 	} else if (page === 0) {
 		ctx.body = siteMap0Template({ serverHost, pages });
 	} else {
@@ -40,7 +42,7 @@ module.exports = async (ctx) => {
 
 function updateProbesData () {
 	return got('https://api.globalping.io/v1/probes').json().then((body) => {
-		setTimeout(updateProbesData, 24 * 60 * 60 * 1000);
+		setTimeout(updateProbesData, 60 * 1000);
 		return createPossibleUrls(body);
 	}).catch(() => {
 		setTimeout(updateProbesData, 60 * 1000);
@@ -112,13 +114,16 @@ function createPossibleUrls (data) {
 	let testTypesList = [ 'ping', 'dns', 'traceroute', 'mtr', 'http' ];
 	let parsedProbesResponse = parseProbesResponse(data);
 
-	return Object.keys(parsedProbesResponse).reduce((urlParts, ppKey) => {
-		let prepared = parsedProbesResponse[ppKey].reduce((res, loc) => {
-			let combined = testTypesList.map(tt => `${tt}-from-${loc}`);
+	return {
+		probes: Object.keys(parsedProbesResponse).reduce((urlParts, ppKey) => {
+			let prepared = parsedProbesResponse[ppKey].reduce((res, loc) => {
+				let combined = testTypesList.map(tt => `${tt}-from-${loc}`);
 
-			return [ ...res, ...combined ];
-		}, []);
+				return [ ...res, ...combined ];
+			}, []);
 
-		return [ ...urlParts, ...prepared ];
-	}, [ ...testTypesList ]);
+			return [ ...urlParts, ...prepared ];
+		}, [ ...testTypesList ]),
+		users: data.map(({ tags }) => tags).flat().filter(tag => tag.startsWith('u-')).map(tag => tag.slice(2)),
+	};
 }
