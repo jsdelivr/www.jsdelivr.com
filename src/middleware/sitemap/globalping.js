@@ -11,6 +11,7 @@ const usaStates = require('../../assets/json/usa-states.json');
 
 const serverHost = config.get('globalping.server.host');
 const viewsPath = __dirname + '/../../views';
+const usernameTagPattern = /^u-[^:]+$/;
 
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-gp.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-0.xml', 'utf8'));
@@ -126,6 +127,6 @@ function createPossibleUrls (data) {
 
 			return [ ...urlParts, ...prepared ];
 		}, [ ...testTypesList ]),
-		users: data.map(({ tags }) => tags).flat().filter(tag => tag.startsWith('u-')).map(tag => tag.slice(2)),
+		users: _.uniq(data.map(({ tags }) => tags).flat().filter(tag => usernameTagPattern.test(tag)).map(tag => tag.slice(2))),
 	};
 }
