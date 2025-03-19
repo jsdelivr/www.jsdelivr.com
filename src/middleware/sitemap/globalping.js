@@ -19,7 +19,7 @@ let probesPromise = updateProbesData();
 
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
-	let pages = (await readDirRecursive(viewsPath + '/pages/globalping', [ '_*' ])).filter(p => ![ 'globalping/users.html' ].some(path => p.endsWith(path))).map(p => path.relative(viewsPath + '/pages/globalping', p).replace(/\\/g, '/').slice(0, -5));
+	let pages = (await readDirRecursive(viewsPath + '/pages/globalping', [ '_*' ])).map(p => path.relative(viewsPath + '/pages/globalping', p).replace(/\\/g, '/').slice(0, -5));
 	let response = await probesPromise;
 	let maxPage = Math.ceil(response.probes.length / 50000);
 	let page = Number(ctx.params.page);
