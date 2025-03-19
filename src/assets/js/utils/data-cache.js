@@ -19,7 +19,6 @@ module.exports.getCache = (key, ttl, getDefaultValue) => {
 	}
 
 	return getDefaultValue().then((value) => {
-		console.log('value', value);
 		sessionStorage.setItem(key, JSON.stringify({ data: value, ttl: Date.now() + ttl }));
 		return value;
 	});
