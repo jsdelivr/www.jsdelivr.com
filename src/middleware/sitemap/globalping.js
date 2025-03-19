@@ -129,6 +129,55 @@ function createPossibleUrls (data) {
 
 			return [ ...urlParts, ...prepared ];
 		}, [ ...testTypesList ]),
-		users: _.uniq(data.map(({ tags }) => tags).flat().filter(tag => usernameTagPattern.test(tag)).map(tag => tag.slice(2))),
+		users: _.uniq(data.map(({ tags }) => {
+			return tags.filter(tag => usernameTagPattern.test(tag) && v1TagsUsers.every(b => b === tag || !tag.startsWith(b)))[0];
+		}).filter(tag => tag).map(tag => tag.slice(2))),
 	};
 }
+
+// From the public probes listing.
+let v1TagsUsers = [
+	'u-365cent',
+	'u-ajdejonge',
+	'u-Antex',
+	'u-aroundmyroom',
+	'u-bleesoft',
+	'u-claskfosmic',
+	'u-crazyuploader',
+	'u-drugallergy',
+	'u-duderuud',
+	'u-DunkieGaming',
+	'u-Ernst2020',
+	'u-erwin-willems',
+	'u-Escovan',
+	'u-evharten',
+	'u-extent-technologies',
+	'u-FaustoRAlves',
+	'u-fmurodov',
+	'u-HA-Blob',
+	'u-ILW8',
+	'u-joeyaben',
+	'u-jtradel',
+	'u-kansal15',
+	'u-killermagpie',
+	'u-mfld-pub',
+	'u-mike015',
+	'u-nathang21',
+	'u-osxy',
+	'u-Out-of-Control74',
+	'u-Pacerino',
+	'u-petarpetrovic',
+	'u-praveengite',
+	'u-rdeavila',
+	'u-Roetzen',
+	'u-sander816',
+	'u-schenkict',
+	'u-Staticznld',
+	'u-SukkaW',
+	'u-superyupkent',
+	'u-TehloWasTaken',
+	'u-tyree-z',
+	'u-Xavierhorwood',
+	'u-xiaozhu2007',
+	'u-yuna0x0',
+];
