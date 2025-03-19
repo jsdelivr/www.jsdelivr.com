@@ -43,7 +43,7 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ 'users', '/users/:username' ],
 ], async (ctx) => {
-	let users = (await globalpingSitemap.updateProbesData()).users;
+	let users = await globalpingSitemap.getUsers();
 	let username = users.find(user => user.toLowerCase() === ctx.params.username.toLowerCase());
 
 	if (!username) {

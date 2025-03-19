@@ -41,6 +41,10 @@ module.exports = async (ctx) => {
 	ctx.maxAge = 24 * 60 * 60;
 };
 
+module.exports.getUsers = () => {
+	return probesPromise.then(response => response.users);
+};
+
 function updateProbesData () {
 	return got('https://api.globalping.io/v1/probes').json().then((body) => {
 		setTimeout(updateProbesData, 60 * 1000);
@@ -49,8 +53,6 @@ function updateProbesData () {
 		setTimeout(updateProbesData, 60 * 1000);
 	});
 }
-
-module.exports.updateProbesData = updateProbesData;
 
 function parseProbesResponse (data) {
 	return data.reduce((res, { location }) => {
