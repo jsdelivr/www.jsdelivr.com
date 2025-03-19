@@ -143,8 +143,8 @@
 <script>
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
-	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
+	const dataCache = require('../../../assets/js/utils/data-cache');
 	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
@@ -235,50 +235,26 @@
 			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
 			this.set('maxTagCount', maxTagCount);
 		},
-		handleProbesResponse (isStored) {
-			return (response) => {
-				if (!isStored) {
-					sessionStorage.setItem('probesResponse', JSON.stringify(response));
-				} else {
-					response = JSON.parse(response);
-				}
+		handleProbesResponse (response) {
+			let user = `u-${this.get('username')}`.toLowerCase();
+			let userProbes = response
+				.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user))
+				.sort((a, b) => {
+					let aLocation = `${a.location.country}${a.location.city}`;
+					let bLocation = `${b.location.country}${b.location.city}`;
+					return aLocation < bLocation ? -1 : aLocation > bLocation ? 1 : 0;
+				});
 
-				let user = `u-${this.get('username')}`.toLowerCase();
-				let userProbes = response
-					.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user))
-					.sort((a, b) => {
-						let aLocation = `${a.location.country}${a.location.city}`;
-						let bLocation = `${b.location.country}${b.location.city}`;
-						return aLocation < bLocation ? -1 : aLocation > bLocation ? 1 : 0;
-					});
+			this.set('userProbes', userProbes);
 
-				this.set('userProbes', userProbes);
-
-				this.set('asn', [
-					...new Set(userProbes.map(probe => probe.location.asn)),
-				].length);
-			};
+			this.set('asn', [
+				...new Set(userProbes.map(probe => probe.location.asn)),
+			].length);
 		},
 		getProbesData () {
-			if (has.sessionStorage()) {
-				let probesResponse = sessionStorage.getItem('probesResponse');
-
-				if (probesResponse) {
-					this.handleProbesResponse(true)(probesResponse);
-				} else {
-					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-				}
-			} else {
-				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-			}
-
-			setTimeout(() => {
-				if (has.sessionStorage()) {
-					sessionStorage.removeItem('probesResponse');
-				}
-
-				this.getProbesData();
-			}, 60 * 1000);
+			dataCache
+				.getCache('probesResponse@2', 60 * 1000, http.fetchGlobalpingProbes)
+				.then(value => this.handleProbesResponse(value));
 		},
 		groupProbes (probes) {
 			// group probes by Coordinates
