@@ -11,6 +11,7 @@ const usaStates = require('../../assets/json/usa-states.json');
 
 const serverHost = config.get('globalping.server.host');
 const viewsPath = __dirname + '/../../views';
+const usernameTagPattern = /^u-[^:]+$/;
 
 let siteMapTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-gp.xml', 'utf8'));
 let siteMap0Template = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-0.xml', 'utf8'));
@@ -20,14 +21,16 @@ let probesPromise = updateProbesData();
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
 	let pages = (await readDirRecursive(viewsPath + '/pages/globalping', [ '_*' ])).map(p => path.relative(viewsPath + '/pages/globalping', p).replace(/\\/g, '/').slice(0, -5));
-	let probes = await probesPromise;
-	let maxPage = Math.ceil(probes.length / 50000);
+	let response = await probesPromise;
+	let maxPage = Math.ceil(response.probes.length / 50000);
 	let page = Number(ctx.params.page);
 
 	if (ctx.params.page === 'index') {
-		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 1) });
-	} else if (page > 0 && page <= maxPage) {
-		ctx.body = siteMapTemplate({ probes: probes.slice((page - 1) * 50000, page * 50000) });
+		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 2) });
+	} else if (page > 1 && page <= maxPage + 1) {
+		ctx.body = siteMapTemplate({ probes: response.probes.slice((page - 2) * 50000, (page - 1) * 50000) });
+	} else if (page === 1) {
+		ctx.body = siteMapTemplate({ users: response.users });
 	} else if (page === 0) {
 		ctx.body = siteMap0Template({ serverHost, pages });
 	} else {
@@ -38,9 +41,13 @@ module.exports = async (ctx) => {
 	ctx.maxAge = 24 * 60 * 60;
 };
 
+module.exports.getUsers = () => {
+	return probesPromise.then(response => response.users);
+};
+
 function updateProbesData () {
 	return got('https://api.globalping.io/v1/probes').json().then((body) => {
-		setTimeout(updateProbesData, 24 * 60 * 60 * 1000);
+		setTimeout(updateProbesData, 60 * 1000);
 		return createPossibleUrls(body);
 	}).catch(() => {
 		setTimeout(updateProbesData, 60 * 1000);
@@ -112,13 +119,65 @@ function createPossibleUrls (data) {
 	let testTypesList = [ 'ping', 'dns', 'traceroute', 'mtr', 'http' ];
 	let parsedProbesResponse = parseProbesResponse(data);
 
-	return Object.keys(parsedProbesResponse).reduce((urlParts, ppKey) => {
-		let prepared = parsedProbesResponse[ppKey].reduce((res, loc) => {
-			let combined = testTypesList.map(tt => `${tt}-from-${loc}`);
+	return {
+		probes: Object.keys(parsedProbesResponse).reduce((urlParts, ppKey) => {
+			let prepared = parsedProbesResponse[ppKey].reduce((res, loc) => {
+				let combined = testTypesList.map(tt => `${tt}-from-${loc}`);
 
-			return [ ...res, ...combined ];
-		}, []);
+				return [ ...res, ...combined ];
+			}, []);
 
-		return [ ...urlParts, ...prepared ];
-	}, [ ...testTypesList ]);
+			return [ ...urlParts, ...prepared ];
+		}, [ ...testTypesList ]),
+		users: _.uniq(data.map(({ tags }) => {
+			return tags.filter(tag => usernameTagPattern.test(tag) && v1TagsUsers.every(b => b === tag || !tag.startsWith(b)))[0];
+		}).filter(tag => tag).map(tag => tag.slice(2))),
+	};
 }
+
+// From the public probes listing.
+let v1TagsUsers = [
+	'u-365cent',
+	'u-ajdejonge',
+	'u-Antex',
+	'u-aroundmyroom',
+	'u-bleesoft',
+	'u-claskfosmic',
+	'u-crazyuploader',
+	'u-drugallergy',
+	'u-duderuud',
+	'u-DunkieGaming',
+	'u-Ernst2020',
+	'u-erwin-willems',
+	'u-Escovan',
+	'u-evharten',
+	'u-extent-technologies',
+	'u-FaustoRAlves',
+	'u-fmurodov',
+	'u-HA-Blob',
+	'u-ILW8',
+	'u-joeyaben',
+	'u-jtradel',
+	'u-kansal15',
+	'u-killermagpie',
+	'u-mfld-pub',
+	'u-mike015',
+	'u-nathang21',
+	'u-osxy',
+	'u-Out-of-Control74',
+	'u-Pacerino',
+	'u-petarpetrovic',
+	'u-praveengite',
+	'u-rdeavila',
+	'u-Roetzen',
+	'u-sander816',
+	'u-schenkict',
+	'u-Staticznld',
+	'u-SukkaW',
+	'u-superyupkent',
+	'u-TehloWasTaken',
+	'u-tyree-z',
+	'u-Xavierhorwood',
+	'u-xiaozhu2007',
+	'u-yuna0x0',
+];

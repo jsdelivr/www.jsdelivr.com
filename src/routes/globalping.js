@@ -38,6 +38,43 @@ koaElasticUtils.addRoutes(router, [
 });
 
 /**
+ * Users pages
+ */
+koaElasticUtils.addRoutes(router, [
+	[ 'users', '/users/:username' ],
+], async (ctx) => {
+	let users = await globalpingSitemap.getUsers();
+	let username = users.find(user => user.toLowerCase() === ctx.params.username.toLowerCase());
+
+	if (!username) {
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
+		return;
+	}
+
+	if (username !== ctx.params.username) {
+		ctx.status = 301;
+		return ctx.redirect(`/users/${username}`);
+	}
+
+	let data = {
+		username,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/_users.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 301;
+		return ctx.redirect('/');
+	}
+});
+
+/**
  * Sitemap.
  */
 koaElasticUtils.addRoutes(router, [

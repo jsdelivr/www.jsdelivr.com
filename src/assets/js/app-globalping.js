@@ -12,6 +12,7 @@ const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
 const cGlobalpingSponsors = require('../../views/pages/globalping/sponsors.html');
 const cGlobalpingCredits = require('../../views/pages/globalping/credits.html');
 const cGlobalpingNetwork = require('../../views/pages/globalping/network.html');
+const cGlobalpingUsers = require('../../views/pages/globalping/_users.html');
 const cPP = require('../../views/pages/globalping/terms.html');
 const { getGlobalpingUser } = require('./utils/http');
 
@@ -42,6 +43,7 @@ app.router.addRoute('/credits', cGlobalpingCredits);
 app.router.addRoute('/network', cGlobalpingNetwork);
 app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/:currentPolicy', cPP);
+app.router.addRoute('/users/:username', cGlobalpingUsers);
 
 
 app.router.replaceQueryParam = function (name, newValue) {
