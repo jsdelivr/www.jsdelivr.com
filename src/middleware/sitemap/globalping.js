@@ -49,6 +49,8 @@ function updateProbesData () {
 	});
 }
 
+module.exports.updateProbesData = updateProbesData;
+
 function parseProbesResponse (data) {
 	return data.reduce((res, { location }) => {
 		let cityNameAsUrlPart = location.city.split(' ').join('-').toLowerCase();
