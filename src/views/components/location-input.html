@@ -1,0 +1,604 @@
+<div class="c-controlled-input {{classList}}">
+	<div class="c-controlled-input_info">
+		<span class="c-controlled-input_info_label">
+			{{labelText}}
+			{{#if @this.partials.labelIcon && !hideLabelIcon}}
+				{{>labelIcon}}
+			{{/if}}
+		</span>
+
+		{{#if error}}
+			<span class="c-controlled-input_info_errorMsg">
+				{{error}}
+			</span>
+
+			<img class="c-controlled-input_err-icon"
+				width="20"
+				height="20"
+				src="{{@shared.assetsHost}}/img/globalping/alert-icon.svg">
+		{{/if}}
+	</div>
+
+	<!-- Use a server-rendered input and swap it for the real on init to avoid having visible empty space here during init. -->
+	<input
+		type="text"
+		value="{{value}}"
+		placeholder="{{placeholder}}"
+		class="{{#if swapInputs}}hidden{{/if}}">
+
+	<div class="aa-gp-container {{#unless swapInputs}}hidden{{/unless}}"></div>
+</div>
+
+<script>
+	const _ = require('../../assets/js/_');
+	const debounce = require('../../assets/js/utils/debounce');
+	const throttle = require('../../assets/js/utils/throttle');
+	const tooltip = require('../../assets/js/decorators/tooltip');
+
+	const states = require('../../assets/json/usa-states.json');
+	const countries = require('../../assets/json/countries.json');
+	const continents = require('../../assets/json/continents.json');
+
+	const statesByCode = Object.fromEntries(states.map(state => [ `US-${state.code}`, state ]));
+	const countriesByCode = Object.fromEntries(countries.map(country => [ country.code, country ]));
+	const continentsByCode = Object.fromEntries(continents.map(continent => [ continent.code, continent ]));
+
+	const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
+	const escapeRegExp = string => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				invalidValue: null,
+				errMsgTopPos: false,
+				rawProbes: [],
+			};
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.observeOnce('error', () => {
+					this.set('invalidValue', this.get('value'));
+				}, { init: false });
+
+				this.observe('value', (value) => {
+					let invalidValue = this.get('invalidValue');
+					let error = this.get('error');
+
+					if (error && invalidValue !== value) {
+						this.set('error', undefined);
+					}
+				});
+
+				this.observe('screenWidth', (screenWidth) => {
+					if ((screenWidth || innerWidth) < 768) {
+						this.set('errMsgTopPos', true);
+					} else {
+						this.set('errMsgTopPos', false);
+					}
+				});
+			}
+		},
+		onrender () {
+			// detect window resize
+			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+
+			if (!Ractive.isServer) {
+				let normalizedProbes;
+				let indexForConditions;
+
+				let initLimit = value => function runLimit (rawSources) {
+					let sources = rawSources.flat().filter(Boolean);
+					let nonEmptySources = 0;
+					let totalItems = 0;
+
+					sources.forEach((source) => {
+						nonEmptySources += source.count ? 1 : 0;
+						totalItems += source.count;
+					});
+
+					if (totalItems === 0) {
+						return [];
+					}
+
+					let minLimitPerSource = Math.ceil(value / nonEmptySources);
+					let maxLimitPerSource = Math.max(Math.min(totalItems, value), minLimitPerSource);
+					let limitedSources;
+
+					for (let currentLimit = minLimitPerSource; currentLimit <= maxLimitPerSource; currentLimit++) {
+						let sharedLimitRemaining = value;
+
+						limitedSources = sources.map((source, index) => {
+							let isLastSource = index === sources.length - 1;
+							let sourceLimit = isLastSource
+								? sharedLimitRemaining
+								: Math.min(currentLimit, sharedLimitRemaining);
+							let items = source.getItems().slice(0, sourceLimit);
+							sharedLimitRemaining = Math.max(sharedLimitRemaining - items.length, 0);
+
+							return {
+								...source,
+								getItems () {
+									return items;
+								},
+							};
+						});
+
+						if (!sharedLimitRemaining) {
+							return limitedSources;
+						}
+					}
+
+					return limitedSources;
+				};
+
+				let columns = (html, left, right) => html`
+					<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+						<div>${left}</div>
+						<div class="aa-gp-item-count">${right}</div>
+					</div>
+				`;
+
+				let limit = initLimit(12);
+				let { autocomplete, destroy } = window['@algolia/autocomplete-js'];
+
+				let customTabHandlingActive = false;
+				let overrideState = false;
+				let isAsyncOpen = false;
+
+				let activeItemId;
+				let currentCompletion;
+				let currentCollections;
+
+				let { setQuery, setActiveItemId } = autocomplete({
+					container: this.find('.aa-gp-container'),
+					onStateChange: ({ state }) => {
+						activeItemId = state.activeItemId;
+						setTimeout(() => isAsyncOpen = state.isOpen);
+
+						if (overrideState) {
+							overrideState = false;
+							return;
+						}
+
+						if (state.isOpen) {
+							currentCompletion = state.completion;
+							currentCollections = state.collections;
+
+							if (state.query && !currentCompletion && activeItemId === null) {
+								setActiveItemId(0);
+								customTabHandlingActive = true;
+							} else if (state.activeItemId !== 0) {
+								customTabHandlingActive = false;
+							}
+						}
+
+						this.set('value', state.isOpen ? state.query : state.completion || state.query);
+					},
+					onSubmit: () => {
+						this.fire('enter');
+					},
+					detachedMediaQuery: 'none',
+					placeholder: this.get('placeholder'),
+					openOnFocus: true,
+					classNames: {
+						panelLayout: 'dropdown-menu',
+						input: this.get('error') ? 'has-error' : '',
+					},
+					render ({ sections, render, html }, root) {
+						render(
+							html`
+							<div class="aa-PanelLayout aa-Panel--scrollable">
+								<section class="aa-gp-info"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Try one of these suggestions or use your own value.</section>
+								${sections}
+							</div>`,
+							root,
+						);
+					},
+					renderNoResults ({ html, render, state }, root) {
+						return render(html`
+							<div class="aa-PanelLayout">
+								<section class="aa-gp-info">
+									Search for <code>${state.query}</code> across all probes.
+								</section>
+
+								<div class="aa-gp-no-results">
+									Our magic search supports names of continents, regions, countries, US states, cities, networks, and custom tags.<br/><br/>
+									Use <code>+</code> to combine multiple filters, and <code>,</code> to select multiple locations.
+								</div>
+							</div>
+						`, root);
+					},
+					reshape ({ sources }) {
+						return [
+							limit(sources),
+						];
+					},
+					getSources ({ query }) {
+						// The input allows several queries separated by a comma.
+						// Each query may have multiple parts separated by a plus sign.
+						// We always operate on the last part of the last query but need to preserve anything before it.
+						let queries = query.split(',');
+						let previousQueries = queries.length > 1 ? queries.slice(0, -1) : [];
+						let currentQuery = queries.at(-1);
+
+						let currentQueryParts = currentQuery.split('+');
+						let currentQueryPrevParts = currentQueryParts.length > 1 ? currentQueryParts.slice(0, -1) : [];
+						let currentQueryPrevPartsNormalized = currentQueryPrevParts.map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
+						let currentQueryPrevPartsNormalizedString = currentQueryPrevPartsNormalized.join('+');
+						let currentQueryCurrentPart = currentQueryParts.at(-1) || '';
+						let currentQueryCurrentPartLeadingWhitespace = currentQueryCurrentPart.match(/^\s+/)?.[0] || '';
+						let currentQueryCurrentPartTrimmed = currentQueryCurrentPart.trim();
+
+						let escapedQuery = escapeRegExp(currentQueryCurrentPartTrimmed);
+						let queryPrefix = previousQueries.join(',');
+
+						if (queryPrefix) {
+							queryPrefix += ',';
+						}
+
+						if (currentQueryPrevParts.length) {
+							queryPrefix += `${currentQueryPrevParts.join('+')}+`;
+						}
+
+						queryPrefix += currentQueryCurrentPartLeadingWhitespace;
+
+						if (!indexForConditions[currentQueryPrevPartsNormalizedString]) {
+							createIndexFor(currentQueryPrevPartsNormalized);
+						}
+
+						let index = indexForConditions[currentQueryPrevPartsNormalizedString];
+						let rankedPatterns = escapedQuery ? [
+							new RegExp(`^${escapedQuery}$`, 'im'),
+							// new RegExp(`^${escapedQuery}\\b`, 'im'),
+							new RegExp(`^${escapedQuery}`, 'im'),
+							new RegExp(`\\b${escapedQuery}\\b`, 'im'),
+							new RegExp(`\\b${escapedQuery}`, 'im'),
+							new RegExp(`${escapedQuery}`, 'im'),
+						] : [ /./ ];
+
+						let initSource = (name, properties) => {
+							return _.deepExtend({
+								sourceId: name,
+								getItems: () => {
+									return index[name];
+								},
+								getItemInputValue ({ item }) {
+									// Some items have multiple valid ways to refer to them, e.g., EU and Europe. Preserve the existing value in that case.
+									let allowedValue = item.inputValues?.find(v => v.toLowerCase() === currentQueryCurrentPartTrimmed.toLowerCase());
+
+									// Cities are composed of two parts, which requires special handling to avoid duplicating one of them.
+									let valueToAdd = allowedValue || item.value;
+									let partsToAdd = valueToAdd.split('+').filter(v => !currentQueryPrevPartsNormalized.includes(v.toLowerCase()));
+
+									return queryPrefix + partsToAdd.join('+');
+								},
+								templates: {
+									header () {
+										return _.capitalizeFirstLetter(name);
+									},
+								},
+							}, properties);
+						};
+
+						let filterSourceResults = (source) => {
+							let filtered = [];
+							let bestRank = Infinity;
+
+							for (let item of source.getItems()) {
+								if (item.count > index.countCap && (!index.countCap || source.sourceId !== 'cities' || source.getItemInputValue({ item }) === queryPrefix)) {
+									continue;
+								}
+
+								for (let i = 0; i < rankedPatterns.length; i++) {
+									if (rankedPatterns[i].test(item.normalizedValue)) {
+										filtered.push({ ...item, rank: i });
+
+										if (i < bestRank) {
+											bestRank = i;
+										}
+
+										break;
+									}
+								}
+							}
+
+							filtered.sort((a, b) => {
+								if (a.rank === b.rank) {
+									return b.count - a.count;
+								}
+
+								return a.rank - b.rank;
+							});
+
+							return {
+								...source,
+								getItems: () => filtered,
+								count: filtered.length,
+								rank: bestRank,
+							};
+						};
+
+						return [
+							initSource('tags', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, item.value, `${item.count}`);
+									},
+								},
+							}),
+							initSource('countries', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.value}<span class="aa-gp-item-extra"> (${item.countryCode})</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('continents', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('cities', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.displayValue}<span class="aa-gp-item-extra">, ${item.state || item.country}</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('regions', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('states', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, html`${item.displayValue}<span class="aa-gp-item-extra"> (${item.stateCode})</span>`, `${item.count}`);
+									},
+								},
+							}),
+							initSource('networks', {
+								templates: {
+									item ({ item, html }) {
+										return columns(html, `${item.value}`, `${item.count}`);
+									},
+								},
+							}),
+						].map((source) => {
+							return filterSourceResults(source);
+						}).sort((a, b) => {
+							// For sections with the same rank, order by the number of probes in the first location.
+							if (a.rank === b.rank) {
+								return (b.getItems()[0]?.count || 0) - (a.getItems()[0]?.count || 0);
+							}
+
+							return a.rank - b.rank;
+						});
+					},
+				});
+
+				let input = this.el.querySelector('.aa-Input');
+
+				// Enter handling - run the measurement.
+				let handleEnter = (event) => {
+					if (event.key === 'Enter' && !isAsyncOpen) {
+						this.fire('enter');
+					}
+				};
+
+				input.addEventListener('keydown', handleEnter);
+				this.on('unrender', () => input.removeEventListener('keydown', handleEnter));
+
+				// Tab handling - autocomplete.
+				let handleTab = (event) => {
+					if (event.key === 'Tab' && customTabHandlingActive) {
+						let collection = currentCollections.find(c => c.items.length);
+
+						if (collection) {
+							setQuery(collection.source.getItemInputValue({ item: collection.items[0] }));
+						}
+					} else if ([ 'ArrowDown', 'ArrowUp' ].includes(event.key)) {
+						// Preserve the original unfinished query at "null" position (default behavior without our modifications).
+						if (activeItemId === 0 && !currentCompletion) {
+							overrideState = true;
+							customTabHandlingActive = false;
+							setActiveItemId(null);
+						}
+					}
+				};
+
+				input.addEventListener('keydown', handleTab);
+				this.on('unrender', () => input.removeEventListener('keydown', handleTab));
+
+				// Focus handling - select the text.
+				let handleFocus = () => {
+					if (this.get('value').toLowerCase() === 'world') {
+						input.select();
+					}
+				};
+
+				input.addEventListener('focus', handleFocus);
+				this.on('unrender', () => input.removeEventListener('focus', handleFocus));
+
+				// Propagate state changes.
+				this.observe('value', (newValue) => {
+					setQuery(newValue);
+				}, { init: false });
+
+				this.observe('disabled', (newValue) => {
+					input.classList.toggle('is-disabled', !!newValue);
+					input.disabled = !!newValue;
+				}, { init: false });
+
+				this.observe('error', (newValue) => {
+					input.classList.toggle('has-error', !!newValue);
+				}, { init: false });
+
+				// Fill in the initial value and show the input.
+				setQuery(this.get('value') || '');
+
+				setTimeout(() => {
+					this.set('swapInputs', true);
+				});
+
+				// Prepare the source data.
+				let uniqCountSortNormalize = (values) => {
+					let countValues = values.reduce((acc, value) => {
+						acc[value] = (acc[value] || 0) + 1;
+						return acc;
+					}, {});
+
+					return Object.keys(countValues).map(key => ({
+						value: key,
+						normalizedValue: key.toLowerCase(),
+						count: countValues[key],
+					})).sort((a, b) => b.count - a.count);
+				};
+
+				let createNormalizedProbeList = (probes) => {
+					normalizedProbes = probes.map((probe) => {
+						let countryName = countriesByCode[probe.location.country]?.name || probe.location.country;
+						let continentName = continentsByCode[probe.location.continent]?.name || probe.location.continent;
+
+						let normalizedProbe = {
+							city: `${probe.location.city}\n${probe.location.state ? `US-${probe.location.state}\n` : '\n'}${countryName}\n${probe.location.country}`,
+							region: probe.location.region,
+							state: probe.location.state ? `US-${probe.location.state}` : '',
+							country: `${countryName}\n${probe.location.country}`,
+							continent: `${continentName}\n${probe.location.continent}`,
+							network: probe.location.network.replace(networkNameCleanupPattern, '').trim(),
+							tags: probe.tags.filter(tag => !tag.startsWith('u-')),
+						};
+
+						if (probe.location.country === 'GB') {
+							normalizedProbe.country += `\nUK\nGreat Britain\nEngland`.toLowerCase();
+						}
+
+						return {
+							...normalizedProbe,
+							allValues: Object.values(normalizedProbe).map(value => Array.isArray(value) ? value.join('\n').toLowerCase() : value.toLowerCase()).join('\n'),
+						};
+					});
+
+					indexForConditions = Object.create(null);
+				};
+
+				let createIndexFor = (conditions) => {
+					let index = {};
+
+					let filteredProbes = conditions.reduce((filteredProbes, condition) => {
+						let exactPattern = new RegExp(`(?:^|\n)${escapeRegExp(condition)}(?:$|\n)`, 'm');
+
+						let exactMatchFound = false;
+						let looseMatchFound = false;
+
+						filteredProbes = filteredProbes.filter((probe) => {
+							if (!probe.allValues.includes(condition)) {
+								return false;
+							}
+
+							if (exactPattern.test(probe.allValues)) {
+								exactMatchFound = true;
+							} else {
+								looseMatchFound = true;
+							}
+
+							return true;
+						});
+
+						if (exactMatchFound && looseMatchFound) {
+							filteredProbes = filteredProbes.filter(probe => exactPattern.test(probe.allValues));
+						}
+
+						return filteredProbes;
+					}, normalizedProbes);
+
+					index.global = [
+						'World',
+					];
+
+					index.tags = filteredProbes.map(probe => probe.tags).flat();
+					index.cities = filteredProbes.map(probe => probe.city);
+					index.countries = filteredProbes.map(probe => probe.country);
+					index.continents = filteredProbes.map(probe => probe.continent);
+					index.regions = filteredProbes.map(probe => probe.region);
+					index.states = filteredProbes.map(probe => probe.state).filter(v => v);
+					index.networks = filteredProbes.map(probe => probe.network).filter(network => network && !network.includes(','));
+
+					Object.keys(index).forEach((key) => {
+						index[key] = uniqCountSortNormalize(index[key]);
+					});
+
+					index.cities = index.cities.map((cityRow) => {
+						let [ city, stateCode, countryName, countryCode ] = cityRow.value.split('\n');
+						let stateName = statesByCode[stateCode]?.name || stateCode;
+
+						return {
+							...cityRow,
+							value: `${city}+${stateCode || countryCode}`,
+							normalizedValue: `${cityRow.normalizedValue}\n${stateName.toLowerCase()}`,
+							displayValue: `${city}`,
+							country: `${countryName} (${countryCode})`,
+							state: stateName ? `${stateName} (${stateCode})` : '',
+						};
+					});
+
+					index.countries = index.countries.map((countryRow) => {
+						let [ countryName, countryCode ] = countryRow.value.split('\n');
+
+						return {
+							...countryRow,
+							value: countryName,
+							inputValues: [ countryName, countryCode ],
+							countryCode,
+						};
+					});
+
+					index.continents = index.continents.map((continentRow) => {
+						let [ continentName, continentCode ] = continentRow.value.split('\n');
+
+						return {
+							...continentRow,
+							value: continentName,
+							inputValues: [ continentName, continentCode ],
+						};
+					});
+
+					index.states = index.states.map((stateRow) => {
+						let stateCode = stateRow.value;
+						let stateName = statesByCode[stateCode]?.name || stateCode;
+
+						return {
+							...stateRow,
+							value: stateCode,
+							normalizedValue: `${stateRow.normalizedValue}\n${stateName.toLowerCase()}`,
+							displayValue: stateName,
+							stateCode,
+						};
+					});
+
+					index.count = filteredProbes.length;
+					index.countCap = conditions.length ? index.count - 1 : index.count;
+
+					index.tags.unshift(...index.global);
+					index.tags[0].count = filteredProbes.length;
+
+					indexForConditions[conditions.join('+')] = index;
+				};
+
+				this.observe('rawProbes', (probes) => {
+					createNormalizedProbeList(probes);
+				});
+
+				this.on('unrender', () => destroy());
+			}
+		},
+	};
+</script>
