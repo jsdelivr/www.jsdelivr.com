@@ -288,7 +288,7 @@
 							let bestRank = Infinity;
 
 							for (let item of source.getItems()) {
-								if ((source.sourceId !== 'cities' || !index.countCap) && item.count > index.countCap) {
+								if (item.count > index.countCap && (!index.countCap || source.sourceId !== 'cities' || source.getItemInputValue({ item }) === queryPrefix)) {
 									continue;
 								}
 
