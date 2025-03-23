@@ -5,15 +5,13 @@
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	{{#partial seo}}
-		{{#if username.length}}
-			<meta name="canonical" content="/users/{{username}}">
-		{{/if}}
+		<meta name="canonical" content="/users/{{username}}">
 	{{/partial}}
 
 	<c-notification></c-notification>
 	<c-gp-header additionalClasses="header-with-gp-translucent-bg"></c-gp-header>
 
-	{{#if !@shared.isServer && !@shared.googleMapsLoaded && username.length}}
+	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
 		<script>
 			function onDocumentReady (fn) {
 				if (document.readyState !== 'loading') {
@@ -38,11 +36,7 @@
 	{{/if}}
 
 	<div class="p-users">
-		<div class="please-wait-sign {{#if username.length}} not-displayed{{/if}}">
-			Please wait while user data loads.
-		</div>
-
-		<div class="page-content {{#unless username.length}} not-displayed{{/unless}}">
+		<div class="page-content">
 			<div class="page-content_side-menu">
 				<div class="menu-section">
 					<div class="section-list">
@@ -59,20 +53,22 @@
 							</span>
 						</div>
 
-						<div class="user-section">
-							<span class="user-data">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/icons/radio.svg">
-								{{userProbes.length}} probes
-							</span>
-							<span class="user-data">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/icons/file-text.svg">
-								{{asn}} ASN
-							</span>
-						</div>
+						{{#if userProbes}}
+							<div class="user-section">
+								<span class="user-data">
+									<img width="20"
+										height="20"
+										src="{{@shared.assetsHost}}/img/icons/radio.svg">
+									{{userProbes.length}} probes
+								</span>
+								<span class="user-data">
+									<img width="20"
+										height="20"
+										src="{{@shared.assetsHost}}/img/icons/file-text.svg">
+									{{asn}} ASN
+								</span>
+							</div>
+						{{/if}}
 					</div>
 				</div>
 			</div>
@@ -86,9 +82,16 @@
 
 				<div class="page-content_main_section">
 					<h2 class="page-content_main_section_title">List of probes</h2>
+
+					{{#if userProbes === null}}
+						<div class="text-center">
+							Please wait while user data loads.
+						</div>
+					{{/if}}
+
 					{{#if userProbes.length === 0}}
 						<div class="text-center">
-							{{username}} seems to have no probes.<br>
+							{{username}} seems to have no probes.
 						</div>
 					{{/if}}
 
@@ -191,21 +194,24 @@
 		},
 		data () {
 			return {
-				title: 'User Probes - Globalping',
-				description: 'Find specific user\'s Globalping probes.',
 				username: '',
-				userProbes: [],
+				userProbes: null,
 				probesByCoords: null,
 				asn: 0,
 				maxTagCount: 2,
 			};
 		},
+		computed: {
+			title () {
+				return `${this.get('username')}'s Probes - Globalping`;
+			},
+			description () {
+				return `Find ${this.get('username')}'s Globalping probes.`;
+			},
+		},
 		oninit () {
-			if (!Ractive.isServer && this.get('username')) {
+			if (!Ractive.isServer) {
 				this.getProbesData();
-
-				this.set('title', `${this.get('username')}'s Probes - Globalping`);
-				this.set('description', `Find ${this.get('username')}'s Globalping probes.`);
 
 				this.observe('userProbes', (probes) => {
 					if (probes) {
