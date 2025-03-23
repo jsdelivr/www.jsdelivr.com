@@ -223,6 +223,16 @@
 				filteredMarkersData: null,
 			};
 		},
+		computed: {
+			filter: {
+				get  () {
+					return this.get('filtersSet').map(f => f.value).join(',').toLowerCase();
+				},
+				set (/* value */) {
+					// TODO: apply the value here.
+				},
+			},
+		},
 		oninit () {
 			if (!Ractive.isServer) {
 				// get probes from sessionStorage or fetch them and handle
