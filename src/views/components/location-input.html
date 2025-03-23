@@ -39,7 +39,7 @@
 	const countries = require('../../assets/json/countries.json');
 	const continents = require('../../assets/json/continents.json');
 
-	const statesByCode = Object.fromEntries(states.map(state => [ state.code, state ]));
+	const statesByCode = Object.fromEntries(states.map(state => [ `US-${state.code}`, state ]));
 	const countriesByCode = Object.fromEntries(countries.map(country => [ country.code, country ]));
 	const continentsByCode = Object.fromEntries(continents.map(continent => [ continent.code, continent ]));
 
@@ -464,14 +464,13 @@
 
 				let createNormalizedProbeList = (probes) => {
 					normalizedProbes = probes.map((probe) => {
-						let stateName = statesByCode[probe.location.state]?.name || probe.location.state;
 						let countryName = countriesByCode[probe.location.country]?.name || probe.location.country;
 						let continentName = continentsByCode[probe.location.continent]?.name || probe.location.continent;
 
 						let normalizedProbe = {
-							city: `${probe.location.city}\n${stateName ? `${stateName}\nUS-${probe.location.state}\n` : '\n\n'}${countryName}\n${probe.location.country}`,
+							city: `${probe.location.city}\n${probe.location.state ? `US-${probe.location.state}\n` : '\n'}${countryName}\n${probe.location.country}`,
 							region: probe.location.region,
-							state: stateName ? `${stateName}\nUS-${probe.location.state}` : '',
+							state: probe.location.state ? `US-${probe.location.state}` : '',
 							country: `${countryName}\n${probe.location.country}`,
 							continent: `${continentName}\n${probe.location.continent}`,
 							network: probe.location.network.replace(networkNameCleanupPattern, '').trim(),
@@ -538,11 +537,13 @@
 					});
 
 					index.cities = index.cities.map((cityRow) => {
-						let [ city, stateName, stateCode, countryName, countryCode ] = cityRow.value.split('\n');
+						let [ city, stateCode, countryName, countryCode ] = cityRow.value.split('\n');
+						let stateName = statesByCode[stateCode]?.name || stateCode;
 
 						return {
 							...cityRow,
-							value: `${city}+${stateName ? stateCode : countryCode}`,
+							value: `${city}+${stateCode || countryCode}`,
+							normalizedValue: `${cityRow.normalizedValue}\n${stateName.toLowerCase()}`,
 							displayValue: `${city}`,
 							country: `${countryName} (${countryCode})`,
 							state: stateName ? `${stateName} (${stateCode})` : '',
@@ -571,11 +572,13 @@
 					});
 
 					index.states = index.states.map((stateRow) => {
-						let [ stateName, stateCode ] = stateRow.value.split('\n');
+						let stateCode = stateRow.value;
+						let stateName = statesByCode[stateCode]?.name || stateCode;
 
 						return {
 							...stateRow,
 							value: stateCode,
+							normalizedValue: `${stateRow.normalizedValue}\n${stateName.toLowerCase()}`,
 							displayValue: stateName,
 							stateCode,
 						};
