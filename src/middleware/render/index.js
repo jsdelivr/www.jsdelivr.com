@@ -21,7 +21,7 @@ module.exports = (options) => {
 			}
 
 			let Component = await getComponent(template, options);
-			let component = new Component({ data });
+			let component = new Component({ data: { ...data } });
 			component.set('@shared.escape', escape);
 			component.set('@shared.isServer', true);
 			component.set('@shared.serverHost', options.serverHost);

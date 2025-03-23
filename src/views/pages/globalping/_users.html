@@ -59,14 +59,19 @@
 									<img width="20"
 										height="20"
 										src="{{@shared.assetsHost}}/img/icons/radio.svg">
-									{{userProbes.length}} probes
+									{{userProbes.length}} {{_.pluralize('probe', userProbes.length)}}
 								</span>
-								<span class="user-data">
-									<img width="20"
-										height="20"
-										src="{{@shared.assetsHost}}/img/icons/file-text.svg">
-									{{asn}} ASN
-								</span>
+
+								{{#each userStats}}
+									{{#if count}}
+										<span class="user-data">
+											<img width="20"
+												height="20"
+												src="{{@shared.assetsHost}}/img/icons/{{icon}}">
+											{{count}} {{~/_.pluralize(...name, count)}}
+										</span>
+									{{/if}}
+								{{/each}}
 							</div>
 						{{/if}}
 					</div>
@@ -142,6 +147,7 @@
 </r-page>
 
 <script>
+	const _ = require('../../../assets/js/_');
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
 	const http = require('../../../assets/js/utils/http');
@@ -194,11 +200,28 @@
 		},
 		data () {
 			return {
+				_,
 				username: '',
 				userProbes: null,
 				probesByCoords: null,
-				asn: 0,
 				maxTagCount: 2,
+				userStats: {
+					asn: {
+						name: [ 'ASN' ],
+						icon: 'file-text.svg',
+						count: 0,
+					},
+					city: {
+						name: [ 'city', 'cities' ],
+						icon: 'city.svg',
+						count: 0,
+					},
+					country: {
+						name: [ 'country', 'countries' ],
+						icon: 'country.svg',
+						count: 0,
+					},
+				},
 			};
 		},
 		computed: {
@@ -251,9 +274,16 @@
 
 			this.set('userProbes', userProbes);
 
-			this.set('asn', [
-				...new Set(userProbes.map(probe => probe.location.asn)),
-			].length);
+			let entries = Object.entries(this.get('userStats')).map(([ key, value ]) => {
+				if (key === 'probe') {
+					return [ key, { ...value, count: userProbes.length }];
+				}
+
+				return [ key, { ...value, count: [ ...new Set(userProbes.map(probe => probe.location[key])) ].length }];
+			}).sort((a, b) => b[1].count - a[1].count);
+
+			this.set('userStats', {}); // force reordering
+			this.set('userStats', Object.fromEntries(entries));
 		},
 		getProbesData () {
 			dataCache
