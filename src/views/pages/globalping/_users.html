@@ -252,8 +252,7 @@
 				}
 
 				window.addEventListener('resize', debounce(throttle(() => this.calculateMaxTagCount(), 200)));
-
-				this.calculateMaxTagCount();
+				this.observe('userProbes', () => this.calculateMaxTagCount(), { defer: true });
 			}
 		},
 		calculateMaxTagCount () {
