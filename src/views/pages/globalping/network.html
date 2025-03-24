@@ -225,11 +225,19 @@
 		},
 		computed: {
 			filter: {
-				get  () {
-					return this.get('filtersSet').map(f => f.value).join(',').toLowerCase();
+				get () {
+					return this.get('filtersSet') ? this.get('filtersSet').map(f => f.value).join(',').toLowerCase() : [];
 				},
-				set (/* value */) {
-					// TODO: apply the value here.
+				set (filters) {
+					let availableFilters = this.get('availableFilters');
+
+					this.set(
+						'filtersSet',
+						(filters || '')
+							.split(',')
+							.map(f => availableFilters.find(af => af.value.toLowerCase() === f.toLowerCase()))
+							.filter(Boolean),
+					);
 				},
 			},
 		},
