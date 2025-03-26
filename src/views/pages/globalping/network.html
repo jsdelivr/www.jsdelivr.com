@@ -223,6 +223,24 @@
 				filteredMarkersData: null,
 			};
 		},
+		computed: {
+			filter: {
+				get () {
+					return this.get('filtersSet') ? this.get('filtersSet').map(f => f.value).join(',').toLowerCase() : [];
+				},
+				set (filters) {
+					let availableFilters = this.get('availableFilters');
+
+					(filters || '').split(',').forEach((f) => {
+						let idx = availableFilters.findIndex(af => af.value.toLowerCase() === f.toLowerCase());
+
+						if (idx > -1) {
+							this.setFilterRule(idx);
+						}
+					});
+				},
+			},
+		},
 		oninit () {
 			if (!Ractive.isServer) {
 				// get probes from sessionStorage or fetch them and handle
