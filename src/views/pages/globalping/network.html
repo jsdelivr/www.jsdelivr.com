@@ -231,13 +231,13 @@
 				set (filters) {
 					let availableFilters = this.get('availableFilters');
 
-					this.set(
-						'filtersSet',
-						(filters || '')
-							.split(',')
-							.map(f => availableFilters.find(af => af.value.toLowerCase() === f.toLowerCase()))
-							.filter(Boolean),
-					);
+					(filters || '').split(',').forEach((f) => {
+						let idx = availableFilters.findIndex(af => af.value.toLowerCase() === f.toLowerCase());
+
+						if (idx > -1) {
+							this.setFilterRule(idx);
+						}
+					});
 				},
 			},
 		},
