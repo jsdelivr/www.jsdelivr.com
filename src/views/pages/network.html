@@ -22,29 +22,6 @@
 		{{/each}}
 	</style>
 
-	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
-		<script>
-			function onDocumentReady (fn) {
-				if (document.readyState !== 'loading') {
-					fn();
-				} else {
-					document.addEventListener('DOMContentLoaded', fn);
-				}
-			}
-			/* eslint-disable */
-			function initMap () {
-				onDocumentReady(function () {
-					app.loaded = true;
-
-					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
-						app.router.route.view.initMap();
-					}
-				});
-			}
-		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&amp;libraries=marker&amp;loading=async" async></script>
-	{{/if}}
-
 	<c-notification></c-notification>
 	<c-header></c-header>
 
