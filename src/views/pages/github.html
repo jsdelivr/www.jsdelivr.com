@@ -115,12 +115,16 @@
 				// TODO: broken match (version instead of sha, no file etc.)
 				// pattern must be broken, need to be rewrited
 				// why is it working if api.github returns 422
-				let pattern = /^https?:\/\/(?:github|raw\.githubusercontent)\.com\/([^/]+)\/([^/]+)(?:\/blob)?\/([^/]+)\/(.*)$/i;
+				let pattern = /^https?:\/\/(?:github|raw\.githubusercontent)\.com\/([^/]+)\/([^/]+)(?:(?:\/blob)?\/([^/]+)\/(.*))?\/?$/i;
 				let commitPattern = /^[0-9a-f]{40}$/;
 				let match = pattern.exec(gitHub);
 
 				if (match) {
 					let [ , user, repo, version, file ] = match;
+
+					if (!version && !file) {
+						return `https://cdn.jsdelivr.net/gh/${user}/${repo}/`;
+					}
 
 					// full commit hash
 					if (commitPattern.test(version)) {
