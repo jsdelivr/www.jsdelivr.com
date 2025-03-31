@@ -1,33 +1,10 @@
 <link rel="ractive" href="../../r-page-globalping.html" name="r-page">
 <link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
-	{{#if !@shared.isServer && !@shared.googleMapsLoaded}}
-		<script>
-			function onDocumentReady (fn) {
-				if (document.readyState !== 'loading') {
-					fn();
-				} else {
-					document.addEventListener('DOMContentLoaded', fn);
-				}
-			}
-			/* eslint-disable */
-			function initMap () {
-				onDocumentReady(function () {
-					app.loaded = true;
-
-					if (app.router.route && app.router.route.view && app.router.route.view.initMap) {
-						app.router.route.view.initMap();
-					}
-				});
-			}
-		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&libraries=marker&loading=async" async></script>
-		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
-	{{/if}}
-
 	<c-notification></c-notification>
 
 	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
@@ -35,7 +12,11 @@
 	<div class="p-globalping-network">
 		<div class="gp-network">
 			<div class="gp-network_map-wrapper">
-				<div id="gp-map" class="gp-network_map-wrapper_map"></div>
+				<c-google-maps
+					class="gp-network_map-wrapper_map"
+					iwClass="gp-network_iw"
+					probesByCoords="{{filteredMarkersData}}"
+					onProbesByCoordsChange="{{@this.handleProbesByCoordsChange}}" />
 			</div>
 
 			<div class="gp-network_filters">
@@ -113,49 +94,9 @@
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
 	const CONTINENTS = require('../../../assets/json/continents.json');
-	const MAP_MIN_ZOOM = 2;
-	const MAP_MAX_ZOOM = 22;
-	const MAP_ZOOM_REG = 3.74;
-	const MAP_ZOOM_ALT = 2.14;
-	const MAP_CENTER_REG = { lat: 48, lng: 16 };
-	const MAP_CENTER_ALT = { lat: 30, lng: 18 };
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
 	const FILTER_TYPE_BY_CLOUD = 'byCloud';
-
-	const getMarkerSize = (probeCount, zoom) => {
-		let size = {
-			svgWidth: 16,
-			svgHeight: 16,
-			circleRadius: 4.5,
-			strokeWidth: 1.5,
-		};
-
-		if (probeCount > 1) {
-			let scalingFactor = probeCount.toString().length;
-			size.svgWidth += 4 * scalingFactor + 4;
-			size.svgHeight += 4 * scalingFactor + 4;
-			size.circleRadius += 2 * scalingFactor + 1.5;
-			size.strokeWidth += .5;
-		}
-
-		if (zoom >= 5) {
-			size.svgWidth *= 1.1;
-			size.svgHeight *= 1.1;
-		}
-
-		if (zoom >= 10) {
-			size.svgWidth *= 1.1;
-			size.svgHeight *= 1.1;
-		}
-
-		return size;
-	};
-
-	let map;
-	let infoWindows = [];
-	let mapMarkers = [];
-	let markerCluster;
 
 	component.exports = {
 		data () {
@@ -223,6 +164,24 @@
 				filteredMarkersData: null,
 			};
 		},
+		computed: {
+			filter: {
+				get () {
+					return this.get('filtersSet') ? this.get('filtersSet').map(f => f.value).join(',').toLowerCase() : [];
+				},
+				set (filters) {
+					let availableFilters = this.get('availableFilters');
+
+					(filters || '').split(',').forEach((f) => {
+						let idx = availableFilters.findIndex(af => af.value.toLowerCase() === f.toLowerCase());
+
+						if (idx > -1) {
+							this.setFilterRule(idx);
+						}
+					});
+				},
+			},
+		},
 		oninit () {
 			if (!Ractive.isServer) {
 				// get probes from sessionStorage or fetch them and handle
@@ -282,146 +241,15 @@
 			if (!Ractive.isServer) {
 				this.set('@shared.googleMapsLoaded', true);
 
-				if (app.loaded) {
-					this.initMap();
-				}
-
 				// detect window resize
 				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
 			}
 		},
-		onteardown () {
-			if (!Ractive.isServer) {
-				map = null;
-				markerCluster = null;
-				infoWindows = [];
-				mapMarkers = [];
-			}
-		},
-		initMap () {
-			let mq = window.matchMedia('(min-width: 768px)');
+		handleProbesByCoordsChange () {
+			let filtersSet = this.get('filtersSet');
+			let byContinentFilerRule = filtersSet ? filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT) : null;
 
-			map = new google.maps.Map(this.find('#gp-map'), {
-				zoom: MAP_ZOOM_REG,
-				center: MAP_CENTER_REG,
-				mapTypeId: 'roadmap',
-				draggableCursor: 'default',
-				mapTypeControl: false,
-				streetViewControl: false,
-				fullscreenControl: false,
-				minZoom: MAP_MIN_ZOOM,
-				maxZoom: MAP_MAX_ZOOM,
-				mapId: 'ce04bbf9d49b6f34',
-			});
-
-			if (mq.matches) {
-				map.setCenter(MAP_CENTER_ALT);
-				map.setZoom(MAP_ZOOM_ALT);
-			}
-
-			map.addListener('zoom_changed', () => {
-				markerCluster?.clusters.forEach((c) => {
-					let m = c.marker;
-					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
-					m.content.style.width = `${svgWidth}px`;
-					m.content.style.height = `${svgHeight}px`;
-				});
-
-				mapMarkers.forEach((m) => {
-					let { svgWidth, svgHeight } = getMarkerSize(Number(m.content.getAttribute('data-probe-count')), map.zoom);
-					m.content.style.width = `${svgWidth}px`;
-					m.content.style.height = `${svgHeight}px`;
-					m.content.setAttribute('data-zoom', map.zoom);
-				});
-
-				infoWindows.forEach(iw => iw.close());
-			});
-
-			this.observe('filteredMarkersData', (markersData, prevMarkersData) => {
-				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
-					// hide all existing markers from the map
-					mapMarkers.forEach(mm => mm.map = null);
-
-					// show the marker or create one if it is missing
-					let filteredMarkers = Object.keys(markersData).map((key) => {
-						let [ lat, lng ] = key.split(', ');
-						let marker = mapMarkers.find(mm => mm.position.lat === lat && mm.position.lng === lng);
-
-						if (!marker) {
-							marker = this.createMapMarkerWithIW(key, markersData[key]);
-							mapMarkers.push(marker);
-						}
-
-						marker.map = map;
-
-						return marker;
-					});
-
-					let createClusterMarkerSVG = this.createClusterMarkerSVG;
-
-					if (markerCluster) {
-						markerCluster.clearMarkers();
-						markerCluster.addMarkers(filteredMarkers);
-					} else {
-						// eslint-disable-next-line no-undef
-						markerCluster = new markerClusterer.MarkerClusterer({
-							map,
-							markers: filteredMarkers,
-							renderer: {
-								render ({ markers, position }) {
-									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
-									let svg = createClusterMarkerSVG(totalCustomNumber);
-
-									let clusterDiv = document.createElement('div');
-									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
-									clusterDiv.setAttribute('data-zoom', map.zoom);
-
-									clusterDiv.style.position = 'relative';
-									clusterDiv.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-									clusterDiv.style.backgroundRepeat = 'no-repeat';
-									clusterDiv.style.backgroundPosition = 'center';
-									clusterDiv.style.backgroundSize = 'contain';
-
-									let { svgWidth, svgHeight } = getMarkerSize(totalCustomNumber, map.zoom);
-									clusterDiv.style.width = `${svgWidth}px`;
-									clusterDiv.style.height = `${svgHeight}px`;
-
-									return new google.maps.marker.AdvancedMarkerElement({
-										position,
-										content: clusterDiv,
-										zIndex: totalCustomNumber,
-									});
-								},
-							},
-							// eslint-disable-next-line no-undef
-							algorithm: new markerClusterer.SuperClusterAlgorithm({
-								radius: 40,
-							}),
-						});
-					}
-
-					let filtersSet = this.get('filtersSet');
-					let byContinentFilerRule = filtersSet ? filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT) : null;
-
-					if (byContinentFilerRule) {
-						this.focusMapOnMarkers(markersData);
-					} else {
-						if (!mq.matches) {
-							map.setCenter(MAP_CENTER_REG);
-							map.setZoom(MAP_ZOOM_REG);
-						} else {
-							map.setCenter(MAP_CENTER_ALT);
-							map.setZoom(MAP_ZOOM_ALT);
-						}
-					}
-				}
-			});
-
-
-			// close IWs on click on Map
-			google.maps.event.addListener(map, 'click', () => {
-				infoWindows.forEach(iw => iw.close());
-			});
+			return byContinentFilerRule;
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
@@ -575,88 +403,6 @@
 			this.set('filtersSet', filtersSet.length ? filtersSet : []);
 			this.set('availableFilters', availableFilters);
 		},
-		createMapMarkerWithIW (key, markerData) {
-			let infoWindow = new google.maps.InfoWindow();
-			let svg = this.createMapMarkerSvg(markerData);
-			let [ lat, lng ] = key.split(', ');
-
-			// Collect InfoWindows
-			infoWindows.push(infoWindow);
-			infoWindow.setContent(this.createInfoWindowContent(markerData));
-
-			let markerContent = document.createElement('div');
-			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
-			markerContent.style.backgroundRepeat = 'no-repeat';
-			markerContent.style.backgroundPosition = 'center';
-			markerContent.style.backgroundSize = 'contain';
-			markerContent.setAttribute('data-probe-count', markerData.length);
-
-			let { svgWidth, svgHeight } = getMarkerSize(markerData.length, map.zoom);
-			markerContent.style.width = `${svgWidth}px`;
-			markerContent.style.height = `${svgHeight}px`;
-
-			// Create a new AdvancedMarkerView
-			let marker = new google.maps.marker.AdvancedMarkerElement({
-				map,
-				content: markerContent,
-				position: { lat: Number(lat), lng: Number(lng) },
-				zIndex: 1,
-			});
-
-			marker.markersCount = markerData.length || 0;
-
-			// Handle closing of all InfoWindows on a click on a marker
-			marker.addListener('click', () => {
-				infoWindows.forEach(iw => iw.close());
-				infoWindow.open({ map, anchor: marker });
-			});
-
-			return marker;
-		},
-		createMapMarkerSvg (markerData) {
-			return this.createClusterMarkerSVG(markerData.length);
-		},
-		createInfoWindowContent (markersByCoords) {
-			let markersCnt = markersByCoords.length;
-			let groupedNetworks = markersByCoords.reduce((res, m) => {
-				let marker = res.find(i => i.location.network === m.location.network);
-
-				if (marker) {
-					marker.cnt += 1;
-				} else {
-					res.push({ ...m, cnt: 1, sortKey: m.location.network.toLowerCase() });
-				}
-
-				return res;
-			}, []).sort((a, b) => a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey);
-
-			let infoWindowContent = `<div class="gp-network_iw">`;
-
-			if (markersCnt === 1) {
-				let { network, city, country } = markersByCoords[0].location;
-
-				infoWindowContent += `<span>${network} (${city}, ${country})</span>`;
-			} else {
-				// in this case we should render a list of probes
-				groupedNetworks.forEach((m, mIdx) => {
-					if (mIdx === 0) {
-						// add header content
-						infoWindowContent += '<span class="gp-network_iw_header">';
-						infoWindowContent += `<img width="16" height="16" src="${this.get('@shared.assetsHost')}/img/globalping/location-icon.svg">`;
-						infoWindowContent += `<span class="gp-network_iw_header_location">${m.location.city}, ${m.location.country}</span>`;
-						infoWindowContent += `<span class="gp-network_iw_header_cnt">${markersByCoords.length}</span>`;
-						infoWindowContent += '</span>';
-					}
-
-					// render the list of the probes, grouped by the same network
-					infoWindowContent += `<span class="gp-network_iw_row">${m.location.network} ${m.cnt > 1 ? `<span class="gp-network_iw_row_network-cnt">${m.cnt}</span>` : ''}</span>`;
-				});
-			}
-
-			infoWindowContent += '</div>';
-
-			return infoWindowContent;
-		},
 		getFilteredProbesList (filtersSet) {
 			let probesByContinents = this.get('probesByContinents');
 
@@ -799,58 +545,6 @@
 			});
 
 			return sortedArray;
-		},
-		focusMapOnMarkers (markersData) {
-			let locationStrings = Object.keys(markersData);
-
-			if (locationStrings.length === 0) {
-				return;
-			}
-
-			let positions = locationStrings.map((str) => {
-				let [ lat, lng ] = str.split(', ');
-
-				return { lat: Number(lat), lng: Number(lng) };
-			});
-
-			let bounds = new google.maps.LatLngBounds();
-
-			positions.forEach(position => bounds.extend(position));
-
-			// temp limit for zooming
-			map.setOptions({ maxZoom: 12 });
-
-			map.fitBounds(bounds);
-
-			google.maps.event.addListenerOnce(map, 'idle', () => {
-				// resore zooming to inital
-				map.setOptions({ maxZoom: MAP_MAX_ZOOM });
-			});
-		},
-		createClusterMarkerSVG (elementsCnt) {
-			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
-
-			return window.btoa(`
-				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<g filter="url(#filter0_d_6106_3045)">
-						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
-						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
-					</g>
-					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
-					<defs>
-						<filter id="filter0_d_6106_3045" x="0" y="0" width="${svgWidth}" height="${svgHeight}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-							<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-							<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-							<feOffset dy="1"/>
-							<feGaussianBlur stdDeviation="1"/>
-							<feComposite in2="hardAlpha" operator="out"/>
-							<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-							<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6106_3045"/>
-							<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6106_3045" result="shape"/>
-						</filter>
-					</defs>
-				</svg>
-			`);
 		},
 		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
 			let totalItems = data.length;

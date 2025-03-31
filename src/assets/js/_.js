@@ -1552,4 +1552,11 @@ module.exports = {
 
 		return getColorFromGradient(pureTimingValue / probesMaxTiming, '#17d4a7', '#ffb800', '#e64e3d');
 	},
+
+	pluralize (singular, countOrPlural, countOrUndefined) {
+		let count = countOrUndefined ?? countOrPlural;
+		let plural = countOrUndefined ? countOrPlural : singular + 's';
+
+		return count === 1 ? singular : plural;
+	},
 };

@@ -1,0 +1,247 @@
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
+<link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#partial seo}}
+		<meta name="canonical" content="/users/{{username}}">
+	{{/partial}}
+
+	<c-notification></c-notification>
+	<c-gp-header additionalClasses="header-with-gp-translucent-bg"></c-gp-header>
+
+	<div class="p-users">
+		<div class="page-content">
+			<div class="page-content_side-menu">
+				<div class="menu-section">
+					<div class="section-list">
+						<div class="user-section user-info">
+							<img width="124"
+								height="124"
+								src="https://github.com/{{username}}.png"
+								class="user-avatar">
+							<span class="user-data">
+								<img width="20"
+									height="20"
+									src="{{@shared.assetsHost}}/img/icons/github-outline.svg">
+								<a rel="noopener noreferrer" href="https://github.com/{{username}}">{{username}}</a>
+							</span>
+						</div>
+
+						{{#if userProbes}}
+							<div class="user-section">
+								<span class="user-data">
+									<img width="20"
+										height="20"
+										src="{{@shared.assetsHost}}/img/icons/radio.svg">
+									{{userProbes.length}} {{_.pluralize('probe', userProbes.length)}}
+								</span>
+
+								{{#each userStats}}
+									{{#if count}}
+										<span class="user-data">
+											<img width="20"
+												height="20"
+												src="{{@shared.assetsHost}}/img/icons/{{icon}}">
+											{{count}} {{~/_.pluralize(...name, count)}}
+										</span>
+									{{/if}}
+								{{/each}}
+							</div>
+						{{/if}}
+					</div>
+				</div>
+			</div>
+
+			<div class="page-content_main">
+				<div class="page-content_main_section">
+					<div class="p-users_map-wrapper">
+						<c-google-maps
+							class="p-users_map-wrapper_map"
+							iwClass="p-users_iw"
+							probesByCoords="{{probesByCoords}}" />
+					</div>
+				</div>
+
+				<div class="page-content_main_section">
+					<h2 class="page-content_main_section_title">List of probes</h2>
+
+					{{#if userProbes === null}}
+						<div class="text-center">
+							Please wait while user data loads.
+						</div>
+					{{/if}}
+
+					{{#if userProbes.length === 0}}
+						<div class="text-center">
+							{{username}} seems to have no probes.
+						</div>
+					{{/if}}
+
+					{{#each userProbes}}
+						<div class="page-content_main_section_probe">
+							<div class="page-content_main_section_probe_details">
+								<div class="page-content_main_section_probe_details_icon">
+									<img width="24"
+									height="24"
+									src="{{@shared.assetsHost}}/img/globalping/globalping-probe.svg">
+								</div>
+								<div class="page-content_main_section_probe_details_info">
+									<div class="page-content_main_section_probe_details_info_city">
+										<img width="16.8" height="12" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{location.country}}.svg">
+										<span class="page-content_main_section_probe_details_info_city_name">
+											{{location.city}}, {{location.country}}
+										</span>
+									</div>
+									<span class="page-content_main_section_probe_details_info_location">
+										{{location.network}}
+									</span>
+								</div>
+							</div>
+							<div class="page-content_main_section_probe_tag">
+								{{#each tags: index}}
+									{{#if index < maxTagCount}}
+										<span class="page-content_main_section_probe_tag_item" as-tooltip="this">
+											{{this}}
+										</span>
+									{{/if}}
+								{{/each}}
+								{{#if tags.length > maxTagCount}}
+									<span
+										class="page-content_main_section_probe_tag_item"
+										as-tooltip="tags.slice(maxTagCount).join(', ')">
+										+{{tags.length - maxTagCount}}
+									</span>
+								{{/if}}
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<c-gp-footer></c-gp-footer>
+</r-page>
+
+<script>
+	const _ = require('../../../assets/js/_');
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
+	const http = require('../../../assets/js/utils/http');
+	const dataCache = require('../../../assets/js/utils/data-cache');
+	const tooltip = require('../../../assets/js/decorators/tooltip');
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				_,
+				username: '',
+				userProbes: null,
+				probesByCoords: null,
+				maxTagCount: 2,
+				userStats: {
+					asn: {
+						name: [ 'ASN' ],
+						icon: 'file-text.svg',
+						count: 0,
+					},
+					city: {
+						name: [ 'city', 'cities' ],
+						icon: 'city.svg',
+						count: 0,
+					},
+					country: {
+						name: [ 'country', 'countries' ],
+						icon: 'country.svg',
+						count: 0,
+					},
+				},
+			};
+		},
+		computed: {
+			title () {
+				return `${this.get('username')}'s Probes - Globalping`;
+			},
+			description () {
+				return `Find ${this.get('username')}'s Globalping probes.`;
+			},
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.getProbesData();
+
+				this.observe('userProbes', (probes) => {
+					if (probes) {
+						let { groupedByCoords } = this.groupProbes(probes);
+
+						this.set('probesByCoords', groupedByCoords);
+					}
+				});
+			}
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				window.addEventListener('resize', debounce(throttle(() => this.calculateMaxTagCount(), 200)));
+				this.observe('userProbes', () => this.calculateMaxTagCount(), { defer: true });
+			}
+		},
+		calculateMaxTagCount () {
+			let tagContainer = $('.page-content_main_section_probe_tag').get(0);
+			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
+			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
+			this.set('maxTagCount', maxTagCount);
+		},
+		handleProbesResponse (response) {
+			let user = `u-${this.get('username')}`.toLowerCase();
+			let userProbes = response
+				.filter(probe => probe.tags.some(tag => tag.toLowerCase() === user))
+				.sort((a, b) => {
+					let aLocation = `${a.location.country}${a.location.city}`;
+					let bLocation = `${b.location.country}${b.location.city}`;
+					return aLocation < bLocation ? -1 : aLocation > bLocation ? 1 : 0;
+				});
+
+			this.set('userProbes', userProbes);
+
+			let entries = Object.entries(this.get('userStats')).map(([ key, value ]) => {
+				if (key === 'probe') {
+					return [ key, { ...value, count: userProbes.length }];
+				}
+
+				return [ key, { ...value, count: [ ...new Set(userProbes.map(probe => probe.location[key])) ].length }];
+			}).sort((a, b) => b[1].count - a[1].count);
+
+			this.set('userStats', {}); // force reordering
+			this.set('userStats', Object.fromEntries(entries));
+		},
+		getProbesData () {
+			dataCache
+				.getCache('probesResponse@2', 60 * 1000, http.fetchGlobalpingProbes)
+				.then(value => this.handleProbesResponse(value));
+		},
+		groupProbes (probes) {
+			// group probes by Coordinates
+			let groups = probes.reduce((res, probe) => {
+				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
+
+				if (!Object.hasOwn(res.groupedByCoords, coords)) {
+					res.groupedByCoords[coords] = [];
+				}
+
+				res.groupedByCoords[coords].push(probe);
+
+				return res;
+			}, {
+				groupedByCoords: {},
+			});
+
+			return groups;
+		},
+	};
+</script>
