@@ -222,7 +222,21 @@
 							console.error(`Commits not found.`, error);
 						});
 					} else {
-						this.set('packageVersionsList', versionsArr);
+						let sortedVersionsArr = versionsArr.reduce((acc, version) => {
+							if (version.indexOf('-') !== -1) {
+								acc.prerelease.push(version);
+							} else {
+								acc.stable.push(version);
+							}
+
+							return acc;
+						}, { stable: [], prerelease: [] });
+
+						this.set('packageVersionsList', [
+							...sortedVersionsArr.stable,
+							'separator',
+							...sortedVersionsArr.prerelease,
+						]);
 
 						if (versionsResponse.tags.latest && !app.router.route.getState().qs.version) {
 							result.version = versionsResponse.tags.latest;
