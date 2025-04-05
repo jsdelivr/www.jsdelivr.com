@@ -53,19 +53,18 @@
 						}, [ ...versions ]);
 				}
 
-				for (let i = 0; i < results.length - 1; i++) {
-					if (results[i] === 'separator' && results[i + 1] === 'separator') {
-						results.splice(i, 1);
-						i--;
+				// Remove extra separators
+				results = results.reduce((acc, item) => {
+					if (item === 'separator' && (!acc.length || acc[acc.length - 1] === 'separator')) {
+						return acc;
 					}
-				}
 
-				if (results[0] === 'separator') {
-					results.splice(0, 1);
-				}
+					acc.push(item);
+					return acc;
+				}, []);
 
 				if (results[results.length - 1] === 'separator') {
-					results.splice(results.length - 1, 1);
+					results.pop();
 				}
 
 				return results;
