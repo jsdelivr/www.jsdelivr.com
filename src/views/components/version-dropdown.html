@@ -50,14 +50,22 @@
 						.split(' ')
 						.reduce((acc, filterPart) => {
 							return acc.filter(item => item === 'separator' || item.toLowerCase().includes(filterPart));
-						}, [ ...versions ])
-						.filter((item, i, arr) => {
-							if (item === 'separator') {
-								return i !== 0 && i !== arr.length - 1 && arr[i - 1] !== 'separator' && arr[i + 1] !== 'separator';
-							}
+						}, [ ...versions ]);
+				}
 
-							return true;
-						});
+				for (let i = 0; i < results.length - 1; i++) {
+					if (results[i] === 'separator' && results[i + 1] === 'separator') {
+						results.splice(i, 1);
+						i--;
+					}
+				}
+
+				if (results[0] === 'separator') {
+					results.splice(0, 1);
+				}
+
+				if (results[results.length - 1] === 'separator') {
+					results.splice(results.length - 1, 1);
 				}
 
 				return results;
