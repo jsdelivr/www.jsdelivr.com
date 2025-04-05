@@ -258,11 +258,13 @@
 
 					return [ segments.slice(0, splitAt).join(':'), ':' + segments.slice(splitAt).join(':') ];
 				},
+				chartMaxHeight: 0,
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
 				this.observe('preparedTestResults', (preparedTestResults) => {
+					this.setChartMaxHeight(preparedTestResults);
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
 				});
@@ -280,6 +282,17 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
+		},
+		setChartMaxHeight (results) {
+			let allPacketRtt = results
+				.map(test => Array.isArray(test.statsPerTarget)
+					? test.statsPerTarget.map(target => target.packetsRtt).flat()
+					: []).flat();
+
+			this.set(
+				'chartMaxHeight',
+				Math.max(...allPacketRtt.filter(v => typeof v === 'number')),
+			);
 		},
 		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
@@ -304,7 +317,7 @@
 		) {
 			if (!data) { return; }
 
-			let maxValue = Math.max(...data.filter(v => typeof v === 'number'));
+			let maxValue = this.get('chartMaxHeight');
 			let maxBars = Math.floor(svgWidth / (barWidth + gap));
 			let startIndex = Math.max(data.length - maxBars, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -347,7 +360,7 @@
 			let numBars = data.length;
 			let spaceWidth = 1;
 			let barWidth = Math.round(svgWidth / numBars - spaceWidth);
-			let maxValue = Math.max(...data.filter(v => typeof v === 'number'));
+			let maxValue = this.get('chartMaxHeight');
 			let actualWidth = barWidth * numBars + (numBars - 1) * spaceWidth;
 
 			svg.setAttribute('width', actualWidth > svgWidth ? actualWidth : svgWidth);
