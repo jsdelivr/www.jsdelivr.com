@@ -42,14 +42,32 @@
 			filteredVersions () {
 				let filterBy = this.get('filterBy');
 				let versions = this.get('versions');
+				let results = versions;
 
 				if (filterBy) {
-					return filterBy.toLowerCase().split(' ').reduce((results, filterPart) => {
-						return results.filter(i => i.toLowerCase().includes(filterPart));
-					}, [ ...versions ]);
+					results = filterBy
+						.toLowerCase()
+						.split(' ')
+						.reduce((acc, filterPart) => {
+							return acc.filter(item => item === 'separator' || item.toLowerCase().includes(filterPart));
+						}, [ ...versions ]);
 				}
 
-				return versions;
+				// Remove extra separators
+				results = results.reduce((acc, item) => {
+					if (item === 'separator' && (!acc.length || acc[acc.length - 1] === 'separator')) {
+						return acc;
+					}
+
+					acc.push(item);
+					return acc;
+				}, []);
+
+				if (results[results.length - 1] === 'separator') {
+					results.pop();
+				}
+
+				return results;
 			},
 		},
 		data () {
