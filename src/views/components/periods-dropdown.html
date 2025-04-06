@@ -108,13 +108,16 @@
 				// close dropdown and clear filter on click outside the dropdown el
 				let el = this.find('.c-periods-dropdown');
 
-				document.addEventListener('click', (event) => {
+				let handleOnOutsideClick = (event) => {
 					let currDropdownOpened = this.get('dropdownOpened');
 
 					if (currDropdownOpened && !el.contains(event.target)) {
 						this.set('dropdownOpened', false);
 					}
-				});
+				};
+
+				document.addEventListener('click', handleOnOutsideClick);
+				this.on('unrender', () => document.removeEventListener('click', handleOnOutsideClick));
 
 				this.observe('dropdownOpened', (newValue) => {
 					let ul = this.find('.dropdown_body_list');

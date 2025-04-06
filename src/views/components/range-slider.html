@@ -183,7 +183,7 @@
 				});
 
 				// handle keyboard controls
-				document.addEventListener('keydown', (event) => {
+				let handleSliderKeyboardNavigation = (event) => {
 					let sliderPosition = this.get('sliderPosition');
 
 					if (event.key === 'ArrowLeft') {
@@ -197,7 +197,10 @@
 					this.set('sliderPosition', sliderPosition);
 
 					this.updateSliderPosition();
-				});
+				};
+
+				document.addEventListener('keydown', handleSliderKeyboardNavigation);
+				this.on('unrender', () => document.removeEventListener('keydown', handleSliderKeyboardNavigation));
 
 				// initiate the slider
 				this.updateSliderPosition();
@@ -240,7 +243,7 @@
 				});
 
 				// detect window resize and update partWidth and slider knob posision
-				window.addEventListener('resize', debounce(throttle(() => {
+				let handleSliderResize = debounce(throttle(() => {
 					let partsGap = this.get('partsGap');
 					let sliderPosition = this.get('sliderPosition');
 					let updPartWidth = this.get('partsElements')[0].offsetWidth + partsGap;
@@ -251,7 +254,10 @@
 					this.set('partWidth', updPartWidth);
 					this.set('screenWidth', window.innerWidth);
 					this.createSliderLabels();
-				}, 200)));
+				}, 200));
+
+				window.addEventListener('resize', handleSliderResize);
+				this.on('unrender', () => window.removeEventListener('resize', handleSliderResize));
 			}
 		},
 		updateSliderPosition () {

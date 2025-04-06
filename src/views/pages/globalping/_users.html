@@ -187,7 +187,10 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				window.addEventListener('resize', debounce(throttle(() => this.calculateMaxTagCount(), 200)));
+				let handleResize = debounce(throttle(() => this.calculateMaxTagCount(), 200));
+				window.addEventListener('resize', handleResize);
+				this.on('unrender', () => window.removeEventListener('resize', handleResize));
+
 				this.observe('userProbes', () => this.calculateMaxTagCount(), { defer: true });
 			}
 		},

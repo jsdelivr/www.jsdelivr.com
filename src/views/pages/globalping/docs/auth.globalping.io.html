@@ -59,7 +59,11 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				this.set('screenWidth', innerWidth);
-				window.addEventListener('resize', debounce(() => this.set('screenWidth', innerWidth), 100));
+
+				let handleResize = debounce(() => this.set('screenWidth', innerWidth), 100);
+				window.addEventListener('resize', handleResize);
+
+				this.on('unrender', () => window.removeEventListener('resize', handleResize));
 
 				this.find('rapi-doc').addEventListener('before-render', () => {
 					this.set('loaded', true);

@@ -175,7 +175,10 @@
 		},
 		onrender () {
 			// detect window resize
-			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
+			window.addEventListener('resize', handleResize);
+
+			this.on('unrender', () => window.removeEventListener('resize', handleResize));
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
@@ -261,11 +264,14 @@
 					this.handleInputFocus(tagsBlockEl);
 				});
 
-				document.addEventListener('click', (e) => {
+				let handleOnClickOutside = (e) => {
 					if (e.target.isConnected && !tagsBlockEl.contains(e.target)) {
 						tagsBlockEl.classList.remove('focused');
 					}
-				});
+				};
+
+				document.addEventListener('click', handleOnClickOutside);
+				this.on('unrender', () => document.removeEventListener('click', handleOnClickOutside));
 
 				this.observe('isDisabled', (isDisabled) => {
 					if (isDisabled) {

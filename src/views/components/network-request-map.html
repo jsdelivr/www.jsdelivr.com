@@ -386,7 +386,10 @@
 					});
 
 					// detect window resize
-					window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+					let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
+					window.addEventListener('resize', handleResize);
+
+					this.on('unrender', () => window.removeEventListener('resize', handleResize));
 				});
 			}
 		},

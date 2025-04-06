@@ -210,7 +210,7 @@
 							let prevPageY = 0;
 							let currentPageY = 0;
 
-							window.addEventListener('scroll', () => {
+							let handleScroll = () => {
 								currentPageY = window.pageYOffset;
 
 								if (prevPageY > currentPageY) {
@@ -233,7 +233,10 @@
 								});
 
 								prevPageY = currentPageY;
-							});
+							};
+
+							window.addEventListener('scroll', handleScroll);
+							this.on('unrender', () => window.removeEventListener('scroll', handleScroll));
 						});
 					}).catch(() => {
 						this.set('readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
@@ -249,7 +252,7 @@
 				if (sidebar) {
 					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
 
-					window.addEventListener('scroll', () => {
+					let handleStickySidebarScroll = () => {
 						let y = document.scrollingElement.scrollTop;
 						let currentSidebarTop = sidebar.getBoundingClientRect().top;
 
@@ -258,7 +261,10 @@
 						} else {
 							sidebar.removeAttribute('style');
 						}
-					});
+					};
+
+					window.addEventListener('scroll', handleStickySidebarScroll);
+					this.on('unrender', () => window.removeEventListener('scroll', handleStickySidebarScroll));
 				}
 			}
 		},
