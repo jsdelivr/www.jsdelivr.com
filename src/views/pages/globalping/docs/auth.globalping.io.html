@@ -42,7 +42,7 @@
 </r-docs>
 
 <script>
-	const debounce = require('../../../../assets/js/utils/debounce');
+	const listeners = require('../../../../assets/js/utils/listeners');
 
 	component.exports = {
 		data () {
@@ -58,12 +58,9 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				this.set('screenWidth', innerWidth);
+				this.set('screenWidth', window.innerWidth);
 
-				let handleResize = debounce(() => this.set('screenWidth', innerWidth), 100);
-				window.addEventListener('resize', handleResize);
-
-				this.on('unrender', () => window.removeEventListener('resize', handleResize));
+				listeners.screenWidthListener(this);
 
 				this.find('rapi-doc').addEventListener('before-render', () => {
 					this.set('loaded', true);

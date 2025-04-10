@@ -1230,8 +1230,7 @@
 <script>
 	const _ = require('../../../assets/js/_.js');
 	const ipRegex = require('../../../assets/js/utils/ip-regex');
-	const debounce = require('../../../assets/js/utils/debounce');
-	const throttle = require('../../../assets/js/utils/throttle');
+	const listeners = require('../../../assets/js/utils/listeners');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
@@ -1475,11 +1474,7 @@
 					this.initMap();
 				}
 
-				// detect window resize
-				let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
-				window.addEventListener('resize', handleResize);
-
-				this.on('unrender', () => window.removeEventListener('resize', handleResize));
+				listeners.screenWidthListener(this);
 			}
 		},
 		oninit () {
@@ -1793,7 +1788,7 @@
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
-						this.set('screenWidth', innerWidth);
+						this.set('screenWidth', window.innerWidth);
 					}
 				});
 

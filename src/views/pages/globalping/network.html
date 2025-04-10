@@ -89,8 +89,7 @@
 </r-page>
 
 <script>
-	const debounce = require('../../../assets/js/utils/debounce');
-	const throttle = require('../../../assets/js/utils/throttle');
+	const listeners = require('../../../assets/js/utils/listeners');
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
 	const CONTINENTS = require('../../../assets/json/continents.json');
@@ -190,7 +189,7 @@
 				// set initial screenWidth value
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
-						this.set('screenWidth', innerWidth);
+						this.set('screenWidth', window.innerWidth);
 					} else {
 						let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 						let filteredProbes = this.get('filteredProbes');
@@ -241,11 +240,7 @@
 			if (!Ractive.isServer) {
 				this.set('@shared.googleMapsLoaded', true);
 
-				// detect window resize
-				let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
-				window.addEventListener('resize', handleResize);
-
-				this.on('unrender', () => window.removeEventListener('resize', handleResize));
+				listeners.screenWidthListener(this);
 			}
 		},
 		handleProbesByCoordsChange () {

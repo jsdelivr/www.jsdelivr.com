@@ -195,8 +195,7 @@
 	const tooltip = require('../../assets/js/decorators/tooltip');
 	const countries = require('../../assets/json/countries.json');
 	const continents = require('../../assets/json/continents.json');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 	const GLOBAL_SEARCH_ITEM_TYPE = 'global';
 	const NO_RESULTS_SEARCH_ITEM_TYPE = 'no-results';
 	const COUNTRY_SEARCH_ITEM_TYPE = 'country';
@@ -235,7 +234,7 @@
 			this.set('countriesList', countriesList);
 
 			this.observe('screenWidth', (screenWidth) => {
-				if ((screenWidth || innerWidth) < 768) {
+				if ((screenWidth || window.innerWidth) < 768) {
 					this.set('searchPlaceholder', 'Search');
 				} else {
 					this.set('searchPlaceholder', 'Filter for a specific country or a continent...');
@@ -392,11 +391,7 @@
 				}, 4);
 			});
 
-			// detect window resize
-			let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
-			window.addEventListener('resize', handleResize);
-
-			this.on('unrender', () => window.removeEventListener('resize', handleResize));
+			listeners.screenWidthListener(this);
 		},
 		oncomplete () {
 			let globalEl = this.find('.global-data');

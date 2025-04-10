@@ -30,8 +30,7 @@
 </label>
 
 <script>
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 	const DEFAULT_TEXTAREA_ROWS_AMOUNT = 2;
 
 	component.exports = {
@@ -59,7 +58,7 @@
 				});
 
 				this.observe('screenWidth', (screenWidth) => {
-					if ((screenWidth || innerWidth) < 768) {
+					if ((screenWidth || window.innerWidth) < 768) {
 						this.set('errMsgTopPos', true);
 					} else {
 						this.set('errMsgTopPos', false);
@@ -119,11 +118,7 @@
 			}
 		},
 		onrender () {
-			// detect window resize
-			let handleResize = debounce(throttle(() => this.set('screenWidth', innerWidth), 200));
-			window.addEventListener('resize', handleResize);
-
-			this.on('unrender', () => window.removeEventListener('resize', handleResize));
+			listeners.screenWidthListener(this);
 		},
 	};
 </script>
