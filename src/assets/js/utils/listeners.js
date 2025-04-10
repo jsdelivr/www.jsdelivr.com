@@ -29,7 +29,7 @@ module.exports.stickySidebarScrollListener = (component) => {
 	let sidebar = document.querySelector('.page-content_side-menu');
 
 	if (sidebar) {
-		let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
+		let top = sidebar.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop);
 
 		let handleStickySidebarScroll = () => {
 			let y = document.scrollingElement.scrollTop;
