@@ -2,7 +2,17 @@ const debounce = require('./debounce');
 const throttle = require('./throttle');
 
 const addManagedListener = (component, target, event, handler) => {
+	if (!target || typeof target.addEventListener !== 'function' || typeof target.removeEventListener !== 'function') {
+		console.warn('Invalid target passed to addManagedListener');
+		return;
+	}
+
 	target.addEventListener(event, handler);
+
+	if (!component || typeof component.on !== 'function') {
+		console.warn('Invalid component passed to addManagedListener');
+		return;
+	}
 
 	component.on('unrender', () => {
 		target.removeEventListener(event, handler);
@@ -33,5 +43,6 @@ module.exports.stickySidebarScrollListener = (component) => {
 		};
 
 		addManagedListener(component, window, 'scroll', handleStickySidebarScroll);
+		handleStickySidebarScroll();
 	}
 };
