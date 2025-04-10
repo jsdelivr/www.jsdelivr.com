@@ -26,6 +26,7 @@
 	const _ = require('../../assets/js/_');
 	const debounce = require('../../assets/js/utils/debounce');
 	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 	const CUSTOM_DONATION_VALUE = 'custom';
 	const NO_DONATION = {
 		value: 'free',
@@ -199,8 +200,7 @@
 					this.updateSliderPosition();
 				};
 
-				document.addEventListener('keydown', handleSliderKeyboardNavigation);
-				this.on('unrender', () => document.removeEventListener('keydown', handleSliderKeyboardNavigation));
+				listeners.addManagedListener(this, document, 'keydown', handleSliderKeyboardNavigation);
 
 				// initiate the slider
 				this.updateSliderPosition();
@@ -256,8 +256,7 @@
 					this.createSliderLabels();
 				}, 200));
 
-				window.addEventListener('resize', handleSliderResize);
-				this.on('unrender', () => window.removeEventListener('resize', handleSliderResize));
+				listeners.addManagedListener(this, document, 'resize', handleSliderResize);
 			}
 		},
 		updateSliderPosition () {

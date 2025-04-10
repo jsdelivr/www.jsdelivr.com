@@ -264,6 +264,7 @@
 
 <script>
 	const http = require('../../assets/js/utils/http');
+	const listeners = require('../../assets/js/utils/listeners');
 	const { buildLinks } = require('../../assets/js/utils/build-links');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 
@@ -407,8 +408,7 @@
 					}
 				};
 
-				document.addEventListener('scroll', handleScroll);
-				this.on('unrender', () => document.removeEventListener('scroll', handleScroll));
+				listeners.addManagedListener(this, window, 'scroll', handleScroll);
 			}
 		},
 		getLink (files, addTag, enableSri, outFiles) {

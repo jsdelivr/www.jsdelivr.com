@@ -46,6 +46,7 @@
 
 <script>
 	const _ = require('../../assets/js/_');
+	const listeners = require('../../assets/js/utils/listeners');
 
 	component.exports = {
 		computed: {
@@ -116,8 +117,7 @@
 					}
 				};
 
-				document.addEventListener('click', handleOnOutsideClick);
-				this.on('unrender', () => document.removeEventListener('click', handleOnOutsideClick));
+				listeners.addManagedListener(this, document, 'click', handleOnOutsideClick);
 
 				this.observe('dropdownOpened', (newValue) => {
 					let ul = this.find('.dropdown_body_list');

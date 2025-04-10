@@ -102,6 +102,7 @@
 
 <script>
 	const _ = require('../../assets/js/_');
+	const listeners = require('../../assets/js/utils/listeners');
 	const ID_PREFIX = 'id-';
 
 	component.exports = {
@@ -235,8 +236,7 @@
 								prevPageY = currentPageY;
 							};
 
-							window.addEventListener('scroll', handleScroll);
-							this.on('unrender', () => window.removeEventListener('scroll', handleScroll));
+							listeners.addManagedListener(this, window, 'scroll', handleScroll);
 						});
 					}).catch(() => {
 						this.set('readmeText', `Failed to load the document. Please view it directly at:<br>https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md`);
@@ -246,26 +246,7 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				// handle sticky side menu
-				let sidebar = document.querySelector('.page-content_side-menu');
-
-				if (sidebar) {
-					let top = sidebar.getBoundingClientRect().top + document.body.scrollTop;
-
-					let handleStickySidebarScroll = () => {
-						let y = document.scrollingElement.scrollTop;
-						let currentSidebarTop = sidebar.getBoundingClientRect().top;
-
-						if ((currentSidebarTop <= 20 && currentSidebarTop >= 0) || y > top) {
-							sidebar.setAttribute('style', 'position: sticky; top: 20px');
-						} else {
-							sidebar.removeAttribute('style');
-						}
-					};
-
-					window.addEventListener('scroll', handleStickySidebarScroll);
-					this.on('unrender', () => window.removeEventListener('scroll', handleStickySidebarScroll));
-				}
+				listeners.stickySidebarScrollListener(this);
 			}
 		},
 	};

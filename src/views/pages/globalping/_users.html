@@ -130,6 +130,7 @@
 	const _ = require('../../../assets/js/_');
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
+	const listeners = require('../../../assets/js/utils/listeners');
 	const http = require('../../../assets/js/utils/http');
 	const dataCache = require('../../../assets/js/utils/data-cache');
 	const tooltip = require('../../../assets/js/decorators/tooltip');
@@ -188,8 +189,7 @@
 		onrender () {
 			if (!Ractive.isServer) {
 				let handleResize = debounce(throttle(() => this.calculateMaxTagCount(), 200));
-				window.addEventListener('resize', handleResize);
-				this.on('unrender', () => window.removeEventListener('resize', handleResize));
+				listeners.addManagedListener(this, window, 'resize', handleResize);
 
 				this.observe('userProbes', () => this.calculateMaxTagCount(), { defer: true });
 			}

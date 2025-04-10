@@ -37,6 +37,8 @@
 </div>
 
 <script>
+	const listeners = require('../../assets/js/utils/listeners');
+
 	component.exports = {
 		computed: {
 			filteredVersions () {
@@ -92,8 +94,7 @@
 					}
 				};
 
-				document.addEventListener('click', handleOnClickOutside);
-				this.on('unrender', () => document.removeEventListener('click', handleOnClickOutside));
+				listeners.addManagedListener(this, document, 'click', handleOnClickOutside);
 
 				this.observe('dropdownOpened', (newValue) => {
 					let ul = this.find('.version-dropdown_wrapper_list');
