@@ -1559,4 +1559,7 @@ module.exports = {
 
 		return count === 1 ? singular : plural;
 	},
+	getScreenWidth (screenWidth) {
+		return screenWidth || window.innerWidth;
+	},
 };
