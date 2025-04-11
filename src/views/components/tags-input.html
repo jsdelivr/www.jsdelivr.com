@@ -73,8 +73,7 @@
 
 <script>
 	const ipRegex = require('../../assets/js/utils/ip-regex');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 	const tooltip = require('../../assets/js/decorators/tooltip');
 	const IP_V4_VALUE = 4;
 	const IP_V6_VALUE = 6;
@@ -126,7 +125,7 @@
 				});
 
 				this.observe('screenWidth', (screenWidth) => {
-					if ((screenWidth || innerWidth) < 768) {
+					if ((screenWidth || window.innerWidth) < 768) {
 						this.set('errMsgTopPos', true);
 					} else {
 						this.set('errMsgTopPos', false);
@@ -174,8 +173,7 @@
 			}
 		},
 		onrender () {
-			// detect window resize
-			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			listeners.screenWidthListener(this);
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
@@ -261,11 +259,13 @@
 					this.handleInputFocus(tagsBlockEl);
 				});
 
-				document.addEventListener('click', (e) => {
+				let handleOnClickOutside = (e) => {
 					if (e.target.isConnected && !tagsBlockEl.contains(e.target)) {
 						tagsBlockEl.classList.remove('focused');
 					}
-				});
+				};
+
+				listeners.addManagedListener(this, document, 'click', handleOnClickOutside);
 
 				this.observe('isDisabled', (isDisabled) => {
 					if (isDisabled) {

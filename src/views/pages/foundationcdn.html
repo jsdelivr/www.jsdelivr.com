@@ -264,6 +264,7 @@
 
 <script>
 	const http = require('../../assets/js/utils/http');
+	const listeners = require('../../assets/js/utils/listeners');
 	const { buildLinks } = require('../../assets/js/utils/build-links');
 	const clipboard = require('../../assets/js/decorators/clipboard');
 
@@ -380,7 +381,7 @@
 					console.error(`Package versions not found.`, error);
 				});
 
-				document.addEventListener('scroll', () => {
+				let handleScroll = () => {
 					let $customizeBar = document.querySelector('.section-2 .customize-bar');
 					let sectionOneEl = document.querySelector('.section-1');
 
@@ -405,7 +406,9 @@
 						$customizeBar.classList.remove('fixed-cb');
 						document.querySelector('.section-2').style.marginTop = 0;
 					}
-				});
+				};
+
+				listeners.addManagedListener(this, window, 'scroll', handleScroll);
 			}
 		},
 		getLink (files, addTag, enableSri, outFiles) {

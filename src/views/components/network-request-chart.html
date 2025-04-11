@@ -78,8 +78,7 @@
 	const http = require('../../assets/js/utils/http');
 	const initCharts = require('../../assets/js/utils/charts');
 	const providersJson = require('../../assets/json/net-providers.json');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 
 	component.exports = {
 		data () {
@@ -164,7 +163,7 @@
 					let chartPeriodType = this.get('period').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let showProviderBreakdown = this.get('showProviderBreakdown');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : window.innerWidth;
 					let usageChartGroupBy = 'day';
 					let hitsProviders = [ ...rawHitsChartData.hits.providers ];
 					let bandwidthProviders = [ ...rawHitsChartData.bandwidth.providers ];
@@ -342,8 +341,7 @@
 				});
 			});
 
-			// detect window resize
-			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			listeners.screenWidthListener(this);
 		},
 		combineProvidersData (providersList) {
 			return providersList.reduce((res, currProvider) => {
