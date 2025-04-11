@@ -37,6 +37,8 @@
 </div>
 
 <script>
+	const listeners = require('../../assets/js/utils/listeners');
+
 	component.exports = {
 		computed: {
 			filteredVersions () {
@@ -84,13 +86,15 @@
 				// close dropdown and clear filter on click outside the dropdown el
 				let el = this.find('.version-dropdown');
 
-				document.addEventListener('click', (event) => {
+				let handleOnClickOutside = (event) => {
 					let currDropdownOpened = this.get('dropdownOpened');
 
 					if (currDropdownOpened && !el.contains(event.target)) {
 						this.set('dropdownOpened', false);
 					}
-				});
+				};
+
+				listeners.addManagedListener(this, document, 'click', handleOnClickOutside);
 
 				this.observe('dropdownOpened', (newValue) => {
 					let ul = this.find('.version-dropdown_wrapper_list');
