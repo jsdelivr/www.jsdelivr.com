@@ -5,10 +5,10 @@
 	<div class="box-files">
 		<div class="path-n-version">
 			<div>
-				<a on-click="@this.set('path', [])" class="path-text">{{name}}</a>
+				<button on-click="@this.set('path', [])" class="path-text">{{name}}</button>
 				{{#each path.slice(0, -1)}}
 					<span class="path-divider">{{' / '}}</span>
-					<a on-click="@this.splice('path', @index + 1)" class="path-text">{{this}}</a>
+					<button on-click="@this.splice('path', @index + 1)" class="path-text">{{this}}</button>
 				{{/each}}
 				{{#if path}}
 					<span class="path-divider">{{' / '}}</span>
@@ -58,7 +58,13 @@
 							checked="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/sharedVersion, ~/default) !== -1}}"
 							twoway="false">
 
-						<label for="df" on-click="@this.toggleCollectionFile(~/default)" as-tooltip="'Add to collection'"></label>
+						<label for="df"
+							on-click="@this.toggleCollectionFile(~/default)"
+							on-keydown="@this.handleLabelKeydown(event, ~/default)"
+							as-tooltip="'Add to collection'"
+							role="button"
+							aria-pressed="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/sharedVersion, ~/default) !== -1}}"
+							tabindex="0"></label>
 					</div>
 				</div>
 			{{/if}}
@@ -73,11 +79,11 @@
 
 					{{#if path.length}}
 						<div class="files-list-back">
-							<a on-click="@this.pop('path')">
+							<button class="disable-button-styles" on-click="@this.pop('path')" tabindex="0">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/back.svg" loading="lazy"/>
 								<span class="path-divider-small">/</span>
 								<span class="file-path">{{pathS}}...</span>
-							</a>
+							</button>
 						</div>
 					{{/if}}
 				{{/if}}
@@ -85,10 +91,10 @@
 				{{#partial fileLink}}
 					<div class="file-item file-item-{{type}}">
 						{{#if type === 'directory'}}
-							<a on-click="@this.push('path', name)">
+							<button class="disable-button-styles" on-click="@this.push('path', name)">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/folder.svg" loading="lazy"/>
 								/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/<span class="file-path">{{pathS}}{{name}}</span>
-							</a>
+							</button>
 						{{else}}
 							<a target="_blank" rel="noopener noreferrer" href="https://cdn.jsdelivr.net/{{~/type}}/{{~/name}}@{{~/sharedVersion}}/{{pathS}}{{name}}">
 								<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/file.svg" loading="lazy"/>
@@ -126,7 +132,11 @@
 
 							<label for="{{name}}"
 								on-click="@this.toggleCollectionFile('/' + pathS + name)"
-								as-tooltip="'Add to collection'">
+								on-keydown="@this.handleLabelKeydown(event, '/' + pathS + name)"
+								as-tooltip="'Add to collection'"
+								role="button"
+								aria-pressed="{{@this.getCollectionIndex(~/collection, ~/type, ~/name, ~/sharedVersion, '/' + pathS + name) !== -1}}"
+								tabindex="0">
 							</label>
 						</div>
 					</div>
@@ -149,9 +159,9 @@
 		{{#if _.listFiles(~/files, path).length > filesLimit}}
 			<div class="show-more-toggle">
 				{{#if showMoreFiles}}
-					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</a>
+					<button class="disable-button-styles" on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-up" aria-hidden="true"></i> Show first 10</button>
 				{{else}}
-					<a on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</a>
+					<button class="disable-button-styles" on-click="@this.toggleShowMoreFiles()"><i class="fa fa-angle-down" aria-hidden="true"></i> Show all</button>
 				{{/if}}
 			</div>
 		{{/if}}
@@ -339,6 +349,13 @@
 			}
 
 			return Object.assign({ path: file }, f);
+		},
+		handleLabelKeydown (e, path) {
+			if (e.event.key === 'Enter' || e.event.key === ' ') {
+				e.event.preventDefault();
+				e.event.stopPropagation();
+				this.toggleCollectionFile(path);
+			}
 		},
 		toggleCollectionFile (file) {
 			let type = this.get('type');

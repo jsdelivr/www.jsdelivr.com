@@ -1,25 +1,25 @@
 <div class="c-copy-dropdown btn-group {{#if dropup}}dropup{{/if}}">
-	<span data-toggle="dropdown">
+	<button data-toggle="dropdown" role="button" aria-haspopup="true">
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/copy-btn-black.svg" loading="lazy"/>
-	</span>
+	</button>
 
-	<ul class="dropdown-menu dropdown-menu-right">
+	<ul class="dropdown-menu dropdown-menu-right" role="listbox" aria-label="Copy options" aria-expanded="false">
 		<li>
-			<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{url}}">Copy URL</a>
+			<button as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{url}}">Copy URL</button>
 		</li>
 		{{#if hash}}
 			<li>
-				<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</a>
+				<button as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildIntegrity(hash)}}">Copy SRI</button>
 			</li>
 		{{/if}}
 
 		{{#if canBuildHtml(url)}}
 			<li>
-				<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url)}}">Copy HTML</a>
+				<button as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url)}}">Copy HTML</button>
 			</li>
 			{{#if hash}}
 				<li>
-					<a as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url, hash)}}">Copy HTML + SRI</a>
+					<button as-clipboard="undefined, dropup ? 'bottom' : 'top', '.c-copy-dropdown'" data-clipboard-text="{{buildHtml(url, hash)}}">Copy HTML + SRI</button>
 				</li>
 			{{/if}}
 		{{/if}}
@@ -40,6 +40,41 @@
 				buildHtml,
 				canBuildHtml,
 			};
+		},
+		onrender () {
+			let handleDropdownShown = (event) => {
+				let dropdown = $(event.target);
+				dropdown.find('.dropdown-menu').attr('aria-expanded', true);
+
+				dropdown.on('keydown', (e) => {
+					if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+						e.preventDefault();
+						let items = dropdown.find('.dropdown-menu li button');
+						let currentIndex = items.index(e.target);
+						let nextIndex = (currentIndex + (e.key === 'ArrowDown' ? 1 : -1)) % items.length;
+
+						if (nextIndex < 0) {
+							nextIndex = items.length - 1;
+						}
+
+						items.eq(nextIndex).focus();
+					}
+				});
+			};
+
+			let handleDropdownHidden = (event) => {
+				let dropdown = $(event.target);
+				dropdown.find('.dropdown-menu').attr('aria-expanded', false);
+				dropdown.find('.dropdown-toggle').focus();
+			};
+
+			$(document).on('shown.bs.dropdown', handleDropdownShown);
+			$(document).on('hidden.bs.dropdown', handleDropdownHidden);
+
+			this.on('unrender', () => {
+				$(document).off('shown.bs.dropdown', handleDropdownShown);
+				$(document).off('hidden.bs.dropdown', handleDropdownHidden);
+			});
 		},
 	};
 </script>
