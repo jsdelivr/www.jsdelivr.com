@@ -21,7 +21,9 @@ const addManagedListener = (component, target, event, handler) => {
 
 module.exports.addManagedListener = addManagedListener;
 
-module.exports.screenWidgetListener = (component) => {
+module.exports.screenWidthListener = (component) => {
+	component.set('screenWidth', window.innerWidth);
+
 	addManagedListener(component, window, 'resize', debounce(throttle(() => component.set('screenWidth', window.innerWidth), 200)));
 };
 
