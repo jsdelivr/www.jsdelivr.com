@@ -6,6 +6,7 @@ const _ = require('./_');
 const cGlobalping = require('../../views/pages/globalping/_index.html');
 const cGlobalpingCli = require('../../views/pages/globalping/cli.html');
 const cGlobalpingSlack = require('../../views/pages/globalping/slack.html');
+const cGlobalpingDiscord = require('../../views/pages/globalping/discord.html');
 const cGlobalpingNetworkTools = require('../../views/pages/globalping/network-tools.html');
 const cGlobalpingIntegrations = require('../../views/pages/globalping/integrations.html');
 const cGlobalpingAbout = require('../../views/pages/globalping/about-us.html');
@@ -35,6 +36,7 @@ app.router = new Ractive.Router({
 app.router.addRoute('/', cGlobalping, { qs: [ 'measurement' ] });
 app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
+app.router.addRoute('/discord', cGlobalpingDiscord);
 app.router.addRoute('/network-tools/:params?', cGlobalpingNetworkTools);
 app.router.addRoute('/integrations', cGlobalpingIntegrations);
 app.router.addRoute('/about-us', cGlobalpingAbout);
