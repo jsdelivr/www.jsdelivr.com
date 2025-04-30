@@ -175,8 +175,7 @@
 	const _ = require('../../assets/js/_');
 	const http = require('../../assets/js/utils/http');
 	const stats = require('../../assets/js/utils/stats');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 	const initCharts = require('../../assets/js/utils/charts');
 	const DEFAULT_LIMIT = 5;
 	const COLORS_ARR = [
@@ -383,7 +382,7 @@
 
 					let chartPeriodType = this.get('periodData').periodType;
 					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : window.innerWidth;
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					// collect X-Axis dates, group data by period, get
@@ -431,7 +430,7 @@
 
 					let chartPeriodType = this.get('periodData').periodType;
 					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : window.innerWidth;
 
 					// collect versions for hitsChart Legend element
 					let hitsChartLegendVersions = rawHitsChartData.map(item => ({ version: item.version }));
@@ -730,8 +729,7 @@
 					});
 				});
 
-				// detect window resize
-				window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+				listeners.screenWidthListener(this);
 			}
 		},
 

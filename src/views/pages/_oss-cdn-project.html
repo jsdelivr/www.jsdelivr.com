@@ -149,8 +149,7 @@
 	const http = require('../../assets/js/utils/http');
 	const stats = require('../../assets/js/utils/stats');
 	const initCharts = require('../../assets/js/utils/charts');
-	const debounce = require('../../assets/js/utils/debounce');
-	const throttle = require('../../assets/js/utils/throttle');
+	const listeners = require('../../assets/js/utils/listeners');
 
 	component.exports = {
 		computed: {
@@ -310,7 +309,7 @@
 					let chartPeriodType = this.get('periodData').periodType;
 					let showChartBandwidth = this.get('showChartBandwidth');
 					let usageChartGroupBy = this.get('usageChartGroupBy');
-					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : innerWidth;
+					let screenWidth = this.get('screenWidth') ? this.get('screenWidth') : window.innerWidth;
 					let dataType = showChartBandwidth ? 'bandwidth' : 'hits';
 
 					// collect X-Axis dates, group data by period, get
@@ -454,8 +453,7 @@
 				});
 			});
 
-			// detect window resize
-			window.addEventListener('resize', debounce(throttle(() => this.set('screenWidth', innerWidth), 200)));
+			listeners.screenWidthListener(this);
 		},
 		handlePeriodSelecting () {
 			return (periodData) => {
