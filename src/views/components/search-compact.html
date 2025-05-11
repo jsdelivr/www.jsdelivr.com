@@ -100,10 +100,6 @@
 				let s = debounce((keypath) => {
 					if (this.get('query')) {
 						search(this.get('query'), this.get('page'), 5).then((result) => {
-							result.response.hits.forEach((hit) => {
-								hit.jsDelivrHits = _.formatToShortNumber(hit.jsDelivrHits);
-							});
-
 							// The query might have changed since we sent the request.
 							if (result.query === this.get('query')) {
 								this.set('packages', result.response.hits, { shuffle: 'name' });
