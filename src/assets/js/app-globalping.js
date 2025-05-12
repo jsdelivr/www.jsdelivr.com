@@ -94,11 +94,6 @@ _.onDocumentReady(() => {
 			.watchLinks()
 			.watchState();
 	}
-
-	// open navbar dropdowns on hover
-	$(document)
-		.on('mouseenter', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown:not(.open)').find('.dropdown-toggle').dropdown('toggle')))
-		.on('mouseleave', '.navbar .dropdown', e => setTimeout(() => $(e.target).closest('.navbar-collapse').css('position') !== 'absolute' && $(e.target).closest('.dropdown.open').find('.dropdown-toggle').dropdown('toggle')));
 });
 
 app.injectGlobalStyle = (href) => {
