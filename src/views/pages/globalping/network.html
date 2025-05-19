@@ -3,6 +3,7 @@
 <link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/select.html" name="c-select">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -20,58 +21,104 @@
 			</div>
 
 			<div class="gp-network_filters">
-				<span class="gp-network_filters_title">
-					<img width="20" height="20" src="{{@shared.assetsHost}}/img/globalping/filter-icon.svg">
-					<span>Filters:</span>
-				</span>
+				<div class="gp-network_filters_row">
+					<div class="gp-network_filters_field gp-network_filters_field--location">
+						<label>Location/Network</label>
+						<input
+							type="text"
+							placeholder="Filter by location or network..."
+							value="{{locationFilter}}"
+							on-input="@this.handleLocationFilter"
+						/>
+					</div>
 
-				<div class="gp-network_filters_list">
-					{{#each filtersSet}}
-						<span class="gp-network_filters_list_selected">
-							{{this.name}}
+					<div class="gp-network_filters_field">
+						<label>Group by</label>
+						<c-select
+							className="gp-network_filters_field--group-by"
+							options="{{groupingOptions}}"
+							selected="{{groupBy}}" />
+					</div>
 
-							<img on-click="@this.rmFilterRule(@key)"
-								width="16"
-								height="16"
-								src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
-						</span>
-					{{/each}}
+					<div class="gp-network_filters_field gp-network_filters_field--sort-by">
+						<label>Sort by</label>
+						<c-select
+							options="{{sortOptions}}"
+							selected="{{sortOrder}}" />
+					</div>
+				</div>
+				<div class="gp-network_filters_quick_filters">
+					<span class="gp-network_filters_quick_filters_title">
+						<span>Quick Filters:</span>
+					</span>
 
-					{{#each availableFilters}}
-						{{#unless this.selected}}
-							<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_list_item">
+					<div class="gp-network_filters_quick_filters_list">
+						{{#each filtersSet}}
+							<span class="gp-network_filters_quick_filters_list_selected">
 								{{this.name}}
+
+								<img on-click="@this.rmFilterRule(@key)"
+									width="16"
+									height="16"
+									src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
 							</span>
-						{{/unless}}
-					{{/each}}
+						{{/each}}
+
+						{{#each availableFilters}}
+							{{#unless this.selected}}
+								<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_quick_filters_list_item">
+									{{this.name}}
+								</span>
+							{{/unless}}
+						{{/each}}
+					</div>
 				</div>
 			</div>
 
 			<div class="gp-network_list">
 				{{#each preparedProbesColumns as column}}
 					<div class="gp-network_list_column">
-						{{#each column as item}}
-							{{#if item.continent !== null}}
-								<span class="gp-network_list_column_item cont-header">
-									{{@this.getContinentName(item.continent)}}
-								</span>
-							{{/if}}
+						{{#each column as continentGroup}}
+							<div class="gp-network_list_column_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
+								{{#if continentGroup.title}}
+									<span class="gp-network_list_column_group_item cont-header">
+										{{@this.getContinentName(continentGroup.title)}}
+									</span>
+								{{/if}}
 
-							<span class="gp-network_list_column_item">
-								<span class="gp-network_list_column_item_img">
-									<img width="17"
-										height="12"
-										src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
-								</span>
+								{{#each continentGroup.items as item}}
+									<span class="gp-network_list_column_group_item">
+										{{#if item.showFlag}}
+											<span class="gp-network_list_column_group_item_img">
+												<img width="17"
+													height="12"
+													src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
+											</span>
+										{{/if}}
 
-								<span class="gp-network_list_column_item_location">
-									{{item.location}}
+										<span class="gp-network_list_column_group_item_location">
+											{{item.location}}
 
-									{{#if item.probes.length !== 1}}
-										<span>(x{{item.probes.length}})</span>
-									{{/if}}
-								</span>
-							</span>
+											{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
+												<span>(x{{item.probes.length}})</span>
+											{{/if}}
+										</span>
+
+										{{#if item.networks && item.networks.length}}
+											<div class="gp-network_list_column_group_item_networks">
+												{{#each item.networks}}
+													<span class="gp-network_list_column_group_item_network">
+														{{this.name}}
+														{{#if this.count !== 1}}
+															<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
+														{{/if}}
+													</span>
+												{{/each}}
+											</div>
+										{{/if}}
+									</span>
+								{{/each}}
+							</div>
 						{{/each}}
 					</div>
 				{{/each}}
@@ -102,6 +149,7 @@
 			return {
 				title: 'Network - Globalping',
 				description: 'Explore the global network map of Globalping probes.',
+				locationFilter: '',
 				availableFilters: [
 					{
 						name: 'Europe',
@@ -154,6 +202,42 @@
 						type: FILTER_TYPE_BY_CLOUD,
 					},
 				],
+				groupingOptions: [
+					{
+						name: 'Country',
+						value: 'country',
+					},
+					{
+						name: 'City',
+						value: 'city',
+					},
+					{
+						name: 'Network',
+						value: 'network',
+					},
+					{
+						name: 'Country + Network',
+						value: 'country-network',
+					},
+					{
+						name: 'City + Network',
+						value: 'city-network',
+					},
+					{
+						name: 'Disabled',
+						value: 'disabled',
+					},
+				],
+				sortOptions: [
+					{
+						name: 'Ascending',
+						value: 'asc',
+					},
+					{
+						name: 'Descending',
+						value: 'desc',
+					},
+				],
 				filtersSet: null,
 				probesResponse: null,
 				probesByContinents: null,
@@ -161,6 +245,8 @@
 				filteredProbes: null,
 				preparedProbesColumns: null,
 				filteredMarkersData: null,
+				groupBy: 'country',
+				sortOrder: 'asc',
 			};
 		},
 		computed: {
@@ -193,7 +279,7 @@
 					} else {
 						let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 						let filteredProbes = this.get('filteredProbes');
-						let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+						let sorted = this.sortAndGroup(filteredProbes);
 						let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
 
 						this.set('preparedProbesColumns', preparedProbesColumns);
@@ -229,7 +315,27 @@
 					let screenWidth = this.get('screenWidth');
 					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 
-					let sorted = this.sortProbesByCountriesAndCities(filteredProbes);
+					let sorted = this.sortAndGroup(filteredProbes);
+					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
+
+					this.set('preparedProbesColumns', preparedProbesColumns);
+				});
+
+				this.observe('groupBy', () => {
+					let screenWidth = this.get('screenWidth');
+					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+					let filteredProbes = this.get('filteredProbes');
+					let sorted = this.sortAndGroup(filteredProbes);
+					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
+
+					this.set('preparedProbesColumns', preparedProbesColumns);
+				});
+
+				this.observe('sortOrder', () => {
+					let screenWidth = this.get('screenWidth');
+					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
+					let filteredProbes = this.get('filteredProbes');
+					let sorted = this.sortAndGroup(filteredProbes);
 					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
 
 					this.set('preparedProbesColumns', preparedProbesColumns);
@@ -305,6 +411,7 @@
 
 			let byContinentSorted = Object.entries(groups.groupedByContinents).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
 			groups.groupedByContinents = Object.fromEntries(byContinentSorted);
+			console.log('groups.groupedByContinents', groups.groupedByContinents);
 
 			return groups;
 		},
@@ -524,68 +631,181 @@
 
 			return filteredProbes;
 		},
-		sortProbesByCountriesAndCities (obj) {
-			let sortedArray = [];
+		sortAndGroup (obj) {
+			let groupBy = this.get('groupBy');
+			let sortOrder = this.get('sortOrder');
 
-			Object.keys(obj).forEach((continent) => {
-				let sortedLocations = Object.keys(obj[continent]).sort((a, b) => {
-					let [ countryA, cityA ] = a.split(', ');
-					let [ countryB, cityB ] = b.split(', ');
+			if (groupBy === 'disabled') {
+				return [{
+					continent: null,
+					location: 'Grouping is disabled',
+					probes: [],
+				}];
+			}
 
-					return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
-				});
+			let sortedArray = Object
+				.keys(obj)
+				.sort((a, b) => a.localeCompare(b))
+				.reduce((acc, continent) => {
+					let locations = Object.keys(obj[continent]);
+					let groupedLocations = locations.reduce((acc, location) => {
+						let probes = obj[continent][location];
+						let key;
 
-				sortedArray.push(...sortedLocations.map(location => ({
-					continent,
-					location,
-					probes: obj[continent][location],
-				})));
-			});
+						switch (groupBy) {
+							case 'network':
+								key = probes[0].location.network;
+								break;
+							case 'country-network':
+								key = probes[0].location.country;
+								break;
+							case 'city-network':
+								key = `${probes[0].location.country}, ${probes[0].location.city}`;
+								break;
+							case 'city':
+								key = `${probes[0].location.country}, ${probes[0].location.city}`;
+								break;
+							case 'country':
+							default:
+								key = probes[0].location.country;
+								break;
+						}
+
+						if (!acc[key]) {
+							acc[key] = [];
+						}
+
+						acc[key].push(...probes);
+						return acc;
+					}, {});
+
+					let sortedLocations = Object.keys(groupedLocations).sort((a, b) => {
+						if (groupBy === 'network') {
+							return a.localeCompare(b);
+						}
+
+						let [ countryA, cityA ] = a.split(', ');
+						let [ countryB, cityB ] = b.split(', ');
+
+						if (sortOrder === 'asc') {
+							return countryA.localeCompare(countryB) || (cityA && cityB ? cityA.localeCompare(cityB) : 0);
+						}
+
+						return countryB.localeCompare(countryA) || (cityB && cityA ? cityB.localeCompare(cityA) : 0);
+					});
+
+					acc.push(...sortedLocations.map((location) => {
+						let probes = groupedLocations[location];
+						let networks = [];
+
+						if (groupBy === 'country-network' || groupBy === 'city-network') {
+							// Count probes per network
+							let networkCounts = probes.reduce((acc, probe) => {
+								let network = probe.location.network;
+								acc[network] = (acc[network] || 0) + 1;
+								return acc;
+							}, {});
+
+							// Convert to array of objects with name and count
+							networks = Object.entries(networkCounts).map(([ name, count ]) => ({
+								name,
+								count,
+							}));
+						}
+
+						return {
+							continent,
+							location,
+							probes,
+							networks,
+							showFlag: groupBy !== 'network',
+						};
+					}));
+
+					return acc;
+				}, []);
 
 			return sortedArray;
 		},
-		splitDataIntoColumns (data, columnsCnt = 4, minItemsPerColumn = 30) {
+		splitDataIntoColumns (data, columnsCnt = 3, minItemsPerColumn = 30) {
 			let totalItems = data.length;
 			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
 
 			let columnNumber = 0;
 			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
 
+			let groupBy = this.get('groupBy');
+
+			if (groupBy === 'network') {
+				return data.reduce((res, item) => {
+					if (!res[columnNumber]) {
+						res[columnNumber] = [{
+							title: null,
+							items: [],
+						}];
+					}
+
+					let currentColumn = res[columnNumber];
+					let currentColumnItems = currentColumn[0].items.length;
+
+					if (currentColumnItems >= columnMax) {
+						columnNumber++;
+
+						res[columnNumber] = [{
+							title: null,
+							items: [],
+						}];
+
+						currentColumn = res[columnNumber];
+					}
+
+					currentColumn[0].items.push(item);
+					return res;
+				}, []);
+			}
+
 			return data.reduce((res, item) => {
 				if (!res[columnNumber]) {
 					res[columnNumber] = [];
 				}
 
-				let currCont = item.continent;
+				let currentColumn = res[columnNumber];
+				let currentColumnItems = currentColumn.reduce((sum, continent) => {
+					return sum + continent.items.length;
+				}, 0);
 
-				if (res[columnNumber].length < columnMax) {
-					let isPresent = res.some(i => i.some(k => k.continent === currCont));
+				if (currentColumnItems >= columnMax) {
+					columnNumber++;
 
-					if (isPresent) {
-						res[columnNumber].push({ ...item, continent: null });
-					} else {
-						if (res[columnNumber].length + 1 !== columnMax) {
-							res[columnNumber].push(item);
-						} else {
-							columnNumber += 1;
-						}
+					if (!res[columnNumber]) {
+						res[columnNumber] = [];
 					}
-				} else {
-					columnNumber += 1;
+
+					currentColumn = res[columnNumber];
 				}
 
+				let continentGroup = currentColumn.find(group => group.title === item.continent);
+
+				if (!continentGroup) {
+					continentGroup = {
+						title: item.continent,
+						items: [],
+					};
+
+					currentColumn.push(continentGroup);
+				}
+
+				continentGroup.items.push(item);
 				return res;
 			}, []);
 		},
 		getLayoutColumnsAmount (screenWidth) {
 			let columnsAmount = 1;
 
-			if (screenWidth >= 576 && screenWidth < 768) {
+			if (screenWidth >= 576 && screenWidth < 992) {
 				columnsAmount = 2;
-			} else if (screenWidth >= 768 && screenWidth < 992) {
-				columnsAmount = 3;
 			} else if (screenWidth >= 992) {
-				columnsAmount = 4;
+				columnsAmount = 3;
 			}
 
 			return columnsAmount;

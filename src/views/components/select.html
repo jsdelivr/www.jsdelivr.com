@@ -1,0 +1,135 @@
+<div class="select {{className}}">
+	<button class="select_selected" on-click="@this.toggleDropdown()" on-keydown="@this.onKeyDown(@event)" aria-expanded="{{dropdownOpened}}">
+		<a>{{selectedName}}</a>
+		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy" alt=""/>
+	</button>
+
+	<div class="select_wrapper {{#if dropdownOpened}}opened{{/if}}" role="listbox">
+		<ul class="select_wrapper_list">
+			{{#each options}}
+				<li class="select_wrapper_list_item {{#if this.value === selected}}selected{{/if}} {{#if currSelectedItemIdx === @index}}focused{{/if}}" role="option" aria-selected="{{this.value === selected}}">
+					<a on-click="@this.selectItem(this.value)">{{this.name}}</a>
+				</li>
+			{{/each}}
+		</ul>
+	</div>
+</div>
+
+<script>
+	const listeners = require('../../assets/js/utils/listeners');
+
+	component.exports = {
+		data () {
+			return {
+				dropdownOpened: false,
+				className: '',
+				currSelectedItemIdx: null,
+			};
+		},
+		computed: {
+			selectedName () {
+				let selected = this.get('selected');
+				let options = this.get('options');
+				let option = options.find(opt => opt.value === selected);
+				return option ? option.name : selected;
+			},
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// close dropdown on click outside the select el
+				let el = this.find('.select');
+
+				let handleOnClickOutside = (event) => {
+					let currDropdownOpened = this.get('dropdownOpened');
+
+					if (currDropdownOpened && !el.contains(event.target)) {
+						this.set('dropdownOpened', false);
+					}
+				};
+
+				listeners.addManagedListener(this, document, 'click', handleOnClickOutside);
+
+				this.observe('dropdownOpened', (newValue) => {
+					if (newValue) {
+						this.find('.select_wrapper_list_item.selected')?.scrollIntoView?.({ block: 'nearest' });
+					}
+				}, { defer: true });
+
+				this.observe('currSelectedItemIdx', () => {
+					this.find('.select_wrapper_list_item.focused')?.scrollIntoView?.({ block: 'nearest' });
+				}, { defer: true });
+			}
+		},
+		onKeyDown (e) {
+			let listEl = this.find('.select_wrapper_list');
+
+			if (!listEl) { return; }
+
+			let options = this.get('options');
+			let currSelectedItemIdx = this.get('currSelectedItemIdx');
+			let selected = this.get('selected');
+
+			// Start nav from the selected value position if not already navigating
+			if (currSelectedItemIdx === null) {
+				options.some((opt, idx) => {
+					if (opt.value === selected) {
+						currSelectedItemIdx = idx;
+						return true;
+					}
+
+					return false;
+				});
+			}
+
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+
+				if (!this.get('dropdownOpened')) {
+					this.toggleDropdown();
+				}
+
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx + 1 > options.length - 1 ? options.length - 1 : currSelectedItemIdx + 1;
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault();
+
+				if (!this.get('dropdownOpened')) {
+					this.toggleDropdown();
+				}
+
+				currSelectedItemIdx = currSelectedItemIdx === null ? 0 : currSelectedItemIdx - 1 < 0 ? 0 : currSelectedItemIdx - 1;
+				this.set('currSelectedItemIdx', currSelectedItemIdx);
+			} else if (e.key === 'Enter') {
+				e.preventDefault();
+
+				if (this.get('dropdownOpened')) {
+					let selectedItem = options[currSelectedItemIdx];
+
+					if (selectedItem) {
+						this.selectItem(selectedItem.value);
+					}
+				} else {
+					this.toggleDropdown();
+				}
+			} else if (e.key === 'Escape') {
+				e.preventDefault();
+
+				if (this.get('dropdownOpened')) {
+					this.toggleDropdown();
+				}
+			} else if (e.key === 'Tab') {
+				if (this.get('dropdownOpened')) {
+					this.toggleDropdown();
+				}
+			}
+		},
+		toggleDropdown () {
+			this.set('dropdownOpened', !this.get('dropdownOpened'));
+			this.set('currSelectedItemIdx', null);
+		},
+		selectItem (value) {
+			this.toggleDropdown();
+			this.set('selected', value);
+		},
+	};
+</script>
