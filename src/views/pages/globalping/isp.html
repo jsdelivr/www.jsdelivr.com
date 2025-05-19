@@ -16,7 +16,35 @@
 			<span class="p-globalping-isp_head_asn">AS37754</span>
 		</div>
 
-		<div class="p-globalping-isp_network"></div>
+		<div class="p-globalping-isp_network">
+			<div class="p-globalping-isp_network_head">
+				<span>Network</span>
+				<span>LOGO</span>
+			</div>
+
+			<div class="p-globalping-isp_network_body">
+				<div class="p-globalping-isp_network_body location-dropdown">
+					<span>Test type</span>
+
+					<div class="btn-group">
+						<button type="button"
+							class="dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{~/location}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/locationsList}}
+								<div on-click="@this.setLocation(this)">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<div class="p-globalping-isp_network-tests"></div>
 	</div>
@@ -30,6 +58,8 @@
 			return {
 				title: 'TODO: ISP - Globalping',
 				description: 'TODO: add descr',
+				locationsList: [ 'TODO 1', 'TODO 2', 'TODO 3', 'TODO 4', 'TODO 5' ],
+				location: null,
 			}
 		},
 		oninit () {
@@ -41,6 +71,9 @@
 			if (!Ractive.isServer) {
 
 			}
+		},
+		setLocation (newLocation) {
+			this.set('location', newLocation);
 		},
 	};
 </script>
