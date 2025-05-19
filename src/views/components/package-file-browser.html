@@ -251,7 +251,7 @@
 								http.findProjectIssue(this.get('github.user'), this.get('github.project'), `${packageType === 'npm' ? 'npm package' : 'GitHub release'} too big for jsDelivr`).then((data) => {
 									errorHtml += `<br><br>Consider <a target="_blank" rel="noopener noreferrer" href="${data.items.length ? data.items[0].html_url : this.get('issueTooBig')}">asking the author to remove unnecessary files</a> to make the package smaller.`;
 								}).finally(() => {
-									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@sharedVersion/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
+									errorHtml += `<strong><br><br>You may still find the files you need in the <a target="_blank" rel="noopener noreferrer" href="https://github.com/${this.get('github.user')}/${this.get('github.project')}/">GitHub repository</a> and include them in your project like this:<br><code>https://cdn.jsdelivr.net/gh/${this.get('github.user')}/${this.get('github.project')}@${this.get('sharedVersion')}/file</code></strong><br><br>Read more about <a target="_blank" href="/documentation#id-github">GitHub CDN</a>, which can load individual files even if the overall package size exceeds the limit.`;
 									this.set('filesLoadingMessage', errorHtml);
 								});
 							}
