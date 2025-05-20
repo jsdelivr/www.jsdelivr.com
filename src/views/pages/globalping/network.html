@@ -168,7 +168,6 @@
 	const CONTINENTS = require('../../../assets/json/continents.json');
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
-	const FILTER_TYPE_BY_CLOUD = 'byCloud';
 
 	component.exports = {
 		data () {
@@ -216,16 +215,6 @@
 						name: 'datacenter',
 						value: 'datacenter-network',
 						type: FILTER_TYPE_BY_NETWORK,
-					},
-					{
-						name: 'Google Cloud',
-						value: 'gcp',
-						type: FILTER_TYPE_BY_CLOUD,
-					},
-					{
-						name: 'AWS Cloud',
-						value: 'aws',
-						type: FILTER_TYPE_BY_CLOUD,
 					},
 				],
 				groupingOptions: [
@@ -459,11 +448,7 @@
 				// if user sets the Eyeball filter we should deselect any byCloud filters and replace the previous byNetwork filter
 				if (newFilterRule.value === 'eyeball-network') {
 					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
-						if (f.type !== FILTER_TYPE_BY_CLOUD) {
-							acc.filtered.push(f);
-						} else {
-							acc.filteredOut.push(f);
-						}
+						acc.filteredOut.push(f);
 
 						return acc;
 					}, { filtered: [], filteredOut: [] });
@@ -480,28 +465,6 @@
 					updFiltersSet = filtered;
 					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
 				// if user sets the byCloud filter we should deselect Eyeball filter and replace the previous byCloud filter
-				} else if (newFilterRule.type === FILTER_TYPE_BY_CLOUD) {
-					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
-						if (f.value !== 'eyeball-network') {
-							acc.filtered.push(f);
-						} else {
-							acc.filteredOut.push(f);
-						}
-
-						return acc;
-					}, { filtered: [], filteredOut: [] });
-
-					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_CLOUD);
-
-					if (index !== -1) {
-						availableFilters[filtered[index].avFiltersIdx].selected = false;
-						filtered[index] = newFilterRule;
-					} else {
-						filtered.push(newFilterRule);
-					}
-
-					updFiltersSet = filtered;
-					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
 				} else if (filtersSet.find(f => f.type === newFilterRule.type)) {
 					updFiltersSet = filtersSet.map((f) => {
 						if (f.type === newFilterRule.type) {
@@ -554,7 +517,6 @@
 			// get the filter rules
 			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
 			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
-			let byCloudFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CLOUD);
 
 			// filter by Continent
 			if (byContinentFilerRule) {
@@ -604,45 +566,6 @@
 				} else {
 					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
 						let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
-
-						if (filtered.length) {
-							res[key] = filtered;
-						} else {
-							delete res[key];
-						}
-
-						return res;
-					}, filteredProbes);
-				}
-			}
-
-			// filter by Cloud provider
-			if (byCloudFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
-
-				if (forProbes) {
-					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
-							let locFiltered = toFilter[key][loc].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
-
-							if (locFiltered.length) {
-								cRes[loc] = locFiltered;
-							}
-
-							return cRes;
-						}, {});
-
-						if (Object.keys(continentProbes).length) {
-							res[key] = continentProbes;
-						} else {
-							delete res[key];
-						}
-
-						return res;
-					}, {});
-				} else {
-					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let filtered = toFilter[key].filter(p => p.tags.some(v => v.startsWith(byCloudFilerRule.value)));
 
 						if (filtered.length) {
 							res[key] = filtered;
