@@ -12,65 +12,91 @@
 
 	<div class="p-globalping-network">
 		<div class="gp-network">
-			<div class="gp-network_map-wrapper">
-				<c-google-maps
-					class="gp-network_map-wrapper_map"
-					iwClass="gp-network_iw"
-					probesByCoords="{{filteredMarkersData}}"
-					onProbesByCoordsChange="{{@this.handleProbesByCoordsChange}}" />
-			</div>
+			<div class="gp-network_filters_map_wrapper">
 
-			<div class="gp-network_filters">
-				<div class="gp-network_filters_row">
-					<div class="gp-network_filters_field gp-network_filters_field--location">
-						<label>Location/Network</label>
-						<input
-							type="text"
-							placeholder="Filter by location or network..."
-							value="{{locationFilter}}"
-							on-input="@this.handleLocationFilter"
-						/>
+				<div class="gp-network_stats">
+					<div class="gp-network_stats_item">
+						<img src="{{@shared.assetsHost}}/img/icons/radio.svg">
+						<span class="gp-network_stats_item_value">21</span>
+						<span class="gp-network_stats_item_title">probes</span>
 					</div>
-
-					<div class="gp-network_filters_field">
-						<label>Group by</label>
-						<c-select
-							className="gp-network_filters_field--group-by"
-							options="{{groupingOptions}}"
-							selected="{{groupBy}}" />
+					<div class="gp-network_stats_item">
+						<img src="{{@shared.assetsHost}}/img/icons/file-text.svg">
+						<span class="gp-network_stats_item_value">6</span>
+						<span class="gp-network_stats_item_title">ASNs</span>
 					</div>
-
-					<div class="gp-network_filters_field gp-network_filters_field--sort-by">
-						<label>Sort by</label>
-						<c-select
-							options="{{sortOptions}}"
-							selected="{{sortOrder}}" />
+					<div class="gp-network_stats_item">
+						<img src="{{@shared.assetsHost}}/img/icons/results-icon.svg">
+						<span class="gp-network_stats_item_value">40</span>
+						<span class="gp-network_stats_item_title">Tests/day</span>
+					</div>
+					<div class="gp-network_stats_item">
+						<img src="{{@shared.assetsHost}}/img/icons/activity.svg">
+						<span class="gp-network_stats_item_value">99%</span>
+						<span class="gp-network_stats_item_title">Avg uptime</span>
 					</div>
 				</div>
-				<div class="gp-network_filters_quick_filters">
-					<span class="gp-network_filters_quick_filters_title">
-						<span>Quick Filters:</span>
-					</span>
 
-					<div class="gp-network_filters_quick_filters_list">
-						{{#each filtersSet}}
-							<span class="gp-network_filters_quick_filters_list_selected">
-								{{this.name}}
+				<div class="gp-network_map-wrapper">
+					<c-google-maps
+						class="gp-network_map-wrapper_map"
+						iwClass="gp-network_iw"
+						probesByCoords="{{filteredMarkersData}}"
+						onProbesByCoordsChange="{{@this.handleProbesByCoordsChange}}" />
+				</div>
 
-								<img on-click="@this.rmFilterRule(@key)"
-									width="16"
-									height="16"
-									src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
-							</span>
-						{{/each}}
+				<div class="gp-network_filters">
+					<div class="gp-network_filters_row">
+						<div class="gp-network_filters_field gp-network_filters_field--location">
+							<label>Location/Network</label>
+							<input
+								type="text"
+								placeholder="Filter by location or network..."
+								value="{{locationFilter}}"
+								on-input="@this.handleLocationFilter"
+							/>
+						</div>
 
-						{{#each availableFilters}}
-							{{#unless this.selected}}
-								<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_quick_filters_list_item">
+						<div class="gp-network_filters_field">
+							<label>Group by</label>
+							<c-select
+								className="gp-network_filters_field--group-by"
+								options="{{groupingOptions}}"
+								selected="{{groupBy}}" />
+						</div>
+
+						<div class="gp-network_filters_field gp-network_filters_field--sort-by">
+							<label>Sort by</label>
+							<c-select
+								options="{{sortOptions}}"
+								selected="{{sortOrder}}" />
+						</div>
+					</div>
+					<div class="gp-network_filters_quick_filters">
+						<span class="gp-network_filters_quick_filters_title">
+							<span>Quick Filters:</span>
+						</span>
+
+						<div class="gp-network_filters_quick_filters_list">
+							{{#each filtersSet}}
+								<span class="gp-network_filters_quick_filters_list_selected">
 									{{this.name}}
+
+									<img on-click="@this.rmFilterRule(@key)"
+										width="16"
+										height="16"
+										src="{{@shared.assetsHost}}/img/globalping/tag-input-close-icon.svg">
 								</span>
-							{{/unless}}
-						{{/each}}
+							{{/each}}
+
+							{{#each availableFilters}}
+								{{#unless this.selected}}
+									<span on-click="@this.setFilterRule(@key)" class="gp-network_filters_quick_filters_list_item">
+										{{this.name}}
+									</span>
+								{{/unless}}
+							{{/each}}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -245,7 +271,7 @@
 				filteredProbes: null,
 				preparedProbesColumns: null,
 				filteredMarkersData: null,
-				groupBy: 'country',
+				groupBy: 'city',
 				sortOrder: 'asc',
 			};
 		},
