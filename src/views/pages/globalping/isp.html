@@ -3,6 +3,7 @@
 <link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -19,29 +20,45 @@
 		<div class="p-globalping-isp_network">
 			<div class="p-globalping-isp_network_head">
 				<span>Network</span>
-				<span>LOGO</span>
+
+				<img width="32"
+					height="32"
+					src="{{@shared.assetsHost}}/img/globalping/link-icon.svg"
+					loading="lazy"
+					as-tooltip="'TODO: LOGO TITLE'">
 			</div>
 
 			<div class="p-globalping-isp_network_body">
-				<div class="p-globalping-isp_network_body location-dropdown">
-					<span>Test type</span>
+				<div class="p-globalping-isp_network_body">
+					<div class="gp_dropdown_reg p-globalping-isp_network_body_select">
+						<span>Location</span>
 
-					<div class="btn-group">
-						<button type="button"
-							class="dropdown-toggle"
-							data-toggle="dropdown"
-							aria-haspopup="true"
-							aria-expanded="false">
-							<span>{{~/location}}</span>
-							<i class="fa fa-angle-down" aria-hidden="true"></i>
-						</button>
+						<div class="btn-group">
+							<button type="button"
+								class="dropdown-toggle"
+								data-toggle="dropdown"
+								aria-haspopup="true"
+								aria-expanded="false">
+								<span>{{~/location}}</span>
+								<i class="fa fa-angle-down" aria-hidden="true"></i>
+							</button>
 
-						<div class="dropdown-menu">
-							{{#each ~/locationsList}}
-								<div on-click="@this.setLocation(this)">{{this}}</div>
-							{{/each}}
+							<div class="dropdown-menu">
+								{{#each ~/locationsList}}
+									<div on-click="@this.setLocation(this)">{{this}}</div>
+								{{/each}}
+							</div>
 						</div>
 					</div>
+
+					<c-controlled-input
+						id="ipAddress"
+						value="TODO: value"
+						error=""
+						placeholder="TODO: placeholer"
+						labelText="Your IP"
+						classList="p-globalping-isp_network_body_input gp_input">
+					</c-controlled-input>
 				</div>
 			</div>
 		</div>
@@ -53,6 +70,8 @@
 </r-page>
 
 <script>
+	const tooltip = require('../../../assets/js/decorators/tooltip');
+
 	component.exports = {
 		data () {
 			return {
