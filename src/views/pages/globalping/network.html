@@ -4,6 +4,7 @@
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/select.html" name="c-select">
+<link rel="ractive" href="../../components/location-input.html" name="c-location-input">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -17,12 +18,12 @@
 				<div class="gp-network_stats">
 					<div class="gp-network_stats_item">
 						<img src="{{@shared.assetsHost}}/img/icons/radio.svg">
-						<span class="gp-network_stats_item_value">21</span>
+						<span class="gp-network_stats_item_value">{{filteredProbesStats.count}}</span>
 						<span class="gp-network_stats_item_title">probes</span>
 					</div>
 					<div class="gp-network_stats_item">
 						<img src="{{@shared.assetsHost}}/img/icons/file-text.svg">
-						<span class="gp-network_stats_item_value">6</span>
+						<span class="gp-network_stats_item_value">{{filteredProbesStats.asns}}</span>
 						<span class="gp-network_stats_item_title">ASNs</span>
 					</div>
 					<div class="gp-network_stats_item">
@@ -48,13 +49,22 @@
 				<div class="gp-network_filters">
 					<div class="gp-network_filters_row">
 						<div class="gp-network_filters_field gp-network_filters_field--location">
-							<label>Location/Network</label>
-							<input
-								type="text"
-								placeholder="Filter by location or network..."
-								value="{{locationFilter}}"
-								on-input="@this.handleLocationFilter"
-							/>
+							<c-location-input
+								on-enter="@this.resetMapAndRunTest()"
+								rawProbes="{{probesResponse}}"
+								value="{{location}}"
+								error="{{locationError}}"
+								placeholder="Enter location"
+								labelText="Location"
+								classList="gp_map-block_settings-wrapper_settings_location gp_input"
+								ttPos="{{ttPositions.locationTtPos}}">
+								{{#partial labelIcon}}
+									<img as-tooltip="[ 'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags.', '', 'Use + to combine multiple filters.', 'Use , to select multiple locations.' ], ttPos, undefined, undefined, 'multiline'"
+										width="14"
+										height="14"
+										src="{{@shared.assetsHost}}/img/globalping/help-icon.svg">
+								{{/partial}}
+							</c-location-input>
 						</div>
 
 						<div class="gp-network_filters_field">
@@ -174,7 +184,8 @@
 			return {
 				title: 'Network - Globalping',
 				description: 'Explore the global network map of Globalping probes.',
-				locationFilter: '',
+				location: '',
+				locationError: '',
 				availableFilters: [
 					{
 						name: 'Europe',
@@ -262,6 +273,7 @@
 				filteredMarkersData: null,
 				groupBy: 'city',
 				sortOrder: 'asc',
+				filteredProbesStats: 0,
 			};
 		},
 		computed: {
@@ -299,6 +311,25 @@
 
 						this.set('preparedProbesColumns', preparedProbesColumns);
 					}
+
+					// handle tooltips positions depending on the screen size
+					let ttPositions = {};
+
+					if (screenWidth >= 1272) {
+						ttPositions.targetTtPos = 'top';
+						ttPositions.locationTtPos = 'top';
+						ttPositions.limitTtPos = 'top';
+					} else if (screenWidth >= 768) {
+						ttPositions.targetTtPos = 'top';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'top';
+					} else {
+						ttPositions.targetTtPos = 'right';
+						ttPositions.locationTtPos = 'right';
+						ttPositions.limitTtPos = 'right';
+					}
+
+					this.set('ttPositions', ttPositions);
 				});
 
 				// sort probes by continents, and each list by country name
@@ -318,13 +349,32 @@
 				});
 
 				// use filters for the probesByContinents before render
-				this.observe('filtersSet', (filtersSet) => {
+				this.observe('filtersSet location', (filtersSet) => {
+					console.log('location', this.get('location'));
 					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
 					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
 				});
 
 				// prepare probes data for rendering
 				this.observe('filteredProbes', (filteredProbes) => {
+					let filteredProbesStats = Object
+						.values(filteredProbes || {})
+						.reduce((acc, cont) => {
+							let contCities = Object.values(cont).reduce((cAcc, cityProbes) => {
+								cAcc.count += cityProbes.length;
+								cityProbes.forEach(probe => cAcc.asns.add(probe.location.asn));
+
+								return cAcc;
+							}, { count: 0, asns: new Set() });
+
+							acc.count += contCities.count;
+							contCities.asns.forEach(asn => acc.asns.add(asn));
+
+							return acc;
+						}, { count: 0, asns: new Set() });
+
+					this.set('filteredProbesStats', { count: filteredProbesStats.count, asns: filteredProbesStats.asns.size });
+
 					if (!filteredProbes) { return; }
 
 					let screenWidth = this.get('screenWidth');
@@ -336,17 +386,7 @@
 					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
 
-				this.observe('groupBy', () => {
-					let screenWidth = this.get('screenWidth');
-					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
-					let filteredProbes = this.get('filteredProbes');
-					let sorted = this.sortAndGroup(filteredProbes);
-					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
-
-					this.set('preparedProbesColumns', preparedProbesColumns);
-				});
-
-				this.observe('sortOrder', () => {
+				this.observe('groupBy sortOrder', () => {
 					let screenWidth = this.get('screenWidth');
 					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 					let filteredProbes = this.get('filteredProbes');
