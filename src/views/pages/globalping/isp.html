@@ -119,12 +119,20 @@
 	component.exports = {
 		data () {
 			return {
-				title: 'TODO: ISP - Globalping',
-				description: 'TODO: add descr',
+				title: '',
+				description: '',
 				locationsList: [ 'TODO 1', 'TODO 2', 'TODO 3', 'TODO 4', 'TODO 5' ],
 				location: null,
 				testType: null,
 				testTypesList: [ 'ping', 'ping6', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+			}
+		},
+		onconfig () {
+			if (!Ractive.isServer) {
+				const ispName = this.get('ispName');
+
+				this.set('title', `${ispName} - Globalping`);
+				this.set('description', `${ispName} - Globalping`);
 			}
 		},
 		oninit () {
