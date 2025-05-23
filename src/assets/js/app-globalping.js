@@ -42,7 +42,7 @@ app.router.addRoute('/about-us', cGlobalpingAbout);
 app.router.addRoute('/sponsors', cGlobalpingSponsors);
 app.router.addRoute('/credits', cGlobalpingCredits);
 app.router.addRoute('/network', cGlobalpingNetwork, { qs: [ 'filter' ] });
-app.router.addRoute('/isp', cGlobalpingISP);
+app.router.addRoute('/isp/:ispName?', cGlobalpingISP);
 app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/users/:username', cGlobalpingUsers);
