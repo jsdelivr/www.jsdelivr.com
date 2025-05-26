@@ -210,7 +210,7 @@
 							</div>
 						</div>
 
-						<div class="extra-file-items {{ #if showMoreExLogo }} expanded {{ /if }}">
+						<div id="extraFileItems" class="extra-file-items">
 							{{#each filesData:key}}
 								<div class="files-item">
 									<div class="title">{{key}}</div>
@@ -237,8 +237,8 @@
 							{{/each}}
 						</div>
 
-						<button class="btn-more" on-click="@this.set('showMoreExLogo', !showMoreExLogo)">
-							{{ #if !showMoreExLogo }}
+						<button class="btn-more" on-click="@this.set('showMoreFileItems', !showMoreFileItems)">
+							{{ #if !showMoreFileItems }}
 								Show more CDN
 							{{ else }}
 								Hide more CDN
@@ -382,6 +382,9 @@
 						this.set('filesData', filesData);
 					});
 				});
+
+				// set initial value
+				this.set('showMoreFileItems', window.innerWidth >= 768);
 			}
 		},
 		createAliasing (aliasingBase, version, full = false) {
@@ -448,6 +451,78 @@
 					document.querySelector('#btn_aliasing').parentNode.classList.remove('open');
 				}
 			}, false);
+
+			// HANDLE EXTRA FILE ITEMS EXPAND/COLLAPSE
+			let extraItems = this.find('#extraFileItems');
+
+			// handle initial satte
+			if (!this.get('showMoreFileItems') && window.innerWidth <= 768) {
+				extraItems.style.height = '0px';
+				extraItems.style.opacity = '0';
+			}
+
+			this.observe('showMoreFileItems', (showMoreFileItems) => {
+				// skip on large screens
+				if (window.innerWidth > 768) { return; }
+
+				if (showMoreFileItems) {
+					// handle expand
+					extraItems.style.height = 'auto';
+					let fullHeight = extraItems.scrollHeight + 'px';
+					extraItems.style.height = '0px';
+					void extraItems.offsetHeight; // force reflow, the browser applies pending style changes immediately
+					extraItems.style.transition = 'height 0.5s ease-out, opacity 0.5s ease-out';
+					extraItems.style.height = fullHeight;
+					extraItems.style.opacity = '1';
+				} else {
+					// handle collapse; fade first, then shrink
+					extraItems.style.transition = 'opacity 0.4s ease-out';
+					extraItems.style.opacity = '0';
+
+					requestAnimationFrame(() => {
+						setTimeout(() => {
+							extraItems.style.transition = 'height 0.6s ease';
+							extraItems.style.height = '0px';
+						}, 200);
+					});
+				}
+			});
+
+			this._boundResizeHandler = this.handleResize.bind(this);
+
+			window.addEventListener('resize', this._boundResizeHandler);
+		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				window.removeEventListener('resize', this._boundResizeHandler);
+			}
+		},
+		handleResize () {
+			let extraItems = this.find('#extraFileItems');
+
+			if (!extraItems) { return; }
+
+			let isExpanded = this.get('showMoreFileItems');
+
+			if (window.innerWidth >= 768) {
+				// always expanded for large screens
+				extraItems.style.transition = '';
+				extraItems.style.height = 'auto';
+				extraItems.style.opacity = '1';
+			} else {
+				// preserve state and recalculate height
+				extraItems.style.height = 'auto';
+				let newHeight = extraItems.scrollHeight;
+				void extraItems.offsetHeight; // force reflow, the browser applies pending style changes immediately.
+
+				if (isExpanded) {
+					extraItems.style.height = `${newHeight}px`;
+					extraItems.style.opacity = '1';
+				} else {
+					extraItems.style.height = '0px';
+					extraItems.style.opacity = '0';
+				}
+			}
 		},
 	};
 </script>
