@@ -16,7 +16,9 @@
 										{{this.city}}, {{this.country}}, {{this.continent}}
 								</span>
 								<span>&nbsp;-&nbsp;</span>
-								<span>{{this.network}} (AS{{this.asn}})</span>
+								<a href="{{@this.getUrlNetworkName(this.network)}}">
+									{{this.network}} (AS{{this.asn}})
+								</a>
 							</span>
 
 							{{#if @this.getTimingValueToDisplay(this, activeTargetIdx)}}
@@ -167,6 +169,10 @@
 			} else if (areTimingsReady) {
 				return avgTiming;
 			}
+		},
+		getUrlNetworkName (network) {
+			// TODO: DRY, put it to the utils
+			return `/isp/${network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase()}`;
 		},
 	};
 </script>
