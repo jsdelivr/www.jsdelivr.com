@@ -115,6 +115,7 @@
 
 <script>
 	const tooltip = require('../../../assets/js/decorators/tooltip');
+	const http = require('../../../assets/js/utils/http');
 
 	component.exports = {
 		data () {
@@ -125,6 +126,8 @@
 				location: null,
 				testType: null,
 				testTypesList: [ 'ping', 'ping6', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				probesResponse: null,
+				probesParsed: false,
 			}
 		},
 		onconfig () {
@@ -150,6 +153,148 @@
 		},
 		setTestType (newTestType) {
 			this.set('testType', newTestType);
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				this.set('parsedLocations', this.parseProbesResponse(response));
+				this.set('totalProbesCnt', response.length);
+				this.set('probesParsed', true);
+			};
+		},
+		getGlobalpingProbesData () {
+			// get probes from sessionStorage or fetch them
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		parseProbesResponse (data) {
+			return data.reduce((res, { location }) => {
+				let cityNameLC = location.city.toLowerCase();
+				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
+				let countryCodeLC = location.country.toLowerCase();
+				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
+				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
+				let asnName = `as${location.asn}`;
+				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
+				let continentCodeLC = location.continent.toLowerCase();
+				let continentNameLC = continents.find(i => i.code.toLowerCase() === continentCodeLC).name.toLowerCase();
+				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
+				let regionNameLC = location.region.toLowerCase();
+				let regionNameAsUrlPart = regionNameLC.split(' ').join('-');
+				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
+				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
+				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
+
+				// collect uniques cities and count amount of probes per city
+				if (!Object.keys(res.cities).includes(cityNameAsUrlPart)) {
+					res.cities[cityNameAsUrlPart] = {
+						name: cityNameLC,
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+						probesCnt: 1,
+						fromAsUrlPart: countryNameAsUrlPart,
+					};
+				} else {
+					res.cities[cityNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques ASNs and count amount of probes per ASN
+				if (!Object.keys(res.asns).includes(asnName)) {
+					res.asns[asnName] = {
+						name: asnName,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.asns[asnName].probesCnt += 1;
+				}
+
+				// collect uniques Networks and count amount of probes per Network
+				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
+					res.networks[networkNameAsKey] = {
+						name: location.network,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.networks[networkNameAsKey].probesCnt += 1;
+				}
+
+				// collect uniques Countries and count amount of probes per Country
+				if (!Object.keys(res.countries).includes(countryNameAsUrlPart)) {
+					res.countries[countryNameAsUrlPart] = {
+						name: countryNameLC,
+						from: continentNameLC,
+						probesCnt: 1,
+						fromAsUrlPart: continentNameAsUrlPart,
+					};
+				} else {
+					res.countries[countryNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Continents and count amount of probes per Continent
+				if (!Object.keys(res.continents).includes(continentNameAsUrlPart)) {
+					res.continents[continentNameAsUrlPart] = {
+						name: continentNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.continents[continentNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Regions and count amount of probes per Region
+				if (!Object.keys(res.regions).includes(regionNameAsUrlPart)) {
+					res.regions[regionNameAsUrlPart] = {
+						name: regionNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.regions[regionNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques states (if they are present) and count amount of probes per state
+				if (stateNameAsUrlPart) {
+					if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
+						res.states[stateNameAsUrlPart] = {
+							name: stateNameLC,
+							from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+							probesCnt: 1,
+							fromAsUrlPart: countryNameAsUrlPart,
+						};
+					} else {
+						res.states[stateNameAsUrlPart].probesCnt += 1;
+					}
+				}
+
+				return res;
+			}, {
+				cities: {},
+				asns: {},
+				networks: {},
+				countries: {},
+				continents: {},
+				regions: {},
+				states: {},
+			});
 		},
 	};
 </script>
