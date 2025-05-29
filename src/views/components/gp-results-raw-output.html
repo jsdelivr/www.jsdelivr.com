@@ -16,7 +16,7 @@
 										{{this.city}}, {{this.country}}, {{this.continent}}
 								</span>
 								<span>&nbsp;-&nbsp;</span>
-								<a href="{{@this.getUrlNetworkName(this.network)}}">
+								<a href="{{@this.getUrlNetworkName('/isp', this.network)}}">
 									{{this.network}} (AS{{this.asn}})
 								</a>
 							</span>
@@ -170,9 +170,8 @@
 				return avgTiming;
 			}
 		},
-		getUrlNetworkName (network) {
-			// TODO: DRY, put it to the utils
-			return `/isp/${network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase()}`;
+		getUrlNetworkName (base = '', network) {
+			return `${base}/${network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase()}`;
 		},
 	};
 </script>
