@@ -14,8 +14,12 @@
 		<div class="p-globalping-isp_head">
 			<h1 class="p-globalping-isp_head_title">Looking Glass - {{ispFullName}}</h1>
 
-			<!-- TODO: where to get it from? -->
-			<span class="p-globalping-isp_head_asn">AS37754</span>
+			<!-- TODO: 688, upd styles for the case when there are a lot of ASNs -->
+			<div class="p-globalping-isp_head_asn-list">
+				{{#each asnList}}
+					<span class="p-globalping-isp_head_asn-list_item">AS{{this}}</span>
+				{{/each}}
+			</div>
 		</div>
 
 		<div class="p-globalping-isp_network">
@@ -139,6 +143,7 @@
 				probesParsed: false,
 				target: null, // TODO: 688, value, should be fileld by user
 				userIP: null, // TODO: 688, value, use third party lib to get user's IP
+				asnList: [],
 			};
 		},
 		onconfig () {
@@ -167,16 +172,15 @@
 
 					if (ispName) {
 						let parsedLocations = this.get('parsedLocations');
-						let { name: ispFullName } = parsedLocations.networks[ispName];
-
-						console.log('+++++ parsedLocations', parsedLocations);
-						console.log('_________________________');
+						let { name: ispFullName, asnList = [] } = parsedLocations.networks[ispName];
 
 						if (ispFullName) {
 							this.set('ispFullName', ispFullName);
 						} else {
 							// TODO: 688, when there is no such ISP we need to redirect user to some other pages
 						}
+
+						this.set('asnList', asnList);
 					}
 				});
 			}
@@ -265,14 +269,14 @@
 						from: 'world',
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
-						asn: [ location.asn ],
+						asnList: [ location.asn ],
 					};
 				} else {
 					res.networks[networkNameAsKey].probesCnt += 1;
 
 					// collect all unique network's ASNs
-					if (!res.networks[networkNameAsKey].asn.includes(location.asn)) {
-						res.networks[networkNameAsKey].asn.push(location.asn);
+					if (!res.networks[networkNameAsKey].asnList.includes(location.asn)) {
+						res.networks[networkNameAsKey].asnList.push(location.asn);
 					}
 				}
 
