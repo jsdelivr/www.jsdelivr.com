@@ -169,6 +169,9 @@
 						let parsedLocations = this.get('parsedLocations');
 						let { name: ispFullName } = parsedLocations.networks[ispName];
 
+						console.log('+++++ parsedLocations', parsedLocations);
+						console.log('_________________________');
+
 						if (ispFullName) {
 							this.set('ispFullName', ispFullName);
 						} else {
@@ -212,6 +215,8 @@
 		},
 		// TODO: DRY
 		parseProbesResponse (data) {
+			console.log('+++++ data', data);
+			console.log('________________________');
 			return data.reduce((res, { location }) => {
 				let cityNameLC = location.city.toLowerCase();
 				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
@@ -260,9 +265,15 @@
 						from: 'world',
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
+						asn: [ location.asn ],
 					};
 				} else {
 					res.networks[networkNameAsKey].probesCnt += 1;
+
+					// collect all unique network's ASNs
+					if (!res.networks[networkNameAsKey].asn.includes(location.asn)) {
+						res.networks[networkNameAsKey].asn.push(location.asn);
+					}
 				}
 
 				// collect uniques Countries and count amount of probes per Country
