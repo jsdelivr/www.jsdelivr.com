@@ -54,6 +54,8 @@
 				invalidValue: null,
 				errMsgTopPos: false,
 				rawProbes: [],
+				exposeProbes: false,
+				results: [],
 			};
 		},
 		oninit () {
@@ -214,14 +216,17 @@
 							limit(sources),
 						];
 					},
-					getSources ({ query }) {
+					getSources: ({ query }) => {
+						if (this.get('exposeProbes')) {
+							filterProbesByCurrentParts(query);
+						}
+
 						// The input allows several queries separated by a comma.
 						// Each query may have multiple parts separated by a plus sign.
 						// We always operate on the last part of the last query but need to preserve anything before it.
 						let queries = query.split(',');
 						let previousQueries = queries.length > 1 ? queries.slice(0, -1) : [];
 						let currentQuery = queries.at(-1);
-
 						let currentQueryParts = currentQuery.split('+');
 						let currentQueryPrevParts = currentQueryParts.length > 1 ? currentQueryParts.slice(0, -1) : [];
 						let currentQueryPrevPartsNormalized = currentQueryPrevParts.map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
@@ -244,7 +249,7 @@
 						queryPrefix += currentQueryCurrentPartLeadingWhitespace;
 
 						if (!indexForConditions[currentQueryPrevPartsNormalizedString]) {
-							createIndexFor(currentQueryPrevPartsNormalized);
+							createIndexFor(filterProbes(normalizedProbes, currentQueryPrevPartsNormalized), currentQueryPrevPartsNormalized);
 						}
 
 						let index = indexForConditions[currentQueryPrevPartsNormalizedString];
@@ -428,6 +433,7 @@
 				// Propagate state changes.
 				this.observe('value', (newValue) => {
 					setQuery(newValue);
+					filterProbesByCurrentParts(newValue);
 				}, { init: false });
 
 				this.observe('disabled', (newValue) => {
@@ -481,6 +487,7 @@
 
 						return {
 							...normalizedProbe,
+							original: probe,
 							allValues: Object.values(normalizedProbe).map(value => Array.isArray(value) ? value.join('\n').toLowerCase() : value.toLowerCase()).join('\n'),
 						};
 					});
@@ -488,10 +495,15 @@
 					indexForConditions = Object.create(null);
 				};
 
-				let createIndexFor = (conditions) => {
-					let index = {};
+				let filterProbesByCurrentParts = (query) => {
+					this.set('results', query.split(',').reduce((acc, part) => {
+						let partNormalized = part.split('+').map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
+						return acc.concat(filterProbes(normalizedProbes, partNormalized).map(p => p.original));
+					}, []));
+				};
 
-					let filteredProbes = conditions.reduce((filteredProbes, condition) => {
+				let filterProbes = (normalizedProbes, conditions) => {
+					return conditions.reduce((filteredProbes, condition) => {
 						let exactPattern = new RegExp(`(?:^|\n)${escapeRegExp(condition)}(?:$|\n)`, 'm');
 
 						let exactMatchFound = false;
@@ -517,7 +529,11 @@
 
 						return filteredProbes;
 					}, normalizedProbes);
+				};
 
+
+				let createIndexFor = (filteredProbes, conditions) => {
+					let index = {};
 					index.global = [
 						'World',
 					];

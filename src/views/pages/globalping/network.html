@@ -57,7 +57,9 @@
 								placeholder="Enter location"
 								labelText="Location"
 								classList="gp_map-block_settings-wrapper_settings_location gp_input"
-								ttPos="{{ttPositions.locationTtPos}}">
+								ttPos="{{ttPositions.locationTtPos}}"
+								exposeProbes="{{true}}"
+								results="{{locationProbes}}">
 								{{#partial labelIcon}}
 									<img as-tooltip="[ 'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags.', '', 'Use + to combine multiple filters.', 'Use , to select multiple locations.' ], ttPos, undefined, undefined, 'multiline'"
 										width="14"
@@ -269,6 +271,7 @@
 				probesByContinents: null,
 				probesByCoords: null,
 				filteredProbes: null,
+				locationProbes: null,
 				preparedProbesColumns: null,
 				filteredMarkersData: null,
 				groupBy: 'city',
@@ -341,24 +344,24 @@
 						this.set('probesByCoords', groupedByCoords);
 
 						// set initial probes and marker data values
-						let filtersSet = this.get('filtersSet');
-
-						this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
-						this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
+						this.set('filteredProbes', groupedByContinents);
+						this.set('filteredMarkersData', groupedByCoords);
 					}
 				});
 
-				// use filters for the probesByContinents before render
-				this.observe('filtersSet location', (filtersSet) => {
-					console.log('location', this.get('location'));
-					this.set('filteredProbes', this.getFilteredProbesList(filtersSet));
-					this.set('filteredMarkersData', this.getFilteredMarkersData(filtersSet));
+				this.observe('location', () => {
+					this.updateFiltersSet();
 				});
 
-				// prepare probes data for rendering
-				this.observe('filteredProbes', (filteredProbes) => {
+				this.observe('locationProbes', (locationProbes) => {
+					let { groupedByContinents, groupedByCoords } = this.groupProbes(locationProbes);
+
+					this.set('probesByContinents', groupedByContinents);
+					this.set('probesByCoords', groupedByCoords);
+					this.set('filteredMarkersData', groupedByCoords);
+
 					let filteredProbesStats = Object
-						.values(filteredProbes || {})
+						.values(groupedByContinents || {})
 						.reduce((acc, cont) => {
 							let contCities = Object.values(cont).reduce((cAcc, cityProbes) => {
 								cAcc.count += cityProbes.length;
@@ -375,12 +378,12 @@
 
 					this.set('filteredProbesStats', { count: filteredProbesStats.count, asns: filteredProbesStats.asns.size });
 
-					if (!filteredProbes) { return; }
+					if (!groupedByContinents) { return; }
 
 					let screenWidth = this.get('screenWidth');
 					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
 
-					let sorted = this.sortAndGroup(filteredProbes);
+					let sorted = this.sortAndGroup(groupedByContinents);
 					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
 
 					this.set('preparedProbesColumns', preparedProbesColumns);
@@ -389,8 +392,8 @@
 				this.observe('groupBy sortOrder', () => {
 					let screenWidth = this.get('screenWidth');
 					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
-					let filteredProbes = this.get('filteredProbes');
-					let sorted = this.sortAndGroup(filteredProbes);
+					let probesByContinents = this.get('probesByContinents');
+					let sorted = this.sortAndGroup(probesByContinents);
 					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
 
 					this.set('preparedProbesColumns', preparedProbesColumns);
@@ -403,12 +406,6 @@
 
 				listeners.screenWidthListener(this);
 			}
-		},
-		handleProbesByCoordsChange () {
-			let filtersSet = this.get('filtersSet');
-			let byContinentFilerRule = filtersSet ? filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT) : null;
-
-			return byContinentFilerRule;
 		},
 		getProbesData () {
 			if (has.sessionStorage()) {
@@ -466,7 +463,6 @@
 
 			let byContinentSorted = Object.entries(groups.groupedByContinents).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
 			groups.groupedByContinents = Object.fromEntries(byContinentSorted);
-			console.log('groups.groupedByContinents', groups.groupedByContinents);
 
 			return groups;
 		},
@@ -475,150 +471,61 @@
 
 			return cData ? cData.name : null;
 		},
-		setFilterRule (fIdx) {
-			let filtersSet = this.get('filtersSet');
+		updateFiltersSet () {
+			let location = this.get('location');
 			let availableFilters = this.get('availableFilters');
-			let newFilterRule = availableFilters[fIdx];
-			let updFiltersSet;
+			availableFilters.forEach(f => f.selected = false);
 
-			newFilterRule.selected = true;
-			newFilterRule.avFiltersIdx = fIdx;
+			if (!location) {
+				this.set('filtersSet', []);
+				this.set('availableFilters', availableFilters);
+				return;
+			}
 
-			if (filtersSet) {
-				// if user sets the Eyeball filter we should deselect any byCloud filters and replace the previous byNetwork filter
-				if (newFilterRule.value === 'eyeball-network') {
-					let { filtered, filteredOut } = filtersSet.reduce((acc, f) => {
-						acc.filteredOut.push(f);
+			let parts = location.split(/[+,]/).map(p => p.trim().toLowerCase());
+			let filtersSet = [];
 
-						return acc;
-					}, { filtered: [], filteredOut: [] });
+			availableFilters.forEach((f, i) => {
+				let part = parts.find((part) => {
+					return f.name.toLowerCase() === part || f.value.toLowerCase() === part;
+				});
 
-					let index = filtered.findIndex(i => i.type === FILTER_TYPE_BY_NETWORK);
-
-					if (index !== -1) {
-						availableFilters[filtered[index].avFiltersIdx].selected = false;
-						filtered[index] = newFilterRule;
-					} else {
-						filtered.push(newFilterRule);
-					}
-
-					updFiltersSet = filtered;
-					filteredOut.forEach(fO => availableFilters[fO.avFiltersIdx].selected = false);
-				// if user sets the byCloud filter we should deselect Eyeball filter and replace the previous byCloud filter
-				} else if (filtersSet.find(f => f.type === newFilterRule.type)) {
-					updFiltersSet = filtersSet.map((f) => {
-						if (f.type === newFilterRule.type) {
-							availableFilters[f.avFiltersIdx].selected = false;
-
-							return newFilterRule;
-						}
-
-						return f;
-					});
-				} else {
-					updFiltersSet = [ ...filtersSet, newFilterRule ];
+				if (part) {
+					f.selected = true;
+					f.avFiltersIdx = i;
+					filtersSet.push(f);
 				}
+			});
+
+			this.set('filtersSet', filtersSet);
+			this.set('availableFilters', availableFilters);
+		},
+		setFilterRule (idx) {
+			let availableFilters = this.get('availableFilters');
+			let filter = availableFilters[idx];
+			let location = this.get('location');
+
+			if (!location) {
+				this.set('location', filter.value);
 			} else {
-				updFiltersSet = [ newFilterRule ];
+				this.set('location', `${location},${filter.value}`);
 			}
-
-			this.set('filtersSet', updFiltersSet);
-			this.set('availableFilters', availableFilters);
 		},
-		rmFilterRule (fIdx) {
-			let filtersSet = this.get('filtersSet');
-			let availableFilters = this.get('availableFilters');
-			let setFilterRule = filtersSet[fIdx];
-			let avFiltersRule = availableFilters.find(af => af.value === setFilterRule.value);
+		rmFilterRule (idx) {
+			let filter = this.get('filtersSet')[idx];
+			let selectedFilter = this.get('availableFilters').find(f => f.value === filter.value);
+			let location = this.get('location');
 
-			avFiltersRule.selected = false;
-			filtersSet.splice(fIdx, 1);
+			if (location.includes(selectedFilter.value)) {
+				let parts = location.split(',');
+				let updatedParts = parts.map((part) => {
+					let segments = part.split('+').map(s => s.trim());
+					let filteredSegments = segments.filter(s => s.toLowerCase() !== filter.value.toLowerCase());
+					return filteredSegments.join('+');
+				}).filter(part => part.trim() !== '');
 
-			this.set('filtersSet', filtersSet.length ? filtersSet : []);
-			this.set('availableFilters', availableFilters);
-		},
-		getFilteredProbesList (filtersSet) {
-			let probesByContinents = this.get('probesByContinents');
-
-			return this.applyFiltersToData(probesByContinents, filtersSet, true);
-		},
-		getFilteredMarkersData (filtersSet) {
-			let probesByCoords = this.get('probesByCoords');
-
-			return this.applyFiltersToData(probesByCoords, filtersSet);
-		},
-		applyFiltersToData (data, filtersSet, forProbes = false) {
-			let filteredProbes = {};
-
-			if (filtersSet === null || filtersSet.length === 0) {
-				return data;
+				this.set('location', updatedParts.join(','));
 			}
-
-			// get the filter rules
-			let byContinentFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT);
-			let byNetworkFilerRule = filtersSet.find(fR => fR.type === FILTER_TYPE_BY_NETWORK);
-
-			// filter by Continent
-			if (byContinentFilerRule) {
-				if (forProbes) {
-					filteredProbes[byContinentFilerRule.value] = data[byContinentFilerRule.value];
-				} else {
-					let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
-
-					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let filtered = toFilter[key].filter(p => p.location.continent === byContinentFilerRule.value);
-
-						if (filtered.length) {
-							res[key] = filtered;
-						} else {
-							delete res[key];
-						}
-
-						return res;
-					}, filteredProbes);
-				}
-			}
-
-			// filter by Network
-			if (byNetworkFilerRule) {
-				let toFilter = Object.keys(filteredProbes).length ? filteredProbes : data;
-
-				if (forProbes) {
-					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let continentProbes = Object.keys(toFilter[key]).reduce((cRes, loc) => {
-							let locFiltered = toFilter[key][loc].filter(p => p.tags.includes(byNetworkFilerRule.value));
-
-							if (locFiltered.length) {
-								cRes[loc] = locFiltered;
-							}
-
-							return cRes;
-						}, {});
-
-						if (Object.keys(continentProbes).length) {
-							res[key] = continentProbes;
-						} else {
-							delete res[key];
-						}
-
-						return res;
-					}, {});
-				} else {
-					filteredProbes = Object.keys(toFilter).reduce((res, key) => {
-						let filtered = toFilter[key].filter(p => p.tags.includes(byNetworkFilerRule.value));
-
-						if (filtered.length) {
-							res[key] = filtered;
-						} else {
-							delete res[key];
-						}
-
-						return res;
-					}, filteredProbes);
-				}
-			}
-
-			return filteredProbes;
 		},
 		sortAndGroup (obj) {
 			let groupBy = this.get('groupBy');
