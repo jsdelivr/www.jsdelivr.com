@@ -434,7 +434,7 @@
 				this.observe('value', (newValue) => {
 					setQuery(newValue);
 					filterProbesByCurrentParts(newValue);
-				}, { init: false });
+				});
 
 				this.observe('disabled', (newValue) => {
 					input.classList.toggle('is-disabled', !!newValue);
@@ -496,6 +496,8 @@
 				};
 
 				let filterProbesByCurrentParts = (query) => {
+					if (!this.get('exposeProbes')) { return; }
+
 					this.set('results', query.split(',').reduce((acc, part) => {
 						let partNormalized = part.split('+').map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
 						return acc.concat(filterProbes(normalizedProbes, partNormalized).map(p => p.original));
@@ -530,7 +532,6 @@
 						return filteredProbes;
 					}, normalizedProbes);
 				};
-
 
 				let createIndexFor = (filteredProbes, conditions) => {
 					let index = {};
@@ -612,6 +613,8 @@
 				});
 
 				this.on('unrender', () => destroy());
+
+				filterProbesByCurrentParts(this.get('value') || '');
 			}
 		},
 	};

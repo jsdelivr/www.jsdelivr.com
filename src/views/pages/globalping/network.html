@@ -282,18 +282,10 @@
 		computed: {
 			filter: {
 				get () {
-					return this.get('filtersSet') ? this.get('filtersSet').map(f => f.value).join(',').toLowerCase() : [];
+					return (this.get('location') || '').replace(/\+/g, '\\+');
 				},
-				set (filters) {
-					let availableFilters = this.get('availableFilters');
-
-					(filters || '').split(',').forEach((f) => {
-						let idx = availableFilters.findIndex(af => af.value.toLowerCase() === f.toLowerCase());
-
-						if (idx > -1) {
-							this.setFilterRule(idx);
-						}
-					});
+				set (location) {
+					this.set('location', location.replace(/\\+/g, '+'));
 				},
 			},
 		},
@@ -335,26 +327,12 @@
 					this.set('ttPositions', ttPositions);
 				});
 
-				// sort probes by continents, and each list by country name
-				this.observe('probesResponse', (probesResponse) => {
-					if (probesResponse) {
-						let { groupedByContinents, groupedByCoords } = this.groupProbes(probesResponse);
-
-						this.set('probesByContinents', groupedByContinents);
-						this.set('probesByCoords', groupedByCoords);
-
-						// set initial probes and marker data values
-						this.set('filteredProbes', groupedByContinents);
-						this.set('filteredMarkersData', groupedByCoords);
-					}
-				});
-
 				this.observe('location', () => {
 					this.updateFiltersSet();
 				});
 
 				this.observe('locationProbes', (locationProbes) => {
-					let { groupedByContinents, groupedByCoords } = this.groupProbes(locationProbes);
+					let { groupedByContinents, groupedByCoords } = this.groupProbes(locationProbes || []);
 
 					this.set('probesByContinents', groupedByContinents);
 					this.set('probesByCoords', groupedByCoords);
