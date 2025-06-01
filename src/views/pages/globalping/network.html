@@ -502,13 +502,35 @@
 		},
 		setFilterRule (idx) {
 			let availableFilters = this.get('availableFilters');
-			let filter = availableFilters[idx];
+			let selectedFilter = availableFilters[idx];
 			let location = this.get('location');
 
 			if (!location) {
-				this.set('location', filter.value);
+				this.set('location', selectedFilter.value);
 			} else {
-				this.set('location', `${location},${filter.value}`);
+				let parts = location.split(',').map(query => query.split('+').map(p => p.trim().toLowerCase())).flat();
+				let hasContinent = false;
+				let hasNetwork = false;
+
+				for (let f of availableFilters) {
+					let matchingPart = parts.find(part => part === f.name.toLowerCase() || part === f.value.toLowerCase());
+
+					if (matchingPart) {
+						if (f.type === FILTER_TYPE_BY_CONTINENT) {
+							hasContinent = true;
+						} else if (f.type === FILTER_TYPE_BY_NETWORK) {
+							hasNetwork = true;
+						}
+					}
+				}
+
+				if (selectedFilter.type === FILTER_TYPE_BY_NETWORK && hasContinent && !hasNetwork) {
+					this.set('location', `${location}+${selectedFilter.value}`);
+				} else if (selectedFilter.type === FILTER_TYPE_BY_CONTINENT && hasNetwork && !hasContinent) {
+					this.set('location', `${location}+${selectedFilter.value}`);
+				} else {
+					this.set('location', selectedFilter.value);
+				}
 			}
 		},
 		rmFilterRule (idx) {
