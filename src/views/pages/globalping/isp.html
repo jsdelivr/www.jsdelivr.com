@@ -43,13 +43,17 @@
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
-							<span>{{~/location}}</span>
+							{{#if selectedLocation}}
+								<span>{{~/selectedLocation}} - {{ispFullName}}</span>
+							{{else}}
+								<span></span>
+							{{/if}}
 							<i class="fa fa-angle-down" aria-hidden="true"></i>
 						</button>
 
 						<div class="dropdown-menu">
 							{{#each ~/locationsList}}
-								<div on-click="@this.setLocation(this)">{{this}}</div>
+								<div on-click="@this.setLocation(this)">{{this}} - {{ispFullName}}</div>
 							{{/each}}
 						</div>
 					</div>
@@ -135,8 +139,8 @@
 			return {
 				title: '',
 				description: '',
-				locationsList: [ 'TODO 1', 'TODO 2', 'TODO 3', 'TODO 4', 'TODO 5' ], // TODO: 688, all locations where the network is present
-				location: 'TODO 1', // TODO: 688, first on the list
+				locationsList: [],
+				selectedLocation: null,
 				testType: 'ping',
 				testTypesList: [ 'ping', 'ping6', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				probesResponse: null,
@@ -160,9 +164,15 @@
 			if (!Ractive.isServer) {
 				this.getGlobalpingProbesData();
 
-
 				this.observe('ispFullName', (ispFullName) => {
 					this.setTitleAndDescr(ispFullName);
+				});
+
+				// set default location value
+				this.observe('locationsList', (locationsList) => {
+					if (locationsList && locationsList.length) {
+						this.set('selectedLocation', locationsList[0]);
+					}
 				});
 
 				this.observe('probesParsed', (probesParsed) => {
@@ -172,7 +182,7 @@
 
 					if (ispName) {
 						let parsedLocations = this.get('parsedLocations');
-						let { name: ispFullName, asnList = [] } = parsedLocations.networks[ispName];
+						let { name: ispFullName, asnList = [], locationsList = [] } = parsedLocations.networks[ispName];
 
 						if (ispFullName) {
 							this.set('ispFullName', ispFullName);
@@ -181,12 +191,13 @@
 						}
 
 						this.set('asnList', asnList);
+						this.set('locationsList', locationsList);
 					}
 				});
 			}
 		},
 		setLocation (newLocation) {
-			this.set('location', newLocation);
+			this.set('selectedLocation', newLocation);
 		},
 		setTestType (newTestType) {
 			this.set('testType', newTestType);
@@ -217,15 +228,14 @@
 				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
 		},
-		// TODO: 688, DRY
+		// TODO: 688, DRY, this is an improved version of parseProbesResponse
 		parseProbesResponse (data) {
-			console.log('+++++ data', data);
-			console.log('________________________');
 			return data.reduce((res, { location }) => {
 				let cityNameLC = location.city.toLowerCase();
 				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
 				let countryCodeLC = location.country.toLowerCase();
-				let countryNameLC = countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase();
+				let countryName = countries.find(i => i.code.toLowerCase() === countryCodeLC)?.name;
+				let countryNameLC = countryName.toLowerCase();
 				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
 				let asnName = `as${location.asn}`;
 				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
@@ -270,6 +280,7 @@
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
 						asnList: [ location.asn ],
+						locationsList: [ `${location.city}, ${countryName}` ],
 					};
 				} else {
 					res.networks[networkNameAsKey].probesCnt += 1;
@@ -277,6 +288,11 @@
 					// collect all unique network's ASNs
 					if (!res.networks[networkNameAsKey].asnList.includes(location.asn)) {
 						res.networks[networkNameAsKey].asnList.push(location.asn);
+					}
+
+					// collect all unique network's locations (city, country)
+					if (!res.networks[networkNameAsKey].locationsList.includes(`${location.city}, ${countryName}`)) {
+						res.networks[networkNameAsKey].locationsList.push(`${location.city}, ${countryName}`);
 					}
 				}
 
