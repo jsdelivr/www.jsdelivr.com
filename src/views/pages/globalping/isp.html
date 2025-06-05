@@ -49,7 +49,7 @@
 							aria-haspopup="true"
 							aria-expanded="false">
 							{{#if selectedLocation}}
-								<span>{{~/selectedLocation}} - {{ispFullName}}</span>
+								<span>{{~/selectedLocation.city}}, {{~/selectedLocation.country}} - {{ispFullName}}</span>
 							{{else}}
 								<span></span>
 							{{/if}}
@@ -58,7 +58,7 @@
 
 						<div class="dropdown-menu">
 							{{#each ~/locationsList}}
-								<div on-click="@this.setLocation(this)">{{this}} - {{ispFullName}}</div>
+								<div on-click="@this.setLocation(this)">{{this.city}}, {{this.country}} - {{ispFullName}}</div>
 							{{/each}}
 						</div>
 					</div>
@@ -160,7 +160,7 @@
 					<span class="p-globalping-isp_network-tests_descr_msg">
 						Enter a target and click <span class="highlighted">"Run Test"</span> to start a network test from:
 						<br/>
-						<span class="highlighted">{{selectedLocation}}</span> with <span class="highlighted">{{ispFullName}}</span>.
+						<span class="highlighted">{{selectedLocation.city}}, {{selectedLocation.country}}</span> with <span class="highlighted">{{ispFullName}}</span>.
 					</span>
 				</div>
 			{{/if}}
@@ -400,7 +400,7 @@
 						probesCnt: 1,
 						fromAsUrlPart: 'world',
 						asnList: [ location.asn ],
-						locationsList: [ `${location.city}, ${countryName}` ], // TODO:688, rewrite this, keep each value as an obj with city, country props
+						locationsList: [{ city: location.city, country: countryName }],
 					};
 				} else {
 					res.networks[networkNameAsKey].probesCnt += 1;
@@ -411,8 +411,8 @@
 					}
 
 					// collect all unique network's locations (city, country)
-					if (!res.networks[networkNameAsKey].locationsList.includes(`${location.city}, ${countryName}`)) { // TODO:688, rewrite this, keep each value as an obj with city, country props
-						res.networks[networkNameAsKey].locationsList.push(`${location.city}, ${countryName}`);// TODO:688, rewrite this, keep each value as an obj with city, country props
+					if (!this.isExactMatchInArr(res.networks[networkNameAsKey].locationsList, { city: location.city, country: countryName })) {
+						res.networks[networkNameAsKey].locationsList.push({ city: location.city, country: countryName });
 					}
 				}
 
@@ -487,9 +487,9 @@
 		proceedToTest () {
 			let type = this.get('selectedTestType');
 			let testOpts = this.get('testOpts');
-			let selectedLocation = this.get('selectedLocation');
+			let { city, country } = this.get('selectedLocation');
 			let ispFullName = this.get('ispFullName');
-			let magic = `${selectedLocation}+${ispFullName}`;
+			let magic = `${city}+${country}+${ispFullName}`;
 			let reqParams = {
 				type,
 				...testOpts,
@@ -556,6 +556,11 @@
 			}, 1000);
 
 			this.set('testReqInterval', testReqInterval);
+		},
+		// TODO: 688, mv to utils
+		isExactMatchInArr (arr, targetObj) {
+			return arr.some(obj => Object.keys(obj).length === Object.keys(targetObj).length
+				&& Object.keys(targetObj).every(key => obj[key] === targetObj[key]));
 		},
 	};
 </script>
