@@ -198,7 +198,6 @@
 				testTypesList: [ 'ping', 'ping6', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				probesResponse: null,
 				probesParsed: false,
-				target: null, // TODO: 688, value, should be fileld by user
 				userIP: null, // TODO: 688, value, use third party lib to get user's IP
 				asnList: [],
 				TEST_NETWORK_DOMAIN: 'TESTsweetgreen.com', // TODO: 688, test value
@@ -208,7 +207,7 @@
 				testReqParams: null,
 				testOpts: {
 					target: INITIAL_OPTS_VALUES.target,
-					limit: '',
+					limit: DEFAULT_LIMIT,
 				},
 			};
 		},
@@ -495,10 +494,6 @@
 				...testOpts,
 				locations: [{ magic }],
 			};
-
-			if (!reqParams.limit) {
-				reqParams.limit = DEFAULT_LIMIT;
-			}
 
 			// clear all data from the previous test, show spinner
 			this.set('testResults', null);
