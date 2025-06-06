@@ -183,6 +183,8 @@
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
 	};
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
 	component.exports = {
 		decorators: {
@@ -556,6 +558,52 @@
 		isExactMatchInArr (arr, targetObj) {
 			return arr.some(obj => Object.keys(obj).length === Object.keys(targetObj).length
 				&& Object.keys(targetObj).every(key => obj[key] === targetObj[key]));
+		},
+		prepareRegularResults (testResults) {
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+			let selectedTestType = this.get('selectedTestType');
+
+			return testResults.map((res) => {
+				let preparedRes = {
+					...res.probe,
+					statsPerTarget: [{
+						target: res.target,
+					}],
+				};
+
+				if (res.result.status !== 'in-progress') {
+					let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(selectedTestType, res, dnsTraceEnabled);
+					let { packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+					let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+					let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+					let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
+
+					preparedRes.statsPerTarget = [{
+						...preparedRes.statsPerTarget[0],
+						avgTiming,
+						isFailed,
+						isOffline,
+						extraValues,
+						rawOutput: res.result.rawOutput,
+						areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+					}];
+				}
+
+				return preparedRes;
+			});
+		},
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
+			if (
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return false;
+			}
+
+			return true;
 		},
 	};
 </script>
