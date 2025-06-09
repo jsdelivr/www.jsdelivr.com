@@ -4,7 +4,6 @@
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
-<link rel="ractive" href="../../components/gp-results-raw-output.html" name="c-gp-results-raw-output">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -148,13 +147,9 @@
 					</p>
 				</div>
 			{{elseif testResults}}
-				<c-gp-results-raw-output
-					testReqParams="{{testReqParams}}"
-					testInProgress="{{testInProgress}}"
-					measurementsMetadata="{{measurementsMetadata}}"
-					preparedTestResults="{{preparedTestResults}}"
-					activeTargetIdx="0">
-				</c-gp-results-raw-output>
+				<div class="p-globalping-isp_network-tests_results">
+					<pre>{{testResults[0].result.rawOutput}}</pre>
+				</div>
 			{{else}}
 				<div class="p-globalping-isp_network-tests_descr">
 					<span class="p-globalping-isp_network-tests_descr_msg">
@@ -178,7 +173,7 @@
 	const countries = require('../../../assets/json/countries.json');
 	const continents = require('../../../assets/json/continents.json');
 	const usaStates = require('../../../assets/json/usa-states.json');
-	const DEFAULT_LIMIT = 3;
+	const DEFAULT_LIMIT = 1;
 	const INITIAL_OPTS_VALUES = {
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
@@ -202,7 +197,7 @@
 				probesParsed: false,
 				userIP: null, // TODO: 688, value, use third party lib to get user's IP
 				asnList: [],
-				TEST_NETWORK_DOMAIN: 'TESTsweetgreen.com', // TODO: 688, test value
+				TEST_NETWORK_DOMAIN: 'sweetgreen.com', // TODO: 688, test value
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
@@ -292,13 +287,6 @@
 					};
 
 					this.set('measurementsMetadata', measurementsMetadata);
-				});
-
-				// prepare results for gp-results-raw-output
-				this.observe('testResults', (testResults) => {
-					if (!testResults) { return; }
-
-					this.set('preparedTestResults', this.prepareRegularResults(testResults));
 				});
 			}
 		},
