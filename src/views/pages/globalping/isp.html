@@ -26,13 +26,11 @@
 			<div class="p-globalping-isp_network_head">
 				<span>Network</span>
 
-				<!-- src="{{@shared.assetsHost}}/img/globalping/link-icon.svg" -->
-				<!-- src="https://img.logo.dev/{{TEST_NETWORK_DOMAIN}}?token=pk_C85EboAPQzmOL4HyKhSIXQ&format=png&fallback=404" -->
 				<!-- TODO: 688, mv img.logo.dev to global vars (@shared.assetsHost like) -->
 				<img width="32"
 					height="32"
 					class="p-globalping-isp_network_head_img"
-					src="https://img.logo.dev/{{TEST_NETWORK_DOMAIN}}?token=pk_C85EboAPQzmOL4HyKhSIXQ&format=png"
+					src="https://img.logo.dev/{{networkDomainName}}?token=pk_C85EboAPQzmOL4HyKhSIXQ&format=png"
 					loading="lazy"
 					as-tooltip="`${ispFullName}`">
 			</div>
@@ -171,6 +169,7 @@
 	const has = require('../../../assets/js/utils/has');
 	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const countries = require('../../../assets/json/countries.json');
+	const asnDomains = require('../../../assets/json/asn-domain.json');
 	const continents = require('../../../assets/json/continents.json');
 	const usaStates = require('../../../assets/json/usa-states.json');
 	const DEFAULT_LIMIT = 1;
@@ -197,7 +196,7 @@
 				probesParsed: false,
 				userIP: null, // TODO: 688, value, use third party lib to get user's IP
 				asnList: [],
-				TEST_NETWORK_DOMAIN: 'sweetgreen.com', // TODO: 688, test value
+				networkDomainName: null,
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
@@ -288,6 +287,13 @@
 					};
 
 					this.set('measurementsMetadata', measurementsMetadata);
+				});
+
+				// get network domain name to get the icon
+				this.observe('asnList', (asnList) => {
+					if (asnList && asnList.length) {
+						this.set('networkDomainName', asnDomains[`AS${asnList[0]}`]);
+					}
 				});
 			}
 		},
