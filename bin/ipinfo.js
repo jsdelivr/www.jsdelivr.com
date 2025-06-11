@@ -33,11 +33,11 @@ async function fetchAndSaveAsnDomainMap (url) {
 		}
 	}
 
-	let outputPath = path.resolve(__dirname, '../src/public/js/ipinfo/asn-domain.json');
+	let outputPath = path.resolve(__dirname, '../src/assets/json/asn-domain.json');
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 	fs.writeFileSync(outputPath, JSON.stringify(asnDomainMap, null, 2), 'utf8');
 
-	console.log(`✅ ASN-domain map saved to: ${outputPath}`);
+	console.log(`ASN-domain map saved to: ${outputPath}`);
 }
 
 async function main () {
