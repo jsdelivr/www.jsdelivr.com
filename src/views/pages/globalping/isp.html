@@ -197,7 +197,7 @@
 				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
 				probesResponse: null,
 				probesParsed: false,
-				userIP: null, // TODO: 688, value, use third party lib to get user's IP
+				userIP: null,
 				asnList: [],
 				networkDomainName: null,
 				testResults: null,
@@ -224,6 +224,7 @@
 		oninit () {
 			if (!Ractive.isServer) {
 				this.getGlobalpingProbesData();
+				this.fetchAndSetUserIP();
 
 				this.observe('ispFullName', (ispFullName) => {
 					this.setTitleAndDescr(ispFullName);
@@ -602,6 +603,19 @@
 			}
 
 			return true;
+		},
+		fetchAndSetUserIP () {
+			fetch('https://cloudflare-dns.com/cdn-cgi/trace')
+				.then(res => res.text())
+				.then((text) => {
+					let data = Object.fromEntries(text.trim().split('\n').map(line => line.split('=')));
+
+					this.set('userIP', data.ip || null);
+				})
+				.catch((err) => {
+					console.error('Failed to fetch user\'s IP:', err);
+					this.set('userIP', null);
+				});
 		},
 	};
 </script>
