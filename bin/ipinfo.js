@@ -5,6 +5,7 @@ const gunzip = require('gunzip-maybe');
 const parseCsv = require('csv-parse/lib/sync');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 async function fetchAndSaveAsnDomainMap (url) {
 	let chunks = [];
@@ -35,13 +36,15 @@ async function fetchAndSaveAsnDomainMap (url) {
 
 	let outputPath = path.resolve(__dirname, '../src/assets/json/asn-domain.json');
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-	fs.writeFileSync(outputPath, JSON.stringify(asnDomainMap, null, 2), 'utf8');
+
+	let jsonWithTabs = JSON.stringify(asnDomainMap, null, '\t') + '\n';
+	fs.writeFileSync(outputPath, jsonWithTabs, 'utf8');
 
 	console.log(`ASN-domain map saved to: ${outputPath}`);
 }
 
 async function main () {
-	let url = 'https://ipinfo.io/data/ipinfo_lite.csv.gz?token=IP_INFO_TOKEN';
+	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${process.env.IP_INFO_TOKEN}`;
 	let csvFileName = 'ipinfo_lite.csv';
 
 	try {
