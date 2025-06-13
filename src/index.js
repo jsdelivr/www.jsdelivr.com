@@ -147,6 +147,7 @@ app.use(render({
 		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
 	assetsVersion,
+	logoDevPublicKey: serverConfig.logoDevPublicKey,
 }, app));
 
 
