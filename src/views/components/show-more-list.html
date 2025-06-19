@@ -1,0 +1,75 @@
+<div
+	id="wrapperEl"
+	class="c-show-more-list {{addClass || ''}}"
+	style="height: {{wrapperHeight}}"
+>
+	<div id="wrapperElInner" class="inner">
+		{{#if @this.partials.content}}
+			{{>content}}
+		{{else}}
+			{{#each limitedList as item}}
+				<span class="item">{{prefix || ''}}{{item}}</span>
+			{{/each}}
+		{{/if}}
+
+		{{#if list.length > limit}}
+			<button
+				class="toggle-button"
+				on-click="@this.set('expanded', !expanded)"
+			>
+				{{expanded ? 'Show less' : 'Show more'}}
+			</button>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	component.exports = {
+		data() {
+			return {
+				wrapperHeight: 'auto',
+				expanded: false,
+				limitedList: null,
+				initialHeight: null,
+				restList: [],
+			};
+		},
+		onrender () {
+			if (!Ractive.isServer) {
+				let wrapperEl = this.find('#wrapperEl');
+
+				this.observe('expanded', (expanded) => {
+					if (!wrapperEl) return;
+
+					if (expanded) {
+						requestAnimationFrame(() => {
+							this.set('wrapperHeight', `${wrapperEl.scrollHeight}px`);
+						});
+					} else {
+						this.set('wrapperHeight', `${wrapperEl.scrollHeight}px`);
+
+						requestAnimationFrame(() => {
+							this.set('wrapperHeight', this.get('initialHeight'));
+						});
+					}
+				});
+
+				this.observe('limitedList', (limitedList) => {
+					let initialHeight = this.get('initialHeight');
+					let list = this.get('list');
+
+					if (initialHeight === null && limitedList && limitedList.length) {
+						this.set('initialHeight', `${wrapperEl.scrollHeight}px`);
+					}
+				});
+
+				this.observe('expanded', (expanded) => {
+					let list = this.get('list') || [];
+					let limit = this.get('limit') || 4;
+
+					this.set('limitedList', expanded ? list : list.slice(0, limit));
+				});
+			}
+		},
+	};
+</script>
