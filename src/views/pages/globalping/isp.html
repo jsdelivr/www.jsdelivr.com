@@ -4,6 +4,7 @@
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/show-more-list.html" name="c-show-more-list">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -15,11 +16,19 @@
 			<h1 class="p-globalping-isp_head_title">Looking Glass - {{ispFullName}}</h1>
 
 			<!-- TODO: 688, maybe add Show more/less logic? -->
-			<div class="p-globalping-isp_head_asn-list">
+			<!-- <div class="p-globalping-isp_head_asn-list">
 				{{#each asnList}}
 					<span class="p-globalping-isp_head_asn-list_item">AS{{this}}</span>
 				{{/each}}
-			</div>
+			</div> -->
+			<!-- {{#partial content}}
+					{{#each list as item}}
+						<span class="p-globalping-isp_head_asn-list_item">
+							{{item}}
+						</span>
+					{{/each}}
+				{{/partial}} -->
+			<c-show-more-list list="{{asnList}}" limit="4" prefix="AS" addClass="p-globalping-isp_head_asn-list"/>
 		</div>
 
 		<div class="p-globalping-isp_network">
@@ -252,7 +261,9 @@
 							// TODO: 688, when there is no such ISP we need to redirect user to some other pages
 						}
 
-						this.set('asnList', asnList);
+						// TODO: 688, uncomment, remove next line
+						// this.set('asnList', asnList);
+						this.set('asnList', [24940, 249401, 249402,249403,249404,249405,249406,249407,249408,249409,249410]);
 						this.set('locationsList', locationsList);
 					}
 				});
