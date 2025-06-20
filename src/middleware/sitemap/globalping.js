@@ -45,7 +45,6 @@ module.exports.getUsers = () => {
 	return probesPromise.then(response => response.users);
 };
 
-// TODO: 688, here we should add possible links for /isp/network-name pages
 function updateProbesData () {
 	return got('https://api.globalping.io/v1/probes').json().then((body) => {
 		setTimeout(updateProbesData, 60 * 1000);
