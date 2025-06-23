@@ -250,22 +250,19 @@
 					if (probesParsed === false) { return; }
 
 					let ispName = this.get('ispName');
+					let parsedLocations = this.get('parsedLocations');
+					let { name: ispFullName, asnList = [], locationsList = [] } = parsedLocations.networks[ispName] || {};
 
-					if (ispName) {
-						let parsedLocations = this.get('parsedLocations');
-						let { name: ispFullName, asnList = [], locationsList = [] } = parsedLocations.networks[ispName];
+					if (ispFullName) {
+						this.set('ispFullName', ispFullName);
+					} else {
+						window.location.replace('/404');
 
-						if (ispFullName) {
-							this.set('ispFullName', ispFullName);
-						} else {
-							// TODO: 688, when there is no such ISP we need to redirect user to some other pages
-						}
-
-						// TODO: 688, uncomment, remove next line
-						// this.set('asnList', asnList);
-						this.set('asnList', [24940, 249401, 249402,249403,249404,249405,249406,249407,249408,249409,249410]);
-						this.set('locationsList', locationsList);
+						return;
 					}
+
+					this.set('asnList', asnList);
+					this.set('locationsList', locationsList);
 				});
 
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
