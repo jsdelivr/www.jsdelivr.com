@@ -179,6 +179,7 @@
 	const _ = require('../../../assets/js/_');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
+	const isArrContainsExactObj = require('../../../assets/js/utils/check-if-array-contains-exact-object');
 	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const countries = require('../../../assets/json/countries.json');
 	const asnDomains = require('../../../assets/json/asn-domain.json');
@@ -419,7 +420,7 @@
 					}
 
 					// collect all unique network's locations (city, country)
-					if (!this.isExactMatchInArr(res.networks[networkNameAsKey].locationsList, { city: location.city, country: countryName })) {
+					if (!isArrContainsExactObj(res.networks[networkNameAsKey].locationsList, { city: location.city, country: countryName })) {
 						res.networks[networkNameAsKey].locationsList.push({ city: location.city, country: countryName });
 					}
 				}
@@ -560,11 +561,6 @@
 			}, 1000);
 
 			this.set('testReqInterval', testReqInterval);
-		},
-		// TODO: 688, mv to utils
-		isExactMatchInArr (arr, targetObj) {
-			return arr.some(obj => Object.keys(obj).length === Object.keys(targetObj).length
-				&& Object.keys(targetObj).every(key => obj[key] === targetObj[key]));
 		},
 		prepareRegularResults (testResults) {
 			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
