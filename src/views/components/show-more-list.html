@@ -3,18 +3,18 @@
 	class="c-show-more-list {{addClass || ''}}"
 	style="height: {{wrapperHeight}}"
 >
-	<div id="wrapperElInner" class="inner">
+	<div id="wrapperElInner" class="c-show-more-list_inner">
 		{{#if @this.partials.content}}
 			{{>content}}
 		{{else}}
 			{{#each limitedList as item}}
-				<span class="item">{{prefix || ''}}{{item}}</span>
+				<span class="c-show-more-list_inner_item">{{prefix || ''}}{{item}}</span>
 			{{/each}}
 		{{/if}}
 
 		{{#if list.length > limit}}
 			<button
-				class="toggle-button"
+				class="c-show-more-list_toggle-button"
 				on-click="@this.set('expanded', !expanded)"
 			>
 				{{expanded ? 'Show less' : 'Show more'}}
@@ -58,7 +58,13 @@
 					let initialHeight = this.get('initialHeight');
 
 					if (initialHeight === null && limitedList && limitedList.length) {
-						this.set('initialHeight', `${wrapperEl.scrollHeight}px`);
+
+						requestAnimationFrame(() => {
+							let height = `${wrapperEl.scrollHeight}px`;
+
+							this.set('initialHeight', height);
+							this.set('wrapperHeight', height);
+						});
 					}
 				});
 
