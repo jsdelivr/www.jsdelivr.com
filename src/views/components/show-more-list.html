@@ -20,6 +20,8 @@
 </div>
 
 <script>
+	const ITEMS_TO_SHOW_LIMIT = 4;
+
 	component.exports = {
 		data () {
 			return {
@@ -28,6 +30,7 @@
 				limitedList: null,
 				initialHeight: null,
 				restList: [],
+				limit: ITEMS_TO_SHOW_LIMIT,
 			};
 		},
 		onrender () {
@@ -38,7 +41,7 @@
 					if (!wrapperEl) { return; }
 
 					let list = this.get('list') || [];
-					let limit = this.get('limit') || 4;
+					let limit = this.get('limit');
 
 					this.set('limitedList', expanded ? list : list.slice(0, limit));
 
