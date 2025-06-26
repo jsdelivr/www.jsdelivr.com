@@ -177,8 +177,13 @@
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
 	const CONTINENTS = require('../../../assets/json/continents.json');
+	const COUNTRIES = require('../../../assets/json/countries.json');
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
+	const COUNTRIES_MAP = COUNTRIES.reduce((acc, country) => {
+		acc[country.code] = country.name;
+		return acc;
+	}, {});
 
 	component.exports = {
 		data () {
@@ -448,6 +453,9 @@
 
 			return cData ? cData.name : null;
 		},
+		getCountryName (code) {
+			return COUNTRIES_MAP[code] || code;
+		},
 		updateFiltersSet () {
 			let location = this.get('location');
 			let availableFilters = this.get('availableFilters');
@@ -552,7 +560,7 @@
 								key = probes[0].location.network;
 								break;
 							case 'country-network':
-								key = probes[0].location.country;
+								key = this.getCountryName(probes[0].location.country);
 								break;
 							case 'city-network':
 								key = `${probes[0].location.country}, ${probes[0].location.city}`;
@@ -562,7 +570,7 @@
 								break;
 							case 'country':
 							default:
-								key = probes[0].location.country;
+								key = this.getCountryName(probes[0].location.country);
 								break;
 						}
 
