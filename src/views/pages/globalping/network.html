@@ -5,6 +5,7 @@
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
 <link rel="ractive" href="../../components/select.html" name="c-select">
 <link rel="ractive" href="../../components/location-input.html" name="c-location-input">
+<link rel="ractive" href="../../components/probe-single-card.html" name="c-probe-single-card">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-notification></c-notification>
@@ -112,7 +113,7 @@
 				</div>
 			</div>
 
-			<div class="gp-network_list">
+			<div class="gp-network_list {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
 				{{#if probesLoading}}
 					<div class="gp-network_list_no-result">
 						Loading...
@@ -124,49 +125,57 @@
 						</div>
 					{{else}}
 						{{#each preparedProbesColumns as column}}
-							<div class="gp-network_list_column">
-								{{#each column as continentGroup}}
-									<div class="gp-network_list_column_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
-										{{#if continentGroup.title}}
-											<span class="gp-network_list_column_group_item cont-header">
-												{{@this.getContinentName(continentGroup.title)}}
-											</span>
-										{{/if}}
-
+							<div class="gp-network_list_column {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
+								{{#if groupBy === 'disabled'}}
+									{{#each column as continentGroup}}
 										{{#each continentGroup.items as item}}
-											<span class="gp-network_list_column_group_item">
-												{{#if item.showFlag}}
-													<span class="gp-network_list_column_group_item_img">
-														<img width="17"
-															height="12"
-															src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
+											<c-probe-single-card location="{{item.location}}" tags="{{item.tags}}" maxTagCount="{{maxTagCount}}"></c-probe-single-card>
+										{{/each}}
+									{{/each}}
+								{{else}}
+									{{#each column as continentGroup}}
+										<div class="gp-network_list_column_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
+											{{#if continentGroup.title}}
+												<span class="gp-network_list_column_group_item cont-header">
+													{{@this.getContinentName(continentGroup.title)}}
+												</span>
+											{{/if}}
+
+											{{#each continentGroup.items as item}}
+												<span class="gp-network_list_column_group_item">
+													{{#if item.showFlag}}
+														<span class="gp-network_list_column_group_item_img">
+															<img width="17"
+																height="12"
+																src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
+														</span>
+													{{/if}}
+
+													<span class="gp-network_list_column_group_item_location">
+														{{item.location}}
+
+														{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
+															<span>(x{{item.probes.length}})</span>
+														{{/if}}
 													</span>
-												{{/if}}
 
-												<span class="gp-network_list_column_group_item_location">
-													{{item.location}}
-
-													{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
-														<span>(x{{item.probes.length}})</span>
+													{{#if item.networks && item.networks.length}}
+														<div class="gp-network_list_column_group_item_networks">
+															{{#each item.networks}}
+																<span class="gp-network_list_column_group_item_network">
+																	{{this.name}}
+																	{{#if this.count !== 1}}
+																		<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
+																	{{/if}}
+																</span>
+															{{/each}}
+														</div>
 													{{/if}}
 												</span>
-
-												{{#if item.networks && item.networks.length}}
-													<div class="gp-network_list_column_group_item_networks">
-														{{#each item.networks}}
-															<span class="gp-network_list_column_group_item_network">
-																{{this.name}}
-																{{#if this.count !== 1}}
-																	<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
-																{{/if}}
-															</span>
-														{{/each}}
-													</div>
-												{{/if}}
-											</span>
-										{{/each}}
-									</div>
-								{{/each}}
+											{{/each}}
+										</div>
+									{{/each}}
+								{{/if}}
 							</div>
 						{{/each}}
 					{{/if}}
@@ -179,6 +188,8 @@
 </r-page>
 
 <script>
+	const debounce = require('../../../assets/js/utils/debounce');
+	const throttle = require('../../../assets/js/utils/throttle');
 	const listeners = require('../../../assets/js/utils/listeners');
 	const has = require('../../../assets/js/utils/has');
 	const http = require('../../../assets/js/utils/http');
@@ -279,7 +290,7 @@
 				filtersSet: null,
 				probesLoading: true,
 				probesResponse: null,
-				probesByContinents: null,
+				groupedProbes: null,
 				probesByCoords: null,
 				locationProbes: null,
 				preparedProbesColumns: null,
@@ -292,6 +303,7 @@
 					tests: 0,
 					uptime: 0,
 				},
+				maxTagCount: 2,
 			};
 		},
 		computed: {
@@ -314,12 +326,7 @@
 					if (!screenWidth) {
 						this.set('screenWidth', window.innerWidth);
 					} else {
-						let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
-						let locationProbes = this.get('locationProbes');
-						let { groupedByContinents } = this.groupProbes(locationProbes || []);
-						let sorted = this.sortAndGroup(groupedByContinents);
-						let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
-
+						let preparedProbesColumns = this.splitDataIntoColumns();
 						this.set('preparedProbesColumns', preparedProbesColumns);
 					}
 
@@ -347,49 +354,35 @@
 					this.updateFiltersSet();
 				});
 
-				this.observe('locationProbes', (locationProbes) => {
-					let { groupedByContinents, groupedByCoords } = this.groupProbes(locationProbes || []);
+				this.observe('probesResponse', () => this.calculateMaxTagCount(), { defer: true });
 
-					this.set('probesByContinents', groupedByContinents);
+				this.observe('locationProbes', (locationProbes) => {
+					let { groupedProbes, groupedByCoords } = this.groupProbes(locationProbes || []);
+
+					this.set('groupedProbes', groupedProbes);
 					this.set('probesByCoords', groupedByCoords);
 					setTimeout(() => this.set('filteredMarkersData', groupedByCoords), 50);
 
-					let filteredProbesStats = Object
-						.values(groupedByContinents || {})
-						.reduce((acc, cont) => {
-							let contCities = Object.values(cont).reduce((cAcc, cityProbes) => {
-								cAcc.count += cityProbes.length;
-								cityProbes.forEach(probe => cAcc.asns.add(probe.location.asn));
-
-								return cAcc;
-							}, { count: 0, asns: new Set() });
-
-							acc.count += contCities.count;
-							contCities.asns.forEach(asn => acc.asns.add(asn));
-
+					let filteredProbesStats = locationProbes
+						.reduce((acc, probe) => {
+							acc.asns.add(probe.location.asn);
 							return acc;
-						}, { count: 0, asns: new Set() });
+						}, { count: locationProbes.length, asns: new Set() });
 
 					this.set('filteredProbesStats', { count: filteredProbesStats.count, asns: filteredProbesStats.asns.size });
+				});
 
-					if (!groupedByContinents) { return; }
+				this.observe('groupBy', () => {
+					let locationProbes = this.get('locationProbes');
+					let { groupedProbes } = this.groupProbes(locationProbes || []);
+					this.set('groupedProbes', groupedProbes);
 
-					let screenWidth = this.get('screenWidth');
-					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
-
-					let sorted = this.sortAndGroup(groupedByContinents);
-					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
-
+					let preparedProbesColumns = this.splitDataIntoColumns();
 					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
 
-				this.observe('groupBy sortOrder', () => {
-					let screenWidth = this.get('screenWidth');
-					let columnsAmount = this.getLayoutColumnsAmount(screenWidth);
-					let probesByContinents = this.get('probesByContinents');
-					let sorted = this.sortAndGroup(probesByContinents);
-					let preparedProbesColumns = this.splitDataIntoColumns(sorted, columnsAmount);
-
+				this.observe('sortOrder groupedProbes', () => {
+					let preparedProbesColumns = this.splitDataIntoColumns();
 					this.set('preparedProbesColumns', preparedProbesColumns);
 				});
 			}
@@ -399,6 +392,9 @@
 				this.set('@shared.googleMapsLoaded', true);
 
 				listeners.screenWidthListener(this);
+
+				let handleResize = debounce(throttle(() => this.calculateMaxTagCount(), 200));
+				listeners.addManagedListener(this, window, 'resize', handleResize);
 			}
 		},
 		getProbesData () {
@@ -441,21 +437,32 @@
 			};
 		},
 		groupProbes (probes) {
+			let groupBy = this.get('groupBy');
 			// group probes by Continents and Coordinates
 			let groups = probes.reduce((res, probe) => {
 				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
 				let location = `${probe.location.country}, ${probe.location.city}`;
 
-				// group by Continents
-				if (!Object.hasOwn(res.groupedByContinents, probe.location.continent)) {
-					res.groupedByContinents[probe.location.continent] = {};
-				}
+				let groupKey = groupBy === 'disabled' ? 'disabled' : probe.location.continent;
 
-				if (!Object.hasOwn(res.groupedByContinents[probe.location.continent], location)) {
-					res.groupedByContinents[probe.location.continent][location] = [];
-				}
 
-				res.groupedByContinents[probe.location.continent][location].push(probe);
+				if (groupBy === 'disabled') {
+					if (!Object.hasOwn(res.groupedProbes, groupKey)) {
+						res.groupedProbes[groupKey] = [];
+					}
+
+					res.groupedProbes[groupKey].push(probe);
+				} else {
+					if (!Object.hasOwn(res.groupedProbes, groupKey)) {
+						res.groupedProbes[groupKey] = {};
+					}
+
+					if (!Object.hasOwn(res.groupedProbes[groupKey], location)) {
+						res.groupedProbes[groupKey][location] = [];
+					}
+
+					res.groupedProbes[groupKey][location].push(probe);
+				}
 
 				// group by Coordinates
 				if (!Object.hasOwn(res.groupedByCoords, coords)) {
@@ -466,12 +473,14 @@
 
 				return res;
 			}, {
-				groupedByContinents: {},
+				groupedProbes: {},
 				groupedByCoords: {},
 			});
 
-			let byContinentSorted = Object.entries(groups.groupedByContinents).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
-			groups.groupedByContinents = Object.fromEntries(byContinentSorted);
+			if (groupBy !== 'disabled') {
+				let byContinentSorted = Object.entries(groups.groupedProbes).sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length);
+				groups.groupedProbes = Object.fromEntries(byContinentSorted);
+			}
 
 			return groups;
 		},
@@ -566,11 +575,7 @@
 			let sortOrder = this.get('sortOrder');
 
 			if (groupBy === 'disabled') {
-				return [{
-					continent: null,
-					location: 'Grouping is disabled',
-					probes: [],
-				}];
+				return Object.values(obj).flat();
 			}
 
 			if (groupBy === 'network') {
@@ -691,16 +696,25 @@
 
 			return sortedArray;
 		},
-		splitDataIntoColumns (data, columnsCnt = 3, minItemsPerColumn = 30) {
-			let totalItems = data.length;
-			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
+		splitDataIntoColumns (minItemsPerColumn = 30) {
+			let groupedProbes = this.get('groupedProbes');
 
-			let columnNumber = 0;
-			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
+			if (!groupedProbes) {
+				return [];
+			}
+
+			let data = this.sortAndGroup(groupedProbes);
+
+			let screenWidth = this.get('screenWidth');
+			let columnsCnt = this.getLayoutColumnsAmount(screenWidth);
 
 			let groupBy = this.get('groupBy');
+			let totalItems = data.length;
+			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
+			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
+			let columnNumber = 0;
 
-			if (groupBy === 'network') {
+			if (groupBy === 'network' || groupBy === 'disabled') {
 				return data.reduce((res, item) => {
 					if (!res[columnNumber]) {
 						res[columnNumber] = [{
@@ -766,13 +780,27 @@
 		getLayoutColumnsAmount (screenWidth) {
 			let columnsAmount = 1;
 
-			if (screenWidth >= 576 && screenWidth < 992) {
+			if (this.get('groupBy') === 'disabled') {
+				if (screenWidth >= 992) {
+					columnsAmount = 2;
+				}
+			} else if (screenWidth >= 576 && screenWidth < 992) {
 				columnsAmount = 2;
 			} else if (screenWidth >= 992) {
 				columnsAmount = 3;
 			}
 
 			return columnsAmount;
+		},
+		calculateMaxTagCount () {
+			if (this.get('groupBy') !== 'disabled') {
+				return;
+			}
+
+			let tagContainer = $('.probe-single-card_tag').get(0);
+			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
+			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
+			this.set('maxTagCount', maxTagCount);
 		},
 	};
 </script>

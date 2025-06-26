@@ -3,6 +3,7 @@
 <link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/probe-single-card.html" name="c-probe-single-card">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	{{#partial seo}}
@@ -82,42 +83,7 @@
 					{{/if}}
 
 					{{#each userProbes}}
-						<div class="page-content_main_section_probe">
-							<div class="page-content_main_section_probe_details">
-								<div class="page-content_main_section_probe_details_icon">
-									<img width="24"
-									height="24"
-									src="{{@shared.assetsHost}}/img/globalping/globalping-probe.svg">
-								</div>
-								<div class="page-content_main_section_probe_details_info">
-									<div class="page-content_main_section_probe_details_info_city">
-										<img width="16.8" height="12" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{location.country}}.svg">
-										<span class="page-content_main_section_probe_details_info_city_name">
-											{{location.city}}, {{location.country}}
-										</span>
-									</div>
-									<span class="page-content_main_section_probe_details_info_location">
-										{{location.network}}
-									</span>
-								</div>
-							</div>
-							<div class="page-content_main_section_probe_tag">
-								{{#each tags: index}}
-									{{#if index < maxTagCount}}
-										<span class="page-content_main_section_probe_tag_item" as-tooltip="this">
-											{{this}}
-										</span>
-									{{/if}}
-								{{/each}}
-								{{#if tags.length > maxTagCount}}
-									<span
-										class="page-content_main_section_probe_tag_item"
-										as-tooltip="tags.slice(maxTagCount).join(', ')">
-										+{{tags.length - maxTagCount}}
-									</span>
-								{{/if}}
-							</div>
-						</div>
+						<c-probe-single-card location="{{location}}" tags="{{tags}}" maxTagCount="{{maxTagCount}}"></c-probe-single-card>
 					{{/each}}
 				</div>
 			</div>
@@ -134,12 +100,8 @@
 	const listeners = require('../../../assets/js/utils/listeners');
 	const http = require('../../../assets/js/utils/http');
 	const dataCache = require('../../../assets/js/utils/data-cache');
-	const tooltip = require('../../../assets/js/decorators/tooltip');
 
 	component.exports = {
-		decorators: {
-			tooltip,
-		},
 		data () {
 			return {
 				_,
@@ -196,7 +158,7 @@
 			}
 		},
 		calculateMaxTagCount () {
-			let tagContainer = $('.page-content_main_section_probe_tag').get(0);
+			let tagContainer = $('.probe-single-card_tag').get(0);
 			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
 			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
 			this.set('maxTagCount', maxTagCount);
