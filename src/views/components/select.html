@@ -24,14 +24,17 @@
 				dropdownOpened: false,
 				className: '',
 				currSelectedItemIdx: null,
+				placeholder: '',
+				onSelect: null,
 			};
 		},
 		computed: {
 			selectedName () {
+				let placeholder = this.get('placeholder');
 				let selected = this.get('selected');
 				let options = this.get('options');
 				let option = options.find(opt => opt.value === selected);
-				return option ? option.name : selected;
+				return option ? option.name : selected ? selected : placeholder;
 			},
 		},
 		oncomplete () {
@@ -130,6 +133,10 @@
 		selectItem (value) {
 			this.toggleDropdown();
 			this.set('selected', value);
+
+			if (this.get('onSelect')) {
+				this.get('onSelect')(value);
+			}
 		},
 	};
 </script>

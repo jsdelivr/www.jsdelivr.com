@@ -113,6 +113,19 @@
 				</div>
 			</div>
 
+			{{#if probeContinents.length}}
+				<div class="gp-network_jump">
+					<div class="gp-network_jump_field">
+						<label>Jump to</label>
+						<c-select
+							options="{{probeContinents}}"
+							selected="{{selectedContinent}}"
+							placeholder="Choose continent"
+							onSelect="{{@this.scrollToContinent}}" />
+					</div>
+				</div>
+			{{/if}}
+
 			<div class="gp-network_list {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
 				{{#if probesLoading}}
 					<div class="gp-network_list_loading">
@@ -141,7 +154,7 @@
 									{{#each column as continentGroup}}
 										<div class="gp-network_list_column_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
 											{{#if continentGroup.title}}
-												<span class="gp-network_list_column_group_item cont-header">
+												<span class="gp-network_list_column_group_item cont-header" id="probe-group-{{continentGroup.title}}">
 													{{@this.getContinentName(continentGroup.title)}}
 												</span>
 											{{/if}}
@@ -292,6 +305,7 @@
 						value: 'probe-count',
 					},
 				],
+				probeContinents: [],
 				filtersSet: null,
 				probesLoading: true,
 				probesError: null,
@@ -368,20 +382,22 @@
 					this.set('groupedProbes', groupedProbes);
 					this.set('probesByCoords', groupedByCoords);
 					setTimeout(() => this.set('filteredMarkersData', groupedByCoords), 50);
+					this.recalculateProbeContinents();
 
-					let filteredProbesStats = locationProbes
+					let { count, asns } = locationProbes
 						.reduce((acc, probe) => {
 							acc.asns.add(probe.location.asn);
 							return acc;
 						}, { count: locationProbes.length, asns: new Set() });
 
-					this.set('filteredProbesStats', { count: filteredProbesStats.count, asns: filteredProbesStats.asns.size });
+					this.set('filteredProbesStats', { count, asns: asns.size });
 				});
 
 				this.observe('groupBy', () => {
 					let locationProbes = this.get('locationProbes');
 					let { groupedProbes } = this.groupProbes(locationProbes || []);
 					this.set('groupedProbes', groupedProbes);
+					this.recalculateProbeContinents();
 
 					let preparedProbesColumns = this.splitDataIntoColumns();
 					this.set('preparedProbesColumns', preparedProbesColumns);
@@ -820,6 +836,26 @@
 			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
 			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
 			this.set('maxTagCount', maxTagCount);
+		},
+		recalculateProbeContinents () {
+			let groupBy = this.get('groupBy');
+			let groupedProbes = this.get('groupedProbes');
+
+			if (groupBy === 'disabled' || groupBy === 'network') {
+				this.set('probeContinents', []);
+			} else {
+				this.set('probeContinents', Object.keys(groupedProbes).map(continent => ({
+					name: this.getContinentName(continent),
+					value: continent,
+				})));
+			}
+		},
+		scrollToContinent (continent) {
+			let continentElement = document.getElementById(`probe-group-${continent}`);
+
+			if (continentElement) {
+				continentElement.scrollIntoView({ behavior: 'smooth' });
+			}
 		},
 	};
 </script>
