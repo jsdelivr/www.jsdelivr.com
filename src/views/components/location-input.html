@@ -506,6 +506,10 @@
 
 				let filterProbes = (normalizedProbes, conditions) => {
 					return conditions.reduce((filteredProbes, condition) => {
+						if (condition === 'world') {
+							return normalizedProbes;
+						}
+
 						let exactPattern = new RegExp(`(?:^|\n)${escapeRegExp(condition)}(?:$|\n)`, 'm');
 
 						let exactMatchFound = false;
