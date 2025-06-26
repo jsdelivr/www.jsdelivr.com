@@ -37,6 +37,11 @@
 				this.observe('expanded', (expanded) => {
 					if (!wrapperEl) { return; }
 
+					let list = this.get('list') || [];
+					let limit = this.get('limit') || 4;
+
+					this.set('limitedList', expanded ? list : list.slice(0, limit));
+
 					if (expanded) {
 						requestAnimationFrame(() => {
 							this.set('wrapperHeight', `${wrapperEl.scrollHeight}px`);
@@ -61,13 +66,6 @@
 							this.set('wrapperHeight', height);
 						});
 					}
-				});
-
-				this.observe('expanded', (expanded) => {
-					let list = this.get('list') || [];
-					let limit = this.get('limit') || 4;
-
-					this.set('limitedList', expanded ? list : list.slice(0, limit));
 				});
 			}
 		},
