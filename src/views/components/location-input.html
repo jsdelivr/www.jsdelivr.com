@@ -86,7 +86,7 @@
 			listeners.screenWidthListener(this);
 
 			if (!Ractive.isServer) {
-				let normalizedProbes;
+				let normalizedProbes = [];
 				let indexForConditions;
 
 				let initLimit = value => function runLimit (rawSources) {
@@ -155,6 +155,10 @@
 				let { setQuery, setActiveItemId, destroy } = autocomplete({
 					container: this.find('.aa-gp-container'),
 					onStateChange: ({ state }) => {
+						if (!state.isOpen && this.get('exposeProbes') && normalizedProbes) {
+							setTimeout(() => filterProbesByCurrentParts(state.query), 0);
+						}
+
 						activeItemId = state.activeItemId;
 						setTimeout(() => isAsyncOpen = state.isOpen);
 
@@ -217,10 +221,6 @@
 						];
 					},
 					getSources: ({ query }) => {
-						if (this.get('exposeProbes')) {
-							filterProbesByCurrentParts(query);
-						}
-
 						// The input allows several queries separated by a comma.
 						// Each query may have multiple parts separated by a plus sign.
 						// We always operate on the last part of the last query but need to preserve anything before it.
@@ -433,7 +433,6 @@
 				// Propagate state changes.
 				this.observe('value', (newValue) => {
 					setQuery(newValue);
-					filterProbesByCurrentParts(newValue);
 				});
 
 				this.observe('disabled', (newValue) => {
@@ -614,11 +613,10 @@
 
 				this.observe('rawProbes', (probes) => {
 					createNormalizedProbeList(probes);
+					filterProbesByCurrentParts(this.get('value') || '');
 				});
 
 				this.on('unrender', () => destroy());
-
-				filterProbesByCurrentParts(this.get('value') || '');
 			}
 		},
 	};
