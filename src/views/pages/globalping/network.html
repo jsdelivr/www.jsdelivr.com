@@ -115,8 +115,13 @@
 
 			<div class="gp-network_list {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
 				{{#if probesLoading}}
-					<div class="gp-network_list_no-result">
+					<div class="gp-network_list_loading">
 						Loading...
+					</div>
+				{{elseif probesError}}
+					<div class="gp-network_list_error">
+						Failed to load probes. Please try again later.
+						<button type="button" on-click="@this.getProbesData()">Try again</button>
 					</div>
 				{{else}}
 					{{#if preparedProbesColumns && preparedProbesColumns.length === 0}}
@@ -289,6 +294,7 @@
 				],
 				filtersSet: null,
 				probesLoading: true,
+				probesError: null,
 				probesResponse: null,
 				groupedProbes: null,
 				probesByCoords: null,
@@ -399,6 +405,7 @@
 		},
 		getProbesData () {
 			this.set('probesLoading', true);
+			this.set('probesError', null);
 
 			if (has.sessionStorage()) {
 				let probesResponse = sessionStorage.getItem('probesResponse');
@@ -412,6 +419,7 @@
 
 				http.fetchGlobalpingProbes()
 					.then(this.handleProbesResponse(false))
+					.catch(this.handleProbesError)
 					.finally(() => {
 						this.set('probesLoading', false);
 					});
@@ -421,12 +429,23 @@
 
 			http.fetchGlobalpingProbes()
 				.then(this.handleProbesResponse(false))
+				.catch(this.handleProbesError)
 				.finally(() => {
 					this.set('probesLoading', false);
 				});
 		},
+		handleProbesError (error) {
+			console.error('Failed to fetch probes', error);
+
+			this.set('probesError', error);
+		},
 		handleProbesResponse (isStored) {
 			return (response) => {
+				if (!response) {
+					this.handleProbesError(new Error('No response from server'));
+					return;
+				}
+
 				if (!isStored) {
 					sessionStorage.setItem('probesResponse', JSON.stringify(response));
 				} else {
