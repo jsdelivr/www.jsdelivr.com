@@ -353,10 +353,11 @@
 				this.observe('screenWidth', (screenWidth) => {
 					if (!screenWidth) {
 						this.set('screenWidth', window.innerWidth);
-					} else {
-						let preparedProbesColumns = this.splitDataIntoColumns();
-						this.set('preparedProbesColumns', preparedProbesColumns);
+						return;
 					}
+
+					let preparedProbesColumns = this.splitDataIntoColumns();
+					this.set('preparedProbesColumns', preparedProbesColumns);
 
 					// handle tooltips positions depending on the screen size
 					let ttPositions = {};
@@ -376,6 +377,15 @@
 					}
 
 					this.set('ttPositions', ttPositions);
+
+					let statsItems = document.querySelector('.gp-network_stats_items');
+					let isScrollable = statsItems.scrollWidth > statsItems.clientWidth;
+
+					if (isScrollable) {
+						statsItems.parentElement.classList.add('has-scroll');
+					} else {
+						statsItems.parentElement.classList.remove('has-scroll');
+					}
 				});
 
 				this.observe('location', () => {
