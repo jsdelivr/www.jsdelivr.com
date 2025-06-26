@@ -304,14 +304,18 @@
 				// run the test if user is pressed Enter inside of any of options inputs
 				let ipOrHostnameEl = this.find('#ipOrHostname');
 
-				let handleEnterBtn = (event) => {
-					if (event.key === 'Enter') {
-						event.preventDefault();
-						this.proceedToTest();
-					}
-				};
+				this._boundHandleEnterBtn = this.handleEnterBtn.bind(this);
 
-				ipOrHostnameEl.addEventListener('keypress', handleEnterBtn);
+				ipOrHostnameEl.addEventListener('keypress', this._boundHandleEnterBtn);
+			}
+		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				let ipOrHostnameEl = this.find('#ipOrHostname');
+
+				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
+					ipOrHostnameEl.removeEventListener('keypress', this._boundHandleEnterBtn);
+				}
 			}
 		},
 		setLocation (newLocation) {
@@ -609,6 +613,12 @@
 					console.error('Failed to fetch user\'s IP:', err);
 					this.set('userIP', null);
 				});
+		},
+		handleEnterBtn (event) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				this.proceedToTest();
+			}
 		},
 	};
 </script>
