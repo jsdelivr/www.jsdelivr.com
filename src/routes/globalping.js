@@ -127,7 +127,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (ctx.app.env === 'development') {
+		if (app.env === 'development') {
 			console.error(e);
 		}
 
