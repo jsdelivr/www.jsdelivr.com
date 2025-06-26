@@ -17,26 +17,34 @@
 			<div class="gp-network_filters_map_wrapper">
 
 				<div class="gp-network_stats">
-					<div class="gp-network_stats_item">
-						<img src="{{@shared.assetsHost}}/img/icons/radio.svg">
-						<span class="gp-network_stats_item_value">{{filteredProbesStats.count}}</span>
-						<span class="gp-network_stats_item_title">probes</span>
+					<div class="gp-network_stats_items">
+						<div class="gp-network_stats_item">
+							<img src="{{@shared.assetsHost}}/img/icons/radio.svg">
+							<span class="gp-network_stats_item_value">{{filteredProbesStats.count}}</span>
+							<span class="gp-network_stats_item_title">probes</span>
+						</div>
+						<div class="gp-network_stats_item">
+							<img src="{{@shared.assetsHost}}/img/icons/file-text.svg">
+							<span class="gp-network_stats_item_value">{{filteredProbesStats.asns}}</span>
+							<span class="gp-network_stats_item_title">ASNs</span>
+						</div>
+						<div class="gp-network_stats_item">
+							<img src="{{@shared.assetsHost}}/img/icons/results-icon.svg">
+							<span class="gp-network_stats_item_value">40</span>
+							<span class="gp-network_stats_item_title">Tests/day</span>
+						</div>
+						<div class="gp-network_stats_item">
+							<img src="{{@shared.assetsHost}}/img/icons/activity.svg">
+							<span class="gp-network_stats_item_value">99%</span>
+							<span class="gp-network_stats_item_title">Avg uptime</span>
+						</div>
 					</div>
-					<div class="gp-network_stats_item">
-						<img src="{{@shared.assetsHost}}/img/icons/file-text.svg">
-						<span class="gp-network_stats_item_value">{{filteredProbesStats.asns}}</span>
-						<span class="gp-network_stats_item_title">ASNs</span>
-					</div>
-					<div class="gp-network_stats_item">
-						<img src="{{@shared.assetsHost}}/img/icons/results-icon.svg">
-						<span class="gp-network_stats_item_value">40</span>
-						<span class="gp-network_stats_item_title">Tests/day</span>
-					</div>
-					<div class="gp-network_stats_item">
-						<img src="{{@shared.assetsHost}}/img/icons/activity.svg">
-						<span class="gp-network_stats_item_value">99%</span>
-						<span class="gp-network_stats_item_title">Avg uptime</span>
-					</div>
+					<button type="button" class="gp-network_stats_prev" on-click="@this.scrollStats(-1)">
+						<img src="{{@shared.assetsHost}}/img/icons/chevron-left.svg" alt="Previous">
+					</button>
+					<button type="button" class="gp-network_stats_next" on-click="@this.scrollStats(1)">
+						<img src="{{@shared.assetsHost}}/img/icons/chevron-right.svg" alt="Next">
+					</button>
 				</div>
 
 				<div class="gp-network_map-wrapper">
@@ -855,6 +863,66 @@
 
 			if (continentElement) {
 				continentElement.scrollIntoView({ behavior: 'smooth' });
+			}
+		},
+		scrollStats (direction) {
+			let statsItems = $('.gp-network_stats_items');
+			let statItemElements = $('.gp-network_stats_item');
+
+			if (!statsItems.length || !statItemElements.length) {
+				return;
+			}
+
+			let container = statsItems[0];
+			let containerRect = container.getBoundingClientRect();
+			let visibleItems = [];
+			let hiddenItems = [];
+
+			statItemElements.each((index, element) => {
+				let elementRect = element.getBoundingClientRect();
+
+				let isVisible = elementRect.left < containerRect.right
+					&& elementRect.right > containerRect.left;
+
+				if (isVisible) {
+					visibleItems.push({ element, index });
+				} else {
+					hiddenItems.push({ element, index });
+				}
+			});
+
+			let targetItem = null;
+
+			if (direction > 0) {
+				if (hiddenItems.length > 0) {
+					let lastVisibleIndex = Math.max(...visibleItems.map(item => item.index));
+					let nextHiddenItems = hiddenItems.filter(item => item.index > lastVisibleIndex);
+
+					if (nextHiddenItems.length > 0) {
+						targetItem = nextHiddenItems[0];
+					} else {
+						targetItem = hiddenItems[0];
+					}
+				}
+			} else {
+				if (hiddenItems.length > 0) {
+					let firstVisibleIndex = Math.min(...visibleItems.map(item => item.index));
+					let prevHiddenItems = hiddenItems.filter(item => item.index < firstVisibleIndex);
+
+					if (prevHiddenItems.length > 0) {
+						targetItem = prevHiddenItems[prevHiddenItems.length - 1];
+					} else {
+						targetItem = hiddenItems[hiddenItems.length - 1];
+					}
+				}
+			}
+
+			if (targetItem) {
+				targetItem.element.scrollIntoView({
+					behavior: 'smooth',
+					block: 'nearest',
+					inline: 'nearest',
+				});
 			}
 		},
 	};
