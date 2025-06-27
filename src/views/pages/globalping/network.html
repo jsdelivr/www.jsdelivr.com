@@ -179,7 +179,7 @@
 													{{/if}}
 
 													<span class="gp-network_list_column_group_item_location">
-														{{item.location}}
+														{{item.name}}
 
 														{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
 															<span>(x{{item.probes.length}})</span>
@@ -661,6 +661,7 @@
 
 				return sortedNetworks.map(network => ({
 					continent: null,
+					name: network,
 					location: network,
 					probes: allNetworks[network],
 					networks: [],
@@ -679,7 +680,7 @@
 
 						switch (groupBy) {
 							case 'country-network':
-								key = this.getCountryName(probes[0].location.country);
+								key = probes[0].location.country;
 								break;
 							case 'city-network':
 								key = `${probes[0].location.country}, ${probes[0].location.city}`;
@@ -689,7 +690,7 @@
 								break;
 							case 'country':
 							default:
-								key = this.getCountryName(probes[0].location.country);
+								key = probes[0].location.country;
 								break;
 						}
 
@@ -737,6 +738,7 @@
 						}
 
 						return {
+							name: this.getCountryName(location),
 							continent,
 							location,
 							probes,
