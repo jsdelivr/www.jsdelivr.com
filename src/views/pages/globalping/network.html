@@ -326,6 +326,7 @@
 				filteredMarkersData: null,
 				groupBy: 'city',
 				sortOrder: 'alphabetically',
+				selectedContinent: null,
 				filteredProbesStats: {
 					count: 0,
 					asns: 0,
@@ -864,11 +865,19 @@
 
 			if (groupBy === 'disabled' || groupBy === 'network') {
 				this.set('probeContinents', []);
+				this.set('selectedContinent', null);
 			} else {
 				this.set('probeContinents', Object.keys(groupedProbes).map(continent => ({
 					name: this.getContinentName(continent),
 					value: continent,
 				})));
+
+				let selectedContinent = this.get('selectedContinent');
+				this.set(
+					'selectedContinent',
+					this.get('probeContinents')
+						.some(continent => continent.value === selectedContinent) ? this.get('location') : null,
+				);
 			}
 		},
 		scrollToContinent (continent) {
