@@ -1,11 +1,9 @@
-const Koa = require('koa');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
 const ogImage = require('../middleware/open-graph');
 
-const app = new Koa();
 const router = new KoaRouter();
 
 /**
@@ -30,7 +28,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/terms.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -67,7 +65,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/_users.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -129,7 +127,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/network-tools.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -161,7 +159,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/isp.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
