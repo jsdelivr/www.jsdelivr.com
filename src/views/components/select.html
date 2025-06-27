@@ -1,10 +1,18 @@
 <div class="select {{className}}">
-	<button class="select_selected" disabled="{{disabled}}" on-click="@this.toggleDropdown()" on-keydown="@this.onKeyDown(@event)" aria-expanded="{{dropdownOpened}}">
+	<button
+		type="button"
+		class="select_selected"
+		disabled="{{disabled}}"
+		on-click="@this.toggleDropdown()"
+		on-keydown="@this.onKeyDown(@event)"
+		aria-expanded="{{dropdownOpened}}"
+		aria-haspopup="listbox"
+		aria-controls="{{name}}">
 		<span class="select_selected_label">{{selectedName}}</span>
 		<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/chevron-down.svg" loading="lazy" alt=""/>
 	</button>
 
-	<div class="select_wrapper {{#if dropdownOpened}}opened{{/if}}" role="listbox">
+	<div id="{{name}}" class="select_wrapper {{#if dropdownOpened}}opened{{/if}}" role="listbox">
 		<ul class="select_wrapper_list">
 			{{#each options}}
 				<li
@@ -32,6 +40,7 @@
 				placeholder: '',
 				onSelect: null,
 				disabled: false,
+				name: '',
 			};
 		},
 		computed: {
