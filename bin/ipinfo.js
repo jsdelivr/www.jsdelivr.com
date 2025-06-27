@@ -7,6 +7,9 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+const ASN_COLUMN_NUM = 5;
+const DOMAIN_COLUMN_NUM = 7;
+
 async function fetchAndSaveAsnDomainMap (url) {
 	let chunks = [];
 	await new Promise((resolve, reject) => {
@@ -22,12 +25,16 @@ async function fetchAndSaveAsnDomainMap (url) {
 		skip_empty_lines: true,
 	});
 
+	if (records.length === 0) {
+		throw new Error('No data found in ipinfo-lite CSV file');
+	}
+
 	let asnDomainMap = {};
 
 	for (let i = 1; i < records.length; i++) {
 		let row = records[i];
-		let asn = row[5];
-		let domain = row[7];
+		let asn = row[ASN_COLUMN_NUM];
+		let domain = row[DOMAIN_COLUMN_NUM];
 
 		if (asn && domain) {
 			asnDomainMap[asn] = domain;
@@ -44,6 +51,10 @@ async function fetchAndSaveAsnDomainMap (url) {
 }
 
 async function main () {
+	if (!process.env.IP_INFO_TOKEN) {
+		throw new Error('IP_INFO_TOKEN environment variable is required');
+	}
+
 	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${process.env.IP_INFO_TOKEN}`;
 	let csvFileName = 'ipinfo_lite.csv';
 
