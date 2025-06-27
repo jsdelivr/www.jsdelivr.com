@@ -28,7 +28,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/terms.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -65,7 +65,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/_users.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -134,6 +134,37 @@ koaElasticUtils.addRoutes(router, [
 		ctx.status = 301;
 
 		return ctx.redirect(`/network-tools/${newPath}`);
+	}
+});
+
+/**
+ * ISP pages
+ */
+koaElasticUtils.addRoutes(router, [
+	[ 'isp', '/isp/:ispName?' ],
+], async (ctx) => {
+	let { ispName = '' } = ctx.params;
+
+	if (!ispName) {
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
+		return;
+	}
+
+	let data = {
+		ispName,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/isp.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (ctx.app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 301;
+		return ctx.redirect('/');
 	}
 });
 

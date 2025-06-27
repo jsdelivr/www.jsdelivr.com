@@ -1,0 +1,627 @@
+<link rel="ractive" href="../../r-page-globalping.html" name="r-page">
+<link rel="ractive" href="../../components/gp-header.html" name="c-gp-header">
+<link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
+<link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
+<link rel="ractive" href="../../components/notification.html" name="c-notification">
+<link rel="ractive" href="../../components/controlled-input.html" name="c-controlled-input">
+<link rel="ractive" href="../../components/show-more-list.html" name="c-show-more-list">
+
+<r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	<c-notification></c-notification>
+
+	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
+
+	<div class="p-globalping-isp">
+		<div class="p-globalping-isp_head">
+			<h1 class="p-globalping-isp_head_title">Looking Glass - {{ispFullName}}</h1>
+
+			<c-show-more-list list="{{asnList}}" limit="4" prefix="AS" addClass="p-globalping-isp_head_asn-list"/>
+		</div>
+
+		<div class="p-globalping-isp_network">
+			<div class="p-globalping-isp_network_head">
+				<span>Network</span>
+
+				{{#if networkDomainName}}
+					<img width="32"
+						height="32"
+						src="https://img.logo.dev/{{networkDomainName}}?token={{@shared.logoDevPublicKey}}&format=png"
+						loading="lazy"
+						alt="{{ispFullName}} logo"
+						as-tooltip="`${ispFullName}`">
+					{{else}}
+						<div class="p-globalping-isp_network_head_img"/>
+					{{/if}}
+			</div>
+
+			<div class="p-globalping-isp_network_body">
+				<div class="gp_dropdown_reg p-globalping-isp_network_body_select">
+					<span>Location</span>
+
+					<div class="btn-group">
+						<button type="button"
+							class="dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							{{#if selectedLocation}}
+								<span>{{~/selectedLocation.city}}, {{~/selectedLocation.country}} - {{ispFullName}}</span>
+							{{else}}
+								<span></span>
+							{{/if}}
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/locationsList}}
+								<div on-click="@this.setLocation(this)">{{this.city}}, {{this.country}} - {{ispFullName}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<c-controlled-input
+					id="ipAddress"
+					value="{{userIP}}"
+					userIP="{{userIP}}"
+					error=""
+					placeholder="Your IP"
+					labelText="Your IP"
+					classList="p-globalping-isp_network_body_input gp_input"
+					locked="true">
+					{{#partial copyBtn}}
+						{{#if userIP}}
+							<button
+								class="p-globalping-isp_network_body_input_copy-btn"
+								as-clipboard
+								data-clipboard-text="{{userIP}}">
+								Copy
+							</button>
+						{{/if}}
+					{{/partial}}
+				</c-controlled-input>
+			</div>
+		</div>
+
+		<div class="p-globalping-isp_network-tests">
+			<div class="p-globalping-isp_network_head">
+				<span>Network tests</span>
+			</div>
+
+			<div class="p-globalping-isp_network-tests_body">
+				<c-controlled-input
+					id="ipOrHostname"
+					value="{{testOpts.target}}"
+					error="{{inputErrors.target}}"
+					placeholder="IP or Hostname"
+					labelText="IP or Hostname"
+					classList="p-globalping-isp_network-tests_body_input gp_input">
+				</c-controlled-input>
+
+				<div class="gp_dropdown_reg p-globalping-isp_network-tests_body_select">
+					<span>Method</span>
+
+					<div class="btn-group">
+						<button type="button"
+							class="dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							<span>{{~/selectedTestType}}</span>
+							<i class="fa fa-angle-down" aria-hidden="true"></i>
+						</button>
+
+						<div class="dropdown-menu">
+							{{#each ~/testTypesList}}
+								<div on-click="@this.setTestType(this)">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<button type="button"
+					on-click="@this.proceedToTest()"
+					class=" p-globalping-isp_network-tests_body_btn-test gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+					disabled="{{testInProgress}}">
+					{{#if testInProgress}}
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					{{else}}
+						Run Test
+					{{/if}}
+				</button>
+			</div>
+
+			{{#if testFailed}}
+				<div class="gp_map-block_demo-tools_fail-msg">
+					<img width="56"
+						height="56"
+						alt="Fail icon"
+						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
+
+					<p>
+						All tests failed. Maybe you specified a non existing endpoint?
+					</p>
+				</div>
+			{{elseif testResults}}
+				<div class="p-globalping-isp_network-tests_results">
+					<pre>{{testResults[0].result.rawOutput}}</pre>
+				</div>
+			{{else}}
+				<div class="p-globalping-isp_network-tests_descr">
+					<span class="p-globalping-isp_network-tests_descr_msg">
+						Enter a target and click <span class="highlighted">"Run Test"</span> to start a network test from:
+						<br/>
+						<span class="highlighted">{{selectedLocation.city}}, {{selectedLocation.country}}</span> with <span class="highlighted">{{ispFullName}}</span>.
+					</span>
+				</div>
+			{{/if}}
+		</div>
+	</div>
+
+	<c-gp-footer></c-gp-footer>
+</r-page>
+
+<script>
+	const _ = require('../../../assets/js/_');
+	const http = require('../../../assets/js/utils/http');
+	const has = require('../../../assets/js/utils/has');
+	const isArrContainsExactObj = require('../../../assets/js/utils/check-if-array-contains-exact-object');
+	const tooltip = require('../../../assets/js/decorators/tooltip');
+	const countries = require('../../../assets/json/countries.json');
+	const asnDomains = require('../../../assets/json/asn-domain.json');
+	const continents = require('../../../assets/json/continents.json');
+	const usaStates = require('../../../assets/json/usa-states.json');
+	const DEFAULT_LIMIT = 1;
+	const INITIAL_OPTS_VALUES = {
+		type: 'Ping',
+		target: 'cdn.jsdelivr.net',
+	};
+	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
+	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				title: '',
+				description: '',
+				locationsList: [],
+				selectedLocation: null,
+				selectedTestType: 'ping',
+				testTypesList: [ 'ping', 'traceroute', 'DNS', 'MTR', 'HTTP' ],
+				probesResponse: null,
+				probesParsed: false,
+				userIP: null,
+				asnList: [],
+				networkDomainName: null,
+				testResults: null,
+				testInProgress: false,
+				testReqInterval: null,
+				testReqParams: null,
+				testOpts: {
+					target: INITIAL_OPTS_VALUES.target,
+					limit: DEFAULT_LIMIT,
+				},
+				inputErrors: {},
+			};
+		},
+		onconfig () {
+			if (!Ractive.isServer) {
+				let ispName = this.get('ispName');
+
+				this.set('title', `${ispName} - Globalping`);
+				this.set('description', `${ispName} - Globalping`);
+				this.set('ispName', ispName);
+				this.set('ispFullName', this.getTempIspName(ispName));
+			}
+		},
+		oninit () {
+			if (!Ractive.isServer) {
+				this.getGlobalpingProbesData();
+				this.fetchAndSetUserIP();
+
+				this.observe('ispFullName', (ispFullName) => {
+					this.setTitleAndDescr(ispFullName);
+				});
+
+				// set default location value
+				this.observe('locationsList', (locationsList) => {
+					if (locationsList && locationsList.length) {
+						this.set('selectedLocation', locationsList[0]);
+					}
+				});
+
+				this.observe('probesParsed', (probesParsed) => {
+					if (probesParsed === false) { return; }
+
+					let ispName = this.get('ispName');
+					let parsedLocations = this.get('parsedLocations');
+					let { name: ispFullName, asnList = [], locationsList = [] } = parsedLocations.networks[ispName] || {};
+
+					if (ispFullName) {
+						this.set('ispFullName', ispFullName);
+					} else {
+						window.location.replace('/404');
+
+						return;
+					}
+
+					this.set('asnList', asnList);
+					this.set('locationsList', locationsList);
+				});
+
+				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (realTimeTestResResponse.status === 'finished') {
+						clearInterval(this.get('testReqInterval'));
+						this.set('testInProgress', false);
+					}
+
+					let prevTestResults = this.get('testResults') || [];
+					let updTestResults = realTimeTestResResponse.results.filter((res) => {
+						// if it is no in-progress then it is already finished or failed
+						if (res.result.status !== 'in-progress') { return true; }
+
+						return false;
+					});
+
+					// filter out results that have already been drawn
+					let newTestResults = updTestResults.filter((updRes) => {
+						return !prevTestResults.some(prevRes => JSON.stringify(prevRes) === JSON.stringify(updRes));
+					});
+
+					this.set('testResults', [ ...prevTestResults, ...newTestResults ]);
+				}, { init: false });
+
+				// set measurementsMetadata for the c-gp-results-share component
+				this.observe('testReqParams', (testReqParams) => {
+					if (!testReqParams) { return; }
+
+					let measurementsMetadata = {
+						0: {
+							target: testReqParams.target,
+							measurementId: testReqParams.id,
+						},
+					};
+
+					this.set('measurementsMetadata', measurementsMetadata);
+				});
+
+				// get network domain name to get the icon
+				this.observe('asnList', (asnList) => {
+					if (asnList && asnList.length) {
+						this.set('networkDomainName', asnDomains[`AS${asnList[0]}`]);
+					}
+				});
+			}
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// run the test if user is pressed Enter inside of any of options inputs
+				let ipOrHostnameEl = this.find('#ipOrHostname');
+
+				this._boundHandleEnterBtn = this.handleEnterBtn.bind(this);
+
+				ipOrHostnameEl.addEventListener('keypress', this._boundHandleEnterBtn);
+			}
+		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				let ipOrHostnameEl = this.find('#ipOrHostname');
+
+				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
+					ipOrHostnameEl.removeEventListener('keypress', this._boundHandleEnterBtn);
+				}
+
+				clearInterval(this.get('testReqInterval'));
+			}
+		},
+		setLocation (newLocation) {
+			this.set('selectedLocation', newLocation);
+		},
+		setTestType (newTestType) {
+			this.set('selectedTestType', newTestType);
+		},
+		handleProbesResponse (isStored) {
+			return (response) => {
+				if (!isStored) {
+					sessionStorage.setItem('probesResponse', JSON.stringify(response));
+				} else {
+					response = JSON.parse(response);
+				}
+
+				this.set('parsedLocations', this.parseProbesResponse(response));
+				this.set('probesParsed', true);
+			};
+		},
+		getGlobalpingProbesData () {
+			// get probes from sessionStorage or fetch them
+			if (has.sessionStorage()) {
+				let probesResponse = sessionStorage.getItem('probesResponse');
+
+				if (probesResponse) {
+					this.handleProbesResponse(true)(probesResponse);
+				} else {
+					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+				}
+			} else {
+				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+			}
+		},
+		// TODO: 688, DRY, this is an improved version of parseProbesResponse
+		parseProbesResponse (data) {
+			return data.reduce((res, { location }) => {
+				let cityNameLC = location.city.toLowerCase();
+				let cityNameAsUrlPart = cityNameLC.split(' ').join('-');
+				let countryCodeLC = location.country.toLowerCase();
+				let countryName = countries.find(i => i.code.toLowerCase() === countryCodeLC)?.name;
+				let countryNameLC = countryName?.toLowerCase();
+				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
+				let asnName = `as${location.asn}`;
+				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
+				let continentCodeLC = location.continent.toLowerCase();
+				let continentName = continents.find(i => i.code.toLowerCase() === continentCodeLC)?.name;
+				let continentNameLC = continentName?.toLowerCase();
+				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
+				let regionNameLC = location.region.toLowerCase();
+				let regionNameAsUrlPart = regionNameLC.split(' ').join('-');
+				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
+				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
+				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
+
+				// collect uniques cities and count amount of probes per city
+				if (!Object.keys(res.cities).includes(cityNameAsUrlPart)) {
+					res.cities[cityNameAsUrlPart] = {
+						name: cityNameLC,
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+						probesCnt: 1,
+						fromAsUrlPart: countryNameAsUrlPart,
+					};
+				} else {
+					res.cities[cityNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques ASNs and count amount of probes per ASN
+				if (!Object.keys(res.asns).includes(asnName)) {
+					res.asns[asnName] = {
+						name: asnName,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.asns[asnName].probesCnt += 1;
+				}
+
+				// collect uniques Networks and count amount of probes per Network
+				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
+					res.networks[networkNameAsKey] = {
+						name: location.network,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+						asnList: [ location.asn ],
+						locationsList: [{ city: location.city, country: countryName }],
+					};
+				} else {
+					res.networks[networkNameAsKey].probesCnt += 1;
+
+					// collect all unique network's ASNs
+					if (!res.networks[networkNameAsKey].asnList.includes(location.asn)) {
+						res.networks[networkNameAsKey].asnList.push(location.asn);
+					}
+
+					// collect all unique network's locations (city, country)
+					if (!isArrContainsExactObj(res.networks[networkNameAsKey].locationsList, { city: location.city, country: countryName })) {
+						res.networks[networkNameAsKey].locationsList.push({ city: location.city, country: countryName });
+					}
+				}
+
+				// collect uniques Countries and count amount of probes per Country
+				if (!Object.keys(res.countries).includes(countryNameAsUrlPart)) {
+					res.countries[countryNameAsUrlPart] = {
+						name: countryNameLC,
+						from: continentNameLC,
+						probesCnt: 1,
+						fromAsUrlPart: continentNameAsUrlPart,
+					};
+				} else {
+					res.countries[countryNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Continents and count amount of probes per Continent
+				if (!Object.keys(res.continents).includes(continentNameAsUrlPart)) {
+					res.continents[continentNameAsUrlPart] = {
+						name: continentNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.continents[continentNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques Regions and count amount of probes per Region
+				if (!Object.keys(res.regions).includes(regionNameAsUrlPart)) {
+					res.regions[regionNameAsUrlPart] = {
+						name: regionNameLC,
+						from: 'world',
+						probesCnt: 1,
+						fromAsUrlPart: 'world',
+					};
+				} else {
+					res.regions[regionNameAsUrlPart].probesCnt += 1;
+				}
+
+				// collect uniques states (if they are present) and count amount of probes per state
+				if (stateNameAsUrlPart) {
+					if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
+						res.states[stateNameAsUrlPart] = {
+							name: stateNameLC,
+							from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+							probesCnt: 1,
+							fromAsUrlPart: countryNameAsUrlPart,
+						};
+					} else {
+						res.states[stateNameAsUrlPart].probesCnt += 1;
+					}
+				}
+
+				return res;
+			}, {
+				cities: {},
+				asns: {},
+				networks: {},
+				countries: {},
+				continents: {},
+				regions: {},
+				states: {},
+			});
+		},
+		setTitleAndDescr (ispFullName) {
+			this.set('title', `${ispFullName} - Globalping`);
+			this.set('description', `${ispFullName} - Globalping`);
+		},
+		getTempIspName (ispName) {
+			return _.capitalizeStrEveryFirstLetter(ispName.split('-').join(' '));
+		},
+		proceedToTest () {
+			let type = this.get('selectedTestType');
+			let testOpts = this.get('testOpts');
+			let { city, country } = this.get('selectedLocation');
+			let ispFullName = this.get('ispFullName');
+			let magic = `${city}+${country}+${ispFullName}`;
+			let reqParams = {
+				type,
+				...testOpts,
+				locations: [{ magic }],
+			};
+
+			// clear all data from the previous test, show spinner
+			this.set('testResults', null);
+			this.set('testInProgress', true);
+			this.set('testReqParams', null);
+
+			http.postGlobalpingMeasurement(reqParams).then((response) => {
+				this.getTestMeasurementById(response.id);
+			}).catch((err) => {
+				if (err.error.type === 'validation_error') {
+					this.set('testInProgress', false);
+
+					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+						let fieldName = key.split('.')[key.split('.').length - 1];
+						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+
+						res[key] = errMsg;
+
+						return res;
+					}, {});
+
+					this.set('inputErrors', inputErrors);
+				}
+			});
+		},
+		getTestMeasurementById (measurementId) {
+			let testReqInterval = setInterval(() => {
+				http.getGlobalpingMeasurement(measurementId).then((testRes) => {
+					// prepare and set request params to pass them to gp-test-results
+					let testReqParams = JSON.parse(JSON.stringify(testRes));
+
+					delete testReqParams.results;
+					delete testReqParams.status;
+					delete testReqParams.updatedAt;
+					delete testReqParams.createdAt;
+
+					testReqParams = {
+						inProgressUpdates: true,
+						limit: DEFAULT_LIMIT,
+						...testReqParams,
+						measurementOptions: {
+							trace: false,
+							...testReqParams.measurementOptions,
+						},
+					};
+
+					// set testReqParams to pass them to c-gp-results-raw-output
+					this.set('testReqParams', testReqParams);
+
+					// should be after the mainOptions.type was set
+					this.set('realTimeTestResResponse', testRes);
+				}).catch(() => {
+					clearInterval(testReqInterval);
+				});
+			}, 1000);
+
+			this.set('testReqInterval', testReqInterval);
+		},
+		prepareRegularResults (testResults) {
+			let dnsTraceEnabled = this.get('testReqParams.measurementOptions.trace');
+			let selectedTestType = this.get('selectedTestType');
+
+			return testResults.map((res) => {
+				let preparedRes = {
+					...res.probe,
+					statsPerTarget: [{
+						target: res.target,
+					}],
+				};
+
+				if (res.result.status !== 'in-progress') {
+					let { isFailed = false, lastTiming, value: avgTiming, extraValues } = _.calcGpTestResTiming(selectedTestType, res, dnsTraceEnabled);
+					let { packetsTotal } = _.parseGpRawOutputForTimings(res.result.rawOutput);
+					let minTiming = res.result?.stats?.min || PROBE_NO_TIMING_VALUE;
+					let maxTiming = res.result?.stats?.max || PROBE_NO_TIMING_VALUE;
+					let isOffline = res.result.status === PROBE_STATUS_OFFLINE;
+
+					preparedRes.statsPerTarget = [{
+						...preparedRes.statsPerTarget[0],
+						avgTiming,
+						isFailed,
+						isOffline,
+						extraValues,
+						rawOutput: res.result.rawOutput,
+						areTimingsReady: this.checkAreTimingsReady(lastTiming, maxTiming, minTiming, avgTiming, packetsTotal),
+					}];
+				}
+
+				return preparedRes;
+			});
+		},
+		checkAreTimingsReady (lastTiming, maxTiming, minTiming, avgTiming, packetsTotal) {
+			if (
+				!packetsTotal
+				|| typeof lastTiming === 'undefined'
+				|| typeof maxTiming === 'undefined'
+				|| typeof minTiming === 'undefined'
+				|| typeof avgTiming === 'undefined'
+			) {
+				return false;
+			}
+
+			return true;
+		},
+		fetchAndSetUserIP () {
+			fetch('https://cloudflare-dns.com/cdn-cgi/trace')
+				.then(res => res.text())
+				.then((text) => {
+					let data = Object.fromEntries(text.trim().split('\n').map(line => line.split('=')));
+
+					this.set('userIP', data.ip || null);
+				})
+				.catch((err) => {
+					console.error('Failed to fetch user\'s IP:', err);
+					this.set('userIP', null);
+				});
+		},
+		handleEnterBtn (event) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				this.proceedToTest();
+			}
+		},
+	};
+</script>
