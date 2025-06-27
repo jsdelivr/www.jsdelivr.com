@@ -225,6 +225,10 @@
 	const COUNTRIES = require('../../../assets/json/countries.json');
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
+	const CONTINENT_MAP = CONTINENTS.reduce((acc, continent) => {
+		acc[continent.code] = continent.name;
+		return acc;
+	}, {});
 	const COUNTRIES_MAP = COUNTRIES.reduce((acc, country) => {
 		acc[country.code] = country.name;
 		return acc;
@@ -541,9 +545,7 @@
 			return groups;
 		},
 		getContinentName (code) {
-			let cData = CONTINENTS.find(c => c.code === code);
-
-			return cData ? cData.name : null;
+			return CONTINENT_MAP[code] || code;
 		},
 		getCountryName (code) {
 			return COUNTRIES_MAP[code] || code;
