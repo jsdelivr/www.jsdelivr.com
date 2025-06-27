@@ -52,7 +52,8 @@
 						class="gp-network_map-wrapper_map"
 						iwClass="gp-network_iw"
 						probesByCoords="{{filteredMarkersData}}"
-						hasCluster="{{true}}" />
+						hasCluster="{{true}}"
+						onProbesByCoordsChange="{{@this.handleProbesByCoordsChange}}" />
 				</div>
 
 				<div class="gp-network_filters">
@@ -934,6 +935,12 @@
 					inline: 'nearest',
 				});
 			}
+		},
+		handleProbesByCoordsChange () {
+			let filtersSet = this.get('filtersSet');
+			let byContinentFilerRule = filtersSet ? filtersSet.find(fR => fR.type === FILTER_TYPE_BY_CONTINENT) : null;
+
+			return byContinentFilerRule;
 		},
 	};
 </script>
