@@ -1,9 +1,11 @@
+const Koa = require('koa');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
 const ogImage = require('../middleware/open-graph');
 
+const app = new Koa();
 const router = new KoaRouter();
 
 /**
