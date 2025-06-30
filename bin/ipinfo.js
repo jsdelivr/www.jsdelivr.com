@@ -5,7 +5,7 @@ const gunzip = require('gunzip-maybe');
 const parseCsv = require('csv-parse/lib/sync');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+const config = require('config');
 
 const ASN_COLUMN_NUM = 5;
 const DOMAIN_COLUMN_NUM = 7;
@@ -51,11 +51,13 @@ async function fetchAndSaveAsnDomainMap (url) {
 }
 
 async function main () {
-	if (!process.env.IP_INFO_TOKEN) {
+	const IP_INFO_TOKEN = config.get('globalping.server.ipInfoToken');
+
+	if (!IP_INFO_TOKEN) {
 		throw new Error('IP_INFO_TOKEN environment variable is required');
 	}
 
-	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${process.env.IP_INFO_TOKEN}`;
+	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${IP_INFO_TOKEN}`;
 	let csvFileName = 'ipinfo_lite.csv';
 
 	try {

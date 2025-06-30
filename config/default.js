@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const { version } = require('../package.json');
 const { version: assetsVersion } = require('../src/lib/assets');
 
@@ -47,7 +45,8 @@ module.exports = {
 				'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 			},
 			blogRewrite: {},
-			logoDevPublicKey: process.env.LOGO_DEV_PUBLIC_KEY,
+			logoDevPublicKey: null,
+			ipInfoToken: null,
 		},
 	},
 };
