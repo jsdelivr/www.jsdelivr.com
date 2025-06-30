@@ -135,14 +135,14 @@
 			</div>
 
 			{{#if testFailed}}
-				<div class="gp_map-block_demo-tools_fail-msg">
+				<div class="p-globalping-isp_network-tests_fail-msg">
 					<img width="56"
 						height="56"
 						alt="Fail icon"
 						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
 					<p>
-						All tests failed. Maybe you specified a non existing endpoint?
+						All tests failed.
 					</p>
 				</div>
 			{{elseif testResults}}
@@ -409,12 +409,14 @@
 			http.postGlobalpingMeasurement(reqParams).then((response) => {
 				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
-				if (err.error.type === 'validation_error') {
+				let errBody = err?.error;
+
+				if (errBody?.type === 'validation_error') {
 					this.set('testInProgress', false);
 
-					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
+					let inputErrors = Object.keys(errBody.params || {}).reduce((res, key) => {
 						let fieldName = key.split('.')[key.split('.').length - 1];
-						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
+						let errMsg = errBody.params[key].replace(/".*"/, fieldName);
 
 						res[key] = errMsg;
 
