@@ -254,6 +254,8 @@
 				});
 
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
+					if (!realTimeTestResResponse) { return; }
+
 					if (realTimeTestResResponse.status === 'finished') {
 						clearInterval(this.get('testReqInterval'));
 						this.set('testInProgress', false);
