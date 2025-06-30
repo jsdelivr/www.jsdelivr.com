@@ -357,7 +357,7 @@
 		},
 		parseProbesResponse (data) {
 			return data.reduce((res, { location }) => {
-				let countryName = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase())?.name;
+				let countryName = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase())?.name || location.country;
 				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
 
 				// collect uniques Networks and count amount of probes per Network
