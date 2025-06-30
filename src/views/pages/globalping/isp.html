@@ -360,24 +360,24 @@
 				let countryCodeLC = location.country.toLowerCase();
 				let countryName = countries.find(i => i.code.toLowerCase() === countryCodeLC)?.name;
 				let countryNameLC = countryName?.toLowerCase();
-				let countryNameAsUrlPart = countryNameLC.split(' ').join('-');
+				let countryNameAsUrlPart = countryNameLC?.split(' ')?.join('-');
 				let asnName = `as${location.asn}`;
 				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
 				let continentCodeLC = location.continent.toLowerCase();
 				let continentName = continents.find(i => i.code.toLowerCase() === continentCodeLC)?.name;
 				let continentNameLC = continentName?.toLowerCase();
-				let continentNameAsUrlPart = continentNameLC.split(' ').join('-');
+				let continentNameAsUrlPart = continentNameLC?.split(' ')?.join('-');
 				let regionNameLC = location.region.toLowerCase();
 				let regionNameAsUrlPart = regionNameLC.split(' ').join('-');
 				let stateCodeLC = location.state ? location.state.toLowerCase() : null;
-				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC).name.toLowerCase() : null;
+				let stateNameLC = stateCodeLC ? usaStates.find(i => i.code.toLowerCase() === stateCodeLC)?.name?.toLowerCase() : null;
 				let stateNameAsUrlPart = stateNameLC ? stateNameLC.split(' ').join('-') : null;
 
 				// collect uniques cities and count amount of probes per city
 				if (!Object.keys(res.cities).includes(cityNameAsUrlPart)) {
 					res.cities[cityNameAsUrlPart] = {
 						name: cityNameLC,
-						from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+						from: countries.find(i => i.code.toLowerCase() === countryCodeLC)?.name?.toLowerCase(),
 						probesCnt: 1,
 						fromAsUrlPart: countryNameAsUrlPart,
 					};
@@ -462,7 +462,7 @@
 					if (!Object.keys(res.states).includes(stateNameAsUrlPart)) {
 						res.states[stateNameAsUrlPart] = {
 							name: stateNameLC,
-							from: countries.find(i => i.code.toLowerCase() === countryCodeLC).name.toLowerCase(),
+							from: countries.find(i => i.code.toLowerCase() === countryCodeLC)?.name?.toLowerCase(),
 							probesCnt: 1,
 							fromAsUrlPart: countryNameAsUrlPart,
 						};
