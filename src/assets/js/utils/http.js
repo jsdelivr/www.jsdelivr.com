@@ -316,3 +316,7 @@ module.exports.gpLogOut = () => {
 		rawResponse: true,
 	});
 };
+
+module.exports.getDomainFromASN = (asn) => {
+	return _.makeHTTPRequest({ url: `/asnToDomain/${asn}` });
+};

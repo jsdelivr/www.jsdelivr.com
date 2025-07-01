@@ -1,8 +1,17 @@
+const fs = require('node:fs');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
 const ogImage = require('../middleware/open-graph');
+
+let asnDomains = null;
+
+try {
+	asnDomains = JSON.parse(fs.readFileSync(__dirname + '/../assets/json/asn-domain.json', 'utf8'));
+} catch (e) {
+	console.error('ASN to domain name data not downloaded.');
+}
 
 const router = new KoaRouter();
 
@@ -166,6 +175,34 @@ koaElasticUtils.addRoutes(router, [
 		ctx.status = 301;
 		return ctx.redirect('/');
 	}
+});
+
+/**
+ * Translate ASN to domain name (AS prefix expected)
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/asnToDomain/:asn?' ],
+], async (ctx) => {
+	let { asn = '' } = ctx.params;
+
+	if (!asn) {
+		ctx.status = 400;
+		return;
+	}
+
+	if (!asnDomains) {
+		ctx.status = 503;
+		return;
+	}
+
+	let domain = asnDomains[asn];
+
+	if (!domain) {
+		ctx.status = 404;
+		return;
+	}
+
+	ctx.body = { domain };
 });
 
 module.exports = router;
