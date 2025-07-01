@@ -150,7 +150,7 @@ koaElasticUtils.addRoutes(router, [
  * ISP pages
  */
 koaElasticUtils.addRoutes(router, [
-	[ 'isp', '/isp/:ispName?' ],
+	[ '/isp/:ispName' ],
 ], async (ctx) => {
 	let { ispName = '' } = ctx.params;
 
@@ -184,7 +184,7 @@ koaElasticUtils.addRoutes(router, [
  * Translate ASN to domain name (AS prefix expected)
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/asn-to-domain/:asn?' ],
+	[ '/asn-to-domain/:asn' ],
 ], async (ctx) => {
 	let { asn = '' } = ctx.params;
 
