@@ -47,6 +47,10 @@ module.exports.getUsers = () => {
 	return probesPromise.then(response => response.users);
 };
 
+module.exports.getISPs = () => {
+	return probesPromise.then(response => response.isps);
+};
+
 function updateProbesData () {
 	return got('https://api.globalping.io/v1/probes').json().then((body) => {
 		setTimeout(updateProbesData, 60 * 1000);

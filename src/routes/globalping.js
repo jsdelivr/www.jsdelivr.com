@@ -154,18 +154,21 @@ koaElasticUtils.addRoutes(router, [
 ], async (ctx) => {
 	let { ispName = '' } = ctx.params;
 
-	if (!ispName) {
+	let isps = await globalpingSitemap.getISPs();
+	let isp = isps.find(isp => isp.toLowerCase() === ispName.toLowerCase());
+
+	if (!isp) {
 		ctx.status = 404;
 		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
 		return;
 	}
 
 	let data = {
-		ispName,
+		isp,
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/globalping/isp.html', data);
+		ctx.body = await ctx.render('pages/globalping/_isp.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (ctx.app.env === 'development') {
@@ -181,7 +184,7 @@ koaElasticUtils.addRoutes(router, [
  * Translate ASN to domain name (AS prefix expected)
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/asnToDomain/:asn?' ],
+	[ '/asn-to-domain/:asn?' ],
 ], async (ctx) => {
 	let { asn = '' } = ctx.params;
 

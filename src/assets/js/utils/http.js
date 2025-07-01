@@ -318,5 +318,5 @@ module.exports.gpLogOut = () => {
 };
 
 module.exports.getDomainFromASN = (asn) => {
-	return _.makeHTTPRequest({ url: `/asnToDomain/${asn}` });
+	return _.makeHTTPRequest({ url: `/asn-to-domain/${asn}` });
 };
