@@ -54,7 +54,8 @@ async function main () {
 	let IP_INFO_TOKEN = config.get('globalping.server.ipInfoToken');
 
 	if (!IP_INFO_TOKEN) {
-		throw new Error('IP_INFO_TOKEN environment variable is required');
+		console.error('IP_INFO_TOKEN environment variable is required');
+		return 0;
 	}
 
 	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${IP_INFO_TOKEN}`;
