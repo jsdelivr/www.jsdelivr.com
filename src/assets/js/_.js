@@ -1466,8 +1466,8 @@ module.exports = {
 	parseGpRawOutputForTimings (raw) {
 		let packets = [];
 		let timeMatch, noAnswerMatch;
-		let timeRegex = /icmp_seq=(\d+).*time=(\d+(\.\d+)?)/;
-		let noAnswerRegex = /no answer yet for icmp_seq=(\d+)/;
+		let timeRegex = /(?:icmp_seq|tcp_conn)=(\d+).*time=(\d+(\.\d+)?)/;
+		let noAnswerRegex = /no answer yet for (?:icmp_seq|tcp_conn)=(\d+)/;
 		let lines = raw.split('\n').filter(l => l);
 
 		for (let i = 0; i < lines.length; i++) {
