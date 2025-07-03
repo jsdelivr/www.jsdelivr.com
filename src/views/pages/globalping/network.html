@@ -68,7 +68,8 @@
 								classList="gp_map-block_settings-wrapper_settings_location gp_input"
 								ttPos="{{ttPositions.locationTtPos}}"
 								exposeProbes="{{true}}"
-								results="{{locationProbes}}">
+								results="{{locationProbes}}"
+								completedValue="{{locationCompletedValue}}">
 								{{#partial labelIcon}}
 									<img as-tooltip="[ 'This magic field supports names of continents, regions, countries, US states, cities, networks, and our custom tags.', '', 'Use + to combine multiple filters.', 'Use , to select multiple locations.' ], ttPos, undefined, undefined, 'multiline'"
 										width="14"
@@ -244,6 +245,7 @@
 				description: 'Explore the global network map of Globalping probes.',
 				location: '',
 				locationError: '',
+				locationCompletedValue: '',
 				availableFilters: [
 					{
 						name: 'Europe',
@@ -347,10 +349,11 @@
 		computed: {
 			filter: {
 				get () {
-					return (this.get('location') || '').replace(/\+/g, '\\+');
+					return (this.get('locationCompletedValue') || '').replace(/\+/g, '\\+');
 				},
 				set (location) {
 					this.set('location', location.replace(/\\+/g, '+'));
+					this.set('locationCompletedValue', location.replace(/\\+/g, '+'));
 				},
 			},
 		},
