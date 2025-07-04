@@ -1559,4 +1559,58 @@ module.exports = {
 
 		return count === 1 ? singular : plural;
 	},
+
+	createMeasCreditsErrMsg (responseHeaders, hasToken = false, isInfinite = false, hasResults = false) {
+		// do not show err msg if while infinite meas we've got the 429's err and we already have results
+		if (hasResults && isInfinite) {
+			return null;
+		}
+
+		let minutes = responseHeaders['x-ratelimit-reset'] / 60;
+		let timeToReset = minutes < 1 ? '< 1 minute' : `${Math.ceil(minutes)} minutes`;
+		let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
+		let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
+
+		if (isInfinite === false && remainingCredits) {
+			let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
+
+			msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
+
+			if (hasToken) {
+				msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
+			} else {
+				msg += '<span>You can get higher limits by creating an account. <a href="https://dash.globalping.io">Sign up</a><span>';
+			}
+
+			return msg;
+		} else if ((isInfinite && !hasResults) || !remainingCredits) {
+			let msg = `<span>You have run out of credits for this session.</span>`;
+
+			msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
+
+			if (hasToken) {
+				msg += ` sponsoring us or hosting probes.</span>`;
+			} else {
+				msg += ` creating an account. <a href='https://dash.globalping.io'>Sign up</a></span>`;
+			}
+
+			return msg;
+		}
+
+		return 'All tests failed. Maybe you specified a non-existing endpoint?';
+	},
+
+	parseValidationErrors (errorBody) {
+		return Object.keys(errorBody.params || {}).reduce((res, key) => {
+			let fieldName = key.split('.')[key.split('.').length - 1];
+
+			if ([ 'locations', 'magic' ].includes(fieldName)) {
+				fieldName = 'location';
+			}
+
+			res[key] = errorBody.params[key].replace(/".*"/, fieldName);
+
+			return res;
+		}, {});
+	},
 };

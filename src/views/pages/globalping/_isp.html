@@ -44,11 +44,11 @@
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
-							{{#if selectedLocation}}
-								<span>{{~/selectedLocation.city}}, {{~/selectedLocation.country}}</span>
-							{{else}}
-								<span></span>
-							{{/if}}
+							<span>
+								{{#if selectedLocation}}
+									{{~/selectedLocation.city}}, {{~/selectedLocation.country}}
+								{{/if}}
+							</span>
 							<i class="fa fa-angle-down" aria-hidden="true"></i>
 						</button>
 
@@ -134,10 +134,7 @@
 				</button>
 			</div>
 
-			<!-- TODO: 688, Do we need this Error message element at all or are validation errors sufficient?
-			If we keep it, when exactly should it be shown?
-			I assume this is for server errors (e.g. 500), since validation errors cover user input issues -->
-			{{#if testFailed}}
+			{{#if errorMessage}}
 				<div class="p-globalping-isp_network-tests_fail-msg">
 					<img width="56"
 						height="56"
@@ -145,7 +142,7 @@
 						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
 					<p>
-						All tests failed.
+						{{{errorMessage}}}
 					</p>
 				</div>
 			{{elseif testResults}}
@@ -179,6 +176,12 @@
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
 	};
+	const RATE_LIMIT_HEADERS = [
+		'x-ratelimit-remaining',
+		'x-ratelimit-reset',
+		'x-credits-remaining',
+		'x-request-cost',
+	];
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
@@ -208,6 +211,7 @@
 					limit: DEFAULT_LIMIT,
 				},
 				inputErrors: {},
+				errorMessage: null,
 			};
 		},
 		onconfig () {
@@ -311,10 +315,11 @@
 			if (!Ractive.isServer) {
 				// run the test if user is pressed Enter inside of any of options inputs
 				let ipOrHostnameEl = this.find('#ipOrHostname');
-
 				this._boundHandleEnterBtn = this.handleEnterBtn.bind(this);
 
-				ipOrHostnameEl.addEventListener('keydown', this._boundHandleEnterBtn);
+				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
+					ipOrHostnameEl.addEventListener('keydown', this._boundHandleEnterBtn);
+				}
 			}
 		},
 		onteardown () {
@@ -353,12 +358,11 @@
 
 				if (probesResponse) {
 					this.handleProbesResponse(true)(probesResponse);
-				} else {
-					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
+					return;
 				}
-			} else {
-				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 			}
+
+			http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
 		},
 		parseProbesResponse (data) {
 			return data.reduce((res, { location }) => {
@@ -413,25 +417,26 @@
 			this.set('testResults', null);
 			this.set('testInProgress', true);
 			this.set('testReqParams', null);
+			this.set('errorMessage', null);
 
-			http.postGlobalpingMeasurement(reqParams).then((response) => {
+			http.postGlobalpingMeasurement(reqParams, RATE_LIMIT_HEADERS).then((response) => {
 				this.getTestMeasurementById(response.id);
 			}).catch((err) => {
 				let errBody = err?.error;
+				this.set('testInProgress', false);
 
 				if (errBody?.type === 'validation_error') {
-					this.set('testInProgress', false);
-
-					let inputErrors = Object.keys(errBody.params || {}).reduce((res, key) => {
-						let fieldName = key.split('.')[key.split('.').length - 1];
-						let errMsg = errBody.params[key].replace(/".*"/, fieldName);
-
-						res[key] = errMsg;
-
-						return res;
-					}, {});
-
+					let inputErrors = _.parseValidationErrors(errBody);
 					this.set('inputErrors', inputErrors);
+				} else if (err.responseStatusCode === 429) {
+					let measurementErrMsg = _.createMeasCreditsErrMsg(
+						err.responseHeaders,
+						this.get('@shared.user'),
+					);
+
+					this.set('errorMessage', measurementErrMsg);
+				} else {
+					this.set('errorMessage', err.error?.message ?? 'An unexpected error occurred.');
 				}
 			});
 		},
