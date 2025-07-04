@@ -189,7 +189,7 @@
 										height="20"
 										src="{{@shared.assetsHost}}/img/globalping/settings-icon.svg">
 
-									{{#if infiniteSwitchEnabled === false && modifiedMeasOptsCnt && showMeasurementOpts === false}}
+									{{#if modifiedMeasOptsCnt && showMeasurementOpts === false}}
 										<div class="additional-opts-total">
 											{{modifiedMeasOptsCnt}}
 										</div>
@@ -199,6 +199,36 @@
 								<div class="gp_map-block_settings-wrapper_settings_subgroup_options-block_specific-set">
 									{{#if mainOptions.type === 'ping'}}
 										<div class="typePing">
+											<div class="pair">
+												<c-controlled-input
+													value="{{notAppliedOpts.port}}"
+													error="{{inputErrors.port}}"
+													placeholder="80"
+													labelText="Port"
+													classList="port-input gp_input">
+												</c-controlled-input>
+
+												<div class="gp_dropdown_reg">
+													<span>Protocol</span>
+
+													<div class="btn-group">
+														<button type="button"
+																class="dropdown-toggle"
+																data-toggle="dropdown"
+																aria-haspopup="true"
+																aria-expanded="false">
+															<span>{{~/pingOpts.protocol}}</span>
+															<i class="fa fa-angle-down" aria-hidden="true"></i>
+														</button>
+
+														<div class="dropdown-menu">
+															<div on-click="@this.set('pingOpts.protocol', 'TCP')">TCP</div>
+															<div on-click="@this.set('pingOpts.protocol', 'ICMP')">ICMP</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
 											<c-controlled-input
 												value="{{notAppliedOpts.packets}}"
 												error="{{inputErrors.packets}}"
@@ -1265,8 +1295,12 @@
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
-	const CLIENT_DEFAULT_PING_OPTS = {};
-	const API_DEFAULT_PING_OPTS = {};
+	const CLIENT_DEFAULT_PING_OPTS = {
+		protocol: 'ICMP',
+	};
+	const API_DEFAULT_PING_OPTS = {
+		protocol: 'ICMP',
+	};
 	const CLIENT_DEFAULT_TRACEROUTE_OPTS = {
 		protocol: 'ICMP',
 	};
@@ -1457,7 +1491,7 @@
 				totalProbes: 0,
 				totalCities: 0,
 				totalCountries: 0,
-				pingOpts: CLIENT_DEFAULT_PING_OPTS,
+				pingOpts: JSON.parse(JSON.stringify(CLIENT_DEFAULT_PING_OPTS)), // deep copy is needed here, as default values for other options are deep-copied elsewhere
 				tracerouteOpts: CLIENT_DEFAULT_TRACEROUTE_OPTS,
 				dnsOpts: CLIENT_DEFAULT_DNS_OPTS,
 				mtrOpts: CLIENT_DEFAULT_MTR_OPTS,
@@ -2524,7 +2558,7 @@
 
 			switch (name.toLowerCase()) {
 				case 'ping':
-					res = CLIENT_DEFAULT_PING_OPTS; break;
+					res = this.get('infiniteSwitchEnabled') ? { ...CLIENT_DEFAULT_PING_OPTS, packets: INFINITE_MEASUREMENT_PACKETS } : CLIENT_DEFAULT_PING_OPTS; break;
 				case 'traceroute':
 					res = CLIENT_DEFAULT_TRACEROUTE_OPTS; break;
 				case 'dns':
@@ -2592,9 +2626,11 @@
 					}
 
 					return cnt + Object.keys(notPresetOpts[key]).length;
+				} else if (defaultOpts[key] !== notPresetOpts[key]) {
+					return ++cnt;
 				}
 
-				return ++cnt;
+				return cnt;
 			}, 0);
 
 			Object.keys(defaultOpts).forEach((key) => {
@@ -2604,7 +2640,7 @@
 							modifiedMeasOptsCnt++;
 						}
 					});
-				} else if (defaultOpts[key] !== initPresetOpts[key]) {
+				} else if (defaultOpts[key] !== initPresetOpts[key] && defaultOpts[key] !== notPresetOpts[key]) {
 					modifiedMeasOptsCnt++;
 				}
 			});
@@ -3342,10 +3378,13 @@
 
 				if (lines[i].includes('---')) { break; }
 
-				let match = lines[i].match(/icmp_seq=(\d+)/);
-				lastLineIdx = idxShift + Number(match[1]);
-				let substitute = `icmp_seq=${lastLineIdx}`;
-				let numberedLine = lines[i].replace(/icmp_seq=\d+/, substitute);
+				let subRegex = /(icmp_seq|tcp_conn)=(\d+)/;
+				let match = lines[i].match(subRegex);
+				let proto = match[1];
+				let originalIdx = Number(match[2]);
+				lastLineIdx = idxShift + originalIdx;
+				let substitute = `${proto}=${lastLineIdx}`;
+				let numberedLine = lines[i].replace(subRegex, substitute);
 
 				packetLines.push(numberedLine);
 			}
