@@ -2927,7 +2927,7 @@
 					this.set('showMap', false);
 				}
 			} else if (err.error.type === 'validation_error') {
-				let measurementOptsErr = Object.keys(err.error.params).some(key => key.split('.')[0] === 'measurementOptions');
+				let measurementOptsErr = Object.keys(err.error.params || {}).some(key => key.split('.')[0] === 'measurementOptions');
 				let inputErrors = _.parseValidationErrors(err.error);
 
 				this.set('inputErrors', inputErrors);
