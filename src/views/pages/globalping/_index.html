@@ -1429,7 +1429,6 @@
 		traceroute: [ 'TCP' ],
 		mtr: [ 'TCP', 'UDP' ],
 	};
-	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
 	const getMarkerSize = (probeCount, zoom) => {
 		let size = {
 			svgWidth: 16,
@@ -2939,10 +2938,11 @@
 			this.set('rateCreditsData', err.responseHeaders);
 
 			if (err.responseStatusCode === 429) {
-				let measurementErrMsg = this.createMeasCreditsErrMsg(
+				let measurementErrMsg = _.createMeasCreditsErrMsg(
 					err.responseHeaders,
+					this.get('@shared.user'),
 					isInfiniteModeRes,
-					testResults,
+					!!testResults,
 				);
 
 				this.set('measurementErrMsg', measurementErrMsg);
@@ -2954,24 +2954,8 @@
 					this.set('showMap', false);
 				}
 			} else if (err.error.type === 'validation_error') {
-				let measurementOptsErr = false;
-				let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-					let splittedKeyName = key.split('.');
-					let splittedKeyNameLength = splittedKeyName.length;
-					let fieldName = splittedKeyName[splittedKeyNameLength - 1];
-
-					if ([ 'locations', 'magic' ].includes(fieldName)) {
-						fieldName = 'location';
-					}
-
-					res[fieldName] = err.error.params[key].replace(/".*"/, fieldName);
-
-					if (splittedKeyName[0] === 'measurementOptions') {
-						measurementOptsErr = true;
-					}
-
-					return res;
-				}, {});
+				let measurementOptsErr = Object.keys(err.error.params || {}).some(key => key.split('.')[0] === 'measurementOptions');
+				let inputErrors = _.parseValidationErrors(err.error);
 
 				this.set('inputErrors', inputErrors);
 
@@ -3476,52 +3460,6 @@ rtt min/avg/max/mdev = ${minTiming}/${avgTiming}/${maxTiming}/${mdev}${showRttUn
 			let mdev = Math.sqrt(rttsSquaredSum / rttsNumber - Math.pow(rttsSum / rttsNumber, 2));
 
 			return Math.round(mdev * 1000) / 1000;
-		},
-		createResetInStr (seconds) {
-			let minutes = seconds / 60;
-
-			if (minutes < 1) {
-				return '< 1 minute';
-			}
-
-			return `${Math.ceil(minutes)} minutes`;
-		},
-		createMeasCreditsErrMsg (responseHeaders, isInfinite, testResults) {
-			// do not show err msg if while infinite meas we've got the 429's err and we already have results
-			if (testResults && isInfinite) { return null; }
-
-			let hasToken = this.get('@shared.user');
-			let timeToReset = this.createResetInStr(responseHeaders['x-ratelimit-reset']);
-			let remainingCredits = Number(responseHeaders['x-ratelimit-remaining'] || 0) + Number(responseHeaders['x-credits-remaining'] || 0);
-			let requiredCredits = Number(responseHeaders['x-request-cost'] || 0);
-
-			if (isInfinite === false && remainingCredits) {
-				let msg = `<span>You only have ${remainingCredits} credits remaining, and ${requiredCredits} were required.</span>`;
-
-				msg += `<span>Try requesting fewer probes or wait ${timeToReset} for the limit to reset.</span>`;
-
-				if (hasToken) {
-					msg += '<span>You can get higher limits by sponsoring us or hosting probes</span>';
-				} else {
-					msg += '<span>You can get higher limits by creating an account. <a href="https://dash.globalping.io">Sign up</a><span>';
-				}
-
-				return msg;
-			} else if ((isInfinite && !testResults) || !remainingCredits) {
-				let msg = `<span>You have run out of credits for this session.</span>`;
-
-				msg += `<span>You can wait ${timeToReset} for the limit to reset or get higher limits by`;
-
-				if (hasToken) {
-					msg += ` sponsoring us or hosting probes.</span>`;
-				} else {
-					msg += ` creating an account. <a href='https://dash.globalping.io'>Sign up</a></span>`;
-				}
-
-				return msg;
-			}
-
-			return DEFAULT_MEASUREMENT_ERR_MSG;
 		},
 		groupProbes (probes) {
 			// group probes by Continents and Coordinates
