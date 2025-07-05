@@ -45,8 +45,8 @@ module.exports = {
 				'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 			},
 			blogRewrite: {},
-			logoDevPublicKey: null,
 		},
-		ipInfoToken: null,
+		ipInfoToken: '',
+		logoDevPublicToken: '',
 	},
 };
