@@ -46,7 +46,7 @@ module.exports = {
 			},
 			blogRewrite: {},
 			logoDevPublicKey: null,
-			ipInfoToken: null,
 		},
+		ipInfoToken: null,
 	},
 };

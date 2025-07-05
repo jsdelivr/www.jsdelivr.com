@@ -44,7 +44,7 @@ async function fetchAndSaveAsnDomainMap (url) {
 }
 
 async function main () {
-	let IP_INFO_TOKEN = config.get('globalping.server.ipInfoToken');
+	let IP_INFO_TOKEN = config.get('globalping.ipInfoToken');
 
 	if (!IP_INFO_TOKEN) {
 		console.error('IP_INFO_TOKEN environment variable is required');
