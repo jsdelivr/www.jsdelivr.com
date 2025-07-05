@@ -168,6 +168,7 @@
 	const _ = require('../../../assets/js/_');
 	const http = require('../../../assets/js/utils/http');
 	const has = require('../../../assets/js/utils/has');
+	const listeners = require('../../../assets/js/utils/listeners');
 	const isArrContainsExactObj = require('../../../assets/js/utils/check-if-array-contains-exact-object');
 	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const countries = require('../../../assets/json/countries.json');
@@ -315,15 +316,7 @@
 			if (!Ractive.isServer) {
 				// run the test if user is pressed Enter inside of any of options inputs
 				let ipOrHostnameEl = this.find('#ipOrHostname');
-				this._boundHandleEnterBtn = this.handleEnterBtn.bind(this);
-
-				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
-					ipOrHostnameEl.addEventListener('keydown', this._boundHandleEnterBtn);
-
-					this.on('unrender', () => {
-						ipOrHostnameEl.removeEventListener('keydown', this._boundHandleEnterBtn);
-					});
-				}
+				listeners.addManagedListener(this, ipOrHostnameEl, 'keydown', this.handleEnterBtn.bind(this));
 			}
 		},
 		onunrender () {

@@ -20,6 +20,7 @@
 </div>
 
 <script>
+	const listeners = require('../../assets/js/utils/listeners');
 	const ITEMS_TO_SHOW_LIMIT = 4;
 
 	component.exports = {
@@ -35,6 +36,8 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				listeners.addManagedListener(this, window, 'resize', this._boundResizeHandler);
+
 				let wrapperEl = this.find('#showMoreListWrapperEl');
 
 				this.observe('expanded', (expanded) => {
@@ -68,18 +71,6 @@
 						});
 					}
 				});
-			}
-		},
-		oncomplete () {
-			if (!Ractive.isServer) {
-				this._boundResizeHandler = this.handleResize.bind(this);
-
-				window.addEventListener('resize', this._boundResizeHandler);
-			}
-		},
-		onteardown () {
-			if (!Ractive.isServer) {
-				window.removeEventListener('resize', this._boundResizeHandler);
 			}
 		},
 		handleResize () {
