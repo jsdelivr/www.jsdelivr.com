@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const got = require('got');
-const gunzip = require('gunzip-maybe');
+const zlib = require('zlib');
 const parseCsv = require('csv-parse/lib/sync');
 const fs = require('fs');
 const path = require('path');
@@ -11,16 +11,9 @@ const ASN_COLUMN_NUM = 5;
 const DOMAIN_COLUMN_NUM = 7;
 
 async function fetchAndSaveAsnDomainMap (url) {
-	let chunks = [];
-	await new Promise((resolve, reject) => {
-		got.stream(url)
-			.pipe(gunzip())
-			.on('data', chunk => chunks.push(chunk))
-			.on('end', resolve)
-			.on('error', reject);
-	});
+	let compressedBuffer = await got(url).buffer();
+	let csvText = zlib.gunzipSync(compressedBuffer).toString();
 
-	let csvText = Buffer.concat(chunks).toString();
 	let records = parseCsv(csvText, {
 		skip_empty_lines: true,
 	});
