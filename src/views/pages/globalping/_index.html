@@ -1424,6 +1424,11 @@
 		'x-credits-remaining',
 		'x-request-cost',
 	];
+	const PORT_SUPPORTED_BY_TYPE = {
+		ping: [ 'TCP' ],
+		traceroute: [ 'TCP' ],
+		mtr: [ 'TCP', 'UDP' ],
+	};
 	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
 	const getMarkerSize = (probeCount, zoom) => {
 		let size = {
@@ -1539,7 +1544,11 @@
 				let type = this.get('mainOptions.type').toLowerCase();
 				let opts = this.get(`${type}Opts`);
 
-				let supportedProtocols = type === 'mtr' ? [ 'TCP', 'UDP' ] : [ 'TCP' ];
+				let supportedProtocols = PORT_SUPPORTED_BY_TYPE[type];
+
+				if (!supportedProtocols) {
+					return false;
+				}
 
 				return !supportedProtocols.includes(opts?.protocol ?? '');
 			},
