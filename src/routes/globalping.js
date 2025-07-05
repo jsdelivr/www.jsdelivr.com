@@ -147,28 +147,28 @@ koaElasticUtils.addRoutes(router, [
 });
 
 /**
- * ISP pages
+ * Network pages
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/isp/:ispName' ],
+	[ '/networks/:name' ],
 ], async (ctx) => {
-	let { ispName = '' } = ctx.params;
+	let { name = '' } = ctx.params;
 
-	let isps = await globalpingSitemap.getISPs();
-	let isp = isps.find(isp => isp.toLowerCase() === ispName.toLowerCase());
+	let networks = await globalpingSitemap.getNetworks();
+	let networkName = networks.find(network => network.toLowerCase() === name.toLowerCase());
 
-	if (!isp) {
+	if (!networkName) {
 		ctx.status = 404;
 		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
 		return;
 	}
 
 	let data = {
-		isp,
+		networkName,
 	};
 
 	try {
-		ctx.body = await ctx.render('pages/globalping/_isp.html', data);
+		ctx.body = await ctx.render('pages/globalping/_networks.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
 		if (ctx.app.env === 'development') {

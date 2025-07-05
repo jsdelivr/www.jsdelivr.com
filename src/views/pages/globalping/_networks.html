@@ -11,15 +11,15 @@
 
 	<c-gp-header additionalClasses="header-with-globalping-bg"></c-gp-header>
 
-	<div class="p-globalping-isp">
-		<div class="p-globalping-isp_head">
-			<h1 class="p-globalping-isp_head_title">Looking Glass - {{ispFullName}}</h1>
+	<div class="p-globalping-networks">
+		<div class="p-globalping-networks_head">
+			<h1 class="p-globalping-networks_head_title">Looking Glass - {{networkFullName}}</h1>
 
-			<c-show-more-list list="{{asnList}}" limit="4" prefix="AS" addClass="p-globalping-isp_head_asn-list"/>
+			<c-show-more-list list="{{asnList}}" limit="4" prefix="AS" addClass="p-globalping-networks_head_asn-list"/>
 		</div>
 
-		<div class="p-globalping-isp_network">
-			<div class="p-globalping-isp_network_head">
+		<div class="p-globalping-networks_network">
+			<div class="p-globalping-networks_network_head">
 				<span>Network</span>
 
 				{{#if networkDomainName && @shared.logoDevPublicKey}}
@@ -27,15 +27,15 @@
 						height="32"
 						src="https://img.logo.dev/{{networkDomainName}}?token={{@shared.logoDevPublicKey}}&format=png"
 						loading="lazy"
-						alt="{{ispFullName}} logo"
-						as-tooltip="`${ispFullName}`">
+						alt="{{networkFullName}} logo"
+						as-tooltip="`${networkFullName}`">
 					{{else}}
-						<div class="p-globalping-isp_network_head_img"/>
+						<div class="p-globalping-networks_network_head_img"/>
 					{{/if}}
 			</div>
 
-			<div class="p-globalping-isp_network_body">
-				<div class="gp_dropdown_reg p-globalping-isp_network_body_select">
+			<div class="p-globalping-networks_network_body">
+				<div class="gp_dropdown_reg p-globalping-networks_network_body_select">
 					<span>Location</span>
 
 					<div class="btn-group">
@@ -67,12 +67,12 @@
 					error=""
 					placeholder="Your IP"
 					labelText="Your IP"
-					classList="p-globalping-isp_network_body_input gp_input"
+					classList="p-globalping-networks_network_body_input gp_input"
 					locked="true">
 					{{#partial copyBtn}}
 						{{#if userIP}}
 							<button
-								class="p-globalping-isp_network_body_input_copy-btn"
+								class="p-globalping-networks_network_body_input_copy-btn"
 								as-clipboard
 								data-clipboard-text="{{userIP}}">
 								Copy
@@ -83,22 +83,22 @@
 			</div>
 		</div>
 
-		<div class="p-globalping-isp_network-tests">
-			<div class="p-globalping-isp_network_head">
+		<div class="p-globalping-networks_network-tests">
+			<div class="p-globalping-networks_network_head">
 				<span>Network tests</span>
 			</div>
 
-			<div class="p-globalping-isp_network-tests_body">
+			<div class="p-globalping-networks_network-tests_body">
 				<c-controlled-input
 					id="ipOrHostname"
 					value="{{testOpts.target}}"
 					error="{{inputErrors.target}}"
 					placeholder="IP or Hostname"
 					labelText="IP or Hostname"
-					classList="p-globalping-isp_network-tests_body_input gp_input">
+					classList="p-globalping-networks_network-tests_body_input gp_input">
 				</c-controlled-input>
 
-				<div class="gp_dropdown_reg p-globalping-isp_network-tests_body_select">
+				<div class="gp_dropdown_reg p-globalping-networks_network-tests_body_select">
 					<span>Method</span>
 
 					<div class="btn-group">
@@ -121,7 +121,7 @@
 
 				<button type="button"
 					on-click="@this.proceedToTest()"
-					class=" p-globalping-isp_network-tests_body_btn-test gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
+					class=" p-globalping-networks_network-tests_body_btn-test gp_btn_green {{#if testInProgress}}gp_btn_green_disabled gp_btn_green_loading{{/if}}"
 					disabled="{{testInProgress || !selectedLocation}}">
 					{{#if testInProgress}}
 						<div></div>
@@ -135,7 +135,7 @@
 			</div>
 
 			{{#if errorMessage}}
-				<div class="p-globalping-isp_network-tests_fail-msg">
+				<div class="p-globalping-networks_network-tests_fail-msg">
 					<img width="56"
 						height="56"
 						alt="Fail icon"
@@ -146,15 +146,15 @@
 					</p>
 				</div>
 			{{elseif testResults}}
-				<div class="p-globalping-isp_network-tests_results">
+				<div class="p-globalping-networks_network-tests_results">
 					<pre>{{testResults[0].result.rawOutput}}</pre>
 				</div>
 			{{else}}
-				<div class="p-globalping-isp_network-tests_descr">
-					<span class="p-globalping-isp_network-tests_descr_msg">
+				<div class="p-globalping-networks_network-tests_descr">
+					<span class="p-globalping-networks_network-tests_descr_msg">
 						Enter a target and click <span class="highlighted">"Run Test"</span> to start a network test from:
 						<br/>
-						<span class="highlighted">{{selectedLocation.city}}, {{selectedLocation.country}}</span> with <span class="highlighted">{{ispFullName}}</span>.
+						<span class="highlighted">{{selectedLocation.city}}, {{selectedLocation.country}}</span> with <span class="highlighted">{{networkFullName}}</span>.
 					</span>
 				</div>
 			{{/if}}
@@ -216,12 +216,12 @@
 		},
 		onconfig () {
 			if (!Ractive.isServer) {
-				let ispName = this.get('ispName');
+				let networkName = this.get('networkName');
 
-				this.set('title', `${ispName} - Globalping`);
-				this.set('description', `${ispName} - Globalping`);
-				this.set('ispName', ispName);
-				this.set('ispFullName', this.getTempIspName(ispName));
+				this.set('title', `${networkName} - Globalping`);
+				this.set('description', `${networkName} - Globalping`);
+				this.set('networkName', networkName);
+				this.set('networkFullName', this.getTempNetworkName(networkName));
 			}
 		},
 		oninit () {
@@ -229,8 +229,8 @@
 				this.getGlobalpingProbesData();
 				this.fetchAndSetUserIP();
 
-				this.observe('ispFullName', (ispFullName) => {
-					this.setTitleAndDescr(ispFullName);
+				this.observe('networkFullName', (networkFullName) => {
+					this.setTitleAndDescr(networkFullName);
 				});
 
 				// set default location value
@@ -243,12 +243,12 @@
 				this.observe('probesParsed', (probesParsed) => {
 					if (probesParsed === false) { return; }
 
-					let ispName = this.get('ispName');
+					let networkName = this.get('networkName');
 					let parsedLocations = this.get('parsedLocations');
-					let { name: ispFullName, asnList = [], locationsList = [] } = parsedLocations.networks[ispName] || {};
+					let { name: networkFullName, asnList = [], locationsList = [] } = parsedLocations.networks[networkName] || {};
 
-					if (ispFullName) {
-						this.set('ispFullName', ispFullName);
+					if (networkFullName) {
+						this.set('networkFullName', networkFullName);
 					} else {
 						window.location.replace('/404');
 
@@ -394,19 +394,19 @@
 				networks: {},
 			});
 		},
-		setTitleAndDescr (ispFullName) {
-			this.set('title', `${ispFullName} - Globalping`);
-			this.set('description', `${ispFullName} - Globalping`);
+		setTitleAndDescr (networkFullName) {
+			this.set('title', `${networkFullName} - Globalping`);
+			this.set('description', `${networkFullName} - Globalping`);
 		},
-		getTempIspName (ispName) {
-			return _.capitalizeStrEveryFirstLetter(ispName.split('-').join(' '));
+		getTempNetworkName (networkName) {
+			return _.capitalizeStrEveryFirstLetter(networkName.split('-').join(' '));
 		},
 		proceedToTest () {
 			let type = this.get('selectedTestType').toLowerCase();
 			let testOpts = this.get('testOpts');
 			let { city, country } = this.get('selectedLocation');
-			let ispFullName = this.get('ispFullName');
-			let magic = `${city}+${country}+${ispFullName}`;
+			let networkFullName = this.get('networkFullName');
+			let magic = `${city}+${country}+${networkFullName}`;
 			let reqParams = {
 				type,
 				...testOpts,
