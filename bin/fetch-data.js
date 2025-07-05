@@ -34,7 +34,7 @@ async function fetchAndSaveAsnDomainMap (url) {
 		}
 	}
 
-	let outputPath = path.resolve(__dirname, '../src/assets/json/asn-domain.json');
+	let outputPath = path.resolve(__dirname, '../data/asn-domain.json');
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
 	let jsonWithTabs = JSON.stringify(asnDomainMap, null, '\t') + '\n';
@@ -52,10 +52,9 @@ async function main () {
 	}
 
 	let url = `https://ipinfo.io/data/ipinfo_lite.csv.gz?token=${IP_INFO_TOKEN}`;
-	let csvFileName = 'ipinfo_lite.csv';
 
 	try {
-		await fetchAndSaveAsnDomainMap(url, csvFileName);
+		await fetchAndSaveAsnDomainMap(url);
 	} catch (err) {
 		console.error('Failed to fetch or process data:', err);
 		process.exit(1);

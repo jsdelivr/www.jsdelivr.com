@@ -8,7 +8,7 @@ const ogImage = require('../middleware/open-graph');
 let asnDomains = null;
 
 try {
-	asnDomains = JSON.parse(fs.readFileSync(__dirname + '/../assets/json/asn-domain.json', 'utf8'));
+	asnDomains = JSON.parse(fs.readFileSync(__dirname + '/../../data/asn-domain.json', 'utf8'));
 } catch (e) {
 	console.error('ASN to domain name data not downloaded.');
 }
