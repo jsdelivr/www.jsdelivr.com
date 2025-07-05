@@ -1,0 +1,57 @@
+<div class="probe-single-card">
+	<div class="probe-single-card_details">
+		<div class="probe-single-card_details_icon">
+			<img width="24"
+				height="24"
+				src="{{@shared.assetsHost}}/img/globalping/globalping-probe.svg"
+				alt="Probe icon">
+		</div>
+		<div class="probe-single-card_details_info">
+			<div class="probe-single-card_details_info_city">
+				<img width="16.8"
+					height="12"
+					src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{location.country}}.svg"
+					alt="{{location.country}}">
+				<span class="probe-single-card_details_info_city_name">
+					{{location.city}}, {{location.country}}
+				</span>
+			</div>
+			<span class="probe-single-card_details_info_location">
+				{{location.network}}
+			</span>
+		</div>
+	</div>
+	<div class="probe-single-card_tag">
+		{{#each tags: index}}
+			{{#if index < maxTagCount}}
+				<span class="probe-single-card_tag_item" as-tooltip="this">
+					{{this}}
+				</span>
+			{{/if}}
+		{{/each}}
+		{{#if tags.length > maxTagCount}}
+			<span
+				class="probe-single-card_tag_item"
+				as-tooltip="tags.slice(maxTagCount).join(', ')">
+				+{{tags.length - maxTagCount}}
+			</span>
+		{{/if}}
+	</div>
+</div>
+
+<script>
+	const tooltip = require('../../assets/js/decorators/tooltip');
+
+	component.exports = {
+		decorators: {
+			tooltip,
+		},
+		data () {
+			return {
+				location: {},
+				tags: [],
+				maxTagCount: 3,
+			};
+		},
+	};
+</script>

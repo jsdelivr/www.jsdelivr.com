@@ -19,7 +19,7 @@
 		}
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTICLY5LgWNJ0Uly61Q1sNXz_1KZIECwg&amp;language=en&amp;callback=initMap&libraries=marker&loading=async" async></script>
-	{{#if probesByCoords}}
+	{{#if hasCluster}}
 		<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
 	{{/if}}
 {{/if}}
@@ -72,6 +72,7 @@
 			return {
 				class: '',
 				iwClass: '',
+				hasCluster: false,
 				probesByCoords: null,
 				onProbesByCoordsChange: null,
 			};
@@ -157,7 +158,7 @@
 					if (markerCluster) {
 						markerCluster.clearMarkers();
 						markerCluster.addMarkers(filteredMarkers);
-					} else {
+					} else if (this.get('hasCluster')) {
 						// eslint-disable-next-line no-undef
 						markerCluster = new markerClusterer.MarkerClusterer({
 							map,
