@@ -311,7 +311,7 @@
 				});
 			}
 		},
-		oncomplete () {
+		onrender () {
 			if (!Ractive.isServer) {
 				// run the test if user is pressed Enter inside of any of options inputs
 				let ipOrHostnameEl = this.find('#ipOrHostname');
@@ -319,17 +319,15 @@
 
 				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
 					ipOrHostnameEl.addEventListener('keydown', this._boundHandleEnterBtn);
+
+					this.on('unrender', () => {
+						ipOrHostnameEl.removeEventListener('keydown', this._boundHandleEnterBtn);
+					});
 				}
 			}
 		},
-		onteardown () {
-			if (!Ractive.isServer) {
-				let ipOrHostnameEl = this.find('#ipOrHostname');
-
-				if (ipOrHostnameEl && this._boundHandleEnterBtn) {
-					ipOrHostnameEl.removeEventListener('keydown', this._boundHandleEnterBtn);
-				}
-
+		onunrender () {
+			if (this.get('testReqInterval')) {
 				clearInterval(this.get('testReqInterval'));
 			}
 		},
