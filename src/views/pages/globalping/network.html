@@ -690,7 +690,15 @@
 
 			let sortedArray = Object
 				.keys(obj)
-				.sort((a, b) => a.localeCompare(b))
+				.sort((a, b) => {
+					if (sortOrder === 'alphabetically') {
+						return a.localeCompare(b);
+					}
+
+					let probesCountA = Object.values(obj[a]).reduce((sum, probes) => sum + probes.length, 0);
+					let probesCountB = Object.values(obj[b]).reduce((sum, probes) => sum + probes.length, 0);
+					return probesCountB - probesCountA;
+				})
 				.reduce((acc, continent) => {
 					let locations = Object.keys(obj[continent]);
 					let groupedLocations = locations.reduce((acc, location) => {
