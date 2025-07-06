@@ -219,10 +219,14 @@
 	const COUNTRIES = require('../../../assets/json/countries.json');
 	const FILTER_TYPE_BY_CONTINENT = 'byContinent';
 	const FILTER_TYPE_BY_NETWORK = 'byNetwork';
+	const GROUP_DEFAULT = 'city';
+	const SORT_DEFAULT = 'alphabetically';
+
 	const CONTINENT_MAP = CONTINENTS.reduce((acc, continent) => {
 		acc[continent.code] = continent.name;
 		return acc;
 	}, {});
+
 	const COUNTRIES_MAP = COUNTRIES.reduce((acc, country) => {
 		acc[country.code] = country.name;
 		return acc;
@@ -324,8 +328,8 @@
 				locationProbes: null,
 				preparedProbesColumns: null,
 				filteredMarkersData: null,
-				groupBy: 'city',
-				sortOrder: 'alphabetically',
+				groupBy: GROUP_DEFAULT,
+				sortOrder: SORT_DEFAULT,
 				selectedContinent: null,
 				filteredProbesStats: {
 					count: 0,
@@ -348,7 +352,7 @@
 			},
 			group: {
 				get () {
-					return this.get('groupBy');
+					return this.get('groupBy') === GROUP_DEFAULT ? '' : this.get('groupBy');
 				},
 				set (group) {
 					this.set('groupBy', group);
@@ -356,7 +360,7 @@
 			},
 			sort: {
 				get () {
-					return this.get('sortOrder');
+					return this.get('sortOrder') === SORT_DEFAULT ? '' : this.get('sortOrder');
 				},
 				set (sort) {
 					this.set('sortOrder', sort);
