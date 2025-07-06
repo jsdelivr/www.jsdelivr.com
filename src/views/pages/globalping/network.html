@@ -146,60 +146,56 @@
 							No results found. Try adjusting your filters.
 						</div>
 					{{else}}
-						{{#each preparedProbesColumns as column}}
-							<div class="gp-network_list_column {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
+						<div class="gp-network_list_wrapper {{groupBy === 'disabled' ? 'disabled-group-by' : ''}}">
+							{{#each preparedProbesColumns as continentGroup}}
 								{{#if groupBy === 'disabled'}}
-									{{#each column as continentGroup}}
-										{{#each continentGroup.items as item}}
-											<c-probe-single-card location="{{item.location}}" tags="{{item.tags}}" maxTagCount="{{maxTagCount}}"></c-probe-single-card>
-										{{/each}}
+									{{#each continentGroup.items as item}}
+										<c-probe-single-card location="{{item.location}}" tags="{{item.tags}}" maxTagCount="{{maxTagCount}}"></c-probe-single-card>
 									{{/each}}
 								{{else}}
-									{{#each column as continentGroup}}
-										<div class="gp-network_list_column_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
-											{{#if continentGroup.title}}
-												<span class="gp-network_list_column_group_item cont-header" id="probe-group-{{continentGroup.title}}">
-													{{@this.getContinentName(continentGroup.title)}}
-												</span>
-											{{/if}}
+									<div class="gp-network_list_group {{groupBy === 'city-network' || groupBy === 'country-network' ? 'has-networks' : ''}}">
+										{{#if continentGroup.title}}
+											<span class="gp-network_list_group_item cont-header" id="probe-group-{{continentGroup.title}}">
+												{{@this.getContinentName(continentGroup.title)}}
+											</span>
+										{{/if}}
 
-											{{#each continentGroup.items as item}}
-												<span class="gp-network_list_column_group_item">
-													{{#if item.showFlag}}
-														<span class="gp-network_list_column_group_item_img">
-															<img width="17"
-																height="12"
-																src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
-														</span>
-													{{/if}}
-
-													<span class="gp-network_list_column_group_item_location">
-														{{item.name}}
-
-														{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
-															<span>(x{{item.probes.length}})</span>
-														{{/if}}
+										{{#each continentGroup.items as item}}
+											<span class="gp-network_list_group_item">
+												{{#if item.showFlag}}
+													<span class="gp-network_list_group_item_img">
+														<img width="17"
+															height="12"
+															src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{item.location.split(', ')[0]}}.svg">
 													</span>
+												{{/if}}
 
-													{{#if item.networks && item.networks.length}}
-														<div class="gp-network_list_column_group_item_networks">
-															{{#each item.networks}}
-																<span class="gp-network_list_column_group_item_network">
-																	{{this.name}}
-																	{{#if this.count !== 1}}
-																		<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
-																	{{/if}}
-																</span>
-															{{/each}}
-														</div>
+												<span class="gp-network_list_group_item_location">
+													{{item.name}}
+
+													{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
+														<span>(x{{item.probes.length}})</span>
 													{{/if}}
 												</span>
-											{{/each}}
-										</div>
-									{{/each}}
+
+												{{#if item.networks && item.networks.length}}
+													<div class="gp-network_list_group_item_networks">
+														{{#each item.networks}}
+															<span class="gp-network_list_group_item_network">
+																{{this.name}}
+																{{#if this.count !== 1}}
+																	<span class="gp-network_list_group_item_network_count">(x{{this.count}})</span>
+																{{/if}}
+															</span>
+														{{/each}}
+													</div>
+												{{/if}}
+											</span>
+										{{/each}}
+									</div>
 								{{/if}}
-							</div>
-						{{/each}}
+							{{/each}}
+						</div>
 					{{/if}}
 				{{/if}}
 			</div>
@@ -783,7 +779,7 @@
 
 			return sortedArray;
 		},
-		splitDataIntoColumns (minItemsPerColumn = 10) {
+		splitDataIntoColumns () {
 			let groupedProbes = this.get('groupedProbes');
 
 			if (!groupedProbes) {
@@ -792,64 +788,21 @@
 
 			let data = this.sortAndGroup(groupedProbes);
 
-			let screenWidth = this.get('screenWidth');
-			let columnsCnt = this.getLayoutColumnsAmount(screenWidth);
 
 			let groupBy = this.get('groupBy');
-			let totalItems = data.length;
-			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
-			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
-			let columnNumber = 0;
 
 			if (groupBy === 'network' || groupBy === 'disabled') {
 				return data.reduce((res, item) => {
-					if (!res[columnNumber]) {
-						res[columnNumber] = [{
-							title: null,
-							items: [],
-						}];
-					}
-
-					let currentColumn = res[columnNumber];
-					let currentColumnItems = currentColumn[0].items.length;
-
-					if (currentColumnItems >= columnMax) {
-						columnNumber++;
-
-						res[columnNumber] = [{
-							title: null,
-							items: [],
-						}];
-
-						currentColumn = res[columnNumber];
-					}
-
-					currentColumn[0].items.push(item);
+					res[0].items.push(item);
 					return res;
-				}, []);
+				}, [{
+					title: null,
+					items: [],
+				}]);
 			}
 
 			return data.reduce((res, item) => {
-				if (!res[columnNumber]) {
-					res[columnNumber] = [];
-				}
-
-				let currentColumn = res[columnNumber];
-				let currentColumnItems = currentColumn.reduce((sum, continent) => {
-					return sum + continent.items.length;
-				}, 0);
-
-				if (currentColumnItems >= columnMax) {
-					columnNumber++;
-
-					if (!res[columnNumber]) {
-						res[columnNumber] = [];
-					}
-
-					currentColumn = res[columnNumber];
-				}
-
-				let continentGroup = currentColumn.find(group => group.title === item.continent);
+				let continentGroup = res.find(group => group.title === item.continent);
 
 				if (!continentGroup) {
 					continentGroup = {
@@ -857,7 +810,7 @@
 						items: [],
 					};
 
-					currentColumn.push(continentGroup);
+					res.push(continentGroup);
 				}
 
 				continentGroup.items.push(item);
