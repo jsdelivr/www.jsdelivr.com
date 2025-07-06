@@ -237,7 +237,7 @@
 			return {
 				title: 'Network - Globalping',
 				description: 'Explore the global network map of Globalping probes.',
-				location: 'World',
+				location: '',
 				locationError: '',
 				locationCompletedValue: '',
 				availableFilters: [
@@ -343,13 +343,7 @@
 		computed: {
 			filter: {
 				get () {
-					let location = this.get('locationCompletedValue') || '';
-
-					if (location.toLowerCase() === 'world') {
-						return '';
-					}
-
-					return location.replace(/\+/g, '%');
+					return (this.get('locationCompletedValue') || '').replace(/\+/g, '%');
 				},
 				set (location) {
 					this.set('location', location.replace(/%/g, '+'));
@@ -802,7 +796,7 @@
 			let columnsCnt = this.getLayoutColumnsAmount(screenWidth);
 
 			let groupBy = this.get('groupBy');
-			let totalItems = data.length;
+			let totalItems = data.length + (groupBy.includes('-network') ? data.reduce((sum, item) => sum + item.probes.length, 0) / 2 : 0);
 			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
 			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
 			let columnNumber = 0;
@@ -835,15 +829,13 @@
 				}, []);
 			}
 
+			let currentColumnItems = 0;
 			return data.reduce((res, item) => {
 				if (!res[columnNumber]) {
 					res[columnNumber] = [];
 				}
 
 				let currentColumn = res[columnNumber];
-				let currentColumnItems = currentColumn.reduce((sum, continent) => {
-					return sum + continent.items.length;
-				}, 0);
 
 				if (currentColumnItems >= columnMax) {
 					columnNumber++;
@@ -853,6 +845,7 @@
 					}
 
 					currentColumn = res[columnNumber];
+					currentColumnItems = 0;
 				}
 
 				let continentGroup = currentColumn.find(group => group.title === item.continent);
@@ -867,6 +860,8 @@
 				}
 
 				continentGroup.items.push(item);
+				currentColumnItems += groupBy.includes('-network') ? 1 + (item.probes.length / 2) : 1;
+
 				return res;
 			}, []);
 		},
