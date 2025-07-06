@@ -1,8 +1,17 @@
+const fs = require('node:fs');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
 const ogImage = require('../middleware/open-graph');
+
+let asnDomains = null;
+
+try {
+	asnDomains = JSON.parse(fs.readFileSync(__dirname + '/../../data/asn-domain.json', 'utf8'));
+} catch (e) {
+	console.error('ASN to domain name data not downloaded.');
+}
 
 const router = new KoaRouter();
 
@@ -28,7 +37,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/terms.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -65,7 +74,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/globalping/_users.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -135,6 +144,68 @@ koaElasticUtils.addRoutes(router, [
 
 		return ctx.redirect(`/network-tools/${newPath}`);
 	}
+});
+
+/**
+ * Network pages
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/networks/:name' ],
+], async (ctx) => {
+	let { name = '' } = ctx.params;
+
+	let networks = await globalpingSitemap.getNetworks();
+	let networkName = networks.find(network => network.toLowerCase() === name.toLowerCase());
+
+	if (!networkName) {
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
+		return;
+	}
+
+	let data = {
+		networkName,
+	};
+
+	try {
+		ctx.body = await ctx.render('pages/globalping/_networks.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (ctx.app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 301;
+		return ctx.redirect('/');
+	}
+});
+
+/**
+ * Translate ASN to domain name (AS prefix expected)
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/asn-to-domain/:asn' ],
+], async (ctx) => {
+	let { asn = '' } = ctx.params;
+
+	if (!asn) {
+		ctx.status = 400;
+		return;
+	}
+
+	if (!asnDomains) {
+		ctx.status = 503;
+		return;
+	}
+
+	let domain = asnDomains[asn];
+
+	if (!domain) {
+		ctx.status = 404;
+		return;
+	}
+
+	ctx.body = { domain };
 });
 
 module.exports = router;

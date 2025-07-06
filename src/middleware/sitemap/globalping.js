@@ -27,8 +27,10 @@ module.exports = async (ctx) => {
 
 	if (ctx.params.page === 'index') {
 		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 2) });
-	} else if (page > 1 && page <= maxPage + 1) {
-		ctx.body = siteMapTemplate({ probes: response.probes.slice((page - 2) * 50000, (page - 1) * 50000) });
+	} else if (page > 2 && page <= maxPage + 1) {
+		ctx.body = siteMapTemplate({ probes: response.probes.slice((page - 3) * 50000, (page - 2) * 50000) });
+	} else if (page === 2) {
+		ctx.body = siteMapTemplate({ networks: response.networks });
 	} else if (page === 1) {
 		ctx.body = siteMapTemplate({ users: response.users });
 	} else if (page === 0) {
@@ -43,6 +45,10 @@ module.exports = async (ctx) => {
 
 module.exports.getUsers = () => {
 	return probesPromise.then(response => response.users);
+};
+
+module.exports.getNetworks = () => {
+	return probesPromise.then(response => response.networks);
 };
 
 function updateProbesData () {
@@ -132,6 +138,7 @@ function createPossibleUrls (data) {
 		users: _.uniq(data.map(({ tags }) => {
 			return tags.filter(tag => usernameTagPattern.test(tag) && v1TagsUsers.every(b => b === tag || !tag.startsWith(b)))[0];
 		}).filter(tag => tag).map(tag => tag.slice(2))),
+		networks: parsedProbesResponse.networks.map(network => network),
 	};
 }
 
