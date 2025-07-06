@@ -2,30 +2,32 @@
 
 const got = require('got');
 const zlib = require('zlib');
-const parseCsv = require('csv-parse/lib/sync');
+const parse = require('csv-parse');
 const fs = require('fs');
 const path = require('path');
 const config = require('config');
+const { pipeline } = require('node:stream/promises');
 
 const ASN_COLUMN_NUM = 5;
 const DOMAIN_COLUMN_NUM = 7;
 
 async function fetchAndSaveAsnDomainMap (url) {
-	let compressedBuffer = await got(url).buffer();
-	let csvText = zlib.gunzipSync(compressedBuffer).toString();
+	let asnDomainMap = {};
+	let hasRecords = false;
 
-	let records = parseCsv(csvText, {
+	let parser = parse({
+		from_line: 2,
 		skip_empty_lines: true,
 	});
 
-	if (records.length === 0) {
-		throw new Error('No data found in ipinfo-lite CSV file');
-	}
+	let pipelinePromise = pipeline(
+		got.stream(url),
+		zlib.createGunzip(),
+		parser,
+	);
 
-	let asnDomainMap = {};
-
-	for (let i = 1; i < records.length; i++) {
-		let row = records[i];
+	for await (let row of parser) {
+		hasRecords = true;
 		let asn = row[ASN_COLUMN_NUM];
 		let domain = row[DOMAIN_COLUMN_NUM];
 
@@ -33,6 +35,12 @@ async function fetchAndSaveAsnDomainMap (url) {
 			asnDomainMap[asn] = domain;
 		}
 	}
+
+	if (!hasRecords) {
+		throw new Error('No data found in ipinfo-lite CSV file');
+	}
+
+	await pipelinePromise;
 
 	let outputPath = path.resolve(__dirname, '../data/asn-domain.json');
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
@@ -61,4 +69,4 @@ async function main () {
 	}
 }
 
-main();
+main().catch(console.error);
