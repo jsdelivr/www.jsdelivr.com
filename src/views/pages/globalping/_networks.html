@@ -140,7 +140,7 @@
 				</button>
 			</div>
 
-			{{#if errorMessage}}
+			{{#if serverErrorMessage || creditErrorMessage}}
 				<div class="p-globalping-networks_network-tests_fail-msg">
 					<img width="56"
 						height="56"
@@ -148,7 +148,11 @@
 						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
 
 					<p>
-						{{{errorMessage}}}
+						{{#if serverErrorMessage}}
+							{{serverErrorMessage}}
+						{{else}}
+							{{{creditErrorMessage}}}
+						{{/if}}
 					</p>
 				</div>
 			{{elseif testResults}}
@@ -218,7 +222,8 @@
 					limit: DEFAULT_LIMIT,
 				},
 				inputErrors: {},
-				errorMessage: null,
+				serverErrorMessage: null,
+				creditErrorMessage: null,
 			};
 		},
 		onconfig () {
@@ -414,7 +419,8 @@
 			this.set('testResults', null);
 			this.set('testInProgress', true);
 			this.set('testReqParams', null);
-			this.set('errorMessage', null);
+			this.set('serverErrorMessage', null);
+			this.set('creditErrorMessage', null);
 
 			http.postGlobalpingMeasurement(reqParams, RATE_LIMIT_HEADERS).then((res) => {
 				this.getTestMeasurementById(res.response.id);
@@ -431,9 +437,9 @@
 						this.get('@shared.user'),
 					);
 
-					this.set('errorMessage', measurementErrMsg);
+					this.set('creditErrorMessage', measurementErrMsg);
 				} else {
-					this.set('errorMessage', err.error?.message ?? 'An unexpected error occurred.');
+					this.set('serverErrorMessage', err.error?.message ?? 'An unexpected error occurred.');
 				}
 			});
 		},
@@ -465,6 +471,8 @@
 					this.set('realTimeTestResResponse', testRes);
 				}).catch(() => {
 					clearInterval(testReqInterval);
+					this.set('serverErrorMessage', 'An unexpected error occurred.');
+					this.set('testInProgress', false);
 				});
 			}, 1000);
 
