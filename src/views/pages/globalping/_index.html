@@ -205,7 +205,8 @@
 													error="{{inputErrors.port}}"
 													placeholder="80"
 													labelText="Port"
-													classList="port-input gp_input">
+													classList="port-input gp_input"
+													disabled="{{disablePort}}">
 												</c-controlled-input>
 
 												<div class="gp_dropdown_reg">
@@ -248,7 +249,8 @@
 													error="{{inputErrors.port}}"
 													placeholder="53"
 													labelText="Port"
-													classList="port-input gp_input">
+													classList="port-input gp_input"
+													disabled="{{disablePort}}">
 												</c-controlled-input>
 
 												<div class="gp_dropdown_reg">
@@ -359,7 +361,8 @@
 													error="{{inputErrors.port}}"
 													placeholder="53"
 													labelText="Port"
-													classList="port-input gp_input">
+													classList="port-input gp_input"
+													disabled="{{disablePort}}">
 												</c-controlled-input>
 
 												<div class="gp_dropdown_reg">
@@ -1421,6 +1424,11 @@
 		'x-credits-remaining',
 		'x-request-cost',
 	];
+	const PORT_SUPPORTED_BY_TYPE = {
+		ping: [ 'TCP' ],
+		traceroute: [ 'TCP' ],
+		mtr: [ 'TCP', 'UDP' ],
+	};
 	const DEFAULT_MEASUREMENT_ERR_MSG = 'All tests failed. Maybe you specified a non existing endpoint?';
 	const getMarkerSize = (probeCount, zoom) => {
 		let size = {
@@ -1530,6 +1538,20 @@
 				measurementErrMsg: null,
 				probesMaxTiming: 200,
 			};
+		},
+		computed: {
+			disablePort () {
+				let type = this.get('mainOptions.type').toLowerCase();
+				let opts = this.get(`${type}Opts`);
+
+				let supportedProtocols = PORT_SUPPORTED_BY_TYPE[type];
+
+				if (!supportedProtocols) {
+					return false;
+				}
+
+				return !supportedProtocols.includes(opts?.protocol ?? '');
+			},
 		},
 		onrender () {
 			if (!Ractive.isServer) {
@@ -2091,6 +2113,11 @@
 			});
 		},
 		applyOptions () {
+			// Clear the port input in the case the selected protocol does not support it
+			if (this.get('disablePort')) {
+				this.set('notAppliedOpts.port', '');
+			}
+
 			// filter opts from empty values
 			let filterOptsFromEmptyOne = opts => Object.keys(opts).reduce((res, key) => {
 				if (typeof opts[key] === 'object') {
