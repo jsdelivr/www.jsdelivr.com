@@ -1551,6 +1551,16 @@
 
 				return !supportedProtocols.includes(opts?.protocol ?? '');
 			},
+			location: {
+				get () {
+					// This is a one-way setter.
+					return this.get('_location');
+				},
+				set (value) {
+					this.set('_location');
+					this.set('mainOptions.location', value.replace(/%/g, '+'));
+				},
+			},
 		},
 		onrender () {
 			if (!Ractive.isServer) {

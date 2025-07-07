@@ -174,7 +174,7 @@
 													{{/if}}
 
 													<span class="gp-network_list_column_group_item_location">
-														{{item.name}}
+														<a href="/?location={{encodeURIComponent(item.from)}}">{{item.name}}</a>
 
 														{{#if (groupBy !== 'city-network' && groupBy !== 'country-network') && item.probes.length !== 1}}
 															<span>(x{{item.probes.length}})</span>
@@ -184,12 +184,14 @@
 													{{#if item.networks && item.networks.length}}
 														<div class="gp-network_list_column_group_item_networks">
 															{{#each item.networks}}
-																<span class="gp-network_list_column_group_item_network">
-																	{{this.name}}
-																	{{#if this.count !== 1}}
-																		<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
-																	{{/if}}
-																</span>
+																<a href="/?location={{encodeURIComponent(`${item.from}%${_.cleanNetworkName(this.name)}`)}}">
+																	<span class="gp-network_list_column_group_item_network">
+																		{{this.name}}
+																		{{#if this.count !== 1}}
+																			<span class="gp-network_list_column_group_item_network_count">(x{{this.count}})</span>
+																		{{/if}}
+																	</span>
+																</a>
 															{{/each}}
 														</div>
 													{{/if}}
@@ -210,6 +212,7 @@
 </r-page>
 
 <script>
+	const _ = require('../../../assets/js/_');
 	const debounce = require('../../../assets/js/utils/debounce');
 	const throttle = require('../../../assets/js/utils/throttle');
 	const listeners = require('../../../assets/js/utils/listeners');
@@ -235,6 +238,7 @@
 	component.exports = {
 		data () {
 			return {
+				_,
 				title: 'Network - Globalping',
 				description: 'Explore the global network map of Globalping probes.',
 				location: 'World',
@@ -691,6 +695,7 @@
 				return sortedNetworks.map(network => ({
 					continent: null,
 					name: network,
+					from: _.cleanNetworkName(network),
 					location: network,
 					probes: allNetworks[network],
 					networks: [],
@@ -774,8 +779,23 @@
 							}
 						}
 
+						let from;
+
+						switch (groupBy) {
+							case 'city':
+							case 'city-network':
+								from = `${probes[0].location.city}%${probes[0].location.country}`;
+								break;
+							case 'country-network':
+							case 'country':
+							default:
+								from = this.getCountryName(probes[0].location.country);
+								break;
+						}
+
 						return {
 							continent,
+							from,
 							name: groupBy.startsWith('country') ? this.getCountryName(location) : location,
 							location,
 							probes,

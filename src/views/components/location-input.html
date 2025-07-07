@@ -42,7 +42,6 @@
 	const countriesByCode = Object.fromEntries(countries.map(country => [ country.code, country ]));
 	const continentsByCode = Object.fromEntries(continents.map(continent => [ continent.code, continent ]));
 
-	const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
 	const escapeRegExp = string => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
 	component.exports = {
@@ -480,7 +479,7 @@
 							state: probe.location.state ? `US-${probe.location.state}` : '',
 							country: `${countryName}\n${probe.location.country}`,
 							continent: `${continentName}\n${probe.location.continent}`,
-							network: probe.location.network.replace(networkNameCleanupPattern, '').trim(),
+							network: _.cleanNetworkName(probe.location.network).trim(),
 							tags: probe.tags.filter(tag => !tag.startsWith('u-')),
 						};
 
