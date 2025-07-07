@@ -842,9 +842,17 @@
 				}
 
 				let currentColumn = res[columnNumber];
+				let itemsHeight = 1 + (groupBy.includes('-network') ? item.probes.length / 2 : 0);
 
-				if (currentColumnItems >= columnMax) {
+				if (
+					columnNumber < columnsCnt - 1
+					&& (
+						currentColumnItems >= columnMax
+						|| currentColumnItems + (itemsHeight * 1.5) > columnMax
+					)
+				) {
 					columnNumber++;
+					console.log('columnNumber', columnNumber, 'columnCnt', columnsCnt, 'currentColumnItems', currentColumnItems, 'itemsHeight', itemsHeight, 'columnMax', columnMax);
 
 					if (!res[columnNumber]) {
 						res[columnNumber] = [];
