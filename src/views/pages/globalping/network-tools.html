@@ -144,14 +144,14 @@
 				</button>
 			</div>
 
-			{{#if testFailed}}
-				<div class="gp_map-block_demo-tools_fail-msg">
+			{{#if errorMessage}}
+				<div class="gp-nettools_demo-tools_fail-msg">
 					<img width="56"
 						height="56"
+						alt="Fail icon"
 						src="{{@shared.assetsHost}}/img/globalping/fail-icon-big.svg">
-
 					<p>
-						All tests failed. Maybe you specified a non existing endpoint?
+						{{{errorMessage}}}
 					</p>
 				</div>
 			{{elseif testResults}}
@@ -219,6 +219,12 @@
 		target: 'cdn.jsdelivr.net',
 	};
 	const CAPITALIZE_EXCLUDE_LIST = [ 'and', 'or', 'from', 'ltd', 'of' ];
+	const RATE_LIMIT_HEADERS = [
+		'x-ratelimit-remaining',
+		'x-ratelimit-reset',
+		'x-credits-remaining',
+		'x-request-cost',
+	];
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 
@@ -258,6 +264,7 @@
 					limit: '',
 				},
 				inputErrors: {},
+				errorMessage: null,
 				testResults: null,
 				testInProgress: false,
 				testReqInterval: null,
@@ -455,23 +462,26 @@
 			this.set('testResults', null);
 			this.set('testInProgress', true);
 			this.set('testReqParams', null);
+			this.set('errorMessage', null);
 
-			http.postGlobalpingMeasurement(reqParams).then((response) => {
-				this.getTestMeasurementById(response.id);
+			http.postGlobalpingMeasurement(reqParams, RATE_LIMIT_HEADERS).then((res) => {
+				this.getTestMeasurementById(res.response.id);
 			}).catch((err) => {
-				if (err.error.type === 'validation_error') {
-					this.set('testInProgress', false);
+				let errBody = err?.error;
+				this.set('testInProgress', false);
 
-					let inputErrors = Object.keys(err.error.params).reduce((res, key) => {
-						let fieldName = key.split('.')[key.split('.').length - 1];
-						let errMsg = err.error.params[key].replace(/".*"/, fieldName);
-
-						res[key] = errMsg;
-
-						return res;
-					}, {});
-
+				if (errBody?.type === 'validation_error') {
+					let inputErrors = _.parseValidationErrors(errBody);
 					this.set('inputErrors', inputErrors);
+				} else if (err.responseStatusCode === 429) {
+					let measurementErrMsg = _.createMeasCreditsErrMsg(
+						err.responseHeaders,
+						this.get('@shared.user'),
+					);
+
+					this.set('errorMessage', measurementErrMsg);
+				} else {
+					this.set('errorMessage', err.error?.message ?? 'An unexpected error occurred.');
 				}
 			});
 		},
