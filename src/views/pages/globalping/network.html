@@ -343,7 +343,13 @@
 		computed: {
 			filter: {
 				get () {
-					return (this.get('locationCompletedValue') || '').replace(/\+/g, '%');
+					let location = this.get('locationCompletedValue') || '';
+
+					if (location.toLowerCase() === 'world') {
+						return '';
+					}
+
+					return location.replace(/\+/g, '%');
 				},
 				set (location) {
 					this.set('location', location.replace(/%/g, '+'));
