@@ -802,7 +802,7 @@
 			let columnsCnt = this.getLayoutColumnsAmount(screenWidth);
 
 			let groupBy = this.get('groupBy');
-			let totalItems = data.length + (groupBy.includes('-network') ? data.reduce((sum, item) => sum + item.probes.length, 0) / 2 : 0);
+			let totalItems = data.length + (groupBy.includes('-network') ? data.reduce((sum, item) => sum + item.networks.length, 0) / 2 : 0);
 			let itemsPerColumn = Math.max(minItemsPerColumn, Math.ceil(totalItems / columnsCnt));
 			let columnMax = Math.max(minItemsPerColumn, itemsPerColumn);
 			let columnNumber = 0;
@@ -842,7 +842,7 @@
 				}
 
 				let currentColumn = res[columnNumber];
-				let itemsHeight = 1 + (groupBy.includes('-network') ? item.probes.length / 2 : 0);
+				let itemsHeight = 1 + (groupBy.includes('-network') ? item.networks.length / 2 : 0);
 
 				if (
 					columnNumber < columnsCnt - 1
@@ -874,7 +874,7 @@
 				}
 
 				continentGroup.items.push(item);
-				currentColumnItems += groupBy.includes('-network') ? 1 + (item.probes.length / 2) : 1;
+				currentColumnItems += groupBy.includes('-network') ? 1 + (item.networks.length / 2) : 1;
 
 				return res;
 			}, []);
