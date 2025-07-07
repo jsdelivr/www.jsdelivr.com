@@ -1,16 +1,16 @@
 <div
-	id="showMoreListWrapperEl"
-	class="c-show-more-list {{addClass || ''}}"
+	id="showMoreLinkListWrapperEl"
+	class="c-show-more-link-list {{addClass || ''}}"
 	style="height: {{wrapperHeight}}"
 >
-	<div class="c-show-more-list_inner">
+	<div class="c-show-more-link-list_inner">
 		{{#each limitedList as item}}
-			<span class="c-show-more-list_inner_item">{{prefix || ''}}{{item}}</span>
+			<a href="{{@this.makeURLFromASN(item)}}" class="c-show-more-link-list_inner_item">{{prefix || ''}}{{item}}</a>
 		{{/each}}
 
 		{{#if list.length > limit}}
 			<button
-				class="c-show-more-list_toggle-button"
+				class="c-show-more-link-list_toggle-button"
 				on-click="@this.set('expanded', !expanded)"
 			>
 				{{expanded ? 'Show less' : 'Show more'}}
@@ -38,7 +38,7 @@
 			if (!Ractive.isServer) {
 				listeners.addManagedListener(this, window, 'resize', this.handleResize.bind(this));
 
-				let wrapperEl = this.find('#showMoreListWrapperEl');
+				let wrapperEl = this.find('#showMoreLinkListWrapperEl');
 
 				this.observe('expanded', (expanded) => {
 					let list = this.get('list') || [];
@@ -74,7 +74,7 @@
 			}
 		},
 		handleResize () {
-			let wrapperEl = this.find('#showMoreListWrapperEl');
+			let wrapperEl = this.find('#showMoreLinkListWrapperEl');
 			let expanded = this.get('expanded');
 
 			if (expanded) {
@@ -92,6 +92,12 @@
 				this.set('initialHeight', height);
 				this.set('wrapperHeight', height);
 			});
+		},
+		makeURLFromASN (id) {
+			let method = this.get('method')?.toLowerCase() || 'ping';
+			let prefix = this.get('prefix') ?? '';
+
+			return `/network-tools/${method}-from-${prefix}${id}`;
 		},
 	};
 </script>
