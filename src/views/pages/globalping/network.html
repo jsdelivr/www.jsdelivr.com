@@ -52,6 +52,7 @@
 							<c-location-input
 								rawProbes="{{probesResponse}}"
 								value="{{location}}"
+								overrideValue="{{overrideLocation}}"
 								error="{{locationError}}"
 								placeholder="Enter location"
 								labelText="Location"
@@ -241,7 +242,8 @@
 				_,
 				title: 'Network - Globalping',
 				description: 'Explore the global network map of Globalping probes.',
-				location: 'World',
+				location: '',
+				overrideLocation: 'World',
 				locationError: '',
 				locationCompletedValue: '',
 				availableFilters: [
@@ -356,7 +358,7 @@
 					return location.replace(/\+/g, '%');
 				},
 				set (location) {
-					this.set('location', location.replace(/%/g, '+'));
+					this.set('overrideLocation', location.replace(/%/g, '+'));
 					this.set('locationCompletedValue', location.replace(/%/g, '+'));
 				},
 			},
@@ -633,11 +635,11 @@
 				}
 
 				if (selectedFilter.type === FILTER_TYPE_BY_NETWORK && hasContinent && !hasNetwork) {
-					this.set('location', `${location}+${selectedFilter.value}`);
+					this.set('overrideLocation', `${location}+${selectedFilter.value}`);
 				} else if (selectedFilter.type === FILTER_TYPE_BY_CONTINENT && hasNetwork && !hasContinent) {
-					this.set('location', `${location}+${selectedFilter.value}`);
+					this.set('overrideLocation', `${location}+${selectedFilter.value}`);
 				} else {
-					this.set('location', selectedFilter.value);
+					this.set('overrideLocation', selectedFilter.value);
 				}
 			}
 		},
@@ -654,7 +656,7 @@
 					return filteredSegments.join('+');
 				}).filter(part => part.trim() !== '');
 
-				this.set('location', updatedParts.join(','));
+				this.set('overrideLocation', updatedParts.join(','));
 			}
 		},
 		sortAndGroup (obj) {

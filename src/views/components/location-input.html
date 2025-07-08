@@ -56,6 +56,7 @@
 				exposeProbes: false,
 				results: [],
 				completedValue: '',
+				overrideValue: '',
 			};
 		},
 		oninit () {
@@ -623,6 +624,15 @@
 				this.observe('rawProbes', (probes) => {
 					createNormalizedProbeList(probes);
 					filterProbesByCurrentParts(this.get('value') || '');
+				});
+
+				this.observe('overrideValue', (value) => {
+					this.set('value', value);
+
+					if (!this.get('rawProbes') || !this.get('exposeProbes')) { return; }
+
+					filterProbesByCurrentParts(value);
+					this.set('completedValue', value);
 				});
 
 				this.on('unrender', () => destroy());
