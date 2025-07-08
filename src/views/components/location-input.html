@@ -152,16 +152,19 @@
 				let currentCompletion;
 				let currentCollections;
 
+				let prevStateIsOpen;
+
 				let { setQuery, setActiveItemId, destroy } = autocomplete({
 					container: this.find('.aa-gp-container'),
 					onStateChange: ({ state }) => {
-						if (!state.isOpen && this.get('exposeProbes') && normalizedProbes) {
+						if (!state.isOpen && prevStateIsOpen && this.get('exposeProbes') && normalizedProbes) {
 							setTimeout(() => {
 								filterProbesByCurrentParts(state.query);
 								this.set('completedValue', state.query);
 							}, 0);
 						}
 
+						prevStateIsOpen = state.isOpen;
 						activeItemId = state.activeItemId;
 						setTimeout(() => isAsyncOpen = state.isOpen);
 
