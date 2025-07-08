@@ -1,0 +1,111 @@
+@import "../mixins.less";
+
+.select {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+
+	&_selected {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		height: 40px;
+		padding: 0 16px;
+		border-radius: 8px;
+		border: 1.5px solid #e7e7ee;
+		background-color: #fff;
+		box-shadow: 0 2px 2px 0 #0000000a;
+		cursor: pointer;
+
+		&_label {
+			font-family: Lexend, sans-serif;
+			font-size: 14px;
+			font-weight: 400;
+			line-height: 20px;
+			color: #17233a;
+			text-decoration: none;
+			white-space: nowrap;
+			max-width: 100px;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			margin-right: 4px;
+		}
+
+		&:not(:disabled) {
+			&:hover {
+				border-color: #4a90e2;
+			}
+
+			&:focus-visible {
+				outline: none;
+				border-color: #4a90e2;
+			}
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			background-color: #e7e7ee;
+
+			.select_selected_label {
+				color: #17233a88;
+			}
+		}
+	}
+
+	&_wrapper {
+		position: absolute;
+		top: calc(100% + 4px);
+		left: 0;
+		z-index: 11;
+		display: none;
+		width: 100%;
+		max-height: 282px;
+		overflow-y: auto;
+		background: #fff;
+		border: 1px solid #e7e7ee;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+		border-radius: 8px;
+
+		&.opened {
+			display: block;
+		}
+
+		&_list {
+			margin: 0;
+			padding: 8px 0;
+			list-style: none;
+
+			&_item {
+				height: 40px;
+				font-size: 14px;
+
+				&.selected {
+					background-color: #f3f5f6;
+				}
+
+				&.focused, span:hover {
+					background-color: #f3f5f6;
+				}
+
+				span {
+					display: block;
+					height: 100%;
+					padding: 10px 16px;
+					font-family: Lexend, sans-serif;
+					font-size: 14px;
+					font-weight: 400;
+					line-height: 20px;
+					color: #17233a;
+					text-decoration: none;
+					cursor: pointer;
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					overflow: hidden;
+				}
+			}
+		}
+	}
+}

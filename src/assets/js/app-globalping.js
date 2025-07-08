@@ -34,7 +34,7 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/', cGlobalping, { qs: [ 'measurement' ] });
+app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement' ] });
 app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
 app.router.addRoute('/discord', cGlobalpingDiscord);
@@ -43,7 +43,7 @@ app.router.addRoute('/integrations', cGlobalpingIntegrations);
 app.router.addRoute('/about-us', cGlobalpingAbout);
 app.router.addRoute('/sponsors', cGlobalpingSponsors);
 app.router.addRoute('/credits', cGlobalpingCredits);
-app.router.addRoute('/network', cGlobalpingNetwork, { qs: [ 'filter' ] });
+app.router.addRoute('/network', cGlobalpingNetwork, { qs: [ 'filter', 'group', 'sort' ] });
 app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/networks/:networkName', cGlobalpingNetworks);

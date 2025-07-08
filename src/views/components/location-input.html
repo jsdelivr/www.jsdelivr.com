@@ -42,7 +42,6 @@
 	const countriesByCode = Object.fromEntries(countries.map(country => [ country.code, country ]));
 	const continentsByCode = Object.fromEntries(continents.map(continent => [ continent.code, continent ]));
 
-	const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
 	const escapeRegExp = string => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
 	component.exports = {
@@ -54,6 +53,9 @@
 				invalidValue: null,
 				errMsgTopPos: false,
 				rawProbes: [],
+				exposeProbes: false,
+				results: [],
+				completedValue: '',
 			};
 		},
 		oninit () {
@@ -84,7 +86,7 @@
 			listeners.screenWidthListener(this);
 
 			if (!Ractive.isServer) {
-				let normalizedProbes;
+				let normalizedProbes = [];
 				let indexForConditions;
 
 				let initLimit = value => function runLimit (rawSources) {
@@ -150,9 +152,19 @@
 				let currentCompletion;
 				let currentCollections;
 
+				let prevStateIsOpen;
+
 				let { setQuery, setActiveItemId, destroy } = autocomplete({
 					container: this.find('.aa-gp-container'),
 					onStateChange: ({ state }) => {
+						if (!state.isOpen && prevStateIsOpen && this.get('exposeProbes') && normalizedProbes) {
+							setTimeout(() => {
+								filterProbesByCurrentParts(state.query);
+								this.set('completedValue', state.query);
+							}, 0);
+						}
+
+						prevStateIsOpen = state.isOpen;
 						activeItemId = state.activeItemId;
 						setTimeout(() => isAsyncOpen = state.isOpen);
 
@@ -214,14 +226,13 @@
 							limit(sources),
 						];
 					},
-					getSources ({ query }) {
+					getSources: ({ query }) => {
 						// The input allows several queries separated by a comma.
 						// Each query may have multiple parts separated by a plus sign.
 						// We always operate on the last part of the last query but need to preserve anything before it.
 						let queries = query.split(',');
 						let previousQueries = queries.length > 1 ? queries.slice(0, -1) : [];
 						let currentQuery = queries.at(-1);
-
 						let currentQueryParts = currentQuery.split('+');
 						let currentQueryPrevParts = currentQueryParts.length > 1 ? currentQueryParts.slice(0, -1) : [];
 						let currentQueryPrevPartsNormalized = currentQueryPrevParts.map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
@@ -244,7 +255,7 @@
 						queryPrefix += currentQueryCurrentPartLeadingWhitespace;
 
 						if (!indexForConditions[currentQueryPrevPartsNormalizedString]) {
-							createIndexFor(currentQueryPrevPartsNormalized);
+							createIndexFor(filterProbes(normalizedProbes, currentQueryPrevPartsNormalized), currentQueryPrevPartsNormalized);
 						}
 
 						let index = indexForConditions[currentQueryPrevPartsNormalizedString];
@@ -428,7 +439,7 @@
 				// Propagate state changes.
 				this.observe('value', (newValue) => {
 					setQuery(newValue);
-				}, { init: false });
+				});
 
 				this.observe('disabled', (newValue) => {
 					input.classList.toggle('is-disabled', !!newValue);
@@ -471,7 +482,7 @@
 							state: probe.location.state ? `US-${probe.location.state}` : '',
 							country: `${countryName}\n${probe.location.country}`,
 							continent: `${continentName}\n${probe.location.continent}`,
-							network: probe.location.network.replace(networkNameCleanupPattern, '').trim(),
+							network: _.cleanNetworkName(probe.location.network).trim(),
 							tags: probe.tags.filter(tag => !tag.startsWith('u-')),
 						};
 
@@ -481,6 +492,7 @@
 
 						return {
 							...normalizedProbe,
+							original: probe,
 							allValues: Object.values(normalizedProbe).map(value => Array.isArray(value) ? value.join('\n').toLowerCase() : value.toLowerCase()).join('\n'),
 						};
 					});
@@ -488,10 +500,24 @@
 					indexForConditions = Object.create(null);
 				};
 
-				let createIndexFor = (conditions) => {
-					let index = {};
+				let filterProbesByCurrentParts = (query) => {
+					if (!this.get('exposeProbes')) { return; }
 
-					let filteredProbes = conditions.reduce((filteredProbes, condition) => {
+					let uniq = new Set();
+					query.split(',').forEach((part) => {
+						let partNormalized = part.split('+').map(q => q.trim()).filter(v => v).map(s => s.toLowerCase()).sort();
+						filterProbes(normalizedProbes, partNormalized).forEach(p => uniq.add(p.original));
+					});
+
+					this.set('results', Array.from(uniq));
+				};
+
+				let filterProbes = (normalizedProbes, conditions) => {
+					return conditions.reduce((filteredProbes, condition) => {
+						if (condition === 'world') {
+							return normalizedProbes;
+						}
+
 						let exactPattern = new RegExp(`(?:^|\n)${escapeRegExp(condition)}(?:$|\n)`, 'm');
 
 						let exactMatchFound = false;
@@ -517,7 +543,10 @@
 
 						return filteredProbes;
 					}, normalizedProbes);
+				};
 
+				let createIndexFor = (filteredProbes, conditions) => {
+					let index = {};
 					index.global = [
 						'World',
 					];
@@ -593,6 +622,7 @@
 
 				this.observe('rawProbes', (probes) => {
 					createNormalizedProbeList(probes);
+					filterProbesByCurrentParts(this.get('value') || '');
 				});
 
 				this.on('unrender', () => destroy());
