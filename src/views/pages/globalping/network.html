@@ -640,6 +640,8 @@
 					this.set('location', selectedFilter.value);
 				}
 			}
+
+			this.findComponent('c-location-input')?.fire('outsideLocationChange');
 		},
 		rmFilterRule (idx) {
 			let filter = this.get('filtersSet')[idx];
@@ -654,8 +656,10 @@
 					return filteredSegments.join('+');
 				}).filter(part => part.trim() !== '');
 
-				this.set('location', updatedParts.join(','));
+				this.set('location', updatedParts.join(',') || 'World');
 			}
+
+			this.findComponent('c-location-input')?.fire('outsideLocationChange');
 		},
 		sortAndGroup (obj) {
 			let groupBy = this.get('groupBy');

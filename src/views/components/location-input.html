@@ -625,6 +625,14 @@
 					filterProbesByCurrentParts(this.get('value') || '');
 				});
 
+				this.on('outsideLocationChange', () => {
+					// When exposing probes, we need to update the list state regardless of the dropdown state.
+					setTimeout(() => {
+						filterProbesByCurrentParts(this.get('value') || '');
+						this.set('completedValue', this.get('value') || '');
+					}, 0);
+				});
+
 				this.on('unrender', () => destroy());
 			}
 		},
