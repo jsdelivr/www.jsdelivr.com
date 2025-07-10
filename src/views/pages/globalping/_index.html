@@ -1539,6 +1539,12 @@
 			};
 		},
 		computed: {
+			title () {
+				return this.get('_measurementTitle');
+			},
+			description () {
+				return this.get('_measurementDescription');
+			},
 			disablePort () {
 				let type = this.get('mainOptions.type').toLowerCase();
 				let opts = this.get(`${type}Opts`);
@@ -2040,6 +2046,8 @@
 			this.set('preparedTestResults', []);
 			this.set('rateCreditsData', null);
 			this.set('probesMaxTiming', type.toLowerCase() === 'http' ? 1000 : 200);
+			this.set('_measurementTitle', null);
+			this.set('_measurementDescription', null);
 
 			// since Table output mode is available only for the Ping measurement
 			if (type !== 'ping') {

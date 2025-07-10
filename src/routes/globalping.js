@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
+const _ = require('lodash');
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
 const ogImage = require('../middleware/open-graph');
@@ -206,6 +207,36 @@ koaElasticUtils.addRoutes(router, [
 	}
 
 	ctx.body = { domain };
+});
+
+/**
+ * Homepage
+ */
+koaElasticUtils.addRoutes(router, [
+	[ '/', '/' ],
+], async (ctx) => {
+	let path = ctx.path.startsWith('/_') ? '/_404' : ctx.path;
+	let data = {
+		..._.pick(ctx.query, [ 'measurement' ]),
+		actualPath: ctx.path,
+	};
+
+	if (ctx.query.measurement) {
+		data._measurementTitle = 'TODO'; // fetch the data and generate the title and description here
+		data._measurementDescription = 'TODO';
+	}
+
+	try {
+		ctx.body = await ctx.render(`pages/globalping/` + (path === '/' ? '_index' : path) + '.html', data);
+		ctx.maxAge = 5 * 60;
+	} catch (e) {
+		if (app.env === 'development') {
+			console.error(e);
+		}
+
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/globalping/_404.html`, { actualPath: ctx.path });
+	}
 });
 
 module.exports = router;
