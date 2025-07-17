@@ -1610,7 +1610,7 @@ module.exports = {
 				fieldName = 'location';
 			}
 
-			res[key] = errorBody.params[key].replace(/".*"/, fieldName);
+			res[fieldName] = errorBody.params[key].replace(/".*"/, fieldName);
 
 			return res;
 		}, {});
