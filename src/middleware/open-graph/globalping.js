@@ -72,7 +72,7 @@ const getHttpDescription = (data) => {
 	let resCodeText = statusCodes.slice(0, 3).map(code => `${code.code} (${code.count})`).join(', ');
 
 	if (statusCodes.length > 3) {
-		resCodeText += ` +(${statusCodes.length - 3})`;
+		resCodeText += `... (+${statusCodes.length - 3})`;
 	}
 
 	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
