@@ -232,7 +232,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render(`pages/globalping/` + (path === '/' ? '_index' : path) + '.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
