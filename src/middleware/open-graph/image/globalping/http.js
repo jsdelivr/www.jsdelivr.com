@@ -1,8 +1,7 @@
 const { fontsProcessor, truncateString } = require('../utils');
-
+const { getRangeString, getStatusCodes } = require('../../utils/globalping');
 const {
 	getBaseInfo,
-	getRangeString,
 	START_X_POS,
 	X_POS_THRESHOLD,
 	FIELD_GAP_NARROW,
@@ -102,20 +101,4 @@ function prepareData (data) {
 		pathWidth,
 		remainingCodes,
 	};
-}
-
-function getStatusCodes (array) {
-	let filtered = array.filter(val => typeof val.result?.statusCode === 'number');
-
-	let err = array.length - filtered.length;
-	let statusCountMap = _.countBy(filtered, 'result.statusCode');
-
-	if (err) {
-		statusCountMap.Error = err;
-	}
-
-	let sortedCodes = _.sortBy(Object.keys(statusCountMap), code => statusCountMap[code]).reverse();
-	sortedCodes = sortedCodes.map(code => ({ code, count: statusCountMap[code] }));
-
-	return sortedCodes;
 }

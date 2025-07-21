@@ -4,7 +4,8 @@ const koaElasticUtils = require('elastic-apm-utils').koa;
 const _ = require('lodash');
 
 const globalpingSitemap = require('../middleware/sitemap/globalping');
-const ogImage = require('../middleware/open-graph');
+const ogImage = require('../middleware/open-graph/image');
+const ogMetadata = require('../middleware/open-graph/globalping');
 
 let asnDomains = null;
 
@@ -222,8 +223,9 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	if (ctx.query.measurement) {
-		data._measurementTitle = 'TODO'; // fetch the data and generate the title and description here
-		data._measurementDescription = 'TODO';
+		let { title, description } = await ogMetadata(ctx);
+		data._measurementOgTitle = title;
+		data._measurementOgDescription = description;
 	}
 
 	try {

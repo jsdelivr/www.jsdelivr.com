@@ -15,8 +15,8 @@
 
 <r-page
 	noYield="{{noYield}}"
-	title="{{title}}"
-	description="{{description}}"
+	ogTitle="{{ogTitle}}"
+	ogDescription="{{ogDescription}}"
 	openGraphImage="{{#if measurement}}{{@shared.serverHost}}/open-graph/image/measurement/{{measurement}}{{/if}}"
 >
 	<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.umd.min.js"></script>
@@ -1539,11 +1539,11 @@
 			};
 		},
 		computed: {
-			title () {
-				return this.get('_measurementTitle');
+			ogTitle () {
+				return this.get('_measurementOgTitle');
 			},
-			description () {
-				return this.get('_measurementDescription');
+			ogDescription () {
+				return this.get('_measurementOgDescription');
 			},
 			disablePort () {
 				let type = this.get('mainOptions.type').toLowerCase();
@@ -2046,8 +2046,8 @@
 			this.set('preparedTestResults', []);
 			this.set('rateCreditsData', null);
 			this.set('probesMaxTiming', type.toLowerCase() === 'http' ? 1000 : 200);
-			this.set('_measurementTitle', null);
-			this.set('_measurementDescription', null);
+			this.set('_measurementOgTitle', null);
+			this.set('_measurementOgDescription', null);
 
 			// since Table output mode is available only for the Ping measurement
 			if (type !== 'ping') {

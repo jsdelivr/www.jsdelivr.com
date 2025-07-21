@@ -1,7 +1,7 @@
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
-const ogImage = require('../middleware/open-graph');
+const ogImage = require('../middleware/open-graph/image');
 const sitemap = require('../middleware/sitemap');
 const readme = require('../middleware/readme');
 

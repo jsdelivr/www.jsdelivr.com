@@ -4,8 +4,8 @@ const entities = require('entities');
 const FontsProcessor = require('./fonts');
 const fontsProcessor = new FontsProcessor();
 
-fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../fonts/Lexend-Regular.ttf'));
-fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../fonts/Lexend-SemiBold.ttf'));
+fontsProcessor.addFontSync('Lexend Regular', path.resolve(__dirname, '../../../../fonts/Lexend-Regular.ttf'));
+fontsProcessor.addFontSync('Lexend SemiBold', path.resolve(__dirname, '../../../../fonts/Lexend-SemiBold.ttf'));
 
 /**
  *

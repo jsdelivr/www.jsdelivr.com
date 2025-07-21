@@ -8,10 +8,11 @@ const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
 
-const algoliaNode = require('../../lib/algolia-node');
-const got = require('../../lib/got');
+const algoliaNode = require('../../../lib/algolia-node');
+const got = require('../../../lib/got');
 
 const { cleanString, truncateString, fontsProcessor } = require('./utils');
+const { fetchGlobalpingStats } = require('../utils/globalping');
 
 const gpGenerators = {
 	dns: require('./globalping/dns'),
@@ -21,10 +22,9 @@ const gpGenerators = {
 	traceroute: require('./globalping/traceroute'),
 };
 
-const globalpingOG = fs.readFileSync(path.resolve(__dirname, '../../assets/img/og-globalping.png'));
+const globalpingOG = fs.readFileSync(path.resolve(__dirname, '../../../assets/img/og-globalping.png'));
 
 const API_HOST = 'https://data.jsdelivr.com';
-const GLOBALPING_API_HOST = 'https://api.globalping.io';
 const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
 const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
@@ -35,10 +35,6 @@ const fetchStats = async (name, type = 'npm', period = 'month') => {
 	]);
 
 	return { requests, bandwidth };
-};
-
-const fetchGlobalpingStats = async (id) => {
-	return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id}`).json().catch(() => {});
 };
 
 const fetchLogo = async (url) => {
@@ -213,7 +209,7 @@ module.exports = async (ctx) => {
 
 module.exports.globalping = async (ctx) => {
 	try {
-		let data = await fetchGlobalpingStats(ctx.params.id.split(',')[0].split('.')[0]);
+		let data = await fetchGlobalpingStats(ctx.params.id);
 
 		if (!data || data.status !== 'finished' || !gpGenerators[data.type]) {
 			ctx.body = globalpingOG;
