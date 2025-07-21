@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const { fontsProcessor } = require('../utils');
 const { getRangeString } = require('../../utils/globalping');
 

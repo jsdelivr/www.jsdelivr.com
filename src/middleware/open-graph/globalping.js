@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const { pluralize } = require('../../assets/js/_');
 const { fetchGlobalpingStats, getRangeString, getStatusCodes } = require('./utils/globalping');
 

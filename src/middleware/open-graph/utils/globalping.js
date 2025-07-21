@@ -1,5 +1,4 @@
 const got = require('../../../lib/got');
-const _ = require('lodash');
 
 const GLOBALPING_API_HOST = 'https://api.globalping.io';
 
