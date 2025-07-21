@@ -30,16 +30,6 @@ const removeOutliers = (array) => {
 	return array.filter(val => (val >= lowerBound) && (val <= upperBound));
 };
 
-module.exports.filterMeasurementData = async (data) => {
-	switch (data.type.toLower()) {
-		case 'ping': return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.stats?.avg));
-		case 'traceroute': return data.results.filter(obj => obj.result.status === 'finished' && obj.result.hops?.at(-1).timings.length);
-		case 'mtr': return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.hops?.at(-1).stats?.avg));
-		case 'http': return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result?.timings?.total) && obj.result?.statusCode);
-		default: return data.results.filter(obj => obj.result.status === 'finished');
-	}
-};
-
 module.exports.fetchGlobalpingStats = async (id) => {
 	return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id.split(',')[0].split('.')[0]}`).json().catch(() => {});
 };
