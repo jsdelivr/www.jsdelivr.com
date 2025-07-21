@@ -12,7 +12,7 @@ const getPingDescription = (data) => {
 	let latRange = `${getRangeString(viableData.map(obj => obj.result.stats?.avg))} ms`;
 	let lossRange = `${getRangeString(viableData.map(obj => obj.result.stats?.loss))}%`;
 
-	return `Latency ${latRange}, packet loss ${lossRange} (based on ${viableData.length} ${pluralize('probe', viableData.length)}).`;
+	return `Latency ${latRange}, packet loss ${lossRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
 };
 
 const getTracerouteDescription = (data) => {
@@ -25,7 +25,7 @@ const getTracerouteDescription = (data) => {
 	let latRange = getRangeString(viableData.map(obj => _.mean(obj.result.hops?.at(-1).timings.map(timing => timing.rtt)))) + ' ms';
 	let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
 
-	return `Latency ${latRange}, hop count ${hopRange} (based on ${viableData.length} ${pluralize('probe', viableData.length)}).`;
+	return `Latency ${latRange}, hop count ${hopRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
 };
 
 const getMtrDescription = (data) => {
@@ -39,7 +39,7 @@ const getMtrDescription = (data) => {
 	let lossRange = `${getRangeString(viableData.map(obj => obj.result.hops?.at(-1).stats?.loss))}%`;
 	let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
 
-	return `Latency ${latRange}, packet loss ${lossRange}, hop count ${hopRange} (based on ${viableData.length} ${pluralize('probe', viableData.length)}).`;
+	return `Latency ${latRange}, packet loss ${lossRange}, hop count ${hopRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
 };
 
 const getDnsDescription = (data) => {
@@ -52,7 +52,7 @@ const getDnsDescription = (data) => {
 	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings.total))} ms`;
 	let answersRange = getRangeString(viableData.map(obj => obj.result.answers.length));
 
-	return `Query time ${timeRange}, number of answers ${answersRange} (based on ${viableData.length} ${pluralize('probe', viableData.length)}).`;
+	return `Query time ${timeRange}, number of answers ${answersRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
 };
 
 const getHttpDescription = (data) => {
@@ -77,7 +77,7 @@ const getHttpDescription = (data) => {
 
 	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
 
-	return `URL "${completePathString}", response status codes: ${resCodeText}, total time ${timeRange} (based on ${viableData.length} ${pluralize('probe', viableData.length)}).`;
+	return `URL "${completePathString}", response status codes: ${resCodeText}, total time ${timeRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
 };
 
 const gpDescFunctions = {
