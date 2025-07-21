@@ -8,6 +8,10 @@ const FIELD_GAP_NARROW = 32;
 const FIELD_PADDING = 32;
 
 const getLocationString = (locations) => {
+	if (!locations) {
+		return '';
+	}
+
 	let locationStr = locations.map((location) => {
 		return Object.values(location).join('+').trim();
 	}).join(', ');

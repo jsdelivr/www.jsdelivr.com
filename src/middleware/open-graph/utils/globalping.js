@@ -30,12 +30,31 @@ const removeOutliers = (array) => {
 	return array.filter(val => (val >= lowerBound) && (val <= upperBound));
 };
 
-module.exports.fetchGlobalpingStats = async (id) => {
-	return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id.split(',')[0].split('.')[0]}`).json().catch(() => {});
+module.exports.fetchGlobalpingStats = async (id, env) => {
+	try {
+		let measurementId = id.split(',')[0].split('.')[0];
+
+		if (!measurementId) {
+			return undefined;
+		}
+
+		return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${measurementId}`).json();
+	} catch (e) {
+		if (env === 'development') {
+			console.error(e);
+		}
+
+		return undefined;
+	}
 };
 
 module.exports.getRangeString = (array) => {
 	let filtered = removeOutliers(array.filter(_.isFinite));
+
+	if (!filtered.length) {
+		return '--';
+	}
+
 	let min = formatNumber(Math.min(...filtered));
 	let max = formatNumber(Math.max(...filtered));
 

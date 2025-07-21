@@ -105,12 +105,19 @@ const gpTitles = {
 };
 
 const getOgTitle = (data) => {
-	let locationStr = data.locations.slice(0, 3).map((location) => {
-		return Object.values(location).join('+').trim();
-	}).join(', ');
+	let locationCount = data.locations?.length;
+	let locationStr = '';
 
-	if (data.locations.length > 3) {
-		locationStr += `... (+${data.locations.length - 3})`;
+	if (locationCount) {
+		locationStr = 'from ';
+
+		locationStr += data.locations?.slice(0, 3).map((location) => {
+			return Object.values(location).join('+').trim();
+		}).join(', ');
+
+		if (locationCount > 3) {
+			locationStr += `... (+${locationCount - 3})`;
+		}
 	}
 
 	let measType = gpTitles[data.type];
@@ -119,11 +126,11 @@ const getOgTitle = (data) => {
 		measType += ` (${data.measurementOptions?.request?.method ?? 'HEAD'}):`;
 	}
 
-	return `${measType} ${data.target} from ${locationStr} - Globalping`;
+	return `${measType} ${data.target} ${locationStr} - Globalping`;
 };
 
 module.exports = async (ctx) => {
-	let data = await fetchGlobalpingStats(ctx.query.measurement);
+	let data = await fetchGlobalpingStats(ctx.query.measurement, ctx.app.env);
 
 	if (!data || !gpTitles[data.type]) {
 		return { title: null, description: null };

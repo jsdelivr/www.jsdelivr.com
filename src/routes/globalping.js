@@ -223,9 +223,15 @@ koaElasticUtils.addRoutes(router, [
 	};
 
 	if (ctx.query.measurement) {
-		let { title, description } = await ogMetadata(ctx);
-		data._measurementOgTitle = title;
-		data._measurementOgDescription = description;
+		try {
+			let { title, description } = await ogMetadata(ctx);
+			data._measurementOgTitle = title;
+			data._measurementOgDescription = description;
+		} catch (e) {
+			if (ctx.app.env === 'development') {
+				console.error(e);
+			}
+		}
 	}
 
 	try {

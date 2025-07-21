@@ -209,7 +209,7 @@ module.exports = async (ctx) => {
 
 module.exports.globalping = async (ctx) => {
 	try {
-		let data = await fetchGlobalpingStats(ctx.params.id);
+		let data = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
 
 		if (!data || data.status !== 'finished' || !gpGenerators[data.type]) {
 			ctx.body = globalpingOG;
