@@ -96,11 +96,11 @@ const getOgDescription = (data) => {
 };
 
 const gpTitles = {
-	dns: 'DNS:',
+	dns: 'DNS resolve',
 	http: 'HTTP',
-	mtr: 'MTR:',
+	mtr: 'MTR to',
 	ping: 'Ping',
-	traceroute: 'Traceroute',
+	traceroute: 'Traceroute to',
 };
 
 const getOgTitle = (data) => {
@@ -122,7 +122,7 @@ const getOgTitle = (data) => {
 	let measType = gpTitles[data.type];
 
 	if (data.type === 'http') {
-		measType += ` (${data.measurementOptions?.request?.method ?? 'HEAD'}):`;
+		measType += ` ${data.measurementOptions?.request?.method ?? 'HEAD'}`;
 	}
 
 	return `${measType} ${data.target} ${locationStr} - Globalping`;
