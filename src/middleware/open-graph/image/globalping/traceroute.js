@@ -1,8 +1,8 @@
 const { fontsProcessor } = require('../utils');
+const { getRangeString } = require('../../utils/globalping');
 
 const {
 	getBaseInfo,
-	getRangeString,
 	START_X_POS,
 	FIELD_GAP_WIDE,
 	FIELD_PADDING,

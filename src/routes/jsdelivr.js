@@ -1,7 +1,7 @@
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 
-const ogImage = require('../middleware/open-graph');
+const ogImage = require('../middleware/open-graph/image');
 const sitemap = require('../middleware/sitemap');
 const readme = require('../middleware/readme');
 
@@ -71,7 +71,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/terms.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -124,7 +124,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/_package.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
@@ -156,7 +156,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (app.env === 'development') {
+		if (ctx.app.env === 'development') {
 			console.error(e);
 		}
 
