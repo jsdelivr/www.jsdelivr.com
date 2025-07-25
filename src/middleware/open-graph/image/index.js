@@ -12,7 +12,7 @@ const algoliaNode = require('../../../lib/algolia-node');
 const got = require('../../../lib/got');
 
 const { cleanString, truncateString, fontsProcessor } = require('./utils');
-const { fetchGlobalpingStats } = require('../utils/globalping');
+const { fetchGlobalpingStats, validateMeasurementData } = require('../utils/globalping');
 
 const gpGenerators = {
 	dns: require('./globalping/dns'),
@@ -209,16 +209,16 @@ module.exports = async (ctx) => {
 
 module.exports.globalping = async (ctx) => {
 	try {
-		let data = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
+		let measData = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
 
-		if (!data || data.status !== 'finished' || !gpGenerators[data.type]) {
+		if (!validateMeasurementData(measData, false)) {
 			ctx.body = globalpingOG;
 			ctx.type = 'image/png';
 			ctx.maxAge = 60;
 			return;
 		}
 
-		let svg = await gpGenerators[data.type](ctx, data);
+		let svg = await gpGenerators[measData[0].type](ctx, measData);
 		ctx.body = await render(svg);
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
