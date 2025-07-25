@@ -1,83 +1,154 @@
 const { pluralize } = require('../../assets/js/_');
-const { fetchGlobalpingStats, getRangeString, getStatusCodes } = require('./utils/globalping');
+const { fetchGlobalpingStats,
+	getRangeString,
+	getStatusCodes,
+	getViableData,
+	validateMeasurementData,
+} = require('./utils/globalping');
 
-const getPingDescription = (data) => {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.stats?.avg));
+function formatMeasurements (data, formatter) {
+	return data.map(formatter).join('; ') + '.';
+}
 
-	if (!viableData.length) {
-		return null;
+function getFailMessage (target, isComparison) {
+	if (isComparison) {
+		return `${target}: test failed on all probes`;
 	}
 
-	let latRange = `${getRangeString(viableData.map(obj => obj.result.stats?.avg))} ms`;
-	let lossRange = `${getRangeString(viableData.map(obj => obj.result.stats?.loss))}%`;
+	return 'Test failed on all probes';
+}
 
-	return `Latency ${latRange}, packet loss ${lossRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
-};
+function getPingDescription (data) {
+	let isComparison = data.length > 1;
 
-const getTracerouteDescription = (data) => {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && obj.result.hops?.at(-1).timings.length);
+	return formatMeasurements(data, (meas) => {
+		let viableData = getViableData(meas);
 
-	if (!viableData.length) {
-		return null;
-	}
+		if (!viableData.length) {
+			return getFailMessage(meas.target, isComparison);
+		}
 
-	let latRange = getRangeString(viableData.map(obj => _.mean(obj.result.hops?.at(-1).timings.map(timing => timing.rtt)))) + ' ms';
-	let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
+		let latRange = `${getRangeString(viableData.map(obj => obj.result.stats?.avg))} ms`;
+		let lossRange = `${getRangeString(viableData.map(obj => obj.result.stats?.loss))}%`;
 
-	return `Latency ${latRange}, hop count ${hopRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
-};
+		if (isComparison) {
+			return `${meas.target}: latency ${latRange}, packet loss ${lossRange}`;
+		}
 
-const getMtrDescription = (data) => {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.hops?.at(-1).stats?.avg));
+		return `Latency ${latRange}, packet loss ${lossRange} (based on ${meas.results.length} ${pluralize('probe', meas.results.length)})`;
+	});
+}
 
-	if (!viableData.length) {
-		return null;
-	}
+function getTracerouteDescription (data) {
+	let isComparison = data.length > 1;
 
-	let latRange = `${getRangeString(viableData.map(obj => obj.result.hops?.at(-1).stats?.avg))} ms`;
-	let lossRange = `${getRangeString(viableData.map(obj => obj.result.hops?.at(-1).stats?.loss))}%`;
-	let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
+	return formatMeasurements(data, (meas) => {
+		let viableData = getViableData(meas);
 
-	return `Latency ${latRange}, packet loss ${lossRange}, hop count ${hopRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
-};
+		if (!viableData.length) {
+			return getFailMessage(meas.target, isComparison);
+		}
 
-const getDnsDescription = (data) => {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished');
+		let latRange = getRangeString(viableData.map(obj => _.mean(obj.result.hops?.at(-1).timings.map(timing => timing.rtt)))) + ' ms';
+		let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
 
-	if (!viableData.length) {
-		return null;
-	}
+		if (isComparison) {
+			return `${meas.target}: latency ${latRange}, hop count ${hopRange}`;
+		}
 
-	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings.total))} ms`;
-	let answersRange = getRangeString(viableData.map(obj => obj.result.answers.length));
+		return `Latency ${latRange}, hop count ${hopRange} (based on ${meas.results.length} ${pluralize('probe', meas.results.length)})`;
+	});
+}
 
-	return `Query time ${timeRange}, number of answers ${answersRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
-};
+function getMtrDescription (data) {
+	let isComparison = data.length > 1;
 
-const getHttpDescription = (data) => {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result?.timings?.total) && obj.result?.statusCode);
+	return formatMeasurements(data, (meas) => {
+		let viableData = getViableData(meas);
 
-	if (!viableData.length) {
-		return null;
-	}
+		if (!viableData.length) {
+			return getFailMessage(meas.target, isComparison);
+		}
+
+		let latRange = `${getRangeString(viableData.map(obj => obj.result.hops?.at(-1).stats?.avg))} ms`;
+		let lossRange = `${getRangeString(viableData.map(obj => obj.result.hops?.at(-1).stats?.loss))}%`;
+
+		if (isComparison) {
+			return `${meas.target}: latency ${latRange}, packet loss ${lossRange}`;
+		}
+
+		let hopRange = getRangeString(viableData.map(obj => obj.result.hops?.length));
+
+		return `Latency ${latRange}, packet loss ${lossRange}, hop count ${hopRange} (based on ${meas.results.length} ${pluralize('probe', meas.results.length)})`;
+	});
+}
+
+function getDnsDescription (data) {
+	let isComparison = data.length > 1;
+
+	return formatMeasurements(data, (meas) => {
+		let viableData = getViableData(meas);
+
+		if (!viableData.length) {
+			return getFailMessage(meas.target, isComparison);
+		}
+
+		let isTrace = !!meas.measurementOptions?.trace;
+
+		let timeString = isTrace ? 'Query time ' : 'Time ';
+		let answersString = 'number of answers ';
+
+		if (isTrace) {
+			timeString += `${getRangeString(viableData.map(obj => obj.result.hops.at(-1).timings.total))} ms`;
+			answersString += getRangeString(viableData.map(obj => obj.result.hops.at(-1).answers.length));
+		} else {
+			timeString += `${getRangeString(viableData.map(obj => obj.result.timings.total))} ms`;
+			answersString += getRangeString(viableData.map(obj => obj.result.answers.length));
+		}
+
+		if (isComparison) {
+			return `${meas.target}: ${timeString.toLowerCase()}, ${answersString}`;
+		}
+
+		return `${timeString}, ${answersString} (based on ${meas.results.length} ${pluralize('probe', meas.results.length)})`;
+	});
+}
+
+function getHttpDescription (data) {
+	let isComparison = data.length > 1;
 
 	// construct URL
-	let path = data.measurementOptions?.request?.path ?? '';
-	let query = data.measurementOptions?.request?.query ?? '';
+	let path = data[0].measurementOptions?.request?.path ?? '';
+	let query = data[0].measurementOptions?.request?.query ?? '';
 	let completePathString = '/' + path.replace(/^\//, '') + (query && '?' + query.replace(/^\?/, ''));
 
-	// construct status codes
-	let statusCodes = getStatusCodes(data.results, false);
-	let resCodeText = statusCodes.slice(0, 3).map(code => `${code.code} (${code.count})`).join(', ');
+	let descriptionString = formatMeasurements(data, (meas) => {
+		let viableData = getViableData(meas);
 
-	if (statusCodes.length > 3) {
-		resCodeText += `... (+${statusCodes.length - 3})`;
-	}
+		if (!viableData.length) {
+			return getFailMessage(meas.target, isComparison);
+		}
 
-	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
+		// get time string
+		let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
 
-	return `URL "${completePathString}", response status codes: ${resCodeText}, total time ${timeRange} (based on ${data.results.length} ${pluralize('probe', data.results.length)}).`;
-};
+		// construct status codes
+		let statusCodes = getStatusCodes(meas.results, false);
+		let resCodeText = statusCodes.slice(0, isComparison ? 1 : 3).map(code => `${code.code} (${code.count})`).join(', ');
+
+		if (statusCodes.length > 3 && !isComparison) {
+			resCodeText += `... (+${statusCodes.length - 3})`;
+		}
+
+		if (isComparison) {
+			return `${meas.target}: top status code: ${resCodeText}, total time ${timeRange}`;
+		}
+
+		return `response status codes: ${resCodeText}, total time ${timeRange} (based on ${meas.results.length} ${pluralize('probe', meas.results.length)})`;
+	});
+
+	return `URL: "${completePathString}", ${descriptionString}`;
+}
 
 const gpDescFunctions = {
 	dns: getDnsDescription,
@@ -87,13 +158,13 @@ const gpDescFunctions = {
 	traceroute: getTracerouteDescription,
 };
 
-const getOgDescription = (data) => {
-	if (data.status === 'in-progress') {
+function getOgDescription (data) {
+	if (data.some(meas => meas.status === 'in-progress').length) {
 		return 'Test in progress. Click to view more details or run another test.';
 	}
 
-	return (gpDescFunctions[data.type](data) ?? 'Test failed on all probes.') + ' Click to view more details or run another test.';
-};
+	return gpDescFunctions[data[0].type](data) + ' Click to view more details or run another test.';
+}
 
 const gpTitles = {
 	dns: 'DNS resolve',
@@ -103,14 +174,15 @@ const gpTitles = {
 	traceroute: 'Traceroute to',
 };
 
-const getOgTitle = (data) => {
-	let locationCount = data.locations?.length;
+function getOgTitle (data) {
+	let firstMeas = data[0];
+	let locationCount = firstMeas.locations?.length;
 	let locationStr = '';
 
 	if (locationCount) {
 		locationStr = 'from ';
 
-		locationStr += data.locations?.slice(0, 3).map((location) => {
+		locationStr += firstMeas.locations?.slice(0, 3).map((location) => {
 			return Object.values(location).join('+').trim();
 		}).join(', ');
 
@@ -119,25 +191,25 @@ const getOgTitle = (data) => {
 		}
 	}
 
-	let measType = gpTitles[data.type];
+	let measType = gpTitles[firstMeas.type];
 
-	if (data.type === 'http') {
-		measType += ` ${data.measurementOptions?.request?.method ?? 'HEAD'}`;
+	if (firstMeas.type === 'http') {
+		measType += ` ${firstMeas.measurementOptions?.request?.method ?? 'HEAD'}`;
 	}
 
-	return `${measType} ${data.target} ${locationStr} - Globalping`;
-};
+	let targetString = data.map(meas => meas.target).join(', ');
+
+	return `${measType} ${targetString} ${locationStr} - Globalping`;
+}
 
 module.exports = async (ctx) => {
 	let measData = await fetchGlobalpingStats(ctx.query.measurement, ctx.app.env);
 
-	// todo extract validation into utils
-	if (!measData || !measData.length || measData.filter(meas => !gpTitles[meas.type]).length) {
+	if (!validateMeasurementData(measData)) {
 		return { title: null, description: null };
 	}
 
-	// TODO comparison support
 	if (measData.length) {
-		return { title: getOgTitle(measData[0]), description: getOgDescription(measData[0]) };
+		return { title: getOgTitle(measData), description: getOgDescription(measData) };
 	}
 };
