@@ -133,7 +133,7 @@ function getHttpDescription (data) {
 		let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
 
 		// construct status codes
-		let statusCodes = getStatusCodes(meas.results, false);
+		let statusCodes = getStatusCodes(meas.results);
 		let resCodeText = statusCodes.slice(0, isComparison ? 1 : 3).map(code => `${code.code} (${code.count})`).join(', ');
 
 		if (statusCodes.length > 3 && !isComparison) {

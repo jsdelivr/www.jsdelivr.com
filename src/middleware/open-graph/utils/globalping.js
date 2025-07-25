@@ -114,13 +114,13 @@ module.exports.getRangeString = (array) => {
 	return min === max ? min : min + ' - ' + max;
 };
 
-module.exports.getStatusCodes = (array, includeError = true) => {
+module.exports.getStatusCodes = (array) => {
 	let filtered = array.filter(val => typeof val.result?.statusCode === 'number');
 
 	let err = array.length - filtered.length;
 	let statusCountMap = _.countBy(filtered, 'result.statusCode');
 
-	if (err && includeError) {
+	if (err) {
 		statusCountMap.Error = err;
 	}
 

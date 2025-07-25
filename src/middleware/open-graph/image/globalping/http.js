@@ -137,7 +137,7 @@ function prepareComparisonData (data) {
 			};
 		}
 
-		let topStatusCode = getStatusCodes(viableData)[0];
+		let topStatusCode = getStatusCodes(meas)[0];
 		let { timeRange } = getFieldContents(viableData);
 
 		return {
