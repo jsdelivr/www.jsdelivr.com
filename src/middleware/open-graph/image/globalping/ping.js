@@ -1,19 +1,30 @@
 const { fontsProcessor } = require('../utils');
-const { getRangeString } = require('../../utils/globalping');
+const { getRangeString, getViableData } = require('../../utils/globalping');
 
 const {
 	getBaseInfo,
+	getBaseComparisonInfo,
+	getTargetField,
+	getHeaderWidths,
 	START_X_POS,
 	FIELD_GAP_WIDE,
 	FIELD_PADDING,
 } = require('./utils');
 
-module.exports = async (ctx, data) => {
-	return ctx.render('open-graph/gp-ping.svg', prepareData(data));
-};
+function getFieldContents (data) {
+	let latencyRange = `${getRangeString(data.map(obj => obj.result.stats?.avg))} ms`;
+	let lossRange = `${getRangeString(data.map(obj => obj.result.stats?.loss))} %`;
+
+	return {
+		latencyRange,
+		lossRange,
+		latencyWidth: fontsProcessor.computeWidth(latencyRange, 'Lexend SemiBold', 32, -0.6),
+		lossWidth: fontsProcessor.computeWidth(lossRange, 'Lexend SemiBold', 32, -0.6),
+	};
+}
 
 function prepareData (data) {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.stats?.avg));
+	let viableData = getViableData(data);
 	let { location, locationWidth, probes, target } = getBaseInfo(data);
 
 	if (viableData.length === 0) {
@@ -26,25 +37,67 @@ function prepareData (data) {
 		};
 	}
 
-	let latRange = `${getRangeString(viableData.map(obj => obj.result.stats?.avg))} ms`;
-	let lossRange = `${getRangeString(viableData.map(obj => obj.result.stats?.loss))} %`;
+	let { latencyRange, lossRange, latencyWidth, lossWidth } = getFieldContents(viableData);
 
-	let latencyWidth = fontsProcessor.computeWidth(latRange, 'Lexend SemiBold', 32, -0.6);
-	let latencyHeaderWidth = fontsProcessor.computeWidth('Avg latency:', 'Lexend Regular', 30, 0);
-	let packetLossWidth = fontsProcessor.computeWidth(lossRange, 'Lexend SemiBold', 32, -0.6);
-
-	let fieldWidth = Math.max(latencyWidth + FIELD_PADDING, latencyHeaderWidth);
+	let fieldWidth = Math.max(latencyWidth + FIELD_PADDING, ...getHeaderWidths('Avg latency:'));
 	let lossOffset = START_X_POS + FIELD_GAP_WIDE + fieldWidth;
 
 	return {
-		latRange,
+		latencyRange,
 		lossRange,
 		target,
 		location,
 		latencyWidth,
-		packetLossWidth,
+		lossWidth,
 		probes,
 		locationWidth,
 		lossOffset,
 	};
 }
+
+function prepareComparisonData (data) {
+	let { probes, location, locationWidth } = getBaseComparisonInfo(data);
+	let [ maxLatencyWidth, maxTargetWidth ] = getHeaderWidths('Avg latency', 'Target');
+
+	let targets = data.map((meas) => {
+		let viableData = getViableData(meas);
+		let { target, targetWidth } = getTargetField(meas);
+		maxTargetWidth = Math.max(maxTargetWidth, targetWidth);
+
+		if (viableData.length === 0) {
+			return {
+				target,
+				failure: true,
+			};
+		}
+
+		let { latencyRange, lossRange, latencyWidth } = getFieldContents(viableData);
+		maxLatencyWidth = Math.max(maxLatencyWidth, latencyWidth);
+
+		return {
+			target,
+			latencyRange,
+			lossRange,
+		};
+	});
+
+	let latencyOffset = START_X_POS + maxTargetWidth + 1.5 * FIELD_GAP_WIDE;
+	let lossOffset = latencyOffset + maxLatencyWidth + FIELD_GAP_WIDE;
+
+	return {
+		targets,
+		location,
+		probes,
+		locationWidth,
+		latencyOffset,
+		lossOffset,
+	};
+}
+
+module.exports = async (ctx, data) => {
+	if (data.length === 1) {
+		return ctx.render('open-graph/gp-ping.svg', prepareData(data[0]));
+	}
+
+	return ctx.render('open-graph/gp-ping-comp.svg', prepareComparisonData(data));
+};

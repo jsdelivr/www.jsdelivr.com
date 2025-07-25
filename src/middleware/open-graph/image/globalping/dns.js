@@ -1,7 +1,10 @@
 const { fontsProcessor } = require('../utils');
-const { getRangeString } = require('../../utils/globalping');
+const { getRangeString, getViableData } = require('../../utils/globalping');
 const {
 	getBaseInfo,
+	getBaseComparisonInfo,
+	getHeaderWidths,
+	getTargetField,
 	START_X_POS,
 	X_POS_THRESHOLD,
 	FIELD_GAP_WIDE,
@@ -9,9 +12,25 @@ const {
 	FIELD_PADDING,
 } = require('./utils');
 
-module.exports = async (ctx, data) => {
-	return ctx.render('open-graph/gp-dns.svg', prepareData(data));
-};
+function getFieldContents (data, isTrace = false) {
+	let timeRange;
+	let answersRange;
+
+	if (isTrace) {
+		timeRange = `${getRangeString(data.map(obj => obj.result.hops.at(-1).timings.total))} ms`;
+		answersRange = getRangeString(data.map(obj => obj.result.hops.at(-1).answers.length));
+	} else {
+		timeRange = `${getRangeString(data.map(obj => obj.result.timings.total))} ms`;
+		answersRange = getRangeString(data.map(obj => obj.result.answers.length));
+	}
+
+	return {
+		timeRange,
+		answersRange,
+		timeWidth: fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6),
+		answersWidth: fontsProcessor.computeWidth(answersRange, 'Lexend SemiBold', 32, -0.6),
+	};
+}
 
 function prepareData (data) {
 	if (data.measurementOptions?.trace) {
@@ -31,20 +50,13 @@ function prepareData (data) {
 		};
 	}
 
-	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings.total))} ms`;
-	let answersRange = getRangeString(viableData.map(obj => obj.result.answers.length));
+	let { timeRange, answersRange, timeWidth, answersWidth } = getFieldContents(viableData);
+	let [ timeHeaderWidth, answersHeaderWidth, errorsHeaderWidth ] = getHeaderWidths('Time:', 'Number of answers:', 'Errors:');
 
-	let timeWidth = fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6);
-	let timeHeaderWidth = fontsProcessor.computeWidth('Time:', 'Lexend SemiBold', 30, 0);
-
-	let answersWidth = fontsProcessor.computeWidth(answersRange, 'Lexend SemiBold', 32, -0.6);
-	let answersHeaderWidth = fontsProcessor.computeWidth('Number of answers:', 'Lexend Regular', 30, 0);
-
-	let answersOffset = START_X_POS + Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
+	let answersOffset = START_X_POS + FIELD_GAP_WIDE + Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
 	let errorOffset = answersOffset + Math.max(answersWidth + FIELD_PADDING, answersHeaderWidth);
 
 	let errors = viableData.filter(obj => obj.result.statusCode !== 0);
-	let errorsHeaderWidth = fontsProcessor.computeWidth('Errors:', 'Lexend Regular', 30, 0);
 
 	let mostCommonError;
 	let mostCommonErrorCount;
@@ -109,13 +121,9 @@ function prepareTraceData (data) {
 		};
 	}
 
-	let timeRange = `${getRangeString(viableData.map(obj => obj.result.hops.at(-1).timings.total))} ms`;
-	let answersRange = getRangeString(viableData.map(obj => obj.result.hops.at(-1).answers.length));
+	let { timeRange, answersRange, timeWidth, answersWidth } = getFieldContents(viableData, true);
+	let [ timeHeaderWidth ] = getHeaderWidths('Query time:');
 
-	let timeWidth = fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6);
-	let timeHeaderWidth = fontsProcessor.computeWidth('Query time:', 'Lexend SemiBold', 30, 0);
-
-	let answersWidth = fontsProcessor.computeWidth(answersRange, 'Lexend SemiBold', 32, -0.6);
 	let answersOffset = START_X_POS + FIELD_GAP_WIDE + Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
 
 	return {
@@ -130,3 +138,59 @@ function prepareTraceData (data) {
 		answersOffset,
 	};
 }
+
+const prepareComparisonData = (data) => {
+	let { probes, location, locationWidth } = getBaseComparisonInfo(data);
+	let timeHeader = data[0].measurementOptions?.trace ? 'Query time' : 'Time';
+	let [ maxTimeWidth, maxTargetWidth, maxAnswersWidth ] = getHeaderWidths(timeHeader, 'Target', 'Number of answers');
+
+	let targets = data.map((meas) => {
+		let viableData = getViableData(meas);
+		let { target, targetWidth } = getTargetField(meas);
+		maxTargetWidth = Math.max(maxTargetWidth, targetWidth);
+
+		if (viableData.length === 0) {
+			return {
+				target,
+				failure: true,
+			};
+		}
+
+		let { timeRange, answersRange, timeWidth, answersWidth } = getFieldContents(viableData, meas.measurementOptions?.trace);
+		maxTimeWidth = Math.max(maxTimeWidth, timeWidth);
+		maxAnswersWidth = Math.max(maxAnswersWidth, answersWidth);
+
+		return {
+			target,
+			timeRange,
+			answersRange,
+		};
+	});
+
+	let timeOffset = START_X_POS + maxTargetWidth + 1.5 * FIELD_GAP_WIDE;
+	let answersOffset = timeOffset + maxTimeWidth + FIELD_GAP_WIDE;
+
+	if (answersOffset + maxAnswersWidth > X_POS_THRESHOLD) {
+		let squeezeCoeff = Math.max(1 - (answersOffset + maxAnswersWidth - X_POS_THRESHOLD) / (2.5 * FIELD_GAP_WIDE), 0.2);
+		timeOffset = START_X_POS + maxTargetWidth + 1.5 * FIELD_GAP_WIDE * squeezeCoeff;
+		answersOffset = timeOffset + maxTimeWidth + FIELD_GAP_WIDE * squeezeCoeff;
+	}
+
+	return {
+		targets,
+		location,
+		probes,
+		locationWidth,
+		timeOffset,
+		answersOffset,
+		timeHeader,
+	};
+};
+
+module.exports = async (ctx, data) => {
+	if (data.length === 1) {
+		return ctx.render('open-graph/gp-dns.svg', prepareData(data[0]));
+	}
+
+	return ctx.render('open-graph/gp-dns-comp.svg', prepareComparisonData(data));
+};

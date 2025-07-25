@@ -20,39 +20,22 @@
 			<g>
 				<g>
 					<g>
-						<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="40" letter-spacing="0px"><tspan x="88" y="110">PING</tspan></text>
+						<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="40" letter-spacing="0px"><tspan x="88" y="110">MTR</tspan></text>
 					</g>
-					<g>
-						<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="72" font-weight="600" letter-spacing="0.2px"><tspan x="88" y="194">{{target}}</tspan></text>
-					</g>
-					<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="88" y="256">from {{location}}</tspan></text>
-					<text fill="#67738B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30" font-weight="400" letter-spacing="-0.6px"><tspan x="{{188 + locationWidth}}" y="254">({{probes}})</tspan></text>
+					<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="88" y="164">from {{location}}</tspan></text>
+					<text fill="#67738B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30" font-weight="400" letter-spacing="-0.6px"><tspan x="{{188 + locationWidth}}" y="162">({{probes}})</tspan></text>
 				</g>
 				<g>
-					{{#if failure}}
 					<g>
-						<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="88" y="489">FAILED ON ALL PROBES</tspan></text>
+						<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30"><tspan x="88" y="385">Target</tspan></text>
+						<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30"><tspan x="{{latencyOffset}}" y="385">Avg latency</tspan></text>
+						<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30"><tspan x="{{lossOffset}}" y="385">Packet loss</tspan></text>
 					</g>
-					{{else}}
-					<g>
-						<g>
-							<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30" letter-spacing="0px"><tspan x="88" y="426.25">Avg latency:</tspan></text>
-							<g>
-								<rect x="88.5" y="441.5" width="{{ latencyWidth + 32 }}" height="71" rx="15.5" stroke="#E7E7EE"/>
-								<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="104" y="489">{{latencyRange}}</tspan></text>
-							</g>
-						</g>
-					</g>
-					<g>
-						<g>
-							<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="30" letter-spacing="0px"><tspan x="{{lossOffset}}" y="426.25">Packet loss:</tspan></text>
-							<g>
-								<rect x="{{lossOffset + 0.5}}" y="441.5" width="{{ lossWidth + 32 }}" height="71" rx="15.5" stroke="#E7E7EE"/>
-								<text fill="#17233B" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="{{lossOffset + 16.5}}" y="489">{{lossRange}}</tspan></text>
-							</g>
-						</g>
-					</g>
-					{{/if}}
+					{{#each targets: index}}
+					<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="88" y="{{445 + index * 65}}">{{target}}</tspan></text>
+					<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="{{latencyOffset}}" y="{{445 + index * 65}}">{{#if failure}} -- {{else}} {{latencyRange}} {{/if}}</tspan></text>
+					<text fill="#17233A" xml:space="preserve" style="white-space: pre" font-family="Lexend" font-size="32" font-weight="600" letter-spacing="-0.6px"><tspan x="{{lossOffset}}" y="{{445 + index * 65}}">{{#if failure}} -- {{else}} {{lossRange}} {{/if}}</tspan></text>
+					{{/each}}
 				</g>
 			</g>
 			<g>

@@ -129,11 +129,15 @@ const getOgTitle = (data) => {
 };
 
 module.exports = async (ctx) => {
-	let data = await fetchGlobalpingStats(ctx.query.measurement, ctx.app.env);
+	let measData = await fetchGlobalpingStats(ctx.query.measurement, ctx.app.env);
 
-	if (!data || !gpTitles[data.type]) {
+	// todo extract validation into utils
+	if (!measData || !measData.length || measData.filter(meas => !gpTitles[meas.type]).length) {
 		return { title: null, description: null };
 	}
 
-	return { title: getOgTitle(data), description: getOgDescription(data) };
+	// TODO comparison support
+	if (measData.length) {
+		return { title: getOgTitle(measData[0]), description: getOgDescription(measData[0]) };
+	}
 };

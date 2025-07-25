@@ -209,16 +209,20 @@ module.exports = async (ctx) => {
 
 module.exports.globalping = async (ctx) => {
 	try {
-		let data = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
+		let measData = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
 
-		if (!data || data.status !== 'finished' || !gpGenerators[data.type]) {
+		// TODO ENSURE SAME PROBE COUNT
+		if (!measData
+			|| !measData.length
+			|| measData.some(meas => !gpGenerators[meas.type] || meas.status !== 'finished')
+			|| (measData.length === 2 && measData[0].type !== measData[1].type)) {
 			ctx.body = globalpingOG;
 			ctx.type = 'image/png';
 			ctx.maxAge = 60;
 			return;
 		}
 
-		let svg = await gpGenerators[data.type](ctx, data);
+		let svg = await gpGenerators[measData[0].type](ctx, measData);
 		ctx.body = await render(svg);
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;

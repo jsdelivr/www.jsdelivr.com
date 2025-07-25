@@ -31,19 +31,51 @@ const removeOutliers = (array) => {
 
 module.exports.fetchGlobalpingStats = async (id, env) => {
 	try {
-		let measurementId = id.split(',')[0].split('.')[0];
+		let ids = id.split(',');
 
-		if (!measurementId) {
+		if (!ids || !ids.length) {
 			return undefined;
 		}
 
-		return got.get(`${GLOBALPING_API_HOST}/v1/measurements/${measurementId}`).json();
+		return Promise.all(ids.slice(0, 2).map(id => got.get(`${GLOBALPING_API_HOST}/v1/measurements/${id.split('.')[0]}`).json()));
 	} catch (e) {
 		if (env === 'development') {
 			console.error(e);
 		}
 
 		return undefined;
+	}
+};
+
+module.exports.getViableData = (data) => {
+	switch (data.type) {
+		case 'ping': {
+			return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.stats?.avg));
+		}
+
+		case 'traceroute': {
+			return data.results.filter(obj => obj.result.status === 'finished' && obj.result.hops?.at(-1).timings.length);
+		}
+
+		case 'mtr': {
+			return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result.hops?.at(-1).stats?.avg));
+		}
+
+		case 'dns': {
+			if (data.measurementOptions?.trace) {
+				return data.results.filter(obj => obj.result.status === 'finished' && obj.result.hops.length);
+			}
+
+			return data.results.filter(obj => obj.result.status === 'finished');
+		}
+
+		case 'http': {
+			return data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result?.timings?.total) && obj.result?.statusCode);
+		}
+
+		default: {
+			return data.results.filter(obj => obj.result.status === 'finished');
+		}
 	}
 };
 

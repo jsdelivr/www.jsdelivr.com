@@ -1,29 +1,44 @@
 const { fontsProcessor, truncateString } = require('../utils');
-const { getRangeString, getStatusCodes } = require('../../utils/globalping');
+const { getRangeString, getStatusCodes, getViableData } = require('../../utils/globalping');
 const {
 	getBaseInfo,
+	getHeaderWidths,
+	getBaseComparisonInfo,
 	START_X_POS,
 	X_POS_THRESHOLD,
 	FIELD_GAP_NARROW,
-	FIELD_PADDING,
+	FIELD_PADDING, getTargetField, FIELD_GAP_WIDE,
 } = require('./utils');
 
-module.exports = async (ctx, data) => {
-	return ctx.render('open-graph/gp-http.svg', prepareData(data));
-};
-
-function prepareData (data) {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && _.isFinite(obj.result?.timings?.total) && obj.result?.statusCode);
-	let { location, locationWidth, probes, target } = getBaseInfo(data);
-
+function getHttpInformation (data) {
 	let method = data.measurementOptions?.request?.method ?? 'HEAD';
+
 	let path = data.measurementOptions?.request?.path ?? '';
 	let query = data.measurementOptions?.request?.query ?? '';
 	let completePathString = '/' + path.replace(/^\//, '') + (query && '?' + query.replace(/^\?/, ''));
-	path = truncateString(completePathString, 'Lexend SemiBold', 30, 800).text;
+	path = truncateString(completePathString, 'Lexend SemiBold', 30, 800, -0.6).text;
 
-	let pathWidth = fontsProcessor.computeWidth(path, 'Lexend SemiBold', 30, -0.6);
-	let methodWidth = fontsProcessor.computeWidth(method, 'Lexend SemiBold', 34, -0.6);
+	return {
+		path,
+		method,
+		pathWidth: fontsProcessor.computeWidth(path, 'Lexend SemiBold', 30, -0.6),
+		methodWidth: fontsProcessor.computeWidth(method, 'Lexend SemiBold', 34, -0.6),
+	};
+}
+
+function getFieldContents (data) {
+	let timeRange = `${getRangeString(data.map(obj => obj.result.timings?.total))} ms`;
+
+	return {
+		timeRange,
+		timeWidth: fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6),
+	};
+}
+
+function prepareData (data) {
+	let viableData = getViableData(data);
+	let { location, locationWidth, probes, target } = getBaseInfo(data);
+	let { path, pathWidth, method, methodWidth } = getHttpInformation(data);
 
 	if (viableData.length === 0) {
 		return {
@@ -39,7 +54,7 @@ function prepareData (data) {
 		};
 	}
 
-	let timeRange = `${getRangeString(viableData.map(obj => obj.result.timings?.total))} ms`;
+	let { timeRange, timeWidth } = getFieldContents(viableData);
 	let statusCodes = getStatusCodes(data.results); // includes errors
 	let usedStatusCodes = statusCodes.slice(0, 3);
 
@@ -68,8 +83,9 @@ function prepareData (data) {
 		}
 	});
 
+	let [ timeHeaderWidth, codesHeaderWidth ] = getHeaderWidths('Total time:', 'Response status codes:');
+
 	let timeOffset;
-	let codesHeaderWidth = fontsProcessor.computeWidth('Response status codes:', 'Lexend Regular', 30, 0);
 
 	if (remainingCodes) {
 		let remainingWidth = fontsProcessor.computeWidth(`+${remainingCodes.count}`, 'Lexend Regular', 32, -0.6);
@@ -78,8 +94,6 @@ function prepareData (data) {
 		timeOffset = Math.max(START_X_POS + codesHeaderWidth, usedStatusCodes.at(-1).offset + usedStatusCodes.at(-1).width + FIELD_PADDING) + FIELD_GAP_NARROW;
 	}
 
-	let timeWidth = fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6);
-	let timeHeaderWidth = fontsProcessor.computeWidth('Total time:', 'Lexend Regular', 30, 0);
 	let fieldWidth = Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
 
 	if (timeOffset + fieldWidth + FIELD_GAP_NARROW < X_POS_THRESHOLD) {
@@ -102,3 +116,55 @@ function prepareData (data) {
 		remainingCodes,
 	};
 }
+
+function prepareComparisonData (data) {
+	let { probes, location, locationWidth } = getBaseComparisonInfo(data);
+	let { path, method, pathWidth, methodWidth } = getHttpInformation(data[0]);
+	let [ statusWidth, maxTargetWidth ] = getHeaderWidths('Top status code', 'Target');
+
+	let targets = data.map((meas) => {
+		let viableData = getViableData(meas);
+		let { target, targetWidth } = getTargetField(meas);
+		maxTargetWidth = Math.max(maxTargetWidth, targetWidth);
+
+		if (viableData.length === 0) {
+			return {
+				target,
+				failure: true,
+			};
+		}
+
+		let topStatusCode = getStatusCodes(viableData)[0];
+		let { timeRange } = getFieldContents(viableData);
+
+		return {
+			target,
+			topStatusCode,
+			timeRange,
+		};
+	});
+
+	let statusOffset = START_X_POS + maxTargetWidth + 1.5 * FIELD_GAP_WIDE;
+	let timeOffset = statusOffset + statusWidth + FIELD_GAP_WIDE;
+
+	return {
+		targets,
+		location,
+		probes,
+		path,
+		method,
+		pathWidth,
+		methodWidth,
+		locationWidth,
+		statusOffset,
+		timeOffset,
+	};
+}
+
+module.exports = async (ctx, data) => {
+	if (data.length === 1) {
+		return ctx.render('open-graph/gp-http.svg', prepareData(data[0]));
+	}
+
+	return ctx.render('open-graph/gp-http-comp.svg', prepareComparisonData(data));
+};
