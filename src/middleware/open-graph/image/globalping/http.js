@@ -1,13 +1,17 @@
-const { fontsProcessor, truncateString } = require('../utils');
 const { getRangeString, getStatusCodes, getViableData } = require('../../utils/globalping');
 const {
 	getBaseInfo,
 	getHeaderWidths,
 	getBaseComparisonInfo,
+	getTargetField,
+	getFieldWidth,
+	truncateField,
 	START_X_POS,
 	X_POS_THRESHOLD,
 	FIELD_GAP_NARROW,
-	FIELD_PADDING, getTargetField, FIELD_GAP_WIDE,
+	FIELD_PADDING,
+	FIELD_GAP_WIDE,
+	FIELD_TYPES,
 } = require('./utils');
 
 function getHttpInformation (data) {
@@ -16,13 +20,13 @@ function getHttpInformation (data) {
 	let path = data.measurementOptions?.request?.path ?? '';
 	let query = data.measurementOptions?.request?.query ?? '';
 	let completePathString = '/' + path.replace(/^\//, '') + (query && '?' + query.replace(/^\?/, ''));
-	path = truncateString(completePathString, 'Lexend SemiBold', 30, 800, -0.6).text;
+	path = truncateField(completePathString, 800, FIELD_TYPES.PATH);
 
 	return {
 		path,
 		method,
-		pathWidth: fontsProcessor.computeWidth(path, 'Lexend SemiBold', 30, -0.6),
-		methodWidth: fontsProcessor.computeWidth(method, 'Lexend SemiBold', 34, -0.6),
+		pathWidth: getFieldWidth(path, FIELD_TYPES.PATH),
+		methodWidth: getFieldWidth(method, FIELD_TYPES.BIGGER),
 	};
 }
 
@@ -31,7 +35,7 @@ function getFieldContents (data) {
 
 	return {
 		timeRange,
-		timeWidth: fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6),
+		timeWidth: getFieldWidth(timeRange),
 	};
 }
 
@@ -65,8 +69,7 @@ function prepareData (data) {
 	}
 
 	usedStatusCodes.forEach((code, index) => {
-		let width = fontsProcessor.computeWidth(`${code.code} `, 'Lexend SemiBold', 32, -0.6)
-			+ fontsProcessor.computeWidth(`(${code.count})`, 'Lexend Regular', 30, -0.6);
+		let width = getFieldWidth(`${code.code} `) + getFieldWidth(`(${code.count})`, FIELD_TYPES.SMALLER);
 		let offset;
 
 		if (index === 0) {
@@ -88,7 +91,7 @@ function prepareData (data) {
 	let timeOffset;
 
 	if (remainingCodes) {
-		let remainingWidth = fontsProcessor.computeWidth(`+${remainingCodes.count}`, 'Lexend Regular', 32, -0.6);
+		let remainingWidth = getFieldWidth(`+${remainingCodes.count}`, FIELD_TYPES.REGULAR);
 		timeOffset = Math.max(START_X_POS + codesHeaderWidth, remainingWidth + remainingCodes.offset) + FIELD_GAP_NARROW;
 	} else {
 		timeOffset = Math.max(START_X_POS + codesHeaderWidth, usedStatusCodes.at(-1).offset + usedStatusCodes.at(-1).width + FIELD_PADDING) + FIELD_GAP_NARROW;

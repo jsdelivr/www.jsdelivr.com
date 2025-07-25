@@ -1,4 +1,3 @@
-const { fontsProcessor } = require('../utils');
 const { getRangeString, getViableData } = require('../../utils/globalping');
 
 const {
@@ -6,6 +5,7 @@ const {
 	getBaseComparisonInfo,
 	getTargetField,
 	getHeaderWidths,
+	getFieldWidth,
 	START_X_POS,
 	FIELD_GAP_WIDE,
 	FIELD_PADDING,
@@ -18,8 +18,8 @@ function getFieldContents (data) {
 	return {
 		latencyRange,
 		hopRange,
-		latencyWidth: fontsProcessor.computeWidth(latencyRange, 'Lexend SemiBold', 32, -0.6),
-		hopWidth: fontsProcessor.computeWidth(hopRange, 'Lexend SemiBold', 32, -0.6),
+		latencyWidth: getFieldWidth(latencyRange),
+		hopWidth: getFieldWidth(hopRange),
 	};
 }
 

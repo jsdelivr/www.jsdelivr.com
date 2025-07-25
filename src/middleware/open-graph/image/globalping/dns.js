@@ -1,15 +1,16 @@
-const { fontsProcessor } = require('../utils');
 const { getRangeString, getViableData } = require('../../utils/globalping');
 const {
 	getBaseInfo,
 	getBaseComparisonInfo,
 	getHeaderWidths,
 	getTargetField,
+	getFieldWidth,
 	START_X_POS,
 	X_POS_THRESHOLD,
 	FIELD_GAP_WIDE,
 	FIELD_GAP_NARROW,
 	FIELD_PADDING,
+	FIELD_TYPES,
 } = require('./utils');
 
 function getFieldContents (data, isTrace = false) {
@@ -27,8 +28,8 @@ function getFieldContents (data, isTrace = false) {
 	return {
 		timeRange,
 		answersRange,
-		timeWidth: fontsProcessor.computeWidth(timeRange, 'Lexend SemiBold', 32, -0.6),
-		answersWidth: fontsProcessor.computeWidth(answersRange, 'Lexend SemiBold', 32, -0.6),
+		timeWidth: getFieldWidth(timeRange),
+		answersWidth: getFieldWidth(answersRange),
 	};
 }
 
@@ -71,9 +72,9 @@ function prepareData (data) {
 		let errorCodeMap = _.countBy(errors, 'result.statusCodeName');
 		mostCommonError = _.maxBy(Object.keys(errorCodeMap), code => errorCodeMap[code]);
 		mostCommonErrorCount = errorCodeMap[mostCommonError];
-		mostCommonErrorWidth = fontsProcessor.computeWidth(mostCommonError + ' ', 'Lexend SemiBold', 32, -0.6) + (mostCommonErrorCount ? fontsProcessor.computeWidth(mostCommonErrorCount + '()', 'Lexend Regular', 30, -0.6) : 0);
+		mostCommonErrorWidth = getFieldWidth(mostCommonError + ' ') + (mostCommonErrorCount ? getFieldWidth(mostCommonErrorCount + '()', FIELD_TYPES.SMALLER) : 0);
 		remainingErrors = Object.keys(errorCodeMap).length - 1;
-		remainingErrorsWidth = remainingErrors ? Number(fontsProcessor.computeWidth('+' + remainingErrors, 'Lexend Regular', 32, -0.6)) : 0;
+		remainingErrorsWidth = remainingErrors ? getFieldWidth('+' + remainingErrors, FIELD_TYPES.REGULAR) : 0;
 		remainingErrorsOffset = remainingErrors ? mostCommonErrorWidth + FIELD_PADDING + 10 : 0;
 	}
 
