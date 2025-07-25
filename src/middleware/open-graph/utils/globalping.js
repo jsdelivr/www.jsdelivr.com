@@ -1,17 +1,18 @@
 const got = require('../../../lib/got');
 
 const GLOBALPING_API_HOST = 'https://api.globalping.io';
+const MEASUREMENT_TYPES = [ 'ping', 'traceroute', 'mtr', 'dns', 'http' ];
 
-const formatNumber = (number) => {
+function formatNumber (number) {
 	if (number > 0 && number < 1) {
 		return '1';
 	}
 
 	return number.toFixed(0);
-};
+}
 
 // Based on https://en.wikipedia.org/wiki/Interquartile_range#Outliers:~:text=be%20indicated%20here.-,Outliers,-%5Bedit%5D
-const removeOutliers = (array) => {
+function removeOutliers (array) {
 	let len = array.length;
 	array.sort((a, b) => a - b);
 
@@ -27,6 +28,27 @@ const removeOutliers = (array) => {
 	let lowerBound = q1 - 1.5 * iqr;
 
 	return array.filter(val => (val >= lowerBound) && (val <= upperBound));
+}
+
+module.exports.validateMeasurementData = (data, allowInProgress = true) => {
+	let baseValidation = data && data.length
+		&& data.every(meas => MEASUREMENT_TYPES.includes(meas.type))
+		&& (allowInProgress || data.every(meas => meas.status === 'finished'));
+
+	if (data.length === 1) {
+		return baseValidation;
+	} else if (data.length === 2) {
+		let [ firstMeas, secMeas ] = data;
+
+		let baseComparisonValidation = firstMeas.type === secMeas.type
+			&& firstMeas.probesCount === secMeas.probesCount
+			&& _.isEqual(firstMeas.measurementOptions, secMeas.measurementOptions)
+			&& _.isEqual(firstMeas.locations, secMeas.locations);
+
+		return baseValidation && baseComparisonValidation;
+	}
+
+	return false;
 };
 
 module.exports.fetchGlobalpingStats = async (id, env) => {
