@@ -159,7 +159,7 @@ const gpDescFunctions = {
 };
 
 function getOgDescription (data) {
-	if (data.some(meas => meas.status === 'in-progress').length) {
+	if (data.some(meas => meas.status === 'in-progress')) {
 		return 'Test in progress. Click to view more details or run another test.';
 	}
 
