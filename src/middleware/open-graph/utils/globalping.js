@@ -35,9 +35,9 @@ module.exports.validateMeasurementData = (data, allowInProgress = true) => {
 		&& data.every(meas => MEASUREMENT_TYPES.includes(meas.type))
 		&& (allowInProgress || data.every(meas => meas.status === 'finished'));
 
-	if (data.length === 1) {
+	if (data?.length === 1) {
 		return baseValidation;
-	} else if (data.length === 2) {
+	} else if (data?.length === 2) {
 		let [ firstMeas, secMeas ] = data;
 
 		let baseComparisonValidation = firstMeas.type === secMeas.type
