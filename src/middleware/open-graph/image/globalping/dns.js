@@ -51,7 +51,8 @@ function prepareData (data) {
 	}
 
 	let { timeRange, answersRange, timeWidth, answersWidth } = getFieldContents(viableData);
-	let [ timeHeaderWidth, answersHeaderWidth, errorsHeaderWidth ] = getHeaderWidths('Time:', 'Number of answers:', 'Errors:');
+	let timeHeader = 'Time:';
+	let [ timeHeaderWidth, answersHeaderWidth, errorsHeaderWidth ] = getHeaderWidths(timeHeader, 'Number of answers:', 'Errors:');
 
 	let answersOffset = START_X_POS + FIELD_GAP_WIDE + Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
 	let errorOffset = answersOffset + Math.max(answersWidth + FIELD_PADDING, answersHeaderWidth);
@@ -89,6 +90,7 @@ function prepareData (data) {
 	remainingErrorsOffset += errorOffset;
 
 	return {
+		timeHeader,
 		timeRange,
 		answersRange,
 		target,
@@ -122,11 +124,13 @@ function prepareTraceData (data) {
 	}
 
 	let { timeRange, answersRange, timeWidth, answersWidth } = getFieldContents(viableData, true);
-	let [ timeHeaderWidth ] = getHeaderWidths('Query time:');
+	let timeHeader = 'Query time:';
+	let [ timeHeaderWidth ] = getHeaderWidths(timeHeader);
 
 	let answersOffset = START_X_POS + FIELD_GAP_WIDE + Math.max(timeWidth + FIELD_PADDING, timeHeaderWidth);
 
 	return {
+		timeHeader,
 		timeRange,
 		answersRange,
 		target,
@@ -139,7 +143,7 @@ function prepareTraceData (data) {
 	};
 }
 
-const prepareComparisonData = (data) => {
+function prepareComparisonData (data) {
 	let { probes, location, locationWidth } = getBaseComparisonInfo(data);
 	let timeHeader = data[0].measurementOptions?.trace ? 'Query time' : 'Time';
 	let [ maxTimeWidth, maxTargetWidth, maxAnswersWidth ] = getHeaderWidths(timeHeader, 'Target', 'Number of answers');
@@ -185,7 +189,7 @@ const prepareComparisonData = (data) => {
 		answersOffset,
 		timeHeader,
 	};
-};
+}
 
 module.exports = async (ctx, data) => {
 	if (data.length === 1) {
