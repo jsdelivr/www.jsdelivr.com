@@ -175,6 +175,9 @@ function prepareComparisonData (data) {
 	let answersOffset = timeOffset + maxTimeWidth + FIELD_GAP_WIDE;
 
 	if (answersOffset + maxAnswersWidth > X_POS_THRESHOLD) {
+		// equally reduce the size of gaps between fields (originally 2.5*FIELD_GAP_WIDE pixels) such that we do not overflow X_POS_THRESHOLD
+		// if the gap becomes too narrow, allow the overflow and set the squeezeCoeff to 0.2 (should not happen)
+		// results from: overflow = 2.5 * FIELD_GAP_WIDE - 2.5 * FIELD_GAP_WIDE * squeezeCoeff
 		let squeezeCoeff = Math.max(1 - (answersOffset + maxAnswersWidth - X_POS_THRESHOLD) / (2.5 * FIELD_GAP_WIDE), 0.2);
 		timeOffset = START_X_POS + maxTargetWidth + 1.5 * FIELD_GAP_WIDE * squeezeCoeff;
 		answersOffset = timeOffset + maxTimeWidth + FIELD_GAP_WIDE * squeezeCoeff;
