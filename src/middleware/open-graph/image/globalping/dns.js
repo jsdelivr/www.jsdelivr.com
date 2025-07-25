@@ -38,7 +38,7 @@ function prepareData (data) {
 		return prepareTraceData(data);
 	}
 
-	let viableData = data.results.filter(obj => obj.result.status === 'finished');
+	let viableData = getViableData(data);
 	let { location, locationWidth, probes, target } = getBaseInfo(data);
 
 	if (viableData.length === 0) {
@@ -111,7 +111,7 @@ function prepareData (data) {
 }
 
 function prepareTraceData (data) {
-	let viableData = data.results.filter(obj => obj.result.status === 'finished' && obj.result.hops.length);
+	let viableData = getViableData(data);
 	let { location, locationWidth, probes, target } = getBaseInfo(data);
 
 	if (viableData.length === 0) {
