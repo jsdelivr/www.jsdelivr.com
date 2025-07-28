@@ -125,12 +125,13 @@
 				}
 
 				&_list {
-					display: flex;
-					flex-direction: column;
+					display: grid;
+					grid-auto-rows: 1fr;
+					grid-template-columns: 1fr;
 					row-gap: 24px;
 
 					@media (min-width: @screen-sm-min) {
-						flex-direction: row;
+						grid-template-columns: repeat(2, 1fr);
 						column-gap: 24px;
 					}
 
@@ -154,7 +155,11 @@
 						box-sizing: border-box;
 
 						@media (min-width: @screen-sm-min) {
-							width: calc((100% - 24px) / 2);
+							&:nth-last-child(1):nth-child(odd) {
+								grid-column: 1 / -1;
+								margin: 0 auto;
+								max-width: calc(50% - 12px);
+							}
 						}
 
 						&_logo {
@@ -196,7 +201,7 @@
 							padding: 0 24px;
 							row-gap: 8px;
 							background: #e8fff9;
-							height: 130px;
+							min-height: 130px;
 
 							.gp-sponsors_sponsors-list_platinum_list_item_title,
 							.gp-sponsors_sponsors-list_gold_list_item_title,
