@@ -307,6 +307,10 @@ module.exports.getGlobalpingUser = () => {
 	return _.makeHTTPRequest({ url: `${GLOBALPING_DASH_HOST}/users/me`, withCredentials: true }).then(body => body.data).catch(() => null);
 };
 
+module.exports.getSponsorshipDetails = (userId) => {
+	return _.makeHTTPRequest({ url: `${GLOBALPING_DASH_HOST}/sponsorship-details`, withCredentials: true, body: { userId } });
+};
+
 module.exports.gpLogOut = () => {
 	return _.makeHTTPRequest({
 		method: 'POST',

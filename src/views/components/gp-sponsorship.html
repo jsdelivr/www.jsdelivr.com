@@ -1,0 +1,255 @@
+<div class="c-gp-sponsorship">
+	<div class="payment-type-select">
+		<input id="switch-payment-type" type="checkbox" twoway="false" class="switch-input {{#if monthlyChecked}} checked {{/if}}">
+
+		<label for="switch-payment-type" on-click="@this.handleCheckboxSwitch()">
+			<span class="prevent-select">One-time</span>
+			<span class="prevent-select">Monthly</span>
+		</label>
+	</div>
+
+	<div class="donation">
+		<label for="slider" class="sponsorship-subtitle">Choose your donation amount:</label>
+		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider">
+		<div class="slider-overlay">
+			<div class="slider-overlay_track" style-width="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)"></div>
+			<span class="slider-overlay_label" style-margin-left="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)">{{toDonate}}$</span>
+		</div>
+	</div>
+
+	{{#if monthlyChecked}}
+		<div class="monthly-donation">
+			<div class="monthly-donation_information">
+				<p>Your bonus grows as your total donations increase.</p>
+				<p>At {{toDonate}}$/mo, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+			</div>
+
+			<h3 class="sponsorship-subtitle">Monthly bonus progress</h3>
+			<div class="monthly-donation_infographic">
+				{{#each Array(13): index}}
+					{{#if skipMiddleMonths && index+1 >= 5 && index+1 <= 9}}
+						<span class="skipped-month"></span>
+					{{else}}
+						<div class="infographic-cell {{#if skipMiddleMonths}} skipping-months {{/if}}">
+							<div class="bonus-percentage {{#if @this.isMonthIncrease(index + 1)}} bonus-highlight {{/if}} {{#if index === 12}} final-cell {{/if}}">
+								{{@this.formatNumber(@this.getSubBonusForMonth(index + 1))}}%
+							</div>
+							<div >
+								{{#if index === 12}}
+									<span class="mobile-only">Ongoing</span>...
+								{{else}}
+									M<span class="mobile-only">onth </span>{{index+1}}
+								{{/if}}
+							</div>
+						</div>
+					{{/if}}
+				{{/each}}
+			</div>
+
+			<div class="prepay-subscription">
+				<img width="48" height="48" src="{{@shared.assetsHost}}/img/globalping/bulb-icon-big.svg">
+
+				<div>
+					<h4>
+						Prepay 12 months & get full bonus instantly!
+					</h4>
+					<p>
+						Credits: {{@this.formatNumber(twelveMonthCredits)}}
+					</p>
+				</div>
+
+				<a class="gp_btn_green get-now-button" href="{{@this.getOneTimeDonationLink(12 * toDonate)}}" target="_blank">
+					Get now
+				</a>
+			</div>
+
+			<a class="gp_btn_black" href="https://github.com/sponsors/jsdelivr?frequency=recurring&amount={{toDonate}}" target="_blank">
+				Start Monthly Support
+			</a>
+		</div>
+	{{else}}
+		<div class="one-time-donation">
+			<div class="donation-information">
+				<div class="donation-information_block">
+					<span>{{#if !isLoggedIn}}Estimated{{/if}} Bonus:</span>
+					<span class="donation-information_value">+{{@this.formatNumber(estimatedBonus)}}%</span>
+
+					<span>Credits Total:</span>
+					<span class="donation-information_value">{{@this.formatNumber(creditsTotal)}}</span>
+				</div>
+				<p class="donation-information_footer">
+					{{#if isLoggedIn}}
+						{{#if donatedLastYear && estimatedBonus > 0}}
+							(Bonus from previous donations included)
+						{{/if}}
+					{{else}}
+						(Assuming this is your first donation)
+					{{/if}}
+				</p>
+			</div>
+
+			{{#if !isLoggedIn}}
+				<p>
+					Log in to calculate your personal bonus based on past donations
+				</p>
+			{{/if}}
+
+			<a class="gp_btn_green" href="{{@this.getOneTimeDonationLink(toDonate)}}" target="_blank">
+				Donate
+			</a>
+		</div>
+	{{/if}}
+</div>
+
+<script>
+	const _ = require('../../assets/js/_');
+	const http = require('../../assets/js/utils/http');
+
+	const MAXIMUM_BONUS = 1500; // in %
+	const DOLLARS_FOR_BONUS = 100; // dollars needed for bonus increase
+	const CREDITS_PER_DOLLAR = 4000;
+	const BONUS_PER_HUNDRED_DOLLARS = 5;
+	const MAXIMUM_ONE_TIME_DONATION = 12000;
+
+	component.exports = {
+		data () {
+			return {
+				isMobileScreen: false,
+				monthlyChecked: false,
+				sliderValue: 10,
+				donatedLastYear: 0,
+			};
+		},
+		computed: {
+			minimumDonation () {
+				if (this.get('monthlyChecked')) {
+					return 10;
+				}
+
+				return 5;
+			},
+			maximumDonation () {
+				if (this.get('monthlyChecked')) {
+					return 3000;
+				}
+
+				return 30000;
+			},
+			sliderMinimum () {
+				return Math.sqrt(this.get('minimumDonation'));
+			},
+			sliderMaximum () {
+				return Math.sqrt(this.get('maximumDonation'));
+			},
+			sliderPosition () {
+				let sliderValue = this.get('sliderValue');
+				let sliderMinimum = this.get('sliderMinimum');
+				let sliderMaximum = this.get('sliderMaximum');
+
+				return (sliderValue - sliderMinimum) / (sliderMaximum - sliderMinimum);
+			},
+			toDonate () {
+				return Math.round(Math.pow(this.get('sliderValue'), 2));
+			},
+			estimatedBonus () {
+				let totalDonated = this.get('donatedLastYear') + this.get('toDonate');
+				let bonusSize = Math.floor(totalDonated / DOLLARS_FOR_BONUS) * BONUS_PER_HUNDRED_DOLLARS;
+
+				return Math.min(bonusSize, MAXIMUM_BONUS);
+			},
+			creditsTotal () {
+				let rawCredits = CREDITS_PER_DOLLAR * this.get('toDonate');
+
+				return Math.round((this.get('estimatedBonus') / 100 + 1) * rawCredits);
+			},
+			bonusIncreasePeriod () {
+				return Math.max(Math.round(DOLLARS_FOR_BONUS / this.get('toDonate')), 1);
+			},
+			isBonusPeriodExact () {
+				return this.get('toDonate') >= 100 || DOLLARS_FOR_BONUS % this.get('toDonate') === 0;
+			},
+			maxTwelveMonthBonus () {
+				return Math.min(Math.floor(this.get('toDonate') * 12 / DOLLARS_FOR_BONUS) * BONUS_PER_HUNDRED_DOLLARS, MAXIMUM_BONUS);
+			},
+			monthMaximumReached () {
+				let dollarsForMaxBonus = MAXIMUM_BONUS * DOLLARS_FOR_BONUS / BONUS_PER_HUNDRED_DOLLARS;
+				return Math.min(Math.floor(dollarsForMaxBonus / this.get('toDonate')), 12);
+			},
+			twelveMonthCredits () {
+				let rawCredits = this.get('toDonate') * 12 * CREDITS_PER_DOLLAR;
+				return Math.floor((1 + this.get('maxTwelveMonthBonus') / 100) * rawCredits);
+			},
+			isLoggedIn () {
+				return !!this.get('@shared.user');
+			},
+			skipMiddleMonths () {
+				return !this.get('isMobileScreen') && this.getSubBonusForMonth(9) >= 100;
+			},
+		},
+		observe: {
+			'@shared.user' (user) {
+				if (!user?.id) {
+					this.set('donatedLastYear', 0);
+				}
+
+				http.getSponsorshipDetails(user.id).then((response) => {
+					if (response?.donatedInLastYear) {
+						this.set('donatedLastYear', response.donatedInLastYear);
+					}
+				}).catch((e) => {
+					console.error(e);
+				});
+			},
+			'monthlyChecked' () {
+				if (this.get('monthlyChecked')) {
+					this.set('sliderValue', 5);
+					return;
+				}
+
+				this.set('sliderValue', 10);
+			},
+		},
+		oncomplete () {
+			if (!Ractive.isServer) {
+				// reset slider when navigating back to the page
+				setTimeout(() => {
+					document.getElementById('slider').value = this.get('sliderValue');
+				}, 1);
+
+				this.handleWindowResize();
+				this._boundResize = this.handleWindowResize.bind(this);
+				window.addEventListener('resize', this._boundResize);
+			}
+		},
+		onteardown () {
+			if (!Ractive.isServer) {
+				window.removeEventListener('resize', this._boundResize);
+			}
+		},
+		getSubBonusForMonth (month) {
+			let bonusLevel = Math.floor(Math.min(month, 12) * this.get('toDonate') / DOLLARS_FOR_BONUS);
+			return Math.min(bonusLevel * 5, MAXIMUM_BONUS);
+		},
+		isMonthIncrease (month) {
+			let currentMonthBonus = this.getSubBonusForMonth(month);
+			let prevMonthBonus = this.getSubBonusForMonth(month - 1);
+			return currentMonthBonus && currentMonthBonus !== prevMonthBonus;
+		},
+		getOneTimeDonationLink (amount) {
+			if (amount > MAXIMUM_ONE_TIME_DONATION) {
+				return 'mailto:d@globalping.io';
+			}
+
+			return `https://github.com/sponsors/jsdelivr?frequency=one-time&amount=${amount}`;
+		},
+		formatNumber (number) {
+			return number.toLocaleString('en-US');
+		},
+		handleCheckboxSwitch () {
+			this.set('monthlyChecked', !this.get('monthlyChecked'));
+		},
+		handleWindowResize () {
+			this.set('isMobileScreen', _.isMobileScreen());
+		},
+};
+</script>
