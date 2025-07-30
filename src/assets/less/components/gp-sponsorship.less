@@ -47,8 +47,13 @@
 		border-radius: 8px;
 		cursor: pointer;
 
+		&:focus-within, &:active {
+			box-shadow: 0 2px 2px rgba(0, 0, 0, .04), 0 0 0 1px #fff, 0 0 0 3px #17d4a7;
+		}
+
 		.switch-input {
-			display: none;
+			position: absolute;
+			clip: rect(0 0 0 0);
 
 			& + label {
 				position: relative;
@@ -117,10 +122,18 @@
 			background: none;
 			cursor: pointer;
 			outline: none;
+			--scale-coefficient: 1;
+
+			&:focus, &:active, &:focus-within {
+				@media (min-width: @screen-sm-min) {
+					--scale-coefficient: 1.15;
+				}
+			}
 
 			&::-webkit-slider-thumb {
 				height: 15px;
 				width: 15px;
+				scale: var(--scale-coefficient);
 				z-index: 5;
 				-webkit-appearance: none;
 				appearance: none;
@@ -129,16 +142,22 @@
 				border-radius: 50%;
 				box-shadow: 0 1px 5px 1px rgba(0, 0, 0, .25);
 				transition: .2s ease-in-out;
+
+				&:focus-within {
+					border: 2px solid #17d4a7;
+				}
 			}
 
 			&::-moz-range-thumb {
 				height: 15px;
 				width: 15px;
 				appearance: none;
+				scale: var(--scale-coefficient);
 				background-color: #17d4a7;
 				border: 2px solid #fff;
 				border-radius: 50%;
 				transition: .2s ease-in-out;
+				box-shadow: 0 1px 5px 1px rgba(0, 0, 0, var(--box-shadow-opacity));
 			}
 		}
 

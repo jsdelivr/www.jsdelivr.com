@@ -1,8 +1,8 @@
 <div class="c-gp-sponsorship">
 	<div class="payment-type-select">
-		<input id="switch-payment-type" type="checkbox" twoway="false" class="switch-input {{#if monthlyChecked}} checked {{/if}}">
+		<input id="switch-payment-type" type="checkbox" aria-checked="{{monthlyChecked}}" checked="{{monthlyChecked}}" class="switch-input {{#if monthlyChecked}} checked {{/if}}">
 
-		<label for="switch-payment-type" on-click="@this.handleCheckboxSwitch()">
+		<label for="switch-payment-type">
 			<span class="prevent-select">One-time</span>
 			<span class="prevent-select">Monthly</span>
 		</label>
@@ -10,7 +10,7 @@
 
 	<div class="donation">
 		<label for="slider" class="sponsorship-subtitle">Choose your donation amount:</label>
-		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider">
+		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider" on-keydown="@this.handleSliderKeypress()">
 		<div class="slider-overlay">
 			<div class="slider-overlay_track" style-width="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)"></div>
 			<span class="slider-overlay_label" style-margin-left="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)">{{toDonate}}$</span>
@@ -250,6 +250,16 @@
 		},
 		handleWindowResize () {
 			this.set('isMobileScreen', _.isMobileScreen());
+		},
+		handleSliderKeypress () {
+			let sliderRange = this.get('sliderMaximum') - this.get('sliderMinimum');
+			let sliderValue = this.get('sliderValue');
+
+			if (event.keyCode === 37 || event.keyCode === 40) {
+				this.set('sliderValue', Math.max(sliderValue - sliderRange / 100, this.get('sliderMinimum')));
+			} else if (event.keyCode === 39 || event.keyCode === 38) {
+				this.set('sliderValue', Math.min(sliderValue + sliderRange / 100, this.get('sliderMaximum')));
+			}
 		},
 };
 </script>
