@@ -55,10 +55,14 @@ app.router.replaceQueryParam = function (name, newValue) {
 	return this;
 };
 
-app.signIn = () => {
+app.getSignInLink = () => {
 	let url = new URL('https://dash-directus.globalping.io/auth/login/github');
 	url.searchParams.set('redirect', `${Ractive.sharedGet('serverHost')}/auth/callback?redirect=${encodeURIComponent(location.href)}`);
-	location.href = url.toString();
+	return url.toString();
+};
+
+app.signIn = () => {
+	location.href = app.getSignInLink();
 };
 
 app.signOut = () => {
