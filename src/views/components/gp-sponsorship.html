@@ -1,10 +1,10 @@
 <div class="c-gp-sponsorship">
 	<div class="payment-type-select">
-		<input id="switch-payment-type" type="checkbox" aria-checked="{{monthlyChecked}}" checked="{{monthlyChecked}}" class="switch-input {{#if monthlyChecked}} checked {{/if}}">
+		<input id="switch-payment-type" type="checkbox" aria-checked="{{oneTimeChecked}}" checked="{{oneTimeChecked}}" class="switch-input {{#if oneTimeChecked}} checked {{/if}}">
 
 		<label for="switch-payment-type">
-			<span class="prevent-select">One-time</span>
 			<span class="prevent-select">Monthly</span>
+			<span class="prevent-select">One-time</span>
 		</label>
 	</div>
 
@@ -13,15 +13,46 @@
 		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider" on-keydown="@this.handleSliderKeypress()">
 		<div class="slider-overlay">
 			<div class="slider-overlay_track" style-width="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)"></div>
-			<span class="slider-overlay_label" style-margin-left="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)">{{toDonate}}$</span>
+			<span class="slider-overlay_label" style-margin-left="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)">${{toDonate}}</span>
 		</div>
 	</div>
 
-	{{#if monthlyChecked}}
+	{{#if oneTimeChecked}}
+		<div class="one-time-donation">
+			<div class="donation-information">
+				<div class="donation-information_block">
+					<span>{{#if !isLoggedIn}}Estimated{{/if}} Bonus:</span>
+					<span class="donation-information_value">+{{@this.formatNumber(estimatedBonus)}}%</span>
+
+					<span>Credits Total:</span>
+					<span class="donation-information_value">{{@this.formatNumber(creditsTotal)}}</span>
+				</div>
+				<p class="donation-information_footer">
+					{{#if isLoggedIn}}
+						{{#if donatedLastYear && estimatedBonus > 0}}
+							(Bonus from previous donations included)
+						{{/if}}
+							{{else}}
+						(Assuming this is your first donation)
+					{{/if}}
+				</p>
+			</div>
+
+			{{#if !isLoggedIn}}
+			<p>
+				Log in to calculate your personal bonus based on past donations
+			</p>
+			{{/if}}
+
+			<a class="gp_btn_green" href="{{@this.getOneTimeDonationLink(toDonate)}}" target="_blank">
+				Donate
+			</a>
+		</div>
+	{{else}}
 		<div class="monthly-donation">
 			<div class="monthly-donation_information">
 				<p>Your bonus grows as your total donations increase.</p>
-				<p>At {{toDonate}}$/mo, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+				<p>At ${{toDonate}}/mo, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
 			</div>
 
 			<h3 class="sponsorship-subtitle">Monthly bonus progress</h3>
@@ -30,15 +61,15 @@
 					{{#if skipMiddleMonths && index+1 >= 5 && index+1 <= 9}}
 						<span class="skipped-month"></span>
 					{{else}}
-						<div class="infographic-cell {{#if skipMiddleMonths}} skipping-months {{/if}}">
+						<div class="infographic-cell">
 							<div class="bonus-percentage {{#if @this.isMonthIncrease(index + 1)}} bonus-highlight {{/if}} {{#if index === 12}} final-cell {{/if}}">
 								{{@this.formatNumber(@this.getSubBonusForMonth(index + 1))}}%
 							</div>
 							<div >
 								{{#if index === 12}}
-									<span class="mobile-only">Ongoing</span>...
+								<span class="mobile-only">Ongoing</span>...
 								{{else}}
-									M<span class="mobile-only">onth </span>{{index+1}}
+								M<span class="mobile-only">onth </span>{{index+1}}
 								{{/if}}
 							</div>
 						</div>
@@ -67,37 +98,6 @@
 				Start Monthly Support
 			</a>
 		</div>
-	{{else}}
-		<div class="one-time-donation">
-			<div class="donation-information">
-				<div class="donation-information_block">
-					<span>{{#if !isLoggedIn}}Estimated{{/if}} Bonus:</span>
-					<span class="donation-information_value">+{{@this.formatNumber(estimatedBonus)}}%</span>
-
-					<span>Credits Total:</span>
-					<span class="donation-information_value">{{@this.formatNumber(creditsTotal)}}</span>
-				</div>
-				<p class="donation-information_footer">
-					{{#if isLoggedIn}}
-						{{#if donatedLastYear && estimatedBonus > 0}}
-							(Bonus from previous donations included)
-						{{/if}}
-					{{else}}
-						(Assuming this is your first donation)
-					{{/if}}
-				</p>
-			</div>
-
-			{{#if !isLoggedIn}}
-				<p>
-					Log in to calculate your personal bonus based on past donations
-				</p>
-			{{/if}}
-
-			<a class="gp_btn_green" href="{{@this.getOneTimeDonationLink(toDonate)}}" target="_blank">
-				Donate
-			</a>
-		</div>
 	{{/if}}
 </div>
 
@@ -115,25 +115,25 @@
 		data () {
 			return {
 				isMobileScreen: false,
-				monthlyChecked: false,
+				oneTimeChecked: false,
 				sliderValue: 10,
 				donatedLastYear: 0,
 			};
 		},
 		computed: {
 			minimumDonation () {
-				if (this.get('monthlyChecked')) {
-					return 10;
+				if (this.get('oneTimeChecked')) {
+					return 5;
 				}
 
-				return 5;
+				return 10;
 			},
 			maximumDonation () {
-				if (this.get('monthlyChecked')) {
-					return 3000;
+				if (this.get('oneTimeChecked')) {
+					return 30000;
 				}
 
-				return 30000;
+				return 3000;
 			},
 			sliderMinimum () {
 				return Math.sqrt(this.get('minimumDonation'));
@@ -149,7 +149,9 @@
 				return (sliderValue - sliderMinimum) / (sliderMaximum - sliderMinimum);
 			},
 			toDonate () {
-				return Math.round(Math.pow(this.get('sliderValue'), 2));
+				let newDonation = Math.round(Math.pow(this.get('sliderValue'), 2) / 5) * 5;
+				this.set('sliderValue', Math.sqrt(newDonation));
+				return newDonation;
 			},
 			estimatedBonus () {
 				let totalDonated = this.get('donatedLastYear') + this.get('toDonate');
@@ -201,13 +203,13 @@
 					console.error(e);
 				});
 			},
-			'monthlyChecked' () {
-				if (this.get('monthlyChecked')) {
-					this.set('sliderValue', 5);
+			'oneTimeChecked' () {
+				if (this.get('oneTimeChecked')) {
+					this.set('sliderValue', 10);
 					return;
 				}
 
-				this.set('sliderValue', 10);
+				this.set('sliderValue', 5);
 			},
 		},
 		oncomplete () {
@@ -247,19 +249,20 @@
 			return number.toLocaleString('en-US');
 		},
 		handleCheckboxSwitch () {
-			this.set('monthlyChecked', !this.get('monthlyChecked'));
+			this.set('oneTimeChecked', !this.get('oneTimeChecked'));
 		},
 		handleWindowResize () {
 			this.set('isMobileScreen', _.isMobileScreen());
 		},
 		handleSliderKeypress () {
-			let sliderRange = this.get('sliderMaximum') - this.get('sliderMinimum');
-			let sliderValue = this.get('sliderValue');
+			let toDonate = this.get('toDonate');
+			let changeMultiplier = toDonate > 100 ? Math.floor(Math.sqrt(toDonate)) / 5 : 1;
+
 
 			if (event.keyCode === 37 || event.keyCode === 40) {
-				this.set('sliderValue', Math.max(sliderValue - sliderRange / 100, this.get('sliderMinimum')));
+				this.set('sliderValue', Math.max(Math.sqrt(toDonate - 5 * changeMultiplier), this.get('sliderMinimum')));
 			} else if (event.keyCode === 39 || event.keyCode === 38) {
-				this.set('sliderValue', Math.min(sliderValue + sliderRange / 100, this.get('sliderMaximum')));
+				this.set('sliderValue', Math.min(Math.sqrt(toDonate + 5 * changeMultiplier), this.get('sliderMaximum')));
 			}
 		},
 };
