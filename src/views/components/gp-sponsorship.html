@@ -30,7 +30,7 @@
 				<p class="donation-information_footer">
 					{{#if isLoggedIn}}
 						{{#if donatedLastYear && estimatedBonus > 0}}
-							(Bonus from previous donations included)
+							(Total bonus based on your personal donation history)
 						{{/if}}
 							{{else}}
 						(Assuming this is your first donation)
@@ -40,7 +40,8 @@
 
 			{{#if !isLoggedIn}}
 			<p>
-				Log in to calculate your personal bonus based on past donations
+				<!-- TODO: regular green link -->
+				<a on-click="@global.app.signIn()">Sign in</a> to calculate your personal bonus based on past donations.
 			</p>
 			{{/if}}
 
@@ -52,7 +53,7 @@
 		<div class="monthly-donation">
 			<div class="monthly-donation_information">
 				<p>Your bonus grows as your total donations increase.</p>
-				<p>At ${{toDonate}}/mo, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+				<p>At ${{toDonate}}/month, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
 			</div>
 
 			<h3 class="sponsorship-subtitle">Monthly bonus progress</h3>
