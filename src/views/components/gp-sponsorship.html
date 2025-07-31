@@ -105,6 +105,7 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const http = require('../../assets/js/utils/http');
+	const listeners = require('../../assets/js/utils/listeners');
 
 	const MAXIMUM_BONUS = 1500; // in %
 	const DOLLARS_FOR_BONUS = 100; // dollars needed for bonus increase
@@ -210,6 +211,9 @@
 
 				this.set('sliderValue', 5);
 			},
+			'screenWidth' () {
+				this.set('isMobileScreen', _.isMobileScreen() || _.isTabletScreen());
+			},
 		},
 		oncomplete () {
 			if (!Ractive.isServer) {
@@ -218,14 +222,7 @@
 					document.getElementById('slider').value = this.get('sliderValue');
 				}, 1);
 
-				this.handleWindowResize();
-				this._boundResize = this.handleWindowResize.bind(this);
-				window.addEventListener('resize', this._boundResize);
-			}
-		},
-		onteardown () {
-			if (!Ractive.isServer) {
-				window.removeEventListener('resize', this._boundResize);
+				listeners.screenWidthListener(this);
 			}
 		},
 		getSubBonusForMonth (month) {
@@ -246,9 +243,6 @@
 		},
 		formatNumber (number) {
 			return number.toLocaleString('en-US');
-		},
-		handleWindowResize () {
-			this.set('isMobileScreen', _.isMobileScreen() || _.isTabletScreen());
 		},
 		handleSliderKeypress (e) {
 			e.preventDefault();
