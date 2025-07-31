@@ -10,7 +10,7 @@
 
 	<div class="donation">
 		<label for="slider" class="sponsorship-subtitle">Choose your donation amount:</label>
-		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider" on-input="@this.roundSliderValue()" on-keydown="@this.handleSliderKeypress()">
+		<input id="slider" type="range" min="{{sliderMinimum}}" max="{{sliderMaximum}}" step="0.001" value="{{sliderValue}}" class="slider" on-input="@this.roundSliderValue()" on-keydown="@this.handleSliderKeypress(@event)">
 		<div class="slider-overlay">
 			<div class="slider-overlay_track" style-width="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)"></div>
 			<span class="slider-overlay_label" style-margin-left="calc({{sliderPosition * 100}}% + {{(1/2 - sliderPosition) * 15}}px)">${{toDonate}}</span>
@@ -249,16 +249,16 @@
 		handleWindowResize () {
 			this.set('isMobileScreen', _.isMobileScreen());
 		},
-		handleSliderKeypress () {
-			event.preventDefault();
-			event.stopPropagation();
+		handleSliderKeypress (e) {
+			e.preventDefault();
+			e.stopPropagation();
 
 			let toDonate = this.get('toDonate');
 			let changeMultiplier = toDonate > 100 ? Math.floor(Math.sqrt(toDonate)) / 5 : 1;
 
-			if (event.keyCode === 37 || event.keyCode === 40) {
+			if (e.code === 'ArrowLeft' || e.code === 'ArrowDown') {
 				this.set('sliderValue', Math.max(Math.sqrt(toDonate - 5 * changeMultiplier), this.get('sliderMinimum')));
-			} else if (event.keyCode === 39 || event.keyCode === 38) {
+			} else if (e.code === 'ArrowRight' || e.code === 'ArrowUp') {
 				this.set('sliderValue', Math.min(Math.sqrt(toDonate + 5 * changeMultiplier), this.get('sliderMaximum')));
 			}
 		},
