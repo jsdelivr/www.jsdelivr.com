@@ -32,7 +32,7 @@
 						{{#if donatedLastYear && estimatedBonus > 0}}
 							(Total bonus based on your personal donation history)
 						{{/if}}
-							{{else}}
+					{{else}}
 						(Assuming this is your first donation)
 					{{/if}}
 				</p>
@@ -44,7 +44,7 @@
 			</p>
 			{{/if}}
 
-			<a class="gp_btn_green" href="{{@this.getOneTimeDonationLink(toDonate)}}" target="_blank">
+			<a class="gp_btn_green button-link" href="{{@this.getOneTimeDonationLink(toDonate)}}" target="_blank">
 				Donate
 			</a>
 		</div>
@@ -52,7 +52,21 @@
 		<div class="monthly-donation">
 			<div class="monthly-donation_information">
 				<p>Your bonus grows as your total donations increase.</p>
-				<p>At ${{toDonate}}/month, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+
+				{{#if !isLoggedIn || !donatedLastYear}}
+					<p>At ${{toDonate}}/month, your bonus increases {{#if bonusIncreasePeriod === 1}}{{#if !isBonusPeriodExact}}almost{{/if}} every month{{else}}every {{#if !isBonusPeriodExact}}~{{/if}}{{bonusIncreasePeriod}} months{{/if}}, up to {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+				{{else}}
+					<p>At ${{toDonate}}/month, your bonus stabilizes at {{maxTwelveMonthBonus}}% in month {{monthMaximumReached}}.</p>
+				{{/if}}
+
+
+				{{#if isLoggedIn}}
+					{{#if donatedLastYear && estimatedBonus > 0}}
+						<p class="monthly-donation_information_footer">(Bonus based on your personal donation history)</p>
+					{{/if}}
+				{{else}}
+					<p class="monthly-donation_information_footer">(Assuming this is your first donation)</p>
+				{{/if}}
 			</div>
 
 			<h3 class="sponsorship-subtitle">Monthly bonus progress</h3>
@@ -63,7 +77,7 @@
 					{{else}}
 						<div class="infographic-cell">
 							<div class="bonus-percentage {{#if @this.isMonthIncrease(index + 1)}} bonus-highlight {{/if}} {{#if index === 12}} final-cell {{/if}}">
-								{{@this.formatNumber(@this.getSubBonusForMonth(index + 1))}}%
+								{{@this.formatNumber(subscriptionBonuses[index])}}%
 							</div>
 							<div >
 								{{#if index === 12}}
@@ -89,12 +103,18 @@
 					</p>
 				</div>
 
-				<a class="gp_btn_green get-now-button" href="{{@this.getOneTimeDonationLink(12 * toDonate)}}" target="_blank">
+				<a class="gp_btn_green get-now-button button-link" href="{{@this.getOneTimeDonationLink(12 * toDonate)}}" target="_blank">
 					Get now
 				</a>
 			</div>
 
-			<a class="gp_btn_black" href="https://github.com/sponsors/jsdelivr?frequency=recurring&amount={{toDonate}}" target="_blank">
+			{{#if !isLoggedIn}}
+			<p class="sign-in-message">
+				<a class="sign-in-link" href="{{@global.app.getSignInLink()}}">Sign in</a> to calculate your personal bonus based on past donations.
+			</p>
+			{{/if}}
+
+			<a class="gp_btn_black button-link" href="https://github.com/sponsors/jsdelivr?frequency=recurring&amount={{toDonate}}" target="_blank">
 				Start Monthly Support
 			</a>
 		</div>
@@ -119,6 +139,7 @@
 				oneTimeChecked: false,
 				sliderValue: 10,
 				donatedLastYear: 0,
+				donatedByMonth: Array(12).fill(0),
 			};
 		},
 		computed: {
@@ -169,6 +190,14 @@
 			isBonusPeriodExact () {
 				return this.get('toDonate') >= 100 || DOLLARS_FOR_BONUS % this.get('toDonate') === 0;
 			},
+			subscriptionBonuses () {
+				return Array.from({ length: 13 }, (_, index) => {
+					let month = Math.min(index + 1, 12);
+					let previousDonations = this.get('donatedByMonth').slice(month, 12).reduce((a, b) => a + b, 0);
+					let bonusLevel = Math.floor((Math.min(month, 12) * this.get('toDonate') + previousDonations) / DOLLARS_FOR_BONUS);
+					return Math.min(bonusLevel * BONUS_PER_HUNDRED_DOLLARS, MAXIMUM_BONUS);
+				});
+			},
 			maxTwelveMonthBonus () {
 				return Math.min(Math.floor(this.get('toDonate') * 12 / DOLLARS_FOR_BONUS) * BONUS_PER_HUNDRED_DOLLARS, MAXIMUM_BONUS);
 			},
@@ -184,19 +213,24 @@
 				return !!this.get('@shared.user');
 			},
 			skipMiddleMonths () {
-				return !this.get('isMobileScreen') && this.getSubBonusForMonth(9) >= 100;
+				return !this.get('isMobileScreen') && this.get('subscriptionBonuses')[8] >= 100;
 			},
 		},
 		observe: {
 			'@shared.user' (user) {
 				if (!user?.id) {
 					this.set('donatedLastYear', 0);
+					this.set('donatedByMonth', Array(12).fill(0));
 					return;
 				}
 
 				http.getSponsorshipDetails(user.id).then((response) => {
 					if (response?.donatedInLastYear) {
 						this.set('donatedLastYear', response.donatedInLastYear);
+					}
+
+					if (response?.donatedByMonth?.length === 12) {
+						this.set('donatedByMonth', response.donatedByMonth);
 					}
 				}).catch((e) => {
 					console.error(e);
@@ -224,14 +258,25 @@
 				listeners.screenWidthListener(this);
 			}
 		},
-		getSubBonusForMonth (month) {
-			let bonusLevel = Math.floor(Math.min(month, 12) * this.get('toDonate') / DOLLARS_FOR_BONUS);
-			return Math.min(bonusLevel * 5, MAXIMUM_BONUS);
-		},
 		isMonthIncrease (month) {
-			let currentMonthBonus = this.getSubBonusForMonth(month);
-			let prevMonthBonus = this.getSubBonusForMonth(month - 1);
-			return currentMonthBonus && currentMonthBonus !== prevMonthBonus;
+			let subscriptionBonuses = this.get('subscriptionBonuses');
+			let currentMonthBonus = subscriptionBonuses[month - 1];
+
+			if (month === 1) {
+				return currentMonthBonus > this.get('donatedByMonth').reduce((a, b) => a + b, 0) / DOLLARS_FOR_BONUS * BONUS_PER_HUNDRED_DOLLARS;
+			}
+
+			return subscriptionBonuses.every((bonus, index) => {
+				if (index === month - 1) {
+					return true;
+				}
+
+				if (index < month - 1) {
+					return bonus < currentMonthBonus;
+				}
+
+				return bonus >= currentMonthBonus;
+			});
 		},
 		getOneTimeDonationLink (amount) {
 			if (amount > MAXIMUM_ONE_TIME_DONATION) {
