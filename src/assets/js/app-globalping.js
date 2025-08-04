@@ -49,11 +49,24 @@ app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/networks/:networkName', cGlobalpingNetworks);
 app.router.addRoute('/users/:username', cGlobalpingUsers);
 
-
 app.router.replaceQueryParam = function (name, newValue) {
 	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
 	this.route.view.set(name, newValue);
 	return this;
+};
+
+app.getSignInLink = () => {
+	let url = new URL('https://dash-directus.globalping.io/auth/login/github');
+	url.searchParams.set('redirect', `${Ractive.sharedGet('serverHost')}/auth/callback?redirect=${encodeURIComponent(location.href)}`);
+	return url.toString();
+};
+
+app.signIn = () => {
+	location.href = app.getSignInLink();
+};
+
+app.signOut = () => {
+	http.gpLogOut().then(() => Ractive.sharedSet('user', null));
 };
 
 _.onDocumentReady(() => {

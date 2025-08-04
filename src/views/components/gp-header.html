@@ -84,14 +84,14 @@
 								<ul class="dropdown-menu">
 									<li class="current-user">{{@shared.user.github_username}}</li>
 									<li role="separator" class="divider"></li>
-									<li><a on-click="@this.signOut()">Sign Out</a></li>
+									<li><a on-click="@global.app.signOut()">Sign Out</a></li>
 								</ul>
 							</div>
 						</li>
-						<li class="hidden-md hidden-lg"><a on-click="@this.signOut()"><i class="fa fa-sign-out" style="margin-right: 8px;"></i>Sign Out</a></li>
+						<li class="hidden-md hidden-lg"><a on-click="@global.app.signOut()"><i class="fa fa-sign-out" style="margin-right: 8px;"></i>Sign Out</a></li>
 					{{elseif @shared.user === null}}
 						<li class="dashboard-section">
-							<a class="btn btn-sign-in" on-click="@this.signIn()">
+							<a class="btn btn-sign-in" on-click="@global.app.signIn()">
 								<i class="fa fa-sign-in hidden-md hidden-lg" style="margin-right: 8px;"></i>
 								Sign in
 								<span class="hidden-md hidden-lg">&nbsp;with GitHub</span><i class="fa fa-github hidden-xs hidden-sm" style="margin-left: 8px;"></i>
@@ -107,8 +107,6 @@
 </header>
 
 <script>
-	const http = require('../../assets/js/utils/http');
-
 	component.exports = {
 		data () {
 			return {};
@@ -119,14 +117,6 @@
 			} else {
 				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
 			}
-		},
-		signIn () {
-			let url = new URL('https://dash-directus.globalping.io/auth/login/github');
-			url.searchParams.set('redirect', `${this.get('@shared.serverHost')}/auth/callback?redirect=${encodeURIComponent(location.href)}`);
-			location.href = url.toString();
-		},
-		signOut () {
-			http.gpLogOut().then(() => this.set('@shared.user', null));
 		},
 	};
 </script>
