@@ -44,6 +44,20 @@
 								{{/each}}
 							{{/unless}}
 
+							{{#if testReqParams.type === 'http' && this.statsPerTarget[activeTargetIdx].ipAddr}}
+								<span class="c-gp-results-raw-output_list_item_header_time main-value">
+									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
+										width="4"
+										height="4"
+										src="{{@shared.assetsHost}}/img/globalping/dot-icon.svg">
+
+									<span>Resolved address:</span>
+									<span class="c-gp-results-raw-output_list_item_header_time_value">
+										{{this.statsPerTarget[activeTargetIdx].ipAddr}}
+									</span>
+								</span>
+							{{/if}}
+
 							<c-gp-tls-details tls="{{this.statsPerTarget[activeTargetIdx].tls}}" screenWidth="{{screenWidth}}"></c-gp-tls-details>
 
 							<img on-click="@this.hideShowTestResult(idx)"
