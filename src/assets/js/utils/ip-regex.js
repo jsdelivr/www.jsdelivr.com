@@ -30,17 +30,21 @@ const v6exact = new RegExp(`^${v6}$`);
 const v6exactOrBracketed = new RegExp(`^(?:\\[${v6}\\]|${v6})$`);
 
 const ipRegex = options => options && options.exact
-	? v46Exact
-	: options?.allowBrackets
+	? options?.allowBrackets
 		? v46ExactOrV6Bracketed
+		: v46Exact
+	: options?.allowBrackets
+		? new RegExp(`(?:${boundry(options)}${v4}${boundry(options)})|(?:${boundry(options)}${v6}${boundry(options)})|(?:${boundry(options)}\\[${v6}\\]${boundry(options)})`, 'g')
 		: new RegExp(`(?:${boundry(options)}${v4}${boundry(options)})|(?:${boundry(options)}${v6}${boundry(options)})`, 'g');
 
 ipRegex.v4 = options => options && options.exact ? v4exact : new RegExp(`${boundry(options)}${v4}${boundry(options)}`, 'g');
 
 ipRegex.v6 = options => options?.exact
-	? v6exact
-	: options?.allowBrackets
+	? options?.allowBrackets
 		? v6exactOrBracketed
+		: v6exact
+	: options?.allowBrackets
+		? new RegExp(`(?:${boundry(options)}${v6}${boundry(options)})|(?:${boundry(options)}\\[${v6}\\]${boundry(options)})`, 'g')
 		: new RegExp(`${boundry(options)}${v6}${boundry(options)}`, 'g');
 
 module.exports = ipRegex;
