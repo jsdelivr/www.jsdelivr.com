@@ -24,14 +24,27 @@ const v6 = `
 
 // Pre-compile only the exact regexes because adding a global flag make regexes stateful
 const v46Exact = new RegExp(`(?:^${v4}$)|(?:^${v6}$)`);
+const v46ExactOrV6Bracketed = new RegExp(`^(?:${v4}|${v6}|\\[${v6}\\])$`);
 const v4exact = new RegExp(`^${v4}$`);
 const v6exact = new RegExp(`^${v6}$`);
+const v6exactOrBracketed = new RegExp(`^(?:\\[${v6}\\]|${v6})$`);
 
 const ipRegex = options => options && options.exact
-	? v46Exact
-	: new RegExp(`(?:${boundry(options)}${v4}${boundry(options)})|(?:${boundry(options)}${v6}${boundry(options)})`, 'g');
+	? options?.allowBrackets
+		? v46ExactOrV6Bracketed
+		: v46Exact
+	: options?.allowBrackets
+		? new RegExp(`(?:${boundry(options)}${v4}${boundry(options)})|(?:${boundry(options)}${v6}${boundry(options)})|(?:${boundry(options)}\\[${v6}\\]${boundry(options)})`, 'g')
+		: new RegExp(`(?:${boundry(options)}${v4}${boundry(options)})|(?:${boundry(options)}${v6}${boundry(options)})`, 'g');
 
 ipRegex.v4 = options => options && options.exact ? v4exact : new RegExp(`${boundry(options)}${v4}${boundry(options)}`, 'g');
-ipRegex.v6 = options => options && options.exact ? v6exact : new RegExp(`${boundry(options)}${v6}${boundry(options)}`, 'g');
+
+ipRegex.v6 = options => options?.exact
+	? options?.allowBrackets
+		? v6exactOrBracketed
+		: v6exact
+	: options?.allowBrackets
+		? new RegExp(`(?:${boundry(options)}${v6}${boundry(options)})|(?:${boundry(options)}\\[${v6}\\]${boundry(options)})`, 'g')
+		: new RegExp(`${boundry(options)}${v6}${boundry(options)}`, 'g');
 
 module.exports = ipRegex;
