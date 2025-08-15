@@ -36,7 +36,6 @@
 	const _ = require('../../assets/js/_');
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const clipboard = require('../../assets/js/decorators/clipboard');
-	const ABBREVIATED_TEST_TYPES = [ 'dns', 'http', 'mtr' ];
 
 	component.exports = {
 		decorators: {
@@ -71,7 +70,7 @@
 					this.createCliCommand();
 				});
 
-				this.observe('preparedTestResults testReqParams measurementsMetadata', () => {
+				this.observe('preparedTestResults testReqParams measurementsMetadata measurementLink', () => {
 					this.createMarkdownResults();
 				});
 			}
@@ -221,23 +220,25 @@
 			let dnsTestType = testReqParams.measurementOptions?.query?.type;
 			let extraTestInfo = testMethod || dnsTestType;
 
-			let testType = ABBREVIATED_TEST_TYPES.includes(testReqParams.type)
-				? testReqParams.type.toUpperCase()
-				: _.capitalizeFirstLetter(testReqParams.type);
-
+			let testType = testReqParams.type.toUpperCase();
 			let testStr = `${testType}${extraTestInfo ? ` (${extraTestInfo})` : ''}`;
 			let resultTitle = `## Globalping: \`\`\`${testStr}\`\`\` from ${locationStr}\n`;
 
 			// create markdown for each target
 			let targetStrings = [];
-			let uniqueTargets = new Set(Object.values(measurementsMetadata).map(m => m.target)).size;
+			let targetNames = Array.from(new Set(Object.values(measurementsMetadata).map(m => m.target)));
 
-			for (let targetIdx = 0; targetIdx < uniqueTargets; ++targetIdx) {
+			for (let targetIdx = 0; targetIdx < targetNames.length; ++targetIdx) {
 				// add target header and iterate over each result (probe)
-				let targetHeader = `### Target: ${measurementsMetadata[targetIdx].target}\n`;
+				let currentTarget = targetNames[targetIdx];
+				let targetHeader = `### Target: ${currentTarget}\n`;
 
 				let perProbe = results.map((probeStats) => {
-					let targetStats = probeStats.statsPerTarget[targetIdx];
+					let targetStats = probeStats.statsPerTarget.find(measurement => measurement.target === currentTarget);
+
+					if (!targetStats) {
+						return '';
+					}
 
 					// HEADER
 					let header = `#### ${probeStats.city}, ${probeStats.country}, ${probeStats.continent} - ${probeStats.network} (AS${probeStats.asn})\n`;
@@ -250,7 +251,7 @@
 						subheaderParts.push({ title: 'Time', value: timing });
 					}
 
-					if (!targetStats.isFailed && !targetStats.avgTiming !== PROBE_STATUS_OFFLINE) {
+					if (!targetStats.isFailed && targetStats.avgTiming !== PROBE_STATUS_OFFLINE) {
 						Object.keys(targetStats.extraValues).forEach((key) => {
 							let extraVal = targetStats.extraValues[key];
 							subheaderParts.push({ title: extraVal.text, value: `${extraVal.value}${extraVal.units}` });
@@ -268,17 +269,29 @@
 					}
 
 					// RAW OUTPUT
-					let rawOutput = `\`\`\`\n${targetStats.rawOutput.trim()}\n\`\`\``;
+					let rawOutputContent = targetStats.rawOutput.trim();
+					let tickCount = 3;
+
+					rawOutputContent.replace(/`+/g, (m) => {
+						if (m.length >= tickCount) { tickCount = m.length + 1; }
+
+						return m;
+					});
+
+					let tickWrapper = '`'.repeat(tickCount);
+					let rawOutputBlock = `${tickWrapper}\n${targetStats.rawOutput.trim()}\n${tickWrapper}`;
 
 					// COMPLETE THE STRING
-					return `${header}${subheader}${rawOutput}`;
+					return `${header}${subheader}${rawOutputBlock}`;
 				}).join('\n');
 
 				targetStrings.push(targetHeader + perProbe);
 			}
 
 			let targetStr = targetStrings.join('\n---\n');
-			this.set('markdownResults', resultTitle + targetStr);
+			let link = this.get('measurementLink');
+			let footer = link ? `\n\nYou can also view the results at ${link}\n` : '';
+			this.set('markdownResults', resultTitle + targetStr + footer);
 		},
 	};
 </script>
