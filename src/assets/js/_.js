@@ -1271,6 +1271,10 @@ module.exports = {
 	},
 
 	getGpTargetTiming (targetData) {
+		if (!targetData) {
+			return null;
+		}
+
 		let { avgTiming, isFailed, isOffline, areTimingsReady } = targetData;
 
 		if (isFailed) {
