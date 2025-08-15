@@ -231,7 +231,7 @@
 			for (let targetIdx = 0; targetIdx < targetNames.length; ++targetIdx) {
 				// add target header and iterate over each result (probe)
 				let currentTarget = targetNames[targetIdx];
-				let targetHeader = `### Target: ${currentTarget}\n`;
+				let targetHeader = `### Target: ${currentTarget}\n\n`;
 
 				let perProbe = results.map((probeStats) => {
 					let targetStats = probeStats.statsPerTarget.find(measurement => measurement.target === currentTarget);
@@ -283,12 +283,12 @@
 
 					// COMPLETE THE STRING
 					return `${header}${subheader}${rawOutputBlock}`;
-				}).join('\n');
+				}).join('\n\n');
 
 				targetStrings.push(targetHeader + perProbe);
 			}
 
-			let targetStr = targetStrings.join('\n---\n');
+			let targetStr = targetStrings.join('\n\n---\n\n');
 			let link = this.get('measurementLink');
 			let footer = link ? `\n\nYou can also view the results at ${link}\n` : '';
 			this.set('markdownResults', resultTitle + targetStr + footer);
