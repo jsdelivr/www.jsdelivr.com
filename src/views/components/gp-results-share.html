@@ -85,10 +85,10 @@
 			let measIDsArr = Object.values(measurementsMetadata).map(v => v.measurementId);
 			let preparedMeasIDsArr = measIDsArr;
 
-			this.set('shareResMsg', null);
+			this.set('shareResMsg', '');
 
 			if (isInfiniteModeRes) {
-				// the infinite one by a plus sign
+				// the infinite one by a dot
 				idsDelimiter = '.';
 
 				// for infinite get last 10 IDs from oldest to newest
@@ -222,7 +222,7 @@
 
 			let testType = testReqParams.type.toUpperCase();
 			let testStr = `${testType}${extraTestInfo ? ` (${extraTestInfo})` : ''}`;
-			let resultTitle = `## Globalping: \`\`\`${testStr}\`\`\` from ${locationStr}\n`;
+			let resultTitle = `## Globalping: \`${testStr}\` from ${locationStr}\n`;
 
 			// create markdown for each target
 			let targetStrings = [];
@@ -272,14 +272,12 @@
 					let rawOutputContent = targetStats.rawOutput.trim();
 					let tickCount = 3;
 
-					rawOutputContent.replace(/`+/g, (m) => {
-						if (m.length >= tickCount) { tickCount = m.length + 1; }
-
-						return m;
-					});
+					for (let tickSequence of rawOutputContent.matchAll(/`+/g)) {
+						tickCount = Math.max(tickCount, tickSequence[0].length + 1);
+					}
 
 					let tickWrapper = '`'.repeat(tickCount);
-					let rawOutputBlock = `${tickWrapper}\n${targetStats.rawOutput.trim()}\n${tickWrapper}`;
+					let rawOutputBlock = `${tickWrapper}\n${rawOutputContent}\n${tickWrapper}`;
 
 					// COMPLETE THE STRING
 					return `${header}${subheader}${rawOutputBlock}`;
