@@ -34,7 +34,7 @@ app.router = new Ractive.Router({
 	globals: [ 'query', 'collection' ],
 });
 
-app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement' ] });
+app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement', 'display', 'map' ] });
 app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
 app.router.addRoute('/discord', cGlobalpingDiscord);
