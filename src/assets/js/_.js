@@ -1270,6 +1270,26 @@ module.exports = {
 		return lastTiming;
 	},
 
+	getGpTargetTiming (targetData) {
+		if (!targetData) {
+			return null;
+		}
+
+		let { avgTiming, isFailed, isOffline, areTimingsReady } = targetData;
+
+		if (isFailed) {
+			return PROBE_STATUS_FAILED;
+		} else if (isOffline) {
+			return PROBE_STATUS_OFFLINE;
+		} else if (typeof avgTiming === 'number') {
+			return `${Math.round(avgTiming)} ms`;
+		} else if (areTimingsReady) {
+			return avgTiming;
+		}
+
+		return null;
+	},
+
 	calcGpTestResTiming (testType, testResData, dnsTraceEnabled = false, units = ' ms') {
 		let resTiming;
 		let lastTiming;
