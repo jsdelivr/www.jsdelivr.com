@@ -20,6 +20,45 @@ const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
+const originalHistory = window.history;
+const historyChangeMethods = [ 'pushState', 'replaceState', 'back', 'forward', 'go' ];
+
+const historyProxy = new Proxy(originalHistory, {
+	get (target, prop) {
+		let value = target[prop];
+
+		// If it's a method that changes history, wrap it to emit an event
+		if (historyChangeMethods.includes(prop) && typeof value === 'function') {
+			return function (...args) {
+				let result = value.apply(target, args);
+
+				// Emit historyChange event
+				let event = new CustomEvent('historyChange', {
+					detail: {
+						method: prop,
+						args,
+					},
+				});
+				window.dispatchEvent(event);
+
+				return result;
+			};
+		}
+
+		// For all other properties/methods, return as-is
+		if (typeof value === 'function') {
+			return value.bind(target);
+		}
+
+		return value;
+	},
+
+	set (target, prop, value) {
+		target[prop] = value;
+		return true;
+	},
+});
+
 let app = {
 	config: {},
 };
@@ -32,6 +71,7 @@ app.router = new Ractive.Router({
 		};
 	},
 	globals: [ 'query', 'collection' ],
+	history: historyProxy,
 });
 
 app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement', 'display', 'map' ] });
@@ -61,7 +101,7 @@ app.router.replaceQueryParam = function (name, newValue, view = this.route.view)
 	let queryString = urlSearchParams.size ? `?${urlSearchParams.toString()}` : '';
 	let hash = location.hash || '';
 
-	history.replaceState(history.state, document.title, `${location.pathname}${queryString}${hash}`);
+	this.history.replaceState(this.history.state, document.title, `${location.pathname}${queryString}${hash}`);
 	view?.set(name, newValue);
 	return this;
 };

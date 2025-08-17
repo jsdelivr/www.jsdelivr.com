@@ -36,6 +36,7 @@
 	const _ = require('../../assets/js/_');
 	const PROBE_STATUS_OFFLINE = _.getProbeStatusOfflineValue();
 	const clipboard = require('../../assets/js/decorators/clipboard');
+	const { addManagedListener } = require('../../assets/js/utils/listeners');
 
 	component.exports = {
 		decorators: {
@@ -51,6 +52,8 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				addManagedListener(this, window, 'historyChange', this.createMeasLink.bind(this));
+
 				// select all share-res text of link on click
 				this.observe('testInProgress', (testInProgress) => {
 					if (!testInProgress) {
@@ -62,7 +65,7 @@
 					}
 				}, { defer: true });
 
-				this.observe('isInfiniteModeRes measurementsMetadata map display', () => {
+				this.observe('isInfiniteModeRes measurementsMetadata', () => {
 					this.createMeasLink();
 				});
 
