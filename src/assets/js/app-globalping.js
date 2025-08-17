@@ -20,6 +20,43 @@ const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
+const historyChangeMethods = [ 'pushState', 'replaceState', 'back', 'forward', 'go' ];
+const historyProxy = new Proxy(history, {
+	get (target, prop) {
+		let value = target[prop];
+
+		// If it's a method that changes history, wrap it to emit an event
+		if (historyChangeMethods.includes(prop) && typeof value === 'function') {
+			return function (...args) {
+				let result = value.apply(target, args);
+
+				// Emit historyChange event
+				let event = new CustomEvent('historyChange', {
+					detail: {
+						method: prop,
+						args,
+					},
+				});
+
+				window.dispatchEvent(event);
+				return result;
+			};
+		}
+
+		// For all other properties/methods, return as-is
+		if (typeof value === 'function') {
+			return value.bind(target);
+		}
+
+		return value;
+	},
+
+	set (target, prop, value) {
+		target[prop] = value;
+		return true;
+	},
+});
+
 let app = {
 	config: {},
 };
@@ -32,9 +69,10 @@ app.router = new Ractive.Router({
 		};
 	},
 	globals: [ 'query', 'collection' ],
+	history: historyProxy,
 });
 
-app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement' ] });
+app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement', 'display', 'map' ] });
 app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
 app.router.addRoute('/discord', cGlobalpingDiscord);
@@ -49,9 +87,20 @@ app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/networks/:networkName', cGlobalpingNetworks);
 app.router.addRoute('/users/:username', cGlobalpingUsers);
 
-app.router.replaceQueryParam = function (name, newValue) {
-	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
-	this.route.view.set(name, newValue);
+app.router.replaceQueryParam = function (name, newValue, view = this.route.view) {
+	let urlSearchParams = new URLSearchParams(location.search);
+
+	if (newValue !== null && newValue !== undefined) {
+		urlSearchParams.set(name, newValue);
+	} else {
+		urlSearchParams.delete(name);
+	}
+
+	let queryString = urlSearchParams.size ? `?${urlSearchParams.toString()}` : '';
+	let hash = location.hash || '';
+
+	this.history.replaceState(this.history.state, document.title, `${location.pathname}${queryString}${hash}`);
+	view?.set(name, newValue);
 	return this;
 };
 

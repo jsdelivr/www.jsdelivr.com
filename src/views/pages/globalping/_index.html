@@ -1497,6 +1497,8 @@
 		data () {
 			return {
 				_,
+				map: null,
+				display: null,
 				rawProbes: '',
 				PROBE_NO_TIMING_VALUE,
 				PROBE_STATUS_FAILED,
@@ -1615,10 +1617,12 @@
 				let measurement = this.get('measurement');
 				let qsMeasurementIdsArr = [];
 				let isInfiniteMeas = false;
+				let isMultiEpMeas = false;
 
 				// A separator for IDs for regular link is a comma, for infinite one - plus sign
 				if (measurement && measurement.includes(',')) {
 					qsMeasurementIdsArr = measurement.split(',');
+					isMultiEpMeas = true;
 				} else if (measurement && measurement.includes('.')) {
 					qsMeasurementIdsArr = measurement.split('.');
 					isInfiniteMeas = true;
@@ -1637,8 +1641,59 @@
 					this.getMultipleTestMeasurementById(qsMeasurementIdsArr, isInfiniteMeas);
 				}
 
+				// read the map and display URL params and apply them
+				let map = this.get('map');
+				let display = this.get('display');
+
+				if (map === 'hidden') {
+					this.set('showMap', false);
+				}
+
+				let nonDefaultDisplayValue = isMultiEpMeas || isInfiniteMeas ? 'raw' : 'table';
+
+				if (display === nonDefaultDisplayValue) {
+					// if valid, set the non-default value in params
+					this.set('rawOutputMode', display === 'raw');
+				} else {
+					// otherwise set the appropriate default value
+					// for multi-endpoint tests, this always sets the display to table
+					// if the test is not ping, it is changed back to raw in an observer
+					this.set('rawOutputMode', nonDefaultDisplayValue !== 'raw');
+				}
+
 				// get probes from sessionStorage or fetch them and handle
 				this.getProbesData();
+
+				// disable rawOutputMode whenever test type isn't ping
+				this.observe('testReqParams.type', (testType) => {
+					if (testType && testType !== 'ping') {
+						this.set('rawOutputMode', true);
+					}
+				});
+
+				// persist non-default display value in the URL
+				this.observe('rawOutputMode testReqParams.type', () => {
+					let testType = this.get('testReqParams.type');
+
+					if (!testType) {
+						return;
+					}
+
+					let rawOutputMode = this.get('rawOutputMode');
+					let isInfiniteMeas = this.get('isInfiniteModeRes');
+					let isMultiEpMeas = this.get('measurement')?.split(',')?.length >= 2;
+
+					if (testType === 'ping' && (isInfiniteMeas || isMultiEpMeas)) {
+						app.router.replaceQueryParam('display', rawOutputMode ? 'raw' : null, this);
+					} else {
+						app.router.replaceQueryParam('display', rawOutputMode ? null : 'table', this);
+					}
+				});
+
+				// persist non-default map value in the URL
+				this.observe('showMap', (showMap) => {
+					app.router.replaceQueryParam('map', showMap ? null : 'hidden', this);
+				});
 
 				// handle test type switch
 				this.observe('mainOptions.type', (type) => {
@@ -2072,14 +2127,9 @@
 			this.set('_measurementOgTitle', null);
 			this.set('_measurementOgDescription', null);
 
-			// since Table output mode is available only for the Ping measurement
-			if (type !== 'ping') {
-				this.set('rawOutputMode', true);
-			}
-
-			// if it is infinite measurement then we should show TableOutput by default
+			// if it is infinite/multi-endpoint measurement then we should show TableOutput by default
 			// otherwise leave prev value set by user
-			if (type === 'ping' && infiniteSwitchEnabled) {
+			if (type === 'ping' && (infiniteSwitchEnabled || targetsArr.length >= 2)) {
 				this.set('rawOutputMode', false);
 			}
 
