@@ -20,10 +20,8 @@ const { getGlobalpingUser } = require('./utils/http');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
-const originalHistory = window.history;
 const historyChangeMethods = [ 'pushState', 'replaceState', 'back', 'forward', 'go' ];
-
-const historyProxy = new Proxy(originalHistory, {
+const historyProxy = new Proxy(history, {
 	get (target, prop) {
 		let value = target[prop];
 
@@ -39,8 +37,8 @@ const historyProxy = new Proxy(originalHistory, {
 						args,
 					},
 				});
-				window.dispatchEvent(event);
 
+				window.dispatchEvent(event);
 				return result;
 			};
 		}
