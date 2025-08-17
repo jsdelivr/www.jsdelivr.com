@@ -52,14 +52,17 @@ app.router.addRoute('/users/:username', cGlobalpingUsers);
 app.router.replaceQueryParam = function (name, newValue, view = this.route.view) {
 	let urlSearchParams = new URLSearchParams(location.search);
 
-	if (newValue) {
+	if (newValue !== null && newValue !== undefined) {
 		urlSearchParams.set(name, newValue);
 	} else {
 		urlSearchParams.delete(name);
 	}
 
-	history.replaceState(history.state, null, `${location.pathname}?${urlSearchParams.toString()}`);
-	view.set(name, newValue);
+	let queryString = urlSearchParams.size ? `?${urlSearchParams.toString()}` : '';
+	let hash = location.hash || '';
+
+	history.replaceState(history.state, document.title, `${location.pathname}${queryString}${hash}`);
+	view?.set(name, newValue);
 	return this;
 };
 
