@@ -1,4 +1,3 @@
-<link rel="ractive" href="../components/gp-results-share.html" name="c-gp-results-share">
 <link rel="ractive" href="./gp-tls-details.html" name="c-gp-tls-details">
 
 <div class="c-gp-results-raw-output">
@@ -21,7 +20,7 @@
 								</a>
 							</span>
 
-							{{#if @this.getTimingValueToDisplay(this, activeTargetIdx)}}
+							{{#if _.getGpTargetTiming(this.statsPerTarget[activeTargetIdx])}}
 								<span class="c-gp-results-raw-output_list_item_header_time main-value">
 									<img class="c-gp-results-raw-output_list_item_header_time_dot-icon"
 										width="4"
@@ -30,7 +29,7 @@
 
 									<span>Time:</span>
 									<span class="c-gp-results-raw-output_list_item_header_time_value">
-										{{@this.getTimingValueToDisplay(this, activeTargetIdx)}}
+										{{_.getGpTargetTiming(this.statsPerTarget[activeTargetIdx])}}
 									</span>
 								</span>
 							{{/if}}
@@ -94,15 +93,6 @@
 			</div>
 		{{/each}}
 	</div>
-
-	{{#if testReqParams.id && !testInProgress}}
-		<c-gp-results-share
-			testReqParams="{{testReqParams}}"
-			measurementsMetadata="{{measurementsMetadata}}"
-			isInfiniteModeRes="{{isInfiniteModeRes}}"
-			testInProgress="{{testInProgress}}">
-		</c-gp-results-share>
-	{{/if}}
 </div>
 
 <script>
@@ -170,19 +160,6 @@
 		},
 		setProbeAsLocation (probeData) {
 			this.set('currSearchLocation', `AS${probeData.asn}+${probeData.city}`);
-		},
-		getTimingValueToDisplay (data, activeTargetIdx) {
-			let { avgTiming, isFailed, isOffline, areTimingsReady } = data.statsPerTarget[activeTargetIdx];
-
-			if (isFailed) {
-				return PROBE_STATUS_FAILED;
-			} else if (isOffline) {
-				return PROBE_STATUS_OFFLINE;
-			} else if (typeof avgTiming === 'number') {
-				return `${Math.round(avgTiming)} ms`;
-			} else if (areTimingsReady) {
-				return avgTiming;
-			}
 		},
 		getUrlNetworkName (base = '', network) {
 			return `${base}/${network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase()}`;
