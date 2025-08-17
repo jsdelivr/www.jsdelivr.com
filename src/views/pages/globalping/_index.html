@@ -1497,6 +1497,8 @@
 		data () {
 			return {
 				_,
+				map: null,
+				display: null,
 				rawProbes: '',
 				PROBE_NO_TIMING_VALUE,
 				PROBE_STATUS_FAILED,
@@ -1643,10 +1645,10 @@
 				let map = this.get('map');
 				let display = this.get('display');
 
-				if (map === 'false') {
+				if (map === 'hidden') {
 					this.set('showMap', false);
 				} else {
-					this.set('map', null);
+					app.router.replaceQueryParam('map', null, this);
 				}
 
 				let nonDefaultDisplayValue = isMultiEpMeas || isInfiniteMeas ? 'raw' : 'table';
@@ -1684,15 +1686,16 @@
 					let isMultiEpMeas = this.get('measurement')?.split(',')?.length >= 2;
 
 					if (testType === 'ping' && (isInfiniteMeas || isMultiEpMeas)) {
-						this.set('display', rawOutputMode ? 'raw' : null);
+						app.router.replaceQueryParam('display', rawOutputMode ? 'raw' : null, this);
 					} else {
-						this.set('display', rawOutputMode ? null : 'table');
+						app.router.replaceQueryParam('display', rawOutputMode ? null : 'table', this);
 					}
 				});
 
 				// persist non-default map value in the URL
 				this.observe('showMap', (showMap) => {
-					this.set('map', showMap ? null : 'false');
+					console.log('in show map observer', showMap);
+					app.router.replaceQueryParam('map', showMap ? null : 'hidden', this);
 				});
 
 				// handle test type switch

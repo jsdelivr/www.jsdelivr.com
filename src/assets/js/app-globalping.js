@@ -49,9 +49,17 @@ app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/networks/:networkName', cGlobalpingNetworks);
 app.router.addRoute('/users/:username', cGlobalpingUsers);
 
-app.router.replaceQueryParam = function (name, newValue) {
-	history.replaceState(history.state, null, location.href.replace(new RegExp(`${name}=[^&]+|$`), `${name}=${encodeURIComponent(newValue)}`));
-	this.route.view.set(name, newValue);
+app.router.replaceQueryParam = function (name, newValue, view = this.route.view) {
+	let urlSearchParams = new URLSearchParams(location.search);
+
+	if (newValue) {
+		urlSearchParams.set(name, newValue);
+	} else {
+		urlSearchParams.delete(name);
+	}
+
+	history.replaceState(history.state, null, `${location.pathname}?${urlSearchParams.toString()}`);
+	view.set(name, newValue);
 	return this;
 };
 

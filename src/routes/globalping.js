@@ -218,7 +218,7 @@ koaElasticUtils.addRoutes(router, [
 ], async (ctx) => {
 	let path = ctx.path.startsWith('/_') ? '/_404' : ctx.path;
 	let data = {
-		..._.pick(ctx.query, [ 'measurement', 'map', 'display' ]),
+		..._.pick(ctx.query, [ 'measurement' ]),
 		actualPath: ctx.path,
 	};
 
