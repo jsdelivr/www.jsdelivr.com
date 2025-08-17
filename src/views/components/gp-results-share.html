@@ -102,7 +102,10 @@
 
 			let textToCopy = preparedMeasIDsArr.join(idsDelimiter);
 
-			this.set('measurementLink', `${origin}?measurement=${textToCopy}`);
+			let urlSearchParams = new URLSearchParams(location.search);
+			urlSearchParams.set('measurement', textToCopy);
+
+			this.set('measurementLink', `${origin}?${urlSearchParams.toString()}`);
 		},
 		createCliCommand () {
 			let params = this.get('testReqParams');
