@@ -3,112 +3,102 @@
 <link rel="ractive" href="../../components/google-maps.html" name="c-google-maps">
 <link rel="ractive" href="../../components/gp-footer.html" name="c-gp-footer">
 <link rel="ractive" href="../../components/notification.html" name="c-notification">
-<link rel="ractive" href="../../components/probe-single-card.html" name="c-probe-single-card">
+<link rel="ractive" href="../../components/gp-filtered-probe-list.html" name="c-filtered-probe-list">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	{{#partial seo}}
 		<meta name="canonical" content="/users/{{username}}">
 	{{/partial}}
 
-	<c-notification></c-notification>
-	<c-gp-header additionalClasses="header-with-gp-translucent-bg"></c-gp-header>
+	<c-notification />
+	<c-gp-header additionalClasses="header-with-gp-translucent-bg" />
 
 	<div class="p-users">
-		<div class="page-content">
-			<div class="page-content_side-menu">
-				<div class="menu-section">
-					<div class="section-list">
-						<div class="user-section user-info">
-							<img width="124"
-								height="124"
-								src="https://github.com/{{username}}.png"
-								class="user-avatar">
-							<span class="user-data">
-								<img width="20"
-									height="20"
-									src="{{@shared.assetsHost}}/img/icons/github-outline.svg">
+		<div class="p-users_hero">
+			<div class="user-banner">
+				<div class="user-banner_user">
+					<img width="48" height="48" src="https://github.com/{{username}}.png" class="user-banner_user_avatar">
+					<div class="user-banner_user_contact">
+						<span class="user-banner_user_contact_username">{{username}}</span>
+						<span class="user-banner_user_contact_gh">
+							<span>
+								<img width="16" height="16" src="{{@shared.assetsHost}}/img/icons/github-outline.svg">
 								<a rel="noopener noreferrer" href="https://github.com/{{username}}">{{username}}</a>
 							</span>
-						</div>
+						</span>
+					</div>
+				</div>
+				{{#if filteredProbes}}
+					<div class="user-banner_stats">
+						<span>
+							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/radio.svg">
+							{{filteredProbes.length}} {{_.pluralize('probe', filteredProbes.length)}}
+						</span>
 
-						{{#if userProbes}}
-							<div class="user-section">
-								<span class="user-data">
-									<img width="20"
-										height="20"
-										src="{{@shared.assetsHost}}/img/icons/radio.svg">
-									{{userProbes.length}} {{_.pluralize('probe', userProbes.length)}}
+						{{#each userStats}}
+							{{#if count}}
+								<span>
+									<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/{{icon}}">
+									{{count}} {{~/_.pluralize(...name, count)}}
 								</span>
-
-								{{#each userStats}}
-									{{#if count}}
-										<span class="user-data">
-											<img width="20"
-												height="20"
-												src="{{@shared.assetsHost}}/img/icons/{{icon}}">
-											{{count}} {{~/_.pluralize(...name, count)}}
-										</span>
-									{{/if}}
-								{{/each}}
-							</div>
-						{{/if}}
+							{{/if}}
+						{{/each}}
 					</div>
-				</div>
+				{{/if}}
 			</div>
 
-			<div class="page-content_main">
-				<div class="page-content_main_section">
-					<div class="p-users_map-wrapper">
-						<c-google-maps
-							class="p-users_map-wrapper_map"
-							iwClass="p-users_iw"
-							probesByCoords="{{probesByCoords}}"
-							hasCluster="{{true}}" />
-					</div>
-				</div>
-
-				<div class="page-content_main_section">
-					<h2 class="page-content_main_section_title">List of probes</h2>
-
-					{{#if userProbes === null}}
-						<div class="text-center">
-							Please wait while user data loads.
-						</div>
-					{{/if}}
-
-					{{#if userProbes.length === 0}}
-						<div class="text-center">
-							{{username}} seems to have no probes.
-						</div>
-					{{/if}}
-
-					{{#each userProbes}}
-						<c-probe-single-card location="{{location}}" tags="{{tags}}" maxTagCount="{{maxTagCount}}"></c-probe-single-card>
-					{{/each}}
-				</div>
+			<div class="p-users_hero_map-wrapper">
+				<c-google-maps
+					class="p-users_hero_map-wrapper_map"
+					iwClass="p-users_iw"
+					probesByCoords="{{probesByCoords}}"
+					hasCluster="{{true}}"
+					focusOnChange="{{true}}"
+				/>
 			</div>
+		</div>
+
+		<div class="p-users_filtered-list">
+			<c-filtered-probe-list
+					rawProbes="{{userProbes}}"
+					filteredProbes="{{filteredProbes}}"
+					location="{{location}}"
+					locationCompletedValue="{{locationCompletedValue}}"
+					groupBy="{{groupBy}}"
+					sortOrder="{{sortOrder}}"
+					refresh="{{@this.getProbesData}}"
+					probesLoading="{{probesLoading}}"
+					probesError="{{probesError}}"
+			/>
 		</div>
 	</div>
 
-	<c-gp-footer></c-gp-footer>
+	<c-gp-footer />
 </r-page>
 
 <script>
 	const _ = require('../../../assets/js/_');
-	const debounce = require('../../../assets/js/utils/debounce');
-	const throttle = require('../../../assets/js/utils/throttle');
 	const listeners = require('../../../assets/js/utils/listeners');
 	const http = require('../../../assets/js/utils/http');
 	const dataCache = require('../../../assets/js/utils/data-cache');
+
+	const GROUP_DEFAULT = 'disabled';
+	const SORT_DEFAULT = 'alphabetically';
 
 	component.exports = {
 		data () {
 			return {
 				_,
 				username: '',
+				probesLoading: true,
+				probesError: null,
 				userProbes: null,
 				probesByCoords: null,
-				maxTagCount: 2,
+				filteredProbes: null,
+				location: 'World',
+				locationCompletedValue: '',
+				groupBy: GROUP_DEFAULT,
+				sortOrder: SORT_DEFAULT,
 				userStats: {
 					asn: {
 						name: [ 'ASN' ],
@@ -135,33 +125,67 @@
 			description () {
 				return `Find ${this.get('username')}'s Globalping probes.`;
 			},
+			filter: {
+				get () {
+					let location = this.get('locationCompletedValue') || '';
+
+					if (location.toLowerCase() === 'world') {
+						return '';
+					}
+
+					return location.replace(/\+/g, '%');
+				},
+				set (location) {
+					this.set('location', location.replace(/%/g, '+'));
+					this.set('locationCompletedValue', location.replace(/%/g, '+'));
+				},
+			},
+			group: {
+				get () {
+					return this.get('groupBy') === GROUP_DEFAULT ? '' : this.get('groupBy');
+				},
+				set (group) {
+					this.set('groupBy', group);
+				},
+			},
+			sort: {
+				get () {
+					return this.get('sortOrder') === SORT_DEFAULT || this.get('groupBy') === 'disabled' ? '' : this.get('sortOrder');
+				},
+				set (sort) {
+					this.set('sortOrder', sort);
+				},
+			},
 		},
 		oninit () {
 			if (!Ractive.isServer) {
 				this.getProbesData();
 
-				this.observe('userProbes', (probes) => {
-					if (probes) {
-						let { groupedByCoords } = this.groupProbes(probes);
-
-						this.set('probesByCoords', groupedByCoords);
+				this.observe('filteredProbes', (probes) => {
+					if (probes === null) {
+						return;
 					}
+
+					let entries = Object.entries(this.get('userStats')).map(([ key, value ]) => {
+						if (key === 'probe') {
+							return [ key, { ...value, count: probes.length }];
+						}
+
+						return [ key, { ...value, count: [ ...new Set(probes.map(probe => probe.location[key])) ].length }];
+					}).sort((a, b) => b[1].count - a[1].count);
+
+					this.set('userStats', {}); // force reordering
+					this.set('userStats', Object.fromEntries(entries));
+
+					let groupedByCoords = this.groupProbes(probes);
+					setTimeout(() => this.set('probesByCoords', groupedByCoords), 50);
 				});
 			}
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				let handleResize = debounce(throttle(() => this.calculateMaxTagCount(), 200));
-				listeners.addManagedListener(this, window, 'resize', handleResize);
-
-				this.observe('userProbes', () => this.calculateMaxTagCount(), { defer: true });
+				listeners.screenWidthListener(this);
 			}
-		},
-		calculateMaxTagCount () {
-			let tagContainer = $('.probe-single-card_tag').get(0);
-			let tagContainerWidth = tagContainer ? tagContainer.offsetWidth : 0;
-			let maxTagCount = Math.max(2, Math.floor(tagContainerWidth / 100));
-			this.set('maxTagCount', maxTagCount);
 		},
 		handleProbesResponse (response) {
 			let user = `u-${this.get('username')}`.toLowerCase();
@@ -174,40 +198,29 @@
 				});
 
 			this.set('userProbes', userProbes);
-
-			let entries = Object.entries(this.get('userStats')).map(([ key, value ]) => {
-				if (key === 'probe') {
-					return [ key, { ...value, count: userProbes.length }];
-				}
-
-				return [ key, { ...value, count: [ ...new Set(userProbes.map(probe => probe.location[key])) ].length }];
-			}).sort((a, b) => b[1].count - a[1].count);
-
-			this.set('userStats', {}); // force reordering
-			this.set('userStats', Object.fromEntries(entries));
 		},
 		getProbesData () {
-			dataCache
-				.getCache('probesResponse@2', 60 * 1000, http.fetchGlobalpingProbes)
-				.then(value => this.handleProbesResponse(value));
+			this.set('probesLoading', true);
+			this.set('probesError', null);
+
+			dataCache.getCache('probesResponse', 60 * 1000, http.fetchGlobalpingProbes)
+				.then(value => this.handleProbesResponse(value))
+				.catch(error => this.set('probesError', error))
+				.finally(() => this.set('probesLoading', false));
 		},
 		groupProbes (probes) {
 			// group probes by Coordinates
-			let groups = probes.reduce((res, probe) => {
+			return probes.reduce((groupedByCoords, probe) => {
 				let coords = `${probe.location.latitude}, ${probe.location.longitude}`;
 
-				if (!Object.hasOwn(res.groupedByCoords, coords)) {
-					res.groupedByCoords[coords] = [];
+				if (!Object.hasOwn(groupedByCoords, coords)) {
+					groupedByCoords[coords] = [];
 				}
 
-				res.groupedByCoords[coords].push(probe);
+				groupedByCoords[coords].push(probe);
 
-				return res;
-			}, {
-				groupedByCoords: {},
-			});
-
-			return groups;
+				return groupedByCoords;
+			}, {});
 		},
 	};
 </script>

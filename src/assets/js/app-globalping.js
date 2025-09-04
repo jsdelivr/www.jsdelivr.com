@@ -85,7 +85,7 @@ app.router.addRoute('/network', cGlobalpingNetwork, { qs: [ 'filter', 'group', '
 app.router.addRoute('/terms', cPP);
 app.router.addRoute('/terms/:currentPolicy', cPP);
 app.router.addRoute('/networks/:networkName', cGlobalpingNetworks);
-app.router.addRoute('/users/:username', cGlobalpingUsers);
+app.router.addRoute('/users/:username', cGlobalpingUsers, { qs: [ 'filter', 'group', 'sort' ] });
 
 app.router.replaceQueryParam = function (name, newValue, view = this.route.view) {
 	let urlSearchParams = new URLSearchParams(location.search);
