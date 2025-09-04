@@ -278,25 +278,21 @@
 			}
 		},
 		handleProbesResponse (response) {
-			let { totalCities, totalCountries, totalASNs } = response.reduce((res, item) => {
-				if (!res.citiesList.includes(item.location.city)) {
-					res.citiesList.push(item.location.city);
-				}
+			let cities = new Set();
+			let countries = new Set();
+			let asns = new Set();
 
-				if (!res.countriesList.includes(item.location.country)) {
-					res.countriesList.push(item.location.country);
-				}
+			response.forEach(({ location }) => {
+				if (location?.city) { cities.add(location.city); }
 
-				if (!res.ASNsList.includes(item.location.asn)) {
-					res.ASNsList.push(item.location.asn);
-				}
+				if (location?.country) { countries.add(location.country); }
 
-				res.totalCities = res.citiesList.length;
-				res.totalCountries = res.countriesList.length;
-				res.totalASNs = res.ASNsList.length;
+				if (location?.asn) { asns.add(location.asn); }
+			});
 
-				return res;
-			}, { citiesList: [], countriesList: [], ASNsList: [], totalCities: 0, totalCountries: 0, totalASNs: 0 });
+			let totalCities = cities.size;
+			let totalCountries = countries.size;
+			let totalASNs = asns.size;
 
 			this.animate('totalProbes', response.length, { duration: 2000 });
 			this.animate('totalCities', totalCities, { duration: 2000 });
