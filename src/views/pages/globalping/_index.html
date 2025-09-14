@@ -1320,7 +1320,8 @@
 	const listeners = require('../../../assets/js/utils/listeners');
 	const clipboard = require('../../../assets/js/decorators/clipboard');
 	const http = require('../../../assets/js/utils/http');
-	const has = require('../../../assets/js/utils/has');
+	const dataCache = require('../../../assets/js/utils/data-cache');
+
 	const CLIENT_DEFAULT_PING_OPTS = {
 		protocol: 'ICMP',
 	};
@@ -2628,36 +2629,28 @@
 				this.set(`testReqInterval[${resNumber}]`, testReqInterval);
 			});
 		},
-		handleProbesResponse (isStored) {
-			return (response) => {
-				if (!isStored) {
-					sessionStorage.setItem('probesResponse', JSON.stringify(response));
-				} else {
-					response = JSON.parse(response);
+		handleProbesResponse (response) {
+			this.set('rawProbes', response);
+
+			let { totalCities, totalCountries } = response.reduce((res, item) => {
+				if (!res.citiesList.includes(item.location.city)) {
+					res.citiesList.push(item.location.city);
 				}
 
-				this.set('rawProbes', response);
+				if (!res.countriesList.includes(item.location.country)) {
+					res.countriesList.push(item.location.country);
+				}
 
-				let { totalCities, totalCountries } = response.reduce((res, item) => {
-					if (!res.citiesList.includes(item.location.city)) {
-						res.citiesList.push(item.location.city);
-					}
+				res.totalCities = res.citiesList.length;
+				res.totalCountries = res.countriesList.length;
 
-					if (!res.countriesList.includes(item.location.country)) {
-						res.countriesList.push(item.location.country);
-					}
+				return res;
+			}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
 
-					res.totalCities = res.citiesList.length;
-					res.totalCountries = res.countriesList.length;
-
-					return res;
-				}, { citiesList: [], countriesList: [], totalCities: 0, totalCountries: 0 });
-
-				this.animate('totalProbes', response.length, { duration: 2000 });
-				this.animate('totalCities', totalCities, { duration: 2000 });
-				this.animate('totalCountries', totalCountries, { duration: 2000 });
-				this.set('probesResponse', this.groupProbes(response));
-			};
+			this.animate('totalProbes', response.length, { duration: 2000 });
+			this.animate('totalCities', totalCities, { duration: 2000 });
+			this.animate('totalCountries', totalCountries, { duration: 2000 });
+			this.set('probesResponse', this.groupProbes(response));
 		},
 		translateTestTypeName (name) {
 			switch (name.toLowerCase()) {
@@ -2852,17 +2845,11 @@
 			}, 400);
 		},
 		getProbesData () {
-			if (has.sessionStorage()) {
-				let probesResponse = sessionStorage.getItem('probesResponse');
-
-				if (probesResponse) {
-					this.handleProbesResponse(true)(probesResponse);
-				} else {
-					http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-				}
-			} else {
-				http.fetchGlobalpingProbes().then(this.handleProbesResponse(false));
-			}
+			dataCache.getCache('probesResponse', 60 * 1000, http.fetchGlobalpingProbes)
+				.then(value => this.handleProbesResponse(value))
+				.catch((error) => {
+					console.error('Failed to fetch probes', error);
+				});
 		},
 		scrollMapIntoView () {
 			let mapBlockEl = this.find('.gp_map-block');
