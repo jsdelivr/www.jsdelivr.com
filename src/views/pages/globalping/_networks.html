@@ -30,9 +30,11 @@
 						src="https://img.jsdelivr.com/img.logo.dev/{{networkDomainName}}?token={{@shared.logoDevPublicToken}}&format=png"
 						loading="lazy"
 						alt="{{networkFullName}} logo"
-						as-tooltip="`${networkFullName}`">
+						as-tooltip="`${networkFullName}`"
+						on-error="@this.set('networkDomainName', null)"
+						>
 				{{else}}
-					<div class="p-globalping-networks_network_head_img"/>
+					<div class="p-globalping-networks_img-placeholder">{{networkFullName[0]}}</div>
 				{{/if}}
 			</div>
 
@@ -84,6 +86,16 @@
 				</c-controlled-input>
 			</div>
 
+			<div class="p-globalping-networks_network_map-wrapper">
+				<c-google-maps
+						class="p-globalping-networks_network_map-wrapper_map"
+						probesByCoords="{{probesByCoords}}"
+						hasCluster="{{true}}"
+						onMarkerClick="{{@this.onMarkerClick}}"
+						displayInfoWindow="{{false}}"
+						selectedProbe="{{selectedLocation}}"
+				/>
+			</div>
 		</div>
 
 		<div class="p-globalping-networks_network-tests">
@@ -166,11 +178,37 @@
 				</div>
 			{{/if}}
 		</div>
-	</div>
 
-	{{#if networkDomainName}}
-		<a href="https://logo.dev" target="_blank" rel="noopener" class="p-globalping-networks-logos-by">Network logos provided by Logo.dev</a>
-	{{/if}}
+		{{#if otherNetworks.length}}
+			<div class="p-globalping-networks_explore">
+				<div class="p-globalping-networks_explore_head">
+					Explore other networks
+				</div>
+
+				<div class="p-globalping-networks_explore_body">
+					{{#each otherNetworks}}
+						<a href="/networks/{{this.name}}" class="p-globalping-networks_explore_network">
+							{{#if this.networkDomainName && @shared.logoDevPublicToken}}
+								<img width="24"
+									height="24"
+									src="https://img.jsdelivr.com/img.logo.dev/{{this.networkDomainName}}?token={{@shared.logoDevPublicToken}}&format=png"
+									loading="lazy"
+									on-error="@this.onLogoError(this)"
+									alt="{{this.fullName}} logo">
+							{{else}}
+								<span class="p-globalping-networks_img-placeholder-sm">{{this.fullName[0]}}</span>
+							{{/if}}
+							<span class="p-globalping-networks_explore_network_name">{{this.fullName}}</span>
+						</a>
+					{{/each}}
+				</div>
+			</div>
+		{{/if}}
+
+		{{#if networkDomainName}}
+			<a href="https://logo.dev" target="_blank" rel="noopener" class="p-globalping-networks_logos-by">Network logos provided by Logo.dev</a>
+		{{/if}}
+	</div>
 
 	<c-gp-footer></c-gp-footer>
 </r-page>
@@ -184,6 +222,7 @@
 	const tooltip = require('../../../assets/js/decorators/tooltip');
 	const countries = require('../../../assets/json/countries.json');
 	const DEFAULT_LIMIT = 1;
+	const OTHER_NETWORKS_DISPLAYED = 12;
 	const INITIAL_OPTS_VALUES = {
 		type: 'Ping',
 		target: 'cdn.jsdelivr.net',
@@ -225,6 +264,8 @@
 				inputErrors: {},
 				serverErrorMessage: null,
 				creditErrorMessage: null,
+				otherNetworks: [],
+				probesByCoords: null,
 			};
 		},
 		onconfig () {
@@ -253,12 +294,12 @@
 					}
 				});
 
-				this.observe('probesParsed', (probesParsed) => {
+				this.observe('probesParsed', async (probesParsed) => {
 					if (probesParsed === false) { return; }
 
 					let networkName = this.get('networkName');
 					let parsedLocations = this.get('parsedLocations');
-					let { name: networkFullName, asnList = [], locationsList = [] } = parsedLocations.networks[networkName] || {};
+					let { name: networkFullName, asnList = [], locationsList = [], probesByCoords = {} } = parsedLocations[networkName] || {};
 
 					if (networkFullName) {
 						this.set('networkFullName', networkFullName);
@@ -270,6 +311,10 @@
 
 					this.set('asnList', asnList);
 					this.set('locationsList', locationsList);
+					this.set('probesByCoords', probesByCoords);
+
+					let otherNetworks = await this.findOtherNetworks();
+					this.set('otherNetworks', otherNetworks);
 				});
 
 				this.observe('realTimeTestResResponse', (realTimeTestResResponse) => {
@@ -311,21 +356,15 @@
 				});
 
 				// get network domain name to get the icon
-				this.observe('asnList', (asnList) => {
-					if (asnList && asnList.length) {
-						http.getDomainFromASN(`AS${asnList[0]}`).then((res) => {
-							if (Object.hasOwn(res, 'domain')) {
-								this.set('networkDomainName', res.domain);
-							}
-						}).catch(() => {
-							console.error('ASN to domain service unavailable.');
-						});
-					}
+				this.observe('asnList', async (asnList) => {
+					let domain = await this.fetchLocationDomain({ asnList });
+					domain && this.set('networkDomainName', domain);
 				});
 			}
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				this.set('@shared.googleMapsLoaded', true);
 				// run the test if user is pressed Enter inside of any of options inputs
 				let ipOrHostnameEl = this.find('#ipOrHostname');
 				listeners.addManagedListener(this, ipOrHostnameEl, 'keydown', this.handleEnterBtn.bind(this));
@@ -353,35 +392,106 @@
 					console.error('Failed to fetch probes', error);
 				});
 		},
+		async findOtherNetworks () {
+			let networkName = this.get('networkName');
+			let parsedLocations = this.get('parsedLocations');
+
+			if (!parsedLocations || !networkName) {
+				return [];
+			}
+
+			// create a sorted list of networks by the number of locations and name
+			let sortedNetworks = Object.entries(parsedLocations)
+				.sort((lhs, rhs) => lhs[1].probeCount - rhs[1].probeCount || lhs[0].localeCompare(rhs[0]));
+
+			let currentNetworkIndex = sortedNetworks.findIndex(([ key ]) => key === networkName);
+
+			// find ideal upper and lower network indices
+			let upperBound = Math.ceil(OTHER_NETWORKS_DISPLAYED / 2);
+			let lowerBound = Math.floor(OTHER_NETWORKS_DISPLAYED / 2);
+
+			// find index over/underflows
+			let upperOverflow = Math.max(0, (currentNetworkIndex + upperBound + 1) - sortedNetworks.length);
+			let lowerUnderflow = Math.max(0, lowerBound - currentNetworkIndex);
+
+			// correct the over/underflows
+			let indexShift = lowerUnderflow - upperOverflow;
+			let lowerIndex = currentNetworkIndex - lowerBound + indexShift;
+			let upperIndex = currentNetworkIndex + upperBound + indexShift;
+
+			// find similar networks
+			let lowerNetworks = sortedNetworks.slice(lowerIndex, currentNetworkIndex);
+			let upperNetworks = sortedNetworks.slice(currentNetworkIndex + 1, upperIndex + 1);
+
+			// fetch network domain names used to get their icons
+			return Promise.all([ ...lowerNetworks, ...upperNetworks ].map(async ([ key, { name, asnList }]) => {
+				let networkDomainName = await this.fetchLocationDomain({ asnList });
+				return { name: key, fullName: name, networkDomainName };
+			}));
+		},
+		async fetchLocationDomain ({ asnList }) {
+			if (asnList && asnList.length) {
+				try {
+					let res = await http.getDomainFromASN(`AS${asnList[0]}`);
+
+					if (res && res.domain) {
+						return res.domain;
+					}
+				} catch (e) {
+					console.error(`ASN to domain failed for ${name}`, e);
+				}
+			}
+
+			return null;
+		},
 		parseProbesResponse (data) {
-			return data.reduce((res, { location }) => {
+			return data.reduce((res, probe) => {
+				let { location } = probe;
 				let countryName = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase())?.name || location.country;
 				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
+				let coords = `${location.latitude}, ${location.longitude}`;
 
 				// collect uniques Networks and count amount of probes per Network
-				if (!Object.keys(res.networks).includes(networkNameAsKey)) {
-					res.networks[networkNameAsKey] = {
+				if (!Object.hasOwn(res, networkNameAsKey)) {
+					res[networkNameAsKey] = {
 						name: location.network,
 						asnList: [ location.asn ],
-						locationsList: [{ city: location.city, country: countryName }],
+						locationsList: [{ city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude }],
+						probesByCoords: { [coords]: [ probe ] },
+						probeCount: 1,
 					};
-				} else {
-					// collect all unique network's ASNs
-					if (!res.networks[networkNameAsKey].asnList.includes(location.asn)) {
-						res.networks[networkNameAsKey].asnList.push(location.asn);
-					}
 
-					// collect all unique network's locations (city, country)
-					if (!isArrContainsExactObj(res.networks[networkNameAsKey].locationsList, { city: location.city, country: countryName })) {
-						res.networks[networkNameAsKey].locationsList.push({ city: location.city, country: countryName });
-					}
+					return res;
 				}
 
+				res.probeCount++;
+
+				// collect all unique network's ASNs
+				if (!res[networkNameAsKey].asnList.includes(location.asn)) {
+					res[networkNameAsKey].asnList.push(location.asn);
+				}
+
+				// collect all unique network's locations (city, country)
+				if (!isArrContainsExactObj(res[networkNameAsKey].locationsList, { city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude })) {
+					res[networkNameAsKey].locationsList.push({ city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude });
+				}
+
+				// group probes by coords
+				if (!Object.hasOwn(res[networkNameAsKey].probesByCoords, coords)) {
+					res[networkNameAsKey].probesByCoords[coords] = [];
+				}
+
+				res[networkNameAsKey].probesByCoords[coords].push(probe);
+
 				return res;
-			}, {
-				asns: {},
-				networks: {},
-			});
+			}, {});
+		},
+		onMarkerClick ({ latitude, longitude }) {
+			let newSelectedLocation = this.get('locationsList').find(loc => loc.latitude === latitude && loc.longitude === longitude);
+
+			if (newSelectedLocation) {
+				this.set('selectedLocation', newSelectedLocation);
+			}
 		},
 		setTitleAndDescr (networkFullName) {
 			this.set('title', `${networkFullName} Looking Glass - Globalping`);
@@ -523,6 +633,12 @@
 					console.error('Failed to fetch user\'s IP:', err);
 					this.set('userIP', null);
 				});
+		},
+		onLogoError (network) {
+			network.networkDomainName = null;
+			let otherNetworks = this.get('otherNetworks');
+			// trigger re-render
+			this.set(`otherNetworks`, otherNetworks);
 		},
 		handleEnterBtn (event) {
 			if (event.key === 'Enter') {
