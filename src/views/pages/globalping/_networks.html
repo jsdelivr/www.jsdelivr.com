@@ -86,7 +86,12 @@
 				</c-controlled-input>
 			</div>
 
-			<div class="p-globalping-networks_network_map-wrapper">
+			<div class="p-globalping-networks_network_map-wrapper {{#if mapExpanded}}is-expanded{{/if}}">
+				<button type="button"
+						aria-label="{{mapExpanded ? 'Collapse map' : 'Expand map'}}"
+						on-click="@this.toggle('mapExpanded')">
+					<img width="20" height="20" alt="" src="{{@shared.assetsHost}}/img/globalping/{{#if mapExpanded}}minimize-icon.svg{{else}}maximize-icon.svg{{/if}}">
+				</button>
 				<c-google-maps
 						class="p-globalping-networks_network_map-wrapper_map"
 						probesByCoords="{{probesByCoords}}"
@@ -266,6 +271,7 @@
 				creditErrorMessage: null,
 				otherNetworks: [],
 				probesByCoords: null,
+				mapExpanded: false,
 			};
 		},
 		onconfig () {
@@ -464,7 +470,7 @@
 					return res;
 				}
 
-				res.probeCount++;
+				res[networkNameAsKey].probeCount++;
 
 				// collect all unique network's ASNs
 				if (!res[networkNameAsKey].asnList.includes(location.asn)) {
