@@ -72,7 +72,7 @@ app.router = new Ractive.Router({
 	history: historyProxy,
 });
 
-app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement', 'display', 'map' ] });
+app.router.addRoute('/', cGlobalping, { qs: [ 'location', 'measurement', 'display', 'map', 'by', 'order' ] });
 app.router.addRoute('/cli', cGlobalpingCli);
 app.router.addRoute('/slack', cGlobalpingSlack);
 app.router.addRoute('/discord', cGlobalpingDiscord);

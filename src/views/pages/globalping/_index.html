@@ -658,7 +658,9 @@
 								targetsCnt="{{targetsArr.length}}"
 								currSearchLocation="{{mainOptions.location}}"
 								measurementsMetadata="{{measurementsMetadata}}"
-								isInfiniteModeRes="{{isInfiniteModeRes}}">
+								isInfiniteModeRes="{{isInfiniteModeRes}}"
+								by="{{by}}"
+								order="{{order}}">
 							</c-gp-results-table-output>
 						</div>
 					{{/if}}
@@ -1665,10 +1667,12 @@
 				// get probes from sessionStorage or fetch them and handle
 				this.getProbesData();
 
-				// disable rawOutputMode whenever test type isn't ping
+				// clear table sort params and enable rawOutputMode whenever test type isn't ping
 				this.observe('testReqParams.type', (testType) => {
 					if (testType && testType !== 'ping') {
 						this.set('rawOutputMode', true);
+						app.router.replaceQueryParam('by', null, this);
+						app.router.replaceQueryParam('order', null, this);
 					}
 				});
 
