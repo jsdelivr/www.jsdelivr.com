@@ -48,9 +48,11 @@
 							data-toggle="dropdown"
 							aria-haspopup="true"
 							aria-expanded="false">
-							<span>
+							<span class="dropdown-item">
 								{{#if selectedLocation}}
-									{{~/selectedLocation.city}}, {{~/selectedLocation.country}}
+								<img height="14"
+									src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{selectedLocation.countryCode}}.svg">
+									{{~/selectedLocation.city}}
 								{{/if}}
 							</span>
 							<i class="fa fa-angle-down" aria-hidden="true"></i>
@@ -58,7 +60,10 @@
 
 						<div class="dropdown-menu">
 							{{#each ~/locationsList}}
-								<div on-click="@this.setLocation(this)">{{this.city}}, {{this.country}}</div>
+								<div on-click="@this.setLocation(this)" class="dropdown-item">
+									<img height="14" src="https://cdn.jsdelivr.net/npm/country-flag-icons@1.5.5/3x2/{{this.countryCode}}.svg">
+									{{this.city}}
+								</div>
 							{{/each}}
 						</div>
 					</div>
@@ -100,7 +105,7 @@
 						displayInfoWindow="{{false}}"
 						selectedProbe="{{selectedLocation}}"
 						focusOnChange="{{true}}"
-						mapMinZoom="{{1}}"
+						repeatMap="{{false}}"
 				/>
 			</div>
 		</div>
@@ -320,6 +325,8 @@
 						return;
 					}
 
+					locationsList.sort((lhs, rhs) => lhs.country.localeCompare(rhs.country) || lhs.city.localeCompare(rhs.city));
+
 					this.set('asnList', asnList);
 					this.set('locationsList', locationsList);
 					this.set('probesByCoords', probesByCoords);
@@ -456,9 +463,16 @@
 			return null;
 		},
 		parseProbesResponse (data) {
+			let extractLocationInfo = (location) => {
+				let country = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase())?.name || location.country;
+				let { city, latitude, longitude } = location;
+
+				return { city, country, countryCode: location.country.split(', ')[0], latitude, longitude };
+			};
+
 			return data.reduce((res, probe) => {
 				let { location } = probe;
-				let countryName = countries.find(i => i.code.toLowerCase() === location.country.toLowerCase())?.name || location.country;
+				let locationInfo = extractLocationInfo(location);
 				let networkNameAsKey = location.network.replace(/\./g, '').replace(/[\W]|_/g, ' ').replace(/\s\s+|_/g, ' ').trim().split(' ').join('-').toLowerCase();
 				let coords = `${location.latitude}, ${location.longitude}`;
 
@@ -467,7 +481,7 @@
 					res[networkNameAsKey] = {
 						name: location.network,
 						asnList: [ location.asn ],
-						locationsList: [{ city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude }],
+						locationsList: [ locationInfo ],
 						probesByCoords: { [coords]: [ probe ] },
 						probeCount: 1,
 					};
@@ -483,8 +497,8 @@
 				}
 
 				// collect all unique network's locations (city, country)
-				if (!isArrContainsExactObj(res[networkNameAsKey].locationsList, { city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude })) {
-					res[networkNameAsKey].locationsList.push({ city: location.city, country: countryName, latitude: location.latitude, longitude: location.longitude });
+				if (!isArrContainsExactObj(res[networkNameAsKey].locationsList, locationInfo)) {
+					res[networkNameAsKey].locationsList.push(locationInfo);
 				}
 
 				// group probes by coords
