@@ -26,6 +26,7 @@
 <div id="gp-map" class="{{class}}"></div>
 
 <script>
+	/* global markerClusterer */
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
@@ -78,7 +79,8 @@
 				onMarkerClick: null,
 				selectedProbe: null,
 				displayInfoWindow: true,
-				repeatMap: true,
+				lockMapBoundaries: false,
+				mapMinZoom: MAP_MIN_ZOOM,
 			};
 		},
 		onrender () {
@@ -100,7 +102,7 @@
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
-			let repeatMap = this.get('repeatMap');
+			let lockMapBoundaries = this.get('lockMapBoundaries');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				zoom: MAP_ZOOM_REG,
@@ -110,16 +112,16 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				minZoom: MAP_MIN_ZOOM,
+				minZoom: this.get('mapMinZoom'),
 				maxZoom: MAP_MAX_ZOOM,
 				mapId: 'ce04bbf9d49b6f34',
-				...!repeatMap && {
+				...lockMapBoundaries && {
 					restriction: {
 						latLngBounds: new google.maps.LatLngBounds(
 							{ lat: -85, lng: -179.5 },
 							{ lat: 85, lng: 179.5 },
 						),
-						strictBounds: true,
+						strictBounds: false,
 					},
 				},
 			});
@@ -259,6 +261,22 @@
 							algorithm: new markerClusterer.SuperClusterAlgorithm({
 								radius: 40,
 							}),
+							onClusterClick: (e, cluster, map) => {
+								// temporarily remove restriction to allow proper fit
+								let prevRestriction = map.get('restriction');
+								map.setOptions({ restriction: undefined });
+
+								// default handler
+								markerClusterer.defaultOnClusterClickHandler(e, cluster, map);
+
+								// restore restriction after the map settles
+								google.maps.event.addListenerOnce(map, 'idle', () => {
+									map.setOptions({
+										restriction: prevRestriction,
+									});
+								});
+							},
+
 						});
 					}
 
