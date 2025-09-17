@@ -171,7 +171,18 @@
 					}
 				});
 
-				this.focusOnSelectedProbe();
+				if (!selectedProbe) {
+					return;
+				}
+
+				// make sure the selected probe is visible
+				let bounds = map.getBounds();
+				let probesByCoords = this.get('probesByCoords');
+				let position = { lat: selectedProbe.latitude, lng: selectedProbe.longitude };
+
+				if (!bounds?.contains(position)) {
+					this.focusMapOnMarkers(probesByCoords);
+				}
 			});
 
 			this.observe('probesByCoords', (markersData, prevMarkersData) => {
@@ -260,22 +271,6 @@
 			google.maps.event.addListener(map, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
 			});
-		},
-		focusOnSelectedProbe () {
-			let selectedProbe = this.get('selectedProbe');
-
-			if (!selectedProbe) {
-				return;
-			}
-
-			// jump/pan to the selected probe
-			let bounds = map.getBounds();
-			let probesByCoords = this.get('probesByCoords');
-			let position = { lat: selectedProbe.latitude, lng: selectedProbe.longitude };
-
-			if (!bounds?.contains(position)) {
-				this.focusMapOnMarkers(probesByCoords);
-			}
 		},
 		createMapMarkerWithIW (key, markerData) {
 			let [ lat, lng ] = key.split(', ');
