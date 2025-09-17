@@ -78,6 +78,7 @@
 				onMarkerClick: null,
 				selectedProbe: null,
 				displayInfoWindow: true,
+				mapMinZoom: MAP_MIN_ZOOM,
 			};
 		},
 		onrender () {
@@ -108,7 +109,7 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				minZoom: MAP_MIN_ZOOM,
+				minZoom: this.get('mapMinZoom'),
 				maxZoom: MAP_MAX_ZOOM,
 				mapId: 'ce04bbf9d49b6f34',
 			});
@@ -170,19 +171,7 @@
 					}
 				});
 
-				if (!selectedProbe) {
-					return;
-				}
-
-				// jump/pan to the selected probe
-				let bounds = map.getBounds();
-				let position = { lat: selectedProbe.latitude, lng: selectedProbe.longitude };
-
-				if (bounds && bounds.contains(position)) {
-					map.panTo(position);
-				} else {
-					map.setCenter(position);
-				}
+				this.focusOnSelectedProbe();
 			});
 
 			this.observe('probesByCoords', (markersData, prevMarkersData) => {
@@ -262,13 +251,6 @@
 							map.setCenter(MAP_CENTER_ALT);
 							map.setZoom(MAP_ZOOM_ALT);
 						}
-
-						let selectedProbe = getSelectedProbe();
-
-						if (selectedProbe) {
-							map.setZoom(4);
-							map.setCenter({ lat: selectedProbe.latitude, lng: selectedProbe.longitude });
-						}
 					}
 				}
 			});
@@ -278,6 +260,22 @@
 			google.maps.event.addListener(map, 'click', () => {
 				infoWindows.forEach(iw => iw.close());
 			});
+		},
+		focusOnSelectedProbe () {
+			let selectedProbe = this.get('selectedProbe');
+
+			if (!selectedProbe) {
+				return;
+			}
+
+			// jump/pan to the selected probe
+			let bounds = map.getBounds();
+			let probesByCoords = this.get('probesByCoords');
+			let position = { lat: selectedProbe.latitude, lng: selectedProbe.longitude };
+
+			if (!bounds?.contains(position)) {
+				this.focusMapOnMarkers(probesByCoords);
+			}
 		},
 		createMapMarkerWithIW (key, markerData) {
 			let [ lat, lng ] = key.split(', ');
