@@ -78,7 +78,7 @@
 				onMarkerClick: null,
 				selectedProbe: null,
 				displayInfoWindow: true,
-				mapMinZoom: MAP_MIN_ZOOM,
+				repeatMap: true,
 			};
 		},
 		onrender () {
@@ -100,6 +100,7 @@
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
+			let repeatMap = this.get('repeatMap');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				zoom: MAP_ZOOM_REG,
@@ -109,9 +110,18 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				minZoom: this.get('mapMinZoom'),
+				minZoom: MAP_MIN_ZOOM,
 				maxZoom: MAP_MAX_ZOOM,
 				mapId: 'ce04bbf9d49b6f34',
+				...!repeatMap && {
+					restriction: {
+						latLngBounds: new google.maps.LatLngBounds(
+							{ lat: -85, lng: -179.5 },
+							{ lat: 85, lng: 179.5 },
+						),
+						strictBounds: true,
+					},
+				},
 			});
 
 			if (mq.matches) {
@@ -407,7 +417,7 @@
 			positions.forEach(position => bounds.extend(position));
 
 			// temp limit for zooming
-			map.setOptions({ maxZoom: 12 });
+			map.setOptions({ maxZoom: 6 });
 
 			map.fitBounds(bounds);
 
