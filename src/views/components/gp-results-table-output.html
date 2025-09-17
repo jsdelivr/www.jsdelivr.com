@@ -2,21 +2,20 @@
 <link rel="ractive" href="./select.html" name="c-select">
 
 <div class="c-gp-results-table-output">
-	<div class="results-table-wrapper">
-		<div class="sort-options">
-			<label for="sort-by-select">Sort by:</label>
-			<div class="sort-options_select">
-				<c-select
-						options="{{sortOpts}}"
-						selected="{{sortBy}}"
-						name="sort-by-select"
-				/>
-				<button on-click="@this.toggleSortOrder()">
-					<img width="18" height="18" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}.svg">
-				</button>
-			</div>
+	<div class="sort-options">
+		<label for="sort-by-select">Sort by:</label>
+		<div class="sort-options_select">
+			<c-select
+					options="{{sortOpts}}"
+					selected="{{sortBy}}"
+					name="sort-by-select"
+			/>
+			<button on-click="@this.toggleSortOrder()">
+				<img width="18" height="18" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}.svg">
+			</button>
 		</div>
-
+	</div>
+	<div class="results-table-wrapper">
 		<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
 			<div class="results-table_header">
 				<button class="results-table_header_cell location" on-click="@this.onSortClick('location')">
@@ -267,6 +266,7 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
+	const listeners = require('../../assets/js/utils/listeners');
 	const PROBE_MAX_TIMING = 200;
 	const PROBE_MIN_TIMING = 5;
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
@@ -331,6 +331,8 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				listeners.screenWidthListener(this);
+
 				let by = this.get('by');
 				let order = this.get('order');
 				let sortByVals = SORT_BY_OPTS.map(opt => opt.value);
@@ -343,6 +345,11 @@
 					this.set('sortOrder', order);
 				}
 
+				this.observe('screenWidth', () => {
+					let preparedTestResults = this.get('preparedTestResults');
+					preparedTestResults && this.setResultsBlockHeight(preparedTestResults);
+				});
+
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					this.setChartMaxHeight(preparedTestResults);
 					// set results block height based on content
@@ -352,6 +359,12 @@
 
 				this.observe('sortOrder sortBy', () => {
 					this.sortTestResults();
+
+					let listWrapperEl = document.querySelector('.results-table-wrapper');
+
+					if (listWrapperEl) {
+						listWrapperEl.scrollTop = 0;
+					}
 				});
 
 				this.observe('sortBy', (sortBy) => {
