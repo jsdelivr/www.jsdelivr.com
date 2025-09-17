@@ -30,7 +30,7 @@
 						src="https://img.jsdelivr.com/img.logo.dev/{{networkDomainName}}?token={{@shared.logoDevPublicToken}}&format=png"
 						loading="lazy"
 						alt="{{networkFullName}} logo"
-						as-tooltip="`${networkFullName}`"
+						as-tooltip="networkFullName"
 						on-error="@this.set('networkDomainName', null)"
 						>
 				{{else}}
@@ -212,7 +212,7 @@
 			</div>
 		{{/if}}
 
-		{{#if networkDomainName}}
+		{{#if shouldDisplayLogoDevLink}}
 			<a href="https://logo.dev" target="_blank" rel="noopener" class="p-globalping-networks_logos-by">Network logos provided by Logo.dev</a>
 		{{/if}}
 	</div>
@@ -275,6 +275,12 @@
 				probesByCoords: null,
 				mapExpanded: false,
 			};
+		},
+		computed: {
+			shouldDisplayLogoDevLink () {
+				let otherNetworks = this.get('otherNetworks');
+				return this.get('networkDomainName') || (otherNetworks && otherNetworks.filter(n => n.networkDomainName).length);
+			},
 		},
 		onconfig () {
 			let networkName = this.get('networkName');
@@ -443,7 +449,7 @@
 						return res.domain;
 					}
 				} catch (e) {
-					console.error(`ASN to domain failed for ${asnList[0]}`, e);
+					console.error(`ASN to domain failed for AS${asnList[0]}`, e);
 				}
 			}
 
@@ -641,9 +647,8 @@
 		},
 		onLogoError (network) {
 			network.networkDomainName = null;
-			let otherNetworks = this.get('otherNetworks');
 			// trigger re-render
-			this.set(`otherNetworks`, otherNetworks);
+			this.update('otherNetworks');
 		},
 		handleEnterBtn (event) {
 			if (event.key === 'Enter') {
