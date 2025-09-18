@@ -88,11 +88,11 @@
 				app.initMap = this.initMap.bind(this);
 
 				if (app.loaded) {
-					this.initMap();
+					setTimeout(this.initMap.bind(this));
 				}
 			}
 		},
-		onteardown () {
+		onunrender () {
 			if (!Ractive.isServer) {
 				map = null;
 				markerCluster = null;
