@@ -531,7 +531,13 @@
 			};
 
 			let getFieldVal = (loc, field) => {
-				return loc.statsPerTarget[0][field] ?? 0;
+				let value = loc.statsPerTarget[0][field];
+
+				if (typeof value !== 'number' || Number.isNaN(value)) {
+					return Infinity;
+				}
+
+				return value;
 			};
 
 			switch (sortBy) {
@@ -541,8 +547,16 @@
 				}
 
 				case 'quality': {
-					preparedTestResults.sort((a, b) => -sortCoeff
-                        * (getFieldVal(a, 'statsDrop') / getFieldVal(a, 'statsTotal') - getFieldVal(b, 'statsDrop') / getFieldVal(b, 'statsTotal')));
+					preparedTestResults.sort((a, b) => {
+						let totalLhs = getFieldVal(a, 'statsTotal');
+						let totalRhs = getFieldVal(b, 'statsTotal');
+
+						if (totalLhs === 0 || totalRhs === 0) {
+							return 0;
+						}
+
+						return -sortCoeff * (getFieldVal(a, 'statsDrop') / totalLhs - getFieldVal(b, 'statsDrop') / totalRhs);
+					});
 
 					break;
 				}
