@@ -2,27 +2,12 @@
 <link rel="ractive" href="./select.html" name="c-select">
 
 <div class="c-gp-results-table-output">
-	<div class="sort-options">
-		<label for="sort-by-select">Sort by:</label>
-		<div class="sort-options_select">
-			<c-select
-					options="{{sortOpts}}"
-					selected="{{sortBy}}"
-					name="sort-by-select"
-			/>
-			<button on-click="@this.toggleSortOrder()">
-				<img width="18" height="18" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}.svg">
-			</button>
-		</div>
-	</div>
 	<div class="results-table-wrapper">
 		<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
 			<div class="results-table_header">
 				<button class="results-table_header_cell location" on-click="@this.onSortClick('location')">
 					Location
-					{{#if sortBy === 'location'}}
-						<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-					{{/if}}
+					<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('location')}}">
 				</button>
 
 				{{#if targetsCnt > 1}}
@@ -31,38 +16,28 @@
 
 				<button class="results-table_header_cell quality" on-click="@this.onSortClick('quality')">
 					Quality
-					{{#if sortBy === 'quality'}}
-						<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-					{{/if}}
+					<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('quality')}}">
 				</button>
 
 				<div class="results-table_header_cell rtt">
 					<button class="rtt_text" on-click="@this.onSortClick('rtt-last')">
 						rtt last
-						{{#if sortBy === 'rtt-last'}}
-							<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-						{{/if}}
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('rtt-last')}}">
 					</button>
 					<span class="rtt_separator">/</span>
 					<button class="rtt_text" on-click="@this.onSortClick('min')">
 						min
-						{{#if sortBy === 'min'}}
-							<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-						{{/if}}
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('min')}}">
 					</button>
 					<span class="rtt_separator">/</span>
 					<button class="rtt_text" on-click="@this.onSortClick('avg')">
 						avg
-						{{#if sortBy === 'avg'}}
-							<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-						{{/if}}
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('avg')}}">
 					</button>
 					<span class="rtt_separator">/</span>
 					<button class="rtt_text" on-click="@this.onSortClick('max')">
 						max
-						{{#if sortBy === 'max'}}
-							<img width="10" height="10" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
-						{{/if}}
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('max')}}">
 					</button>
 				</div>
 				<div class="results-table_header_cell ip">Resolved IP</div>
@@ -272,35 +247,6 @@
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
 	const PROBE_OFFLINE_TEXT = 'Probe offline';
 	const PROBE_FAILED_TEXT = 'Probe failed';
-	const DEFAULT_SORT_BY = 'location';
-	const DEFAULT_SORT_ORDER = 'asc';
-	const SORT_ORDER_OPTS = [ 'asc', 'desc' ];
-	const SORT_BY_OPTS = [
-		{
-			value: 'location',
-			name: 'Location',
-		},
-		{
-			value: 'quality',
-			name: 'Quality',
-		},
-		{
-			value: 'rtt-last',
-			name: 'Rtt last',
-		},
-		{
-			value: 'min',
-			name: 'Rtt in',
-		},
-		{
-			value: 'avg',
-			name: 'Rtt min',
-		},
-		{
-			value: 'man',
-			name: 'Rtt max',
-		},
-	];
 
 	component.exports = {
 		decorators: {
@@ -326,24 +272,11 @@
 				chartMaxHeight: 0,
 				sortBy: 'location',
 				sortOrder: 'asc',
-				sortOpts: SORT_BY_OPTS,
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
 				listeners.screenWidthListener(this);
-
-				let by = this.get('by');
-				let order = this.get('order');
-				let sortByVals = SORT_BY_OPTS.map(opt => opt.value);
-
-				if (sortByVals.includes(by)) {
-					this.set('sortBy', by);
-				}
-
-				if (SORT_ORDER_OPTS.includes(order)) {
-					this.set('sortOrder', order);
-				}
 
 				this.observe('screenWidth', () => {
 					let preparedTestResults = this.get('preparedTestResults');
@@ -365,14 +298,6 @@
 					if (listWrapperEl) {
 						listWrapperEl.scrollTop = 0;
 					}
-				});
-
-				this.observe('sortBy', (sortBy) => {
-					app.router.replaceQueryParam('by', sortBy === DEFAULT_SORT_BY ? null : sortBy, this);
-				});
-
-				this.observe('sortOrder', (sortOrder) => {
-					app.router.replaceQueryParam('order', sortOrder === DEFAULT_SORT_ORDER ? null : sortOrder, this);
 				});
 			}
 		},
@@ -582,6 +507,13 @@
 		toggleSortOrder () {
 			this.set('sortOrder', this.get('sortOrder') === 'asc' ? 'desc' : 'asc');
 		},
+		getSortIcon (field) {
+			if (field === this.get('sortBy')) {
+				return `sort-${this.get('sortOrder')}-sm.svg`;
+			}
+
+			return 'sort-none.svg';
+		},
 		sortTestResults () {
 			let sortBy = this.get('sortBy');
 			let sortCoeff = this.get('sortOrder') === 'asc' ? 1 : -1;
@@ -598,8 +530,8 @@
 				return `${loc.city}${loc.country}${loc.continent}${loc.network}`;
 			};
 
-			let getFieldTotal = (loc, field) => {
-				return loc.statsPerTarget.reduce((acc, target) => acc + target[field], 0);
+			let getFieldVal = (loc, field) => {
+				return loc.statsPerTarget[0][field] ?? 0;
 			};
 
 			switch (sortBy) {
@@ -609,12 +541,14 @@
 				}
 
 				case 'quality': {
-					preparedTestResults.sort((a, b) => -sortCoeff * (getFieldTotal(a, 'statsDrop') / getFieldTotal(a, 'statsTotal') - getFieldTotal(b, 'statsDrop') / getFieldTotal(b, 'statsTotal')));
+					preparedTestResults.sort((a, b) => -sortCoeff
+                        * (getFieldVal(a, 'statsDrop') / getFieldVal(a, 'statsTotal') - getFieldVal(b, 'statsDrop') / getFieldVal(b, 'statsTotal')));
+
 					break;
 				}
 
 				default: {
-					preparedTestResults.sort((a, b) => sortCoeff * (getFieldTotal(a, sortToFieldMap[sortBy]) - getFieldTotal(b, sortToFieldMap[sortBy])));
+					preparedTestResults.sort((a, b) => sortCoeff * (getFieldVal(a, sortToFieldMap[sortBy]) - getFieldVal(b, sortToFieldMap[sortBy])));
 				}
 			}
 
