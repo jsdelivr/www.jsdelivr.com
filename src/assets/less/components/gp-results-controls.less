@@ -14,6 +14,22 @@
 		border-bottom: 1px solid #e7e7ee;
 	}
 
+	.desktop-only {
+		display: none;
+
+		@media (min-width: @screen-sm-min) {
+			display: initial;
+		}
+	}
+
+	.desktop-hidden {
+		display: initial;
+
+		@media (min-width: @screen-lg-min) {
+			display: none !important;
+		}
+	}
+
 	.content-wrapper {
 		display: flex;
 		flex-direction: column;
@@ -126,12 +142,28 @@
 				padding: 0;
 			}
 
-			&_display-settings {
+			&_btn {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				column-gap: 8px;
+				column-gap: 9.5px;
+				height: 32px;
+				width: 32px;
+				background: #fff;
+				border: 1.5px solid #e7e7ee;
+				border-radius: 8px;
+				cursor: pointer;
+			}
 
+			&_sort-options, &_map-switch, &_display-settings {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-wrap: nowrap;
+				column-gap: 8px;
+			}
+
+			&_display-settings {
 				&_switch {
 					display: flex;
 					align-items: center;
@@ -152,20 +184,52 @@
 			}
 
 			&_map-switch {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				column-gap: 8px;
-
 				&_switch {
 					display: flex;
 					align-items: center;
 					justify-content: center;
 					height: 32px;
 					width: 32px;
-					border-radius: 8px;
 					border: 1.5px solid #e7e7ee;
+					border-radius: 8px;
 					cursor: pointer;
+				}
+			}
+
+			&_sort-options {
+				.dropdown-menu {
+					right: 0;
+					padding: 0;
+					overflow: hidden;
+					border: 1px solid #e7e7ee;
+					border-radius: 8px;
+					user-select: none;
+
+					> li {
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+						column-gap: 8px;
+						padding: 8px 16px;
+						border-bottom: 1px solid #e7e7ee;
+						cursor: pointer;
+
+						&.selected {
+							background: #f3f5f7;
+						}
+
+						&:last-child {
+							border-bottom: none;
+						}
+					}
+				}
+
+				.btn-group.open {
+					.dropdown-toggle {
+						background: #f3f5f7;
+						-webkit-box-shadow: none;
+						box-shadow: none;
+					}
 				}
 			}
 		}

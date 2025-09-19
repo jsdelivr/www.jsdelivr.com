@@ -12,7 +12,7 @@
 
 		<div class="content-wrapper_ctrls">
 			<div class="content-wrapper_ctrls_display-settings">
-				<span>Display settings:</span>
+				<span>Display<span class="desktop-only"> settings</span>:</span>
 
 				<div class="content-wrapper_ctrls_display-settings_switch" on-click="@this.handleOutputModeSwitch()">
 					<img width="16"
@@ -32,6 +32,34 @@
 				<span>Map: </span>
 				<div class="content-wrapper_ctrls_map-switch_switch" on-click="@this.set('originalShowMap', !showMap),@this.set('showMap', !showMap)">
 					<img width="16" height="16" src="{{@shared.assetsHost}}/img/globalping/map-icon{{#if showMap}}.active{{/if}}.svg">
+				</div>
+			</div>
+
+			<div class="content-wrapper_ctrls_sort-options desktop-hidden dropdown">
+				<span>Sort: </span>
+				<div class="btn-group">
+					<button type="button"
+						class="dropdown-toggle content-wrapper_ctrls_btn"
+						data-toggle="dropdown"
+						aria-haspopup="true"
+						aria-expanded="false">
+						<img width="18" height="18" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}.svg">
+					</button>
+
+					<ul role="listbox" class="dropdown-menu dropdown-menu-right">
+						{{#each sortByOpts}}
+							<li role="option"
+								aria-selected="{{sortBy === this.value}}"
+								on-click="@this.onSortOptionSelect(this.value)"
+								class="dropdown-item {{#if sortBy === this.value}}selected{{/if}}"
+							>
+								{{this.name}}
+								{{#if sortBy === this.value}}
+									<img width="9" src="{{@shared.assetsHost}}/img/globalping/sort-{{sortOrder}}-sm.svg">
+								{{/if}}
+							</li>
+						{{/each}}
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -55,5 +83,15 @@
 				this.set('rawOutputMode', !rawOutputMode);
 			}
 		},
-	};
+		onSortOptionSelect (field) {
+			if (this.get('sortBy') === field) {
+				this.set('sortOrder', this.get('sortOrder') === 'asc' ? 'desc' : 'asc');
+			} else {
+				this.set('sortBy', field);
+				this.set('sortOrder', 'asc');
+			}
+
+			return false;
+		},
+};
 </script>

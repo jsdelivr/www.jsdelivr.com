@@ -1,24 +1,44 @@
 <link rel="ractive" href="../components/placeholder-skeleton.html" name="c-placeholder-skeleton">
+<link rel="ractive" href="./select.html" name="c-select">
 
 <div class="c-gp-results-table-output">
 	<div class="results-table-wrapper">
 		<div class="results-table {{#if targetsCnt === 1}}single-target{{/if}}">
 			<div class="results-table_header">
-				<div class="results-table_header_cell location">Location</div>
+				<button class="results-table_header_cell location" on-click="@this.onSortClick('location')">
+					Location
+					<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('location')}}">
+				</button>
 
 				{{#if targetsCnt > 1}}
 					<div class="results-table_header_cell targets"></div>
 				{{/if}}
 
-				<div class="results-table_header_cell quality">Quality</div>
+				<button class="results-table_header_cell quality" on-click="@this.onSortClick('quality')">
+					Quality
+					<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('quality')}}">
+				</button>
+
 				<div class="results-table_header_cell rtt">
-					<span class="rtt_text">rtt last</span>
+					<button class="rtt_text" on-click="@this.onSortClick('rtt-last')">
+						rtt last
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('rtt-last')}}">
+					</button>
 					<span class="rtt_separator">/</span>
-					<span class="rtt_text">min</span>
+					<button class="rtt_text" on-click="@this.onSortClick('min')">
+						min
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('min')}}">
+					</button>
 					<span class="rtt_separator">/</span>
-					<span class="rtt_text">avg</span>
+					<button class="rtt_text" on-click="@this.onSortClick('avg')">
+						avg
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('avg')}}">
+					</button>
 					<span class="rtt_separator">/</span>
-					<span class="rtt_text">max</span>
+					<button class="rtt_text" on-click="@this.onSortClick('max')">
+						max
+						<img width="8" src="{{@shared.assetsHost}}/img/globalping/{{@this.getSortIcon('max')}}">
+					</button>
 				</div>
 				<div class="results-table_header_cell ip">Resolved IP</div>
 				<div class="results-table_header_cell graph">Graph</div>
@@ -221,6 +241,7 @@
 <script>
 	const _ = require('../../assets/js/_');
 	const tooltip = require('../../assets/js/decorators/tooltip');
+	const listeners = require('../../assets/js/utils/listeners');
 	const PROBE_MAX_TIMING = 200;
 	const PROBE_MIN_TIMING = 5;
 	const PROBE_NO_TIMING_VALUE = _.getProbeTimeOutValue();
@@ -249,14 +270,34 @@
 					return [ segments.slice(0, splitAt).join(':'), ':' + segments.slice(splitAt).join(':') ];
 				},
 				chartMaxHeight: 0,
+				sortBy: 'location',
+				sortOrder: 'asc',
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				listeners.screenWidthListener(this);
+
+				this.observe('screenWidth', () => {
+					let preparedTestResults = this.get('preparedTestResults');
+					preparedTestResults && this.setResultsBlockHeight(preparedTestResults);
+				});
+
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					this.setChartMaxHeight(preparedTestResults);
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
+					this.sortTestResults();
+				});
+
+				this.observe('sortOrder sortBy', () => {
+					this.sortTestResults();
+
+					let listWrapperEl = document.querySelector('.results-table-wrapper');
+
+					if (listWrapperEl) {
+						listWrapperEl.scrollTop = 0;
+					}
 				});
 			}
 		},
@@ -454,6 +495,78 @@
 			}
 
 			return Math.round(value);
+		},
+		onSortClick (field) {
+			if (field === this.get('sortBy')) {
+				this.set('sortOrder', this.get('sortOrder') === 'asc' ? 'desc' : 'asc');
+			} else {
+				this.set('sortBy', field);
+				this.set('sortOrder', 'asc');
+			}
+		},
+		toggleSortOrder () {
+			this.set('sortOrder', this.get('sortOrder') === 'asc' ? 'desc' : 'asc');
+		},
+		getSortIcon (field) {
+			if (field === this.get('sortBy')) {
+				return `sort-${this.get('sortOrder')}-sm.svg`;
+			}
+
+			return 'sort-none.svg';
+		},
+		sortTestResults () {
+			let sortBy = this.get('sortBy');
+			let sortCoeff = this.get('sortOrder') === 'asc' ? 1 : -1;
+			let preparedTestResults = this.get('preparedTestResults');
+
+			let sortToFieldMap = {
+				'avg': 'avgTiming',
+				'max': 'maxTiming',
+				'min': 'minTiming',
+				'rtt-last': 'lastTiming',
+			};
+
+			let getLocationStr = (loc) => {
+				return `${loc.city}${loc.country}${loc.continent}${loc.network}`;
+			};
+
+			let getFieldVal = (loc, field) => {
+				let value = loc.statsPerTarget[0][field];
+
+				if (typeof value !== 'number' || Number.isNaN(value)) {
+					return Infinity;
+				}
+
+				return value;
+			};
+
+			switch (sortBy) {
+				case 'location': {
+					preparedTestResults.sort((a, b) => sortCoeff * getLocationStr(a).localeCompare(getLocationStr(b)));
+					break;
+				}
+
+				case 'quality': {
+					preparedTestResults.sort((a, b) => {
+						let totalLhs = getFieldVal(a, 'statsTotal');
+						let totalRhs = getFieldVal(b, 'statsTotal');
+
+						if (totalLhs === 0 || totalRhs === 0) {
+							return 0;
+						}
+
+						return -sortCoeff * (getFieldVal(a, 'statsDrop') / totalLhs - getFieldVal(b, 'statsDrop') / totalRhs);
+					});
+
+					break;
+				}
+
+				default: {
+					preparedTestResults.sort((a, b) => sortCoeff * (getFieldVal(a, sortToFieldMap[sortBy]) - getFieldVal(b, sortToFieldMap[sortBy])));
+				}
+			}
+
+			this.set('preparedTestResults', preparedTestResults);
 		},
 	};
 </script>
