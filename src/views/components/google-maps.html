@@ -26,6 +26,7 @@
 <div id="gp-map" class="{{class}}"></div>
 
 <script>
+	/* global markerClusterer */
 	const MAP_MIN_ZOOM = 2;
 	const MAP_MAX_ZOOM = 22;
 	const MAP_ZOOM_REG = 3.74;
@@ -75,18 +76,24 @@
 				hasCluster: false,
 				probesByCoords: null,
 				onProbesByCoordsChange: null,
+				onMarkerClick: null,
+				selectedProbe: null,
+				displayInfoWindow: true,
+				lockMapBoundaries: false,
+				mapMinZoom: MAP_MIN_ZOOM,
 			};
 		},
 		onrender () {
 			if (!Ractive.isServer) {
+				this.set('@shared.googleMapsLoaded', true);
 				app.initMap = this.initMap.bind(this);
 
 				if (app.loaded) {
-					this.initMap();
+					setTimeout(this.initMap.bind(this));
 				}
 			}
 		},
-		onteardown () {
+		onunrender () {
 			if (!Ractive.isServer) {
 				map = null;
 				markerCluster = null;
@@ -96,6 +103,7 @@
 		},
 		initMap () {
 			let mq = window.matchMedia('(min-width: 768px)');
+			let lockMapBoundaries = this.get('lockMapBoundaries');
 
 			map = new google.maps.Map(this.find('#gp-map'), {
 				zoom: MAP_ZOOM_REG,
@@ -105,9 +113,18 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				minZoom: MAP_MIN_ZOOM,
+				minZoom: this.get('mapMinZoom'),
 				maxZoom: MAP_MAX_ZOOM,
 				mapId: 'ce04bbf9d49b6f34',
+				...lockMapBoundaries && {
+					restriction: {
+						latLngBounds: new google.maps.LatLngBounds(
+							{ lat: -85, lng: -179.5 },
+							{ lat: 85, lng: 179.5 },
+						),
+						strictBounds: false,
+					},
+				},
 			});
 
 			if (mq.matches) {
@@ -133,6 +150,54 @@
 				infoWindows.forEach(iw => iw.close());
 			});
 
+			this.observe('selectedProbe', (selectedProbe, prevSelectedProbe) => {
+				let markerToFade = mapMarkers
+					.find(mm => mm.position.lat === prevSelectedProbe?.latitude && mm.position.lng === prevSelectedProbe?.longitude);
+				let markerToHighlight = mapMarkers
+					.find(mm => mm.position.lat === selectedProbe?.latitude && mm.position.lng === selectedProbe?.longitude);
+
+				// update marker bg colors
+				if (markerToFade) {
+					let svgUnselected = this.createClusterMarkerSVG(markerToFade.markersCount || 0, false);
+					markerToFade.content.style.backgroundImage = `url('data:image/svg+xml;base64,${svgUnselected}')`;
+				}
+
+				if (markerToHighlight) {
+					let svgSelected = this.createClusterMarkerSVG(markerToHighlight.markersCount || 0, true);
+					markerToHighlight.content.style.backgroundImage = `url('data:image/svg+xml;base64,${svgSelected}')`;
+				}
+
+				// update cluster marker bg colors
+				markerCluster?.clusters.forEach((cluster) => {
+					if (cluster.markers.length <= 1) {
+						return;
+					}
+
+					let totalProbeCount = cluster.markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
+
+					if (cluster.markers.includes(markerToHighlight)) {
+						let svgHighlighted = this.createClusterMarkerSVG(totalProbeCount, true);
+						cluster.marker.content.style.backgroundImage = `url('data:image/svg+xml;base64,${svgHighlighted}')`;
+					} else if (cluster.markers.includes(markerToFade)) {
+						let svgUnselected = this.createClusterMarkerSVG(totalProbeCount, false);
+						cluster.marker.content.style.backgroundImage = `url('data:image/svg+xml;base64,${svgUnselected}')`;
+					}
+				});
+
+				if (!selectedProbe) {
+					return;
+				}
+
+				// make sure the selected probe is visible
+				let bounds = map.getBounds();
+				let probesByCoords = this.get('probesByCoords');
+				let position = { lat: selectedProbe.latitude, lng: selectedProbe.longitude };
+
+				if (!bounds?.contains(position)) {
+					this.focusMapOnMarkers(probesByCoords);
+				}
+			});
+
 			this.observe('probesByCoords', (markersData, prevMarkersData) => {
 				if (markersData && JSON.stringify(markersData) !== JSON.stringify(prevMarkersData)) {
 					// hide all existing markers from the map
@@ -154,6 +219,7 @@
 					});
 
 					let createClusterMarkerSVG = this.createClusterMarkerSVG;
+					let getSelectedProbe = () => this.get('selectedProbe');
 
 					if (markerCluster) {
 						markerCluster.clearMarkers();
@@ -166,7 +232,10 @@
 							renderer: {
 								render ({ markers, position }) {
 									let totalCustomNumber = markers.reduce((sum, marker) => sum + (marker.markersCount || 0), 0);
-									let svg = createClusterMarkerSVG(totalCustomNumber);
+									let selectedProbe = getSelectedProbe();
+									let shouldHighlight = !selectedProbe
+										|| markers.some(m => m.position.lat === selectedProbe.latitude && m.position.lng === selectedProbe.longitude);
+									let svg = createClusterMarkerSVG(totalCustomNumber, shouldHighlight);
 
 									let clusterDiv = document.createElement('div');
 									clusterDiv.setAttribute('data-probe-count', totalCustomNumber);
@@ -193,6 +262,22 @@
 							algorithm: new markerClusterer.SuperClusterAlgorithm({
 								radius: 40,
 							}),
+							onClusterClick: (e, cluster, map) => {
+								// temporarily remove restriction to allow proper fit
+								let prevRestriction = map.get('restriction');
+								map.setOptions({ restriction: undefined });
+
+								// default handler
+								markerClusterer.defaultOnClusterClickHandler(e, cluster, map);
+
+								// restore restriction after the map settles
+								google.maps.event.addListenerOnce(map, 'idle', () => {
+									map.setOptions({
+										restriction: prevRestriction,
+									});
+								});
+							},
+
 						});
 					}
 
@@ -217,13 +302,12 @@
 			});
 		},
 		createMapMarkerWithIW (key, markerData) {
-			let infoWindow = new google.maps.InfoWindow();
-			let svg = this.createMapMarkerSvg(markerData);
 			let [ lat, lng ] = key.split(', ');
+			let onMarkerClick = this.get('onMarkerClick');
+			let selectedProbe = this.get('selectedProbe');
+			let shouldHighlight = !selectedProbe || (selectedProbe.latitude === Number(lat) && selectedProbe.longitude === Number(lng));
 
-			// Collect InfoWindows
-			infoWindows.push(infoWindow);
-			infoWindow.setContent(this.createInfoWindowContent(markerData));
+			let svg = this.createMapMarkerSvg(markerData, shouldHighlight);
 
 			let markerContent = document.createElement('div');
 			markerContent.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
@@ -248,14 +332,24 @@
 
 			// Handle closing of all InfoWindows on a click on a marker
 			marker.addListener('click', () => {
-				infoWindows.forEach(iw => iw.close());
-				infoWindow.open({ map, anchor: marker });
+				onMarkerClick && onMarkerClick({ latitude: Number(lat), longitude: Number(lng) });
 			});
+
+			if (this.get('displayInfoWindow')) {
+				let infoWindow = new google.maps.InfoWindow();
+				infoWindows.push(infoWindow);
+				infoWindow.setContent(this.createInfoWindowContent(markerData));
+
+				marker.addListener('click', () => {
+					infoWindows.forEach(iw => iw.close());
+					infoWindow.open({ map, anchor: marker });
+				});
+			}
 
 			return marker;
 		},
-		createMapMarkerSvg (markerData) {
-			return this.createClusterMarkerSVG(markerData.length);
+		createMapMarkerSvg (markerData, shouldHighlight = true) {
+			return this.createClusterMarkerSVG(markerData.length, shouldHighlight);
 		},
 		createInfoWindowContent (markersByCoords) {
 			let markersCnt = markersByCoords.length;
@@ -298,13 +392,14 @@
 
 			return infoWindowContent;
 		},
-		createClusterMarkerSVG (elementsCnt) {
+		createClusterMarkerSVG (elementsCnt, shouldHighlight = true) {
 			let { svgWidth, svgHeight, circleRadius, strokeWidth } = getMarkerSize(elementsCnt, 1); // here zoom must always be 1
+			let backgroundColor = shouldHighlight ? '#17D4A7' : '#202020';
 
 			return window.btoa(`
 				<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g filter="url(#filter0_d_6106_3045)">
-						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="#17D4A7"/>
+						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius}" fill="${backgroundColor}"/>
 						<circle cx="${svgWidth / 2}" cy="${svgHeight / 2}" r="${circleRadius + 1}" stroke="white" stroke-width="${strokeWidth}"/>
 					</g>
 					${elementsCnt !== 1 ? `<text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" dy=".35em" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">${elementsCnt}</text>` : ''}
@@ -341,7 +436,7 @@
 			positions.forEach(position => bounds.extend(position));
 
 			// temp limit for zooming
-			map.setOptions({ maxZoom: 12 });
+			map.setOptions({ maxZoom: 6 });
 
 			map.fitBounds(bounds);
 
