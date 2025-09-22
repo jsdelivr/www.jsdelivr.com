@@ -346,9 +346,10 @@
 			barWidth = 2,
 			gap = 1,
 		) {
-			if (!data) { return; }
-
 			let maxValue = this.get('chartMaxHeight');
+
+			if (!data || maxValue === 0) { return; }
+
 			let maxBars = Math.floor(svgWidth / (barWidth + gap));
 			let startIndex = Math.max(data.length - maxBars, 0);
 			let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -383,7 +384,9 @@
 			svgHeight = 24,
 			svgBgColor = '#F4F4F4',
 		) {
-			if (!data || data.length === 0) { return; }
+			let maxValue = this.get('chartMaxHeight');
+
+			if (!data || data.length === 0 || maxValue === 0) { return; }
 
 			data = data.slice(-20);
 
@@ -391,7 +394,6 @@
 			let numBars = data.length;
 			let spaceWidth = 1;
 			let barWidth = Math.round(svgWidth / numBars - spaceWidth);
-			let maxValue = this.get('chartMaxHeight');
 			let actualWidth = barWidth * numBars + (numBars - 1) * spaceWidth;
 
 			svg.setAttribute('width', actualWidth > svgWidth ? actualWidth : svgWidth);
