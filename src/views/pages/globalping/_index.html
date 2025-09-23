@@ -722,7 +722,9 @@
 								measurementsMetadata="{{measurementsMetadata}}"
 								activeTargetIdx="{{activeTargetIdx}}"
 								isInfiniteModeRes="{{isInfiniteModeRes}}"
-								screenWidth="{{screenWidth}}">
+								screenWidth="{{screenWidth}}"
+								sortOrder="{{sortOrder}}"
+								sortBy="{{sortBy}}">
 							</c-gp-results-raw-output>
 						</div>
 					{{else}}
@@ -1797,13 +1799,15 @@
 					app.router.replaceQueryParam('order', sortOrder === DEFAULT_SORT_ORDER ? null : sortOrder, this);
 				});
 
-				this.observe('sortOrder sortBy preparedTestResults', () => {
+				this.observe('sortOrder sortBy preparedTestResults activeTargetIdx rawOutputMode', () => {
 					let sortOrder = this.get('sortOrder');
 					let sortBy = this.get('sortBy');
 					let preparedTestResults = this.get('preparedTestResults');
+					let rawOutputMode = this.get('rawOutputMode');
+					let activeTargetIdx = rawOutputMode ? this.get('activeTargetIdx') : 0;
 
 					if (preparedTestResults.length) {
-						this.set('preparedTestResults', _.sortGpMeasurementResults(preparedTestResults, sortBy, sortOrder));
+						this.set('preparedTestResults', _.sortGpMeasurementResults(preparedTestResults, sortBy, sortOrder, activeTargetIdx));
 					}
 				});
 

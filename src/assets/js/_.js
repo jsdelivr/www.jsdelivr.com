@@ -1640,7 +1640,7 @@ module.exports = {
 		return name.replace(networkNameCleanupPattern, '');
 	},
 
-	sortGpMeasurementResults (results, by, order) {
+	sortGpMeasurementResults (results, by, order, targetIdx) {
 		let sortCoeff = order === 'desc' ? -1 : 1;
 
 		let sortToFieldMap = {
@@ -1655,7 +1655,7 @@ module.exports = {
 		};
 
 		let getFieldVal = (loc, field) => {
-			let value = loc.statsPerTarget[0][field];
+			let value = loc.statsPerTarget[targetIdx][field];
 
 			if (typeof value !== 'number' || Number.isNaN(value)) {
 				return Infinity;
