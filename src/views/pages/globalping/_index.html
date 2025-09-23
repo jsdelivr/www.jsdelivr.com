@@ -717,7 +717,7 @@
 								testReqParams="{{testReqParams}}"
 								preparedTestResults="{{preparedTestResults}}"
 								testInProgress="{{testInProgress}}"
-								scrolledToResIdx="{{scrolledToResIdx}}"
+								scrolledToResId="{{scrolledToResId}}"
 								currSearchLocation="{{mainOptions.location}}"
 								measurementsMetadata="{{measurementsMetadata}}"
 								activeTargetIdx="{{activeTargetIdx}}"
@@ -1649,7 +1649,7 @@
 				probesMinTiming: 5,
 				joinNetSwitchValue: 'docker',
 				showCommandsBlock: false,
-				scrolledToResIdx: null,
+				scrolledToResId: null,
 				modifiedMeasOptsCnt: 0,
 				appliedMeasOpts: {},
 				shareResHeaderData: null,
@@ -2599,17 +2599,17 @@
 				});
 			});
 		},
-		handleSeeResults (resIdx) {
+		handleSeeResults (clientSideId) {
 			let el;
 
 			if (this.get('rawOutputMode')) {
-				el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper:nth-child(${resIdx + 1})`);
+				el = this.find(`.c-gp-results-raw-output_list .c-gp-results-raw-output_list_item_top-wrapper.item-id-${clientSideId}`);
 			} else {
-				el = this.find(`.c-gp-results-table-output .results-table_row.row-num-${resIdx}`);
+				el = this.find(`.c-gp-results-table-output .results-table_row.row-num-${clientSideId}`);
 			}
 
 			// this prop will be passed to c-gp-results-raw-output in order for it to show the specific result element if it was hidden
-			this.set('scrolledToResIdx', resIdx);
+			this.set('scrolledToResId', clientSideId);
 
 			el.scrollIntoView({ behavior: 'smooth' });
 		},
@@ -3020,6 +3020,7 @@
 
 			// create svg to use as a Marker icon
 			let svg = this.createMapMarkerSvg(markerData);
+			let locationId = markerData.clientSideId;
 
 			// add listener to IW for Results and Actions button
 			google.maps.event.addListener(infoWindow, 'domready', () => {
@@ -3028,7 +3029,7 @@
 
 				if (!hasListener) {
 					clickableEl.addEventListener('click', () => {
-						this.handleSeeResults(currentMarkerIdx);
+						this.handleSeeResults(locationId);
 						clickableEl.dataset.hasListener = true;
 					});
 				}
