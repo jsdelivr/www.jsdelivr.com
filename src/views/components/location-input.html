@@ -458,16 +458,26 @@
 				});
 
 				// Prepare the source data.
-				let uniqCountSortNormalize = (values) => {
+				let uniqCountSortNormalize = (values, caseInsensitive = false) => {
 					let countValues = values.reduce((acc, value) => {
-						acc[value] = (acc[value] || 0) + 1;
+						let key = caseInsensitive ? value.toLowerCase() : value;
+
+						if (!Object.hasOwn(acc, key)) {
+							acc[key] = {
+								count: 0,
+								value,
+							};
+						}
+
+						acc[key].count += 1;
+
 						return acc;
 					}, {});
 
 					return Object.keys(countValues).map(key => ({
-						value: key,
+						value: countValues[key].value,
 						normalizedValue: key.toLowerCase(),
-						count: countValues[key],
+						count: countValues[key].count,
 					})).sort((a, b) => b.count - a.count);
 				};
 
@@ -482,7 +492,7 @@
 							state: probe.location.state ? `US-${probe.location.state}` : '',
 							country: `${countryName}\n${probe.location.country}`,
 							continent: `${continentName}\n${probe.location.continent}`,
-							network: _.cleanNetworkName(probe.location.network).trim(),
+							network: probe.location.network.trim(),
 							tags: probe.tags.filter(tag => !tag.startsWith('u-')),
 						};
 
@@ -560,7 +570,7 @@
 					index.networks = filteredProbes.map(probe => probe.network).filter(network => network && !network.includes(','));
 
 					Object.keys(index).forEach((key) => {
-						index[key] = uniqCountSortNormalize(index[key]);
+						index[key] = uniqCountSortNormalize(index[key], key === 'networks');
 					});
 
 					index.cities = index.cities.map((cityRow) => {
