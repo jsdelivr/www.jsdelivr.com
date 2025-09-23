@@ -132,6 +132,8 @@
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
+					// remove old hidden results
+					this.set('hiddenTestResults', []);
 				});
 
 				this.observe('sortOrder sortBy activeTargetIdx', () => {
@@ -144,19 +146,17 @@
 			}
 		},
 		hideShowTestResult (result) {
-			let hiddenTestResults = this.get('hiddenTestResults');
+			let hidden = this.get('hiddenTestResults');
 
-			if (hiddenTestResults.includes(result)) {
-				hiddenTestResults.splice(hiddenTestResults.indexOf(result), 1);
-			} else {
-				hiddenTestResults.push(result);
-			}
+			let updated = hidden.includes(result)
+				? hidden.filter(item => item !== result)
+				: [ ...hidden, result ];
 
-			this.set('hiddenTestResults', hiddenTestResults);
+			this.set('hiddenTestResults', updated);
 		},
 		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
-				let listEl = document.querySelector('.c-gp-results-raw-output_list');
+				let listEl = this.find('.c-gp-results-raw-output_list');
 
 				if (listEl) {
 					let itemsAmount = results.length;
