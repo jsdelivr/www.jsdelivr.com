@@ -1639,4 +1639,56 @@ module.exports = {
 	cleanNetworkName (name) {
 		return name.replace(networkNameCleanupPattern, '');
 	},
+
+	sortGpMeasurementResults (results, by, order) {
+		let sortCoeff = order === 'desc' ? -1 : 1;
+
+		let sortToFieldMap = {
+			'avg': 'avgTiming',
+			'max': 'maxTiming',
+			'min': 'minTiming',
+			'rtt-last': 'lastTiming',
+		};
+
+		let getLocationStr = (loc) => {
+			return `${loc.city}${loc.country}${loc.continent}${loc.network}`;
+		};
+
+		let getFieldVal = (loc, field) => {
+			let value = loc.statsPerTarget[0][field];
+
+			if (typeof value !== 'number' || Number.isNaN(value)) {
+				return Infinity;
+			}
+
+			return value;
+		};
+
+		switch (by) {
+			case 'location': {
+				return results.toSorted((a, b) => sortCoeff * getLocationStr(a).localeCompare(getLocationStr(b)));
+			}
+
+			case 'quality': {
+				return results.toSorted((a, b) => {
+					let totalLhs = getFieldVal(a, 'statsTotal');
+					let totalRhs = getFieldVal(b, 'statsTotal');
+
+					if (totalLhs === 0 || totalRhs === 0) {
+						return 0;
+					}
+
+					return -sortCoeff * (getFieldVal(a, 'statsDrop') / totalLhs - getFieldVal(b, 'statsDrop') / totalRhs);
+				});
+			}
+
+			default: {
+				if (!Object.hasOwn(sortToFieldMap, by)) {
+					return results;
+				}
+
+				return results.toSorted((a, b) => sortCoeff * (getFieldVal(a, sortToFieldMap[by]) - getFieldVal(b, sortToFieldMap[by])));
+			}
+		}
+	},
 };

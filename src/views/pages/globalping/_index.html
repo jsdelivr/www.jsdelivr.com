@@ -1797,6 +1797,16 @@
 					app.router.replaceQueryParam('order', sortOrder === DEFAULT_SORT_ORDER ? null : sortOrder, this);
 				});
 
+				this.observe('sortOrder sortBy preparedTestResults', () => {
+					let sortOrder = this.get('sortOrder');
+					let sortBy = this.get('sortBy');
+					let preparedTestResults = this.get('preparedTestResults');
+
+					if (preparedTestResults.length) {
+						this.set('preparedTestResults', _.sortGpMeasurementResults(preparedTestResults, sortBy, sortOrder));
+					}
+				});
+
 				// clear table sort params and enable rawOutputMode whenever test type isn't ping
 				this.observe('testReqParams.type', (testType) => {
 					if (testType && testType !== 'ping') {
