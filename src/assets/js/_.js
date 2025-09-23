@@ -18,8 +18,6 @@ const PROBE_NO_TIMING_VALUE = 'time out';
 const PROBE_STATUS_FAILED = 'failed';
 const PROBE_STATUS_OFFLINE = 'offline';
 
-const networkNameCleanupPattern = /[\s,]+(?:(?:\w{1,2}\.)+\w{0,2}|Ltd|Limited|Inc|Incorporated|Corp|Corporation|LLC|LLP|PLC|GmbH|S\.?\s?A\.?|Pty|Co|Company|AG|OÜ|ApS|A\/S|IVS|K\/S|AB|HB|KB|AS|ASA|ANS|NUF|Oy|Oyj|Ay|Ky|Tmi|EHF|HF|OHG|KG|GbR|BV|NV|VOF|Comm\.?\s?V|CV|SARL|SCA|SCS|ASBL|TÜ|MTÜ|FIE|Srl|SpA|SNC|SAS|EURL|UG|KGaA|SE|SCP|SCI|SARL-S|SCSp|Kft|Bt|Rt|Zrt|Nyrt|SIA|IK|PS|KS|ĀKF|BO|VSIA|VAS|UAB|VšĮ|IĮ|TŪB|KŪB|MB|BĮ|PP)[.,\s]*$/gi;
-
 module.exports = {
 	screenType,
 	isTabletScreen () {
@@ -1634,10 +1632,6 @@ module.exports = {
 
 			return res;
 		}, {});
-	},
-
-	cleanNetworkName (name) {
-		return name.replace(networkNameCleanupPattern, '');
 	},
 
 	sortGpMeasurementResults (results, by, order, targetIdx) {

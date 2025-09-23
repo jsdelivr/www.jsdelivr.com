@@ -149,7 +149,7 @@
                                             {{#if item.networks && item.networks.length}}
                                                 <div class="gp-filtered-list_list_column_group_item_networks">
                                                     {{#each item.networks}}
-                                                        <a href="/?location={{encodeURIComponent(`${item.from}%${_.cleanNetworkName(this.name)}`)}}">
+                                                        <a href="/?location={{encodeURIComponent(`${item.from}%${this.name}`)}}">
                                                             <span class="gp-filtered-list_list_column_group_item_network">
                                                                 {{this.name}}
                                                                 {{#if this.count !== 1}}
@@ -499,34 +499,40 @@
 						let probes = obj[continent][location];
 						probes.forEach((probe) => {
 							let network = probe.location.network;
+							let key = network.toLowerCase();
 
-							if (!allNetworks[network]) {
-								allNetworks[network] = [];
+							if (!Object.hasOwn(allNetworks, key)) {
+								allNetworks[key] = {
+									name: network,
+									probes: [],
+								};
 							}
 
-							allNetworks[network].push(probe);
+							allNetworks[key].probes.push(probe);
 						});
 					});
 				});
 
 				let sortedNetworks = Object.keys(allNetworks).sort((a, b) => {
 					if (sortOrder === 'alphabetically') {
-						return a.localeCompare(b);
+						return allNetworks[a].name.localeCompare(allNetworks[b].name);
 					}
 
-					return allNetworks[b].length - allNetworks[a].length;
+					return allNetworks[b].probes.length - allNetworks[a].probes.length;
 				});
 
 				return sortedNetworks.map(network => ({
 					continent: null,
-					name: network,
-					from: _.cleanNetworkName(network),
-					location: network,
-					probes: allNetworks[network],
+					name: allNetworks[network].name,
+					from: allNetworks[network].name,
+					location: allNetworks[network].name,
+					probes: allNetworks[network].probes,
 					networks: [],
 					showFlag: false,
 				}));
 			}
+
+			let networkNameMap = {}; // make sure all networks have the same letter case across cities/countries
 
 			let sortedArray = Object
 				.keys(obj)
@@ -588,11 +594,24 @@
 							// Count probes per network
 							let networkCounts = probes.reduce((acc, probe) => {
 								let network = probe.location.network;
-								acc[network] = (acc[network] || 0) + 1;
+								let key = network.toLowerCase();
+
+								if (!Object.hasOwn(networkNameMap, key)) {
+									networkNameMap[key] = network;
+								}
+
+								if (!Object.hasOwn(acc, key)) {
+									acc[key] = {
+										name: networkNameMap[key],
+										count: 0,
+									};
+								}
+
+								acc[key].count += 1;
 								return acc;
 							}, {});
 
-							networks = Object.entries(networkCounts).map(([ name, count ]) => ({
+							networks = Object.entries(networkCounts).map(([ , { name, count }]) => ({
 								name,
 								count,
 							}));
