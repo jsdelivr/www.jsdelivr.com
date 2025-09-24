@@ -2,8 +2,8 @@
 
 <div class="c-gp-results-raw-output">
 	<div class="c-gp-results-raw-output_list">
-		{{#each preparedTestResults:idx}}
-			<div class="c-gp-results-raw-output_list_item_top-wrapper">
+		{{#each preparedTestResults}}
+			<div class="c-gp-results-raw-output_list_item_top-wrapper item-id-{{this.clientSideId}}">
 				<div class="c-gp-results-raw-output_list_item_inner-wrapper">
 					<div class="c-gp-results-raw-output_list_item">
 						<div class="c-gp-results-raw-output_list_item_header">
@@ -59,8 +59,8 @@
 
 							<c-gp-tls-details tls="{{this.statsPerTarget[activeTargetIdx].tls}}" screenWidth="{{screenWidth}}"></c-gp-tls-details>
 
-							<img on-click="@this.hideShowTestResult(idx)"
-								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(idx)}}upside-down{{/if}}"
+							<img on-click="@this.hideShowTestResult(this)"
+								class="c-gp-results-raw-output_list_item_header_dropdown-icon {{#if hiddenTestResults.includes(this)}}upside-down{{/if}}"
 								width="24"
 								height="24"
 								src="{{@shared.assetsHost}}/img/globalping/chevron-up-icon.svg">
@@ -79,10 +79,10 @@
 							</div>
 						</div>
 
-						<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawOutput}}</pre>
+						<pre class="{{#if hiddenTestResults.includes(this)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawOutput}}</pre>
 
 						{{#if testInProgress === false && isInfiniteModeRes}}
-							<pre class="{{#if hiddenTestResults.includes(idx)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawFooter}}</pre>
+							<pre class="{{#if hiddenTestResults.includes(this)}}hidden{{/if}}">{{this.statsPerTarget[activeTargetIdx].rawFooter}}</pre>
 						{{/if}}
 					</div>
 
@@ -115,39 +115,48 @@
 		},
 		onrender () {
 			if (!Ractive.isServer) {
-				// open result under specific index when scrool to this element from the parent called
-				this.observe('scrolledToResIdx', (scrolledToResIdx) => {
-					if (scrolledToResIdx === null) { return; }
+				// open a specific item if it was scrolled to from the parent component
+				this.observe('scrolledToResId', (clientSideId) => {
+					if (clientSideId === null) { return; }
 
 					let hiddenTestResults = this.get('hiddenTestResults');
+					let targetLocation = hiddenTestResults.find(item => item.clientSideId === clientSideId);
 
-					if (hiddenTestResults.includes(scrolledToResIdx)) {
-						this.hideShowTestResult(scrolledToResIdx);
+					if (targetLocation) {
+						this.hideShowTestResult(targetLocation);
 					}
 
-					this.set('scrolledToResIdx', null);
+					this.set('scrolledToResId', null);
 				}, { init: false });
 
 				this.observe('preparedTestResults', (preparedTestResults) => {
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
+					// remove old hidden results
+					this.set('hiddenTestResults', []);
 				});
+
+				this.observe('sortOrder sortBy activeTargetIdx', () => {
+					let listEl = this.find('.c-gp-results-raw-output_list');
+
+					if (listEl) {
+						listEl.scrollTop = 0;
+					}
+				}, { init: false });
 			}
 		},
-		hideShowTestResult (idx) {
-			let hiddenTestResults = this.get('hiddenTestResults');
+		hideShowTestResult (result) {
+			let hidden = this.get('hiddenTestResults');
 
-			if (hiddenTestResults.includes(idx)) {
-				hiddenTestResults.splice(hiddenTestResults.indexOf(idx), 1);
-			} else {
-				hiddenTestResults.push(idx);
-			}
+			let updated = hidden.includes(result)
+				? hidden.filter(item => item !== result)
+				: [ ...hidden, result ];
 
-			this.set('hiddenTestResults', hiddenTestResults);
+			this.set('hiddenTestResults', updated);
 		},
 		setResultsBlockHeight (results) {
 			requestAnimationFrame(() => {
-				let listEl = document.querySelector('.c-gp-results-raw-output_list');
+				let listEl = this.find('.c-gp-results-raw-output_list');
 
 				if (listEl) {
 					let itemsAmount = results.length;

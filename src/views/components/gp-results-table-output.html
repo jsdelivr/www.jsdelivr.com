@@ -44,8 +44,8 @@
 				<div class="results-table_header_cell graph">Graph</div>
 			</div>
 
-			{{#each preparedTestResults:resIdx}}
-				<div class="results-table_row row-num-{{resIdx}}">
+			{{#each preparedTestResults}}
+				<div class="results-table_row row-num-{{this.clientSideId}}">
 					<div class="results-table_row_location">
 						<span class="results-table_row_location_status-line">
 							<span
@@ -287,18 +287,15 @@
 					this.setChartMaxHeight(preparedTestResults);
 					// set results block height based on content
 					this.setResultsBlockHeight(preparedTestResults);
-					this.sortTestResults();
 				});
 
 				this.observe('sortOrder sortBy', () => {
-					this.sortTestResults();
-
-					let listWrapperEl = document.querySelector('.results-table-wrapper');
+					let listWrapperEl = this.find('.results-table-wrapper');
 
 					if (listWrapperEl) {
 						listWrapperEl.scrollTop = 0;
 					}
-				});
+				}, { init: false });
 			}
 		},
 		oncomplete () {
@@ -515,60 +512,6 @@
 			}
 
 			return 'sort-none.svg';
-		},
-		sortTestResults () {
-			let sortBy = this.get('sortBy');
-			let sortCoeff = this.get('sortOrder') === 'asc' ? 1 : -1;
-			let preparedTestResults = this.get('preparedTestResults');
-
-			let sortToFieldMap = {
-				'avg': 'avgTiming',
-				'max': 'maxTiming',
-				'min': 'minTiming',
-				'rtt-last': 'lastTiming',
-			};
-
-			let getLocationStr = (loc) => {
-				return `${loc.city}${loc.country}${loc.continent}${loc.network}`;
-			};
-
-			let getFieldVal = (loc, field) => {
-				let value = loc.statsPerTarget[0][field];
-
-				if (typeof value !== 'number' || Number.isNaN(value)) {
-					return Infinity;
-				}
-
-				return value;
-			};
-
-			switch (sortBy) {
-				case 'location': {
-					preparedTestResults.sort((a, b) => sortCoeff * getLocationStr(a).localeCompare(getLocationStr(b)));
-					break;
-				}
-
-				case 'quality': {
-					preparedTestResults.sort((a, b) => {
-						let totalLhs = getFieldVal(a, 'statsTotal');
-						let totalRhs = getFieldVal(b, 'statsTotal');
-
-						if (totalLhs === 0 || totalRhs === 0) {
-							return 0;
-						}
-
-						return -sortCoeff * (getFieldVal(a, 'statsDrop') / totalLhs - getFieldVal(b, 'statsDrop') / totalRhs);
-					});
-
-					break;
-				}
-
-				default: {
-					preparedTestResults.sort((a, b) => sortCoeff * (getFieldVal(a, sortToFieldMap[sortBy]) - getFieldVal(b, sortToFieldMap[sortBy])));
-				}
-			}
-
-			this.set('preparedTestResults', preparedTestResults);
 		},
 	};
 </script>
