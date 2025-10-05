@@ -31,22 +31,4 @@ module.exports = {
 			'/2013/01/nginx-load-balancing-basics.html': '/blog/nginx-load-balancing-basics/',
 		},
 	},
-	globalping: {
-		server: {
-			port: 13000,
-			host: 'https://globalping.io',
-			blogHost: 'https://jsdelivr-blog.ghost.io',
-			assetsHost: `/assets/${assetsVersion}`,
-			apiDocsHost: 'https://api.globalping.io',
-			userAgent: `globalping.io/${version} (https://github.com/jsdelivr/www.jsdelivr.com)`,
-			headers: {
-				'Cache-Control': 'no-cache, no-store, must-revalidate',
-				'Vary': 'Accept-Encoding',
-				'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-			},
-			blogRewrite: {},
-		},
-		ipInfoToken: '',
-		logoDevPublicToken: '',
-	},
 };
