@@ -2,27 +2,12 @@
 // process.env.PANGOCAIRO_BACKEND = 'fontconfig';
 process.env.FONTCONFIG_PATH = 'fonts';
 
-const fs = require('fs');
-const path = require('path');
 const bytes = require('bytes');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
-
 const algoliaNode = require('../../../lib/algolia-node');
 const got = require('../../../lib/got');
-
 const { cleanString, truncateString, fontsProcessor } = require('./utils');
-const { fetchGlobalpingStats, validateMeasurementData } = require('../utils/globalping');
-
-const gpGenerators = {
-	dns: require('./globalping/dns'),
-	http: require('./globalping/http'),
-	mtr: require('./globalping/mtr'),
-	ping: require('./globalping/ping'),
-	traceroute: require('./globalping/traceroute'),
-};
-
-const globalpingOG = fs.readFileSync(path.resolve(__dirname, '../../../assets/img/og-globalping.png'));
 
 const API_HOST = 'https://data.jsdelivr.com';
 const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
@@ -200,30 +185,6 @@ module.exports = async (ctx) => {
 		ctx.maxAge = 24 * 60 * 60;
 	} catch (error) {
 		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
-			return; // 404 response
-		}
-
-		throw error;
-	}
-};
-
-module.exports.globalping = async (ctx) => {
-	try {
-		let measData = await fetchGlobalpingStats(ctx.params.id, ctx.app.env);
-
-		if (!validateMeasurementData(measData, false)) {
-			ctx.body = globalpingOG;
-			ctx.type = 'image/png';
-			ctx.maxAge = 60;
-			return;
-		}
-
-		let svg = await gpGenerators[measData[0].type](ctx, measData);
-		ctx.body = await render(svg);
-		ctx.type = 'image/png';
-		ctx.maxAge = 24 * 60 * 60;
-	} catch (error) {
-		if (error?.statusCode === 404) {
 			return; // 404 response
 		}
 

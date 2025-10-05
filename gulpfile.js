@@ -18,14 +18,13 @@ const rollupJson = require('rollup-plugin-json');
 const buffer = require('vinyl-buffer');
 const source = require('vinyl-source-stream');
 
-const site = process.env.SITE === 'globalping' ? 'globalping' : 'jsdelivr';
-const liveReloadOptions = { port: site === 'globalping' ? 35730 : 35729 };
+const liveReloadOptions = { port: 35729 };
 
 const srcDir = './src';
 const srcAssetsDir = `${srcDir}/assets`;
-const srcPublicDir = `${srcDir}/public${site === 'globalping' ? '/globalping' : ''}`;
-const dstAssetsDir = `./dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}/assets`;
-const dstPublicDir = `./dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}`;
+const srcPublicDir = `${srcDir}/public`;
+const dstAssetsDir = './dist/jsdelivr/assets';
+const dstPublicDir = './dist/jsdelivr';
 let cache;
 
 const getRollupStream = file => rollupStream({
@@ -75,13 +74,7 @@ gulp.task('copy', gulp.parallel(
 ));
 
 gulp.task('less', () => {
-	return gulp.src(site === 'globalping'
-		? [
-			`${srcAssetsDir}/less/app-globalping.less`,
-		]
-		: [
-			`${srcAssetsDir}/less/app.less`,
-		])
+	return gulp.src(`${srcAssetsDir}/less/app.less`)
 		.pipe(plumber())
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
@@ -92,13 +85,7 @@ gulp.task('less', () => {
 });
 
 gulp.task('less:prod', () => {
-	return gulp.src(site === 'globalping'
-		? [
-			`${srcAssetsDir}/less/app-globalping.less`,
-		]
-		: [
-			`${srcAssetsDir}/less/app.less`,
-		])
+	return gulp.src(`${srcAssetsDir}/less/app.less`)
 		.pipe(sourcemaps.init())
 		.pipe(less({ relativeUrls: true, strictMath: true }))
 		.pipe(autoprefixer())
@@ -109,9 +96,9 @@ gulp.task('less:prod', () => {
 });
 
 gulp.task('js', gulp.parallel(
-	() => getRollupStream(site === 'globalping' ? 'app-globalping.js' : 'app.js')
+	() => getRollupStream('app.js')
 		.pipe(plumber())
-		.pipe(source(site === 'globalping' ? 'app-globalping.js' : 'app.js', srcAssetsDir))
+		.pipe(source('app.js', srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('.'))
@@ -128,8 +115,8 @@ gulp.task('js', gulp.parallel(
 ));
 
 gulp.task('js:prod', gulp.parallel(
-	() => getRollupStream(site === 'globalping' ? 'app-globalping.js' : 'app.js')
-		.pipe(source(site === 'globalping' ? 'app-globalping.js' : 'app.js', srcAssetsDir))
+	() => getRollupStream('app.js')
+		.pipe(source('app.js', srcAssetsDir))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(terser({ sourceMap: { includeSources: true } }))
