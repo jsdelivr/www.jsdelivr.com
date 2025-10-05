@@ -30,7 +30,6 @@ const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const debugHandler = require('./routes/debug');
 const jsDelivrRouter = require('./routes/jsdelivr');
-const globalpingRouter = require('./routes/globalping');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
 
@@ -268,11 +267,7 @@ router.get('/auth/callback', '/auth/callback', async (ctx) => {
 /**
  * Site-specific routes.
  */
-if (site === 'globalping') {
-	router.use(globalpingRouter.routes(), globalpingRouter.allowedMethods());
-} else {
-	router.use(jsDelivrRouter.routes(), jsDelivrRouter.allowedMethods());
-}
+router.use(jsDelivrRouter.routes(), jsDelivrRouter.allowedMethods());
 
 /**
  * All other pages.
