@@ -23,8 +23,8 @@ const liveReloadOptions = { port: 35729 };
 const srcDir = './src';
 const srcAssetsDir = `${srcDir}/assets`;
 const srcPublicDir = `${srcDir}/public`;
-const dstAssetsDir = './dist/jsdelivr/assets';
-const dstPublicDir = './dist/jsdelivr';
+const dstAssetsDir = './dist/assets';
+const dstPublicDir = './dist';
 let cache;
 
 const getRollupStream = file => rollupStream({
