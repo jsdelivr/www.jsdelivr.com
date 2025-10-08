@@ -24,13 +24,11 @@ const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
 const assetsVersion = require('./lib/assets').version;
 
-const site = process.env.SITE === 'globalping' ? 'globalping' : 'jsdelivr';
-const serverConfig = config.get(site === 'globalping' ? 'globalping.server' : 'server');
+const serverConfig = config.get('server');
 const stripTrailingSlash = require('./middleware/strip-trailing-slash');
 const render = require('./middleware/render');
 const debugHandler = require('./routes/debug');
 const jsDelivrRouter = require('./routes/jsdelivr');
-const globalpingRouter = require('./routes/globalping');
 const legacyMapping = require('../data/legacy-mapping.json');
 const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
 
@@ -56,7 +54,7 @@ app.use(async (ctx, next) => {
 /**
  * Handle favicon requests before anything else.
  */
-app.use(koaFavicon(`${__dirname}/public/${site === 'globalping' ? 'globalping/' : ''}favicon.ico`));
+app.use(koaFavicon(`${__dirname}/public/favicon.ico`));
 
 /**
  * Log requests during development.
@@ -99,7 +97,7 @@ app.use(async (ctx, next) => {
  * Livereload support during development.
  */
 if (app.env === 'development') {
-	app.use(koaLivereload({ port: site === 'globalping' ? 35730 : 35729 }));
+	app.use(koaLivereload({ port: 35729 }));
 }
 
 /**
@@ -146,40 +144,37 @@ app.use(render({
 			: serverConfig.assetsHost
 		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
-	logoDevPublicToken: config.get('globalping.logoDevPublicToken'),
 	assetsVersion,
 }, app));
 
 
-if (site === 'jsdelivr') {
-	/**
-	 * Redirect old URLs #1.
-	 */
-	app.use(async (ctx, next) => {
-		if (!ctx.query._escaped_fragment_) {
-			return next();
-		}
-
-		let name = ctx.query._escaped_fragment_.trim();
-
-		if (Object.hasOwn(legacyMapping, name)) {
-			ctx.status = 301;
-			return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
-		}
-	});
-
-	/**
-	 * Redirect previous Globalping pages.
-	 */
-	app.use(async (ctx, next) => {
-		if (/^\/globalping(?:\/|$)/.test(ctx.path)) {
-			ctx.status = 301;
-			return ctx.redirect(`https://globalping.io${ctx.url.replace(/^\/[^/?]+/, '')}`);
-		}
-
+/**
+ * Redirect old URLs #1.
+ */
+app.use(async (ctx, next) => {
+	if (!ctx.query._escaped_fragment_) {
 		return next();
-	});
-}
+	}
+
+	let name = ctx.query._escaped_fragment_.trim();
+
+	if (Object.hasOwn(legacyMapping, name)) {
+		ctx.status = 301;
+		return ctx.redirect(`/package/${legacyMapping[name].type}/${legacyMapping[name].name}`);
+	}
+});
+
+/**
+ * Redirect previous Globalping pages.
+ */
+app.use(async (ctx, next) => {
+	if (/^\/globalping(?:\/|$)/.test(ctx.path)) {
+		ctx.status = 301;
+		return ctx.redirect(`https://globalping.io${ctx.url.replace(/^\/[^/?]+/, '')}`);
+	}
+
+	return next();
+});
 
 /**
  * More accurate APM route names.
@@ -203,7 +198,7 @@ router.use(
 
 		return next();
 	},
-	koaStatic(__dirname + `/../dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}/assets`, {
+	koaStatic(__dirname + '/../dist/assets', {
 		index: false,
 		maxage: 365 * 24 * 60 * 60 * 1000,
 		setHeaders (res) {
@@ -220,7 +215,7 @@ router.use(
 	},
 );
 
-router.use(koaStatic(__dirname + `/../dist${site === 'globalping' ? '/globalping' : '/jsdelivr'}`, {
+router.use(koaStatic(__dirname + '/../dist', {
 	index: false,
 	maxage: 60 * 60 * 1000,
 	setHeaders (res) {
@@ -268,11 +263,7 @@ router.get('/auth/callback', '/auth/callback', async (ctx) => {
 /**
  * Site-specific routes.
  */
-if (site === 'globalping') {
-	router.use(globalpingRouter.routes(), globalpingRouter.allowedMethods());
-} else {
-	router.use(jsDelivrRouter.routes(), jsDelivrRouter.allowedMethods());
-}
+router.use(jsDelivrRouter.routes(), jsDelivrRouter.allowedMethods());
 
 /**
  * All other pages.
@@ -281,9 +272,9 @@ koaElasticUtils.addRoutes(router, [
 	[ '/(.*)', '/(.*)' ],
 ], async (ctx) => {
 	let path = ctx.path.startsWith('/_') ? '/_404' : ctx.path;
-	let root = site === 'globalping' ? 'globalping/' : '';
+	let root = '';
 	let data = {
-		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style', 'measurement' ]),
+		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style' ]),
 		actualPath: ctx.path,
 	};
 
@@ -342,35 +333,33 @@ server.use((req, res, next) => {
 	next();
 });
 
-if (site === 'jsdelivr') {
-	server.use('/blog/robots.txt', (req, res) => {
-		res.set('Content-Type', 'text/plain');
-		return res.send(`User-agent: *
+server.use('/blog/robots.txt', (req, res) => {
+	res.set('Content-Type', 'text/plain');
+	return res.send(`User-agent: *
 Sitemap: ${serverConfig.host}/blog/sitemap.xml
 Disallow: /ghost/
 Disallow: /p/
 Disallow: /email/
 Disallow: /r/`);
-	});
+});
 
-	/**
-	 * Redirect old blog posts.
-	 */
-	server.use('/blog', (req, res, next) => {
-		if (Object.hasOwn(serverConfig.blogRewrite, req.path)) {
-			return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
-		} else if (req.hostname === 'blog.jsdelivr.com') {
-			return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
-		}
+/**
+ * Redirect old blog posts.
+ */
+server.use('/blog', (req, res, next) => {
+	if (Object.hasOwn(serverConfig.blogRewrite, req.path)) {
+		return res.redirect(301, `${serverConfig.host}${serverConfig.blogRewrite[req.path]}`);
+	} else if (req.hostname === 'blog.jsdelivr.com') {
+		return res.redirect(301, `${serverConfig.host}/blog${req.path}`);
+	}
 
-		next();
-	});
+	next();
+});
 
-	/**
-	 * Proxy blog requests to ghost.
-	 */
-	server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
-}
+/**
+ * Proxy blog requests to ghost.
+ */
+server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
 
 /**
  * Forward everything else to Koa (main website).

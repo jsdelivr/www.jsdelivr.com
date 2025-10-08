@@ -2,8 +2,6 @@ require('./polyfills');
 
 const _ = require('./_');
 const cDocsData = require('../../views/pages/docs/data.jsdelivr.com.html');
-const cDocsGP = require('../../views/pages/globalping/docs/api.globalping.io.html');
-const cDocsGPAuth = require('../../views/pages/globalping/docs/auth.globalping.io.html');
 
 Ractive.DEBUG = location.hostname === 'localhost';
 
@@ -33,8 +31,6 @@ Ractive.Router.prototype.dispatch = function (...args) {
 };
 
 app.router.addRoute('/docs/data.jsdelivr.com', cDocsData);
-app.router.addRoute('/docs/api.globalping.io', cDocsGP);
-app.router.addRoute('/docs/auth.globalping.io', cDocsGPAuth);
 
 _.onDocumentReady(() => {
 	let state = {};

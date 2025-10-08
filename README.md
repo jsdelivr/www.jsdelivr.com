@@ -1,7 +1,6 @@
 # www.jsdelivr.com
 
-This repository is used to host the source code for the [jsDelivr website](https://www.jsdelivr.com)
-and the [Globalping website](https://globalping.io).
+This repository is used to host the source code for the [jsDelivr website](https://www.jsdelivr.com).
 
 Related projects:
  - [jsDelivr CDN](https://github.com/jsdelivr/jsdelivr)
