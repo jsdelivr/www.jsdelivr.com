@@ -1,5 +1,5 @@
 <header class="c-header {{#if searchOpened }} disabled {{/if}} {{#if additionalClasses}}{{additionalClasses}}{{/if}}">
-		<nav class="navbar navbar-default {{!actualPath || useWhiteLogos ? 'navbar-filled' : ''}}">
+		<nav class="navbar navbar-default {{!@shared.actualPath || useWhiteLogos ? 'navbar-filled' : ''}}">
 		<div class="container-fluid container-mw">
 			<div class="navbar-header">
 				<a class="main-logo" href="/" on-click="@this.fire('main-logo-click')">
@@ -7,18 +7,18 @@
 						Looking for the logo?
 						Get all versions here: https://github.com/jsdelivr/jsdelivr-media
 					-->
-					{{#if actualPath && actualPath.startsWith('/package/')}}
+					{{#if @shared.actualPath && @shared.actualPath.startsWith('/package/')}}
 						<img width="29" height="32" src="{{@shared.assetsHost}}/img/icons/jsdelivr_icon.svg" title="jsDelivr">
-					{{elseif actualPath && actualPath.startsWith('/docs/data.jsdelivr.com')}}
+					{{elseif @shared.actualPath && @shared.actualPath.startsWith('/docs/data.jsdelivr.com')}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-white.svg" title="jsDelivr">
-					{{elseif actualPath && useWhiteLogos}}
+					{{elseif @shared.actualPath && useWhiteLogos}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-full-white.svg" title="jsDelivr">
-					{{elseif actualPath}}
+					{{elseif @shared.actualPath}}
 						<img width="140" height="34" src="{{@shared.assetsHost}}/img/jsdelivr-horizontal-regular.svg" title="jsDelivr">
 					{{/if}}
 				</a>
 
-				{{#if actualPath && actualPath.includes('/package/')}}
+				{{#if @shared.actualPath && @shared.actualPath.includes('/package/')}}
 					{{yield}}
 				{{/if}}
 
@@ -31,7 +31,7 @@
 			</div>
 
 			<div class="collapse navbar-collapse" id="main-navbar">
-				<ul class="nav navbar-nav navbar-right {{!actualPath ? 'navbar-hidden' : useWhiteLogos ? 'about-navbar-right' : 'default-navbar-right'}}">
+				<ul class="nav navbar-nav navbar-right {{!@shared.actualPath ? 'navbar-hidden' : useWhiteLogos ? 'about-navbar-right' : 'default-navbar-right'}}">
 					<li><a href="/about">About Us</a></li>
 					<li><a href="/network">Network</a></li>
 					<li><a href="/statistics">Stats</a></li>
@@ -90,15 +90,3 @@
 		</div>
 	</nav>
 </header>
-
-<script>
-	component.exports = {
-		oninit () {
-			if (Ractive.isServer) {
-				this.set('actualPath', this.root.get('actualPath'));
-			} else {
-				this.set('actualPath', this.get('@shared')?.app?.router?.uri?.path);
-			}
-		},
-	};
-</script>

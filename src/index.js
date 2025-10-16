@@ -275,7 +275,6 @@ koaElasticUtils.addRoutes(router, [
 	let root = '';
 	let data = {
 		..._.pick(ctx.query, [ 'docs', 'limit', 'page', 'query', 'type', 'style' ]),
-		actualPath: ctx.path,
 	};
 
 	try {
@@ -287,7 +286,7 @@ koaElasticUtils.addRoutes(router, [
 		}
 
 		ctx.status = 404;
-		ctx.body = await ctx.render(`pages/${root}_404.html`, { actualPath: ctx.path });
+		ctx.body = await ctx.render(`pages/${root}_404.html`);
 	}
 });
 

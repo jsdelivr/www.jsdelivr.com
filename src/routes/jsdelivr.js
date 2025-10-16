@@ -100,7 +100,6 @@ koaElasticUtils.addRoutes(router, [
 		user: ctx.params.user,
 		repo: ctx.params.repo,
 		scope: ctx.params.scope,
-		actualPath: ctx.path,
 		..._.pick(ctx.query, [ 'path', 'tab', 'version', 'slide' ]),
 	};
 
@@ -149,7 +148,6 @@ koaElasticUtils.addRoutes(router, [
 ], async (ctx) => {
 	let data = {
 		name: ctx.params.name,
-		actualPath: ctx.path,
 	};
 
 	try {
