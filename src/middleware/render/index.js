@@ -15,7 +15,7 @@ module.exports = (options) => {
 	}
 
 	return async (ctx, next) => {
-		ctx.render = async (template, data) => {
+		ctx.render = async (template, data = {}) => {
 			if (!path.extname(template)) {
 				template += '.html';
 			}
@@ -71,7 +71,7 @@ async function makeComponent (href, options) {
 	});
 }
 
-function escape (string) {
+function escape (string = '') {
 	return string
 		.replace(/</g, '\\u003c')
 		.replace(/>/g, '\\u003e')
