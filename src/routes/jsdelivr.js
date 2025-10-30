@@ -8,6 +8,9 @@ const readme = require('../middleware/readme');
 const algoliaNode = require('../lib/algolia-node');
 const legacyMapping = require('../../data/legacy-mapping.json');
 
+const ossCdnProjects = require('../assets/json/oss-cdn-projects.json');
+const OSS_CDN_PROJECT_NAMES = Object.keys(ossCdnProjects);
+
 const router = new KoaRouter();
 
 /**
@@ -146,8 +149,16 @@ koaElasticUtils.addRoutes(router, [
 koaElasticUtils.addRoutes(router, [
 	[ '/oss-cdn/:name', '/oss-cdn/:name' ],
 ], async (ctx) => {
+	let name = ctx.params.name;
+
+	if (!OSS_CDN_PROJECT_NAMES.includes(name)) {
+		ctx.status = 404;
+		ctx.body = await ctx.render(`pages/_404.html`);
+		return;
+	}
+
 	let data = {
-		name: ctx.params.name,
+		name,
 	};
 
 	try {
