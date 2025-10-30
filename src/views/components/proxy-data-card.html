@@ -1,17 +1,17 @@
 <div class="c-proxy-data-card endpoints_list_wrapper_item">
-	<a href="/oss-cdn/{{name}}">
-		{{#if imgExt === 'svg'}}
+	<a href="{{jsDelivrLink}}">
+		{{#if imgSrc.endsWith('.svg')}}
 			<img
 				width="{{imgWidth}}"
 				height="{{imgHeight}}"
-				src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.svg"
+				src="{{@shared.assetsHost}}{{imgSrc}}"
 				loading="lazy" />
 		{{else}}
 			<img
 				width="{{imgWidth}}"
 				height="{{imgHeight}}"
-				src="{{@shared.assetsHost}}/img/landing/new/{{imgName}}.png"
-				srcset="{{@shared.assetsHost}}/img/landing/new/{{imgName}}@2x.png 2x"
+				src="{{@shared.assetsHost}}{{imgSrc}}"
+				srcset="{{@shared.assetsHost}}{{@this.get2xPngSrc(imgSrc)}}"
 				loading="lazy" />
 		{{/if}}
 	</a>
@@ -56,6 +56,9 @@
 					});
 				});
 			}
+		},
+		get2xPngSrc (imgSrc) {
+			return imgSrc.replace('.png', '@2x.png 2x');
 		},
 	};
 </script>
