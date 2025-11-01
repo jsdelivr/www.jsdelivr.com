@@ -16,23 +16,17 @@
 			<c-proxy-head name="{{projectApiName}}"
 				link="{{projectLink}}"
 				docsLink="{{docsLink}}"
-				jsDelivrLink="/oss-cdn/{{name}}"
-				title="{{projectTitle}}"
-				descr="{{projectDescr}}"
-				imgW="{{projectImgW}}"
-				imgH="{{projectImgH}}"
-				imgExt="{{projectImgExt}}"
-				imgName="{{projectImgName}}">
+				jsDelivrLink="/oss-cdn/{{name}}">
 				{{#partial title}}
-					{{title}}
+					{{projectTitle}}
 				{{/partial}}
 
 				{{#partial descr}}
-					{{descr}}
+					{{projectDescr}}
 				{{/partial}}
 
 				{{#partial img}}
-					<img width="{{imgW}}" height="{{imgH}}" src="{{@shared.assetsHost}}/img/proxy/{{imgName}}{{imgExt}}">
+					<img width="{{projectImgW}}" height="{{projectImgH}}" src="{{@shared.assetsHost}}{{projectImgSrc}}">
 				{{/partial}}
 			</c-proxy-head>
 
@@ -150,6 +144,7 @@
 	const stats = require('../../assets/js/utils/stats');
 	const initCharts = require('../../assets/js/utils/charts');
 	const listeners = require('../../assets/js/utils/listeners');
+	const ossCdnProjects = require('../../assets/json/oss-cdn-projects.json');
 
 	component.exports = {
 		computed: {
@@ -169,66 +164,9 @@
 				showChartBandwidth: false,
 				usageChartGroupBy: 'day',
 				noPackageStatsData: false,
-				projectsData: {
-					cocoa: {
-						title: 'CocoaPods',
-						apiCdnName: 'cocoa',
-						descr: 'CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.',
-						link: 'https://www.cocoapods.org',
-						docsLink: 'https://github.com/CocoaPods/cdn.cocoapods.org',
-						imgW: '202',
-						imgH: '46',
-					},
-					pyodide: {
-						title: 'Pyodide',
-						apiCdnName: 'pyodide',
-						descr: 'Pyodide brings the Python 3.9 runtime to the browser via WebAssembly, thanks to Emscripten. It builds the Python scientific stack including NumPy, Pandas, Matplotlib, SciPy, and scikit-learn. Over 75 packages are currently available. In addition, it’s possible to install pure Python wheels from PyPI.',
-						link: 'https://pyodide.org',
-						docsLink: 'https://pyodide.org/en/stable/usage/index.html',
-						imgW: '170',
-						imgH: '56',
-					},
-					musescore: {
-						title: 'MuseScore',
-						apiCdnName: 'musescore',
-						descr: 'Create, play and print beautiful sheet music. The world’s most popular notation software.',
-						link: 'https://musescore.org',
-						docsLink: 'https://musescore.org',
-						imgW: '213',
-						imgH: '48',
-					},
-					ghost: {
-						title: 'Ghost',
-						apiCdnName: 'ghost',
-						descr: 'Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content. It comes with modern tools to build a website, publish content, send newsletters & offer paid subscriptions to members.',
-						link: 'https://ghost.org',
-						docsLink: 'https://ghost.org/docs/install',
-						imgW: '152',
-						imgH: '56',
-						imgExt: '.png',
-					},
-					fontsource: {
-						title: 'Fontsource',
-						apiCdnName: 'fontsource',
-						descr: 'Fontsource is a collection of open-source fonts.',
-						link: 'https://fontsource.org',
-						docsLink: 'https://fontsource.org/docs/getting-started/cdn',
-						imgW: '239',
-						imgH: '46',
-					},
-					yocto: {
-						title: 'Yocto',
-						apiCdnName: 'yocto-sstate',
-						descr: 'The Yocto Project is an open-source collaboration project that helps developers create custom Linux-based systems regardless of the hardware architecture. The project provides a flexible set of tools and a space where embedded developers worldwide can share technologies, software stacks, configurations, and best practices that can be used to create tailored Linux images for embedded and IOT devices.',
-						link: 'https://www.yoctoproject.org',
-						docsLink: 'https://docs.yoctoproject.org',
-						imgW: '145',
-						imgH: '56',
-						imgName: 'yocto',
-					},
-				},
 				projectTitle: '',
 				projectDescr: '',
+				projectImgSrc: '',
 				projectImgW: '',
 				projectImgH: '',
 				rawStatsData: {},
@@ -242,17 +180,14 @@
 		},
 		oninit () {
 			this.observe('name', (name) => {
-				let projectsData = this.get('projectsData');
-
-				this.set('projectTitle', projectsData[name].title);
-				this.set('projectDescr', projectsData[name].descr);
-				this.set('projectImgW', projectsData[name].imgW);
-				this.set('projectImgH', projectsData[name].imgH);
-				this.set('projectImgExt', projectsData[name].imgExt || '.svg');
-				this.set('projectImgName', projectsData[name].imgName || name);
-				this.set('projectLink', projectsData[name].link);
-				this.set('projectApiName', projectsData[name].apiCdnName);
-				this.set('docsLink', projectsData[name].docsLink);
+				this.set('projectTitle', ossCdnProjects[name].title);
+				this.set('projectDescr', ossCdnProjects[name].descr);
+				this.set('projectImgW', ossCdnProjects[name].imgWidth);
+				this.set('projectImgH', ossCdnProjects[name].imgHeight);
+				this.set('projectImgSrc', ossCdnProjects[name].imgSrc);
+				this.set('projectLink', ossCdnProjects[name].link);
+				this.set('projectApiName', ossCdnProjects[name].apiCdnName);
+				this.set('docsLink', ossCdnProjects[name].docsLink);
 			});
 
 			if (!Ractive.isServer) {

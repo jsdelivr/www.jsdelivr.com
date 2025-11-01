@@ -8,206 +8,40 @@
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
 	<c-header></c-header>
 	<div class="p-proxy">
-		<div class="content-wrapper">
-			<div class="proxy-item">
-				<c-proxy-head	name="cocoapods" link="https://www.cocoapods.org" docsLink="https://github.com/CocoaPods/cdn.cocoapods.org" jsDelivrLink="/oss-cdn/cocoa">
-					{{#partial title}}
-						CocoaPods
-					{{/partial}}
-
-					{{#partial descr}}
-						CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 87 thousand libraries and
-						is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.
-					{{/partial}}
-
-					{{#partial img}}
-						<img width="202" height="46" src="{{@shared.assetsHost}}/img/proxy/cocoa.svg">
-					{{/partial}}
-				</c-proxy-head>
-
-				<c-proxy-request-bandwidth-stats
-					name="cocoa"
-					periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-					bandwidthUnit="GB">
-				</c-proxy-request-bandwidth-stats>
-
-				<div class="full-stats-link">
-					<a href="/oss-cdn/cocoa" class="btn-arrow">
-						<span>CocoaPods full stats</span>
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
-					</a>
-				</div>
-			</div>
-		</div>
-
-
-		<div class="bg-wrapper">
-			<div class="content-wrapper">
+		{{#each ossCdnProjects}}
+			<div class="proxy-wrapper">
 				<div class="proxy-item">
-					<c-proxy-head	name="ghost" link="https://ghost.org/" docsLink="https://ghost.org/docs/install/" jsDelivrLink="/oss-cdn/ghost">
+					<c-proxy-head link="{{link}}" docsLink="{{docsLink}}" jsDelivrLink="{{jsDelivrLink}}">
 						{{#partial title}}
-						Ghost
+							{{title}}
 						{{/partial}}
 
 						{{#partial descr}}
-						Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content.
-						It comes with modern tools to build a website, publish content, send newsletters & offer paid subscriptions to members.
+							{{descr}}
 						{{/partial}}
 
 						{{#partial img}}
-						<img width="152" height="56" src="{{@shared.assetsHost}}/img/proxy/ghost.png">
+							<img width="{{imgWidth}}" height="{{imgHeight}}" src="{{@shared.assetsHost}}{{imgSrc}}">
 						{{/partial}}
 					</c-proxy-head>
 
 					<c-proxy-request-bandwidth-stats
-						name="ghost"
-						periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-						bandwidthUnit="GB">
-					</c-proxy-request-bandwidth-stats>
-
-					<div class="full-stats-link">
-						<a href="/oss-cdn/ghost" class="btn-arrow">
-							<span>Ghost full stats</span>
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="content-wrapper">
-			<div class="proxy-item">
-				<c-proxy-head	name="pyodide" link="https://pyodide.org" docsLink="https://pyodide.org/en/stable/usage/index.html" jsDelivrLink="/oss-cdn/pyodide">
-					{{#partial title}}
-					Pyodide
-					{{/partial}}
-
-					{{#partial descr}}
-					Pyodide brings the Python 3.9 runtime to the browser via WebAssembly, thanks to Emscripten. It builds the Python
-					scientific stack including NumPy, Pandas, Matplotlib, SciPy, and scikit-learn. Over 75 packages are currently available.
-					In addition, it’s possible to install pure Python wheels from PyPI.
-					{{/partial}}
-
-					{{#partial img}}
-					<img width="170" height="56" src="{{@shared.assetsHost}}/img/proxy/pyodide.svg">
-					{{/partial}}
-				</c-proxy-head>
-
-				<c-proxy-request-bandwidth-stats
-					name="pyodide"
-					periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-					bandwidthUnit="GB">
-				</c-proxy-request-bandwidth-stats>
-
-				<div class="full-stats-link" class="btn-arrow">
-					<a href="/oss-cdn/pyodide">
-						<span>Pyodide full stats</span>
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
-					</a>
-				</div>
-			</div>
-		</div>
-
-		<div class="bg-wrapper">
-			<div class="content-wrapper">
-				<div class="proxy-item">
-					<c-proxy-head name="musescore" link="https://musescore.org" docsLink="https://musescore.org" jsDelivrLink="/oss-cdn/musescore">
-						{{#partial title}}
-							MuseScore
-						{{/partial}}
-
-						{{#partial descr}}
-							Create, play and print beautiful sheet music. The world’s most popular notation software.
-						{{/partial}}
-
-						{{#partial img}}
-							<img width="213" height="48" src="{{@shared.assetsHost}}/img/proxy/musescore.svg">
-						{{/partial}}
-					</c-proxy-head>
-
-					<c-proxy-request-bandwidth-stats
-						name="musescore"
-						periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-						bandwidthUnit="GB">
+							name="{{apiCdnName}}"
+							periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
+							bandwidthUnit="GB">
 					</c-proxy-request-bandwidth-stats>
 
 					<div class="full-stats-link" class="btn-arrow">
-						<a href="/oss-cdn/musescore">
-							<span>MuseScore full stats</span>
+						<a href="{{jsDelivrLink}}">
+							<span>{{title}} full stats</span>
 							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
 						</a>
 					</div>
 				</div>
 			</div>
-		</div>
+		{{/each}}
 
-		<div class="content-wrapper">
-			<div class="proxy-item">
-				<c-proxy-head name="fontsource" link="https://fontsource.org" docsLink="https://fontsource.org/docs/getting-started/cdn" jsDelivrLink="/oss-cdn/fontsource">
-					{{#partial title}}
-						Fontsource
-					{{/partial}}
-
-					{{#partial descr}}
-						Fontsource is a collection of open-source fonts.
-					{{/partial}}
-
-					{{#partial img}}
-						<img width="239" height="46" src="{{@shared.assetsHost}}/img/proxy/fontsource.svg">
-					{{/partial}}
-				</c-proxy-head>
-
-				<c-proxy-request-bandwidth-stats
-					name="fontsource"
-					periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-					bandwidthUnit="GB">
-				</c-proxy-request-bandwidth-stats>
-
-				<div class="full-stats-link" class="btn-arrow">
-					<a href="/oss-cdn/fontsource">
-						<span>Fontsource full stats</span>
-						<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
-					</a>
-				</div>
-			</div>
-		</div>
-
-		<div class="bg-wrapper">
-			<div class="content-wrapper">
-				<div class="proxy-item">
-					<c-proxy-head name="yocto-sstate" link="https://www.yoctoproject.org" docsLink="https://docs.yoctoproject.org" jsDelivrLink="/oss-cdn/yocto">
-						{{#partial title}}
-							Yocto
-						{{/partial}}
-
-						{{#partial descr}}
-							The Yocto Project is an open-source collaboration project that helps developers create custom Linux-based systems regardless
-							of the hardware architecture. The project provides a flexible set of tools and a space where embedded developers worldwide can share
-							technologies, software stacks, configurations, and best practices that can be used to create tailored Linux images for embedded and IOT devices.
-						{{/partial}}
-
-						{{#partial img}}
-							<img width="145" height="56" src="{{@shared.assetsHost}}/img/proxy/yocto.svg">
-						{{/partial}}
-					</c-proxy-head>
-
-					<c-proxy-request-bandwidth-stats
-						name="yocto-sstate"
-						periodData="{periodValue: 'month', periodText: 'month', periodType: 's-month'}"
-						bandwidthUnit="GB">
-					</c-proxy-request-bandwidth-stats>
-
-					<div class="full-stats-link" class="btn-arrow">
-						<a href="/oss-cdn/yocto">
-							<span>Yocto full stats</span>
-							<img width="20" height="20" src="{{@shared.assetsHost}}/img/icons/arrow-right.svg">
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="content-wrapper">
+		<div class="proxy-info">
 			<div class="divider"></div>
 
 			<c-proxy-hosting-info></c-proxy-hosting-info>
@@ -218,11 +52,14 @@
 </r-page>
 
 <script>
+	const ossCdnProjects = require('../../assets/json/oss-cdn-projects.json');
+
 	component.exports = {
 		data () {
 			return {
 				title: 'Custom CDN Endpoints - jsDelivr',
 				description: 'jsDelivr is happy to support unique use-cases that require a fast CDN.',
+				ossCdnProjects,
 			};
 		},
 	};

@@ -14,6 +14,9 @@ let siteMap0Template = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-
 let siteMapIndexTemplate = Handlebars.compile(fs.readFileSync(viewsPath + '/sitemap-index.xml', 'utf8'));
 let packagesPromise = updatePackages();
 
+const ossCdnProjects = require('../../assets/json/oss-cdn-projects.json');
+const OSS_CDN_LINKS = Object.values(ossCdnProjects).map(project => project.jsDelivrLink.slice(1));
+
 module.exports = async (ctx) => {
 	ctx.params.page = ctx.params.page.replace(/\.xml$/, '');
 	let pages = (await readDirRecursive(viewsPath + '/pages', [ '_*' ])).map(p => path.relative(viewsPath + '/pages', p).replace(/\\/g, '/').slice(0, -5));
@@ -21,14 +24,7 @@ module.exports = async (ctx) => {
 	let maxPage = Math.ceil(packages.length / 50000);
 	let page = Number(ctx.params.page);
 
-	pages.push(
-		'oss-cdn/cocoa',
-		'oss-cdn/ghost',
-		'oss-cdn/musescore',
-		'oss-cdn/pyodide',
-		'oss-cdn/fontsource',
-		'oss-cdn/yocto',
-	);
+	pages.push(...OSS_CDN_LINKS);
 
 	if (ctx.params.page === 'index') {
 		ctx.body = siteMapIndexTemplate({ serverHost, maps: _.range(1, maxPage + 1) });
