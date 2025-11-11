@@ -737,67 +737,17 @@
 
 		<div class="endpoints_list">
 			<div class="endpoints_list_wrapper">
-				<c-proxy-data-card
-					name="cocoa"
-					apiName="cocoa"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint1"
-					imgWidth="202"
-					imgHeight="56">
-				</c-proxy-data-card>
-
-				<c-proxy-data-card
-					name="ghost"
-					apiName="ghost"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint4"
-					imgWidth="152"
-					imgHeight="56">
-				</c-proxy-data-card>
-
-				<c-proxy-data-card
-					name="pyodide"
-					apiName="pyodide"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint2"
-					imgWidth="170"
-					imgHeight="56">
-				</c-proxy-data-card>
-
-				<c-proxy-data-card
-					name="musescore"
-					apiName="musescore"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint3"
-					imgWidth="213"
-					imgHeight="56">
-				</c-proxy-data-card>
-
-				<c-proxy-data-card
-					name="fontsource"
-					apiName="fontsource"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint5"
-					imgExt="svg"
-					imgWidth="218"
-					imgHeight="42">
-				</c-proxy-data-card>
-
-				<c-proxy-data-card
-					name="yocto"
-					apiName="yocto-sstate"
-					period="month"
-					bandwidthUnit="GB"
-					imgName="endpoint6"
-					imgExt="svg"
-					imgWidth="145"
-					imgHeight="56">
-				</c-proxy-data-card>
+				{{#each ossCdnProjects}}
+					<c-proxy-data-card
+							jsDelivrLink="{{jsDelivrLink}}"
+							apiName="{{apiCdnName}}"
+							period="month"
+							bandwidthUnit="GB"
+							imgSrc="{{imgSrc}}"
+							imgWidth="{{imgWidth}}"
+							imgHeight="{{imgHeight}}">
+					</c-proxy-data-card>
+				{{/each}}
 			</div>
 		</div>
 
@@ -865,6 +815,7 @@
 	const http = require('../../assets/js/utils/http');
 	const codeTabs = [ 'entrypoints', 'versions', 'files' ];
 	const FIREWORKS_ANIMATION_DURATION = 4000;
+	const ossCdnProjects = require('../../assets/json/oss-cdn-projects.json');
 
 	function createLineNums (heightSelector, lineHeightSelector, targetSelector) {
 		let preOffsetHeight = document.querySelector(heightSelector).offsetHeight;
@@ -916,6 +867,7 @@
 					reqMultiplier: 0,
 					bandwMultiplier: 0,
 				},
+				ossCdnProjects,
 			};
 		},
 		oninit () {
