@@ -84,7 +84,7 @@ function buildFileLinkHtml (isJs, link, html, hash, esmName) {
 	let result = { text: link };
 
 	if (esmName) {
-		result.html = `<script type="module"> import ${esmName} from ${link} </script>`;
+		result.html = `<script type="module"> import ${esmName} from '${link}' </script>`;
 	} else if (hash) {
 		result.html = isJs ? `<script src="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous"></script>` : `<link rel="stylesheet" href="${link}" integrity="${buildIntegrity(hash)}" crossorigin="anonymous">`;
 	} else if (html) {
