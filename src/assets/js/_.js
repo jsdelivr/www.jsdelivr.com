@@ -3,6 +3,7 @@ const optimizedHosts = require('../json/optimized-hosts.json');
 const MONTHS_SHORT_NAMES_LIST = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 const MONTHS_FULL_NAMES_LIST = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 const DAY_NAME_NUMBER_MAP = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+const MONTH_NAME_NUMBER_MAP = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
 const MONTH_FULL_OF_DAYS = '31';
 const MONTH_SHORT_OF_DAYS = '30';
 const MONTH_FEB_DAYS = '28';
@@ -760,6 +761,16 @@ module.exports = {
 		return formattedLabels;
 	},
 
+	getSortedIterableChartData (data, groupBy) {
+		let toSort = groupBy === 'day' ? data.days : Object.values(data);
+
+		let getDate = (value) => {
+			return new Date(Number(value.year), MONTH_NAME_NUMBER_MAP[value.month], Number(value.day));
+		};
+
+		return toSort.sort((a, b) => getDate(a) - getDate(b));
+	},
+
 	// take preparedData for charts and then group it by day/week/month, calc magnitude, create labels for x-axis
 	getPreparedDataForBarChart (rawData, groupBy, chartPeriod, showChartBandwidth, onlyFullPeriods = true) {
 		let { preparedData } = this.prepareDataForChartGroupedBy(rawData, groupBy);
@@ -771,10 +782,10 @@ module.exports = {
 			maxRangeValue: 0,
 			valueUnits: '',
 		};
-		let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+		let dataToIterate = this.getSortedIterableChartData(preparedData, groupBy);
 
 		// collect data for chart depending on groupBy
-		results = dataToIteract.reduce((res, period) => {
+		results = dataToIterate.reduce((res, period) => {
 			if (onlyFullPeriods && period.isFull === false) { return res; }
 
 			res.values.push(period.value);
@@ -885,10 +896,10 @@ module.exports = {
 			labels: [],
 			labelsStartEndPeriods: [],
 		};
-		let dataToIteract = groupBy === 'day' ? topProviderPrepData.days : Object.values(topProviderPrepData);
+		let dataToIterate = this.getSortedIterableChartData(topProviderPrepData, groupBy);
 
 		// collect labels, period starts/ends data for chart
-		labelsData = dataToIteract.reduce((labelsData, period) => {
+		labelsData = dataToIterate.reduce((labelsData, period) => {
 			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
 
 			labelsData.labels.push([ period.day, period.month, period.year ]);
@@ -913,9 +924,9 @@ module.exports = {
 
 		let { allGroupedByValues, datasets } = rawData[dataType].providers.reduce((res, providerData) => {
 			let { preparedData } = this.prepareDataForChartGroupedBy(providerData, groupBy, 'total');
-			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+			let dataToIterate = this.getSortedIterableChartData(preparedData, groupBy);
 
-			let groupedByValues = dataToIteract.reduce((values, period) => {
+			let groupedByValues = dataToIterate.reduce((values, period) => {
 				if (onlyFullPeriods && period.isFull === false) { return values; }
 
 				values.push(period.value);
@@ -976,10 +987,10 @@ module.exports = {
 			labels: [],
 			labelsStartEndPeriods: [],
 		};
-		let dataToIteract = groupBy === 'day' ? topVersionPrepData.days : Object.values(topVersionPrepData);
+		let dataToIterate = this.getSortedIterableChartData(topVersionPrepData, groupBy);
 
 		// collect labels, period starts/ends adta for chart
-		labelsData = dataToIteract.reduce((labelsData, period) => {
+		labelsData = dataToIterate.reduce((labelsData, period) => {
 			if (onlyFullPeriods && period.isFull === false) { return labelsData; }
 
 			labelsData.labels.push([ period.day, period.month, period.year ]);
@@ -1004,9 +1015,9 @@ module.exports = {
 
 		let { allGroupedByValues, datasets } = rawDataFiltered.reduce((res, versionData, idx) => {
 			let { preparedData } = this.prepareDataForChartGroupedBy(versionData[dataType], groupBy);
-			let dataToIteract = groupBy === 'day' ? preparedData.days : Object.values(preparedData);
+			let dataToIterate = this.getSortedIterableChartData(preparedData, groupBy);
 
-			let groupedByValues = dataToIteract.reduce((values, period) => {
+			let groupedByValues = dataToIterate.reduce((values, period) => {
 				if (onlyFullPeriods && period.isFull === false) { return values; }
 
 				values.push(period.value);
