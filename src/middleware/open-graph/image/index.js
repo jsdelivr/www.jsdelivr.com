@@ -4,7 +4,7 @@ process.env.FONTCONFIG_PATH = 'fonts';
 
 const bytes = require('bytes');
 const sharp = require('sharp');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const algoliaNode = require('../../../lib/algolia-node');
 const got = require('../../../lib/got');
 const { cleanString, truncateString, fontsProcessor } = require('./utils');
@@ -12,7 +12,7 @@ const { cleanString, truncateString, fontsProcessor } = require('./utils');
 const API_HOST = 'https://data.jsdelivr.com';
 const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 
-const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
+const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
 	let [{ hits: requests, bandwidth }] = await Promise.all([

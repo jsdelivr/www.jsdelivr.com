@@ -5,7 +5,7 @@ require('./lib/startup');
 
 const _ = require('lodash');
 const config = require('config');
-const signalExit = require('signal-exit');
+const { onExit } = require('signal-exit');
 const isSafePath = require('is-safe-path');
 const express = require('express');
 const zlib = require('zlib');
@@ -18,7 +18,7 @@ const koaResponseTime = require('koa-response-time');
 // const koaConditionalGet = require('koa-conditional-get');
 const koaCompress = require('koa-compress');
 const koaLogger = require('koa-logger');
-const koaETag = require('koa-etag');
+const koaETag = require('@koa/etag');
 const KoaRouter = require('koa-router');
 const koaElasticUtils = require('elastic-apm-utils').koa;
 const proxy = require('./proxy');
@@ -375,7 +375,7 @@ server.listen(process.env.PORT || serverConfig.port, function () {
 /**
  * Always log before exit.
  */
-signalExit((code, signal) => {
+onExit((code, signal) => {
 	log[code === 0 ? 'info' : 'fatal']('Web server stopped.', { code, signal });
 });
 

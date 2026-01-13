@@ -7,7 +7,7 @@ const autoprefixer = require('gulp-autoprefixer');
 const minifyCss = require('gulp-clean-css');
 const plumber = require('gulp-plumber');
 const terser = require('gulp-terser');
-const del = require('del');
+const { deleteAsync } = require('del');
 
 const rollupStream = require('@rollup/stream');
 const rollupRactive = require('rollup-plugin-ractive');
@@ -61,14 +61,14 @@ const getRollupStream = file => rollupStream({
 });
 
 gulp.task('clean', () => {
-	return del([ dstPublicDir ]);
+	return deleteAsync([ dstPublicDir ]);
 });
 
 gulp.task('copy', gulp.parallel(
-	() => gulp.src(`${srcAssetsDir}/**/*.!(js|less)`, { base: srcAssetsDir, since: gulp.lastRun('copy') })
+	() => gulp.src(`${srcAssetsDir}/**/*.!(js|less)`, { base: srcAssetsDir, since: gulp.lastRun('copy'), encoding: false })
 		.pipe(gulp.dest(dstAssetsDir))
 		.pipe(livereload(liveReloadOptions)),
-	() => gulp.src(`${srcPublicDir}/**/*`, { base: srcPublicDir, since: gulp.lastRun('copy') })
+	() => gulp.src(`${srcPublicDir}/**/*`, { base: srcPublicDir, since: gulp.lastRun('copy'), encoding: false })
 		.pipe(gulp.dest(dstPublicDir))
 		.pipe(livereload(liveReloadOptions)),
 ));

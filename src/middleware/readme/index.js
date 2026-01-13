@@ -1,11 +1,13 @@
 const { marked } = require('marked');
+const { gfmHeadingId } = require('marked-gfm-heading-id');
+const { markedHighlight } = require('marked-highlight');
 const highlight	= require('highlight.js').default;
 
 const got = require('../../lib/got');
 const algoliaNode = require('../../lib/algolia-node');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 
-const cache = new LRU({ max: 1000, maxAge: 24 * 60 * 60 * 1000 });
+const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
 const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const JSDELIVR_HOST = 'https://cdn.jsdelivr.net';
 const ID_PREFIX = 'id-';
@@ -18,14 +20,16 @@ marked.use({
 	},
 });
 
-marked.setOptions({
+marked.use(gfmHeadingId({
+	prefix: ID_PREFIX,
+}));
+
+marked.use(markedHighlight({
 	langPrefix: 'hljs language-',
-	headerIds: true,
-	headerPrefix: ID_PREFIX,
 	highlight (code, language) {
 		return highlight.getLanguage(language) ? highlight.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
 	},
-});
+}));
 
 const fetchFromGitHub = async (user, repo, version = 'HEAD') => {
 	let path = `${user}/${repo}/${version}`;
@@ -39,7 +43,7 @@ const fetchFromGitHub = async (user, repo, version = 'HEAD') => {
 		return got(`${RAW_GH_USER_CONTENT_HOST}/${path}/README.markdown`, { resolveBodyOnly: true });
 	}).catch((error) => {
 		console.error(error);
-		cache.set(cacheKey, request, 60 * 1000);
+		cache.set(cacheKey, request, { ttl: 60 * 1000 });
 		return '';
 	});
 
@@ -60,7 +64,7 @@ const fetchFromJsDelivr = async (pkg, version) => {
 		return got(`${JSDELIVR_HOST}/${path}/README.markdown`, { resolveBodyOnly: true });
 	}).catch((error) => {
 		console.error(error);
-		cache.set(cacheKey, request, 60 * 1000);
+		cache.set(cacheKey, request, { ttl: 60 * 1000 });
 		return '';
 	});
 

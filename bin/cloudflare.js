@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 const got = require('got');
-const parseCsv = require('csv-parse/lib/sync');
+const { parse } = require('csv-parse/lib/sync');
 
 const result = [];
 
 got('https://www.cloudflare.com/data/current-pops.csv')
 	.then((res) => { return res.body; })
 	.then((text) => {
-		return parseCsv(text, {
+		return parse(text, {
 			columns: true,
 			skip_empty_lines: true,
 		});
