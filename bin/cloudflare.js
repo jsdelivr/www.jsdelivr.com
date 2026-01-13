@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const got = require('got');
-const { parse } = require('csv-parse/lib/sync');
+const { parse } = require('csv-parse/sync');
 
 const result = [];
 
