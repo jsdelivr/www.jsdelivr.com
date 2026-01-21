@@ -7,6 +7,6 @@ module.exports = () => {
 		}
 
 		ctx.status = 301;
-		ctx.redirect(path.replace(/\/+$/, '') + (querystring ? `?${querystring}` : ''));
+		ctx.redirect(path.replace(/^\/+/, '/').replace(/\/+$/, '') + (querystring ? `?${querystring}` : ''));
 	};
 };
