@@ -77,7 +77,7 @@ gulp.task('less', () => {
 	return gulp.src(`${srcAssetsDir}/less/app.less`)
 		.pipe(plumber())
 		.pipe(sourcemaps.init())
-		.pipe(less({ relativeUrls: true, strictMath: true }))
+		.pipe(less({ relativeUrls: true, strictMath: true, sourceMap: { outputSourceFiles: true } }))
 		.pipe(rename('app.css'))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(`${dstAssetsDir}/css`))
@@ -87,7 +87,7 @@ gulp.task('less', () => {
 gulp.task('less:prod', () => {
 	return gulp.src(`${srcAssetsDir}/less/app.less`)
 		.pipe(sourcemaps.init())
-		.pipe(less({ relativeUrls: true, strictMath: true }))
+		.pipe(less({ relativeUrls: true, strictMath: true, sourceMap: { outputSourceFiles: true } }))
 		.pipe(autoprefixer())
 		.pipe(minifyCss())
 		.pipe(rename('app.css'))
