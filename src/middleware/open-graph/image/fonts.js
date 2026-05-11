@@ -1,3 +1,4 @@
+const fs = require('fs');
 const opentype = require('opentype.js');
 
 module.exports = class FontsProcessor {
@@ -18,7 +19,7 @@ module.exports = class FontsProcessor {
 	}
 
 	addFontSync (alias, fontPath) {
-		let font = opentype.loadSync(fontPath);
+		let font = opentype.parse(fs.readFileSync(fontPath));
 		this._fonts.set(alias, font);
 	}
 
