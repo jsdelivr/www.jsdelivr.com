@@ -17,8 +17,8 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
-		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(3) a' }).click();
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) button' }).click();
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(3) button' }).click();
 		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) a .file-path' }).getText()).to.eventually.equal('dist/font/font-famous.eot');
 	});
 
@@ -26,8 +26,8 @@ describe('package', () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1&path=dist`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .files-list-back a' }).click();
-		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(2) > a .file-path' }).getText()).to.eventually.equal('dist');
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .files-list-back button' }).click();
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(2) > button .file-path' }).getText()).to.eventually.equal('dist');
 	});
 
 	it('opening files works', async () => {
@@ -50,17 +50,17 @@ describe('package', () => {
 		await browser.sleep(1000);
 		await browser.findElement({ css: '.version-dropdown_wrapper_list li:last-of-type a' }).click();
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) a' }).click();
-		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) > a .file-path' }).getText()).to.eventually.equal('dist/fonts');
+		await browser.findElement({ css: '.c-package-file-browser .box-content-wrapper .files-list .file-item:nth-child(2) button' }).click();
+		await expect(browser.findElement({ css: '.box-content-wrapper .files-list .file-item:nth-child(3) > button .file-path' }).getText()).to.eventually.equal('dist/fonts');
 	});
 
 	it('copying url works', async () => {
 		await browser.navigate().to(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`);
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .c-copy-dropdown span' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .c-copy-dropdown [data-toggle="dropdown"]' }).click();
 		await browser.sleep(1000);
-		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .dropdown-menu a' }).click();
+		await browser.findElement({ css: '.box-content-wrapper .file-item:nth-child(3) .dropdown-menu button' }).click();
 		await browser.sleep(1000);
 		await browser.executeScript(`let ele = document.createElement('input'); ele.setAttribute('id', 'testInput'); document.body.appendChild(ele)`);
 		await browser.findElement({ css: '#testInput' }).sendKeys(KEY.CONTROL, 'v');
@@ -99,7 +99,7 @@ describe('package', () => {
 		await browser.sleep(4000);
 		await browser.findElement({ id: 'tabRouteFiles' }).click();
 		await browser.sleep(4000);
-		await browser.findElement({ css: '.c-package-file-browser .show-more-toggle a' }).click();
+		await browser.findElement({ css: '.c-package-file-browser .show-more-toggle button' }).click();
 		await browser.sleep(1000);
 		await expect(browser.findElement({ css: '.c-package-file-browser .files-list > div:nth-child(12) .file-item .file-path' }).getText()).to.eventually.contain('README.md');
 	});
