@@ -54,11 +54,11 @@ _.onDocumentReady(() => {
 				ractive.set(`@shared.${key}`, shared[key]);
 			});
 		}
-	} catch (e) {}
+	} catch {}
 
 	try {
 		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
-	} catch (e) {}
+	} catch {}
 
 	app.router.init({ noScroll: true, state });
 

@@ -4,10 +4,10 @@ let version = require('../../../package.json').version;
 
 try {
 	version = childProcess.execSync('git log -1 "--format=%H"', { encoding: 'utf8' }).trim();
-} catch (e) {
+} catch {
 	try {
 		version = fs.readFileSync(__dirname + '/../../../sha.txt', 'utf8').trim();
-	} catch (e) {}
+	} catch {}
 }
 
 module.exports.version = process.env.COMMIT_ID || version;

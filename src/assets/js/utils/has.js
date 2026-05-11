@@ -3,7 +3,7 @@ module.exports = {
 		try {
 			localStorage.setItem('localStorageTest', 1);
 			localStorage.removeItem('localStorageTest');
-		} catch (e) {
+		} catch {
 			return false;
 		}
 
@@ -13,7 +13,7 @@ module.exports = {
 		try {
 			sessionStorage.setItem('sessionStorageTest', 1);
 			sessionStorage.removeItem('sessionStorageTest');
-		} catch (e) {
+		} catch {
 			return false;
 		}
 

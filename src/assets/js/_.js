@@ -242,7 +242,7 @@ module.exports = {
 	},
 
 	convertBytesToUnits (bytesAmount, units = 'GB') {
-		let unitsBase = null;
+		let unitsBase = 1;
 
 		switch (units) {
 			case 'kB':
@@ -263,8 +263,6 @@ module.exports = {
 			case 'EB':
 				unitsBase = 1e18;
 				break;
-			default:
-				unitsBase = 1;
 		}
 
 		return Math.round(bytesAmount / unitsBase);
@@ -432,7 +430,6 @@ module.exports = {
 						};
 					}
 
-					// eslint-disable-next-line prefer-promise-reject-errors
 					reject(rejectData);
 				}
 			};
@@ -1111,7 +1108,7 @@ module.exports = {
 			}
 
 			return parsed.toString();
-		} catch (e) {
+		} catch {
 			return url;
 		}
 	},
@@ -1121,7 +1118,7 @@ module.exports = {
 			let parsed = new URL(url.replace(/^\/+/, ''), location.href);
 
 			return parsed.hostname !== location.hostname;
-		} catch (e) {
+		} catch {
 			return false;
 		}
 	},
