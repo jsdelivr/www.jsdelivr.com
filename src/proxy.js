@@ -67,7 +67,7 @@ module.exports = (proxyTarget, host) => {
 						}
 
 						el.setAttribute(name, value);
-					} catch (e) {}
+					} catch {}
 				});
 			},
 		};
@@ -84,7 +84,7 @@ module.exports = (proxyTarget, host) => {
 					.on('end', () => {
 						try {
 							stream.end(rewrite(value, req.baseUrl));
-						} catch (e) {
+						} catch {
 							stream.end(value);
 						}
 					});
@@ -103,7 +103,7 @@ module.exports = (proxyTarget, host) => {
 					.on('end', () => {
 						try {
 							stream.end(rewriteAllAbsolute(value, req.baseUrl));
-						} catch (e) {
+						} catch {
 							stream.end(value);
 						}
 					});

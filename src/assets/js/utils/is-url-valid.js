@@ -8,7 +8,7 @@ module.exports = {
 			let pattern = /https?:\/\/cdn\.jsdelivr\.net(.*)/;
 			let res = url.match(pattern);
 			return res[1];
-		} catch (e) {
+		} catch {
 			return '/';
 		}
 	},
