@@ -15,10 +15,7 @@ const LOGO_MAX_SIZE = 2 * 2 ** 20; // 2MiB
 const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
 
 const fetchStats = async (name, type = 'npm', period = 'month') => {
-	let [{ hits: requests, bandwidth }] = await Promise.all([
-		got.get(`${API_HOST}/v1/stats/packages/${type}/${name}`, { searchParams: { period } }).json().catch(() => ({})),
-	]);
-
+	let { hits: requests, bandwidth } = await got.get(`${API_HOST}/v1/stats/packages/${type}/${name}`, { searchParams: { period } }).json().catch(() => ({}));
 	return { requests, bandwidth };
 };
 
