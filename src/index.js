@@ -1,6 +1,9 @@
 // This needs to run before any require() call.
-global.apmClient = require('elastic-apm-node').start({});
-global.apmClient.addTransactionFilter(require('elastic-apm-utils').apm.transactionFilter());
+const apm = require('elastic-apm-node');
+const apmUtils = require('elastic-apm-utils');
+apmUtils.apm.useConstrainedMemory();
+global.apmClient = apm.start({});
+global.apmClient.addTransactionFilter(apmUtils.apm.transactionFilter());
 require('./lib/startup');
 
 const cluster = require('cluster');
