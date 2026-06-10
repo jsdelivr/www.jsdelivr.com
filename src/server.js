@@ -1,7 +1,11 @@
 // This needs to run before any require() call.
+const apm = require('elastic-apm-node');
+const apmUtils = require('elastic-apm-utils');
+apmUtils.apm.useConstrainedResources();
+
 if (!global.apmClient) {
-	global.apmClient = require('elastic-apm-node').start({});
-	global.apmClient.addTransactionFilter(require('elastic-apm-utils').apm.transactionFilter());
+	global.apmClient = apm.start({});
+	global.apmClient.addTransactionFilter(apmUtils.apm.transactionFilter());
 }
 
 require('./lib/startup');
