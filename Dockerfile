@@ -9,7 +9,7 @@ RUN apt-get update \
 COPY package.json package-lock.json ./
 COPY patches ./patches
 
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY .babelrc .browserslistrc elastic-apm-node.js gulpfile.js ./
 COPY config ./config
