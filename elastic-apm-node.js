@@ -1,7 +1,7 @@
 module.exports = {
 	active: process.env.NODE_ENV === 'production',
 	serviceName: 'jsdelivr-website',
-	serviceVersion: process.env.RENDER_GIT_COMMIT || require('./package.json').version,
+	serviceVersion: process.env.SOURCE_COMMIT || require('./package.json').version,
 	logLevel: 'fatal',
 	centralConfig: false,
 	captureExceptions: false,

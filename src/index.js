@@ -13,7 +13,6 @@ const zlib = require('zlib');
 const Koa = require('koa');
 const koaStatic = require('koa-static');
 const koaFavicon = require('koa-favicon');
-const koaLivereload = require('koa-livereload');
 const koaResponseTime = require('koa-response-time');
 // const koaConditionalGet = require('koa-conditional-get');
 const koaCompress = require('koa-compress');
@@ -30,7 +29,7 @@ const render = require('./middleware/render');
 const debugHandler = require('./routes/debug');
 const jsDelivrRouter = require('./routes/jsdelivr');
 const legacyMapping = require('../data/legacy-mapping.json');
-const isRenderPreview = process.env.IS_PULL_REQUEST === 'true' && process.env.RENDER_EXTERNAL_URL;
+const coolifyUrl = (process.env.COOLIFY_URL || '').split(/[\s,]+/)[0].replace(/\/+$/, '');
 
 let app = new Koa();
 let router = new KoaRouter();
@@ -97,7 +96,7 @@ app.use(async (ctx, next) => {
  * Livereload support during development.
  */
 if (app.env === 'development') {
-	app.use(koaLivereload({ port: 35729 }));
+	app.use(require('koa-livereload')({ port: 35729 }));
 }
 
 /**
@@ -134,13 +133,11 @@ app.use(render({
 	views: __dirname + '/views/',
 	cache: app.env !== 'development',
 	serverHost: app.env === 'production'
-		? isRenderPreview
-			? process.env.RENDER_EXTERNAL_URL
-			: serverConfig.host
+		? coolifyUrl || serverConfig.host
 		: '',
 	assetsHost: app.env === 'production'
-		? isRenderPreview
-			? `${process.env.RENDER_EXTERNAL_URL}/assets/${assetsVersion}`
+		? coolifyUrl
+			? `${coolifyUrl}/assets/${assetsVersion}`
 			: serverConfig.assetsHost
 		: `/assets/${assetsVersion}`,
 	apiDocsHost: serverConfig.apiDocsHost,
