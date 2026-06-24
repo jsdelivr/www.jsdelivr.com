@@ -8,6 +8,7 @@ require('./lib/startup');
 
 const cluster = require('cluster');
 const config = require('config');
+const Bluebird = require('bluebird');
 const { onExit } = require('signal-exit');
 
 const serverConfig = config.get('server');
@@ -15,8 +16,12 @@ const serverConfig = config.get('server');
 function listen () {
 	let server = require('./server');
 
-	server.listen(process.env.PORT || serverConfig.port, function () {
-		log.info(`Web server started at http://localhost:${this.address().port}, NODE_ENV=${process.env.NODE_ENV}.`);
+	return Bluebird.fromCallback((cb) => {
+		server.listen(process.env.PORT || serverConfig.port, function (e) {
+			return cb(e, this);
+		});
+	}).then((server) => {
+		log.info(`Web server started at http://localhost:${server.address().port}, NODE_ENV=${process.env.NODE_ENV}.`);
 	});
 }
 
