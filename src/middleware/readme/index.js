@@ -1,10 +1,11 @@
-const { marked } = require('marked');
+const { Marked, Renderer } = require('marked');
 const { gfmHeadingId } = require('marked-gfm-heading-id');
 const { markedHighlight } = require('marked-highlight');
 const highlight	= require('highlight.js').default;
 
 const got = require('../../lib/got');
 const algoliaNode = require('../../lib/algolia-node');
+const createMarkedRenderer = require('../../assets/js/utils/marked-renderer');
 const { LRUCache } = require('lru-cache');
 
 const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
@@ -12,24 +13,30 @@ const RAW_GH_USER_CONTENT_HOST = 'https://raw.githubusercontent.com';
 const JSDELIVR_HOST = 'https://cdn.jsdelivr.net';
 const ID_PREFIX = 'id-';
 
-marked.use({
-	renderer: {
-		table (...rows) {
-			return `<div class="table-responsive"><table class="table table-striped">${rows.join('')}</table></div>`;
-		},
-	},
-});
+const getRepositoryReadmeUrl = (githubRepo) => {
+	if (!githubRepo) {
+		return;
+	}
 
-marked.use(gfmHeadingId({
-	prefix: ID_PREFIX,
-}));
+	let path = githubRepo.path ? `${githubRepo.path.replace(/^\/+|\/+$/g, '')}/` : '';
 
-marked.use(markedHighlight({
-	langPrefix: 'hljs language-',
-	highlight (code, language) {
-		return highlight.getLanguage(language) ? highlight.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
-	},
-}));
+	return `https://github.com/${githubRepo.user}/${githubRepo.project}/blob/${githubRepo.head || 'HEAD'}/${path}README.md`;
+};
+
+const renderMarkdown = (readme, githubRepo) => {
+	let marked = new Marked(
+		{ renderer: createMarkedRenderer(Renderer, getRepositoryReadmeUrl(githubRepo)) },
+		gfmHeadingId({ prefix: ID_PREFIX }),
+		markedHighlight({
+			langPrefix: 'hljs language-',
+			highlight (code, language) {
+				return highlight.getLanguage(language) ? highlight.highlightAuto(code, [ 'html', 'javascript', 'sh', 'bash' ]).value : code;
+			},
+		}),
+	);
+
+	return marked.parse(readme);
+};
 
 const fetchFromGitHub = async (user, repo, version = 'HEAD') => {
 	let path = `${user}/${repo}/${version}`;
@@ -76,13 +83,26 @@ const fetchFromJsDelivr = async (pkg, version) => {
 module.exports = async (ctx) => {
 	try {
 		let { type, scope, name, version } = ctx.params;
-		let readme = '';
+		let githubRepo;
+		let readme;
 
 		if (type === 'gh') {
+			githubRepo = {
+				user: ctx.params.user,
+				project: ctx.params.repo,
+				head: version || 'HEAD',
+			};
+
 			readme = await fetchFromGitHub(ctx.params.user, ctx.params.repo, version);
 		} else {
 			let pkg = scope ? scope + '/' + name : name;
 			let meta = await algoliaNode.getObjectWithCache(pkg);
+
+			githubRepo = meta.githubRepo && {
+				...meta.githubRepo,
+				head: version && version !== meta.version ? meta.githubRepo.head : 'HEAD',
+			};
+
 			readme = await fetchFromJsDelivr(pkg, version || meta.version);
 
 			if (!readme && meta.githubRepo) {
@@ -94,7 +114,7 @@ module.exports = async (ctx) => {
 			}
 		}
 
-		ctx.body = marked.parse(readme);
+		ctx.body = renderMarkdown(readme, githubRepo);
 		ctx.type = 'text/plain';
 		ctx.maxAge = readme ? 24 * 60 * 60 : 60;
 	} catch (error) {
