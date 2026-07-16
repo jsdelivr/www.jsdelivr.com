@@ -106,7 +106,7 @@ module.exports = async (ctx) => {
 			readme = await fetchFromJsDelivr(pkg, version || meta.version);
 
 			if (!readme && meta.githubRepo) {
-				readme = await fetchFromGitHub(meta.githubRepo.user, meta.githubRepo.project);
+				readme = await fetchFromGitHub(meta.githubRepo.user, meta.githubRepo.project, githubRepo.head);
 			}
 
 			if (!readme && meta.readme && meta.readme !== 'ERROR: No README data found!') {
