@@ -57,7 +57,7 @@ module.exports = (proxyTarget, host) => {
 				el.getAttribute(name, (value) => {
 					try {
 						if (name === 'srcset') {
-							value = srcset.stringify(srcset.parse(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
+							value = srcset.stringifySrcset(srcset.parseSrcset(value).map(src => (src.url = rewrite(src.url, req.baseUrl), src)));
 						} else if (name === 'style') {
 							value = value.replace(cssUrlPattern, ($0, $1, $2, $3) => {
 								return `url("${rewrite($2 || $3, req.baseUrl)}")`;
