@@ -119,6 +119,10 @@ module.exports = (proxyTarget, host) => {
 			}
 		});
 
+		// Upstream validators do not apply to responses transformed by this proxy.
+		proxyReq.removeHeader('if-modified-since');
+		proxyReq.removeHeader('if-none-match');
+
 		// Remove Cloudflare cookies.
 		if (proxyReq.getHeader('cookie')) {
 			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
