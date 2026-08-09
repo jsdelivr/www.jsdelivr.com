@@ -361,7 +361,7 @@ server.use('/blog', (req, res, next) => {
 /**
  * Proxy blog requests to ghost.
  */
-server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : serverConfig.host));
+server.use('/blog', proxy(serverConfig.blogHost, app.env === 'development' ? `http://localhost:${serverConfig.port}` : coolifyUrl || serverConfig.host));
 
 /**
  * Forward everything else to Koa (main website).
