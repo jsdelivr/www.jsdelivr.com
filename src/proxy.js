@@ -13,12 +13,15 @@ module.exports = (proxyTarget, host) => {
 	let proxy = httpProxy.createProxyServer();
 	let proxyUrl = new URL(proxyTarget);
 	let hostUrl = new URL(host);
-	let proxyTargetPattern = new RegExp(`${_.escapeRegExp(proxyTarget)}/?`, 'gi');
+	let rewritableUrlPattern = new RegExp(`(?:https?:)?//(?:${_.escapeRegExp(proxyUrl.host)}|${_.escapeRegExp(hostUrl.host)})[^\\s"'<>\\\\]*`, 'gi');
+	let proxyHostPattern = new RegExp(_.escapeRegExp(proxyUrl.host), 'gi');
+	let referralPattern = new RegExp(`ref=${_.escapeRegExp(proxyUrl.host)}`, 'gi');
+	let rewrittenReferral = `ref=${hostUrl.host}`;
 
 	let rewrite = (link, baseUrl) => {
 		// A relative URL without a leading slash. No transformation needed.
 		if (!link.includes('://') && !link.startsWith('/')) {
-			return link;
+			return link.replace(referralPattern, rewrittenReferral);
 		}
 
 		let parsed = new URL(link, proxyTarget + baseUrl);
@@ -32,13 +35,25 @@ module.exports = (proxyTarget, host) => {
 			parsed.pathname = baseUrl + parsed.pathname;
 		}
 
+		if (parsed.searchParams.get('ref')?.toLowerCase() === proxyUrl.host.toLowerCase()) {
+			if (parsed.host === hostUrl.host) {
+				parsed.searchParams.delete('ref');
+			} else {
+				parsed.searchParams.set('ref', hostUrl.host);
+			}
+		}
+
 		return url.format(parsed);
 	};
 
 	let rewriteAllAbsolute = (content, baseUrl) => {
-		return content.replace(proxyTargetPattern, (link) => {
+		return content.replace(rewritableUrlPattern, (link) => {
 			return rewrite(link, baseUrl);
 		});
+	};
+
+	let rewriteContent = (content, baseUrl) => {
+		return rewriteAllAbsolute(content, baseUrl).replace(proxyHostPattern, hostUrl.host);
 	};
 
 	let removeElement = (name) => {
@@ -102,7 +117,7 @@ module.exports = (proxyTarget, host) => {
 					.on('data', chunk => value += chunk.toString())
 					.on('end', () => {
 						try {
-							stream.end(rewriteAllAbsolute(value, req.baseUrl));
+							stream.end(rewriteContent(value, req.baseUrl));
 						} catch {
 							stream.end(value);
 						}
@@ -123,6 +138,11 @@ module.exports = (proxyTarget, host) => {
 		proxyReq.removeHeader('if-modified-since');
 		proxyReq.removeHeader('if-none-match');
 
+		if (req.bufferProxyResponse) {
+			proxyReq.removeHeader('if-range');
+			proxyReq.removeHeader('range');
+		}
+
 		// Remove Cloudflare cookies.
 		if (proxyReq.getHeader('cookie')) {
 			let cookies = _.omit(cookie.parse(proxyReq.getHeader('cookie')), '__cfduid');
@@ -137,7 +157,7 @@ module.exports = (proxyTarget, host) => {
 		proxyReq.setHeader('X-Forwarded-For', req.ip);
 	});
 
-	proxy.on('proxyRes', (proxyRes, req) => {
+	proxy.on('proxyRes', (proxyRes, req, res) => {
 		// Only forward standard headers.
 		_.forEach(proxyRes.headers, (value, key) => {
 			if (!headers.isResponseHeader(key)) {
@@ -171,10 +191,62 @@ module.exports = (proxyTarget, host) => {
 		if (proxyRes.headers.location) {
 			proxyRes.headers.location = rewrite(proxyRes.headers.location, req.baseUrl);
 		}
+
+		if (req.bufferProxyResponse) {
+			let chunks = [];
+
+			proxyRes.on('data', chunk => chunks.push(chunk));
+			proxyRes.on('error', error => res.destroy(error));
+
+			proxyRes.on('end', () => {
+				let body = Buffer.concat(chunks);
+
+				if (shouldRewriteResponseBody(proxyRes.headers['content-type'])) {
+					body = Buffer.from(rewriteContent(body.toString('utf8'), req.baseUrl));
+					delete proxyRes.headers['content-md5'];
+					delete proxyRes.headers.etag;
+				}
+
+				delete proxyRes.headers.connection;
+				delete proxyRes.headers['transfer-encoding'];
+				proxyRes.headers['content-length'] = body.length;
+
+				if (proxyRes.headers['set-cookie']) {
+					proxyRes.headers['set-cookie'] = proxyRes.headers['set-cookie'].map((value) => {
+						return value
+							.replace(/;\s*domain=[^;]+/i, '')
+							.replace(/(;\s*path=)[^;]+/i, `$1${req.baseUrl}`);
+					});
+				}
+
+				res.statusCode = proxyRes.statusCode;
+				res.statusMessage = proxyRes.statusMessage;
+				_.forEach(proxyRes.headers, (value, key) => res.setHeader(key, value));
+
+				if (req.method === 'HEAD') {
+					return res.end();
+				}
+
+				let offset = 0;
+				let write = () => {
+					if (offset === body.length) {
+						return res.end();
+					}
+
+					let end = Math.min(offset + 16 * 1024, body.length);
+					let chunk = body.subarray(offset, end);
+					offset = end;
+
+					return res.write(chunk, write);
+				};
+
+				write();
+			});
+		}
 	});
 
 	let removeElementsHTML = [ 'meta[name="robots"][content="noindex"]' ];
-	let rewriteAttributesHTML = [ 'action', 'content', 'href', 'link', 'src', 'srcset', 'style' ];
+	let rewriteAttributesHTML = [ 'action', 'content', 'data-sodo-search', 'href', 'link', 'src', 'srcset', 'style' ];
 	let rewriteElementsHTML = [ 'loc' ];
 	let rewriteRegExpsHTML = [ 'script[type="application/ld+json"]' ];
 	let harmonMiddlewareHTML = harmon([], removeElementsHTML.map(removeElement)
@@ -182,27 +254,20 @@ module.exports = (proxyTarget, host) => {
 		.concat(rewriteElementsHTML.map(rewriteElement))
 		.concat(rewriteRegExpsHTML.map(rewriteRegexp)), false);
 
-	let rewriteAttributesXML = [ 'href' ];
-	let rewriteElementsXML = [ 'loc', 'image\\:loc' ];
-	let harmonMiddlewareXML = harmon([], rewriteElementsXML.map(rewriteElement)
-		.concat(rewriteAttributesXML.map(rewriteAttribute)), false);
-
 	let rewriteAttributesXSL = [ 'href' ];
 	let harmonMiddlewareXSL = harmon([], rewriteAttributesXSL.map(rewriteAttribute), false);
 
 	return [
 		/**
-		 * Harmon middleware should only be applied to html, xml and xsl files.
+		 * Harmon middleware should only be applied to HTML and XSL files.
 		 */
 		(req, res, next) => {
 			let path = req.path.toLowerCase();
 
-			if (path.endsWith('rss/')) {
+			if (shouldBufferResponse(path)) {
 				return next();
 			} else if (path.endsWith('/') || path.endsWith('.html')) {
 				harmonMiddlewareHTML(req, res, next);
-			} else if (path.endsWith('.xml')) {
-				harmonMiddlewareXML(req, res, next);
 			} else if (path.endsWith('.xsl')) {
 				harmonMiddlewareXSL(req, res, next);
 			} else {
@@ -233,6 +298,7 @@ module.exports = (proxyTarget, host) => {
 		 */
 		(req, res, next) => {
 			res.status(502);
+			req.bufferProxyResponse = shouldBufferResponse(req.path);
 
 			proxy.web(req, res, {
 				target: proxyTarget,
@@ -240,7 +306,9 @@ module.exports = (proxyTarget, host) => {
 				protocolRewrite: 'https',
 				cookieDomainRewrite: '',
 				cookiePathRewrite: req.baseUrl,
+				method: req.bufferProxyResponse && req.method === 'HEAD' ? 'GET' : undefined,
 				proxyTimeout: 10000,
+				selfHandleResponse: req.bufferProxyResponse,
 			}, next);
 		},
 	];
@@ -248,4 +316,20 @@ module.exports = (proxyTarget, host) => {
 
 function matchesHost (url, host) {
 	return (!url.host && url.pathname.charAt(0) === '/') || url.host === host;
+}
+
+function shouldRewriteResponseBody (contentType = '') {
+	contentType = String(contentType).toLowerCase();
+
+	return /^(?:application|text)\/(?:[\w.-]+\+)?json(?:;|$)/.test(contentType)
+		|| /^(?:application|text)\/(?:[\w.-]+\+)?xml(?:;|$)/.test(contentType);
+}
+
+function shouldBufferResponse (path = '') {
+	path = path.toLowerCase();
+
+	return path.startsWith('/ghost/api/')
+		|| path.endsWith('.json')
+		|| path.endsWith('.xml')
+		|| path.endsWith('rss/');
 }
