@@ -115,7 +115,7 @@ _.onDocumentReady(() => {
 		state = JSON.parse(document.querySelector('#ractive-data').innerHTML.trim());
 	} catch {}
 
-	if (!document.title.includes('not found')) {
+	if (!document.querySelector('[error-page]')) {
 		app.router
 			.init({ noScroll: true, state: { ...state, ...app.router.data() } })
 			.watchLinks()
