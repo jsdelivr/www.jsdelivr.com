@@ -70,17 +70,8 @@ koaElasticUtils.addRoutes(router, [
 		currentPolicy: ctx.params.currentPolicy,
 	};
 
-	try {
-		ctx.body = await ctx.render('pages/terms.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (ctx.app.env === 'development') {
-			console.error(e);
-		}
-
-		ctx.status = 301;
-		return ctx.redirect('/');
-	}
+	ctx.body = await ctx.render('pages/terms.html', data);
+	ctx.maxAge = 5 * 60;
 });
 
 /**
@@ -122,17 +113,8 @@ koaElasticUtils.addRoutes(router, [
 		}
 	} catch {}
 
-	try {
-		ctx.body = await ctx.render('pages/_package.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (ctx.app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
+	ctx.body = await ctx.render('pages/_package.html', data);
+	ctx.maxAge = 5 * 60;
 });
 
 /**
@@ -161,17 +143,8 @@ koaElasticUtils.addRoutes(router, [
 		name,
 	};
 
-	try {
-		ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
-		ctx.maxAge = 5 * 60;
-	} catch (e) {
-		if (ctx.app.env === 'development') {
-			console.error(e);
-		}
-
-		data.noYield = true;
-		ctx.body = await ctx.render('pages/_index.html', data);
-	}
+	ctx.body = await ctx.render('pages/_oss-cdn-project.html', data);
+	ctx.maxAge = 5 * 60;
 });
 
 /**
