@@ -426,7 +426,7 @@
 			this.set('currentCountryId', data.id);
 
 			let { dataByCountries, switchList } = this.get('preparedMapData');
-			let { layerX, layerY, type: eventType } = event;
+			let { clientX, clientY, type: eventType } = event;
 			let { properties: { name: countryName }, id: countryId } = data;
 			let tooltipEl = document.querySelector('.map-block_map-wrapper_tooltip');
 			let tooltipData = {
@@ -444,24 +444,28 @@
 				mapOverlayEl.style.zIndex = 1;
 
 				tooltipEl.style.top = '50%';
+				tooltipEl.style.bottom = 'auto';
 				tooltipEl.style.left = '50%';
 				tooltipEl.style.transform = 'translate(-50%, -50%)';
 			} else {
-				let svgMapEl = document.querySelector('#hits-map');
-				let { clientWidth: svgElWidth, clientHeight: svgElHeight } = svgMapEl;
+				let mapWrapperEl = tooltipEl.parentElement;
+				let { left, top } = mapWrapperEl.getBoundingClientRect();
+				let { clientWidth: wrapperWidth, clientHeight: wrapperHeight } = mapWrapperEl;
+				let x = clientX - left;
+				let y = clientY - top;
 
-				if (layerY > svgElHeight / 2) {
-					tooltipEl.style.bottom = `${svgElHeight - layerY > 0 ? svgElHeight - layerY + 20 : 30}px`;
+				if (y > wrapperHeight / 2) {
+					tooltipEl.style.bottom = `${wrapperHeight - y > 0 ? wrapperHeight - y + 20 : 30}px`;
 					tooltipEl.style.top = 'auto';
 				} else {
-					tooltipEl.style.top = `${layerY + 10}px`;
+					tooltipEl.style.top = `${y + 10}px`;
 					tooltipEl.style.bottom = 'auto';
 				}
 
-				if (layerX + tooltipEl.clientWidth > svgElWidth && layerX - tooltipEl.clientWidth - 10 > 0) {
-					tooltipEl.style.left = `${layerX - tooltipEl.clientWidth - 10}px`;
+				if (x + tooltipEl.clientWidth > wrapperWidth && x - tooltipEl.clientWidth - 10 > 0) {
+					tooltipEl.style.left = `${x - tooltipEl.clientWidth - 10}px`;
 				} else {
-					tooltipEl.style.left = `${layerX + 10}px`;
+					tooltipEl.style.left = `${x + 10}px`;
 				}
 
 				tooltipEl.style.transform = 'none';
