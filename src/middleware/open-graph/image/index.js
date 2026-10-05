@@ -181,7 +181,7 @@ module.exports = async (ctx) => {
 		ctx.type = 'image/png';
 		ctx.maxAge = 24 * 60 * 60;
 	} catch (error) {
-		if (error?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
+		if (error?.response?.statusCode === 404 || error?.status === 404) { // the algolia lib uses .status
 			return; // 404 response
 		}
 
