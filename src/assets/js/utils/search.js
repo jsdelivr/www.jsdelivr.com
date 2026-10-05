@@ -26,7 +26,11 @@ module.exports = (queryString, page = 0, hitsPerPage = 10) => {
 };
 
 module.exports.getByName = (name) => {
-	return npmIndex.getObject(name).then((pkg) => {
+	return npmIndex.getObjects([ name ]).then(({ results: [ pkg ] }) => {
+		if (!pkg) {
+			throw Object.assign(new Error('Object not found.'), { status: 404 });
+		}
+
 		return _.deepExtend({}, pkg);
 	});
 };

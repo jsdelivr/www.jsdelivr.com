@@ -8,7 +8,11 @@ module.exports.getObjectWithCache = async (name) => {
 		return _.cloneDeep(cache.get(name));
 	}
 
-	let pkg = await npmIndex.getObject(name);
+	let { results: [ pkg ] } = await npmIndex.getObjects([ name ]);
+
+	if (!pkg) {
+		throw Object.assign(new Error('Object not found.'), { status: 404 });
+	}
 
 	cache.set(name, pkg);
 
