@@ -714,13 +714,15 @@ module.exports = {
 			let currAxisYear = labels[0][2];
 
 			formattedLabels = labels.map((label, idx) => {
+				let isEdgeLabel = idx === 0 || idx === labels.length - 1;
+
 				switch (true) {
 					case screen.width >= 768:
-						if (idx === 0 || idx === labels.length - 1 || label[2] !== currAxisYear) {
+						if (isEdgeLabel || label[2] !== currAxisYear) {
 							currAxisYear = label[2];
 							tempCurrMonth = label[1];
 
-							return label.slice(1, 3);
+							return isEdgeLabel || label[1] !== lastPeriodMonth ? label.slice(1, 3) : [];
 						} else if (label[1] !== tempCurrMonth && label[1] !== lastPeriodMonth) {
 							tempCurrMonth = label[1];
 
@@ -729,7 +731,7 @@ module.exports = {
 
 						return [];
 
-					case idx === 0 || idx === labels.length - 1:
+					case isEdgeLabel:
 						return label.slice(1, 3);
 				}
 
