@@ -12,6 +12,12 @@
 <link rel="ractive" href="../components/periods-dropdown.html" name="c-periods-dropdown">
 
 <r-page noYield="{{noYield}}" title="{{title}}" description="{{description}}">
+	{{#partial seo}}
+		<script type="application/ld+json">
+			{{@shared.escape(JSON.stringify(microdata))}}
+		</script>
+	{{/partial}}
+
 	<c-notification></c-notification>
 	<c-header></c-header>
 
@@ -204,6 +210,31 @@
 	const NO_RESULTS_SEARCH_ITEM = { code: 'no-results', name: 'No results found', type: NO_RESULTS_SEARCH_ITEM_TYPE };
 
 	component.exports = {
+		computed: {
+			microdata () {
+				return {
+					'@context': 'https://schema.org',
+					'@type': 'WebPage',
+					'name': 'jsDelivr usage statistics',
+					'url': 'https://www.jsdelivr.com/statistics',
+					'mainEntity': {
+						'@type': 'Dataset',
+						'@id': 'https://www.jsdelivr.com/statistics#dataset',
+						'name': 'jsDelivr CDN network usage statistics',
+						'description': 'Daily request counts and bandwidth served by the jsDelivr CDN, including breakdowns by CDN provider and geographic region, available through the public statistics API for selectable reporting periods.',
+						'url': 'https://www.jsdelivr.com/statistics',
+						'creator': { '@type': 'Organization', 'name': 'jsDelivr', 'url': 'https://www.jsdelivr.com/' },
+						'isAccessibleForFree': true,
+						'variableMeasured': [ 'Requests', 'Bandwidth' ],
+						'distribution': {
+							'@type': 'DataDownload',
+							'encodingFormat': 'application/json',
+							'contentUrl': 'https://data.jsdelivr.com/v1/stats/network?period=month',
+						},
+					},
+				};
+			},
+		},
 		data () {
 			return {
 				_,
