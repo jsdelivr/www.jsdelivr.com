@@ -117,13 +117,16 @@
 			},
 			microdata: {
 				get () {
+					let url = `https://www.jsdelivr.com/package/${this.get('type')}/${this.get('name')}`;
+
 					return {
 						'@context': 'https://schema.org',
 						'@type': 'SoftwareSourceCode',
+						'@id': `${url}#source-code`,
 						'name': this.get('name'),
 						'version': this.get('versionP'),
 						'description': this.get('description'),
-						'url': `https://www.jsdelivr.com/package/${this.get('type')}/${this.get('name')}`,
+						'url': url,
 						'codeRepository': this.get('package.repository.url'),
 						'dateCreated': Object.values(this.get('package.versions') || {}).at(0),
 						'dateModified': Object.values(this.get('package.versions') || {}).at(-1),
@@ -133,6 +136,22 @@
 							'name': this.get('package.owner.name'),
 						},
 						'image': this.get('package.owner.avatar'),
+						'subjectOf': this.get('tab') === 'stats' && !this.get('packageNotFound') && !this.get('packageFailedToLoad') ? {
+							'@type': 'Dataset',
+							'@id': `${url}?tab=stats#dataset`,
+							'name': `${this.get('name')} CDN usage statistics`,
+							'description': `Daily request counts and bandwidth served by jsDelivr for ${this.get('name')}, available through the public statistics API for selectable reporting periods.`,
+							'url': `${url}?tab=stats`,
+							'about': { '@id': `${url}#source-code` },
+							'creator': { '@type': 'Organization', 'name': 'jsDelivr', 'url': 'https://www.jsdelivr.com/' },
+							'isAccessibleForFree': true,
+							'variableMeasured': [ 'Requests', 'Bandwidth' ],
+							'distribution': {
+								'@type': 'DataDownload',
+								'encodingFormat': 'application/json',
+								'contentUrl': `https://data.jsdelivr.com/v1/stats/packages/${this.get('type')}/${this.get('name')}`,
+							},
+						} : undefined,
 					};
 				},
 			},

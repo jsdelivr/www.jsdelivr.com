@@ -17,6 +17,25 @@ async function openFilesTab (url, locator = { css: '.c-package-file-browser .fil
 }
 
 describe('package', () => {
+	it('describes package statistics as a dataset only on the statistics tab', async () => {
+		await browser.navigate().to(`${BASE_URL}/package/npm/react?tab=stats`);
+		await waitForElement({ id: 'tabRouteStats' });
+
+		let metadata = JSON.parse(await browser.findElement({ css: 'script[type="application/ld+json"]' }).getAttribute('textContent'));
+		expect(metadata['@type']).to.equal('SoftwareSourceCode');
+		expect(metadata.subjectOf['@type']).to.equal('Dataset');
+		expect(metadata.subjectOf.about['@id']).to.equal(metadata['@id']);
+		expect(metadata.subjectOf.url).to.equal('https://www.jsdelivr.com/package/npm/react?tab=stats');
+		expect(metadata.subjectOf.distribution.contentUrl).to.equal('https://data.jsdelivr.com/v1/stats/packages/npm/react');
+
+		await (await waitForElement({ id: 'tabRouteReadme' })).click();
+
+		await browser.wait(async () => {
+			metadata = JSON.parse(await browser.findElement({ css: 'script[type="application/ld+json"]' }).getAttribute('textContent'));
+			return !metadata.subjectOf;
+		}, 10000);
+	});
+
 	it('displays default file', async () => {
 		await openFilesTab(`${BASE_URL}/package/npm/fontfamous?version=2.1.1`, { css: '.file-default .file-path' });
 		await expect(browser.findElement({ css: '.file-path' }).getText()).to.eventually.contain('font-famous-jsdelivr.min.css');

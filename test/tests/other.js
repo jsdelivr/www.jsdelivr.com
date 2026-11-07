@@ -13,6 +13,12 @@ describe('other', () => {
 	it('stats page loads', async () => {
 		await browser.navigate().to(`${BASE_URL}/statistics`);
 		await expect(browser.findElement({ css: '.head-text' }).getText()).to.eventually.contain('Global internet insights');
+
+		let metadata = JSON.parse(await browser.findElement({ css: 'script[type="application/ld+json"]' }).getAttribute('textContent'));
+		expect(metadata['@type']).to.equal('WebPage');
+		expect(metadata.mainEntity['@type']).to.equal('Dataset');
+		expect(metadata.mainEntity.variableMeasured).to.deep.equal([ 'Requests', 'Bandwidth' ]);
+		expect(metadata.mainEntity.distribution.contentUrl).to.equal('https://data.jsdelivr.com/v1/stats/network?period=month');
 	});
 
 	it('sponsors page loads', async () => {
