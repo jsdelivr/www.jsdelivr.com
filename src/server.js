@@ -285,7 +285,7 @@ koaElasticUtils.addRoutes(router, [
 		ctx.body = await ctx.render(template, data);
 		ctx.maxAge = 5 * 60;
 	} catch (e) {
-		if (e.code !== 'ENOENT' || e.path !== resolve(__dirname, 'views', template)) {
+		if (![ 'ENOENT', 'ENAMETOOLONG' ].includes(e.code) || e.path !== resolve(__dirname, 'views', template)) {
 			throw e;
 		}
 

@@ -85,7 +85,7 @@ koaElasticUtils.addRoutes(router, [
  * Package pages.
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/package/npm/:name', '/package/:type(npm)/:scope?/:name' ],
+	[ '/package/npm/:name', '/package/:type(npm)/:scope(@[^/@]+)?/:name' ],
 	[ '/package/gh/:user/:repo', '/package/:type(gh)/:user/:repo' ],
 ], async (ctx) => {
 	let data = {
@@ -151,7 +151,7 @@ koaElasticUtils.addRoutes(router, [
  * OG images
  */
 koaElasticUtils.addRoutes(router, [
-	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope?/:name' ],
+	[ '/open-graph/image/npm/:name', '/open-graph/image/:type(npm)/:scope(@[^/@]+)?/:name' ],
 ], ogImage);
 
 module.exports = router;

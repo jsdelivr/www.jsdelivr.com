@@ -1,5 +1,6 @@
 const createBarChart = require('./create-bar-chart');
 const createLineChart = require('./create-line-chart');
+const hideCollidingEdgeLabels = require('./hide-colliding-edge-labels');
 
 module.exports = () => {
 	return Promise.all([
@@ -57,6 +58,7 @@ module.exports = () => {
 			Legend,
 			Title,
 			Tooltip,
+			hideCollidingEdgeLabels,
 		);
 
 		return {
