@@ -46,8 +46,15 @@ async function getComponent (href, options) {
 	let cached = componentCache.get(href);
 
 	if (!cached || (options.revalidate && await hasChangedDependency(cached.dependencies))) {
-		let dependencies = [];
-		cached = { Component: await makeComponent(href, options, dependencies), dependencies };
+		let tree = { dependencies: [], components: [] };
+		let Component = await makeComponent(href, options, tree);
+		let replaced = componentCache.get(href);
+
+		if (replaced) {
+			removeExtensions(replaced.components);
+		}
+
+		cached = { Component, ...tree };
 		componentCache.set(href, cached);
 	}
 
@@ -63,17 +70,24 @@ async function hasChangedDependency (dependencies) {
 	return changes.includes(true);
 }
 
-async function makeComponent (href, options, dependencies) {
+// Ractive.extend() registers every class in Ractive.extensions, which would keep replaced trees alive.
+function removeExtensions (components) {
+	let removed = new Set(components);
+	let kept = Ractive.extensions.filter(Component => !removed.has(Component));
+	Ractive.extensions.splice(0, Ractive.extensions.length, ...kept);
+}
+
+async function makeComponent (href, options, tree) {
 	let viewsHref = path.join(options.views, href);
 	let { mtimeMs } = await fs.statAsync(viewsHref);
 	let template = await fs.readFileAsync(viewsHref, 'utf8');
-	dependencies.push({ file: viewsHref, mtimeMs });
+	tree.dependencies.push({ file: viewsHref, mtimeMs });
 
-	return new Promise((resolve, reject) => {
+	let Component = await new Promise((resolve, reject) => {
 		try {
 			rcu.make(template, {
 				loadImport (name, innerHref, url, callback) {
-					makeComponent(path.join(path.dirname(href), innerHref), options, dependencies).then(callback).catch(reject);
+					makeComponent(path.join(path.dirname(href), innerHref), options, tree).then(callback).catch(reject);
 				},
 				require (module) {
 					return require(path.join(options.views, path.dirname(href), module));
@@ -84,6 +98,9 @@ async function makeComponent (href, options, dependencies) {
 			reject(e);
 		}
 	});
+
+	tree.components.push(Component);
+	return Component;
 }
 
 function escape (string = '') {
