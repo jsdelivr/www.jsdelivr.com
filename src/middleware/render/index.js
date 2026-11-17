@@ -46,15 +46,20 @@ async function getComponent (href, options) {
 	let cached = componentCache.get(href);
 
 	if (!cached || (options.revalidate && await hasChangedDependency(cached.dependencies))) {
-		let tree = { dependencies: [], components: [] };
-		let Component = await makeComponent(href, options, tree);
+		let tree = { dependencies: [], components: [], failed: false };
+		let Component = await makeComponent(href, options, tree).catch((error) => {
+			tree.failed = true;
+			removeExtensions(tree.components);
+			throw error;
+		});
+
 		let replaced = componentCache.get(href);
 
 		if (replaced) {
 			removeExtensions(replaced.components);
 		}
 
-		cached = { Component, ...tree };
+		cached = { Component, dependencies: tree.dependencies, components: tree.components };
 		componentCache.set(href, cached);
 	}
 
@@ -99,7 +104,12 @@ async function makeComponent (href, options, tree) {
 		}
 	});
 
-	tree.components.push(Component);
+	if (tree.failed) {
+		removeExtensions([ Component ]);
+	} else {
+		tree.components.push(Component);
+	}
+
 	return Component;
 }
 
