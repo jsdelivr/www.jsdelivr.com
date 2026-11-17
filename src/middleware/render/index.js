@@ -43,22 +43,37 @@ module.exports = (options) => {
 };
 
 async function getComponent (href, options) {
-	if (!componentCache.has(href) || !options.cache) {
-		componentCache.set(href, await makeComponent(href, options));
+	let cached = componentCache.get(href);
+
+	if (!cached || (options.revalidate && await hasChangedDependency(cached.dependencies))) {
+		let dependencies = [];
+		cached = { Component: await makeComponent(href, options, dependencies), dependencies };
+		componentCache.set(href, cached);
 	}
 
-	return componentCache.get(href);
+	return cached.Component;
 }
 
-async function makeComponent (href, options) {
+async function hasChangedDependency (dependencies) {
+	let changes = await Promise.all(dependencies.map(async ({ file, mtimeMs }) => {
+		let stats = await fs.statAsync(file).catch(() => null);
+		return stats?.mtimeMs !== mtimeMs;
+	}));
+
+	return changes.includes(true);
+}
+
+async function makeComponent (href, options, dependencies) {
 	let viewsHref = path.join(options.views, href);
+	let { mtimeMs } = await fs.statAsync(viewsHref);
 	let template = await fs.readFileAsync(viewsHref, 'utf8');
+	dependencies.push({ file: viewsHref, mtimeMs });
 
 	return new Promise((resolve, reject) => {
 		try {
 			rcu.make(template, {
 				loadImport (name, innerHref, url, callback) {
-					makeComponent(path.join(path.dirname(href), innerHref), options).then(callback).catch(reject);
+					makeComponent(path.join(path.dirname(href), innerHref), options, dependencies).then(callback).catch(reject);
 				},
 				require (module) {
 					return require(path.join(options.views, path.dirname(href), module));
