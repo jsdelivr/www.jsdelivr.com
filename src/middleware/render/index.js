@@ -43,22 +43,56 @@ module.exports = (options) => {
 };
 
 async function getComponent (href, options) {
-	if (!componentCache.has(href) || !options.cache) {
-		componentCache.set(href, await makeComponent(href, options));
+	let cached = componentCache.get(href);
+
+	if (!cached || (options.revalidate && await hasChangedDependency(cached.dependencies))) {
+		let tree = { dependencies: [], components: [], failed: false };
+		let Component = await makeComponent(href, options, tree).catch((error) => {
+			tree.failed = true;
+			removeExtensions(tree.components);
+			throw error;
+		});
+
+		let replaced = componentCache.get(href);
+
+		if (replaced) {
+			removeExtensions(replaced.components);
+		}
+
+		cached = { Component, dependencies: tree.dependencies, components: tree.components };
+		componentCache.set(href, cached);
 	}
 
-	return componentCache.get(href);
+	return cached.Component;
 }
 
-async function makeComponent (href, options) {
-	let viewsHref = path.join(options.views, href);
-	let template = await fs.readFileAsync(viewsHref, 'utf8');
+async function hasChangedDependency (dependencies) {
+	let changes = await Promise.all(dependencies.map(async ({ file, mtimeMs }) => {
+		let stats = await fs.statAsync(file).catch(() => null);
+		return stats?.mtimeMs !== mtimeMs;
+	}));
 
-	return new Promise((resolve, reject) => {
+	return changes.includes(true);
+}
+
+// Ractive.extend() registers every class in Ractive.extensions, which would keep replaced trees alive.
+function removeExtensions (components) {
+	let removed = new Set(components);
+	let kept = Ractive.extensions.filter(Component => !removed.has(Component));
+	Ractive.extensions.splice(0, Ractive.extensions.length, ...kept);
+}
+
+async function makeComponent (href, options, tree) {
+	let viewsHref = path.join(options.views, href);
+	let { mtimeMs } = await fs.statAsync(viewsHref);
+	let template = await fs.readFileAsync(viewsHref, 'utf8');
+	tree.dependencies.push({ file: viewsHref, mtimeMs });
+
+	let Component = await new Promise((resolve, reject) => {
 		try {
 			rcu.make(template, {
 				loadImport (name, innerHref, url, callback) {
-					makeComponent(path.join(path.dirname(href), innerHref), options).then(callback).catch(reject);
+					makeComponent(path.join(path.dirname(href), innerHref), options, tree).then(callback).catch(reject);
 				},
 				require (module) {
 					return require(path.join(options.views, path.dirname(href), module));
@@ -69,6 +103,14 @@ async function makeComponent (href, options) {
 			reject(e);
 		}
 	});
+
+	if (tree.failed) {
+		removeExtensions([ Component ]);
+	} else {
+		tree.components.push(Component);
+	}
+
+	return Component;
 }
 
 function escape (string = '') {

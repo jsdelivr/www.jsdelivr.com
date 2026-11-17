@@ -1,0 +1,40 @@
+diff --git a/node_modules/rollup/dist/es/shared/rollup.js b/node_modules/rollup/dist/es/shared/rollup.js
+index ed213d4..7cf5606 100644
+--- a/node_modules/rollup/dist/es/shared/rollup.js
++++ b/node_modules/rollup/dist/es/shared/rollup.js
+@@ -23153,9 +23153,12 @@ async function catchUnfinishedHookActions(pluginDriver, callback) {
+         };
+         beforeExitEmitter.once(beforeExitEvent, handleEmptyEventLoop);
+     });
+-    const result = await Promise.race([callback(), emptyEventLoopPromise]);
+-    beforeExitEmitter.off(beforeExitEvent, handleEmptyEventLoop);
+-    return result;
++    try {
++        return await Promise.race([callback(), emptyEventLoopPromise]);
++    }
++    finally {
++        beforeExitEmitter.off(beforeExitEvent, handleEmptyEventLoop);
++    }
+ }
+ 
+ const defaultOnWarn = warning => console.warn(warning.message || warning);
+diff --git a/node_modules/rollup/dist/shared/rollup.js b/node_modules/rollup/dist/shared/rollup.js
+index 6b1975e..9f8fc1b 100644
+--- a/node_modules/rollup/dist/shared/rollup.js
++++ b/node_modules/rollup/dist/shared/rollup.js
+@@ -23274,9 +23274,12 @@ async function catchUnfinishedHookActions(pluginDriver, callback) {
+         };
+         beforeExitEmitter.once(beforeExitEvent, handleEmptyEventLoop);
+     });
+-    const result = await Promise.race([callback(), emptyEventLoopPromise]);
+-    beforeExitEmitter.off(beforeExitEvent, handleEmptyEventLoop);
+-    return result;
++    try {
++        return await Promise.race([callback(), emptyEventLoopPromise]);
++    }
++    finally {
++        beforeExitEmitter.off(beforeExitEvent, handleEmptyEventLoop);
++    }
+ }
+ 
+ function normalizeInputOptions(config) {
